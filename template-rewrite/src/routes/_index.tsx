@@ -91,12 +91,14 @@ function Home() {
         let prevNode: AnyNode | undefined
 
         let minTime = 100
+        let prevBackground = null as string | null
         for await (let chunk of eventSource!) {
-            await prevNode?.setAttributes({ backgroundColor: null })
+            console.log('chunk', chunk)
+            await prevNode?.setAttributes({ backgroundColor: prevBackground })
             // Process each chunk (value)
 
             try {
-                const { text, id } = JSON.parse(chunk)
+                const { text, id } = chunk as any
                 if (id == null) {
                     console.log(`no id found: ${chunk}`)
                     return
@@ -112,15 +114,21 @@ function Home() {
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
-
-                await currentParent?.setAttributes({ backgroundColor })
-                prevNode = currentParent
+                if (currentParent && isFrameNode(currentParent)) {
+                    prevBackground = currentParent?.backgroundColor || null
+                    await currentParent?.setAttributes({ backgroundColor })
+                    prevNode = currentParent
+                } else {
+                    prevBackground = null
+                    prevNode = undefined
+                }
 
                 await node.setText(text)
             } catch (e) {
                 console.log('error processing chatgpt', e)
             }
         }
+        await prevNode?.setAttributes({ backgroundColor: prevBackground })
     }
 
     async function replaceImagesClient() {
@@ -167,6 +175,7 @@ function Home() {
                             What is the new landing page about?
                         </div>
                     }
+                    autoFocus
                     labelPlacement='outside'
                     placeholder='a shoes shop'
                 />

@@ -12,7 +12,7 @@ import { raycastLink } from '../lib/utils'
 import { Link } from '@nextui-org/react'
 import { framerUrl } from '../lib/env'
 import { BlockWithStep } from '../components/BlockWithStep'
-import { generatePassword } from '../lib/ssr'
+import { generatePassword } from 'website/src/lib/ssr.server'
 import { notifyError } from '../lib/errors'
 import { db } from 'db/kysely'
 

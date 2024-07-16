@@ -8,6 +8,7 @@ import { streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
+import { sleep } from 'website/src/lib/utils'
 
 export const app = new Elysia({ prefix: '/api/v1' })
     .state('userId', '')
@@ -19,14 +20,14 @@ export const app = new Elysia({ prefix: '/api/v1' })
             response,
         })
         if (!userId) {
-            throw new AppError('Missing userId')
+            // throw new AppError('Missing userId')
         }
         for (let [header, value] of response.headers.entries()) {
             // console.log('setting header', header, value)
             set.headers[header] = value
         }
 
-        store.userId = userId
+        store.userId = userId || ''
         store.session = session!
     })
     // .guard({
@@ -79,9 +80,26 @@ export const app = new Elysia({ prefix: '/api/v1' })
                 temperature: 0.7,
                 abortSignal: request.signal,
             })
-
-            for await (const text of stream.textStream) {
-                yield text
+            let buffer = ''
+            let lastYieldTime = 0
+            for await (const part of stream.textStream) {
+                const parts = part.split('\n')
+                for (let p of parts) {
+                    buffer += p
+                    try {
+                        let obj = JSON.parse(buffer)
+                        const now = Date.now()
+                        if (now - lastYieldTime <= 100) {
+                            await sleep(100 - (now - lastYieldTime))
+                        }
+                        console.log('obj', obj)
+                        yield JSON.stringify(obj)
+                        buffer = ''
+                        lastYieldTime = Date.now()
+                    } catch {
+                        // console.log('error', buffer)
+                    }
+                }
             }
         },
         {
