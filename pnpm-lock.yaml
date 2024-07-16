@@ -380,8 +380,8 @@ importers:
         specifier: ^3.4.4
         version: 3.4.5
       unframer:
-        specifier: ^2.6.2
-        version: 2.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(undici@6.19.2)
+        specifier: workspace:*
+        version: link:../unframer/unframer
       vite-plugin-inspect:
         specifier: ^0.8.4
         version: 0.8.4(rollup@4.18.1)(vite@5.3.4(@types/node@20.14.10))
@@ -6160,13 +6160,6 @@ packages:
   undici@6.19.2:
     resolution: {integrity: sha512-JfjKqIauur3Q6biAtHJ564e3bWa8VvT+7cSiOJHFbX4Erv6CLGDpg8z+Fmg/1OI/47RA+GI2QZaF48SSaLvyBA==}
     engines: {node: '>=18.17'}
-
-  unframer@2.6.2:
-    resolution: {integrity: sha512-26ILoVP0qXwzexs/RCq27dj/6VxW7pOU0re0EvHkP4wDlQoSLkvz+NyANFFU7lz4JlsspRbVAnRHwbmBZGrVhg==}
-    hasBin: true
-    peerDependencies:
-      react: '*'
-      react-dom: '*'
 
   unified@10.1.2:
     resolution: {integrity: sha512-pUSWAi/RAnVy1Pif2kAoeWNBa3JVrx0MId2LASj8G+7AiHWoKZNTomq6LG326T68U7/e263X6fTdcXIy7XnF7Q==}
@@ -14048,30 +14041,6 @@ snapshots:
       '@fastify/busboy': 2.1.1
 
   undici@6.19.2: {}
-
-  unframer@2.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(undici@6.19.2):
-    dependencies:
-      async-sema: 3.1.1
-      cac: 6.7.14
-      chokidar: 3.6.0
-      dedent: 1.5.3
-      dprint-node: 1.0.8
-      esbuild: 0.21.5
-      esbuild-plugin-polyfill-node: 0.3.0(esbuild@0.21.5)
-      eventemitter3: 3.1.2
-      find-up: 5.0.0
-      fs-extra: 11.2.0
-      json5: 2.2.3
-      native-fetch: 4.0.2(undici@6.19.2)
-      picocolors: 1.0.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      real-framer-motion: framer-motion@11.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tmp: 0.2.3
-    transitivePeerDependencies:
-      - '@emotion/is-prop-valid'
-      - babel-plugin-macros
-      - undici
 
   unified@10.1.2:
     dependencies:

@@ -3,10 +3,10 @@
     "outDir": "./src/framer",
     "components": {
         // add here your Framer components urls, the code will be written to outDir/{componentName}.js
-        "hero": "https://framer.com/m/Hero-NMbT.js",
-        "feature-list": "https://framer.com/m/FeatureList-x1w6.js",
-        "footer": "https://framer.com/m/Footer-zc62.js",
-        "pricing-banner": "https://framer.com/m/PricingBanner-jlQv.js",
-        "nav": "https://framer.com/m/Navigation-TVUh.js"
+        "hero": "https://framer.com/m/Hero-E2Xf.js",
+        "feature-list": "https://framer.com/m/FeatureList-pSWG.js",
+        "footer": "https://framer.com/m/Footer-iqWd.js",
+        "pricing-banner": "https://framer.com/m/PricingBanner-etWz.js",
+        "nav": "https://framer.com/m/Navigation-DBMo.js"
     }
 }

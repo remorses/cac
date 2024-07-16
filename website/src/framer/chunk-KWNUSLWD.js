@@ -1,0 +1,485 @@
+// @ts-nocheck
+/* eslint-disable */
+// https :https://framerusercontent.com/modules/f0DboytQenYh21kfme7W/zb1zVBMZJKgPMiedOi0y/Feather.js
+import { jsx as _jsx2, } from 'react/jsx-runtime';
+import * as React2 from 'react';
+import { useEffect, useRef, useState, } from 'react';
+import { addPropertyControls, ControlType as ControlType2, RenderTarget, } from 'unframer';
+
+// https :https://framer.com/m/framer/icon-nullstate.js@0.7.0
+import { jsx as _jsx, } from 'react/jsx-runtime';
+import * as React from 'react';
+var containerStyles = {
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+var emptyStateStyle = {
+  ...containerStyles,
+  borderRadius: 6,
+  background: 'rgba(149, 149, 149, 0.1)',
+  border: '1px dashed rgba(149, 149, 149, 0.15)',
+  color: '#a5a5a5',
+  flexDirection: 'column',
+};
+var NullState = /* @__PURE__ */ React.forwardRef((_, ref,) => {
+  return /* @__PURE__ */ _jsx('div', {
+    style: emptyStateStyle,
+    ref,
+  },);
+},);
+
+// https :https://framer.com/m/feather-icons/home.js@0.0.29
+var r;
+var s = (o,) => {
+  if (!r) {
+    const n = o.forwardRef(({ color: t = 'currentColor', size: e = 24, ...i }, l,) =>
+      o.createElement(
+        'svg',
+        {
+          ref: l,
+          xmlns: 'http://www.w3.org/2000/svg',
+          width: e,
+          height: e,
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: t,
+          strokeWidth: '2',
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+          ...i,
+        },
+        o.createElement('path', { d: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', },),
+        o.createElement('polyline', { points: '9 22 9 12 15 12 15 22', },),
+      )
+    );
+    n.displayName = 'Home', r = n;
+  }
+  return r;
+};
+
+// https :https://framerusercontent.com/modules/Ma20hU0GGRxLxZphbywl/OSpwWF91FHPVFyQJjMHt/utils.js
+import { useMemo, } from 'react';
+import { ControlType, } from 'unframer';
+var defaultEvents = {
+  onClick: { type: ControlType.EventHandler, },
+  onMouseDown: { type: ControlType.EventHandler, },
+  onMouseUp: { type: ControlType.EventHandler, },
+  onMouseEnter: { type: ControlType.EventHandler, },
+  onMouseLeave: { type: ControlType.EventHandler, },
+};
+var findByArray = (arr, search,) => arr.find((a,) => a.toLowerCase().includes(search,));
+function useIconSelection(iconKeys2, selectByList, iconSearch = '', iconSelection, lowercaseIconKeyPairs2,) {
+  const iconSearchResult = useMemo(() => {
+    if (iconSearch == null || (iconSearch === null || iconSearch === void 0 ? void 0 : iconSearch.length) === 0) return null;
+    const iconSearchTerm = iconSearch.toLowerCase().replace(/-|\s/g, '',);
+    var _iconSearchTerm;
+    const searchResult = (_iconSearchTerm = lowercaseIconKeyPairs2[iconSearchTerm]) !== null && _iconSearchTerm !== void 0
+      ? _iconSearchTerm
+      : findByArray(iconKeys2, iconSearchTerm,);
+    return searchResult;
+  }, [iconSelection, iconSearch,],);
+  const name = selectByList ? iconSelection : iconSearchResult;
+  return name;
+}
+
+// https :https://framerusercontent.com/modules/f0DboytQenYh21kfme7W/zb1zVBMZJKgPMiedOi0y/Feather.js
+var iconKeys = [
+  'activity',
+  'airplay',
+  'alert-circle',
+  'alert-octagon',
+  'alert-triangle',
+  'align-center',
+  'align-justify',
+  'align-left',
+  'align-right',
+  'anchor',
+  'aperture',
+  'archive',
+  'arrow-down',
+  'arrow-down-circle',
+  'arrow-down-left',
+  'arrow-down-right',
+  'arrow-left',
+  'arrow-left-circle',
+  'arrow-right',
+  'arrow-right-circle',
+  'arrow-up',
+  'arrow-up-circle',
+  'arrow-up-left',
+  'arrow-up-right',
+  'at-sign',
+  'award',
+  'bar-chart',
+  'bar-chart-2',
+  'battery',
+  'battery-charging',
+  'bell',
+  'bell-off',
+  'bluetooth',
+  'bold',
+  'book',
+  'book-open',
+  'bookmark',
+  'box',
+  'briefcase',
+  'calendar',
+  'camera',
+  'camera-off',
+  'cast',
+  'check',
+  'check-circle',
+  'check-square',
+  'chevron-down',
+  'chevron-left',
+  'chevron-right',
+  'chevron-up',
+  'chevrons-down',
+  'chevrons-left',
+  'chevrons-right',
+  'chevrons-up',
+  'chrome',
+  'circle',
+  'clipboard',
+  'clock',
+  'cloud',
+  'cloud-drizzle',
+  'cloud-lightning',
+  'cloud-off',
+  'cloud-rain',
+  'cloud-snow',
+  'code',
+  'codepen',
+  'codesandbox',
+  'coffee',
+  'columns',
+  'command',
+  'compass',
+  'copy',
+  'corner-down-left',
+  'corner-down-right',
+  'corner-left-down',
+  'corner-left-up',
+  'corner-right-down',
+  'corner-right-up',
+  'corner-up-left',
+  'corner-up-right',
+  'cpu',
+  'credit-card',
+  'crop',
+  'crosshair',
+  'database',
+  'delete',
+  'disc',
+  'divide',
+  'divide-circle',
+  'divide-square',
+  'dollar-sign',
+  'download',
+  'download-cloud',
+  'dribbble',
+  'droplet',
+  'edit',
+  'edit-2',
+  'edit-3',
+  'external-link',
+  'eye',
+  'eye-off',
+  'facebook',
+  'fast-forward',
+  'feather',
+  'figma',
+  'file',
+  'file-minus',
+  'file-plus',
+  'file-text',
+  'film',
+  'filter',
+  'flag',
+  'folder',
+  'folder-minus',
+  'folder-plus',
+  'framer',
+  'frown',
+  'gift',
+  'git-branch',
+  'git-commit',
+  'git-merge',
+  'git-pull-request',
+  'github',
+  'gitlab',
+  'globe',
+  'grid',
+  'hard-drive',
+  'hash',
+  'headphones',
+  'heart',
+  'help-circle',
+  'hexagon',
+  'home',
+  'image',
+  'inbox',
+  'info',
+  'instagram',
+  'italic',
+  'key',
+  'layers',
+  'layout',
+  'life-buoy',
+  'link',
+  'link-2',
+  'linkedin',
+  'list',
+  'loader',
+  'lock',
+  'log-in',
+  'log-out',
+  'mail',
+  'map',
+  'map-pin',
+  'maximize',
+  'maximize-2',
+  'meh',
+  'menu',
+  'message-circle',
+  'message-square',
+  'mic',
+  'mic-off',
+  'minimize',
+  'minimize-2',
+  'minus',
+  'minus-circle',
+  'minus-square',
+  'monitor',
+  'moon',
+  'more-horizontal',
+  'more-vertical',
+  'mouse-pointer',
+  'move',
+  'music',
+  'navigation',
+  'navigation-2',
+  'octagon',
+  'package',
+  'paperclip',
+  'pause',
+  'pause-circle',
+  'pen-tool',
+  'percent',
+  'phone',
+  'phone-call',
+  'phone-forwarded',
+  'phone-incoming',
+  'phone-missed',
+  'phone-off',
+  'phone-outgoing',
+  'pie-chart',
+  'play',
+  'play-circle',
+  'plus',
+  'plus-circle',
+  'plus-square',
+  'pocket',
+  'power',
+  'printer',
+  'radio',
+  'refresh-ccw',
+  'refresh-cw',
+  'repeat',
+  'rewind',
+  'rotate-ccw',
+  'rotate-cw',
+  'rss',
+  'save',
+  'scissors',
+  'search',
+  'send',
+  'server',
+  'settings',
+  'share',
+  'share-2',
+  'shield',
+  'shield-off',
+  'shopping-bag',
+  'shopping-cart',
+  'shuffle',
+  'sidebar',
+  'skip-back',
+  'skip-forward',
+  'slack',
+  'slash',
+  'sliders',
+  'smartphone',
+  'smile',
+  'speaker',
+  'square',
+  'star',
+  'stop-circle',
+  'sun',
+  'sunrise',
+  'sunset',
+  'tablet',
+  'tag',
+  'target',
+  'terminal',
+  'thermometer',
+  'thumbs-down',
+  'thumbs-up',
+  'toggle-left',
+  'toggle-right',
+  'tool',
+  'trash',
+  'trash-2',
+  'trello',
+  'trending-down',
+  'trending-up',
+  'triangle',
+  'truck',
+  'tv',
+  'twitch',
+  'twitter',
+  'type',
+  'umbrella',
+  'underline',
+  'unlock',
+  'upload',
+  'upload-cloud',
+  'user',
+  'user-check',
+  'user-minus',
+  'user-plus',
+  'user-x',
+  'users',
+  'video',
+  'video-off',
+  'voicemail',
+  'volume',
+  'volume-1',
+  'volume-2',
+  'volume-x',
+  'watch',
+  'wifi',
+  'wifi-off',
+  'wind',
+  'x',
+  'x-circle',
+  'x-octagon',
+  'x-square',
+  'youtube',
+  'zap',
+  'zap-off',
+  'zoom-in',
+  'zoom-out',
+];
+var moduleBaseUrl = 'https://framer.com/m/feather-icons/';
+var uppercaseIconKeys = iconKeys.map((name,) => name.charAt(0,).toUpperCase() + name.slice(1,));
+var lowercaseIconKeyPairs = iconKeys.reduce((res, key,) => {
+  res[key.toLowerCase()] = key;
+  return res;
+}, {},);
+function Icon(props,) {
+  const { color, selectByList, iconSearch, iconSelection, onClick, onMouseDown, onMouseUp, onMouseEnter, onMouseLeave, mirrored, } = props;
+  const isMounted = useRef(false,);
+  const iconKey = useIconSelection(iconKeys, selectByList, iconSearch, iconSelection, lowercaseIconKeyPairs,);
+  const [SelectedIcon, setSelectedIcon,] = useState(iconKey === 'Home' ? s(React2,) : null,);
+  async function importModule() {
+    let active = true;
+    try {
+      const iconModuleUrl = `${moduleBaseUrl}${iconKey}.js@0.0.29`;
+      const module = await import(
+        /* webpackIgnore: true */
+        /* @vite-ignore */
+        iconModuleUrl
+      );
+      if (active) setSelectedIcon(module.default(React2,),);
+    } catch (e) {
+      console.log(e,);
+      if (active) setSelectedIcon(null,);
+    }
+    return () => {
+      active = false;
+    };
+  }
+  useEffect(() => {
+    importModule();
+  }, [iconKey,],);
+  const isOnCanvas = RenderTarget.current() === RenderTarget.canvas;
+  const emptyState = isOnCanvas ? /* @__PURE__ */ _jsx2(NullState, {},) : null;
+  return /* @__PURE__ */ _jsx2('div', {
+    style: { display: 'contents', },
+    onClick,
+    onMouseEnter,
+    onMouseLeave,
+    onMouseDown,
+    onMouseUp,
+    children: SelectedIcon
+      ? /* @__PURE__ */ _jsx2(SelectedIcon, {
+        style: { width: '100%', height: '100%', transform: mirrored ? 'scale(-1, 1)' : void 0, },
+        color,
+      },)
+      : emptyState,
+  },);
+}
+Icon.displayName = 'Feather';
+Icon.defaultProps = {
+  width: 24,
+  height: 24,
+  iconSelection: 'home',
+  iconSearch: 'Home',
+  color: '#66F',
+  selectByList: true,
+  mirrored: false,
+};
+addPropertyControls(Icon, {
+  selectByList: {
+    type: ControlType2.Boolean,
+    title: 'Select',
+    enabledTitle: 'List',
+    disabledTitle: 'Search',
+    defaultValue: Icon.defaultProps.selectByList,
+  },
+  iconSelection: {
+    type: ControlType2.Enum,
+    options: iconKeys,
+    optionTitles: uppercaseIconKeys,
+    defaultValue: Icon.defaultProps.iconSelection,
+    title: 'Name',
+    hidden: ({ selectByList, },) => !selectByList,
+    description: 'Find every icon name on the [Feather site](https://feathericons.com/)',
+  },
+  iconSearch: {
+    type: ControlType2.String,
+    title: 'Name',
+    placeholder: 'Menu, Wifi, Box\u2026',
+    hidden: ({ selectByList, },) => selectByList,
+  },
+  mirrored: { type: ControlType2.Boolean, enabledTitle: 'Yes', disabledTitle: 'No', defaultValue: Icon.defaultProps.mirrored, },
+  color: { type: ControlType2.Color, title: 'Color', defaultValue: Icon.defaultProps.color, },
+  ...defaultEvents,
+},);
+
+// https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js
+import { fontStore, } from 'unframer';
+fontStore.loadFonts(['GF;Space Grotesk-regular', 'GF;Space Grotesk-700',],);
+var fonts = [{
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUsmNsFjTDJK.woff2',
+  weight: '400',
+}, {
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksmNsFjTDJK.woff2',
+  weight: '700',
+},];
+var css = [
+  '.framer-ktWBo .framer-styles-preset-17ww93c:not(.rich-text-wrapper), .framer-ktWBo .framer-styles-preset-17ww93c.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
+];
+var className = 'framer-ktWBo';
+
+export { className, css, fonts, Icon, };
