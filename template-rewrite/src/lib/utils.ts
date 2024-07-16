@@ -3,7 +3,7 @@ import { env } from 'website/src/lib/env'
 
 import { treaty } from '@elysiajs/eden'
 
-import type { RouteType } from 'website/src/lib/elysia.server.js'
+import type { RouteType } from 'website/src/lib/elysia.server'
 
 export const apiClient = treaty<RouteType>(env.PUBLIC_URL!, {
     // async fetch(input, requestInit) {
@@ -43,42 +43,4 @@ export const noop: any = () => {}
 
 async function isTruthy<T>(x: T | undefined | null | false): Promise<boolean> {
     return !!x
-}
-
-// show toasts on success and failure and manages loading state
-// you can skip showing the toast on failure putting a field skipToast: true in the error
-export function useThrowingFn({
-    fn: fnToWrap,
-
-    immediate = false,
-}) {
-    const [isLoading, setIsLoading] = useState(false)
-    useEffect(() => {
-        if (immediate) {
-            fn()
-        }
-    }, [immediate])
-    const fn = async function wrappedThrowingFn(...args) {
-        try {
-            setIsLoading(true)
-            const result = await fnToWrap(...args)
-            if (result?.skipToast) {
-                return result
-            }
-
-            return result
-        } catch (err) {
-            console.error(err)
-            // how to handle unreadable errors? simply don't return them from APIs, just return something went wrong
-
-            return err
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    return {
-        isLoading,
-        fn,
-    }
 }
