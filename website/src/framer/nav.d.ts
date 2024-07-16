@@ -11,8 +11,7 @@ export interface Props {
     height?: any
     layoutId?: string
     "variant"?: 'Desktop' | 'Laptop' | 'Tablet' | 'Mobile' | 'Tablet Open' | 'Mobile Open'
-    "raycastUrl"?: string
-    "crispPlugin"?: string
+    "framerPlugin"?: string
     "ctaVariant"?: 'Primary' | 'Secondary' | 'Tertiary' | ' Login button' | 'Button text'
 }
 

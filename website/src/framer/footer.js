@@ -1,7 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
 'use client';
-import { className as className3, css as css3, fonts as fonts3, } from './chunk-VHAJRWMR.js';
 import { className as className2, css as css2, fonts as fonts2, } from './chunk-W6H3PCSD.js';
 import { className, css, fonts, Icon, } from './chunk-KWNUSLWD.js';
 
@@ -25,6 +24,27 @@ import {
 } from 'unframer';
 import { LayoutGroup as LayoutGroup3, motion as motion3, MotionConfigContext as MotionConfigContext3, } from 'unframer';
 import * as React3 from 'react';
+
+// https :https://framerusercontent.com/modules/mZoWK8Epp6w0rOOwFwud/A5AavTqKgg8Mu9oMgSrZ/DrH7EbF3F.js
+import { fontStore, } from 'unframer';
+fontStore.loadFonts(['GF;Space Grotesk-500', 'GF;Space Grotesk-700',],);
+var fonts3 = [{
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsmNsFjTDJK.woff2',
+  weight: '500',
+}, {
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksmNsFjTDJK.woff2',
+  weight: '700',
+},];
+var css3 = [
+  '.framer-JAvBy .framer-styles-preset-15m69fh:not(.rich-text-wrapper), .framer-JAvBy .framer-styles-preset-15m69fh.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 500; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
+];
+var className3 = 'framer-JAvBy';
 
 // https :https://framerusercontent.com/modules/ncTpzEiw3qNOep3VTZcG/3aEAyRlZV6QPh0MaDd3X/IV_7SD635.js
 import { jsx as _jsx, jsxs as _jsxs, } from 'react/jsx-runtime';

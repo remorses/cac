@@ -11,7 +11,7 @@ export interface Props {
     height?: any
     layoutId?: string
     "variant"?: 'Desktop' | 'Laptop' | 'Tablet' | 'Mobile'
-    "crispUrl"?: string
+    "framerUrl"?: string
 }
 
 const PricingBannerFramerComponent = (props: Props) => any

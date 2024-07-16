@@ -1,7 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import { className, css, fonts, } from './chunk-WNPAEZHB.js';
-import { className as className2, css as css2, fonts as fonts2, Icon, } from './chunk-KWNUSLWD.js';
+import { className, css, fonts, Icon, } from './chunk-KWNUSLWD.js';
 
 // https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js
 import { jsx as _jsx, jsxs as _jsxs, } from 'react/jsx-runtime';
@@ -21,6 +20,23 @@ import {
 } from 'unframer';
 import { LayoutGroup, motion, MotionConfigContext, } from 'unframer';
 import * as React from 'react';
+
+// https :https://framerusercontent.com/modules/PunbTAM0YOoCAxOb0Z6w/lJnVHZiW49Phqk9vljQr/dNJjz5Q4p.js
+import { fontStore, } from 'unframer';
+fontStore.loadFonts(['GF;Space Grotesk-700',],);
+var fonts2 = [{
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksmNsFjTDJK.woff2',
+  weight: '700',
+},];
+var css2 = [
+  '.framer-B4h90 .framer-styles-preset-1dpymlu:not(.rich-text-wrapper), .framer-B4h90 .framer-styles-preset-1dpymlu.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
+];
+var className2 = 'framer-B4h90';
+
+// https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js
 var FeatherFonts = getFonts(Icon,);
 var enabledGestures = {
   B3GNqKG_s: { hover: true, },
@@ -97,7 +113,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
   const layoutDependency = createLayoutDependency(props, variants,);
   const ref1 = React.useRef(null,);
   const defaultLayoutId = React.useId();
-  const sharedStyleClassNames = [className, className2,];
+  const sharedStyleClassNames = [className2, className,];
   const componentViewport = useComponentViewport();
   return /* @__PURE__ */ _jsx(LayoutGroup, {
     id: layoutId !== null && layoutId !== void 0 ? layoutId : defaultLayoutId,
@@ -430,8 +446,8 @@ var css3 = [
   '.framer-nyuCL.framer-v-1ik2naf.framer-16c9l7d, .framer-nyuCL.framer-v-5n4rj3.framer-16c9l7d { padding: 14px 24px 14px 24px; }',
   '.framer-nyuCL.framer-v-it02uf.framer-16c9l7d, .framer-nyuCL.framer-v-vxw3cn.framer-16c9l7d { padding: 0px 0px 0px 0px; }',
   '.framer-nyuCL.framer-v-16c9l7d.hover .framer-bvy246, .framer-nyuCL.framer-v-1ik2naf.hover .framer-bvy246, .framer-nyuCL.framer-v-5n4rj3.hover .framer-bvy246, .framer-nyuCL.framer-v-it02uf.hover .framer-bvy246, .framer-nyuCL.framer-v-vxw3cn.hover .framer-bvy246 { justify-content: flex-start; }',
-  ...css,
   ...css2,
+  ...css,
 ];
 var Framern_DVZNexF = withCSS(Component, css3, 'framer-nyuCL',);
 var stdin_default = Framern_DVZNexF;
@@ -448,6 +464,6 @@ addPropertyControls(Framern_DVZNexF, {
   qyxXbxBX2: { defaultValue: true, title: 'Icon Visibility', type: ControlType.Boolean, },
   FDhu5wZJE: { title: 'Link', type: ControlType.Link, },
 },);
-addFonts(Framern_DVZNexF, [...FeatherFonts, ...fonts, ...fonts2,],);
+addFonts(Framern_DVZNexF, [...FeatherFonts, ...fonts2, ...fonts,],);
 
 export { stdin_default, };

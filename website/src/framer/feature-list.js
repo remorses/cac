@@ -1,9 +1,9 @@
 // @ts-nocheck
 /* eslint-disable */
 'use client';
-import { className, css, fonts, } from './chunk-W6H3PCSD.js';
+import { className, css, fonts, } from './chunk-CNV3GALY.js';
 
-// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/urBEWUyGKbxoeMyLPwwS/jGfHTkNGC.js
+// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/jdcxn0gY8mwDj07tKgwK/jGfHTkNGC.js
 import { jsx as _jsx, jsxs as _jsxs, } from 'react/jsx-runtime';
 import {
   addFonts,
@@ -21,7 +21,7 @@ import {
 import { LayoutGroup, motion, MotionConfigContext, } from 'unframer';
 import * as React from 'react';
 
-// https :https://framerusercontent.com/modules/qHxaaKHcsUms3fDTv6BE/VIH5RUBj6TePOrXYYkjl/Stp3cBHim.js
+// https :https://framerusercontent.com/modules/vAjh6AAlRYSYj5CTuDFt/u9eUxHZUH7dGKsXMJn3t/Stp3cBHim.js
 import { fontStore, } from 'unframer';
 fontStore.loadFonts(['GF;Space Grotesk-700',],);
 var fonts2 = [{
@@ -39,9 +39,9 @@ var css2 = [
 ];
 var className2 = 'framer-KXnUO';
 
-// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/urBEWUyGKbxoeMyLPwwS/jGfHTkNGC.js
+// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/jdcxn0gY8mwDj07tKgwK/jGfHTkNGC.js
 var cycleOrder = ['cIqlKiy6o', 'feyXzLrKB',];
-var serializationHash = 'framer-tknJu';
+var serializationHash = 'framer-iPCmF';
 var variantClassNames = { cIqlKiy6o: 'framer-v-1wvkhzp', feyXzLrKB: 'framer-v-mvjmwc', };
 function addPropertyOverrides(overrides, ...variants) {
   const nextOverrides = {};
@@ -80,12 +80,17 @@ var createLayoutDependency = (props, variants,) => {
 var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
   const { activeLocale, setLocale, } = useLocaleInfo();
   const { style, className: className3, layoutId, variant, ...restProps } = getProps(props,);
-  const { baseVariant, classNames, gestureHandlers, gestureVariant, setGestureState, setVariant, variants, } = useVariantState({
-    cycleOrder,
-    defaultVariant: 'cIqlKiy6o',
-    variant,
-    variantClassNames,
-  },);
+  const {
+    baseVariant,
+    classNames,
+    clearLoadingGesture,
+    gestureHandlers,
+    gestureVariant,
+    isLoading,
+    setGestureState,
+    setVariant,
+    variants,
+  } = useVariantState({ cycleOrder, defaultVariant: 'cIqlKiy6o', variant, variantClassNames, },);
   const layoutDependency = createLayoutDependency(props, variants,);
   const ref1 = React.useRef(null,);
   const isDisplayed = () => {
@@ -135,7 +140,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                     /* @__PURE__ */ _jsx(RichText, {
                       __fromCanvasComponent: true,
                       children: /* @__PURE__ */ _jsx(React.Fragment, {
-                        children: /* @__PURE__ */ _jsx(motion.p, {
+                        children: /* @__PURE__ */ _jsx(motion.ol, {
                           style: {
                             '--font-selector': 'R0Y7U3BhY2UgR3JvdGVzay03MDA=',
                             '--framer-font-family': '"Space Grotesk", "Space Grotesk Placeholder", sans-serif',
@@ -143,9 +148,11 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                             '--framer-font-weight': '700',
                             '--framer-letter-spacing': '-2px',
                             '--framer-line-height': '115%',
-                            '--framer-text-color': 'var(--extracted-r6o4lv, rgb(193, 255, 86))',
+                            '--framer-text-color': 'var(--extracted-gjwowx, rgb(193, 255, 86))',
                           },
-                          children: 'All your sites in one interface',
+                          children: /* @__PURE__ */ _jsx(motion.li, {
+                            children: /* @__PURE__ */ _jsx(motion.p, { children: 'Buy a template', },),
+                          },),
                         },),
                       },),
                       className: 'framer-1kc41ev',
@@ -153,7 +160,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                       fonts: ['GF;Space Grotesk-700',],
                       layoutDependency,
                       layoutId: 'EET3qI0XT',
-                      style: { '--extracted-r6o4lv': 'rgb(193, 255, 86)', '--framer-paragraph-spacing': '0px', },
+                      style: { '--extracted-gjwowx': 'rgb(193, 255, 86)', '--framer-paragraph-spacing': '0px', },
                       verticalAlignment: 'top',
                       withExternalLayout: true,
                     },),
@@ -240,14 +247,23 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                 /* @__PURE__ */ _jsx(RichText, {
                   __fromCanvasComponent: true,
                   children: /* @__PURE__ */ _jsx(React.Fragment, {
-                    children: /* @__PURE__ */ _jsx(motion.h3, {
+                    children: /* @__PURE__ */ _jsx(motion.ol, {
                       className: 'framer-styles-preset-g3fwcy',
                       'data-styles-preset': 'Stp3cBHim',
+                      start: '2',
                       style: {
                         '--framer-text-color':
-                          'var(--extracted-a0htzi, var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86)))',
+                          'var(--extracted-gjwowx, var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86)))',
                       },
-                      children: 'Keyboard First',
+                      children: /* @__PURE__ */ _jsx(motion.li, {
+                        children: /* @__PURE__ */ _jsx(motion.h3, {
+                          style: {
+                            '--framer-text-color':
+                              'var(--extracted-1bn47p8, var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86)))',
+                          },
+                          children: 'Use Template Rewrite to migrate the content',
+                        },),
+                      },),
                     },),
                   },),
                   className: 'framer-12ubw8n',
@@ -256,7 +272,8 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                   layoutDependency,
                   layoutId: 'FlUpg5EFB',
                   style: {
-                    '--extracted-a0htzi': 'var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86))',
+                    '--extracted-1bn47p8': 'var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86))',
+                    '--extracted-gjwowx': 'var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86))',
                     '--framer-paragraph-spacing': '0px',
                   },
                   verticalAlignment: 'top',
@@ -375,7 +392,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                             '--framer-text-color':
                               'var(--extracted-a0htzi, var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86)))',
                           },
-                          children: '5x faster to load',
+                          children: '3. Make small adjustements',
                         },),
                       },),
                       className: 'framer-1une4sw',
@@ -449,7 +466,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                             '--framer-text-color':
                               'var(--extracted-a0htzi, var(--token-a05655a1-e6dd-4d69-a82a-f5054b601f79, rgb(193, 255, 86)))',
                           },
-                          children: 'Fastest Search',
+                          children: '4. Your website is live',
                         },),
                       },),
                       className: 'framer-112mwu5',
@@ -519,33 +536,33 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
 },);
 var css3 = [
   '@supports (aspect-ratio: 1) { body { --framer-aspect-ratio-supported: auto; } }',
-  '.framer-tknJu.framer-1s2bef1, .framer-tknJu .framer-1s2bef1 { display: block; }',
-  '.framer-tknJu.framer-1wvkhzp { align-content: center; align-items: center; display: flex; flex-direction: row; flex-wrap: wrap; gap: 22px; height: min-content; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 1140px; }',
-  '.framer-tknJu .framer-1y6vtzo { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 9px; height: auto; justify-content: center; overflow: hidden; padding: 124px 271px 48px 48px; position: relative; width: 66%; will-change: var(--framer-will-change-override, transform); z-index: 0; }',
-  '.framer-tknJu .framer-1e6nlc1 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 24px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
-  '.framer-tknJu .framer-1kc41ev, .framer-tknJu .framer-1a3bv6h, .framer-tknJu .framer-12ubw8n, .framer-tknJu .framer-1s1373j, .framer-tknJu .framer-1une4sw, .framer-tknJu .framer-1mvf3aw, .framer-tknJu .framer-112mwu5, .framer-tknJu .framer-1rtjf36 { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
-  '.framer-tknJu .framer-vc6p6 { bottom: -54px; flex: none; left: 246px; position: absolute; right: -10px; top: -54px; z-index: -1; }',
-  '.framer-tknJu .framer-c1wiul { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 19px; height: min-content; justify-content: center; overflow: hidden; padding: 24px 15px 46px 15px; position: relative; width: 32%; will-change: var(--framer-will-change-override, transform); }',
-  '.framer-tknJu .framer-dv3cbr { align-content: center; align-items: center; aspect-ratio: 0.5710059171597633 / 1; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: var(--framer-aspect-ratio-supported, 333px); justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 57%; }',
-  '.framer-tknJu .framer-1m6hmr4 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: min-content; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
-  '.framer-tknJu .framer-c0bec0, .framer-tknJu .framer-pdfif9 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: 232px; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 325px; }',
-  '.framer-tknJu .framer-dskjyd, .framer-tknJu .framer-ego1bl { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 16px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
-  '.framer-tknJu .framer-1m60r5d { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: auto; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
-  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-tknJu.framer-1wvkhzp, .framer-tknJu .framer-1y6vtzo, .framer-tknJu .framer-1e6nlc1, .framer-tknJu .framer-c1wiul, .framer-tknJu .framer-dv3cbr, .framer-tknJu .framer-1m6hmr4, .framer-tknJu .framer-c0bec0, .framer-tknJu .framer-dskjyd, .framer-tknJu .framer-1m60r5d, .framer-tknJu .framer-ego1bl, .framer-tknJu .framer-pdfif9 { gap: 0px; } .framer-tknJu.framer-1wvkhzp > * { margin: 0px; margin-left: calc(22px / 2); margin-right: calc(22px / 2); } .framer-tknJu.framer-1wvkhzp > :first-child, .framer-tknJu .framer-1y6vtzo > :first-child, .framer-tknJu .framer-dv3cbr > :first-child, .framer-tknJu .framer-c0bec0 > :first-child, .framer-tknJu .framer-pdfif9 > :first-child { margin-left: 0px; } .framer-tknJu.framer-1wvkhzp > :last-child, .framer-tknJu .framer-1y6vtzo > :last-child, .framer-tknJu .framer-dv3cbr > :last-child, .framer-tknJu .framer-c0bec0 > :last-child, .framer-tknJu .framer-pdfif9 > :last-child { margin-right: 0px; } .framer-tknJu .framer-1y6vtzo > * { margin: 0px; margin-left: calc(9px / 2); margin-right: calc(9px / 2); } .framer-tknJu .framer-1e6nlc1 > * { margin: 0px; margin-bottom: calc(24px / 2); margin-top: calc(24px / 2); } .framer-tknJu .framer-1e6nlc1 > :first-child, .framer-tknJu .framer-c1wiul > :first-child, .framer-tknJu .framer-1m6hmr4 > :first-child, .framer-tknJu .framer-dskjyd > :first-child, .framer-tknJu .framer-1m60r5d > :first-child, .framer-tknJu .framer-ego1bl > :first-child { margin-top: 0px; } .framer-tknJu .framer-1e6nlc1 > :last-child, .framer-tknJu .framer-c1wiul > :last-child, .framer-tknJu .framer-1m6hmr4 > :last-child, .framer-tknJu .framer-dskjyd > :last-child, .framer-tknJu .framer-1m60r5d > :last-child, .framer-tknJu .framer-ego1bl > :last-child { margin-bottom: 0px; } .framer-tknJu .framer-c1wiul > * { margin: 0px; margin-bottom: calc(19px / 2); margin-top: calc(19px / 2); } .framer-tknJu .framer-dv3cbr > *, .framer-tknJu .framer-c0bec0 > *, .framer-tknJu .framer-pdfif9 > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-tknJu .framer-1m6hmr4 > *, .framer-tknJu .framer-1m60r5d > * { margin: 0px; margin-bottom: calc(52px / 2); margin-top: calc(52px / 2); } .framer-tknJu .framer-dskjyd > *, .framer-tknJu .framer-ego1bl > * { margin: 0px; margin-bottom: calc(16px / 2); margin-top: calc(16px / 2); } }',
-  '.framer-tknJu.framer-v-mvjmwc.framer-1wvkhzp { flex-direction: column; width: 471px; }',
-  '.framer-tknJu.framer-v-mvjmwc .framer-1y6vtzo { align-self: unset; flex-direction: column; height: 400px; padding: 20px; width: 100%; }',
-  '.framer-tknJu.framer-v-mvjmwc .framer-c1wiul { padding: 24px 15px 22px 15px; width: 100%; }',
-  '.framer-tknJu.framer-v-mvjmwc .framer-dv3cbr { height: var(--framer-aspect-ratio-supported, 440px); }',
-  '.framer-tknJu.framer-v-mvjmwc .framer-1m6hmr4 { width: 100%; }',
-  '.framer-tknJu.framer-v-mvjmwc .framer-1m60r5d { align-self: unset; height: min-content; width: 100%; }',
-  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-tknJu.framer-v-mvjmwc.framer-1wvkhzp, .framer-tknJu.framer-v-mvjmwc .framer-1y6vtzo { gap: 0px; } .framer-tknJu.framer-v-mvjmwc.framer-1wvkhzp > * { margin: 0px; margin-bottom: calc(22px / 2); margin-top: calc(22px / 2); } .framer-tknJu.framer-v-mvjmwc.framer-1wvkhzp > :first-child, .framer-tknJu.framer-v-mvjmwc .framer-1y6vtzo > :first-child { margin-top: 0px; } .framer-tknJu.framer-v-mvjmwc.framer-1wvkhzp > :last-child, .framer-tknJu.framer-v-mvjmwc .framer-1y6vtzo > :last-child { margin-bottom: 0px; } .framer-tknJu.framer-v-mvjmwc .framer-1y6vtzo > * { margin: 0px; margin-bottom: calc(9px / 2); margin-top: calc(9px / 2); } }',
+  '.framer-iPCmF.framer-1s2bef1, .framer-iPCmF .framer-1s2bef1 { display: block; }',
+  '.framer-iPCmF.framer-1wvkhzp { align-content: center; align-items: center; display: flex; flex-direction: row; flex-wrap: wrap; gap: 22px; height: min-content; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 1140px; }',
+  '.framer-iPCmF .framer-1y6vtzo { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 9px; height: auto; justify-content: center; overflow: hidden; padding: 124px 271px 48px 48px; position: relative; width: 66%; will-change: var(--framer-will-change-override, transform); z-index: 0; }',
+  '.framer-iPCmF .framer-1e6nlc1 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 24px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
+  '.framer-iPCmF .framer-1kc41ev, .framer-iPCmF .framer-1a3bv6h, .framer-iPCmF .framer-12ubw8n, .framer-iPCmF .framer-1s1373j, .framer-iPCmF .framer-1une4sw, .framer-iPCmF .framer-1mvf3aw, .framer-iPCmF .framer-112mwu5, .framer-iPCmF .framer-1rtjf36 { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
+  '.framer-iPCmF .framer-vc6p6 { bottom: -54px; flex: none; left: 246px; position: absolute; right: -10px; top: -54px; z-index: -1; }',
+  '.framer-iPCmF .framer-c1wiul { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 19px; height: min-content; justify-content: center; overflow: hidden; padding: 24px 15px 46px 15px; position: relative; width: 32%; will-change: var(--framer-will-change-override, transform); }',
+  '.framer-iPCmF .framer-dv3cbr { align-content: center; align-items: center; aspect-ratio: 0.5710059171597633 / 1; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: var(--framer-aspect-ratio-supported, 333px); justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 57%; }',
+  '.framer-iPCmF .framer-1m6hmr4 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: min-content; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
+  '.framer-iPCmF .framer-c0bec0, .framer-iPCmF .framer-pdfif9 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: 232px; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 325px; }',
+  '.framer-iPCmF .framer-dskjyd, .framer-iPCmF .framer-ego1bl { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 16px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
+  '.framer-iPCmF .framer-1m60r5d { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: auto; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
+  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-iPCmF.framer-1wvkhzp, .framer-iPCmF .framer-1y6vtzo, .framer-iPCmF .framer-1e6nlc1, .framer-iPCmF .framer-c1wiul, .framer-iPCmF .framer-dv3cbr, .framer-iPCmF .framer-1m6hmr4, .framer-iPCmF .framer-c0bec0, .framer-iPCmF .framer-dskjyd, .framer-iPCmF .framer-1m60r5d, .framer-iPCmF .framer-ego1bl, .framer-iPCmF .framer-pdfif9 { gap: 0px; } .framer-iPCmF.framer-1wvkhzp > * { margin: 0px; margin-left: calc(22px / 2); margin-right: calc(22px / 2); } .framer-iPCmF.framer-1wvkhzp > :first-child, .framer-iPCmF .framer-1y6vtzo > :first-child, .framer-iPCmF .framer-dv3cbr > :first-child, .framer-iPCmF .framer-c0bec0 > :first-child, .framer-iPCmF .framer-pdfif9 > :first-child { margin-left: 0px; } .framer-iPCmF.framer-1wvkhzp > :last-child, .framer-iPCmF .framer-1y6vtzo > :last-child, .framer-iPCmF .framer-dv3cbr > :last-child, .framer-iPCmF .framer-c0bec0 > :last-child, .framer-iPCmF .framer-pdfif9 > :last-child { margin-right: 0px; } .framer-iPCmF .framer-1y6vtzo > * { margin: 0px; margin-left: calc(9px / 2); margin-right: calc(9px / 2); } .framer-iPCmF .framer-1e6nlc1 > * { margin: 0px; margin-bottom: calc(24px / 2); margin-top: calc(24px / 2); } .framer-iPCmF .framer-1e6nlc1 > :first-child, .framer-iPCmF .framer-c1wiul > :first-child, .framer-iPCmF .framer-1m6hmr4 > :first-child, .framer-iPCmF .framer-dskjyd > :first-child, .framer-iPCmF .framer-1m60r5d > :first-child, .framer-iPCmF .framer-ego1bl > :first-child { margin-top: 0px; } .framer-iPCmF .framer-1e6nlc1 > :last-child, .framer-iPCmF .framer-c1wiul > :last-child, .framer-iPCmF .framer-1m6hmr4 > :last-child, .framer-iPCmF .framer-dskjyd > :last-child, .framer-iPCmF .framer-1m60r5d > :last-child, .framer-iPCmF .framer-ego1bl > :last-child { margin-bottom: 0px; } .framer-iPCmF .framer-c1wiul > * { margin: 0px; margin-bottom: calc(19px / 2); margin-top: calc(19px / 2); } .framer-iPCmF .framer-dv3cbr > *, .framer-iPCmF .framer-c0bec0 > *, .framer-iPCmF .framer-pdfif9 > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-iPCmF .framer-1m6hmr4 > *, .framer-iPCmF .framer-1m60r5d > * { margin: 0px; margin-bottom: calc(52px / 2); margin-top: calc(52px / 2); } .framer-iPCmF .framer-dskjyd > *, .framer-iPCmF .framer-ego1bl > * { margin: 0px; margin-bottom: calc(16px / 2); margin-top: calc(16px / 2); } }',
+  '.framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp { flex-direction: column; width: 471px; }',
+  '.framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo { align-self: unset; flex-direction: column; height: 400px; padding: 20px; width: 100%; }',
+  '.framer-iPCmF.framer-v-mvjmwc .framer-c1wiul { padding: 24px 15px 22px 15px; width: 100%; }',
+  '.framer-iPCmF.framer-v-mvjmwc .framer-dv3cbr { height: var(--framer-aspect-ratio-supported, 440px); }',
+  '.framer-iPCmF.framer-v-mvjmwc .framer-1m6hmr4 { width: 100%; }',
+  '.framer-iPCmF.framer-v-mvjmwc .framer-1m60r5d { align-self: unset; height: min-content; width: 100%; }',
+  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp, .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo { gap: 0px; } .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp > * { margin: 0px; margin-bottom: calc(22px / 2); margin-top: calc(22px / 2); } .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp > :first-child, .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo > :first-child { margin-top: 0px; } .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp > :last-child, .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo > :last-child { margin-bottom: 0px; } .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo > * { margin: 0px; margin-bottom: calc(9px / 2); margin-top: calc(9px / 2); } }',
   ...css2,
   ...css,
 ];
-var FramerjGfHTkNGC = withCSS(Component, css3, 'framer-tknJu',);
+var FramerjGfHTkNGC = withCSS(Component, css3, 'framer-iPCmF',);
 var stdin_default = FramerjGfHTkNGC;
 FramerjGfHTkNGC.displayName = 'FeatureList';
-FramerjGfHTkNGC.defaultProps = { height: 1096, width: 1140, };
+FramerjGfHTkNGC.defaultProps = { height: 1247, width: 1140, };
 addPropertyControls(FramerjGfHTkNGC, {
   variant: { options: ['cIqlKiy6o', 'feyXzLrKB',], optionTitles: ['desktop', 'mobile',], title: 'Variant', type: ControlType.Enum, },
 },);

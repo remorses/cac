@@ -3,15 +3,10 @@ export const env = {
     PUBLIC_URL: process.env.PUBLIC_URL,
     PUBLIC_SUPABASE_ANON_KEY: process.env.PUBLIC_SUPABASE_ANON_KEY,
     PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL,
-    CRISP_ID: process.env.CRISP_ID,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
     PORT: process.env.PORT || 8040,
 }
-
-
-
-
 
 // console.log(env)
 for (let k in env) {
@@ -29,9 +24,8 @@ export const supabaseRef = env
     .PUBLIC_SUPABASE_URL!.replace('.supabase.co', '')
     .replace('https://', '')
 
-export const raycastUrl = 'https://www.raycast.com/xmorse/crisp?via=tommy'
-export const crispPluginUrl =
-    'https://crisp.chat/en/integrations/urn:tommaso.de.rossi:raycast:0'
+export const framerUrl = 'https://framer.com?via=xmorse'
+export const framerPluginUrl = 'https://framer.com?via=xmorse'
 
-export const companyName = 'Crispy Raycast'
+export const companyName = 'Unframer'
 export const domain = env.PUBLIC_URL!.replace('https://', '').replace('/', '')
