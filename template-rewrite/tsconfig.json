@@ -22,5 +22,5 @@
         },
         "noEmit": true
     },
-    "include": ["src", "../website/src/lib/elysia.server.tsx", "../website/src/lib/ssr.server.ts", "../website/src/routes/api.replace-text.ts", "../website/src/routes/api.v1.$.tsx"]
+    "include": ["src"]
 }

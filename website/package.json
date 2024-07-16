@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@ai-sdk/openai": "^0.0.36",
+        "@elysiajs/cors": "^1.1.0",
         "@elysiajs/eden": "^1.1.0",
         "@elysiajs/stream": "^1.1.0",
         "@elysiajs/swagger": "^1.1.0",
@@ -48,6 +49,7 @@
         "tailwindcss": "^3.4.4",
         "unframer": "workspace:*",
         "vite-plugin-inspect": "^0.8.4",
+        "website": "workspace:*",
         "zod": "^3.23.8",
         "zod-form-data": "^2.0.2",
         "zod-validation-error": "^3.3.0"

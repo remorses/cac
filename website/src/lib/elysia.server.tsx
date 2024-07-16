@@ -6,6 +6,7 @@ import { AppError } from 'website/src/lib/errors'
 import { notifyError } from 'website/src/lib/errors'
 import { streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
+import { cors } from '@elysiajs/cors'
 
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
 import { sleep } from 'website/src/lib/utils'
@@ -13,6 +14,7 @@ import { sleep } from 'website/src/lib/utils'
 export const app = new Elysia({ prefix: '/api/v1' })
     .state('userId', '')
     .state('session', {} as Session)
+    .use(cors())
     .onRequest(async ({ request, set, store }) => {
         const response = new Response()
         const { userId, session } = await getSupabaseSession({
