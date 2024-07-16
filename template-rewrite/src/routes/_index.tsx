@@ -201,44 +201,6 @@ export default function Page() {
     return <Home />
 }
 
-// show toasts on success and failure and manages loading state
-// you can skip showing the toast on failure putting a field skipToast: true in the error
-export function useThrowingFn({
-    fn: fnToWrap,
-
-    immediate = false,
-}) {
-    const [isLoading, setIsLoading] = useState(false)
-    useEffect(() => {
-        if (immediate) {
-            fn()
-        }
-    }, [immediate])
-    const fn = async function wrappedThrowingFn(...args) {
-        try {
-            setIsLoading(true)
-            const result = await fnToWrap(...args)
-            if (result?.skipToast) {
-                return result
-            }
-
-            return result
-        } catch (err) {
-            console.error(err)
-            // how to handle unreadable errors? simply don't return them from APIs, just return something went wrong
-
-            return err
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    return {
-        isLoading,
-        fn,
-    }
-}
-
 export function MaterialSymbolsMagicButton(props) {
     return (
         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' {...props}>
