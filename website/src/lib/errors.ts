@@ -15,3 +15,10 @@ export async function notifyError(error, msg?: string) {
     captureException(error, { extra: { msg } })
     await flush(1000) // delivery timeout in ms
 }
+
+export class AppError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'AppError'
+    }
+}

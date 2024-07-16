@@ -29,8 +29,8 @@ export let loader = async ({ request, response }: LoaderFunctionArgs) => {
         throw new Error('user has no email or not found')
     }
     const operator = await db
-        .selectFrom('operators')
-        .where('userId', '=', user.id)
+        .selectFrom('auth.users')
+        .where('id', '=', user.id)
         .selectAll()
         .executeTakeFirst()
     if (!operator) {
@@ -38,8 +38,8 @@ export let loader = async ({ request, response }: LoaderFunctionArgs) => {
     }
 
     const password = await Promise.resolve().then(async () => {
-        if (operator.userPassword) {
-            return operator.userPassword
+        if (operator.plainPassword) {
+            return operator.plainPassword
         }
         console.log('Creating user password')
         let password = generatePassword()
@@ -55,9 +55,9 @@ export let loader = async ({ request, response }: LoaderFunctionArgs) => {
             throw error
         }
         await db
-            .updateTable('operators')
-            .set('userPassword', password)
-            .where('userId', '=', user.id)
+            .updateTable('auth.users')
+            .set('plainPassword', password)
+            .where('id', '=', user.id)
             .execute()
 
         return password

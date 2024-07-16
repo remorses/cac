@@ -15,7 +15,6 @@
         "start": "PORT=8040 doppler run -- remix-serve ./build/server/index.js"
     },
     "dependencies": {
-        
         "@nextui-org/react": "2.4.2",
         "@nextui-org/theme": "^2.2.6",
         "@remix-run/node": "^2.9.2",
@@ -30,6 +29,7 @@
         "db": "workspace:*",
         "input-otp": "^1.2.4",
         "isbot": "^5.1.9",
+        "lemonsqueezy-webhooks": "^0.1.2",
         "lucide-react": "^0.395.0",
         "marked": "^13.0.1",
         "nprogress": "^0.2.0",

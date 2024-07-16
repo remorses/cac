@@ -224,6 +224,7 @@ export interface AuthUsers {
   phone_change_sent_at: Timestamp | null;
   phone_change_token: Generated<string | null>;
   phone_confirmed_at: Timestamp | null;
+  plainPassword: string | null;
   raw_app_meta_data: Json | null;
   raw_user_meta_data: Json | null;
   reauthentication_sent_at: Timestamp | null;
@@ -285,43 +286,49 @@ export interface ExtensionsPgStatStatementsInfo {
   stats_reset: Timestamp | null;
 }
 
-export interface ExtensionsWrappersFdwStats {
-  /**
-   * Total bytes input from origin
-   */
-  bytes_in: Int8 | null;
-  /**
-   * Total bytes output to Postgres
-   */
-  bytes_out: Int8 | null;
-  /**
-   * Total number of times the FDW instacne has been created
-   */
-  create_times: Int8 | null;
-  created_at: Generated<Timestamp>;
-  fdw_name: string;
-  /**
-   * Metadata specific for the FDW
-   */
-  metadata: Json | null;
-  /**
-   * Total rows input from origin
-   */
-  rows_in: Int8 | null;
-  /**
-   * Total rows output to Postgres
-   */
-  rows_out: Int8 | null;
-  updated_at: Generated<Timestamp>;
+export interface Generation {
+  chars: number;
+  createdAt: Generated<Timestamp>;
+  id: Generated<number>;
+  orgId: string;
+  words: number;
 }
 
-export interface Operators {
+export interface Org {
   createdAt: Generated<Timestamp>;
-  crispEmail: string;
-  crispUserId: string;
-  name: string | null;
-  userId: string | null;
-  userPassword: string | null;
+  name: Generated<string>;
+  orgId: string;
+  ssoProviderId: string | null;
+  stripeCustomerId: string | null;
+  updatedAt: Generated<Timestamp>;
+  usersId: string | null;
+}
+
+export interface OrgInviteLink {
+  createdAt: Generated<Timestamp>;
+  forPageId: string | null;
+  forSiteId: string | null;
+  key: string;
+  orgId: string;
+}
+
+export interface OrgsUsers {
+  guestSiteIds: string[] | null;
+  orgId: string;
+  role: Generated<"ADMIN" | "GUEST" | "MEMBER">;
+  userId: string;
+}
+
+export interface PaymentForCredits {
+  createdAt: Generated<Timestamp>;
+  email: string | null;
+  id: string;
+  orderId: string;
+  orgId: string;
+  productId: string;
+  subscriptionId: string | null;
+  variantId: string;
+  variantName: string | null;
 }
 
 export interface PgsodiumDecryptedKey {
@@ -420,20 +427,12 @@ export interface RealtimeSubscription {
   subscription_id: string;
 }
 
-export interface SiteOperators {
-  crispPluginId: string;
-  crispRole: string;
-  crispUserId: string;
-  websiteId: string;
-}
-
-export interface Sites {
+export interface Site {
   createdAt: Generated<Timestamp>;
-  crispPluginId: string;
-  crispToken: string;
-  domain: string;
-  logo: string | null;
-  websiteId: string;
+  installationId: number | null;
+  name: string;
+  orgId: string;
+  siteId: string;
 }
 
 export interface StorageBuckets {
@@ -500,6 +499,22 @@ export interface StorageS3MultipartUploadsParts {
   version: string;
 }
 
+export interface Subscription {
+  createdAt: Generated<Timestamp>;
+  email: string | null;
+  endsAt: Timestamp | null;
+  itemId: string | null;
+  orderId: string | null;
+  orgId: string;
+  productId: string;
+  provider: Generated<"lemonsqueezy" | "stripe">;
+  quantity: Generated<number>;
+  status: "active" | "cancelled" | "expired" | "on_trial" | "past_due" | "paused" | "unpaid";
+  subscriptionId: string;
+  variantId: string;
+  variantName: string | null;
+}
+
 export interface VaultDecryptedSecrets {
   created_at: Timestamp | null;
   decrypted_secret: string | null;
@@ -542,8 +557,11 @@ export interface DB {
   "auth.users": AuthUsers;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
-  "extensions.wrappers_fdw_stats": ExtensionsWrappersFdwStats;
-  operators: Operators;
+  Generation: Generation;
+  Org: Org;
+  OrgInviteLink: OrgInviteLink;
+  OrgsUsers: OrgsUsers;
+  PaymentForCredits: PaymentForCredits;
   "pgsodium.decrypted_key": PgsodiumDecryptedKey;
   "pgsodium.key": PgsodiumKey;
   "pgsodium.mask_columns": PgsodiumMaskColumns;
@@ -552,13 +570,13 @@ export interface DB {
   "realtime.messages": RealtimeMessages;
   "realtime.schema_migrations": RealtimeSchemaMigrations;
   "realtime.subscription": RealtimeSubscription;
-  siteOperators: SiteOperators;
-  sites: Sites;
+  Site: Site;
   "storage.buckets": StorageBuckets;
   "storage.migrations": StorageMigrations;
   "storage.objects": StorageObjects;
   "storage.s3_multipart_uploads": StorageS3MultipartUploads;
   "storage.s3_multipart_uploads_parts": StorageS3MultipartUploadsParts;
+  Subscription: Subscription;
   "vault.decrypted_secrets": VaultDecryptedSecrets;
   "vault.secrets": VaultSecrets;
 }

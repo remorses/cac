@@ -1,0 +1,125 @@
+import { whatwgWebhooksHandler } from 'lemonsqueezy-webhooks'
+import { prisma, Prisma } from 'db/prisma'
+import { env } from 'website/src/lib/env'
+import { AppError, notifyError } from 'website/src/lib/errors'
+
+const secret = process.env.SECRET
+
+if (!secret) {
+    throw new Error('SECRET is not set')
+}
+
+export const POST = (request: Request) => {
+    return whatwgWebhooksHandler({
+        async onData(payload) {
+            console.log(JSON.stringify(payload, null, 2))
+            let customData = payload.meta.custom_data
+            let orgId = customData?.orgId
+            if (!orgId) {
+                console.error(
+                    'No orgId in lemon squeezy custom_data, ignoring',
+                    payload?.data?.id,
+                )
+                return
+            }
+            if (payload.event_name === 'order_created') {
+                let data = payload.data
+                let item = data.attributes.first_order_item
+
+                let create: Prisma.PaymentForCreditsCreateManyInput = {
+                    id: String(data.id),
+                    // price: 0,
+                    email: data.attributes.user_email,
+                    variantName: item.variant_name,
+                    orderId: String(data.id),
+                    orgId,
+                    productId: String(item.product_id),
+                    variantId: String(item.variant_id),
+                }
+                await prisma.paymentForCredits.upsert({
+                    where: { id: String(data.id) },
+                    create,
+                    update: create,
+                })
+            } else if (
+                payload.event_name === 'subscription_created' ||
+                payload.event_name === 'subscription_cancelled' ||
+                payload.event_name === 'subscription_expired' ||
+                payload.event_name === 'subscription_paused' ||
+                payload.event_name === 'subscription_resumed' ||
+                payload.event_name === 'subscription_unpaused'
+            ) {
+                let data = payload.data
+                let create: Prisma.SubscriptionCreateManyInput = {
+                    orgId: orgId,
+                    orderId: String(data.attributes.order_id),
+                    productId: String(data.attributes.product_id),
+                    variantId: String(data.attributes.variant_id),
+                    subscriptionId: String(data.id),
+                    email: data.attributes.user_email || undefined,
+                    endsAt: data.attributes.ends_at
+                        ? new Date(data.attributes.ends_at)
+                        : undefined,
+                    status: data.attributes.status || undefined,
+                    variantName: data.attributes.variant_name || undefined,
+                    createdAt: new Date(data.attributes.created_at),
+                }
+
+                let sub = await prisma.subscription.upsert({
+                    where: {
+                        subscriptionId_variantId: {
+                            subscriptionId: String(data.id),
+                            variantId: String(data.attributes.variant_id),
+                        },
+                    },
+                    create,
+                    update: create,
+                })
+            } else if (payload.event_name === 'subscription_payment_success') {
+                let data = payload.data
+                let sub = await prisma.subscription.findFirst({
+                    where: {
+                        subscriptionId: String(data.attributes.subscription_id),
+                    },
+                })
+                if (!sub) {
+                    throw new AppError(
+                        `Subscription not found for payment ${data.id}`,
+                    )
+                }
+                let create: Prisma.PaymentForCreditsCreateManyInput = {
+                    id: String(data.id),
+                    orgId: orgId || sub.orgId,
+                    productId: String(sub.productId),
+                    // price: data.attributes.total,
+                    email: sub.email,
+                    orderId: String(sub.orderId),
+                    subscriptionId: String(sub.subscriptionId),
+                    variantId: sub.variantId,
+                    variantName: sub.variantName,
+                }
+                const yesterday = new Date()
+                yesterday.setDate(yesterday.getDate() - 1)
+                // to support both 1 time subscriptions and recurring subscriptions, i need to add payment for credits on order and then delete it
+                await prisma.paymentForCredits
+                    .deleteMany({
+                        where: {
+                            orderId: String(sub.orderId),
+                            createdAt: {
+                                gt: yesterday,
+                            },
+                        },
+                    })
+                    .catch((e) => notifyError(e, 'delete old order'))
+                await prisma.paymentForCredits.upsert({
+                    where: { id: String(data.id) },
+                    create,
+                    update: create,
+                })
+            }
+        },
+        request,
+
+        secret: env.SECRET!,
+    })
+}

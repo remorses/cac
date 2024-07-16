@@ -6,6 +6,7 @@ export const env = {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
     PORT: process.env.PORT || 8040,
+    SECRET: process.env.SECRET,
 }
 
 // console.log(env)
