@@ -1,0 +1,58 @@
+{
+    "name": "website",
+    "private": true,
+    "sideEffects": false,
+    "scripts": {
+        "build": "doppler run -- remix vite:build && pnpm copy-prisma",
+        "fly": "fly --app crispy-raycast-website",
+        "deployment": "pnpm tsx scripts/deployment.ts",
+        "copy-prisma": "# cp ../db/schema.prisma ./build/ && doppler run -- pnpm prisma generate --schema build/schema.prisma",
+        "gen-client": "export DIR=../crisp-raycast/src/generated/ && rm -rf dist && tsc && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/client.* $DIR",
+        "test": "doppler run -- vitest",
+        "test:prod": "doppler run -c production -- vitest -u",
+        "dev": "doppler run -- remix vite:dev -p 8040",
+        "dev:prod": "doppler run -c production -- remix vite:dev -p 8040",
+        "start": "PORT=8040 doppler run -- remix-serve ./build/server/index.js"
+    },
+    "dependencies": {
+        
+        "@nextui-org/react": "2.4.2",
+        "@nextui-org/theme": "^2.2.6",
+        "@remix-run/node": "^2.9.2",
+        "@remix-run/react": "^2.9.2",
+        "@remix-run/serve": "^2.9.2",
+        "@sentry/node": "^8.17.0",
+        "@supabase/ssr": "^0.3.0",
+        "@supabase/supabase-js": "^2.43.4",
+        "@tailwindcss/typography": "^0.5.13",
+        "@types/marked": "^6.0.0",
+        "clsx": "^2.1.1",
+        "db": "workspace:*",
+        "input-otp": "^1.2.4",
+        "isbot": "^5.1.9",
+        "lucide-react": "^0.395.0",
+        "marked": "^13.0.1",
+        "nprogress": "^0.2.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "react-hot-toast": "^2.4.1",
+        "tailwindcss": "^3.4.4",
+        "unframer": "^2.6.2",
+        "vite-plugin-inspect": "^0.8.4",
+        "zod": "^3.23.8",
+        "zod-form-data": "^2.0.2",
+        "zod-validation-error": "^3.3.0"
+    },
+    "devDependencies": {
+        "@remix-run/dev": "^2.9.2",
+        "@types/node": "^20.14.2",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
+        "vite": "^5.3.4",
+        "vite-plugin-environment": "^1.1.3",
+        "vite-tsconfig-paths": "^4.3.2"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

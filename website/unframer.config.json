@@ -1,0 +1,12 @@
+{
+    "schema": "https://unframer-schema.vercel.app/schema.json",
+    "outDir": "./src/framer",
+    "components": {
+        // add here your Framer components urls, the code will be written to outDir/{componentName}.js
+        "hero": "https://framer.com/m/Hero-NMbT.js",
+        "feature-list": "https://framer.com/m/FeatureList-x1w6.js",
+        "footer": "https://framer.com/m/Footer-zc62.js",
+        "pricing-banner": "https://framer.com/m/PricingBanner-jlQv.js",
+        "nav": "https://framer.com/m/Navigation-TVUh.js"
+    }
+}
