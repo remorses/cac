@@ -7,8 +7,9 @@ import {
 import path from 'path'
 
 async function main() {
-    const stage = getCurrentStage()
+    // const stage = getCurrentStage()
     const env = await getDopplerEnv({ stage: 'production', project: 'website' })
+    env.FORCE_COLOR = '1'
     await Promise.all([
         shell(`pnpm build`, {
             env,
@@ -16,7 +17,7 @@ async function main() {
     ])
     const port = 8040
     await deployFly({
-        appName: 'crispy-raycast-website',
+        appName: 'unframer-website-prod',
         port,
         buildRemotely: true,
         dockerfile: 'Dockerfile',
@@ -31,7 +32,7 @@ async function main() {
             NODE_ENV: 'production',
             PORT: String(port),
         },
-        regions: ['ams'],
+        regions: ['iad'],
     })
 }
 

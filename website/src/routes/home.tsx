@@ -11,10 +11,10 @@ import PricingBannerFramerComponent from '../framer/pricing-banner'
 
 export const meta: MetaFunction = () => {
     return [
-        { title: 'Crispy Raycast' },
+        { title: 'Unframer - Framer Plugins' },
         {
             name: 'description',
-            content: 'Manage Crisp conversations in Raycast',
+            content: 'Framer Plugins to make Framer more powerful',
         },
     ]
 }

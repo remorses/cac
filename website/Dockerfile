@@ -21,8 +21,6 @@ RUN echo "{}" > package.json
 
 RUN npm install -g @remix-run/serve
 
-RUN npm install crisp-api@8
-
 COPY ./build /app/build
 
 env PORT=8040

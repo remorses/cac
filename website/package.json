@@ -4,7 +4,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "doppler run -- remix vite:build && pnpm copy-prisma",
-        "fly": "fly --app crispy-raycast-website",
+        "fly": "fly --app unframer-website-prod",
         "deployment": "pnpm tsx scripts/deployment.ts",
         "copy-prisma": "# cp ../db/schema.prisma ./build/ && doppler run -- pnpm prisma generate --schema build/schema.prisma",
         "gen-client": "export DIR=../crisp-raycast/src/generated/ && rm -rf dist && tsc && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/client.* $DIR",
