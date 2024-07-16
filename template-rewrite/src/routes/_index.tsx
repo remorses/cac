@@ -20,6 +20,7 @@ import {
 import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { OldImage, OldText, ReplaceTextInput } from '@/lib/types'
+import { apiClient } from '@/lib/utils'
 
 let abortController: AbortController
 function Home() {
@@ -74,37 +75,30 @@ function Home() {
                 i += 1
             }
         }
-        const body: ReplaceTextInput = {
-            description,
-            oldText: oldText,
+
+        const { data: eventSource, error } =
+            await apiClient.api.v1.rephrase.post({
+                description,
+                oldText,
+            })
+        if (error) {
+            framer.notify(String(error.value), { variant: 'error' })
+            return
         }
-        const eventSource = await fetch('/api/replace-text', {
-            method: 'post',
-            body: JSON.stringify(body),
-            signal: abortController.signal,
-        })
+
         // a red background showing we are changing this text, with 0.7 opacity
         const backgroundColor = 'rgba(255, 0, 0, 0.3)'
         let prevNode: AnyNode | undefined
-        let reader = eventSource
-            .body!.pipeThrough(new TextDecoderStream())
-            .pipeThrough(new EventSourceParserStream())
-            .getReader()
 
         let minTime = 100
-        while (true) {
-            const [{ value: event, done }] = await Promise.all([
-                reader.read(),
-                sleep(minTime),
-            ])
+        for await (let chunk of eventSource!) {
             await prevNode?.setAttributes({ backgroundColor: null })
-            if (done) break
             // Process each chunk (value)
 
             try {
-                const { text, id } = JSON.parse(event.data)
+                const { text, id } = JSON.parse(chunk)
                 if (id == null) {
-                    console.log(`no id found: ${event.data}`)
+                    console.log(`no id found: ${chunk}`)
                     return
                 }
 
