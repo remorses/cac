@@ -1,0 +1,50 @@
+{
+    "name": "template-handoff-plugin",
+    "private": true,
+    "sideEffects": false,
+    "type": "module",
+    "scripts": {
+        "build": "remix vite:build",
+        "dev": "remix vite:dev",
+        "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+        "start": "remix-serve ./build/server/index.js",
+        "typecheck": "tsc"
+    },
+    "dependencies": {
+        "@nextui-org/react": "2.4.2",
+        "@remix-run/node": "^2.10.0",
+        "@remix-run/react": "^2.10.0",
+        "@remix-run/serve": "^2.10.0",
+        "@sinclair/typebox": "^0.32.34",
+        "db": "workspace:^",
+        "eventsource-parser": "^1.1.2",
+        "framer-plugin": "^0.2.8",
+        "isbot": "^4.4.0",
+        "nextjs-progressbar": "^0.0.16",
+        "nprogress": "^0.2.0",
+        "openai": "^4.38.5",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "vite-plugin-mkcert": "^1.17.5",
+        "website": "workspace:^"
+    },
+    "devDependencies": {
+        "@remix-run/dev": "^2.10.0",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
+        "@typescript-eslint/eslint-plugin": "^6.21.0",
+        "@typescript-eslint/parser": "^6.21.0",
+        "eslint": "^8.57.0",
+        "eslint-import-resolver-typescript": "^3.6.1",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-jsx-a11y": "^6.9.0",
+        "eslint-plugin-react": "^7.34.3",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "typescript": "^5.5.3",
+        "vite": "^5.3.3",
+        "vite-tsconfig-paths": "^4.3.2"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

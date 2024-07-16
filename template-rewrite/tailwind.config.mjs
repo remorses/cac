@@ -1,0 +1,45 @@
+import websiteConfig from 'website/tailwind.config'
+
+/** @type {import('tailwindcss').Config} */
+export default {
+    ...websiteConfig,
+    content: [
+        './src/**/*.{js,ts,jsx,tsx}', //
+        // '../website/src/**/*.{js,ts,jsx,tsx}', //
+        '../website/node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
+        // '../beskar/src/**/*.{js,ts,jsx,tsx}', //
+    ],
+    theme: {
+        extend: {
+            ...websiteConfig.theme.extend,
+            backgroundColor: {
+                framer: {
+                    primary: 'var(--framer-color-bg)',
+                    secondary: 'var(--framer-color-bg-secondary)',
+                    tertiary: 'var(--framer-color-bg-tertiary)',
+                    divider: 'var(--framer-color-divider)',
+                    tint: 'var(--framer-color-tint)',
+                    tintDimmed: 'var(--framer-color-tint-dimmed)',
+                    tintDark: 'var(--framer-color-tint-dark)',
+                    blackDimmed: 'rgba(0, 0, 0, 0.5)',
+                },
+            },
+            colors: {
+                framer: {
+                    primary: 'var(--framer-color-text)',
+                    secondary: 'var(--framer-color-text-secondary)',
+                    tertiary: 'var(--framer-color-text-tertiary)',
+                    inverted: 'var(--framer-color-text-inverted)',
+                },
+            },
+            borderColor: {
+                framer: {
+                    divider: 'var(--framer-color-divider)',
+                },
+            },
+            fontSize: {
+                '2xs': '10px',
+            },
+        },
+    },
+}
