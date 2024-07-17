@@ -17,3 +17,4 @@ export let loader = async ({ request, response }: LoaderFunctionArgs) => {
 }
 
 export default Home
+

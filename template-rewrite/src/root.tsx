@@ -8,8 +8,8 @@ import {
 } from '@remix-run/react'
 
 import { NextUIProvider } from '@nextui-org/react'
-import { useSyncExternalStore } from 'react';
-import { noop } from '@/lib/utils';
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { noop } from '@/lib/utils'
 
 function Providers({ children }) {
     return (
@@ -56,4 +56,8 @@ export default function App() {
         return null
     }
     return <Outlet />
+}
+
+export function HydrateFallback() {
+    return <div className=''></div>
 }

@@ -17,7 +17,7 @@ export default defineConfig({
         remix({
             appDirectory: 'src',
             ssr: false,
-
+            
             future: {
                 v3_fetcherPersist: true,
                 v3_relativeSplatPath: true,
@@ -35,9 +35,9 @@ export default defineConfig({
                 if (!options?.ssr) {
                     return
                 }
-                if (id.includes('/framer-plugin@')) {
-                    return { code: `export {}` }
-                }
+                // if (id.includes('/framer-plugin@')) {
+                //     return { code: `export const framer = null` }
+                // }
                 return
             },
         },

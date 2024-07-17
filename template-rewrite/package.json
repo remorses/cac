@@ -4,7 +4,7 @@
     "sideEffects": false,
     "type": "module",
     "scripts": {
-        "build": "doppler run --remix vite:build",
+        "build": "doppler run -- remix vite:build",
         "dev": "doppler run -- remix vite:dev",
         "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
         "start": "doppler run -- remix-serve ./build/server/index.js"
@@ -12,9 +12,9 @@
     "dependencies": {
         "@elysiajs/eden": "^1.1.0",
         "@nextui-org/react": "2.4.2",
-        "@remix-run/node": "^2.10.0",
-        "@remix-run/react": "^2.10.0",
-        "@remix-run/serve": "^2.10.0",
+        "@remix-run/node": "^2.10.3",
+        "@remix-run/react": "^2.10.3",
+        "@remix-run/serve": "^2.10.3",
         "@sinclair/typebox": "^0.32.34",
         "ai": "^3.2.26",
         "db": "workspace:^",
@@ -32,7 +32,7 @@
         "website": "workspace:^"
     },
     "devDependencies": {
-        "@remix-run/dev": "^2.10.0",
+        "@remix-run/dev": "^2.10.3",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@typescript-eslint/eslint-plugin": "^6.21.0",

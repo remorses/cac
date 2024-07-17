@@ -2,6 +2,7 @@ import { whatwgWebhooksHandler } from 'lemonsqueezy-webhooks'
 import { prisma, Prisma } from 'db/prisma'
 import { env } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
+import { ActionFunctionArgs } from '@remix-run/node'
 
 const secret = process.env.SECRET
 
@@ -9,17 +10,27 @@ if (!secret) {
     throw new Error('SECRET is not set')
 }
 
-export const POST = (request: Request) => {
+export const loader = () => {
+    return new Response('use POST', {
+        status: 405,
+    })
+}
+
+export const action = ({ request }: ActionFunctionArgs) => {
     return whatwgWebhooksHandler({
         async onData(payload) {
             console.log(JSON.stringify(payload, null, 2))
             let customData = payload.meta.custom_data
             let orgId = customData?.orgId
             if (!orgId) {
-                console.error(
-                    'No orgId in lemon squeezy custom_data, ignoring',
-                    payload?.data?.id,
+                notifyError(
+                    new AppError(
+                        'No orgId in lemon squeezy custom_data, ignoring ' +
+                            payload?.data?.id,
+                    ),
+                    'lemon squeezy webhook',
                 )
+                // orgId = '1'
                 return
             }
             if (payload.event_name === 'order_created') {

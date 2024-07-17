@@ -198,6 +198,15 @@ function Home() {
 }
 let noop: any = () => {}
 export default function Page() {
+    const isClient = useSyncExternalStore(
+        noop,
+        () => true,
+        () => false,
+    )
+    if (!isClient) {
+        return null
+    }
+
     return <Home />
 }
 
