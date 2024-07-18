@@ -107,11 +107,10 @@ function Home() {
                 if (currentParent && isFrameNode(currentParent)) {
                     prevBackground = currentParent?.backgroundColor || null
                     await currentParent?.setAttributes({ backgroundColor })
-                    prevNode = currentParent
                 } else {
                     prevBackground = null
-                    prevNode = undefined
                 }
+                prevNode = currentParent
 
                 await node.setText(text)
             } catch (e) {
@@ -162,7 +161,6 @@ function Home() {
                     onChange={(e) => setDescription(e.target.value)}
                     className='p-2 w-full'
                     autoFocus
-                    
                     placeholder='a shoes shop'
                 />
             </div>
