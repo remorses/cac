@@ -7,6 +7,7 @@ export const env = {
     DATABASE_URL: process.env.DATABASE_URL,
     PORT: process.env.PORT || 8040,
     SECRET: process.env.SECRET,
+    SCREENSHOTONE_KEY: process.env.SCREENSHOTONE_KEY,
 }
 
 // console.log(env)

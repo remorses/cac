@@ -14,11 +14,17 @@ async function getPage() {
     address = '37.16.31.70'
     console.log('address', address)
     url = `http://${address}`
+    const response = await fetch(`http://${address}/json/version`)
+    const data = await response.json() as any
+    let cdpUrl = data.webSocketDebuggerUrl
+    // cdpUrl = url
     if (!browser) {
-        browser = await chromium.connectOverCDP(url, {
+        browser = await chromium.connectOverCDP(cdpUrl, {
             timeout: 1000 * 10,
+
             // endpointURL: url,
             headers: {
+                // host: address,
                 // host: '0.0.0.0',
             },
             logger: {
@@ -33,12 +39,15 @@ async function getPage() {
     }
 
     // const context = await browser.newContext()
-    const context = browser.contexts()[0]
+    const contexts = browser.contexts()
+    console.log('contexts', contexts, contexts.length)
+    const context = contexts[0]
 
     if (!context) {
         throw new Error('no context found')
     }
     const page = await context.newPage()
+    
     console.timeEnd('getPage')
     return page
 }

@@ -8,7 +8,7 @@ FROM --platform=linux/amd64 gcr.io/zenika-hub/alpine-chrome
 
 EXPOSE 9222
 
-CMD ["chrome", "--headless", "--no-sandbox", "--remote-debugging-address=0.0.0.0", "--remote-debugging-port=9222", "--disable-setuid-sandbox", "--force-prefers-reduced-motion"]
+CMD ["chrome", "--headless", "--no-sandbox", "--remote-debugging-address=0.0.0.0", "--remote-debugging-port=9222", "--disable-setuid-sandbox", "--force-prefers-reduced-motion", "--window-size=1280,1696", "--hide-scrollbars", "--disable-gpu", "--single-process", "--disable-audio","--disable-bluetooth"]
 # COPY package*.json ./
 # RUN npm install
 

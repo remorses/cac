@@ -13,7 +13,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { apiClient } from '@/lib/utils'
 import { RouterProvider } from 'react-router'
-import { createBrowserRouter } from 'react-router-dom'
+import { Link, createBrowserRouter } from 'react-router-dom'
 
 type OldText = { id: number; text: string }
 
@@ -22,7 +22,7 @@ function showFramer() {
 
     if (typeof window !== 'undefined')
         framer.showUI({
-            title: 'template rewrite',
+            title: '',
             position: 'top left',
             width: 600,
             height: height,
@@ -191,9 +191,44 @@ function SimplePrompt() {
     )
 }
 
+function AlreadyHaveWebsite() {
+    async function onSubmit() {}
+
+    return (
+        <div className='flex flex-col justify-start gap-6'>
+            <div className=''>Do you already have an existing website?</div>
+            <div className='flex gap-4 '>
+                <Link
+                    className='flex items-center grow gap-2 px-4 py-2 rounded-md border cursor-pointer'
+                    to={'/prompt?mode=default'}
+                >
+                    <input
+                        type='radio'
+                        name='alreadyHasWebsite'
+                        value='yes'
+                        className='cursor-pointer'
+                    />
+                    Yes
+                </Link>
+                <Link
+                    className='flex items-center grow gap-2 px-4 py-2 rounded-md border border-gray-300 cursor-pointer'
+                    to={'/prompt?mode=default'}
+                >
+                    <input
+                        type='radio'
+                        name='alreadyHasWebsite'
+                        value='no'
+                        className='cursor-pointer !text-xs'
+                    />
+                    No
+                </Link>
+            </div>
+        </div>
+    )
+}
+
 function StructuredPrompt() {
     const [isLoading, setIsLoading] = useState(false)
-
     async function onSubmit() {
         if (isLoading) {
             return
@@ -284,10 +319,14 @@ function StructuredPrompt() {
 const router = createBrowserRouter([
     {
         path: '/',
+        element: <AlreadyHaveWebsite />,
+    },
+    {
+        path: '/prompt',
         element: <StructuredPrompt />,
     },
     {
-        path: '/',
+        path: '/x',
         element: <SimplePrompt />,
     },
 ])
