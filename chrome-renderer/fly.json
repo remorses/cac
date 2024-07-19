@@ -1,0 +1,36 @@
+{
+    "app": "chrome-renderer",
+    "$schema": "https://json.schemastore.org/fly.json",
+    "primary_region": "cdg",
+    "build": {},
+
+    "services": [
+        {
+            "ports": [
+                {
+                    "handlers": ["http"],
+                    "port": 80
+                },
+                {
+                    "handlers": ["tls", "http"],
+                    "port": 443
+                }
+            ],
+            "processes": ["app"],
+            "protocol": "tcp",
+            "auto_start_machines": true,
+            "auto_stop_machines": true,
+            "internal_port": 9222,
+            "concurrency": {
+                "soft_limit": 30
+            }
+        }
+    ],
+    "vm": [
+        {
+            "memory": "4gb",
+            "cpu_kind": "shared",
+            "cpus": 2
+        }
+    ]
+}

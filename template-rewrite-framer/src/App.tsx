@@ -1,4 +1,6 @@
-import { Button, Textarea } from '@nextui-org/react'
+import { Textarea } from '@nextui-org/react'
+import create from 'zustand'
+
 import {
     AnyNode,
     FrameNode,
@@ -7,30 +9,53 @@ import {
     isFrameNode,
     isTextNode,
 } from 'framer-plugin'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { OldImage, OldText } from '@/lib/types'
 import { apiClient } from '@/lib/utils'
+import { RouterProvider } from 'react-router'
+import { createBrowserRouter } from 'react-router-dom'
+
+type OldText = { id: number; text: string }
+
+function showFramer() {
+    const [height, setHeight] = useState(500)
+
+    if (typeof window !== 'undefined')
+        framer.showUI({
+            title: 'template rewrite',
+            position: 'top left',
+            width: 600,
+            height: height,
+        })
+    const ref = useRef<any>(null)
+    useLayoutEffect(() => {
+        if (ref.current) {
+            setHeight(ref.current.clientHeight)
+        }
+        // listen for ref height changes, and update height
+        // window.addEventListener('resize', () => {
+        //     if (ref.current) {
+        //         setHeight(ref.current.clientHeight)
+        //     }
+        // })
+    })
+    return {
+        ref,
+        setHeight,
+    }
+}
 
 let abortController: AbortController
-function Home() {
-    useEffect(() => {
-        framer.showUI({
-            title: '',
-            position: 'top left',
-            width: 400,
-            height: 180,
-        })
-        return framer.subscribeToCanvasRoot((root) => {
-            console.log('root', root)
-        })
-    }, [])
 
+function SimplePrompt() {
     const [description, setDescription] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
     async function onSubmit() {
         if (!description) {
+            return
+        }
+        if (isLoading) {
             return
         }
 
@@ -107,10 +132,11 @@ function Home() {
                 if (currentParent && isFrameNode(currentParent)) {
                     prevBackground = currentParent?.backgroundColor || null
                     await currentParent?.setAttributes({ backgroundColor })
+                    prevNode = currentParent
                 } else {
                     prevBackground = null
+                    prevNode = undefined
                 }
-                prevNode = currentParent
 
                 await node.setText(text)
             } catch (e) {
@@ -118,26 +144,6 @@ function Home() {
             }
         }
         await prevNode?.setAttributes({ backgroundColor: prevBackground })
-    }
-
-    async function replaceImagesClient() {
-        const root = await framer.getCanvasRoot()
-        const [desktop] = await root.getChildren()
-
-        let oldImages = [] as Array<OldImage>
-        let i = 0
-        const nodes = [] as FrameNode[]
-        for await (let node of desktop.walk()) {
-            if (isFrameNode(node)) {
-                const image = await node.backgroundImage
-                if (!image) continue
-
-                if (!image.url) {
-                    console.log(`no url found for image ${image}`)
-                    continue
-                }
-            }
-        }
     }
 
     return (
@@ -162,27 +168,145 @@ function Home() {
                     className='p-2 w-full'
                     autoFocus
                     placeholder='a shoes shop'
+                    onMouseUp={(e) => {
+                        refreshHeight()
+                    }}
                 />
             </div>
 
-            <Button
+            <button
                 // submit on enter
-                size='sm'
-                startContent={
-                    !isLoading && <MaterialSymbolsMagicButton className='w-4' />
-                }
-                isDisabled={isLoading}
-                isLoading={isLoading}
+
+                // startContent={
+                //     !isLoading && <MaterialSymbolsMagicButton className='w-4' />
+                // }
+                disabled={isLoading}
+                // isLoading={isLoading}
                 type='submit'
+                className='framer-button-primary'
             >
                 Replace Text
-            </Button>
+            </button>
         </form>
     )
 }
-let noop: any = () => {}
+
+function StructuredPrompt() {
+    const [isLoading, setIsLoading] = useState(false)
+
+    async function onSubmit() {
+        if (isLoading) {
+            return
+        }
+
+        if (abortController) {
+            abortController.abort()
+        }
+        abortController = new AbortController()
+
+        setIsLoading(true)
+        try {
+            // console.log('component', [
+            //     ...(await framer.getNodesWithType('ComponentNode')),
+            // ])
+
+            await Promise.all([
+                // replaceImagesClient(), //
+                findSchema(),
+            ])
+        } catch (e) {
+            framer.notify(String(e), { variant: 'error' })
+        } finally {
+            setIsLoading(false)
+        }
+    }
+    let [schema, setSchema] = useState<any>({})
+
+    async function findSchema() {
+        const root = await framer.getCanvasRoot()
+        const publishInfo = await framer.getPublishInfo()
+        if (!publishInfo) {
+            throw new Error('Publish your website first')
+        }
+        const url = publishInfo.staging?.currentPageUrl
+
+        const desktop = await getDesktop()
+
+        if (!desktop) {
+            throw new Error('No desktop found')
+        }
+
+        let oldText = [] as Array<OldText>
+        let i = 0
+        const nodes = [] as TextNode[]
+        for await (let node of desktop.walk()) {
+            console.log('node', node)
+            if (isTextNode(node)) {
+                const text = await node.getText()
+                node.isReplica
+
+                if (text) oldText.push({ id: i, text })
+                nodes.push(node)
+                i += 1
+            }
+        }
+
+        setSchema(oldText)
+    }
+
+    return (
+        <form
+            onSubmit={(e) => {
+                e.preventDefault()
+                onSubmit()
+            }}
+            className='flex flex-col items-start justify-start gap-3'
+        >
+            <pre className=''>{JSON.stringify(schema, null, 2)}</pre>
+
+            <button
+                // submit on enter
+
+                // startContent={
+                //     !isLoading && <MaterialSymbolsMagicButton className='w-4' />
+                // }
+                disabled={isLoading}
+                // isLoading={isLoading}
+                type='submit'
+                className='framer-button-primary'
+            >
+                do it
+            </button>
+        </form>
+    )
+}
+
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <StructuredPrompt />,
+    },
+    {
+        path: '/',
+        element: <SimplePrompt />,
+    },
+])
+
+let refreshHeight = () => {}
 export default function Page() {
-    return <Home />
+    const { ref, setHeight } = showFramer()
+    refreshHeight = () => {
+        setHeight(ref.current?.clientHeight)
+    }
+
+    return (
+        <div
+            ref={ref}
+            className='flex flex-col p-4 pt-0 grow  w-full justify-start gap-3'
+        >
+            <RouterProvider router={router} />
+        </div>
+    )
 }
 
 export function MaterialSymbolsMagicButton(props) {
@@ -194,4 +318,22 @@ export function MaterialSymbolsMagicButton(props) {
             ></path>
         </svg>
     )
+}
+
+async function getDesktop() {
+    // const node = await Promise.all(
+    //     [...(await framer.getNodesWithType('WebPageNode'))].map(
+    //         async (node) => {
+    //             return node
+    //         },
+    //     ),
+    // )
+    const root = await framer.getCanvasRoot()
+    const children = await root.getChildren()
+    const desktop = children.find((node) => {
+        if (isFrameNode(node)) {
+            return node.name === 'Desktop'
+        }
+    })
+    return desktop
 }

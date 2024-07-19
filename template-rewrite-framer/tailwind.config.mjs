@@ -6,7 +6,7 @@ export default {
     content: [
         './src/**/*.{js,ts,jsx,tsx}', //
         // '../website/src/**/*.{js,ts,jsx,tsx}', //
-        '../website/node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
+        // '../website/node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
         // '../beskar/src/**/*.{js,ts,jsx,tsx}', //
     ],
     theme: {
