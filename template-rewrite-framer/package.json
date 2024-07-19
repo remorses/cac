@@ -19,6 +19,7 @@
         "db": "workspace:^",
         "elysia": "^1.1.1",
         "eventsource-parser": "^1.1.2",
+        "framer-motion": "^11.3.8",
         "framer-plugin": "^0.2.9",
         "isbot": "^4.4.0",
         "nextjs-progressbar": "^0.0.16",
