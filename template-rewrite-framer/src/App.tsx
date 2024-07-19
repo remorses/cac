@@ -12,7 +12,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { apiClient } from '@/lib/utils'
-import { RouterProvider } from 'react-router'
+import { Outlet, RouterProvider, useMatch, useMatches } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
 
 type OldText = { id: number; text: string }
@@ -20,9 +20,10 @@ type OldText = { id: number; text: string }
 function showFramer() {
     const [height, setHeight] = useState(500)
 
+    const [handle] = useMatches().filter((match) => match.handle)
     if (typeof window !== 'undefined')
         framer.showUI({
-            title: '',
+            title: (handle.handle as any) || '',
             position: 'top left',
             width: 600,
             height: height,
@@ -154,6 +155,9 @@ function SimplePrompt() {
             }}
             className='flex flex-col items-start w-full justify-start gap-3'
         >
+            {/* <label htmlFor='' className=''>
+                Describe what your new website is about
+            </label> */}
             <div className='w-full'>
                 <textarea
                     value={description}
@@ -196,11 +200,11 @@ function AlreadyHaveWebsite() {
 
     return (
         <div className='flex flex-col justify-start gap-6'>
-            <div className=''>Do you already have an existing website?</div>
+            {/* <div className=''>Do you already have an existing website?</div> */}
             <div className='flex gap-4 '>
                 <Link
-                    className='flex items-center grow gap-2 px-4 py-2 rounded-md border cursor-pointer'
-                    to={'/prompt?mode=default'}
+                    className='flex items-center bg-framer-secondary border-framer-secondary grow gap-2 px-4 py-2 rounded-md  cursor-pointer'
+                    to={'/migrate?mode=default'}
                 >
                     <input
                         type='radio'
@@ -211,7 +215,7 @@ function AlreadyHaveWebsite() {
                     Yes
                 </Link>
                 <Link
-                    className='flex items-center grow gap-2 px-4 py-2 rounded-md border border-gray-300 cursor-pointer'
+                    className='flex items-center grow gap-2 px-4 py-2 rounded-md bg-framer-secondary cursor-pointer'
                     to={'/prompt?mode=default'}
                 >
                     <input
@@ -319,33 +323,48 @@ function StructuredPrompt() {
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <AlreadyHaveWebsite />,
-    },
-    {
-        path: '/prompt',
-        element: <StructuredPrompt />,
-    },
-    {
-        path: '/x',
-        element: <SimplePrompt />,
+        element: <Container />,
+        // errorElement: <ErrorPage />,
+        children: [
+            {
+                path: '/',
+
+                element: <AlreadyHaveWebsite />,
+                handle: 'Do you already have an existing website?',
+            },
+            {
+                path: '/migrate',
+                element: <StructuredPrompt />,
+                handle: 'Describe what your new website is about',
+            },
+            {
+                path: '/prompt',
+                element: <SimplePrompt />,
+                handle: 'Describe what your new website is about',
+            },
+        ],
     },
 ])
 
 let refreshHeight = () => {}
-export default function Page() {
+
+function Container({}) {
     const { ref, setHeight } = showFramer()
     refreshHeight = () => {
         setHeight(ref.current?.clientHeight)
     }
-
     return (
         <div
             ref={ref}
             className='flex flex-col p-4 pt-0 grow  w-full justify-start gap-3'
         >
-            <RouterProvider router={router} />
+            <Outlet />
         </div>
     )
+}
+
+export function Page() {
+    return <RouterProvider router={router} />
 }
 
 export function MaterialSymbolsMagicButton(props) {
