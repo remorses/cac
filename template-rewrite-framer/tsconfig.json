@@ -16,6 +16,7 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "baseUrl": ".",
+        "useUnknownInCatchVariables": false,
         "noImplicitAny": false,
         "paths": {
             "@/*": ["src/*"]

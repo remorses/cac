@@ -12,6 +12,7 @@ init({
 })
 
 export async function notifyError(error, msg?: string) {
+    console.error(msg, error)
     captureException(error, { extra: { msg } })
     await flush(1000) // delivery timeout in ms
 }

@@ -152,7 +152,7 @@ export function handleError(
     // https://github.com/remix-run/remix/discussions/8933
     if (
         request.signal.aborted ||
-        error.data?.includes('No route matches URL')
+        error.data?.includes?.('No route match')
     ) {
         return
     }

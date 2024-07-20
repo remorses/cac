@@ -1,4 +1,9 @@
 import { Elysia, t } from 'elysia'
+import { anthropic } from '@ai-sdk/anthropic'
+
+import { EventIterator } from 'event-iterator'
+
+import isValidDomain from 'is-valid-domain'
 
 import { swagger } from '@elysiajs/swagger'
 import { Session } from '@supabase/supabase-js'
@@ -10,6 +15,7 @@ import { cors } from '@elysiajs/cors'
 
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
 import { sleep } from 'website/src/lib/utils'
+import { getWebsiteInfo } from 'website/src/lib/htmlrewrite.server'
 
 export const app = new Elysia({ prefix: '/api/v1' })
     .state('userId', '')
@@ -68,6 +74,18 @@ export const app = new Elysia({ prefix: '/api/v1' })
             description: 'Health check',
         },
     )
+    .get(
+        '/sse-test',
+        async function* () {
+            yield { ok: true }
+            yield { ok: true }
+            throw new Error('hello')
+            yield 'hello'
+        },
+        {
+            description: 'Health check',
+        },
+    )
     .post(
         '/rephrase',
         async function* rephrase({ request, params, body, store }) {
@@ -95,7 +113,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
                             await sleep(100 - (now - lastYieldTime))
                         }
                         console.log('obj', obj)
-                        yield JSON.stringify(obj)
+                        yield obj
                         buffer = ''
                         lastYieldTime = Date.now()
                     } catch {
@@ -110,6 +128,56 @@ export const app = new Elysia({ prefix: '/api/v1' })
                 oldText: t.Array(
                     t.Object({ text: t.String(), id: t.Number() }),
                 ),
+            }),
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+    .post(
+        '/scrapeWebsite',
+        async function* scrape({ request, body, store }) {
+            let { domain } = body
+
+            domain = domain.replace('https://', '').replace('http://', '')
+            if (!domain) {
+                throw new AppError('No domain provided')
+            }
+
+            if (!isValidDomain(domain)) {
+                throw new AppError('Invalid domain')
+            }
+
+            yield { message: 'Analyzing the website content...' }
+            yield { message: 'taking screenshot of the page' }
+
+            let emitter = new EventIterator((queue) => {
+                getWebsiteInfo({
+                    domain,
+                    onObject(object) {
+                        queue.push({
+                            object,
+                            message: `scraped ${object.hierarchy}`,
+                        })
+                    },
+                })
+                    .then((result) => {
+                        queue.stop()
+                    })
+                    .catch((error) => {
+                        queue.fail(error)
+                    })
+            })
+            for await (let chunk of emitter) {
+                console.log('chunk', chunk)
+                yield chunk
+            }
+
+            // const res = await fetch(`https://${domain}`)
+        },
+        {
+            body: t.Object({
+                domain: t.String(),
             }),
             // response: {
             //     200: t.AsyncIterator(t.String()),

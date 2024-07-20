@@ -8,6 +8,7 @@ export const env = {
     PORT: process.env.PORT || 8040,
     SECRET: process.env.SECRET,
     SCREENSHOTONE_KEY: process.env.SCREENSHOTONE_KEY,
+    GROQ_API_KEY: process.env.GROQ_API_KEY,
 }
 
 // console.log(env)

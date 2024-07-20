@@ -8,6 +8,12 @@
         "build": "pnpm -r build",
         "release": "pnpm build && changeset"
     },
+    "pnpm": {
+        "overrides": {
+            "elysia": "remorses/elysia#dist",
+            "@elysiajs/eden": "remorses/elysia-eden#dist"
+        }
+    },
     "devDependencies": {
         "@changesets/cli": "^2.27.7",
         "prettier": "^3.3.3",
