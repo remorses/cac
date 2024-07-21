@@ -1,4 +1,5 @@
 import { createOpenAI, openai } from '@ai-sdk/openai'
+import { Static, t } from 'elysia'
 import { anthropic } from '@ai-sdk/anthropic'
 
 import { z } from 'zod'
@@ -7,6 +8,7 @@ import { streamObject, streamText } from 'ai'
 import { HTMLRewriter } from 'htmlrewriter'
 import { getScreenshotUrl, screenshot } from 'website/src/lib/ssr.server'
 import { env } from 'website/src/lib/env'
+import { RephraseSchema } from 'website/src/lib/elysia.server'
 
 const groq = createOpenAI({
     baseURL: 'https://api.groq.com/openai/v1',
@@ -111,7 +113,7 @@ export async function getWebsiteInfo({ domain, onObject }) {
     })
     let buffer = ''
 
-    let objects = [] as any[]
+    let objects = [] as RephraseSchema['exampleTextToMigrate']
     for await (const part of stream.textStream) {
         // console.log(part)
         if (!buffer && part.startsWith('```')) {
@@ -131,11 +133,7 @@ export async function getWebsiteInfo({ domain, onObject }) {
             }
         }
     }
-    return objects as {
-        hierarchy: string
-        content: string
-        href?: string
-    }[]
+    return objects
     // for await (let chunk of openaiRes.textStream) {
     //     console.log('chunk', JSON.stringify(chunk, null, 2))
     // }

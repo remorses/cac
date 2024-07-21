@@ -19,13 +19,19 @@ import {
     useMatch,
     useMatches,
     useNavigate,
+    useRouteError,
 } from 'react-router'
+import type {
+    RephraseResultItem,
+    RephraseSchema,
+} from 'website/src/lib/elysia.server'
 import { Form, Link, createBrowserRouter } from 'react-router-dom'
 import { flushSync } from 'react-dom'
+// import { notifyError } from 'website/src/lib/errors'
 
-type OldText = { id: number; text: string }
+let refreshHeight = () => {}
 
-function showFramer() {
+function useShowFramer() {
     const [height, setHeight] = useState(500)
 
     const [handle] = useMatches().filter((match) => match.handle)
@@ -55,6 +61,8 @@ function showFramer() {
 }
 
 let abortController: AbortController = new AbortController()
+
+let exampleTextToMigrate = [] as RephraseSchema['exampleTextToMigrate']
 
 function SimplePrompt() {
     const [description, setDescription] = useState('')
@@ -88,14 +96,21 @@ function SimplePrompt() {
 
         const [desktop] = await root.getChildren()
 
-        let oldText = [] as Array<OldText>
+        let oldText = [] as RephraseSchema['textToReplace']
         let i = 0
-        const nodes = [] as TextNode[]
+
         for await (let node of desktop.walk()) {
             if (isTextNode(node)) {
                 const text = await node.getText()
-                if (text) oldText.push({ id: i, text })
-                nodes.push(node)
+                let nodeId = node.id
+                if (text)
+                    oldText.push({
+                        index: i,
+                        nodeId,
+                        text,
+                        name: await getNodePath(node),
+                    })
+
                 i += 1
             }
         }
@@ -103,7 +118,8 @@ function SimplePrompt() {
         const { data: eventSource, error } =
             await apiClient.api.v1.rephrase.post({
                 description,
-                oldText,
+                textToReplace: oldText,
+                exampleTextToMigrate,
             })
         if (error) {
             framer.notify(String(error.value), { variant: 'error' })
@@ -114,26 +130,34 @@ function SimplePrompt() {
         const backgroundColor = 'rgba(255, 0, 0, 0.3)'
         let prevNode: AnyNode | undefined
 
-        let minTime = 100
         let prevBackground = null as string | null
+
         for await (let chunk of eventSource!) {
             console.log('chunk', chunk)
             await prevNode?.setAttributes({ backgroundColor: prevBackground })
             // Process each chunk (value)
 
             try {
-                const { text, id } = chunk as any
-                if (id == null) {
-                    console.log(`no id found: ${chunk}`)
+                const { text, nodeId } = chunk as RephraseResultItem
+                if (nodeId == null) {
+                    console.log(`no nodeId found: ${chunk}`)
                     return
                 }
 
-                const node = nodes[id]
-                if (!node) {
-                    console.log(`no node found for id ${id}`)
-                    return
+                const node = await framer.getNode(nodeId)
+                if (!isTextNode(node)) {
+                    console.log(`no text node found for id ${nodeId}`)
+                    continue
                 }
-                const old = oldText[id]?.text
+                if (!node) {
+                    console.log(`no node found for id ${name}`)
+                    continue
+                }
+                const old = oldText.find((x) => x.nodeId === nodeId)?.text
+                if (!old) {
+                    console.log(`no old text found for node ${nodeId}`)
+                    continue
+                }
                 console.log(
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
                 )
@@ -161,11 +185,12 @@ function SimplePrompt() {
                 e.preventDefault()
                 onSubmit()
             }}
-            className='flex flex-col items-start w-full justify-start gap-3'
+            className='flex flex-col items-start w-full justify-start gap-4'
         >
-            {/* <label htmlFor='' className=''>
-                Describe what your new website is about
-            </label> */}
+            <div className='opacity-70'>
+                Describe what your new website is about. The plugin will use
+                this description to replace content on teh page.
+            </div>
             <div className='w-full'>
                 <textarea
                     value={description}
@@ -177,9 +202,9 @@ function SimplePrompt() {
                         }
                     }}
                     onChange={(e) => setDescription(e.target.value)}
-                    className='p-2 w-full'
+                    className='p-2 py-1 w-full min-h-[100px]'
                     autoFocus
-                    placeholder='a shoes shop'
+                    placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
                     onMouseUp={(e) => {
                         refreshHeight()
                     }}
@@ -203,40 +228,63 @@ function SimplePrompt() {
     )
 }
 
+const nonMeaningfulNames = [
+    'Desktop',
+    'Mobile',
+    'Tablet',
+    'Desktop Open',
+    'Mobile Open',
+    'Tablet Open',
+    'Container',
+    'Row',
+    'Col',
+    'Column',
+    'Frame',
+    'Content',
+    'Section',
+]
+function isNameMeaningful(name: string) {
+    if (!name) return false
+    if (nonMeaningfulNames.includes(name)) return false
+    return true
+}
+
+async function getNodePath(node: AnyNode) {
+    let path = [] as string[]
+    let current = node as AnyNode | null
+    while (current) {
+        let name = current['name']
+        if (isNameMeaningful(name)) {
+            path.unshift(name)
+        }
+        current = await current.getParent()
+    }
+    return path.join('/')
+}
+
 function withMode(path, query?: Record<string, any>) {
     const searchParams = new URLSearchParams({ mode: 'default', ...query })
     return `${path}?${searchParams.toString()}`
 }
 
 function AlreadyHaveWebsite() {
-    async function onSubmit() {}
-
     return (
         <div className='flex flex-col justify-start gap-6'>
-            {/* <div className=''>Do you already have an existing website?</div> */}
+            <div className='opacity-70'>
+                This plugin can use your existing website content to migrate it
+                to Framer
+            </div>
             <div className='flex gap-4 '>
                 <Link
                     className='flex items-center bg-framer-secondary border-framer-secondary grow gap-2 px-4 py-2 rounded-md  cursor-pointer'
                     to={withMode(Paths.checkWebsiteIsPublished)}
                 >
-                    <input
-                        type='radio'
-                        name='alreadyHasWebsite'
-                        value='yes'
-                        className='cursor-pointer'
-                    />
                     Yes
                 </Link>
                 <Link
                     className='flex items-center grow gap-2 px-4 py-2 rounded-md bg-framer-secondary cursor-pointer'
                     to={withMode(Paths.prompt)}
                 >
-                    <input
-                        type='radio'
-                        name='alreadyHasWebsite'
-                        value='no'
-                        className='cursor-pointer !text-xs'
-                    />
                     No
                 </Link>
             </div>
@@ -281,10 +329,14 @@ function GetWebsiteInfo() {
                         throw error
                     }
 
-                    for await (let chunk of stream as any) {
+                    exampleTextToMigrate = []
+                    for await (let chunk of stream) {
                         console.log('chunk', chunk)
-                        if (chunk.error) {
-                            throw new Error(chunk.error)
+                        // if (chunk.error) {
+                        //     throw new Error(chunk.error)
+                        // }
+                        if (chunk.object) {
+                            exampleTextToMigrate.push(chunk.object)
                         }
 
                         flushSync(() => {
@@ -298,7 +350,7 @@ function GetWebsiteInfo() {
 
                         refreshHeight()
                     }
-                    navigate(withMode(Paths.migrate))
+                    navigate(withMode(Paths.prompt))
                 } catch (e) {
                     framer.notify(String(e.message), { variant: 'error' })
                 } finally {
@@ -328,11 +380,11 @@ function GetWebsiteInfo() {
             {isLoading && (
                 <div
                     ref={containerRef}
-                    className='flex h-[200px] overflow-y-auto flex-col grow rounded justify-start gap-px'
+                    className='flex h-[200px] overflow-y-auto overflow-x-hidden flex-col grow rounded justify-start gap-px'
                 >
                     <div className=''>Getting info...</div>
                     {logs.map((log, i) => (
-                        <div key={i} className='opacity-70'>
+                        <div key={i} className='opacity-70 '>
                             {log}
                         </div>
                     ))}
@@ -449,7 +501,7 @@ function IsWebsitePublished() {
 enum Paths {
     root = '/',
     getWebsiteInfo = '/get-website-info',
-    migrate = '/migrate',
+    // migrate = '/migrate',
     prompt = '/prompt',
     checkWebsiteIsPublished = '/check-website-is-published',
     // scrapeWebsite = '/scrape-website',
@@ -459,10 +511,16 @@ const router = createBrowserRouter([
     {
         path: Paths.root,
         element: <Container />,
+        ErrorBoundary() {
+            const error = useRouteError() as any
+            console.error(error, 'ErrorBoundary')
+            return <div>{error?.message}</div>
+        },
         loader() {
-            refreshHeight()
+            // setTimeout(() => refreshHeight(), 1)
             return {}
         },
+
         // errorElement: <ErrorPage />,
         children: [
             {
@@ -497,21 +555,14 @@ const router = createBrowserRouter([
             {
                 path: Paths.prompt,
                 element: <SimplePrompt />,
-                handle: 'Publish your website first',
-            },
-            {
-                path: Paths.migrate,
-                // element: <StructuredPrompt />,
                 handle: 'Describe what your new website is about',
             },
         ],
     },
 ])
 
-let refreshHeight = () => {}
-
 function Container({}) {
-    const { ref, setHeight } = showFramer()
+    const { ref, setHeight } = useShowFramer()
     refreshHeight = () => {
         setHeight(ref.current?.clientHeight)
     }
