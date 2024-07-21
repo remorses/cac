@@ -170,7 +170,7 @@ function SimplePrompt() {
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
-                await node.zoomIntoView({ maxZoom: 1 })
+                await node.zoomIntoView({ maxZoom: 0.7 })
                 if (currentParent && isFrameNode(currentParent)) {
                     prevBackground = currentParent?.backgroundColor || null
 
@@ -183,6 +183,7 @@ function SimplePrompt() {
 
                 await node.setText(text)
             }
+            await desktop.zoomIntoView({ maxZoom: 0.7,  })
         } catch (e) {
             console.log('error processing chatgpt', e)
         } finally {
