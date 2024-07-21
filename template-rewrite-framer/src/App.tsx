@@ -114,6 +114,8 @@ function SimplePrompt() {
                 i += 1
             }
         }
+        console.log('oldText', JSON.stringify(oldText, null, 2))
+        return
 
         const { data: eventSource, error } =
             await apiClient.api.v1.rephrase.post({

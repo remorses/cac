@@ -47,23 +47,40 @@ const RephraseResultItem = t.Object({
 
 export type RephraseResultItem = Static<typeof RephraseResultItem>
 
-function getPrompt({
+function generateMigrationPrompt({
     description,
     textToReplace,
     exampleTextToMigrate,
-}: RephraseSchema) {
+}: RephraseSchema): string {
     return `
-You are a web developer that has to replace the text from a Framer template with new text that follows the new business and branding of the customer, this is the customer description of what the new page should talk about:
+Current Website Content:
+${JSON.stringify(textToReplace, null, 2)}
 
-\`\`\`
+This is the current website content from a template. Ignore its meaning; we want to replace it with new content that aligns with the following description of the new website:
+
+New Website Description:
 ${description}
-\`\`\`
 
-Here are the text to replace in JSON format, keep the new text about the same length as the old text, you should return NDJSON list with the same number of items and using the same ids for each item,but rephrased to follow the new customer business idea. some text will remain the same because part of the UI, for example text like "accept cookies" or "privacy policy" will not change, but the rest of the text should be rephrased:
+Instructions:
+1. Replace the content of each item with new text that fits the above description.
+2. Maintain similar content length and structure where appropriate.
+3. Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
+4. Update href values if present and relevant to the new content.
+5. Use the example content structure below as a reference for style and tone:
 
-${JSON.stringify(textToReplace)}
+Example Content Structure:
+${JSON.stringify(exampleTextToMigrate, null, 2)}
 
-Give me now the NDJSON (json strings delimited by new lines) list of the new text to replace the old text with. Use the same shape as the given JSON, a list of strings or objects.
+Output: Provide an NDJSON list of rephrased content items. Each item should be a valid JSON object on a single line, containing 'nodeId', 'text', 'href' (if applicable), and 'previousText' fields. Ensure that:
+1. All items from the current content are represented in the output.
+2. Each output item uses the exact nodeId from the corresponding input item.
+3. The 'text' field contains the new content based on the new website description.
+4. The 'href' field is updated if present and relevant to the new content.
+5. The 'previousText' field contains the original text from the input.
+
+Note: The example content structure is for reference and may not cover all items in the current content. Use it as a guide for content style and tone, but ensure all current content items are processed and replaced.
+
+Return only NDJSON and not a JSON array, don't add any other text. To think step by step you can use comment lines, start a line with // if you want to reason about an item before writing it.
 `
 }
 
@@ -138,44 +155,14 @@ export const app = new Elysia({ prefix: '/api/v1' })
     )
     .post(
         '/rephrase',
-        async function* rephrase({ request, params, body, store }) {
-            const {
-                exampleTextToMigrate,
+        ({ body, request }) => {
+            const { description, exampleTextToMigrate, textToReplace } = body
+            return rephrase({
                 description,
-                textToReplace: oldText,
-            } = body
-            console.log(oldText)
-            const stream = await streamText({
-                prompt: getPrompt({
-                    description,
-                    textToReplace: oldText,
-                    exampleTextToMigrate,
-                }),
-                model: openai('gpt-3.5-turbo'),
-                temperature: 0.7,
-                abortSignal: request.signal,
+                exampleTextToMigrate,
+                textToReplace,
+                signal: request.signal,
             })
-            let buffer = ''
-            let lastYieldTime = 0
-            for await (const part of stream.textStream) {
-                const parts = part.split('\n')
-                for (let p of parts) {
-                    buffer += p
-                    try {
-                        let obj = JSON.parse(buffer)
-                        const now = Date.now()
-                        if (now - lastYieldTime <= 100) {
-                            await sleep(100 - (now - lastYieldTime))
-                        }
-                        console.log('obj', obj)
-                        yield obj
-                        buffer = ''
-                        lastYieldTime = Date.now()
-                    } catch {
-                        // console.log('error', buffer)
-                    }
-                }
-            }
         },
         {
             body: RephraseSchema,
@@ -253,6 +240,48 @@ export const app = new Elysia({ prefix: '/api/v1' })
             description: 'Health check',
         },
     )
+
+export async function* rephrase({
+    exampleTextToMigrate,
+    description,
+    textToReplace: oldText,
+    signal,
+}: RephraseSchema & { signal: AbortSignal }) {
+    // console.log(oldText)
+    const stream = await streamText({
+        prompt: generateMigrationPrompt({
+            description,
+            textToReplace: oldText,
+            exampleTextToMigrate,
+        }),
+        model: openai('gpt-3.5-turbo'),
+        temperature: 0.7,
+        abortSignal: signal,
+    })
+    let buffer = ''
+    let lastYieldTime = 0
+    for await (const part of stream.textStream) {
+        process.stdout.write(part)
+        const parts = part.split('\n')
+        for (let p of parts) {
+            buffer += p
+            try {
+                let obj = JSON.parse(buffer)
+                const now = Date.now()
+                if (now - lastYieldTime <= 100) {
+                    await sleep(100 - (now - lastYieldTime))
+                }
+                // console.log('obj', obj)
+                yield obj
+
+                buffer = ''
+                lastYieldTime = Date.now()
+            } catch {
+                // console.log('error', buffer)
+            }
+        }
+    }
+}
 
 app.use(swagger({}))
 export type RouteType = typeof app
