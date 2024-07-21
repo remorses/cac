@@ -16,9 +16,11 @@ import {
     Outlet,
     RouterProvider,
     redirect,
+    useLocation,
     useMatch,
     useMatches,
     useNavigate,
+    useResolvedPath,
     useRouteError,
 } from 'react-router'
 import type {
@@ -30,38 +32,10 @@ import { flushSync } from 'react-dom'
 import { supabase } from '@/lib/supabase-framer'
 import { loginRedirectUrl } from 'website/src/lib/utils'
 import { LoginPage } from '@/login'
+import { Button } from '@/components/Button'
 // import { notifyError } from 'website/src/lib/errors'
 
 let refreshHeight = () => {}
-
-function useShowFramer() {
-    const [height, setHeight] = useState(500)
-
-    const [handle] = useMatches().filter((match) => match?.handle)
-    if (typeof window !== 'undefined')
-        framer.showUI({
-            title: (handle?.handle as any) || '',
-            position: 'top left',
-            width: 600,
-            height: height,
-        })
-    const ref = useRef<any>(null)
-    useLayoutEffect(() => {
-        if (ref.current) {
-            setHeight(ref.current.clientHeight)
-        }
-        // listen for ref height changes, and update height
-        // window.addEventListener('resize', () => {
-        //     if (ref.current) {
-        //         setHeight(ref.current.clientHeight)
-        //     }
-        // })
-    })
-    return {
-        ref,
-        setHeight,
-    }
-}
 
 let abortController: AbortController = new AbortController()
 
@@ -216,9 +190,9 @@ function SimplePrompt() {
                 />
             </div>
 
-            <button
+            <Button
                 // submit on enter
-
+                isLoading={isLoading}
                 // startContent={
                 //     !isLoading && <MaterialSymbolsMagicButton className='w-4' />
                 // }
@@ -228,7 +202,7 @@ function SimplePrompt() {
                 className='framer-button-primary'
             >
                 Replace Text
-            </button>
+            </Button>
         </form>
     )
 }
@@ -373,9 +347,13 @@ function GetWebsiteInfo() {
                         name='domain'
                         className='rounded-md p-2 w-full bg-framer-tertiary'
                     />
-                    <button type='submit' className='framer-button-primary'>
+                    <Button
+                        isLoading={isLoading}
+                        type='submit'
+                        className='framer-button-primary'
+                    >
                         Get Info
-                    </button>
+                    </Button>
                 </div>
             )}
             {isLoading && (
@@ -403,9 +381,9 @@ function IsWebsitePublished() {
                 Click the publish button, this is required to get the current
                 website screenshot
             </div>
-            <button type='submit' className='framer-button-primary'>
+            <Button type='submit' className='framer-button-primary'>
                 Ok, I clicked publish
-            </button>
+            </Button>
         </Form>
     )
 }
@@ -502,7 +480,54 @@ function IsWebsitePublished() {
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <Container />,
+
+        Component({}) {
+            const [height, setHeight] = useState(0)
+            const location = useLocation()
+            const [handle] = useMatches().filter((match) => match?.handle)
+            if (typeof window !== 'undefined')
+                framer.showUI({
+                    title: (handle?.handle as any) || '',
+                    position: 'top left',
+                    width: 600,
+                    height: height,
+                })
+            const ref = useRef<any>(null)
+            useLayoutEffect(() => {
+                let height = ref.current?.clientHeight || 500
+                if (!height) {
+                    return
+                }
+                console.log('height', height)
+                setHeight(height)
+
+                framer.showUI({
+                    title: (handle?.handle as any) || '',
+                    position: 'top left',
+                    width: 600,
+                    height,
+                })
+
+                // listen for ref height changes, and update height
+                // window.addEventListener('resize', () => {
+                //     if (ref.current) {
+                //         setHeight(ref.current.clientHeight)
+                //     }
+                // })
+            }, [location.pathname, handle])
+            refreshHeight = () => {
+                setHeight(ref.current?.clientHeight)
+            }
+            return (
+                <div
+                    ref={ref}
+                    className='flex flex-col p-4 pt-[2px] w-full justify-start gap-3'
+                >
+                    <Outlet />
+                </div>
+            )
+        },
+
         ErrorBoundary() {
             const error = useRouteError() as any
             console.error(error, 'ErrorBoundary')
@@ -531,6 +556,7 @@ const router = createBrowserRouter([
                     if (!session) {
                         return redirect(withMode(Paths.login))
                     }
+                    // return redirect(withMode(Paths.login))
                     return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
                     // setTimeout(() => refreshHeight(), 1)
                 },
@@ -578,21 +604,6 @@ const router = createBrowserRouter([
         ],
     },
 ])
-
-function Container({}) {
-    const { ref, setHeight } = useShowFramer()
-    refreshHeight = () => {
-        setHeight(ref.current?.clientHeight)
-    }
-    return (
-        <div
-            ref={ref}
-            className='flex flex-col p-4 pt-[2px] grow  w-full justify-start gap-3'
-        >
-            <Outlet />
-        </div>
-    )
-}
 
 export default function Page() {
     return <RouterProvider router={router} />

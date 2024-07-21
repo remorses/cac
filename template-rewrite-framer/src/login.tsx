@@ -1,20 +1,15 @@
+import { Button } from '@/components/Button'
 import { supabase } from '@/lib/supabase-framer'
 import { Paths, apiClient, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { framerLoginUrl, loginRedirectUrl, sleep } from 'website/src/lib/utils'
-import context from 'zustand/context'
+import {
+    framerLoginUrl,
+    generateSecurePassword,
+    sleep,
+} from 'website/src/lib/utils'
 
-function generateSecurePassword() {
-    const length = 32 // Fixed length for high entropy
-    const charset =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?'
-
-    return Array.from(crypto.getRandomValues(new Uint32Array(length)))
-        .map((x) => charset[x % charset.length])
-        .join('')
-}
 export function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const isDocumentVisible = useIsDocumentVisibile()
@@ -24,11 +19,12 @@ export function LoginPage() {
             <div className='opacity-70'>
                 Login so we can keep your website data and progress
             </div>
-            <button
+            <Button
                 onClick={async () => {
-                    if (isLoading) {
-                        return
-                    }
+                    // if (isLoading) {
+                    //     return
+                    // }
+                    setIsLoading(true)
                     try {
                         const key = generateSecurePassword()
 
@@ -59,7 +55,6 @@ export function LoginPage() {
                                 navigate(
                                     withMode(Paths.doYouAlreadyHaveAWebsite),
                                 )
-                                break
                             } else {
                                 await sleep(1000)
                             }
@@ -74,9 +69,10 @@ export function LoginPage() {
                     }
                 }}
                 className='framer-button-primary'
+                isLoading={isLoading}
             >
                 Login With Google
-            </button>
+            </Button>
         </div>
     )
 }

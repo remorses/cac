@@ -29,3 +29,13 @@ export function framerLoginUrl({ key }) {
     url.searchParams.set('key', key)
     return url.toString()
 }
+
+export function generateSecurePassword() {
+    const length = 32 // Fixed length for high entropy
+    const charset =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?'
+
+    return Array.from(crypto.getRandomValues(new Uint32Array(length)))
+        .map((x) => charset[x % charset.length])
+        .join('')
+}
