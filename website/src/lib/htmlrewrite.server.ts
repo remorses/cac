@@ -8,7 +8,7 @@ import { streamObject, streamText } from 'ai'
 import { HTMLRewriter } from 'htmlrewriter'
 import { getScreenshotUrl, screenshot } from 'website/src/lib/ssr.server'
 import { env } from 'website/src/lib/env'
-import { RephraseSchema } from 'website/src/lib/elysia.server'
+import { NDJSONStream, RephraseSchema } from 'website/src/lib/elysia.server'
 
 const groq = createOpenAI({
     baseURL: 'https://api.groq.com/openai/v1',
@@ -111,27 +111,13 @@ export async function getWebsiteInfo({ domain, onObject }) {
         // model: anthropic('claude-3-sonnet-20240229'),
         model: openai('gpt-4o-mini'),
     })
-    let buffer = ''
-
     let objects = [] as RephraseSchema['exampleTextToMigrate']
-    for await (const part of stream.textStream) {
-        // console.log(part)
-        if (!buffer && part.startsWith('```')) {
-            continue
-        }
-        const parts = part.split('\n')
-        for (let p of parts) {
-            buffer += p
-            try {
-                let obj = JSON.parse(buffer)
-
-                await onObject(obj)
-                objects.push(obj)
-                buffer = ''
-            } catch {
-                // console.log('error', buffer)
-            }
-        }
+    for await (let object of NDJSONStream({
+        stream,
+        // onToken,
+    })) {
+        await onObject(object)
+        objects.push(object)
     }
     return objects
     // for await (let chunk of openaiRes.textStream) {
