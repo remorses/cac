@@ -29,17 +29,32 @@ export const supabase = createClient(
                 isServer: true,
 
                 async getItem(key: string) {
-                    let data = await framer.getPluginData(key)
+                    const keys = getKeys(key)
+                    const values = await Promise.all(
+                        keys.map((key) => framer.getPluginData(key) || ''),
+                    )
+                    const data = values.join('')
                     return data || null
                 },
 
                 async removeItem(key: string) {
-                    await framer.setPluginData(key, null)
+                    const keys = getKeys(key)
+                    await Promise.all(
+                        keys.map((key) => framer.setPluginData(key, null)),
+                    )
                 },
 
                 async setItem(key: string, value: string) {
-                    console.log('setting item', key, value)
-                    await framer.setPluginData(key, value)
+                    const keys = getKeys(key)
+                    const values = [
+                        value.slice(0, 2048),
+                        value.slice(2048),
+                    ]
+                    await Promise.all(
+                        values.map((value, index) =>
+                            framer.setPluginData(keys[index], value),
+                        ),
+                    )
                 },
             },
             autoRefreshToken: true,
@@ -50,3 +65,4 @@ export const supabase = createClient(
         },
     },
 )
+const getKeys = (key: string) => [`${key}.framer1`, `${key}.framer2`]

@@ -50,7 +50,7 @@ export function LoginPage() {
                                     data,
                                 )
                                 // make it smaller
-                                data.session.user = undefined as any
+                                // data.session.user = undefined as any
                                 const { error } =
                                     await supabase.auth.setSession(data.session)
                                 if (error) {

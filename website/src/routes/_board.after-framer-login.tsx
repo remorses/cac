@@ -69,11 +69,11 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
             .where('id', '=', user.id)
             .selectAll()
             .executeTakeFirst(),
-        db
-            .updateTable('auth.users')
-            .where('id', '=', user.id)
-            .set({ raw_user_meta_data: JSON.stringify({}) }) // make session smaller
-            .executeTakeFirst(),
+        // db
+        //     .updateTable('auth.users')
+        //     .where('id', '=', user.id)
+        //     .set({ raw_user_meta_data: JSON.stringify({}) }) // make session smaller
+        //     .executeTakeFirst(),
     ])
     if (!authUser) {
         throw new Error('No auth user found for user')
