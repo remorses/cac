@@ -9,7 +9,7 @@ import { swagger } from '@elysiajs/swagger'
 import { Session } from '@supabase/supabase-js'
 import { AppError } from 'website/src/lib/errors'
 import { notifyError } from 'website/src/lib/errors'
-import { streamText } from 'ai'
+import { StreamTextResult, streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { cors } from '@elysiajs/cors'
 
@@ -80,7 +80,11 @@ Output: Provide an NDJSON list of rephrased content items. Each item should be a
 
 Note: The example content structure is for reference and may not cover all items in the current content. Use it as a guide for content style and tone, but ensure all current content items are processed and replaced.
 
-Return only NDJSON and not a JSON array, don't add any other text. To think step by step you can use comment lines, start a line with // if you want to reason about an item before writing it.
+Return only NDJSON and not a JSON array, To think step by step you can use comments, start a line with // if you want to reason about an item before writing it, explain why you are replacing the previous text with a new one. The things you should keep in mind when replacing old text with new one is
+
+- The size of the new text should be similar to the old text
+- The meaning of the text must be in line with the new purpose of the website but have similar semantic meaning as before, for example if the previous text was an hero/heading you should keep the same style
+- If the example texts given don't fit the text to replace because too long or too short or different in semantics, you can invent new ones that follow the same theme
 `
 }
 
@@ -246,7 +250,11 @@ export async function* rephrase({
     description,
     textToReplace: oldText,
     signal,
-}: RephraseSchema & { signal: AbortSignal }) {
+    onToken,
+}: RephraseSchema & {
+    signal: AbortSignal
+    onToken?: (token: string) => void
+}) {
     // console.log(oldText)
     const stream = await streamText({
         prompt: generateMigrationPrompt({
@@ -254,19 +262,55 @@ export async function* rephrase({
             textToReplace: oldText,
             exampleTextToMigrate,
         }),
-        model: openai('gpt-3.5-turbo'),
-        temperature: 0.7,
+        model: openai('gpt-4o'),
+        temperature: 0.5,
         abortSignal: signal,
     })
+    yield* NDJSONStream({
+        stream,
+        onToken,
+    })
+}
+
+function stripJSONComments(str: string) {
+    str = str.replace(/\/\/.*?\n/g, '\n')
+    // also replace markdown snippets syntax ```lang
+    str = str.replace(/```.*?\n/g, '\n')
+    return str
+}
+
+export function splitStringButKeepChar(str: string, char: string) {
+    const result = [] as string[]
+    let start = 0
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] === char) {
+            result.push(str.slice(start, i + 1))
+            start = i + 1
+        }
+    }
+    if (start < str.length) {
+        result.push(str.slice(start))
+    }
+    return result
+}
+
+export async function* NDJSONStream({
+    stream,
+    onToken,
+}: {
+    stream: StreamTextResult<any>
+    onToken?: (token: string) => void
+}) {
     let buffer = ''
     let lastYieldTime = 0
     for await (const part of stream.textStream) {
-        process.stdout.write(part)
-        const parts = part.split('\n')
+        onToken?.(part)
+        const parts = splitStringButKeepChar(part, '\n')
+
         for (let p of parts) {
             buffer += p
             try {
-                let obj = JSON.parse(buffer)
+                let obj = JSON.parse(stripJSONComments(buffer))
                 const now = Date.now()
                 if (now - lastYieldTime <= 100) {
                     await sleep(100 - (now - lastYieldTime))

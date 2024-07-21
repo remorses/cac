@@ -244,6 +244,7 @@ const nonMeaningfulNames = [
     'Frame',
     'Content',
     'Section',
+    'Text',
 ]
 function isNameMeaningful(name: string) {
     if (!name) return false
