@@ -183,7 +183,7 @@ function SimplePrompt() {
 
                 await node.setText(text)
             }
-            await desktop.zoomIntoView({ maxZoom: 0.7,  })
+            await desktop.zoomIntoView({ maxZoom: 0.7 })
         } catch (e) {
             console.log('error processing chatgpt', e)
         } finally {
@@ -218,13 +218,16 @@ function SimplePrompt() {
                     value={description}
                     // isRequired
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
                             onSubmit()
                         }
+                        const textarea = e.target as HTMLTextAreaElement
+                        textarea.style.height = '26px'
+                        textarea.style.height = `${textarea.scrollHeight}px`
                     }}
                     onChange={(e) => setDescription(e.target.value)}
-                    className='p-2 leading-relaxed py-1 w-full min-h-[80px]'
+                    className='p-2 pb-3 shrink-0 leading-relaxed py-1 w-full min-h-[80px]'
                     autoFocus
                     placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
                     onMouseUp={(e) => {
@@ -239,7 +242,7 @@ function SimplePrompt() {
                 // startContent={
                 //     !isLoading && <MaterialSymbolsMagicButton className='w-4' />
                 // }
-                disabled={isLoading}
+                disabled={isLoading || !description}
                 // isLoading={isLoading}
                 type='submit'
                 className='framer-button-primary'
