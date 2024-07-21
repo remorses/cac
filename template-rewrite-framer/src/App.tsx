@@ -1,4 +1,5 @@
 import { Textarea } from '@nextui-org/react'
+import useMeasure from 'react-use-measure'
 import create from 'zustand'
 
 import {
@@ -9,7 +10,13 @@ import {
     isFrameNode,
     isTextNode,
 } from 'framer-plugin'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+    cloneElement,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react'
 
 import { Paths, apiClient, withMode } from '@/lib/utils'
 import {
@@ -33,6 +40,7 @@ import { supabase } from '@/lib/supabase-framer'
 import { loginRedirectUrl } from 'website/src/lib/utils'
 import { LoginPage } from '@/login'
 import { Button } from '@/components/Button'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 // import { notifyError } from 'website/src/lib/errors'
 
 let refreshHeight = () => {}
@@ -44,6 +52,9 @@ let exampleTextToMigrate = [] as RephraseSchema['exampleTextToMigrate']
 function SimplePrompt() {
     const [description, setDescription] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
+        [],
+    )
 
     async function onSubmit() {
         if (!description) {
@@ -58,17 +69,22 @@ function SimplePrompt() {
         }
         abortController = new AbortController()
         setIsLoading(true)
+
         try {
             await Promise.all([
                 // replaceImagesClient(), //
                 replaceTextClient(),
             ])
+        } catch (e) {
+            console.error('error', e)
+            framer.notify(String(e.message), { variant: 'error' })
         } finally {
             setIsLoading(false)
         }
     }
 
     async function replaceTextClient() {
+        setOldNodes([])
         const root = await framer.getCanvasRoot()
 
         const [desktop] = await root.getChildren()
@@ -80,27 +96,38 @@ function SimplePrompt() {
             if (isTextNode(node)) {
                 const text = await node.getText()
                 let nodeId = node.id
-                if (text)
-                    oldText.push({
+                if (text) {
+                    const textData: RephraseSchema['textToReplace'][number] = {
                         index: i,
                         nodeId,
                         text,
                         name: await getNodePath(node),
-                    })
+                    }
+                    setOldNodes((oldNodes) => [...oldNodes, textData])
+                    oldText.push(textData)
+                }
 
                 i += 1
             }
         }
-        console.log('oldText', JSON.stringify(oldText, null, 2))
-        return
+        // console.log('oldText', JSON.stringify(oldText, null, 2))
+        // return
 
         const { data: eventSource, error } =
-            await apiClient.api.v1.rephrase.post({
-                description,
-                textToReplace: oldText,
-                exampleTextToMigrate,
-            })
+            await apiClient.api.v1.rephrase.post(
+                {
+                    description,
+                    textToReplace: oldText,
+                    exampleTextToMigrate,
+                },
+                {
+                    fetch: {
+                        signal: abortController.signal,
+                    },
+                },
+            )
         if (error) {
+            console.error('error', error)
             framer.notify(String(error.value), { variant: 'error' })
             return
         }
@@ -141,8 +168,10 @@ function SimplePrompt() {
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
+                await node.zoomIntoView({ maxZoom: 1 })
                 if (currentParent && isFrameNode(currentParent)) {
                     prevBackground = currentParent?.backgroundColor || null
+
                     await currentParent?.setAttributes({ backgroundColor })
                     prevNode = currentParent
                 } else {
@@ -159,7 +188,17 @@ function SimplePrompt() {
     }
 
     return (
-        <form
+        <motion.form
+            layoutId='content'
+            // exit={{
+            //     opacity: 0,
+            // }}
+            // initial={{
+            //     opacity: 0,
+            // }}
+            // animate={{
+            //     opacity: 1,
+            // }}
             onSubmit={(e) => {
                 e.preventDefault()
                 onSubmit()
@@ -181,7 +220,7 @@ function SimplePrompt() {
                         }
                     }}
                     onChange={(e) => setDescription(e.target.value)}
-                    className='p-2 py-1 w-full min-h-[100px]'
+                    className='p-2 leading-relaxed py-1 w-full min-h-[80px]'
                     autoFocus
                     placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
                     onMouseUp={(e) => {
@@ -201,9 +240,32 @@ function SimplePrompt() {
                 type='submit'
                 className='framer-button-primary'
             >
-                Replace Text
+                Replace Text On The Page
             </Button>
-        </form>
+            {oldNodes.length > 0 && (
+                <Button
+                    // isLoading={isLoading}
+                    // disabled={isLoading}
+                    onClick={async () => {
+                        if (isLoading) {
+                            abortController.abort()
+                            return
+                        }
+                        for (let node of oldNodes) {
+                            const { nodeId, text } = node
+                            const framerNode = await framer.getNode(nodeId)
+                            if (isTextNode(framerNode)) {
+                                await framerNode.setText(text)
+                            }
+                        }
+                    }}
+                    type='button'
+                    className='framer-button-primary'
+                >
+                    {isLoading ? 'Cancel' : 'Undo Replacement'}
+                </Button>
+            )}
+        </motion.form>
     )
 }
 
@@ -482,30 +544,23 @@ const router = createBrowserRouter([
         path: '/',
 
         Component({}) {
-            const [height, setHeight] = useState(0)
+            const [ref, { height }, refresh] = useMeasure()
             const location = useLocation()
             const [handle] = useMatches().filter((match) => match?.handle)
-            if (typeof window !== 'undefined')
-                framer.showUI({
-                    title: (handle?.handle as any) || '',
-                    position: 'top left',
-                    width: 600,
-                    height: height,
-                })
-            const ref = useRef<any>(null)
-            useLayoutEffect(() => {
-                let height = ref.current?.clientHeight || 500
-                if (!height) {
-                    return
-                }
-                console.log('height', height)
-                setHeight(height)
 
+            // framer.showUI({
+            //     title: (handle?.handle as any) || '',
+            //     position: 'top left',
+            //     width: 600,
+            //     height: height || 500,
+            // })
+
+            useLayoutEffect(() => {
                 framer.showUI({
                     title: (handle?.handle as any) || '',
                     position: 'top left',
                     width: 600,
-                    height,
+                    height: height || 100,
                 })
 
                 // listen for ref height changes, and update height
@@ -514,17 +569,25 @@ const router = createBrowserRouter([
                 //         setHeight(ref.current.clientHeight)
                 //     }
                 // })
-            }, [location.pathname, handle])
+            }, [height, handle])
             refreshHeight = () => {
-                setHeight(ref.current?.clientHeight)
+                refresh()
             }
             return (
-                <div
-                    ref={ref}
-                    className='flex flex-col p-4 pt-[2px] w-full justify-start gap-3'
+                <MotionConfig
+                    transition={{ duration: 0.5, type: 'spring', bounce: 0 }}
                 >
-                    <Outlet />
-                </div>
+                    <div className='overflow-hidden'>
+                        <div
+                            ref={ref}
+                            className='flex shrink-0 grow flex-col p-4 pt-[2px] w-full justify-start gap-3'
+                        >
+                            <AnimatePresence mode='wait'>
+                                <Outlet />
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                </MotionConfig>
             )
         },
 
