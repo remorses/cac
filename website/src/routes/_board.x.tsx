@@ -28,18 +28,18 @@ export let loader = async ({ request, response }: LoaderFunctionArgs) => {
     if (!user || !user.email) {
         throw new Error('user has no email or not found')
     }
-    const operator = await db
+    const authUser = await db
         .selectFrom('auth.users')
         .where('id', '=', user.id)
         .selectAll()
         .executeTakeFirst()
-    if (!operator) {
+    if (!authUser) {
         throw new Error('No operator found for user')
     }
 
     const password = await Promise.resolve().then(async () => {
-        if (operator.plainPassword) {
-            return operator.plainPassword
+        if (authUser.plainPassword) {
+            return authUser.plainPassword
         }
         console.log('Creating user password')
         let password = generatePassword()

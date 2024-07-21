@@ -13,9 +13,14 @@ import { StreamTextResult, streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { cors } from '@elysiajs/cors'
 
-import { getSupabaseSession } from 'website/src/lib/supabase.server'
+import {
+    createSupabaseAnon,
+    getSupabaseSession,
+} from 'website/src/lib/supabase.server'
 import { sleep } from 'website/src/lib/utils'
 import { getWebsiteInfo } from 'website/src/lib/htmlrewrite.server'
+import { db } from 'db/kysely'
+import { generatePassword } from 'website/src/lib/ssr.server'
 
 const RephraseSchema = t.Object({
     description: t.String(),
@@ -170,6 +175,84 @@ export const app = new Elysia({ prefix: '/api/v1' })
         },
         {
             body: RephraseSchema,
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+    .post(
+        '/getSessionForKey',
+        async ({ body, request }) => {
+            // check in database if user with key has logged in, if yes, generate a supabase session for it
+            const { headers, supabase, redirectTo } = await getSupabaseSession({
+                request,
+                // response,
+            })
+            if (!body.key) {
+                return { error: 'No key provided' }
+            }
+            const hourAgo = new Date()
+            hourAgo.setHours(hourAgo.getHours() - 1)
+            const [framerRequest] = await Promise.all([
+                db
+                    .selectFrom('FramerLoginRequest')
+                    .where('key', '=', body.key)
+                    .where('usedByUserId', 'is not', null)
+                    .where('createdAt', '>', hourAgo)
+                    .selectAll()
+                    .executeTakeFirst(),
+            ])
+            if (!framerRequest) {
+                return { error: 'No valid framer request found' }
+            }
+            const user = await db
+                .selectFrom('auth.users')
+                .where('id', '=', framerRequest.usedByUserId)
+                .selectAll()
+                .executeTakeFirst()
+
+            if (!user) {
+                throw new Error('No user found for request')
+            }
+            if (!user.plainPassword) {
+                throw new Error('No user password found for user')
+            }
+            if (!user.email) {
+                throw new Error('No user email found for user')
+            }
+
+            async function createTempSession() {
+                const tempSupabase = createSupabaseAnon()
+                // i am logging in again with password because supabase will log out the user if the refresh token is used in 2 places at the same time
+                const {
+                    data: { session: sessionToPass },
+                    error: signInError,
+                } = await tempSupabase.auth.signInWithPassword({
+                    email: user!.email!,
+                    password: user!.plainPassword!,
+                })
+                if (signInError) {
+                    console.error('Failed to sign in')
+                    throw signInError
+                }
+                if (!sessionToPass) {
+                    throw new Error('No session')
+                }
+                return sessionToPass
+            }
+            const [sessionToPass] = await Promise.all([
+                createTempSession(),
+                // supabase.auth.signInWithPassword({
+                //     email: user.email,
+                //     password: user.plainPassword,
+                // }),
+            ])
+            return { session: sessionToPass, headers }
+        },
+        {
+            body: t.Object({
+                key: t.String(),
+            }),
             // response: {
             //     200: t.AsyncIterator(t.String()),
             // },

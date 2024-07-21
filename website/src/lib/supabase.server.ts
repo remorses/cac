@@ -35,7 +35,7 @@ export function createSupabaseAnon() {
 
 type SupabaseSessionArgs = {
     request: Request
-    response: { headers: Headers } | undefined
+    response?: { headers: Headers } | undefined
 }
 
 export function getSupabaseWithHeaders({

@@ -286,6 +286,12 @@ export interface ExtensionsPgStatStatementsInfo {
   stats_reset: Timestamp | null;
 }
 
+export interface FramerLoginRequest {
+  createdAt: Generated<Timestamp>;
+  key: string;
+  usedByUserId: string | null;
+}
+
 export interface Generation {
   chars: number;
   createdAt: Generated<Timestamp>;
@@ -557,6 +563,7 @@ export interface DB {
   "auth.users": AuthUsers;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
+  FramerLoginRequest: FramerLoginRequest;
   Generation: Generation;
   Org: Org;
   OrgInviteLink: OrgInviteLink;

@@ -6,6 +6,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const code = url.searchParams.get('code') || ''
     const type = url.searchParams.get('type') || ''
+    const isFramerPlugin = url.searchParams.get('framer-plugin') || ''
 
     const next = url.searchParams.get('next') || '/x'
 

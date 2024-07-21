@@ -23,3 +23,9 @@ export function sleep(ms: number) {
         setTimeout(resolve, ms)
     })
 }
+
+export function framerLoginUrl({ key }) {
+    let url = new URL('/api/auth/framer-login', env.PUBLIC_URL)
+    url.searchParams.set('key', key)
+    return url.toString()
+}

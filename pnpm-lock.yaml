@@ -87,6 +87,9 @@ importers:
       '@sinclair/typebox':
         specifier: ^0.32.34
         version: 0.32.34
+      '@supabase/supabase-js':
+        specifier: ^2.44.4
+        version: 2.44.4
       '@tailwindcss/forms':
         specifier: ^0.5.7
         version: 0.5.7(tailwindcss@3.4.6)

@@ -9,6 +9,8 @@ export const env = {
     SECRET: process.env.SECRET,
     SCREENSHOTONE_KEY: process.env.SCREENSHOTONE_KEY,
     GROQ_API_KEY: process.env.GROQ_API_KEY,
+    GOOGLE_ID: process.env.GOOGLE_ID,
+    GOOGLE_SECRET: process.env.GOOGLE_SECRET,
 }
 
 // console.log(env)

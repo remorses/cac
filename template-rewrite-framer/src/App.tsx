@@ -11,7 +11,7 @@ import {
 } from 'framer-plugin'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { apiClient } from '@/lib/utils'
+import { Paths, apiClient, withMode } from '@/lib/utils'
 import {
     Outlet,
     RouterProvider,
@@ -27,6 +27,9 @@ import type {
 } from 'website/src/lib/elysia.server'
 import { Form, Link, createBrowserRouter } from 'react-router-dom'
 import { flushSync } from 'react-dom'
+import { supabase } from '@/lib/supabase-framer'
+import { loginRedirectUrl } from 'website/src/lib/utils'
+import { LoginPage } from '@/login'
 // import { notifyError } from 'website/src/lib/errors'
 
 let refreshHeight = () => {}
@@ -265,11 +268,6 @@ async function getNodePath(node: AnyNode) {
     return path.join('/')
 }
 
-function withMode(path, query?: Record<string, any>) {
-    const searchParams = new URLSearchParams({ mode: 'default', ...query })
-    return `${path}?${searchParams.toString()}`
-}
-
 function AlreadyHaveWebsite() {
     return (
         <div className='flex flex-col justify-start gap-6'>
@@ -501,25 +499,22 @@ function IsWebsitePublished() {
 //     )
 // }
 
-enum Paths {
-    root = '/',
-    getWebsiteInfo = '/get-website-info',
-    // migrate = '/migrate',
-    prompt = '/prompt',
-    checkWebsiteIsPublished = '/check-website-is-published',
-    // scrapeWebsite = '/scrape-website',
-}
-
 const router = createBrowserRouter([
     {
-        path: Paths.root,
+        path: '/',
         element: <Container />,
         ErrorBoundary() {
             const error = useRouteError() as any
             console.error(error, 'ErrorBoundary')
             return <div>{error?.message}</div>
         },
-        loader() {
+        async loader() {
+            const { data, error } = await supabase.auth.getSession()
+            if (error) {
+                console.error('Failed to get session', error)
+                return {}
+            }
+            console.log('supabase session', data)
             // setTimeout(() => refreshHeight(), 1)
             return {}
         },
@@ -527,7 +522,12 @@ const router = createBrowserRouter([
         // errorElement: <ErrorPage />,
         children: [
             {
-                path: Paths.root,
+                path: Paths.login,
+                element: <LoginPage />,
+                handle: 'Login to keep your migration progress',
+            },
+            {
+                path: Paths.doYouAlreadyHaveAWebsite,
                 element: <AlreadyHaveWebsite />,
                 handle: 'Do you already have an existing website?',
             },

@@ -44,3 +44,18 @@ export const noop: any = () => {}
 async function isTruthy<T>(x: T | undefined | null | false): Promise<boolean> {
     return !!x
 }
+
+export function withMode(path, query?: Record<string, any>) {
+    const searchParams = new URLSearchParams({ mode: 'default', ...query })
+    return `${path}?${searchParams.toString()}`
+}
+
+export enum Paths {
+    login = '/',
+    doYouAlreadyHaveAWebsite = '/do-you-already-have-a-website',
+    getWebsiteInfo = '/get-website-info',
+    // migrate = '/migrate',
+    prompt = '/prompt',
+    checkWebsiteIsPublished = '/check-website-is-published',
+    // scrapeWebsite = '/scrape-website',
+}

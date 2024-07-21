@@ -331,6 +331,14 @@ model Site {
   @@schema("public")
 }
 
+model FramerLoginRequest {
+  key          String   @id
+  createdAt    DateTime @default(now())
+  usedByUserId String?  @db.Uuid
+
+  @@schema("public")
+}
+
 model PaymentForCredits {
   id             String   @id @default(cuid())
   createdAt      DateTime @default(now())

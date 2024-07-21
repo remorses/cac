@@ -5,7 +5,7 @@
     "description": "db",
     "scripts": {
         "studio": "doppler run -- prisma studio",
-        "enable-rls": "# doppler run -- tsx scripts/enable-rls.ts",
+        "enable-rls": "doppler run -- pnpm tsx scripts/enable-rls.ts",
         "gen:kysely": "doppler run -- kysely-codegen --out-file kysely.types.ts",
         "diff:prod": "doppler run -c production --command 'pnpm prisma migrate diff --script --from-url $DATABASE_URL --to-schema-datamodel schema.prisma > diff.sql'",
         "diff:preview": "doppler run -c preview --command 'pnpm prisma migrate diff --script --from-url $DATABASE_URL --to-schema-datamodel schema.prisma > diff.sql'",
