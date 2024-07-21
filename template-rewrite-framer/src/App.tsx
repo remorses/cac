@@ -138,12 +138,14 @@ function SimplePrompt() {
 
         let prevBackground = null as string | null
 
-        for await (let chunk of eventSource!) {
-            console.log('chunk', chunk)
-            await prevNode?.setAttributes({ backgroundColor: prevBackground })
-            // Process each chunk (value)
+        try {
+            for await (let chunk of eventSource!) {
+                console.log('chunk', chunk)
+                await prevNode?.setAttributes({
+                    backgroundColor: prevBackground,
+                })
+                // Process each chunk (value)
 
-            try {
                 const { text, nodeId } = chunk as RephraseResultItem
                 if (nodeId == null) {
                     console.log(`no nodeId found: ${chunk}`)
@@ -180,11 +182,12 @@ function SimplePrompt() {
                 }
 
                 await node.setText(text)
-            } catch (e) {
-                console.log('error processing chatgpt', e)
             }
+        } catch (e) {
+            console.log('error processing chatgpt', e)
+        } finally {
+            await prevNode?.setAttributes({ backgroundColor: prevBackground })
         }
-        await prevNode?.setAttributes({ backgroundColor: prevBackground })
     }
 
     return (
@@ -251,16 +254,27 @@ function SimplePrompt() {
                             abortController.abort()
                             return
                         }
-                        for (let node of oldNodes) {
-                            const { nodeId, text } = node
-                            const framerNode = await framer.getNode(nodeId)
-                            if (isTextNode(framerNode)) {
-                                await framerNode.setText(text)
-                            }
-                        }
+                        await Promise.all(
+                            oldNodes.map(async (node) => {
+                                const { nodeId, text } = node
+                                try {
+                                    const framerNode =
+                                        await framer.getNode(nodeId)
+                                    if (isTextNode(framerNode)) {
+                                        await framerNode.setText(text)
+                                    }
+                                } catch (e) {
+                                    console.log(
+                                        'error undoing text for ',
+                                        text,
+                                        e,
+                                    )
+                                }
+                            }),
+                        )
+                        setOldNodes([])
                     }}
                     type='button'
-                    className='framer-button-primary'
                 >
                     {isLoading ? 'Cancel' : 'Undo Replacement'}
                 </Button>

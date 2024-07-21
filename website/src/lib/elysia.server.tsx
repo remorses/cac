@@ -351,6 +351,7 @@ export async function* rephrase({
     })
     yield* NDJSONStream({
         stream,
+        minTime: 200,
         onToken,
     })
 }
@@ -379,13 +380,16 @@ export function splitStringButKeepChar(str: string, char: string) {
 
 export async function* NDJSONStream({
     stream,
+    minTime = 0,
     onToken,
 }: {
     stream: StreamTextResult<any>
+    minTime?: number
     onToken?: (token: string) => void
 }) {
     let buffer = ''
     let lastYieldTime = 0
+
     for await (const part of stream.textStream) {
         onToken?.(part)
         const parts = splitStringButKeepChar(part, '\n')
@@ -395,8 +399,8 @@ export async function* NDJSONStream({
             try {
                 let obj = JSON.parse(stripJSONComments(buffer))
                 const now = Date.now()
-                if (now - lastYieldTime <= 100) {
-                    await sleep(100 - (now - lastYieldTime))
+                if (now - lastYieldTime <= minTime) {
+                    await sleep(minTime - (now - lastYieldTime))
                 }
                 // console.log('obj', obj)
                 yield obj
