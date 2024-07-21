@@ -37,10 +37,10 @@ let refreshHeight = () => {}
 function useShowFramer() {
     const [height, setHeight] = useState(500)
 
-    const [handle] = useMatches().filter((match) => match.handle)
+    const [handle] = useMatches().filter((match) => match?.handle)
     if (typeof window !== 'undefined')
         framer.showUI({
-            title: (handle.handle as any) || '',
+            title: (handle?.handle as any) || '',
             position: 'top left',
             width: 600,
             height: height,
@@ -508,19 +508,34 @@ const router = createBrowserRouter([
             console.error(error, 'ErrorBoundary')
             return <div>{error?.message}</div>
         },
-        async loader() {
-            const { data, error } = await supabase.auth.getSession()
-            if (error) {
-                console.error('Failed to get session', error)
-                return {}
-            }
-            console.log('supabase session', data)
-            // setTimeout(() => refreshHeight(), 1)
-            return {}
-        },
 
         // errorElement: <ErrorPage />,
         children: [
+            {
+                path: '/',
+                Component() {
+                    return null
+                },
+                async loader({ request }) {
+                    // const url = new URL(request.url)
+                    // if (url.pathname === '/login') {
+                    //     return {}
+                    // }
+                    const { data, error } = await supabase.auth.getSession()
+                    if (error) {
+                        console.error('Failed to get session', error)
+                    }
+
+                    console.log('supabase session', data)
+                    const session = data?.session
+                    if (!session) {
+                        return redirect(withMode(Paths.login))
+                    }
+                    return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
+                    // setTimeout(() => refreshHeight(), 1)
+                },
+                handle: '',
+            },
             {
                 path: Paths.login,
                 element: <LoginPage />,

@@ -51,7 +51,7 @@ export function withMode(path, query?: Record<string, any>) {
 }
 
 export enum Paths {
-    login = '/',
+    login = '/login',
     doYouAlreadyHaveAWebsite = '/do-you-already-have-a-website',
     getWebsiteInfo = '/get-website-info',
     // migrate = '/migrate',
