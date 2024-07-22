@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase-framer'
 import { Paths, apiClient, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useRevalidator } from 'react-router'
 import {
     framerLoginUrl,
     generateSecurePassword,
@@ -13,6 +13,7 @@ import {
 export function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const isDocumentVisible = useIsDocumentVisibile()
+    const revalidator = useRevalidator()
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-4'>
@@ -66,6 +67,7 @@ export function LoginPage() {
                         })
                     } finally {
                         setIsLoading(false)
+                        // revalidator.revalidate()
                     }
                 }}
                 className='framer-button-primary'

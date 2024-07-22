@@ -27,12 +27,16 @@ import type { RephraseSchema } from 'website/src/lib/elysia.server'
 import { Session } from '@supabase/supabase-js'
 import { Button } from '@/components/Button'
 import { Settings } from '@/routes/Settings'
+import { NProgressComponent } from '@/components/nprogress'
 // import { notifyError } from 'website/src/lib/errors'
 
 const router = createBrowserRouter([
     {
         path: '/',
         id: RouteIds.root,
+        shouldRevalidate: () => {
+            return true
+        },
         async loader({ request }) {
             const { data, error } = await supabase.auth.getSession()
             if (error) {
@@ -82,20 +86,16 @@ const router = createBrowserRouter([
                             ref={ref}
                             className='flex shrink-0 grow flex-col p-4 pt-[2px] w-full justify-start '
                         >
+                            <NProgressComponent />
                             <Outlet />
+
                             {showSettings && (
                                 <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
-                                    <div className=''>
-                                        {/* Logged in as {session?.user?.email} */}
-                                    </div>
                                     <div className='grow'></div>
                                     <Link to={withMode(Paths.settings)}>
-                                        <div
-                                            role='button'
-                                            className='w-auto bg-transparent !py-px text-[11px] '
-                                        >
+                                        <Button className='w-auto bg-transparent !py-px text-[11px] '>
                                             settings
-                                        </div>
+                                        </Button>
                                     </Link>
                                 </div>
                             )}

@@ -61,10 +61,8 @@ export function Settings() {
                     available
                 </div>
                 <div className='grow'></div>
-                <a href={buyMoreCreditsUrl}>
-                    <Button onClick={async () => {}} className='w-auto'>
-                        Buy More Credits
-                    </Button>
+                <a target='_blank' href={buyMoreCreditsUrl}>
+                    <Button className='w-auto'>Buy More Credits</Button>
                 </a>
             </div>
 

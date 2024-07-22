@@ -164,4 +164,4 @@ export enum RouteIds {
     root = 'root',
 }
 
-export const buyMoreCreditsUrl = '' // TODO
+export const buyMoreCreditsUrl = 'https://x.com' // TODO

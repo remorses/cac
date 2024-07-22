@@ -21,6 +21,17 @@ html,
     border-color: var(--framer-color-divider);
 }
 
+#nprogress .bar {
+    top: unset !important;
+    bottom: 0 !important;
+}
+
+#nprogress .peg {
+    bottom: 0;
+    top: unset !important;
+    display: none !important;
+}
+
 /* main {
     display: flex;
     flex-direction: column;

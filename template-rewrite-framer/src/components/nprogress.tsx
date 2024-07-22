@@ -1,0 +1,33 @@
+import NProgress from 'nprogress'
+import { useEffect } from 'react'
+import { useNavigation } from 'react-router'
+
+export function NProgressComponent() {
+    let navigation = useNavigation()
+
+    useEffect(() => {
+        NProgress.configure({ showSpinner: false })
+
+        // if it's not idle then it's submitting a form and loading the next location loaders
+        if (navigation.state !== 'idle') {
+            console.log('loading')
+            NProgress.start() // so you start it
+        } else {
+            NProgress.done() // when it's idle again complete it
+        }
+    }, [navigation.state])
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            NProgress.start()
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload)
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+        }
+    }, [])
+
+    return null
+}
