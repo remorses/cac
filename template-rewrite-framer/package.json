@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",
-        "deployment": "doppler run -- wrangler pages deploy dist",
+        "deployment": "doppler run -c production -- wrangler pages deploy dist",
         "build": "doppler run -- vite build --base=${PREFIX_BASE_PATH:+/$npm_package_name}/",
         "preview": "vite preview"
     },

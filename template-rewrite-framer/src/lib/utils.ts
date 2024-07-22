@@ -12,6 +12,7 @@ import {
     isWebPageNode,
     isTextNode,
 } from 'framer-plugin'
+import { Session } from '@supabase/supabase-js'
 
 export const apiClient = treaty<RouteType>(env.PUBLIC_URL!, {
     // async fetch(input, requestInit) {
@@ -49,7 +50,9 @@ export function Uint8ArrayToBase64(buffer: Uint8Array) {
 
 export const noop: any = () => {}
 
-export async function isTruthy<T>(x: T | undefined | null | false): Promise<boolean> {
+export async function isTruthy<T>(
+    x: T | undefined | null | false,
+): Promise<boolean> {
     return !!x
 }
 
@@ -60,11 +63,12 @@ export function withMode(path, query?: Record<string, any>) {
 
 export enum Paths {
     login = '/login',
+    settings = '/settings',
     doYouAlreadyHaveAWebsite = '/do-you-already-have-a-website',
     getWebsiteInfo = '/get-website-info',
     // migrate = '/migrate',
     prompt = '/prompt',
-    checkWebsiteIsPublished = '/check-website-is-published',
+    // checkWebsiteIsPublished = '/check-website-is-published',
     // scrapeWebsite = '/scrape-website',
 }
 
@@ -151,3 +155,13 @@ export async function getRootParentId(node: AnyNode) {
 
     return ''
 }
+
+export type PluginLoaderData = {
+    session: Session
+}
+
+export enum RouteIds {
+    root = 'root',
+}
+
+export const buyMoreCreditsUrl = '' // TODO

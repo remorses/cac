@@ -1,7 +1,6 @@
-
 import { Link } from 'react-router-dom'
 import { Paths, withMode } from '@/lib/utils'
-
+import { Button } from '@/components/Button'
 
 export function AlreadyHaveWebsite() {
     return (
@@ -10,18 +9,16 @@ export function AlreadyHaveWebsite() {
                 This plugin can use your existing website content to migrate it
                 to Framer
             </div>
-            <div className='flex gap-4 '>
-                <Link
-                    className='flex items-center bg-framer-secondary border-framer-secondary grow gap-2 px-4 py-2 rounded-md  cursor-pointer'
-                    to={withMode(Paths.checkWebsiteIsPublished)}
-                >
-                    Yes
+            <div className='flex gap-4  '>
+                <Link className='w-full' to={withMode(Paths.getWebsiteInfo)}>
+                    <Button className='flex justify-center items-center w-full gap-2 px-4 py-2 rounded-md'>
+                        Yes, use existing site content
+                    </Button>
                 </Link>
-                <Link
-                    className='flex items-center grow gap-2 px-4 py-2 rounded-md bg-framer-secondary cursor-pointer'
-                    to={withMode(Paths.prompt)}
-                >
-                    No
+                <Link className='w-full' to={withMode(Paths.prompt)}>
+                    <Button className='flex justify-center items-center w-full gap-2 px-4 py-2 rounded-md'>
+                        No, start from scratch
+                    </Button>
                 </Link>
             </div>
         </div>

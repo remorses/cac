@@ -4,7 +4,7 @@ import { framer } from 'framer-plugin'
 import { useLayoutEffect } from 'react'
 
 import { supabase } from '@/lib/supabase-framer'
-import { Paths, withMode } from '@/lib/utils'
+import { Paths, RouteIds, withMode } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
@@ -16,20 +16,23 @@ import {
     RouterProvider,
     redirect,
     useLoaderData,
+    useLocation,
     useMatches,
     useNavigate,
     useRevalidator,
     useRouteError,
 } from 'react-router'
-import { createBrowserRouter } from 'react-router-dom'
+import { Link, createBrowserRouter } from 'react-router-dom'
 import type { RephraseSchema } from 'website/src/lib/elysia.server'
 import { Session } from '@supabase/supabase-js'
 import { Button } from '@/components/Button'
+import { Settings } from '@/routes/Settings'
 // import { notifyError } from 'website/src/lib/errors'
 
 const router = createBrowserRouter([
     {
         path: '/',
+        id: RouteIds.root,
         async loader({ request }) {
             const { data, error } = await supabase.auth.getSession()
             if (error) {
@@ -56,7 +59,7 @@ const router = createBrowserRouter([
                 framer.showUI({
                     title: (handle?.handle as any) || '',
                     position: 'top left',
-                    width: 600,
+                    width: 480,
                     height: height || 100,
                 })
 
@@ -67,7 +70,8 @@ const router = createBrowserRouter([
                 //     }
                 // })
             }, [height, handle])
-
+            const location = useLocation()
+            const showSettings = session && location.pathname !== Paths.settings
             const revalidator = useRevalidator()
             return (
                 <MotionConfig
@@ -78,27 +82,23 @@ const router = createBrowserRouter([
                             ref={ref}
                             className='flex shrink-0 grow flex-col p-4 pt-[2px] w-full justify-start '
                         >
-                            <AnimatePresence mode='wait'>
-                                <Outlet />
-                                {session && (
-                                    <div className='flex text-[11px] items-center pt-1 opacity-70 justify-between '>
-                                        <div className=''>
-                                            Logged in as {session?.user?.email}
-                                        </div>
-                                        <div className='grow'></div>
+                            <Outlet />
+                            {showSettings && (
+                                <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
+                                    <div className=''>
+                                        {/* Logged in as {session?.user?.email} */}
+                                    </div>
+                                    <div className='grow'></div>
+                                    <Link to={withMode(Paths.settings)}>
                                         <div
                                             role='button'
                                             className='w-auto bg-transparent !py-px text-[11px] '
-                                            onClick={async () => {
-                                                await supabase.auth.signOut()
-                                                window.location.href = '/'
-                                            }}
                                         >
-                                            sign out
+                                            settings
                                         </div>
-                                    </div>
-                                )}
-                            </AnimatePresence>
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </MotionConfig>
@@ -131,8 +131,14 @@ const router = createBrowserRouter([
                     console.log('supabase session', data)
                     const session = data?.session
                     if (!session) {
+                        console.log(
+                            `redirecting to login because there is no session`,
+                        )
                         return redirect(withMode(Paths.login))
                     }
+                    console.log(
+                        'redirecting to choose website from / because user is logged in',
+                    )
                     // return redirect(withMode(Paths.login))
                     return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
                     // setTimeout(() => refreshHeight(), 1)
@@ -145,6 +151,11 @@ const router = createBrowserRouter([
                 handle: 'Login to keep your migration progress',
             },
             {
+                path: Paths.settings,
+                element: <Settings />,
+                handle: 'Plugin settings',
+            },
+            {
                 path: Paths.doYouAlreadyHaveAWebsite,
                 element: <AlreadyHaveWebsite />,
                 handle: 'Do you already have an existing website?',
@@ -154,26 +165,34 @@ const router = createBrowserRouter([
                 element: <GetWebsiteInfo />,
                 handle: 'What is your website url?',
             },
-            {
-                path: Paths.checkWebsiteIsPublished,
-                element: <IsWebsitePublished />,
-                loader: async ({}) => {
-                    const publishInfo = await framer.getPublishInfo()
-                    let deploymentTime = publishInfo?.staging?.deploymentTime
-                    let hourAgo = new Date()
-                    hourAgo.setHours(hourAgo.getHours() - 1)
-                    if (deploymentTime && new Date(deploymentTime) > hourAgo) {
-                        return redirect(Paths.getWebsiteInfo)
-                    }
-                    framer.notify('Publish your website first', {
-                        variant: 'error',
-                    })
+            // {
+            //     path: Paths.checkWebsiteIsPublished,
+            //     element: <IsWebsitePublished />,
+            //     loader: async ({}) => {
+            //         const publishInfo = await framer.getPublishInfo()
+            //         let deploymentTime = publishInfo?.staging?.deploymentTime
+            //         let hourAgo = new Date()
+            //         hourAgo.setHours(hourAgo.getHours() - 1)
+            //         if (deploymentTime && new Date(deploymentTime) > hourAgo) {
+            //             return redirect(Paths.getWebsiteInfo)
+            //         }
+            //         framer.notify('Publish your website first', {
+            //             variant: 'error',
+            //         })
 
-                    return {}
-                },
-                handle: 'Publish your website first',
-            },
+            //         return {}
+            //     },
+            //     handle: 'Publish your website first',
+            // },
             {
+                async loader() {
+                    let shouldShowProgress = Boolean(
+                        await framer.getPluginData('usedThePlugin'),
+                    )
+                    return {
+                        shouldShowProgress,
+                    }
+                },
                 path: Paths.prompt,
                 element: <SimplePrompt />,
                 handle: 'Describe what your new website is about',

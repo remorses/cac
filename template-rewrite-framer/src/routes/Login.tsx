@@ -52,11 +52,11 @@ export function LoginPage() {
                                 if (error) {
                                     throw error
                                 }
-                                navigate(
+                                return navigate(
                                     withMode(Paths.doYouAlreadyHaveAWebsite),
                                 )
                             } else {
-                                await sleep(1000)
+                                await sleep(3000)
                             }
                         }
                     } catch (e) {

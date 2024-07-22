@@ -10,6 +10,7 @@ import {
     isComponentNode,
 } from 'framer-plugin'
 import { useState } from 'react'
+import { useLoaderData, useRevalidator } from 'react-router'
 import { apiClient } from 'website/src/lib/api-client'
 import {
     RephraseSchema,
@@ -19,12 +20,14 @@ import { sleep } from 'website/src/lib/utils'
 
 let abortController = new AbortController()
 
-export function SimplePrompt() {
+export function SimplePrompt({}) {
+    const { shouldShowProgress } = useLoaderData() as any
     const [description, setDescription] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
         [],
     )
+    const revalidator = useRevalidator()
 
     async function onSubmit() {
         if (!description) {
@@ -39,7 +42,7 @@ export function SimplePrompt() {
         }
         abortController = new AbortController()
         setIsLoading(true)
-
+        framer.setPluginData('usedThePlugin', 'true')
         try {
             await Promise.all([
                 // replaceImagesClient(), //
@@ -49,6 +52,7 @@ export function SimplePrompt() {
             console.error('error', e)
             framer.notify(String(e.message), { variant: 'error' })
         } finally {
+            revalidator.revalidate()
             setIsLoading(false)
         }
     }
@@ -91,7 +95,7 @@ export function SimplePrompt() {
                 {
                     description,
                     textToReplace: oldText,
-                    exampleTextToMigrate,
+                    exampleTextToMigrate: [],
                 },
                 {
                     fetch: {
@@ -143,7 +147,7 @@ export function SimplePrompt() {
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
-                await node.zoomIntoView({ maxZoom: 0.7 })
+                await node.zoomIntoView({ maxZoom: 0.9 })
                 if (currentParent && isFrameNode(currentParent)) {
                     prevBackground = currentParent?.backgroundColor || null
 
@@ -254,12 +258,19 @@ export function SimplePrompt() {
                     {isLoading ? 'Cancel' : 'Undo Replacement'}
                 </Button>
             )}
-            <div className='flex flex-col self-stretch gap-2'>
-                <div className='flex text-[11px] opacity-70'>
-                    <div className=''>100 credits remaining</div>
+            {shouldShowProgress && (
+                <div className='flex group flex-col hover:opacity-100 transition-opacity duration-100 opacity-60 self-stretch gap-2'>
+                    <div className='flex flex-row-reverse items-center text-[11px] '>
+                        <button className='group-hover:bg-framer-secondary w-auto text-[11px]  bg-transparent'>
+                            Buy More Credits
+                        </button>
+                        <div className='grow'></div>
+                        <div className=''>100 credits remaining</div>
+                    </div>
+
+                    <ProgressBar className='' progress={0.1} />
                 </div>
-                <ProgressBar progress={0.1} />
-            </div>
+            )}
         </motion.form>
     )
 }
