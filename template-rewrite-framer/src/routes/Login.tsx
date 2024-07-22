@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button'
+import { useIsDocumentVisibile } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
 import { Paths, apiClient, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
@@ -77,26 +78,4 @@ export function LoginPage() {
             </Button>
         </div>
     )
-}
-
-function useIsDocumentVisibile() {
-    const [isVisible, setIsVisible] = useState(
-        document.visibilityState === 'visible',
-    )
-
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            setIsVisible(document.visibilityState === 'visible')
-        }
-
-        document.addEventListener('visibilitychange', handleVisibilityChange)
-        return () => {
-            document.removeEventListener(
-                'visibilitychange',
-                handleVisibilityChange,
-            )
-        }
-    }, [])
-
-    return isVisible
 }

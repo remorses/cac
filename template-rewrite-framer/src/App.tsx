@@ -1,7 +1,7 @@
 import useMeasure from 'react-use-measure'
 
 import { framer } from 'framer-plugin'
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 
 import { supabase } from '@/lib/supabase-framer'
 import { Paths, RouteIds, withMode } from '@/lib/utils'
@@ -28,6 +28,7 @@ import { Session } from '@supabase/supabase-js'
 import { Button } from '@/components/Button'
 import { Settings } from '@/routes/Settings'
 import { NProgressComponent } from '@/components/nprogress'
+import { useIsDocumentVisibile } from '@/lib/hooks'
 // import { notifyError } from 'website/src/lib/errors'
 
 const router = createBrowserRouter([
@@ -51,7 +52,15 @@ const router = createBrowserRouter([
             const { session } = useLoaderData() as { session: Session }
             const [handle] = useMatches().filter((match) => match?.handle)
             const navigate = useNavigate()
+            const documentVisible = useIsDocumentVisibile()
 
+            useEffect(() => {
+                if (!documentVisible) {
+                    return
+                }
+                console.log(`document visible again`)
+                revalidator.revalidate()
+            }, [documentVisible])
             // framer.showUI({
             //     title: (handle?.handle as any) || '',
             //     position: 'top left',

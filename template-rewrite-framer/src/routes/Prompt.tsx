@@ -1,5 +1,6 @@
-import { getDesktop, getNodePath } from '@/lib/utils'
-import { Button } from '@nextui-org/react'
+import { Button } from '@/components/Button'
+import { buyMoreCreditsUrl, getDesktop, getNodePath } from '@/lib/utils'
+
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import {
@@ -261,9 +262,11 @@ export function SimplePrompt({}) {
             {shouldShowProgress && (
                 <div className='flex group flex-col hover:opacity-100 transition-opacity duration-100 opacity-60 self-stretch gap-2'>
                     <div className='flex flex-row-reverse items-center text-[11px] '>
-                        <button className='group-hover:bg-framer-secondary w-auto text-[11px]  bg-transparent'>
-                            Buy More Credits
-                        </button>
+                        <a target='_blank' href={buyMoreCreditsUrl}>
+                            <button className='group-hover:bg-framer-secondary w-auto text-[11px]  bg-transparent'>
+                                Buy More Credits
+                            </button>
+                        </a>
                         <div className='grow'></div>
                         <div className=''>100 credits remaining</div>
                     </div>

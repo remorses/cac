@@ -1,21 +1,22 @@
 import NProgress from 'nprogress'
 import { useEffect } from 'react'
-import { useNavigation } from 'react-router'
+import { useNavigation, useRevalidator } from 'react-router'
 
 export function NProgressComponent() {
     let navigation = useNavigation()
 
+    const revalidator = useRevalidator()
     useEffect(() => {
         NProgress.configure({ showSpinner: false })
 
         // if it's not idle then it's submitting a form and loading the next location loaders
-        if (navigation.state !== 'idle') {
+        if (navigation.state !== 'idle' || revalidator.state !== 'idle') {
             console.log('loading')
             NProgress.start() // so you start it
         } else {
             NProgress.done() // when it's idle again complete it
         }
-    }, [navigation.state])
+    }, [navigation.state, revalidator.state])
 
     useEffect(() => {
         const handleBeforeUnload = () => {

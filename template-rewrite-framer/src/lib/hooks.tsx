@@ -1,7 +1,6 @@
-
 // show toasts on success and failure and manages loading state
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
 
 // you can skip showing the toast on failure putting a field skipToast: true in the error
 export function useThrowingFn({
@@ -38,4 +37,26 @@ export function useThrowingFn({
         isLoading,
         fn,
     }
+}
+
+export function useIsDocumentVisibile() {
+    const [isVisible, setIsVisible] = useState(
+        document.visibilityState === 'visible',
+    )
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            setIsVisible(document.visibilityState === 'visible')
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => {
+            document.removeEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            )
+        }
+    }, [])
+
+    return isVisible
 }
