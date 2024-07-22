@@ -12,7 +12,7 @@ export default {
     ],
     theme: {
         extend: {
-            ...websiteConfig.theme.extend,
+            // ...websiteConfig.theme.extend,
             backgroundColor: {
                 framer: {
                     primary: 'var(--framer-color-bg)',

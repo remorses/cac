@@ -4,6 +4,14 @@ import { env } from 'website/src/lib/env'
 import { treaty } from '@elysiajs/eden'
 
 import type { RouteType } from 'website/src/lib/elysia.server'
+import {
+    AnyNode,
+    framer,
+    isFrameNode,
+    isComponentNode,
+    isWebPageNode,
+    isTextNode,
+} from 'framer-plugin'
 
 export const apiClient = treaty<RouteType>(env.PUBLIC_URL!, {
     // async fetch(input, requestInit) {
@@ -41,7 +49,7 @@ export function Uint8ArrayToBase64(buffer: Uint8Array) {
 
 export const noop: any = () => {}
 
-async function isTruthy<T>(x: T | undefined | null | false): Promise<boolean> {
+export async function isTruthy<T>(x: T | undefined | null | false): Promise<boolean> {
     return !!x
 }
 
@@ -58,4 +66,88 @@ export enum Paths {
     prompt = '/prompt',
     checkWebsiteIsPublished = '/check-website-is-published',
     // scrapeWebsite = '/scrape-website',
+}
+
+const nonMeaningfulNames = [
+    'Desktop',
+    'Mobile',
+    'Tablet',
+    'Desktop Open',
+    'Mobile Open',
+    'Tablet Open',
+    'Container',
+    'Row',
+    'Col',
+    'Column',
+    'Frame',
+    'Content',
+    'Section',
+    'Text',
+]
+function isNameMeaningful(name: string) {
+    if (!name) return false
+    if (nonMeaningfulNames.includes(name)) return false
+    return true
+}
+
+export async function getNodePath(node: AnyNode) {
+    let path = [] as string[]
+    let current = node as AnyNode | null
+    while (current) {
+        let name = current['name']
+        if (isNameMeaningful(name)) {
+            path.unshift(name)
+        }
+        current = await current.getParent()
+    }
+    return path.join('/')
+}
+
+export async function getDesktop() {
+    // const node = await Promise.all(
+    //     [...(await framer.getNodesWithType('WebPageNode'))].map(
+    //         async (node) => {
+    //             return node
+    //         },
+    //     ),
+    // )
+    const root = await framer.getCanvasRoot()
+    const children = await root.getChildren()
+    const desktop = children.find((node) => {
+        if (isFrameNode(node)) {
+            return node.name === 'Desktop'
+        }
+    })
+    return desktop
+}
+
+function isRootLevelNode(node: AnyNode) {
+    return isComponentNode(node) || isWebPageNode(node)
+}
+
+export async function getRootParentId(node: AnyNode) {
+    let parent = await node.getParent()
+    if (isRootLevelNode(node)) {
+        return node.id
+    }
+    if (!parent) {
+        console.log('no parent found', node.id)
+        if (isTextNode(node)) {
+            console.log('text node', await node.getText())
+        }
+        return node.id
+    }
+    while (parent) {
+        if (isRootLevelNode(parent)) {
+            return parent.id
+        }
+        let newParent = await parent.getParent()
+        if (!newParent) {
+            console.log('no parent found, last one was', parent)
+            return parent.id
+        }
+        parent = newParent
+    }
+
+    return ''
 }
