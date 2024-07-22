@@ -7,8 +7,10 @@ import {
     FrameNode,
     TextNode,
     framer,
+    isComponentNode,
     isFrameNode,
     isTextNode,
+    isWebPageNode,
 } from 'framer-plugin'
 import {
     cloneElement,
@@ -18,7 +20,7 @@ import {
     useState,
 } from 'react'
 
-import { Paths, apiClient, withMode } from '@/lib/utils'
+import { Paths, apiClient, sleep, withMode } from '@/lib/utils'
 import {
     Outlet,
     RouterProvider,
@@ -87,12 +89,16 @@ function SimplePrompt() {
         setOldNodes([])
         const root = await framer.getCanvasRoot()
 
-        const [desktop] = await root.getChildren()
+        const desktop = await getDesktop()
 
+        if (!desktop) {
+            throw new Error('No desktop found')
+        }
         let oldText = [] as RephraseSchema['textToReplace']
         let i = 0
 
         for await (let node of desktop.walk()) {
+            i += 1
             if (isTextNode(node)) {
                 const text = await node.getText()
                 let nodeId = node.id
@@ -106,10 +112,9 @@ function SimplePrompt() {
                     setOldNodes((oldNodes) => [...oldNodes, textData])
                     oldText.push(textData)
                 }
-
-                i += 1
             }
         }
+
         // console.log('oldText', JSON.stringify(oldText, null, 2))
         // return
 
@@ -183,6 +188,7 @@ function SimplePrompt() {
 
                 await node.setText(text)
             }
+            await sleep(200)
             await desktop.zoomIntoView({ maxZoom: 0.7 })
         } catch (e) {
             console.log('error processing chatgpt', e)
@@ -223,16 +229,13 @@ function SimplePrompt() {
                             onSubmit()
                         }
                         const textarea = e.target as HTMLTextAreaElement
-                        textarea.style.height = '26px'
+                        // textarea.style.height = '26px'
                         textarea.style.height = `${textarea.scrollHeight}px`
                     }}
                     onChange={(e) => setDescription(e.target.value)}
                     className='p-2 pb-3 shrink-0 leading-relaxed py-1 w-full min-h-[80px]'
                     autoFocus
                     placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
-                    onMouseUp={(e) => {
-                        refreshHeight()
-                    }}
                 />
             </div>
 
@@ -717,4 +720,108 @@ async function getDesktop() {
         }
     })
     return desktop
+}
+
+function isRootLevelNode(node: AnyNode) {
+    return isComponentNode(node) || isWebPageNode(node)
+}
+
+async function getRootParentId(node: AnyNode) {
+    let parent = await node.getParent()
+    if (isRootLevelNode(node)) {
+        return node.id
+    }
+    if (!parent) {
+        console.log('no parent found', node.id)
+        if (isTextNode(node)) {
+            console.log('text node', await node.getText())
+        }
+        return node.id
+    }
+    while (parent) {
+        if (isRootLevelNode(parent)) {
+            return parent.id
+        }
+        let newParent = await parent.getParent()
+        if (!newParent) {
+            console.log('no parent found, last one was', parent)
+            return parent.id
+        }
+        parent = newParent
+    }
+
+    return ''
+}
+
+async function replaceTextInCurrentPage() {
+    const desktop = await getDesktop()
+
+    if (!desktop) {
+        throw new Error('No desktop found')
+    }
+
+    // components in the current page
+    const componentInstances = await desktop.getNodesWithType(
+        'ComponentInstanceNode',
+    )
+
+    let componentNodesInThePage = new Set<string>()
+    console.log('components', componentInstances)
+    for (let componentInstance of componentInstances) {
+        if (
+            !componentInstance.componentIdentifier.startsWith('local-module:')
+        ) {
+            console.log(
+                `component ${componentInstance.componentIdentifier} is not a local module`,
+            )
+            continue
+        }
+        // regex to extract lWUcIJP0H from "local-module:canvasComponent/lWUcIJP0H:default"
+        const regex = /local-module:.*\/(.*):.*/
+        const match = componentInstance.componentIdentifier.match(regex)
+        if (!match) {
+            console.log(
+                `component ${componentInstance.componentIdentifier} does not match regex to get component id`,
+            )
+            continue
+        }
+        const componentId = match[1]
+        const componentNode = await framer.getNode(componentId)
+        if (!componentNode || !isComponentNode(componentNode)) {
+            console.log(`could not find component node for ${componentId}`)
+            continue
+        }
+        componentNodesInThePage.add(componentId)
+        // console.log('-----')
+        // console.log('componentNode', componentNode)
+
+        // for await (let child of componentNode.walk()) {
+        //     console.log(await getNodePath(child), child)
+        // }
+    }
+    // TODO change text inside the components too when you can access children of them
+    // const allTextNodes = await framer.getNodesWithType('TextNode')
+    // for (let textNode of allTextNodes) {
+    //     const rootParentId = await getRootParentId(textNode)
+    //     console.log(rootParentId)
+    //     if (!componentNodesInThePage.has(rootParentId)) {
+    //         // console.log(
+    //         //     `text node ${textNode.id} is not in local components`,
+    //         // )
+    //         continue
+    //     }
+    //     console.log('component text:', await textNode.getText())
+    // }
+
+    // recurse inside the components on the page
+    // for (let componentId of componentNodesInThePage) {
+    //     const componentNode = await framer.getNode(componentId)
+    //     if (!componentNode || !isComponentNode(componentNode)) {
+    //         console.log(`could not find component node for ${componentId}`)
+    //         continue
+    //     }
+    //     for await (let child of componentNode.walk()) {
+
+    //     }
+    // }
 }
