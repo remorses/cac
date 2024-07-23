@@ -1,0 +1,23 @@
+{
+    "name": "website-worker",
+    "version": "0.0.7",
+    "private": true,
+    "description": "",
+    "repository": "https://github.com/remorses/",
+    "scripts": {
+        "deployment": "pnpm wrangler deploy",
+        "dev": "wrangler dev",
+        "test": "vitest"
+    },
+    "files": [
+        "dist",
+        "src",
+        "esm"
+    ],
+    "keywords": [],
+    "author": "Tommaso De Rossi, morse <beats.by.morse@gmail.com>",
+    "license": "",
+    "devDependencies": {
+        "@xmorse/deployment-utils": "^0.2.2"
+    }
+}

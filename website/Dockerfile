@@ -1,8 +1,10 @@
+
+
 FROM --platform=linux/amd64 node:18-slim
 
 WORKDIR /app
 
-RUN echo "{}" >package.json
+RUN echo "{}" > package.json
 
 ARG PRISMA_FILE=./build/schema.prisma
 ARG PRISMA_VERSION=5.13.0
@@ -10,14 +12,14 @@ ARG PRISMA_VERSION=5.13.0
 COPY $PRISMA_FILE ./schema.prisma
 
 # install and generate prisma client
-RUN apt update && apt install openssl ca-certificates -y &&
-    npm install @prisma/client@$PRISMA_VERSION &&
-    npx --yes prisma@$PRISMA_VERSION generate &&
-    rm -rf ~/root/.npm/_npx &&
-    rm -rf ~/root/.npm/_cacache &&
-    rm -rf ~/root/.cache
+RUN apt update && apt install openssl ca-certificates -y \
+    && npm install @prisma/client@$PRISMA_VERSION \
+    && npx --yes prisma@$PRISMA_VERSION generate \
+    && rm -rf ~/root/.npm/_npx \
+    && rm -rf ~/root/.npm/_cacache \
+    && rm -rf ~/root/.cache
 
-RUN npm install -g @remix-run/serve htmlrewriter @sentry/node
+RUN npm install -g @remix-run/serve && npm install htmlrewriter @sentry/node
 
 COPY ./build /app/build
 

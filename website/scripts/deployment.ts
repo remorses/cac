@@ -17,7 +17,11 @@ async function main() {
         shell(`pnpm tsc`, {
             env,
         }),
+        shell(`pnpm --filter template-rewrite-framer build`, {
+            env,
+        }),
     ])
+
     const port = 8040
     await deployFly({
         appName: 'unframer-website-prod',
@@ -28,8 +32,14 @@ async function main() {
         forceHttps: false,
         maxInstances: 2,
         healthCheckPath: '/api/health',
-        memorySize: '1gb',
-
+        memorySize: '512mb',
+        statics: [
+            {
+                guest_path: '/app/build/client',
+                url_prefix: '/',
+                index_document: 'index.html',
+            },
+        ],
         env: {
             ...env,
             NODE_ENV: 'production',

@@ -5,10 +5,15 @@ import Inspect from 'vite-plugin-inspect'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import EnvironmentPlugin from 'vite-plugin-environment'
 
+import { visualizer } from 'rollup-plugin-visualizer'
+
 const building = process.env.NODE_ENV === 'production'
 
 export default defineConfig({
     clearScreen: false,
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    },
     plugins: [
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         Inspect(),
@@ -22,6 +27,16 @@ export default defineConfig({
             },
         }),
         tsconfigPaths(),
+        {
+            apply(config, env) {
+                if (env.isSsrBuild) {
+                    return true
+                }
+                return false
+            },
+            ...visualizer({ filename: 'build/trace.html' }),
+        },
+        // bundleGraphPlugin(),
     ],
 
     ssr: {
