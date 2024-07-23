@@ -5,7 +5,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 
 import { streamObject, streamText } from 'ai'
-
+import { HTMLRewriter } from 'htmlrewriter'
 import { getScreenshotUrl, screenshot } from 'website/src/lib/ssr.server'
 import { env } from 'website/src/lib/env'
 import { NDJSONStream, RephraseSchema } from 'website/src/lib/elysia.server'
@@ -14,6 +14,7 @@ const groq = createOpenAI({
     baseURL: 'https://api.groq.com/openai/v1',
     apiKey: env.GROQ_API_KEY,
 })
+import('htmlrewriter')
 
 export async function formatHtmlForPrompt(input: Response) {
     const { HTMLRewriter } = await import('htmlrewriter')

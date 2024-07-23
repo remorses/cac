@@ -26,7 +26,9 @@ export default defineConfig({
 
     ssr: {
         noExternal: building || undefined,
-        external: building ? ['@prisma/client', 'htmlrewriter'] : undefined,
+        external: building
+            ? ['@prisma/client', '@sentry/node', 'htmlrewriter']
+            : undefined,
     },
 
     optimizeDeps: {
