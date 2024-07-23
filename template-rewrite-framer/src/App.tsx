@@ -66,25 +66,25 @@ const router = createBrowserRouter([
 
             const heightMotionValue = useMotionValue(height)
 
-            useMotionValueEvent(heightMotionValue, 'change', () => {
-                // console.log('height changed', heightMotionValue.get())
-                framer.showUI({
-                    title: (handle?.handle as any) || '',
-                    position: 'top left',
-                    width,
-                    height: heightMotionValue.get() || 100,
-                })
-            })
+            // useMotionValueEvent(heightMotionValue, 'change', () => {
+            //     // console.log('height changed', heightMotionValue.get())
+            //     framer.showUI({
+            //         title: (handle?.handle as any) || '',
+            //         position: 'top left',
+            //         width,
+            //         height: heightMotionValue.get() || 100,
+            //     })
+            // })
 
             useLayoutEffect(() => {
-                console.log('mounted app, opening framer ui')
+                console.log('opening framer ui')
                 framer.showUI({
                     title: (handle?.handle as any) || '',
                     position: 'top left',
                     width,
                     height: height || 100,
                 })
-            }, [])
+            }, [height])
             // useEffect(() => {
             //     console.log({ height })
             // }, [height])
@@ -97,9 +97,9 @@ const router = createBrowserRouter([
                 <MotionConfig
                     transition={{ duration: 0.2, type: 'spring', bounce: 0 }}
                 >
-                    <AnimatePresence>
+                    <AnimatePresence mode='wait'>
                         <motion.div
-                            key={'content'}
+                            // key={location.pathname}
                             layoutId='content'
                             initial={{ opacity: 0 }}
                             style={{ height: heightMotionValue }}
@@ -108,7 +108,7 @@ const router = createBrowserRouter([
                                 opacity: 1,
                                 scale: 1,
                             }}
-                            exit={{ opacity: 0, scale: 0.93 }}
+                            exit={{ opacity: 0 }}
                             // transition={{ duration: 0.5 }}
                             className='overflow-hidden '
                         >
