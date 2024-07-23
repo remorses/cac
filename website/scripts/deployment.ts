@@ -14,6 +14,9 @@ async function main() {
         shell(`pnpm build`, {
             env,
         }),
+        shell(`pnpm tsc`, {
+            env,
+        }),
     ])
     const port = 8040
     await deployFly({
@@ -25,7 +28,7 @@ async function main() {
         forceHttps: false,
         maxInstances: 2,
         healthCheckPath: '/api/health',
-        memorySize: '512mb',
+        memorySize: '1gb',
 
         env: {
             ...env,

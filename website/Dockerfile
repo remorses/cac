@@ -19,7 +19,7 @@ RUN apt update && apt install openssl ca-certificates -y \
     && rm -rf ~/root/.npm/_cacache \
     && rm -rf ~/root/.cache
 
-RUN npm install -g @remix-run/serve
+RUN npm install -g @remix-run/serve htmlrewriter
 
 COPY ./build /app/build
 

@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",
+        "open": "open https://",
         "deployment": "pnpm build && doppler run -c production -- wrangler pages deploy dist",
         "build": "tsc && doppler run -- vite build",
         "preview": "vite preview"

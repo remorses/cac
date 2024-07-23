@@ -100,8 +100,8 @@ export const app = new Elysia({ prefix: '/api/v1' })
     .state('session', {} as Session)
     .use(
         cors({
-            credentials: true,
-            origin: env.PUBLIC_URL,
+            // credentials: true,
+            // origin: env.PUBLIC_URL,
             // exposeHeaders: '*',
             allowedHeaders: '*',
         }),

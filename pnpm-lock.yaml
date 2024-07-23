@@ -486,6 +486,9 @@ importers:
       '@types/marked':
         specifier: ^6.0.0
         version: 6.0.0
+      '@xmorse/deployment-utils':
+        specifier: ^0.1.0
+        version: 0.1.10
       ai:
         specifier: ^3.2.26
         version: 3.2.26(openai@4.52.7)(react@18.3.1)(svelte@4.2.18)(vue@3.4.33(typescript@5.5.4))(zod@3.23.8)

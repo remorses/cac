@@ -6,7 +6,7 @@
         "build": "doppler run -- remix vite:build && pnpm copy-prisma",
         "fly": "fly --app unframer-website-prod",
         "deployment": "pnpm tsx scripts/deployment.ts",
-        "copy-prisma": "# cp ../db/schema.prisma ./build/ && doppler run -- pnpm prisma generate --schema build/schema.prisma",
+        "copy-prisma": "cp ../db/schema.prisma ./build/",
         "gen-client": "export DIR=../crisp-raycast/src/generated/ && rm -rf dist && tsc && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/client.* $DIR",
         "test": "doppler run -- vitest",
         "tunnel": "cloudflared tunnel run --url http://localhost:8040 unframer-local",
@@ -14,7 +14,7 @@
         "test:prod": "doppler run -c production -- vitest -u",
         "dev": "doppler run -- remix vite:dev -p 8040",
         "dev:prod": "doppler run -c production -- remix vite:dev -p 8040",
-        "start": "PORT=8040 doppler run -- remix-serve ./build/server/index.js"
+        "start": "NODE_OPTIONS=--inspect PORT=8040 doppler run -- remix-serve ./build/server/index.js"
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.30",
@@ -34,6 +34,7 @@
         "@supabase/supabase-js": "^2.44.4",
         "@tailwindcss/typography": "^0.5.13",
         "@types/marked": "^6.0.0",
+        "@xmorse/deployment-utils": "^0.1.0",
         "ai": "^3.2.26",
         "async-sema": "^3.1.1",
         "clsx": "^2.1.1",

@@ -5,7 +5,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 
 import { streamObject, streamText } from 'ai'
-import { HTMLRewriter } from 'htmlrewriter'
+
 import { getScreenshotUrl, screenshot } from 'website/src/lib/ssr.server'
 import { env } from 'website/src/lib/env'
 import { NDJSONStream, RephraseSchema } from 'website/src/lib/elysia.server'
@@ -16,6 +16,7 @@ const groq = createOpenAI({
 })
 
 export async function formatHtmlForPrompt(input: Response) {
+    const { HTMLRewriter } = await import('htmlrewriter')
     const rewriter = new HTMLRewriter()
 
     // remove all the attributes and tags that are not useful for an AI prompt, that don't show what the website is about, like style, link, script, meta, noscript, svg, head, and footer tags
