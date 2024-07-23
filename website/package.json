@@ -3,7 +3,7 @@
     "private": true,
     "sideEffects": false,
     "scripts": {
-        "build": "NODE_ENV=production doppler run -- remix vite:build && pnpm copy-prisma",
+        "build": "NODE_ENV=production doppler run -- pnpm concurrently 'pnpm remix vite:build' 'pnpm tsc' && pnpm copy-prisma",
         "fly": "fly --app unframer-website-prod",
         "deployment": "pnpm tsx scripts/deployment.ts",
         "copy-prisma": "cp ../db/schema.prisma ./build/",
@@ -18,7 +18,6 @@
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.30",
-        
         "@ai-sdk/openai": "^0.0.37",
         "@elysiajs/cors": "^1.1.0",
         "@elysiajs/eden": "remorses/elysia-eden#dist",
@@ -41,6 +40,7 @@
         "ai": "^3.2.26",
         "async-sema": "^3.1.1",
         "clsx": "^2.1.1",
+        "concurrently": "^8.2.2",
         "db": "workspace:*",
         "elysia": "remorses/elysia#dist",
         "event-iterator": "^2.0.0",

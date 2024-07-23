@@ -1,0 +1,33 @@
+{
+    "name": "remix-serve-but-not-shit",
+    "version": "0.0.1",
+    "description": "",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "repository": "https://github.com/remorses/",
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "pnpm build",
+        "watch": "tsc -w"
+    },
+    "bin": "bin.js",
+    "files": [
+        "dist",
+        "bin.js",
+        "src",
+        "esm"
+    ],
+    "keywords": [],
+    "author": "Tommaso De Rossi, morse <beats.by.morse@gmail.com>",
+    "license": "",
+    "devDependencies": {
+        "@types/node": "^20.14.12"
+    },
+    "dependencies": {
+        "@remix-run/express": "^2.10.3",
+        "@remix-run/node": "^2.10.3",
+        "express": "^4.19.2",
+        "morgan": "^1.10.0"
+    }
+}
