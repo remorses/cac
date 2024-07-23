@@ -298,14 +298,16 @@ function SimplePromptComponent({}) {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    let shouldShowProgress = Boolean(
-        await framer.getPluginData('usedThePlugin'),
-    )
-    const { data: credits, error } =
-        await pluginApiClient.api.v1.getCredits.post({})
-    if (error) {
-        throw error
-    }
+    const [shouldShowProgress, credits] = await Promise.all([
+        framer.getPluginData('usedThePlugin').then(Boolean),
+        pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
+            if (error) {
+                throw error
+            }
+            return data
+        }),
+    ])
+
     return {
         shouldShowProgress,
         credits,
@@ -421,8 +423,7 @@ function ProgressBar({ progress, className = '' }) {
                 // layout
                 transition={{ duration: 0.4 }}
                 animate={{
-                    width:
-                        Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
+                    width: Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
                 }}
                 className={classNames(
                     'h-full bg-gray-200 rounded overflow-hidden',
