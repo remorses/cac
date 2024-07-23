@@ -10,6 +10,17 @@ init({
 
     // Set sampling rate for profiling - this is relative to tracesSampleRate
     profilesSampleRate: 0.01,
+    beforeSend(event) {
+        // do not send in development
+        if (process.env.NODE_ENV === 'development') {
+            return null
+        }
+        if (event?.['name'] === 'AbortError') {
+            return null
+        }
+
+        return event
+    },
 })
 
 export async function notifyError(error, msg?: string) {

@@ -95,7 +95,7 @@ Return only NDJSON and not a JSON array, To think step by step you can use comme
 `
 }
 
-export const app = new Elysia({ prefix: '/api/v1' })
+export const app = new Elysia({ prefix: '/api/v1', aot: false })
     .state('userId', '')
     .state('session', {} as Session)
     .use(
@@ -104,7 +104,8 @@ export const app = new Elysia({ prefix: '/api/v1' })
             // origin: env.PUBLIC_URL,
             // exposeHeaders: '*',
             maxAge: 60 * 60 * 24,
-            allowedHeaders: '*',
+            preflight: true,
+            // allowedHeaders: '*',
         }),
     )
     .onError(({ code, error }) => {
