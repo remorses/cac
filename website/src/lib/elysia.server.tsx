@@ -21,6 +21,8 @@ import { sleep } from 'website/src/lib/utils'
 import { getWebsiteInfo } from 'website/src/lib/htmlrewrite.server'
 import { db } from 'db/kysely'
 import { generatePassword } from 'website/src/lib/ssr.server'
+import { getOrgCredits } from 'website/src/lib/credits'
+import { env } from 'website/src/lib/env'
 
 const RephraseSchema = t.Object({
     description: t.String(),
@@ -96,15 +98,30 @@ Return only NDJSON and not a JSON array, To think step by step you can use comme
 export const app = new Elysia({ prefix: '/api/v1' })
     .state('userId', '')
     .state('session', {} as Session)
-    .use(cors())
+    .use(
+        cors({
+            credentials: true,
+            origin: env.PUBLIC_URL,
+            // exposeHeaders: '*',
+            allowedHeaders: '*',
+        }),
+    )
     .onRequest(async ({ request, set, store }) => {
         const response = new Response()
+        let pluginCookie = request.headers.get('pluginCookie')
+        if (pluginCookie) {
+            // console.log('setting cookie', pluginCookie)
+            request.headers.set('Cookie', pluginCookie)
+        }
         const { userId, session } = await getSupabaseSession({
             request,
             response,
         })
         if (!userId) {
-            // throw new AppError('Missing userId')
+            // console.log(request.headers.get('cookie'))
+            return new Response('No user id found', {
+                status: 401,
+            })
         }
         for (let [header, value] of response.headers.entries()) {
             // console.log('setting header', header, value)
@@ -175,6 +192,26 @@ export const app = new Elysia({ prefix: '/api/v1' })
         },
         {
             body: RephraseSchema,
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+    .post(
+        '/getCredits',
+        async ({ body, cookie, store, request }) => {
+            console.log('cookies', cookie)
+            // const { userId } = await getSupabaseSession({ request })
+            // if (!userId) {
+            //     throw new AppError('No user id')
+            // }
+            const userId = store.userId
+            const credits = await getOrgCredits({ orgId: userId })
+
+            return credits
+        },
+        {
+            body: t.Object({}),
             // response: {
             //     200: t.AsyncIterator(t.String()),
             // },

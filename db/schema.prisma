@@ -412,6 +412,7 @@ enum SubscriptionStatus {
   unpaid
   cancelled
   expired
+  incomplete
 
   @@schema("public")
 }

@@ -11,7 +11,6 @@ export function NProgressComponent() {
 
         // if it's not idle then it's submitting a form and loading the next location loaders
         if (navigation.state !== 'idle' || revalidator.state !== 'idle') {
-            console.log('loading')
             NProgress.start() // so you start it
         } else {
             NProgress.done() // when it's idle again complete it

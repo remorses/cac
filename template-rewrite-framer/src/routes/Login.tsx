@@ -1,7 +1,8 @@
 import { Button } from '@/components/Button'
+import { notifyError } from '@/lib/errors'
 import { useIsDocumentVisibile } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
-import { Paths, apiClient, withMode } from '@/lib/utils'
+import { Paths, pluginApiClient, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useEffect, useState } from 'react'
 import { useNavigate, useRevalidator } from 'react-router'
@@ -36,7 +37,7 @@ export function LoginPage() {
                         while (true) {
                             console.log('checking if login was completed')
                             const { data, error } =
-                                await apiClient.api.v1.getSessionForKey.post({
+                                await pluginApiClient.api.v1.getSessionForKey.post({
                                     key,
                                 })
                             if (error) {
@@ -63,9 +64,7 @@ export function LoginPage() {
                         }
                     } catch (e) {
                         console.error('Failed to login', e)
-                        framer.notify(String(e.message), {
-                            variant: 'error',
-                        })
+                        notifyError(e, 'failed to login')
                     } finally {
                         setIsLoading(false)
                         // revalidator.revalidate()

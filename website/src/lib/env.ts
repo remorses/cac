@@ -34,3 +34,32 @@ export const framerPluginUrl = 'https://framer.com?via=xmorse'
 
 export const companyName = 'Unframer'
 export const domain = env.PUBLIC_URL!.replace('https://', '').replace('/', '')
+
+export const plansConfig = [
+    {
+        variantId: 52783,
+        name: '1 hour',
+        usd: 14,
+        limits: { words: 8_000, seats: 1 },
+    },
+    {
+        variantId: 50792,
+        name: '2 hours',
+        usd: 29,
+        limits: { words: 16_000, seats: 3 },
+    },
+    {
+        variantId: 50793,
+        name: '10 hours',
+        usd: 99,
+        limits: { words: 80_000, seats: 10 },
+    },
+    // test mode
+    { variantId: 38951, name: '1 hour', limits: { words: 3_000, seats: 1 } },
+    { variantId: 38949, name: '2 hours', limits: { words: 1_000, seats: 3 } },
+]
+
+export const variantIdToCredits = Object.assign(
+    {},
+    ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
+)

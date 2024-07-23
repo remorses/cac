@@ -1,6 +1,7 @@
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
+import { prisma } from 'db/prisma'
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
@@ -16,11 +17,33 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
             response,
         })
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        const {
+            error,
+            data: { user },
+        } = await supabase.auth.exchangeCodeForSession(code)
 
         if (error) {
             notifyError(error, 'Error exchanging code for session')
         }
+
+        if (user) {
+            const userId = user.id
+            const org = await prisma.org.findFirst({
+                where: {
+                    orgId: userId,
+                },
+            })
+            if (!org) {
+                await prisma.org.upsert({
+                    where: { orgId: userId },
+                    create: {
+                        name: user.email,
+                    },
+                    update: {},
+                })
+            }
+        }
+
         return redirect(next, { headers })
     }
     if (type === 'magiclink') {

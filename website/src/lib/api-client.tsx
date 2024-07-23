@@ -28,4 +28,4 @@ export function createClient({ url }: { url: string }) {
     return client
 }
 
-export const apiClient = createClient({ url: env.PUBLIC_URL! })
+export const websiteApiClient = createClient({ url: env.PUBLIC_URL! })

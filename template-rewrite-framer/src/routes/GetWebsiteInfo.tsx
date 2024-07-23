@@ -1,15 +1,13 @@
 import { Button } from '@/components/Button'
-import { withMode, Paths } from '@/lib/utils'
+import { notifyError } from '@/lib/errors'
+import { withMode, Paths, pluginApiClient } from '@/lib/utils'
 
 import { framer } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router'
-import { apiClient } from 'website/src/lib/api-client'
-
 
 let abortController: AbortController = new AbortController()
-
 
 export function GetWebsiteInfo() {
     const navigate = useNavigate()
@@ -31,9 +29,9 @@ export function GetWebsiteInfo() {
                     const domain = data.get('domain')?.toString() || ''
                     // navigate(withMode(Paths.scrapeWebsite, { domain }))
                     flushSync(() => setIsLoading(true))
-                    
+
                     const { error, data: stream } =
-                        await apiClient.api.v1.scrapeWebsite.post(
+                        await pluginApiClient.api.v1.scrapeWebsite.post(
                             {
                                 domain,
                             },
@@ -61,12 +59,10 @@ export function GetWebsiteInfo() {
                         if (container) {
                             container.scrollTop = container.scrollHeight
                         }
-
-
                     }
                     navigate(withMode(Paths.prompt))
                 } catch (e) {
-                    framer.notify(String(e.message), { variant: 'error' })
+                    notifyError(e, 'error scraping website')
                 } finally {
                     setIsLoading(false)
                     setLogs([])

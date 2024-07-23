@@ -1,10 +1,11 @@
 import useMeasure from 'react-use-measure'
+import NProgress from 'nprogress'
 
 import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
 import { supabase } from '@/lib/supabase-framer'
-import { Paths, RouteIds, withMode } from '@/lib/utils'
+import { Paths, RouteIds, pluginApiClient, withMode } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
@@ -14,6 +15,7 @@ import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
     Outlet,
     RouterProvider,
+    createRoutesFromElements,
     redirect,
     useLoaderData,
     useLocation,
@@ -29,7 +31,6 @@ import { Button } from '@/components/Button'
 import { Settings } from '@/routes/Settings'
 import { NProgressComponent } from '@/components/nprogress'
 import { useIsDocumentVisibile } from '@/lib/hooks'
-// import { notifyError } from 'website/src/lib/errors'
 
 const router = createBrowserRouter([
     {
@@ -116,8 +117,26 @@ const router = createBrowserRouter([
 
         ErrorBoundary() {
             const error = useRouteError() as any
+            NProgress.done()
             console.error(error, 'ErrorBoundary')
-            return <div>{error?.message}</div>
+            return (
+                <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
+                    <span className='dark:text-red-300'>
+                        Something went wrong...
+                    </span>
+                    <pre className='text-[11px] text-red-400 truncate'>
+                        {error?.message}
+                    </pre>
+                    <button
+                        className='w-auto'
+                        onClick={() => {
+                            window.location.pathname = '/'
+                        }}
+                    >
+                        Try again
+                    </button>
+                </div>
+            )
         },
 
         // errorElement: <ErrorPage />,
@@ -159,11 +178,8 @@ const router = createBrowserRouter([
                 element: <LoginPage />,
                 handle: 'Login to keep your migration progress',
             },
-            {
-                path: Paths.settings,
-                element: <Settings />,
-                handle: 'Plugin settings',
-            },
+            Settings(),
+
             {
                 path: Paths.doYouAlreadyHaveAWebsite,
                 element: <AlreadyHaveWebsite />,

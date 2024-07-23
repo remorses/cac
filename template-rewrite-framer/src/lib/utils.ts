@@ -1,5 +1,5 @@
 import { createClient } from 'website/src/lib/api-client'
-import { env } from 'website/src/lib/env'
+import { env, supabaseRef } from 'website/src/lib/env'
 
 import { treaty } from '@elysiajs/eden'
 
@@ -13,8 +13,10 @@ import {
     isTextNode,
 } from 'framer-plugin'
 import { Session } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase-framer'
+import { notifyError } from '@/lib/errors'
 
-export const apiClient = treaty<RouteType>(env.PUBLIC_URL!, {
+export const pluginApiClient = treaty<RouteType>(env.PUBLIC_URL!, {
     // async fetch(input, requestInit) {
     //     const res = await fetch(input, requestInit)
     //     if (!res.ok) {
@@ -28,11 +30,39 @@ export const apiClient = treaty<RouteType>(env.PUBLIC_URL!, {
     //     }
     //     return response
     // },
-
-    headers() {
-        return {
-            // Cookie: `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`,
+    async onRequest() {
+        const {
+            data: { session },
+            error,
+        } = await supabase.auth.getSession()
+        if (error) {
+            notifyError(error, 'Error getting session')
         }
+        if (!session) {
+            console.log('no session found')
+        }
+        return {
+            // credentials: 'include',
+            headers: {
+                pluginCookie: `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`,
+            },
+        }
+        // let str = JSON.stringify(session)
+        // // split the str in 3kb parts, create an array with the parts
+        // let parts = [] as string[]
+        // for (let i = 0; i < str.length; i += 3000) {
+        //     parts.push(encodeURIComponent(str.substring(i, i + 3000)))
+        // }
+        // const cookie = parts
+        //     .map((part, i) => `sb-${supabaseRef}-auth-token.${i}=${part}`)
+        //     .join('; ')
+        // console.log('cookie', cookie)
+        // return {
+        //     // credentials: 'include',
+        //     headers: {
+        //         pluginCookie: cookie,
+        //     },
+        // }
     },
 })
 
@@ -165,3 +195,9 @@ export enum RouteIds {
 }
 
 export const buyMoreCreditsUrl = 'https://x.com' // TODO
+
+export type LoaderReturnType<T extends Function> = T extends (
+    ...args: any
+) => Promise<infer R>
+    ? R
+    : never

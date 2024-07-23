@@ -515,7 +515,7 @@ export interface Subscription {
   productId: string;
   provider: Generated<"lemonsqueezy" | "stripe">;
   quantity: Generated<number>;
-  status: "active" | "cancelled" | "expired" | "on_trial" | "past_due" | "paused" | "unpaid";
+  status: "active" | "cancelled" | "expired" | "incomplete" | "on_trial" | "past_due" | "paused" | "unpaid";
   subscriptionId: string;
   variantId: string;
   variantName: string | null;

@@ -36,7 +36,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
             if (payload.event_name === 'order_created') {
                 let data = payload.data
                 let item = data.attributes.first_order_item
-
+                
                 let create: Prisma.PaymentForCreditsCreateManyInput = {
                     id: String(data.id),
                     // price: 0,

@@ -1,5 +1,11 @@
 import { Button } from '@/components/Button'
-import { buyMoreCreditsUrl, getDesktop, getNodePath } from '@/lib/utils'
+import { notifyError } from '@/lib/errors'
+import {
+    buyMoreCreditsUrl,
+    getDesktop,
+    getNodePath,
+    pluginApiClient,
+} from '@/lib/utils'
 
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
@@ -12,11 +18,12 @@ import {
 } from 'framer-plugin'
 import { useState } from 'react'
 import { useLoaderData, useRevalidator } from 'react-router'
-import { apiClient } from 'website/src/lib/api-client'
+
 import {
     RephraseSchema,
     RephraseResultItem,
 } from 'website/src/lib/elysia.server'
+
 import { sleep } from 'website/src/lib/utils'
 
 let abortController = new AbortController()
@@ -50,8 +57,7 @@ export function SimplePrompt({}) {
                 replaceTextClient(),
             ])
         } catch (e) {
-            console.error('error', e)
-            framer.notify(String(e.message), { variant: 'error' })
+            notifyError(e, 'submitting rewrite prompt')
         } finally {
             revalidator.revalidate()
             setIsLoading(false)
@@ -92,7 +98,7 @@ export function SimplePrompt({}) {
         // return
 
         const { data: eventSource, error } =
-            await apiClient.api.v1.rephrase.post(
+            await pluginApiClient.api.v1.rephrase.post(
                 {
                     description,
                     textToReplace: oldText,
@@ -105,8 +111,7 @@ export function SimplePrompt({}) {
                 },
             )
         if (error) {
-            console.error('error', error)
-            framer.notify(String(error.value), { variant: 'error' })
+            notifyError(error, 'error getting prompt')
             return
         }
 
