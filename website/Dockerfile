@@ -19,7 +19,7 @@ RUN apt update && apt install openssl ca-certificates -y \
     && rm -rf ~/root/.npm/_cacache \
     && rm -rf ~/root/.cache
 
-RUN npm install -g @remix-run/serve && npm install htmlrewriter @sentry/node
+RUN npm install -g remix-serve-but-not-shit && npm install htmlrewriter @sentry/node
 
 COPY ./build /app/build
 
@@ -27,4 +27,4 @@ env PORT=8040
 
 EXPOSE $PORT
 
-CMD ["remix-serve", "./build/server/index.js"]
+CMD ["remix-serve-but-not-shit", "./build/server/index.js"]
