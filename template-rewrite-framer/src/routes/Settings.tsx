@@ -27,6 +27,7 @@ import {
 } from 'website/src/lib/utils'
 
 import {} from 'react-router'
+import { useRefreshOnVisible } from '@/lib/hooks'
 
 async function loader({}: LoaderFunctionArgs) {
     const [session, credits] = await Promise.all([
@@ -52,6 +53,7 @@ export function Settings(): RouteObject {
         loader,
         Component() {
             const [isLoading, setIsLoading] = useState(false)
+            useRefreshOnVisible({ enabled: !isLoading })
             const { session, buyMoreCreditsUrl } =
                 useLoaderData() as LoaderReturnType<typeof loader>
             const { credits } = useLoaderData() as LoaderReturnType<

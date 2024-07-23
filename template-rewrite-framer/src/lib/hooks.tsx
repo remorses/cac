@@ -1,6 +1,8 @@
 // show toasts on success and failure and manages loading state
 
-import { useState, useEffect } from 'react'
+import { notifyError } from '@/lib/errors'
+import { useState, useEffect, useRef } from 'react'
+import { useRevalidator, useNavigation } from 'react-router'
 
 // you can skip showing the toast on failure putting a field skipToast: true in the error
 export function useThrowingFn({
@@ -24,7 +26,7 @@ export function useThrowingFn({
 
             return result
         } catch (err) {
-            console.error(err)
+            notifyError('useThrowingFn', err)
             // how to handle unreadable errors? simply don't return them from APIs, just return something went wrong
 
             return err
@@ -59,4 +61,33 @@ export function useIsDocumentVisibile() {
     }, [])
 
     return isVisible
+}
+
+export function usePrevious(value) {
+    const ref = useRef()
+    useEffect(() => {
+        ref.current = value
+    })
+    return ref.current
+}
+
+export function useRefreshOnVisible({ enabled = true }) {
+    const documentVisible = useIsDocumentVisibile()
+    const revalidator = useRevalidator()
+
+    const navigation = useNavigation()
+    const previousVisible = usePrevious(documentVisible)
+    useEffect(() => {
+        if (!documentVisible || previousVisible) {
+            return
+        }
+        if (!enabled) {
+            return
+        }
+        if (navigation.state !== 'idle') {
+            return
+        }
+        console.log(`document visible again, revalidating`)
+        revalidator.revalidate()
+    }, [previousVisible, documentVisible, enabled])
 }

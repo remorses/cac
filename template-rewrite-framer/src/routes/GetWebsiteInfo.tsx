@@ -1,5 +1,6 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
+import { useRefreshOnVisible } from '@/lib/hooks'
 import { withMode, Paths, pluginApiClient } from '@/lib/utils'
 
 import { framer } from 'framer-plugin'
@@ -14,6 +15,7 @@ export function GetWebsiteInfo() {
     const [isLoading, setIsLoading] = useState(false)
     const [logs, setLogs] = useState<string[]>([])
     const containerRef = useRef<HTMLDivElement>(null)
+    useRefreshOnVisible({ enabled: !isLoading })
 
     return (
         <form

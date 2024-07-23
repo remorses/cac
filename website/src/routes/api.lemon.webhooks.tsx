@@ -19,7 +19,7 @@ export const loader = () => {
 export const action = ({ request }: ActionFunctionArgs) => {
     return whatwgWebhooksHandler({
         async onData(payload) {
-            console.log(JSON.stringify(payload, null, 2))
+            console.log(JSON.stringify(payload))
             let customData = payload.meta.custom_data
             let orgId = customData?.orgId
             if (!orgId) {

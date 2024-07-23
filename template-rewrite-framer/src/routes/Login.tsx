@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
-import { useIsDocumentVisibile } from '@/lib/hooks'
+import { useIsDocumentVisibile, useRefreshOnVisible } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
 import { Paths, pluginApiClient, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
@@ -24,9 +24,9 @@ let loginCompleted = false
 
 function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
-    const isDocumentVisible = useIsDocumentVisibile()
     const revalidator = useRevalidator()
     const navigate = useNavigate()
+    useRefreshOnVisible({ enabled: true })
     return (
         <div className='flex flex-col justify-start gap-4'>
             <div className='opacity-70'>
@@ -43,12 +43,12 @@ function LoginComponent() {
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
-                            await sleep(10_000)
+                            // slow because i already check when the iframe becomes visible
+                            await sleep(7_000)
                             console.log('checking if login was completed')
                             revalidator.revalidate()
                         }
                     } catch (e) {
-                        console.error('Failed to login', e)
                         notifyError(e, 'failed to login')
                     } finally {
                         setIsLoading(false)

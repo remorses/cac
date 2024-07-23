@@ -107,6 +107,9 @@ export const app = new Elysia({ prefix: '/api/v1' })
         }),
     )
     .onError(({ code, error }) => {
+        if (error instanceof Response) {
+            return error
+        }
         let status = 500
         if (code === 'VALIDATION') {
             status = 400
@@ -257,7 +260,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
             const userId = store.userId
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
-                return new Response('No user id found', {
+                throw new Response('No user id found', {
                     status: 401,
                 })
             }
@@ -353,7 +356,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
     .get(
         '/errorExample',
         () => {
-            throw new Error('An error')
+            throw new Response('An error occurred', { status: 400 })
             return { ok: true }
         },
         {

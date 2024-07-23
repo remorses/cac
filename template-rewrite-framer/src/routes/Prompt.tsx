@@ -1,5 +1,6 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
+import { useRefreshOnVisible } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
 import {
     LoaderReturnType,
@@ -185,12 +186,11 @@ function SimplePromptComponent({}) {
             }
             await sleep(200)
             await desktop.zoomIntoView({ maxZoom: 0.7 })
-        } catch (e) {
-            console.log('error processing chatgpt', e)
         } finally {
             await prevNode?.setAttributes({ backgroundColor: prevBackground })
         }
     }
+    useRefreshOnVisible({ enabled: !isLoading })
 
     return (
         <motion.form

@@ -21,6 +21,7 @@ import {
     useLocation,
     useMatches,
     useNavigate,
+    useNavigation,
     useRevalidator,
     useRouteError,
 } from 'react-router'
@@ -31,6 +32,7 @@ import { Button } from '@/components/Button'
 import { Settings } from '@/routes/Settings'
 import { NProgressComponent } from '@/components/nprogress'
 import { useIsDocumentVisibile } from '@/lib/hooks'
+import { notifyError } from '@/lib/errors'
 
 const router = createBrowserRouter([
     {
@@ -42,26 +44,19 @@ const router = createBrowserRouter([
         async loader({ request }) {
             const { data, error } = await supabase.auth.getSession()
             if (error) {
-                console.error('Failed to get session', error)
+                notifyError(error, 'Failed to get session')
             }
             const session = data?.session
 
             return { session }
         },
+
         Component({}) {
             const [ref, { height }, refresh] = useMeasure()
             const { session } = useLoaderData() as { session: Session }
             const [handle] = useMatches().filter((match) => match?.handle)
             const navigate = useNavigate()
-            const documentVisible = useIsDocumentVisibile()
-
-            useEffect(() => {
-                if (!documentVisible) {
-                    return
-                }
-                console.log(`document visible again`)
-                revalidator.revalidate()
-            }, [documentVisible])
+            
             // framer.showUI({
             //     title: (handle?.handle as any) || '',
             //     position: 'top left',
@@ -118,7 +113,9 @@ const router = createBrowserRouter([
         ErrorBoundary() {
             const error = useRouteError() as any
             NProgress.done()
-            console.error(error, 'ErrorBoundary')
+            useEffect(() => {
+                notifyError(error, 'ErrorBoundary')
+            }, [error])
             return (
                 <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
                     <span className='dark:text-red-300'>
@@ -154,7 +151,7 @@ const router = createBrowserRouter([
                     // }
                     const { data, error } = await supabase.auth.getSession()
                     if (error) {
-                        console.error('Failed to get session', error)
+                        notifyError(error, 'Failed to get session')
                     }
 
                     console.log('supabase session', data)

@@ -1,4 +1,4 @@
-import { Button } from '@nextui-org/react'
+import { Button } from '@/components/Button'
 import { useNavigate } from 'react-router'
 import { Form } from 'react-router-dom'
 
