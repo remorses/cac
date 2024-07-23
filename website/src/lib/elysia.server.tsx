@@ -200,7 +200,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
     .post(
         '/getCredits',
         async ({ body, cookie, store, request }) => {
-            console.log('cookies', cookie)
+            // console.log('cookies', cookie)
             // const { userId } = await getSupabaseSession({ request })
             // if (!userId) {
             //     throw new AppError('No user id')
@@ -221,10 +221,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
         '/getSessionForKey',
         async ({ body, request }) => {
             // check in database if user with key has logged in, if yes, generate a supabase session for it
-            const { headers, supabase, redirectTo } = await getSupabaseSession({
-                request,
-                // response,
-            })
+
             if (!body.key) {
                 return { error: 'No key provided' }
             }
@@ -284,7 +281,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
                 //     password: user.plainPassword,
                 // }),
             ])
-            return { session: sessionToPass, headers }
+            return { session: sessionToPass }
         },
         {
             body: t.Object({

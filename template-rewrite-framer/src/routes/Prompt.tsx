@@ -1,6 +1,8 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
 import {
+    LoaderReturnType,
+    Paths,
     buyMoreCreditsUrl,
     getDesktop,
     getNodePath,
@@ -17,7 +19,12 @@ import {
     isComponentNode,
 } from 'framer-plugin'
 import { useState } from 'react'
-import { useLoaderData, useRevalidator } from 'react-router'
+import {
+    LoaderFunctionArgs,
+    RouteObject,
+    useLoaderData,
+    useRevalidator,
+} from 'react-router'
 
 import {
     RephraseSchema,
@@ -28,8 +35,10 @@ import { sleep } from 'website/src/lib/utils'
 
 let abortController = new AbortController()
 
-export function SimplePrompt({}) {
-    const { shouldShowProgress } = useLoaderData() as any
+function SimplePromptComponent({}) {
+    const { shouldShowProgress, credits } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
     const [description, setDescription] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
@@ -273,14 +282,43 @@ export function SimplePrompt({}) {
                             </button>
                         </a>
                         <div className='grow'></div>
-                        <div className=''>100 credits remaining</div>
+                        <div className=''>
+                            {credits.remaining} credits remaining
+                        </div>
                     </div>
 
-                    <ProgressBar className='' progress={0.1} />
+                    <ProgressBar
+                        className=''
+                        progress={credits.used / credits.total}
+                    />
                 </div>
             )}
         </motion.form>
     )
+}
+
+async function loader({}: LoaderFunctionArgs) {
+    let shouldShowProgress = Boolean(
+        await framer.getPluginData('usedThePlugin'),
+    )
+    const { data: credits, error } =
+        await pluginApiClient.api.v1.getCredits.post({})
+    if (error) {
+        throw error
+    }
+    return {
+        shouldShowProgress,
+        credits,
+    }
+}
+
+export function SimplePrompt(): RouteObject {
+    return {
+        Component: SimplePromptComponent,
+        handle: 'Describe what your new website is about',
+        path: Paths.prompt,
+        loader,
+    }
 }
 
 async function replaceTextInCurrentPage() {
@@ -367,6 +405,10 @@ function ProgressBar({ progress, className = '' }) {
 
         return 'bg-green-500'
     })()
+    if (progress < 0.03) {
+        progress = 0.03
+    }
+    // progress= 0.5
     return (
         <div
             // style={{ backgroundColor }}
@@ -379,7 +421,8 @@ function ProgressBar({ progress, className = '' }) {
                 // layout
                 transition={{ duration: 0.4 }}
                 animate={{
-                    width: Number(Math.min(progress, 1) * 100).toFixed(0) + '%',
+                    width:
+                        Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
                 }}
                 className={classNames(
                     'h-full bg-gray-200 rounded overflow-hidden',

@@ -124,9 +124,9 @@ const router = createBrowserRouter([
                     <span className='dark:text-red-300'>
                         Something went wrong...
                     </span>
-                    <pre className='text-[11px] text-red-400 truncate'>
+                    <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
                         {error?.message}
-                    </pre>
+                    </div>
                     <button
                         className='w-auto'
                         onClick={() => {
@@ -209,19 +209,7 @@ const router = createBrowserRouter([
             //     },
             //     handle: 'Publish your website first',
             // },
-            {
-                async loader() {
-                    let shouldShowProgress = Boolean(
-                        await framer.getPluginData('usedThePlugin'),
-                    )
-                    return {
-                        shouldShowProgress,
-                    }
-                },
-                path: Paths.prompt,
-                element: <SimplePrompt />,
-                handle: 'Describe what your new website is about',
-            },
+            SimplePrompt(),
         ],
     },
 ])
