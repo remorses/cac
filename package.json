@@ -11,6 +11,7 @@
     "pnpm": {
         "overrides": {
             "elysia": "remorses/elysia#dist",
+            "undici": "^5",
             "@elysiajs/eden": "remorses/elysia-eden#dist"
         }
     },

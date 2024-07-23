@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+
 import { redirect } from '@remix-run/node'
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 
@@ -43,7 +44,7 @@ export function getSupabaseWithHeaders({
     response,
 }: SupabaseSessionArgs) {
     const cookies = parse(request.headers.get('Cookie') ?? '')
-    const headers = response ? new Headers(response.headers) : new Headers()
+    const headers = response?.headers ? new Headers(response.headers) : new Headers()
 
     const supabase = createServerClient(
         env.PUBLIC_SUPABASE_URL!,
