@@ -106,37 +106,6 @@ export const app = new Elysia({ prefix: '/api/v1' })
             allowedHeaders: '*',
         }),
     )
-    .onRequest(async ({ request, set, store }) => {
-        const response = new Response()
-        let pluginCookie = request.headers.get('pluginCookie')
-        if (pluginCookie) {
-            // console.log('setting cookie', pluginCookie)
-            request.headers.set('Cookie', pluginCookie)
-        }
-        const { userId, session } = await getSupabaseSession({
-            request,
-            response,
-        })
-        if (!userId) {
-            // console.log(request.headers.get('cookie'))
-            return new Response('No user id found', {
-                status: 401,
-            })
-        }
-        for (let [header, value] of response.headers.entries()) {
-            // console.log('setting header', header, value)
-            set.headers[header] = value
-        }
-
-        store.userId = userId || ''
-        store.session = session!
-    })
-    // .guard({
-    //     type: 'application/json',
-    //     response: {
-    //         500: t.String(),
-    //     },
-    // })
     .onError(({ code, error }) => {
         let status = 500
         if (code === 'VALIDATION') {
@@ -152,71 +121,27 @@ export const app = new Elysia({ prefix: '/api/v1' })
 
         return new Response(error.message, { status })
     })
-    .get(
-        '/health',
-        () => {
-            return { ok: true }
-        },
-        {
-            type: 'application/json',
-            response: {
-                200: t.Object({
-                    ok: t.Boolean(),
-                }),
-            },
-            description: 'Health check',
-        },
-    )
-    .get(
-        '/sse-test',
-        async function* () {
-            yield { ok: true }
-            yield { ok: true }
-            throw new Error('hello')
-            yield 'hello'
-        },
-        {
-            description: 'Health check',
-        },
-    )
-    .post(
-        '/rephrase',
-        ({ body, request }) => {
-            const { description, exampleTextToMigrate, textToReplace } = body
-            return rephrase({
-                description,
-                exampleTextToMigrate,
-                textToReplace,
-                signal: request.signal,
-            })
-        },
-        {
-            body: RephraseSchema,
-            // response: {
-            //     200: t.AsyncIterator(t.String()),
-            // },
-        },
-    )
-    .post(
-        '/getCredits',
-        async ({ body, cookie, store, request }) => {
-            // console.log('cookies', cookie)
-            // const { userId } = await getSupabaseSession({ request })
-            // if (!userId) {
-            //     throw new AppError('No user id')
-            // }
-            const userId = store.userId
-            const credits = await getOrgCredits({ orgId: userId })
 
-            return credits
-        },
-        {
-            body: t.Object({}),
-            // response: {
-            //     200: t.AsyncIterator(t.String()),
-            // },
-        },
-    )
+    .onRequest(async ({ request, set, store }) => {
+        const response = new Response()
+        let pluginCookie = request.headers.get('pluginCookie')
+        if (pluginCookie) {
+            // console.log('setting cookie', pluginCookie)
+            request.headers.set('Cookie', pluginCookie)
+        }
+        const { userId, session } = await getSupabaseSession({
+            request,
+            response,
+        })
+
+        for (let [header, value] of response.headers.entries()) {
+            // console.log('setting header', header, value)
+            set.headers[header] = value
+        }
+
+        store.userId = userId || ''
+        store.session = session!
+    })
     .post(
         '/getSessionForKey',
         async ({ body, request }) => {
@@ -292,6 +217,86 @@ export const app = new Elysia({ prefix: '/api/v1' })
             // },
         },
     )
+    // .guard({
+    //     type: 'application/json',
+    //     response: {
+    //         500: t.String(),
+    //     },
+    // })
+
+    .get(
+        '/health',
+        () => {
+            return { ok: true }
+        },
+        {
+            type: 'application/json',
+            response: {
+                200: t.Object({
+                    ok: t.Boolean(),
+                }),
+            },
+            description: 'Health check',
+        },
+    )
+    .get(
+        '/sse-test',
+        async function* () {
+            yield { ok: true }
+            yield { ok: true }
+            throw new Error('hello')
+            yield 'hello'
+        },
+        {
+            description: 'Health check',
+        },
+    )
+    .post(
+        '/rephrase',
+        ({ body, store, request }) => {
+            const userId = store.userId
+            if (!userId) {
+                // console.log(request.headers.get('cookie'))
+                return new Response('No user id found', {
+                    status: 401,
+                })
+            }
+            const { description, exampleTextToMigrate, textToReplace } = body
+            return rephrase({
+                description,
+                exampleTextToMigrate,
+                textToReplace,
+                signal: request.signal,
+            })
+        },
+        {
+            body: RephraseSchema,
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+    .post(
+        '/getCredits',
+        async ({ body, cookie, store, request }) => {
+            // console.log('cookies', cookie)
+            // const { userId } = await getSupabaseSession({ request })
+            // if (!userId) {
+            //     throw new AppError('No user id')
+            // }
+            const userId = store.userId
+            const credits = await getOrgCredits({ orgId: userId })
+
+            return credits
+        },
+        {
+            body: t.Object({}),
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+
     .post(
         '/scrapeWebsite',
         async function* scrape({ request, body, store }) {

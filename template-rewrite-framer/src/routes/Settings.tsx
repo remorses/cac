@@ -5,8 +5,8 @@ import {
     Paths,
     PluginLoaderData,
     RouteIds,
+    createBuyLink,
     pluginApiClient,
-    buyMoreCreditsUrl,
     withMode,
 } from '@/lib/utils'
 import { framer } from 'framer-plugin'
@@ -29,14 +29,20 @@ import {
 import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {
-    const { data: user } = await supabase.auth.getSession()
-
-    const { data, error } = await pluginApiClient.api.v1.getCredits.post({})
-    if (error) {
-        throw error
-    }
-    const credits = data
-    return { credits }
+    const [session, credits] = await Promise.all([
+        supabase.auth.getSession().then(({ data }) => data.session),
+        pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
+            if (error) {
+                throw error
+            }
+            return data
+        }),
+    ])
+    let buyMoreCreditsUrl = createBuyLink({
+        email: session?.user?.email,
+        orgId: session?.user?.id,
+    })
+    return { credits, session, buyMoreCreditsUrl }
 }
 
 export function Settings(): RouteObject {
@@ -46,9 +52,8 @@ export function Settings(): RouteObject {
         loader,
         Component() {
             const [isLoading, setIsLoading] = useState(false)
-            const { session } = useRouteLoaderData(
-                RouteIds.root,
-            ) as PluginLoaderData
+            const { session, buyMoreCreditsUrl } =
+                useLoaderData() as LoaderReturnType<typeof loader>
             const { credits } = useLoaderData() as LoaderReturnType<
                 typeof loader
             >
@@ -113,26 +118,4 @@ export function Settings(): RouteObject {
             )
         },
     }
-}
-
-function useIsDocumentVisibile() {
-    const [isVisible, setIsVisible] = useState(
-        document.visibilityState === 'visible',
-    )
-
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            setIsVisible(document.visibilityState === 'visible')
-        }
-
-        document.addEventListener('visibilitychange', handleVisibilityChange)
-        return () => {
-            document.removeEventListener(
-                'visibilitychange',
-                handleVisibilityChange,
-            )
-        }
-    }, [])
-
-    return isVisible
 }

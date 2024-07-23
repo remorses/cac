@@ -1,4 +1,5 @@
 import { prisma } from 'db/prisma'
+import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 
 const FREE_CREDITS = 100
@@ -19,24 +20,6 @@ export async function getOrgSubscriptions({ orgId }) {
     })
     return subs
 }
-
-export const plansConfig = [
-    {
-        variantId: 52783,
-        name: '1 hour',
-        usd: 14,
-        limits: { words: 8_000, seats: 1 },
-    },
-
-    // test mode
-    { variantId: 38951, name: '1 hour', limits: { words: 3_000, seats: 1 } },
-]
-
-export const variantIdToCredits = Object.assign(
-    {},
-    ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
-)
-
 // export async function getOrgLimitsAndSubs({ orgId }) {
 //     const subs = await getOrgSubscriptions({ orgId })
 //     const limitsC = plansConfig.filter((x) =>

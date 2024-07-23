@@ -39,3 +39,5 @@ export function generateSecurePassword() {
         .map((x) => charset[x % charset.length])
         .join('')
 }
+
+

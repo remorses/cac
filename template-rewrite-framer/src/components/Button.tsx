@@ -16,6 +16,7 @@ export function Button({
 }: ButtonProps) {
     return (
         <button
+            type='button'
             className={classNames(
                 'relative',
                 variant === 'primary' && 'framer-button-primary',

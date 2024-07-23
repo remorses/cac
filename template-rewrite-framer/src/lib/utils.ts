@@ -194,10 +194,34 @@ export enum RouteIds {
     root = 'root',
 }
 
-export const buyMoreCreditsUrl = 'https://x.com' // TODO
-
 export type LoaderReturnType<T extends Function> = T extends (
     ...args: any
 ) => Promise<infer R>
     ? R
     : never
+
+export function createBuyLink({ email, orgId }) {
+    if (!email) {
+        throw new Error('No email for buy link')
+    }
+    if (!orgId) {
+        throw new Error('No orgId for buy link')
+    }
+
+    let productId = env.PUBLIC_LEMON_PRODUCT!
+
+    let url = new URL(
+        `https://tiktoktts.lemonsqueezy.com/checkout/buy/${productId}`,
+    )
+    if (orgId) {
+        url.searchParams.set('checkout[custom][orgId]', orgId)
+    }
+    url.searchParams.set('embed', '0')
+    url.searchParams.set('logo', '0')
+    url.searchParams.set('dark', '1')
+
+    if (email) {
+        url.searchParams.set('checkout[email]', email)
+    }
+    return url.toString()
+}

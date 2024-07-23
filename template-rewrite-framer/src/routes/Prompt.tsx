@@ -1,9 +1,10 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
+import { supabase } from '@/lib/supabase-framer'
 import {
     LoaderReturnType,
     Paths,
-    buyMoreCreditsUrl,
+    createBuyLink,
     getDesktop,
     getNodePath,
     pluginApiClient,
@@ -36,9 +37,8 @@ import { sleep } from 'website/src/lib/utils'
 let abortController = new AbortController()
 
 function SimplePromptComponent({}) {
-    const { shouldShowProgress, credits } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { shouldShowProgress, buyMoreCreditsUrl, credits } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     const [description, setDescription] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
@@ -217,6 +217,7 @@ function SimplePromptComponent({}) {
             <div className='w-full'>
                 <textarea
                     value={description}
+                    disabled={buyCreditsInstead}
                     // isRequired
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -287,7 +288,10 @@ function SimplePromptComponent({}) {
                 <div className='flex group flex-col hover:opacity-100 transition-opacity duration-100 opacity-60 self-stretch gap-2'>
                     <div className='flex flex-row-reverse items-center text-[11px] '>
                         <a target='_blank' href={buyMoreCreditsUrl}>
-                            <button className='group-hover:bg-framer-secondary w-auto text-[11px]  bg-transparent'>
+                            <button
+                                type='button'
+                                className='group-hover:bg-framer-secondary w-auto text-[11px]  bg-transparent'
+                            >
                                 Buy More Credits
                             </button>
                         </a>
@@ -318,7 +322,7 @@ export function SimplePrompt(): RouteObject {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    let [shouldShowProgress, credits] = await Promise.all([
+    let [shouldShowProgress, credits, session] = await Promise.all([
         framer.getPluginData('usedThePlugin').then(Boolean),
         pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
             if (error) {
@@ -326,17 +330,29 @@ async function loader({}: LoaderFunctionArgs) {
             }
             return data
         }),
+        supabase.auth.getSession().then(({ data, error }) => {
+            if (error) {
+                throw error
+            }
+            return data.session
+        }),
     ])
 
-    credits = {
-        remaining: 0,
-        total: 100,
-        used: 100,
-        free: true,
-    }
+    const buyMoreCreditsUrl = createBuyLink({
+        email: session?.user?.email,
+        orgId: session?.user?.id,
+    })
+
+    // credits = {
+    //     remaining: 0,
+    //     total: 100,
+    //     used: 100,
+    //     free: true,
+    // }
     return {
         shouldShowProgress,
         credits,
+        buyMoreCreditsUrl,
     }
 }
 

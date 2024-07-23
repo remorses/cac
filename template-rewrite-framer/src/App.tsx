@@ -129,6 +129,7 @@ const router = createBrowserRouter([
                     </div>
                     <button
                         className='w-auto'
+                        type='button'
                         onClick={() => {
                             window.location.pathname = '/'
                         }}
@@ -173,11 +174,7 @@ const router = createBrowserRouter([
                 },
                 handle: '',
             },
-            {
-                path: Paths.login,
-                element: <LoginPage />,
-                handle: 'Login to keep your migration progress',
-            },
+            LoginPage(),
             Settings(),
 
             {

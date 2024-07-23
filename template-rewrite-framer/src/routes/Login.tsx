@@ -5,14 +5,24 @@ import { supabase } from '@/lib/supabase-framer'
 import { Paths, pluginApiClient, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useEffect, useState } from 'react'
-import { useNavigate, useRevalidator } from 'react-router'
+import {
+    LoaderFunctionArgs,
+    RouteObject,
+    redirect,
+    useNavigate,
+    useRevalidator,
+} from 'react-router'
 import {
     framerLoginUrl,
     generateSecurePassword,
     sleep,
 } from 'website/src/lib/utils'
 
-export function LoginPage() {
+const key = generateSecurePassword()
+
+let loginCompleted = false
+
+function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const isDocumentVisible = useIsDocumentVisibile()
     const revalidator = useRevalidator()
@@ -29,38 +39,13 @@ export function LoginPage() {
                     // }
                     setIsLoading(true)
                     try {
-                        const key = generateSecurePassword()
-
                         const url = framerLoginUrl({ key })
                         window.open(url, '_blank')
 
-                        while (true) {
+                        while (!loginCompleted) {
+                            await sleep(10_000)
                             console.log('checking if login was completed')
-                            const { data, error } =
-                                await pluginApiClient.api.v1.getSessionForKey.post({
-                                    key,
-                                })
-                            if (error) {
-                                throw error
-                            }
-                            if (data.session) {
-                                console.log(
-                                    'login was completed, got session',
-                                    data,
-                                )
-                                // make it smaller
-                                // data.session.user = undefined as any
-                                const { error } =
-                                    await supabase.auth.setSession(data.session)
-                                if (error) {
-                                    throw error
-                                }
-                                return navigate(
-                                    withMode(Paths.doYouAlreadyHaveAWebsite),
-                                )
-                            } else {
-                                await sleep(3000)
-                            }
+                            revalidator.revalidate()
                         }
                     } catch (e) {
                         console.error('Failed to login', e)
@@ -77,4 +62,36 @@ export function LoginPage() {
             </Button>
         </div>
     )
+}
+
+async function loader({}: LoaderFunctionArgs) {
+    console.log('login loader')
+    const { data, error } = await pluginApiClient.api.v1.getSessionForKey.post({
+        key,
+    })
+    if (error) {
+        notifyError(error, 'Error logging in for framer')
+        throw error
+    }
+    if (data.session) {
+        console.log('login was completed, got session', data)
+        // make it smaller
+        // data.session.user = undefined as any
+        const { error } = await supabase.auth.setSession(data.session)
+        if (error) {
+            throw error
+        }
+        loginCompleted = true
+        return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
+    }
+    return {}
+}
+
+export function LoginPage(): RouteObject {
+    return {
+        handle: 'Login',
+        path: Paths.login,
+        loader,
+        Component: LoginComponent,
+    }
 }

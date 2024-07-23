@@ -1,6 +1,6 @@
 import { whatwgWebhooksHandler } from 'lemonsqueezy-webhooks'
 import { prisma, Prisma } from 'db/prisma'
-import { env } from 'website/src/lib/env'
+import { env, plansConfig } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
 import { ActionFunctionArgs } from '@remix-run/node'
 
@@ -33,10 +33,21 @@ export const action = ({ request }: ActionFunctionArgs) => {
                 // orgId = '1'
                 return
             }
+            let org = await prisma.org.findFirst({
+                where: {
+                    orgId: orgId,
+                },
+            })
+            if (!org) {
+                console.log(
+                    `No org found for lemon squeezy custom_data, ignoring ${payload?.data?.id}`,
+                )
+                return
+            }
             if (payload.event_name === 'order_created') {
                 let data = payload.data
                 let item = data.attributes.first_order_item
-                
+
                 let create: Prisma.PaymentForCreditsCreateManyInput = {
                     id: String(data.id),
                     // price: 0,
@@ -47,6 +58,9 @@ export const action = ({ request }: ActionFunctionArgs) => {
                     productId: String(item.product_id),
                     variantId: String(item.variant_id),
                 }
+                console.log(
+                    `adding payment for credits ${JSON.stringify(plansConfig.find((x) => x.variantId === item.variant_id))} after order ${data.id}`,
+                )
                 await prisma.paymentForCredits.upsert({
                     where: { id: String(data.id) },
                     create,
@@ -61,11 +75,12 @@ export const action = ({ request }: ActionFunctionArgs) => {
                 payload.event_name === 'subscription_unpaused'
             ) {
                 let data = payload.data
+                let variantId = data.attributes.variant_id
                 let create: Prisma.SubscriptionCreateManyInput = {
                     orgId: orgId,
                     orderId: String(data.attributes.order_id),
                     productId: String(data.attributes.product_id),
-                    variantId: String(data.attributes.variant_id),
+                    variantId: String(variantId),
                     subscriptionId: String(data.id),
                     email: data.attributes.user_email || undefined,
                     endsAt: data.attributes.ends_at
@@ -75,6 +90,9 @@ export const action = ({ request }: ActionFunctionArgs) => {
                     variantName: data.attributes.variant_name || undefined,
                     createdAt: new Date(data.attributes.created_at),
                 }
+                console.log(
+                    `adding subscription for credits ${JSON.stringify(plansConfig.find((x) => x.variantId === variantId))} after order ${data.id}`,
+                )
 
                 let sub = await prisma.subscription.upsert({
                     where: {

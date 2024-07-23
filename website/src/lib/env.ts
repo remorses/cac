@@ -11,6 +11,7 @@ export const env = {
     GROQ_API_KEY: process.env.GROQ_API_KEY,
     GOOGLE_ID: process.env.GOOGLE_ID,
     GOOGLE_SECRET: process.env.GOOGLE_SECRET,
+    PUBLIC_LEMON_PRODUCT: process.env.PUBLIC_LEMON_PRODUCT,
 }
 
 // console.log(env)
@@ -22,8 +23,6 @@ for (let k in env) {
         throw new Error(`Missing env var ${k}`)
     }
 }
-
-export const crispAPIIdentifier = 'f5ca7711-02b2-4f5b-bc39-216554c642b7'
 
 export const supabaseRef = env
     .PUBLIC_SUPABASE_URL!.replace('.supabase.co', '')
@@ -42,21 +41,11 @@ export const plansConfig = [
         usd: 14,
         limits: { words: 8_000, seats: 1 },
     },
-    {
-        variantId: 50792,
-        name: '2 hours',
-        usd: 29,
-        limits: { words: 16_000, seats: 3 },
-    },
-    {
-        variantId: 50793,
-        name: '10 hours',
-        usd: 99,
-        limits: { words: 80_000, seats: 10 },
-    },
+
     // test mode
-    { variantId: 38951, name: '1 hour', limits: { words: 3_000, seats: 1 } },
-    { variantId: 38949, name: '2 hours', limits: { words: 1_000, seats: 3 } },
+    { variantId: 457634, name: '1 hour', limits: { words: 1000, seats: 1 } },
+    { variantId: 457648, name: '1 hour', limits: { words: 500, seats: 1 } },
+    { variantId: 457650, name: '1 hour', limits: { words: 3_000, seats: 1 } },
 ]
 
 export const variantIdToCredits = Object.assign(

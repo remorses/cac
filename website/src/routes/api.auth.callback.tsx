@@ -38,6 +38,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
                     where: { orgId: userId },
                     create: {
                         name: user.email,
+                        orgId: userId,
                     },
                     update: {},
                 })
