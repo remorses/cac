@@ -17,10 +17,9 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
-    base: building ? '/plugin-migrate' : '/plugin-migrate',
 
     build: {
         target: 'ES2022',
-        outDir: 'dist/plugins/migrate',
+        outDir: 'dist',
     },
 })
