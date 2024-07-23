@@ -11,13 +11,13 @@ async function main() {
     const env = await getDopplerEnv({ stage: 'production', project: 'website' })
     env.FORCE_COLOR = '1'
     await Promise.all([
-        shell(`pnpm build`, {
-            env,
-        }),
         shell(`pnpm tsc`, {
             env,
         }),
-        shell(`pnpm --filter template-rewrite-framer build`, {
+        // shell(`pnpm --filter template-rewrite-framer build`, {
+        //     env,
+        // }),
+        shell(`pnpm build`, {
             env,
         }),
     ])

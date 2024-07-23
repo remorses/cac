@@ -1,9 +1,0 @@
-account_id = "103e73569e2f6d4aea0fb679ceb8709b"
-compatibility_date = "2023-10-16"
-
-
-main = "./src/worker.ts"
-
-
-routes = [{ pattern = "*unframer.co/plugins/*", zone_name = "unframer.co" }]
-name = "unframer-website-worker"

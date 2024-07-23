@@ -5,8 +5,9 @@
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",
-        "deployment": "pnpm build && doppler run -c production -- wrangler pages deploy dist",
-        "build": "tsc && doppler run -- vite build",
+        "copy-plugin": "export OUT=../website/public/ && mkdir -p $OUT && cp -r ./dist/ $OUT",
+        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
+        "deployment": "pnpm wrangler pages deploy dist",
         "preview": "vite preview"
     },
     "dependencies": {

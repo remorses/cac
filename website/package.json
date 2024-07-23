@@ -7,7 +7,7 @@
         "fly": "fly --app unframer-website-prod",
         "deployment": "pnpm tsx scripts/deployment.ts",
         "copy-prisma": "cp ../db/schema.prisma ./build/",
-        "copy-plugin": "export OUT=./public/plugins/migrate && mkdir -p $OUT && cp -r ../template-rewrite-framer/dist/ $OUT",
+        
         "gen-client": "export DIR=../crisp-raycast/src/generated/ && rm -rf dist && tsc && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/client.* $DIR",
         "test": "doppler run -- vitest",
         "tunnel": "cloudflared tunnel run --url http://localhost:8040 unframer-local",

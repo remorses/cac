@@ -103,6 +103,7 @@ export const app = new Elysia({ prefix: '/api/v1' })
             // credentials: true,
             // origin: env.PUBLIC_URL,
             // exposeHeaders: '*',
+            maxAge: 60 * 60 * 24,
             allowedHeaders: '*',
         }),
     )

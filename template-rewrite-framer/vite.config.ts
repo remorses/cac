@@ -6,6 +6,8 @@ import react from '@vitejs/plugin-react-swc'
 import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
 
+const building = process.env.NODE_ENV === 'production'
+
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
@@ -15,8 +17,8 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
-    base: '/plugins/migrate',
-    
+    base: building ? '/plugin-migrate' : '/plugin-migrate',
+
     build: {
         target: 'ES2022',
         outDir: 'dist/plugins/migrate',
