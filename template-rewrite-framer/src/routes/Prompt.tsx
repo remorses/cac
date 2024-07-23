@@ -44,9 +44,17 @@ function SimplePromptComponent({}) {
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
         [],
     )
-    const revalidator = useRevalidator()
 
+    const revalidator = useRevalidator()
+    const buyCreditsInstead = !credits.remaining
+    const disabled = buyCreditsInstead ? false : isLoading || !description
+    // console.log('credits', credits)
     async function onSubmit() {
+        if (buyCreditsInstead) {
+            // setIsLoading(true)
+            window.open(buyMoreCreditsUrl, '_blank')
+            return
+        }
         if (!description) {
             return
         }
@@ -232,12 +240,14 @@ function SimplePromptComponent({}) {
                 // startContent={
                 //     !isLoading && <MaterialSymbolsMagicButton className='w-4' />
                 // }
-                disabled={isLoading || !description}
+                disabled={disabled}
                 // isLoading={isLoading}
                 type='submit'
                 className='framer-button-primary'
             >
-                Replace Text On The Page
+                {credits.remaining > 0
+                    ? 'Replace Text On The Page'
+                    : 'Buy More Credits'}
             </Button>
             {oldNodes.length > 0 && (
                 <Button
@@ -289,7 +299,7 @@ function SimplePromptComponent({}) {
 
                     <ProgressBar
                         className=''
-                        progress={credits.used / credits.total}
+                        progress={credits.used / credits.total || 0}
                     />
                 </div>
             )}
@@ -297,8 +307,18 @@ function SimplePromptComponent({}) {
     )
 }
 
+export function SimplePrompt(): RouteObject {
+    return {
+        Component: SimplePromptComponent,
+        handle: 'Describe what your new website is about',
+        path: Paths.prompt,
+        loader,
+        shouldRevalidate: () => true,
+    }
+}
+
 async function loader({}: LoaderFunctionArgs) {
-    const [shouldShowProgress, credits] = await Promise.all([
+    let [shouldShowProgress, credits] = await Promise.all([
         framer.getPluginData('usedThePlugin').then(Boolean),
         pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
             if (error) {
@@ -308,18 +328,15 @@ async function loader({}: LoaderFunctionArgs) {
         }),
     ])
 
+    credits = {
+        remaining: 0,
+        total: 100,
+        used: 100,
+        free: true,
+    }
     return {
         shouldShowProgress,
         credits,
-    }
-}
-
-export function SimplePrompt(): RouteObject {
-    return {
-        Component: SimplePromptComponent,
-        handle: 'Describe what your new website is about',
-        path: Paths.prompt,
-        loader,
     }
 }
 
@@ -399,7 +416,7 @@ async function replaceTextInCurrentPage() {
 function ProgressBar({ progress, className = '' }) {
     const backgroundColor = (() => {
         if (progress > 0.9) {
-            return 'bg-orange-500'
+            return 'bg-red-400'
         }
         if (progress > 0.6) {
             return 'bg-yellow-400'
