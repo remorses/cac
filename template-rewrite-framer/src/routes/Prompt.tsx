@@ -6,6 +6,7 @@ import {
     LoaderReturnType,
     Paths,
     createBuyLink,
+    exampleTextToMigrate,
     getDesktop,
     getNodePath,
     pluginApiClient,
@@ -120,7 +121,7 @@ function SimplePromptComponent({}) {
                 {
                     description,
                     textToReplace: oldText,
-                    exampleTextToMigrate: [],
+                    exampleTextToMigrate,
                 },
                 {
                     fetch: {

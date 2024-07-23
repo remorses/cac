@@ -3,7 +3,7 @@ import { env, supabaseRef } from 'website/src/lib/env'
 
 import { treaty } from '@elysiajs/eden'
 
-import type { RouteType } from 'website/src/lib/elysia.server'
+import type { RephraseSchema, RouteType } from 'website/src/lib/elysia.server'
 import {
     AnyNode,
     framer,
@@ -226,4 +226,4 @@ export function createBuyLink({ email, orgId }) {
     return url.toString()
 }
 
-
+export let exampleTextToMigrate = [] as RephraseSchema['exampleTextToMigrate']

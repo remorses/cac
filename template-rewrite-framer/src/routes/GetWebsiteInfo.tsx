@@ -1,7 +1,12 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
-import { withMode, Paths, pluginApiClient } from '@/lib/utils'
+import {
+    withMode,
+    Paths,
+    pluginApiClient,
+    exampleTextToMigrate,
+} from '@/lib/utils'
 
 import { framer } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
@@ -43,7 +48,7 @@ export function GetWebsiteInfo() {
                         throw error
                     }
 
-                    exampleTextToMigrate = []
+                    exampleTextToMigrate.length = 0
                     for await (let chunk of stream) {
                         console.log('chunk', chunk)
                         // if (chunk.error) {
