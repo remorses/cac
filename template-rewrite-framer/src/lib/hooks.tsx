@@ -42,12 +42,11 @@ export function useThrowingFn({
 }
 
 export function useIsDocumentVisibile() {
-    const [isVisible, setIsVisible] = useState(
-        document.visibilityState === 'visible',
-    )
+    const [isVisible, setIsVisible] = useState(true)
 
     useEffect(() => {
         const handleVisibilityChange = () => {
+            console.log('visibility changed')
             setIsVisible(document.visibilityState === 'visible')
         }
 
@@ -78,16 +77,15 @@ export function useRefreshOnVisible({ enabled = true }) {
     const navigation = useNavigation()
     const previousVisible = usePrevious(documentVisible)
     useEffect(() => {
-        if (!documentVisible || previousVisible) {
-            return
-        }
         if (!enabled) {
             return
         }
         if (navigation.state !== 'idle') {
             return
         }
-        console.log(`document visible again, revalidating`)
-        revalidator.revalidate()
-    }, [previousVisible, documentVisible, enabled])
+        if (documentVisible && previousVisible === false) {
+            console.log(`document visible again, revalidating`)
+            revalidator.revalidate()
+        }
+    }, [documentVisible, enabled, navigation.state, previousVisible])
 }

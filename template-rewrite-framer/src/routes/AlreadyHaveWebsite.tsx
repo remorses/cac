@@ -4,7 +4,7 @@ import { Button } from '@/components/Button'
 
 export function AlreadyHaveWebsite() {
     return (
-        <div className='flex flex-col justify-start gap-6'>
+        <div className='flex flex-col grow shrink-0 justify-start gap-6'>
             <div className='opacity-70'>
                 This plugin can use your existing website content to migrate it
                 to Framer

@@ -356,7 +356,7 @@ async function loader({}: LoaderFunctionArgs) {
     }
 }
 
-async function replaceTextInCurrentPage() {
+async function replaceTextInComponents() {
     const desktop = await getDesktop()
 
     if (!desktop) {

@@ -11,7 +11,13 @@ import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
 import { SimplePrompt } from '@/routes/Prompt'
 import { IsWebsitePublished } from '@/routes/PublishWebsite'
-import { AnimatePresence, MotionConfig } from 'framer-motion'
+import {
+    AnimatePresence,
+    MotionConfig,
+    motion,
+    useMotionValue,
+    useMotionValueEvent,
+} from 'framer-motion'
 import {
     Outlet,
     RouterProvider,
@@ -52,60 +58,80 @@ const router = createBrowserRouter([
         },
 
         Component({}) {
-            const [ref, { height }, refresh] = useMeasure()
+            const [ref, { height }] = useMeasure()
+            let width = 480
             const { session } = useLoaderData() as { session: Session }
             const [handle] = useMatches().filter((match) => match?.handle)
             const navigate = useNavigate()
-            
-            // framer.showUI({
-            //     title: (handle?.handle as any) || '',
-            //     position: 'top left',
-            //     width: 600,
-            //     height: height || 500,
-            // })
 
-            useLayoutEffect(() => {
+            const heightMotionValue = useMotionValue(height)
+
+            useMotionValueEvent(heightMotionValue, 'change', () => {
+                // console.log('height changed', heightMotionValue.get())
                 framer.showUI({
                     title: (handle?.handle as any) || '',
                     position: 'top left',
-                    width: 480,
+                    width,
+                    height: heightMotionValue.get() || 100,
+                })
+            })
+
+            useLayoutEffect(() => {
+                console.log('mounted app, opening framer ui')
+                framer.showUI({
+                    title: (handle?.handle as any) || '',
+                    position: 'top left',
+                    width,
                     height: height || 100,
                 })
+            }, [])
+            // useEffect(() => {
+            //     console.log({ height })
+            // }, [height])
 
-                // listen for ref height changes, and update height
-                // window.addEventListener('resize', () => {
-                //     if (ref.current) {
-                //         setHeight(ref.current.clientHeight)
-                //     }
-                // })
-            }, [height, handle])
             const location = useLocation()
             const showSettings = session && location.pathname !== Paths.settings
             const revalidator = useRevalidator()
+
             return (
                 <MotionConfig
-                    transition={{ duration: 0.5, type: 'spring', bounce: 0 }}
+                    transition={{ duration: 0.2, type: 'spring', bounce: 0 }}
                 >
-                    <div className='overflow-hidden'>
-                        <div
-                            ref={ref}
-                            className='flex shrink-0 grow flex-col p-4 pt-[2px] w-full justify-start '
+                    <AnimatePresence>
+                        <motion.div
+                            key={'content'}
+                            layoutId='content'
+                            initial={{ opacity: 0 }}
+                            style={{ height: heightMotionValue }}
+                            animate={{
+                                height: height,
+                                opacity: 1,
+                                scale: 1,
+                            }}
+                            exit={{ opacity: 0, scale: 0.93 }}
+                            // transition={{ duration: 0.5 }}
+                            className='overflow-hidden '
                         >
-                            <NProgressComponent />
-                            <Outlet />
+                            <div
+                                ref={ref}
+                                className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
+                            >
+                                <NProgressComponent />
+                                <Outlet />
 
-                            {showSettings && (
-                                <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
-                                    <div className='grow'></div>
-                                    <Link to={withMode(Paths.settings)}>
-                                        <Button className='w-auto bg-transparent !py-px text-[11px] '>
-                                            settings
-                                        </Button>
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                                {showSettings && (
+                                    <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
+                                        <div className='grow'></div>
+                                        <Link to={withMode(Paths.settings)}>
+                                            <Button className='w-auto bg-transparent !py-px text-[11px] '>
+                                                settings
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
                 </MotionConfig>
             )
         },
