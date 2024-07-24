@@ -29,6 +29,7 @@ function ScrapeWebsiteComponent() {
     useRefreshOnVisible({ enabled: !isLoading })
     const location = useLocation()
 
+    let [error, setError] = useState('')
     useEffect(() => {
         const domain = new URLSearchParams(location.search).get('domain') || ''
         if (!domain) {
@@ -77,8 +78,9 @@ function ScrapeWebsiteComponent() {
                         container.scrollTop = container.scrollHeight
                     }
                 }
-                navigate(withMode(Paths.prompt))
+                navigate(withMode(Paths.prompt), { replace: true })
             } catch (e) {
+                setError(String(e))
                 notifyError(e, 'error scraping website')
             } finally {
                 setIsLoading(false)
@@ -103,11 +105,28 @@ function ScrapeWebsiteComponent() {
                 }}
                 className='flex h-[200px] overflow-y-auto overflow-x-hidden flex-col grow rounded justify-start gap-px'
             >
+                <div className='grow'></div>
                 {logs.map((log, i) => (
                     <pre key={i} className='text-[11px] opacity-60'>
                         {log}
                     </pre>
                 ))}
+                {error && (
+                    <div className=' text-sm flex flex-col gap-2'>
+                        <pre className='text-red-300 text-[11px] overflow-hidden'>
+                            {error}
+                        </pre>
+                        <button
+                            className='w-auto'
+                            type='button'
+                            onClick={() => {
+                                navigate(-1)
+                            }}
+                        >
+                            Try again
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     )

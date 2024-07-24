@@ -1,8 +1,5 @@
 import { Button } from '@/components/Button'
-import {
-    Paths,
-    withMode
-} from '@/lib/utils'
+import { Paths, withMode } from '@/lib/utils'
 
 import { useLocation, useNavigate } from 'react-router'
 
@@ -16,7 +13,7 @@ export function GetWebsiteInfo() {
                 e.preventDefault()
                 const data = new FormData(e.target as any)
                 const domain = data.get('domain')?.toString() || ''
-                navigate(withMode(Paths.scrapeWebsite, { domain }))
+                navigate(withMode(Paths.scrapeWebsite, { domain }), {})
             }}
             className='flex flex-col justify-start gap-4'
         >
@@ -28,6 +25,7 @@ export function GetWebsiteInfo() {
                 <input
                     placeholder='example.com'
                     type='text'
+                    autoFocus
                     name='domain'
                     className='rounded-md p-2 w-full bg-framer-tertiary'
                 />

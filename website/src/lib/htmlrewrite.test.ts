@@ -5,7 +5,7 @@ test(
     'getWebsiteInfo',
     async () => {
         const res = await getWebsiteInfo({
-            domain: 'holocron.so',
+            url: 'https://holocron.so',
             onObject(obj) {
                 console.log('object', JSON.stringify(obj))
             },

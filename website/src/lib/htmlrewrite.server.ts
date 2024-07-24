@@ -88,10 +88,10 @@ async function fetchHtml(url) {
     return formattedHtml
 }
 
-export async function getWebsiteInfo({ domain, signal, onObject }) {
+export async function getWebsiteInfo({ url, signal, onObject }) {
     const [formattedHtml, { image }] = await Promise.all([
-        fetchHtml(`https://${domain}`),
-        screenshot(`https://${domain}`),
+        fetchHtml(url),
+        screenshot(url),
     ])
     const stream = await streamText({
         abortSignal: signal,

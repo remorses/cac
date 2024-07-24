@@ -5,8 +5,6 @@ import { anthropic } from '@ai-sdk/anthropic'
 
 import { EventIterator } from 'event-iterator'
 
-import isValidDomain from 'is-valid-domain'
-
 import { swagger } from '@elysiajs/swagger'
 import { Session } from '@supabase/supabase-js'
 import { AppError } from 'website/src/lib/errors'
@@ -344,14 +342,20 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
         async function* scrape({ request, body, store }) {
             let { domain } = body
 
-            domain = domain.replace('https://', '').replace('http://', '')
-            if (!domain) {
-                throw new AppError('No domain provided')
+            let url = domain
+            // if there is no https:// or http:// prefix, add it
+            if (!url.startsWith('https://') && !url.startsWith('http://')) {
+                url = 'https://' + url
+            }
+            try {
+                new URL(url)
+            } catch (e) {
+                throw new Response('Invalid url', { status: 400 })
             }
 
-            if (!isValidDomain(domain)) {
-                throw new AppError('Invalid domain')
-            }
+            // if (!isValidDomain(domain)) {
+            //     throw new AppError('Invalid domain')
+            // }
 
             yield { message: 'analyzing the website content...', object: null }
             yield { message: 'taking screenshot of the page...', object: null }
@@ -361,7 +365,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 message: string
             }>((queue) => {
                 getWebsiteInfo({
-                    domain,
+                    url,
                     signal: request.signal,
                     onObject(object) {
                         console.log('adding object to queue', object)
