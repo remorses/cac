@@ -40,7 +40,7 @@ import { Settings } from '@/routes/Settings'
 import { NProgressComponent } from '@/components/nprogress'
 import { useIsDocumentVisibile } from '@/lib/hooks'
 import { notifyError } from '@/lib/errors'
-
+import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
 
 globalThis.framer = framer
 
@@ -232,6 +232,7 @@ const router = createBrowserRouter(
                 },
                 LoginPage(),
                 Settings(),
+                ScrapeWebsite(),
 
                 {
                     path: Paths.doYouAlreadyHaveAWebsite,

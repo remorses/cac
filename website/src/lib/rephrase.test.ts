@@ -1109,7 +1109,7 @@ const exampleTextToMigrate = [
 ]
 
 test(
-    'NDJSONStream',
+    'NDJSONStream works',
     async () => {
         const stream = await streamText({
             prompt:
@@ -1127,6 +1127,34 @@ test(
             },
         })) {
             console.log('chunk', chunk)
+        }
+    },
+    1000 * 10,
+)
+test(
+    'NDJSONStream can be aborted',
+    async () => {
+        let abortController = new AbortController()
+
+        const stream = await streamText({
+            prompt:
+                `output in NDJSON format 7 objects with fields text, sentiment. These objects should come from the book Dune, give me many quotes in NDJSON format.` +
+                `You can add lines that start with // in the NDJSON output to indicate a comment and reason about the next quote, use comments to think step by step about the quote and the meaning of the quote. You can also add comments between each field, if for example you want to explain the meaning of the text before deciding the sentiment of it.\n` +
+                `Try to add as many comments as you can, add comments before each field, put the JSON in many lines so you can add the comments easily.\n` +
+                `Add a comment before each sentiment field, between sentiment and text, explain there why you are deciding the sentiment of the text.`,
+            model: openai('gpt-3.5-turbo'),
+            temperature: 0.7,
+            abortSignal: abortController.signal,
+        })
+        for await (let chunk of NDJSONStream({
+            stream,
+            onToken(token) {
+                process.stdout.write(token)
+            },
+        })) {
+            console.log('chunk', chunk)
+            console.log('aborting')
+            abortController.abort()
         }
     },
     1000 * 10,

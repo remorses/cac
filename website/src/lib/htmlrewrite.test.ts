@@ -9,6 +9,7 @@ test(
             onObject(obj) {
                 console.log('object', JSON.stringify(obj))
             },
+            signal: new AbortController().signal,
             // onToken(token) {
             //     process.stdout.write(token)
             // },

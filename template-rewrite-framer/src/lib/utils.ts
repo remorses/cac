@@ -96,6 +96,7 @@ export enum Paths {
     settings = '/settings',
     doYouAlreadyHaveAWebsite = '/do-you-already-have-a-website',
     getWebsiteInfo = '/get-website-info',
+    scrapeWebsite = '/scrape-website',
     // migrate = '/migrate',
     prompt = '/prompt',
     // checkWebsiteIsPublished = '/check-website-is-published',

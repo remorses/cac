@@ -270,6 +270,9 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     status: 401,
                 })
             }
+            request.signal.addEventListener('abort', () => {
+                console.log('aborting rephrase')
+            })
             console.log(
                 'starting to rephrase',
                 JSON.stringify(body.description),
@@ -283,7 +286,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     exampleTextToMigrate,
                     textToReplace,
                     onToken(token) {
-                        process.stdout.write(token)
+                        // process.stdout.write(token)
                     },
                     signal: request.signal,
                 })) {
@@ -292,10 +295,8 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     console.log('chunk', chunk)
                     yield chunk
                 }
-            } catch (error) {
-                // console.error(error)
-                throw error
             } finally {
+                console.log('saving generation on db')
                 await Promise.all([
                     db
                         .insertInto('Generation')
@@ -361,6 +362,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             }>((queue) => {
                 getWebsiteInfo({
                     domain,
+                    signal: request.signal,
                     onObject(object) {
                         console.log('adding object to queue', object)
                         queue.push({
