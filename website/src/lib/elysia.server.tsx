@@ -31,17 +31,17 @@ const RephraseSchema = t.Object({
     description: t.String(),
     textToReplace: t.Array(
         t.Object({
-            name: t.String(),
-            text: t.String(),
-            nodeId: t.String(),
+            name: t.Optional(t.String()),
+            text: t.Optional(t.String()),
+            nodeId: t.Optional(t.String()),
             href: t.Optional(t.String()),
-            index: t.Number(),
+            // index: t.Number(),
         }),
     ),
     exampleTextToMigrate: t.Array(
         t.Object({
-            hierarchy: t.String(), // for example "hero/heading" or "features/paragraph"
-            text: t.String(),
+            hierarchy: t.Optional(t.String()), // for example "hero/heading" or "features/paragraph"
+            content: t.Optional(t.String()),
             href: t.Optional(t.String()),
             // other possible fields like price for price plans, etc
         }),
@@ -51,8 +51,8 @@ const RephraseSchema = t.Object({
 export type RephraseSchema = Static<typeof RephraseSchema>
 
 const RephraseResultItem = t.Object({
-    nodeId: t.String(),
-    text: t.String(),
+    nodeId: t.Optional(t.String()),
+    text: t.Optional(t.String()),
     href: t.Optional(t.String()),
 })
 
@@ -270,6 +270,10 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     status: 401,
                 })
             }
+            console.log(
+                'starting to rephrase',
+                JSON.stringify(body.description),
+            )
             const { description, exampleTextToMigrate, textToReplace } = body
             let words = 0
             let chars = 0
@@ -278,10 +282,14 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     description,
                     exampleTextToMigrate,
                     textToReplace,
+                    onToken(token) {
+                        process.stdout.write(token)
+                    },
                     signal: request.signal,
                 })) {
                     chars += chunk?.text?.length || 0
-                    words += splitIntoWords(chunk?.text)?.length || 0
+                    words += splitIntoWords(chunk?.text || '')?.length || 0
+                    console.log('chunk', chunk)
                     yield chunk
                 }
             } catch (error) {
@@ -444,6 +452,13 @@ export function splitStringButKeepChar(str: string, char: string) {
     return result
 }
 
+export function replaceMarkdownSnippets(text: string) {
+    // remove lines starting with optional spaces followed by ```lang
+    text = text.replace(/^\s*```.*/gm, '')
+    // remove lines starting with optional spaces followed by ```
+    // text = text.replace(/^\s*```/gm, '')
+    return text
+}
 export async function* NDJSONStream<T = any>({
     stream,
     minTime = 0,
@@ -464,7 +479,9 @@ export async function* NDJSONStream<T = any>({
         for (let p of parts) {
             buffer += p
             try {
-                let obj = JSON.parse(stripJsonComments(buffer))
+                let obj = JSON.parse(
+                    stripJsonComments(replaceMarkdownSnippets(buffer)),
+                )
                 const now = Date.now()
                 if (now - lastYieldTime <= minTime) {
                     await sleep(minTime - (now - lastYieldTime))

@@ -23,12 +23,11 @@ export function GetWebsiteInfo() {
     useRefreshOnVisible({ enabled: !isLoading })
     const location = useLocation()
     useEffect(() => {
-        console.log('location changed', location.pathname)
-        if (!isLoading) {
-            return
+        // abort when leaving the page
+        return () => {
+            abortController.abort()
         }
-        abortController.abort()
-    }, [location.pathname])
+    }, [])
 
     return (
         <form
@@ -59,6 +58,9 @@ export function GetWebsiteInfo() {
 
                     exampleTextToMigrate.length = 0
                     for await (let chunk of stream) {
+                        if (abortController.signal.aborted) {
+                            break
+                        }
                         console.log('chunk', chunk)
                         // if (chunk.error) {
                         //     throw new Error(chunk.error)

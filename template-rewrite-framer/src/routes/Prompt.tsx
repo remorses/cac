@@ -21,7 +21,7 @@ import {
     isFrameNode,
     isComponentNode,
 } from 'framer-plugin'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -46,6 +46,14 @@ function SimplePromptComponent({}) {
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
         [],
     )
+
+    useEffect(() => {
+        // abort when leaving the page
+        return () => {
+            console.log('leaving the page, aborting')
+            abortController.abort()
+        }
+    }, [])
 
     const revalidator = useRevalidator()
     const buyCreditsInstead = !credits.remaining
@@ -82,9 +90,11 @@ function SimplePromptComponent({}) {
             setIsLoading(false)
         }
     }
+    let [error, setError] = useState('')
 
     async function replaceTextClient() {
         setOldNodes([])
+        setError('')
         const root = await framer.getCanvasRoot()
 
         const desktop = await getDesktop()
@@ -102,7 +112,7 @@ function SimplePromptComponent({}) {
                 let nodeId = node.id
                 if (text) {
                     const textData: RephraseSchema['textToReplace'][number] = {
-                        index: i,
+                        // index: i,
                         nodeId,
                         text,
                         name: await getNodePath(node),
@@ -131,6 +141,7 @@ function SimplePromptComponent({}) {
             )
         if (error) {
             notifyError(error, 'error getting prompt')
+            setError(String(error))
             return
         }
 
@@ -183,6 +194,9 @@ function SimplePromptComponent({}) {
                     prevNode = undefined
                 }
 
+                if (!text) {
+                    continue
+                }
                 await node.setText(text)
             }
             await sleep(200)
@@ -263,6 +277,10 @@ function SimplePromptComponent({}) {
                         await Promise.all(
                             oldNodes.map(async (node) => {
                                 const { nodeId, text } = node
+                                if (!text || !nodeId) {
+                                    return
+                                }
+
                                 try {
                                     const framerNode =
                                         await framer.getNode(nodeId)

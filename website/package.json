@@ -43,6 +43,7 @@
         "clsx": "^2.1.1",
         "concurrently": "^8.2.2",
         "db": "workspace:*",
+        "dedent": "^1.5.3",
         "elysia": "remorses/elysia#dist",
         "event-iterator": "^2.0.0",
         "htmlrewriter": "^0.0.7",

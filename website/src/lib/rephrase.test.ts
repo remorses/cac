@@ -1,11 +1,13 @@
+import { openai } from '@ai-sdk/openai'
+import dedent from 'dedent'
+import { streamText } from 'ai'
+import { expect, test } from 'vitest'
 import {
     NDJSONStream,
     rephrase,
+    replaceMarkdownSnippets,
     splitStringButKeepChar,
 } from 'website/src/lib/elysia.server'
-import { expect, test } from 'vitest'
-import { streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
 
 test(
     'rephrase a test template',
@@ -25,7 +27,7 @@ test(
         for await (let chunk of stream) {
             let prevLen = resultNodeIds.size
 
-            resultNodeIds.add(chunk.nodeId)
+            resultNodeIds.add(chunk.nodeId!)
             if (resultNodeIds.size === prevLen) {
                 console.error('XXX duplicate nodeId', chunk)
             }
@@ -1130,6 +1132,29 @@ test(
     1000 * 10,
 )
 
+test('replaceMarkdownSnippets', async () => {
+    let x = dedent`
+    # hello
+
+    this is a test
+
+    \`\`\`js
+    console.log('hello')
+    \`\`\`
+
+    `
+    // console.log(x)
+    expect(replaceMarkdownSnippets(x)).not.toContain('```')
+    expect(replaceMarkdownSnippets(x)).toMatchInlineSnapshot(`
+      "# hello
+
+      this is a test
+
+      console.log('hello')
+      "
+    `)
+})
+
 test('splitStringButKeepChar', async () => {
     expect(splitStringButKeepChar('hello world  xx ', ' '))
         .toMatchInlineSnapshot(`
@@ -1150,6 +1175,92 @@ test('splitStringButKeepChar', async () => {
         ""world\\n"",
         ""\\n"",
         "" some bs shit here"",
+      ]
+    `)
+    expect(
+        splitStringButKeepChar(
+            `{"nodeId":"XAJKcOOW8","text":"Join for free and explore endless possibilities.","previousText":"Join for free and start connecting."}
+    {"nodeId":"uVCb29QJD","text":"Hassle-Free","previousText":"No Maintenance Required"}
+    {"nodeId":"WuRl6Hyhg","text":"We manage updates and maintenance for you.","previousText":"We handle all updates and maintenance for you."}`,
+            '\n',
+        ).map((x) => JSON.parse(x)),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "nodeId": "XAJKcOOW8",
+          "previousText": "Join for free and start connecting.",
+          "text": "Join for free and explore endless possibilities.",
+        },
+        {
+          "nodeId": "uVCb29QJD",
+          "previousText": "No Maintenance Required",
+          "text": "Hassle-Free",
+        },
+        {
+          "nodeId": "WuRl6Hyhg",
+          "previousText": "We handle all updates and maintenance for you.",
+          "text": "We manage updates and maintenance for you.",
+        },
+        {
+          "nodeId": "dF7KU7H_S",
+          "previousText": "Quick Setup",
+          "text": "Easy Setup",
+        },
+        {
+          "nodeId": "GUjrtdfZu",
+          "previousText": "Start using the app within minutes.",
+          "text": "Get started in just a few minutes.",
+        },
+        {
+          "nodeId": "PvcCFRx0p",
+          "previousText": "Diverse Features",
+          "text": "Feature-Rich",
+        },
+        {
+          "nodeId": "OvsbDInDl",
+          "previousText": "Access a variety of tools tailored to your needs.",
+          "text": "Access a wide range of tools tailored to your needs.",
+        },
+        {
+          "nodeId": "nk5stNgwE",
+          "previousText": "Impact",
+          "text": "Impactful",
+        },
+        {
+          "nodeId": "ZNSqRTPTe",
+          "previousText": "We aim to revolutionize social connectivity.",
+          "text": "We aim to revolutionize how you connect.",
+        },
+        {
+          "nodeId": "vBnw_mEnl",
+          "previousText": "Transparency",
+          "text": "Transparent",
+        },
+        {
+          "nodeId": "N0spmch6X",
+          "previousText": "We provide clear and detailed insights into your activities.",
+          "text": "We offer clear insights into your activities.",
+        },
+        {
+          "nodeId": "ZtpzDReuy",
+          "previousText": "Simplicity",
+          "text": "Simple",
+        },
+        {
+          "nodeId": "Ez7GQFDih",
+          "previousText": "Our interface makes connecting easy.",
+          "text": "Our interface makes everything easy.",
+        },
+        {
+          "nodeId": "sBye5dU0E",
+          "previousText": "Reliability",
+          "text": "Reliable",
+        },
+        {
+          "nodeId": "sLHXEyRh6",
+          "previousText": "We ensure your data is secure and accessible.",
+          "text": "Your data is secure and always accessible.",
+        },
       ]
     `)
 })
