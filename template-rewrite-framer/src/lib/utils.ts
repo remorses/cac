@@ -159,32 +159,55 @@ function isRootLevelNode(node: AnyNode) {
     return isComponentNode(node) || isWebPageNode(node)
 }
 
-export async function getRootParentId(node: AnyNode) {
+export async function getRootParentNode(node: AnyNode | string | null) {
+    if (typeof node === 'string') {
+        node = await framer.getNode(node)
+    }
+    if (!node) {
+        return null
+    }
+    let rootParent = null as AnyNode | null
+    for await (const parent of getParentNodes(node)) {
+        rootParent = parent
+    }
+    return rootParent
+}
+
+export async function* getParentNodes(node: AnyNode | string | null) {
+    if (typeof node === 'string') {
+        node = await framer.getNode(node)
+    }
+    if (!node) {
+        return
+    }
     let parent = await node.getParent()
     if (isRootLevelNode(node)) {
-        return node.id
+        yield node
     }
     if (!parent) {
         console.log('no parent found', node.id)
         if (isTextNode(node)) {
             console.log('text node', await node.getText())
         }
-        return node.id
+        yield node
+        return
     }
     while (parent) {
+        yield parent
         if (isRootLevelNode(parent)) {
-            return parent.id
+            return
         }
         let newParent = await parent.getParent()
         if (!newParent) {
             console.log('no parent found, last one was', parent)
-            return parent.id
+            yield parent
+            return
         }
         parent = newParent
     }
-
-    return ''
 }
+
+Object.assign(globalThis, { getRootParentNode, getParentNodes })
 
 export type PluginLoaderData = {
     session: Session
@@ -227,3 +250,16 @@ export function createBuyLink({ email, orgId }) {
 }
 
 export let exampleTextToMigrate = [] as RephraseSchema['exampleTextToMigrate']
+
+export async function collectGenerator<T>(
+    gen: AsyncGenerator<T | null, void, unknown>,
+) {
+    const result = [] as T[]
+    for await (const item of gen) {
+        if (!item) {
+            continue
+        }
+        result.push(item)
+    }
+    return result
+}

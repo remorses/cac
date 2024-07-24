@@ -41,6 +41,9 @@ import { NProgressComponent } from '@/components/nprogress'
 import { useIsDocumentVisibile } from '@/lib/hooks'
 import { notifyError } from '@/lib/errors'
 
+
+globalThis.framer = framer
+
 const router = createBrowserRouter(
     [
         {

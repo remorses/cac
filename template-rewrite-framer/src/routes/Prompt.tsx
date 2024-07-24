@@ -5,10 +5,12 @@ import { supabase } from '@/lib/supabase-framer'
 import {
     LoaderReturnType,
     Paths,
+    collectGenerator,
     createBuyLink,
     exampleTextToMigrate,
     getDesktop,
     getNodePath,
+    getParentNodes,
     pluginApiClient,
 } from '@/lib/utils'
 
@@ -20,6 +22,7 @@ import {
     AnyNode,
     isFrameNode,
     isComponentNode,
+    supportsVisible,
 } from 'framer-plugin'
 import { useEffect, useState } from 'react'
 import {
@@ -183,7 +186,11 @@ function SimplePromptComponent({}) {
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
-                await node.zoomIntoView({ maxZoom: 0.9 })
+                // const parents = await collectGenerator(getParentNodes(node))
+                if (node.visible) {
+                    await node.zoomIntoView({ maxZoom: 0.9 })
+                }
+
                 if (currentParent && isFrameNode(currentParent)) {
                     prevBackground = currentParent?.backgroundColor || null
 
