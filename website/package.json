@@ -42,6 +42,7 @@
         "clsx": "^2.1.1",
         "concurrently": "^8.2.2",
         "db": "workspace:*",
+        "remix-serve-but-not-shit": "workspace:*",
         "elysia": "remorses/elysia#dist",
         "event-iterator": "^2.0.0",
         "htmlrewriter": "^0.0.7",

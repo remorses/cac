@@ -2,11 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import url from 'node:url'
-import {
-    type ServerBuild,
-    broadcastDevReady,
-    installGlobals,
-} from '@remix-run/node'
+import { type ServerBuild } from '@remix-run/node'
 import { type RequestHandler, createRequestHandler } from '@remix-run/express'
 
 import express from 'express'
@@ -69,7 +65,7 @@ async function run() {
             )
         }
         if (process.env.NODE_ENV === 'development') {
-            void broadcastDevReady(build)
+            // void broadcastDevReady(build)
         }
     }
     let build: ServerBuild = await reimportServer()
