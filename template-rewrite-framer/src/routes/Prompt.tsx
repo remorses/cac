@@ -95,33 +95,46 @@ function SimplePromptComponent({}) {
     }
     let [error, setError] = useState('')
 
+    const [selectedNodes, setSelectedNodes] = useState<AnyNode[]>([])
+
+    useEffect(() => {
+        return framer.subscribeToSelection((selection) => {
+            setSelectedNodes(selection.filter((x) => x))
+        })
+    }, [])
+
     async function replaceTextClient() {
         setOldNodes([])
         setError('')
-        const root = await framer.getCanvasRoot()
+        // const root = await framer.getCanvasRoot()
 
-        const desktop = await getDesktop()
+        let rootNodes = selectedNodes.length
+            ? selectedNodes
+            : [await getDesktop()]
 
-        if (!desktop) {
+        if (!rootNodes?.length) {
             throw new Error('No desktop found')
         }
         let oldText = [] as RephraseSchema['textToReplace']
         let i = 0
 
-        for await (let node of desktop.walk()) {
-            i += 1
-            if (isTextNode(node)) {
-                const text = await node.getText()
-                let nodeId = node.id
-                if (text) {
-                    const textData: RephraseSchema['textToReplace'][number] = {
-                        // index: i,
-                        nodeId,
-                        text,
-                        name: await getNodePath(node),
+        for (let rootNode of selectedNodes) {
+            for await (let node of rootNode.walk()) {
+                i += 1
+                if (isTextNode(node)) {
+                    const text = await node.getText()
+                    let nodeId = node.id
+                    if (text) {
+                        const textData: RephraseSchema['textToReplace'][number] =
+                            {
+                                // index: i,
+                                nodeId,
+                                text,
+                                name: await getNodePath(node),
+                            }
+                        setOldNodes((oldNodes) => [...oldNodes, textData])
+                        oldText.push(textData)
                     }
-                    setOldNodes((oldNodes) => [...oldNodes, textData])
-                    oldText.push(textData)
                 }
             }
         }
@@ -207,12 +220,22 @@ function SimplePromptComponent({}) {
                 await node.setText(text)
             }
             await sleep(200)
-            await desktop.zoomIntoView({ maxZoom: 0.7 })
+            await rootNodes[0]?.zoomIntoView({ maxZoom: 0.7 })
         } finally {
             await prevNode?.setAttributes({ backgroundColor: prevBackground })
         }
     }
     useRefreshOnVisible({ enabled: !isLoading })
+
+    const buttonText = (() => {
+        if (!credits.remaining) {
+            return 'Buy More Credits'
+        }
+        if (selectedNodes.length) {
+            return 'Replace Text On Selected Layers'
+        }
+        return 'Replace Text On The Page'
+    })()
 
     return (
         <motion.form
@@ -257,6 +280,7 @@ function SimplePromptComponent({}) {
                 />
             </div>
 
+            {error && <div className='text-red-300 '>{error}</div>}
             <Button
                 // submit on enter
                 isLoading={isLoading}
@@ -268,9 +292,7 @@ function SimplePromptComponent({}) {
                 type='submit'
                 className='framer-button-primary'
             >
-                {credits.remaining > 0
-                    ? 'Replace Text On The Page'
-                    : 'Buy More Credits'}
+                {buttonText}
             </Button>
             {oldNodes.length > 0 && (
                 <Button
