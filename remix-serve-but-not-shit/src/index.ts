@@ -11,6 +11,9 @@ import { type RequestHandler, createRequestHandler } from '@remix-run/express'
 
 import express from 'express'
 import morgan from 'morgan'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 process.env.NODE_ENV = process.env.NODE_ENV ?? 'production'
 
