@@ -39,8 +39,10 @@ export async function screenshot(url: string) {
     console.log(`screenshotting ${url}`)
 
     console.time(`screenshot ${url}`)
+    let u = getScreenshotUrl(url)
+    console.log('screenshot url:', u)
     const res = await fetch(
-        getScreenshotUrl(url),
+        u,
 
         {
             method: 'GET',
@@ -50,6 +52,29 @@ export async function screenshot(url: string) {
     console.timeEnd(`screenshot ${url}`)
     console.log(`image size ${formatBytes(image.byteLength)}`)
     return { image }
+}
+export async function screenshotAndForget(url: string) {
+    console.log(`screenshotting ${url}`)
+
+    console.time(`screenshot ${url}`)
+    let u = getScreenshotUrl(url)
+    console.log('screenshot url:', u)
+    const ctrl = new AbortController()
+
+    const response = await fetch(url, { signal: ctrl.signal })
+    if (!response.body) {
+        throw new Error('Failed to screenshot')
+    }
+    if (!response.ok) {
+        throw new Error(
+            `Failed to screenshot, ${response.status} ${response.statusText}`,
+        )
+    }
+    // discard the response, i only want to trigger the screenshot fetch
+    ctrl.abort()
+    console.timeEnd(`screenshot ${url}`)
+
+    return u
 }
 
 function formatBytes(bytes, decimals = 2) {

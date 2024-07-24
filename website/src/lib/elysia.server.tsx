@@ -1,4 +1,6 @@
 import { Elysia, Static, t } from 'elysia'
+import stripJsonComments from 'strip-json-comments';
+
 import { anthropic } from '@ai-sdk/anthropic'
 
 import { EventIterator } from 'event-iterator'
@@ -427,12 +429,6 @@ export async function* rephrase({
     })
 }
 
-function stripJSONComments(str: string) {
-    str = str.replace(/\/\/.*?\n/g, '\n')
-    // also replace markdown snippets syntax ```lang
-    str = str.replace(/```.*?\n/g, '\n')
-    return str
-}
 
 export function splitStringButKeepChar(str: string, char: string) {
     const result = [] as string[]
@@ -465,10 +461,11 @@ export async function* NDJSONStream<T = any>({
         onToken?.(part)
         const parts = splitStringButKeepChar(part, '\n')
 
+        // console.log('parts', parts)
         for (let p of parts) {
             buffer += p
             try {
-                let obj = JSON.parse(stripJSONComments(buffer))
+                let obj = JSON.parse(stripJsonComments(buffer))
                 const now = Date.now()
                 if (now - lastYieldTime <= minTime) {
                     await sleep(minTime - (now - lastYieldTime))
@@ -479,7 +476,9 @@ export async function* NDJSONStream<T = any>({
                 buffer = ''
                 lastYieldTime = Date.now()
             } catch {
-                // console.log('error', buffer)
+                // if (buffer.includes('\n')) {
+                //     console.log('error', buffer)
+                // }
             }
         }
     }

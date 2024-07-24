@@ -178,6 +178,15 @@ You are a web scraper tasked with extracting structured content from an HTML doc
    - [section]/form/radio (Single-select option within a form)
    - [section]/icon (Small graphical element, often used with features or stats)
 
+   If a section is composed of multiple elements append the element number at the end, for example for a pricing section you could use the following hierarchy:
+
+   - pricing/plan1/heading
+   - pricing/plan1/feature1
+   - pricing/plan1/feature2
+   - pricing/plan2/heading
+   - pricing/plan2/feature1
+   - pricing/plan2/feature2
+
 5. Ensure the hierarchy accurately reflects the document structure and content relationships. Use the image to understand the hierarchy, for example if a text is small in the screenshot don't use a heading hierarchy, but a paragraph hierarchy. Notice that each element in the hierarchy is a node in a tree-like structure, and the hierarchy itself is a tree. Some elements will have common prefix if they are part of the same section or subsection, such as "section/heading" or "section/paragraph".
 
 6. Output the results as NDJSON (newline-delimited JSON objects).
@@ -202,17 +211,17 @@ Here is an example output:
 }
 {
     "content": "Product",
-    "hierarchy": "nav/link",
+    "hierarchy": "nav/link1",
     "href": "/product/docs",
 }
 {
     "content": "Showcase",
-    "hierarchy": "nav/link",
+    "hierarchy": "nav/link2",
     "href": "/showcase",
 }
 {
     "content": "Pricing",
-    "hierarchy": "nav/link",
+    "hierarchy": "nav/link3",
     "href": "/#pricing",
 }
 {
@@ -220,6 +229,7 @@ Here is an example output:
     "hierarchy": "hero/heading",
 }
 
+You can use comments starting with // in the NDJSON output to think about the hierarchy and content and write more sophisticated and precise hierarchies.
 
 The example above only shows an example of the data format, you should try to get as many text as possible.Notice there is no markdown formatting, only NDJSON, with each JSON object on a new line:
 
