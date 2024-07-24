@@ -1,4 +1,5 @@
 import { notifyError } from '@/lib/errors'
+import NProgress from 'nprogress'
 import { useRefreshOnVisible } from '@/lib/hooks'
 import {
     pluginApiClient,
@@ -47,6 +48,7 @@ function ScrapeWebsiteComponent() {
         setIsLoading(true)
 
         const fetchData = async () => {
+            NProgress.start()
             try {
                 const { error, data: stream } =
                     await pluginApiClient.api.v1.scrapeWebsite.post(
@@ -91,6 +93,7 @@ function ScrapeWebsiteComponent() {
         fetchData()
         // abort when leaving the page
         return () => {
+            NProgress.done()
             abortController.abort()
         }
     }, [])

@@ -15,6 +15,9 @@ init({
         if (process.env.NODE_ENV === 'development') {
             return null
         }
+        if (process.env.BYTECODE_RUN) {
+            return null
+        }
         if (event?.['name'] === 'AbortError') {
             return null
         }
