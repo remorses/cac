@@ -11,7 +11,7 @@ import {
 import { framer } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 let abortController: AbortController = new AbortController()
 
@@ -21,6 +21,14 @@ export function GetWebsiteInfo() {
     const [logs, setLogs] = useState<string[]>([])
     const containerRef = useRef<HTMLDivElement>(null)
     useRefreshOnVisible({ enabled: !isLoading })
+    const location = useLocation()
+    useEffect(() => {
+        console.log('location changed', location.pathname)
+        if (!isLoading) {
+            return
+        }
+        abortController.abort()
+    }, [location.pathname])
 
     return (
         <form
@@ -34,6 +42,7 @@ export function GetWebsiteInfo() {
                 try {
                     const data = new FormData(e.target as any)
                     const domain = data.get('domain')?.toString() || ''
+                    setLogs(['getting website info...'])
                     // navigate(withMode(Paths.scrapeWebsite, { domain }))
                     flushSync(() => setIsLoading(true))
 
@@ -103,11 +112,10 @@ export function GetWebsiteInfo() {
                     ref={containerRef}
                     className='flex h-[200px] overflow-y-auto overflow-x-hidden flex-col grow rounded justify-start gap-px'
                 >
-                    <div className=''>Getting info...</div>
                     {logs.map((log, i) => (
-                        <div key={i} className='opacity-70 '>
+                        <pre key={i} className='text-[11px] opacity-60'>
                             {log}
-                        </div>
+                        </pre>
                     ))}
                 </div>
             )}

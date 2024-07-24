@@ -28,6 +28,7 @@ import {
     useMatches,
     useNavigate,
     useNavigation,
+    useNavigationType,
     useRevalidator,
     useRouteError,
 } from 'react-router'
@@ -96,6 +97,13 @@ const router = createBrowserRouter(
                     session && location.pathname !== Paths.settings
                 const revalidator = useRevalidator()
 
+                const navigationType = useNavigationType()
+                const canGoBack = ![
+                    Paths.login,
+                    '/',
+                    Paths.doYouAlreadyHaveAWebsite,
+                ].includes(location.pathname as any)
+                // const history = useHistory()
                 return (
                     <MotionConfig
                         transition={{
@@ -105,18 +113,19 @@ const router = createBrowserRouter(
                         }}
                     >
                         <AnimatePresence mode='wait'>
-                            <motion.div
+                            <div
                                 // key={location.pathname}
-                                layoutId='content'
-                                initial={{ opacity: 0 }}
-                                style={{ height: heightMotionValue }}
-                                animate={{
-                                    height: height,
-                                    opacity: 1,
-                                    scale: 1,
-                                }}
-                                exit={{ opacity: 0 }}
-                                // transition={{ duration: 0.5 }}
+                                // layoutId='content'
+                                // initial={{ opacity: 0 }}
+                                // style={{ height: heightMotionValue }}
+                                // style={{ height: height }}
+                                // animate={{
+                                //     height: height,
+                                //     opacity: 1,
+                                //     scale: 1,
+                                // }}
+                                // exit={{ opacity: 0 }}
+
                                 className='overflow-hidden '
                             >
                                 <div
@@ -128,6 +137,18 @@ const router = createBrowserRouter(
 
                                     {showSettings && (
                                         <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
+                                            {canGoBack && (
+                                                <button
+                                                    type='button'
+                                                    onClick={() => {
+                                                        navigate(-1)
+                                                    }}
+                                                    className='w-auto flex flex-row items-center -ml-2 gap-1 bg-transparent !py-px text-[11px] '
+                                                >
+                                                    <BackIcon className='w-2' />
+                                                    <div className=''>back</div>
+                                                </button>
+                                            )}
                                             <div className='grow'></div>
                                             <Link to={withMode(Paths.settings)}>
                                                 <Button className='w-auto bg-transparent !py-px text-[11px] '>
@@ -137,7 +158,7 @@ const router = createBrowserRouter(
                                         </div>
                                     )}
                                 </div>
-                            </motion.div>
+                            </div>
                         </AnimatePresence>
                     </MotionConfig>
                 )
@@ -255,6 +276,23 @@ export function MaterialSymbolsMagicButton(props) {
             <path
                 fill='currentColor'
                 d='m10 19l-2.5-5.5L2 11l5.5-2.5L10 3l2.5 5.5L18 11l-5.5 2.5L10 19Zm8 2l-1.25-2.75L14 17l2.75-1.25L18 13l1.25 2.75L22 17l-2.75 1.25L18 21Z'
+            ></path>
+        </svg>
+    )
+}
+
+export function BackIcon(props) {
+    return (
+        <svg
+            xmlns='http://www.w3.org/2000/svg'
+            // width='1em'
+            // height='1em'
+            viewBox='0 0 24 24'
+            {...props}
+        >
+            <path
+                fill='currentColor'
+                d='M10 22L0 12L10 2l1.775 1.775L3.55 12l8.225 8.225z'
             ></path>
         </svg>
     )

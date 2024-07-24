@@ -1,5 +1,5 @@
 import { Elysia, Static, t } from 'elysia'
-import stripJsonComments from 'strip-json-comments';
+import stripJsonComments from 'strip-json-comments'
 
 import { anthropic } from '@ai-sdk/anthropic'
 
@@ -344,7 +344,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 throw new AppError('Invalid domain')
             }
 
-            yield { message: 'Analyzing the website content...', object: null }
+            yield { message: 'analyzing the website content...', object: null }
             yield { message: 'taking screenshot of the page...', object: null }
 
             let emitter = new EventIterator<{
@@ -357,7 +357,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                         console.log('adding object to queue', object)
                         queue.push({
                             object,
-                            message: `scraped ${object.hierarchy} ${object.content || ''}`,
+                            message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
                         })
                     },
                 })
@@ -428,7 +428,6 @@ export async function* rephrase({
         onToken,
     })
 }
-
 
 export function splitStringButKeepChar(str: string, char: string) {
     const result = [] as string[]
