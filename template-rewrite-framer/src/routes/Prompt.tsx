@@ -11,6 +11,7 @@ import {
     getDesktop,
     getNodePath,
     getParentNodes,
+    isTruthy,
     pluginApiClient,
 } from '@/lib/utils'
 
@@ -23,6 +24,7 @@ import {
     isFrameNode,
     isComponentNode,
     supportsVisible,
+    supportsName,
 } from 'framer-plugin'
 import { useEffect, useState } from 'react'
 import {
@@ -108,9 +110,20 @@ function SimplePromptComponent({}) {
         setError('')
         // const root = await framer.getCanvasRoot()
 
+        let desktop = await getDesktop()
+        if (selectedNodes.length) {
+            console.log(`using selected nodes`, selectedNodes)
+        } else {
+            console.log(`using desktop page`, desktop)
+        }
         let rootNodes = selectedNodes.length
-            ? selectedNodes
-            : [await getDesktop()]
+            ? selectedNodes.filter(isTruthy)
+            : [desktop].filter(isTruthy)
+
+        if (!rootNodes.length) {
+            setError('No root nodes found')
+            return
+        }
 
         if (!rootNodes?.length) {
             throw new Error('No desktop found')
@@ -118,7 +131,10 @@ function SimplePromptComponent({}) {
         let oldText = [] as RephraseSchema['textToReplace']
         let i = 0
 
-        for (let rootNode of selectedNodes) {
+        for (let rootNode of rootNodes) {
+            if (!rootNode) {
+                continue
+            }
             for await (let node of rootNode.walk()) {
                 i += 1
                 if (isTextNode(node)) {
@@ -138,7 +154,12 @@ function SimplePromptComponent({}) {
                 }
             }
         }
+        console.log('oldText', JSON.stringify(oldText, null, 2))
 
+        if (!oldText.length) {
+            setError('No text found to replace')
+            return
+        }
         // console.log('oldText', JSON.stringify(oldText, null, 2))
         // return
 
