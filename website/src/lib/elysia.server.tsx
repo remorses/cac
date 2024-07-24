@@ -283,7 +283,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     yield chunk
                 }
             } catch (error) {
-                console.error(error)
+                // console.error(error)
                 throw error
             } finally {
                 await Promise.all([
@@ -352,6 +352,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 getWebsiteInfo({
                     domain,
                     onObject(object) {
+                        console.log('adding object to queue', object)
                         queue.push({
                             object,
                             message: `scraped ${object.hierarchy} ${object.content || ''}`,

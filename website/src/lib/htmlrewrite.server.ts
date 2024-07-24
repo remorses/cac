@@ -111,7 +111,7 @@ export async function getWebsiteInfo({ domain, onObject }) {
         ],
 
         // model: anthropic('claude-3-sonnet-20240229'),
-        model: openai('gpt-4o-mini'),
+        model: openai('gpt-4o'),
     })
     let objects = [] as RephraseSchema['exampleTextToMigrate']
     for await (let object of NDJSONStream({
@@ -221,7 +221,7 @@ Here is an example output:
 }
 
 
-Notice there is no markdown formatting, only NDJSON, with each JSON object on a new line:
+The example above only shows an example of the data format, you should try to get as many text as possible.Notice there is no markdown formatting, only NDJSON, with each JSON object on a new line:
 
     `
     )
