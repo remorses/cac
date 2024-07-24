@@ -431,8 +431,8 @@ importers:
         specifier: ^18.3.3
         version: 18.3.3
       '@xmorse/deployment-utils':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.2.3
+        version: 0.2.3
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -512,8 +512,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       '@xmorse/deployment-utils':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.2.3
+        version: 0.2.3
       ai:
         specifier: ^3.2.26
         version: 3.2.26(openai@4.52.7)(react@18.3.1)(svelte@4.2.18)(vue@3.4.33(typescript@5.5.4))(zod@3.23.8)
@@ -3614,8 +3614,8 @@ packages:
   '@web3-storage/multipart-parser@1.0.0':
     resolution: {integrity: sha512-BEO6al7BYqcnfX15W2cnGR+Q566ACXAT9UQykORCWW80lmkpWsnEob6zJS1ZVBKsSJC8+7vJkHwlp+lXG1UCdw==}
 
-  '@xmorse/deployment-utils@0.2.2':
-    resolution: {integrity: sha512-6uyVvH1WfOmtyDf5oC/SGpmIezSl6Axjqwmg76dXylcoBIyLNNQzYWY1QUuWLLh894QkolSEEIzUV4Jx1PBnmg==}
+  '@xmorse/deployment-utils@0.2.3':
+    resolution: {integrity: sha512-YTm0Mebhjmd9BwX4t+1FrYUoeXS4tooPMXypt3puYVQ6EHzMcj7DssfQYE7yqrdERqrer3txSazhxLH+hEVijg==}
 
   '@zxing/text-encoding@0.9.0':
     resolution: {integrity: sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==}
@@ -12214,7 +12214,7 @@ snapshots:
 
   '@web3-storage/multipart-parser@1.0.0': {}
 
-  '@xmorse/deployment-utils@0.2.2':
+  '@xmorse/deployment-utils@0.2.3':
     dependencies:
       '@actions/cache': 3.2.4
       '@iarna/toml': 2.2.5

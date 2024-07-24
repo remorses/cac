@@ -152,7 +152,7 @@ export function handleError(
     { request, params, context }: LoaderFunctionArgs | ActionFunctionArgs,
 ) {
     // https://github.com/remix-run/remix/discussions/8933
-    if (request.signal.aborted || error.message?.includes?.('No route match')) {
+    if (request.signal.aborted || error.data?.includes?.('No route match')) {
         return
     }
     if (error instanceof Error) {

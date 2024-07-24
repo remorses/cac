@@ -27,6 +27,7 @@ async function main() {
         appName: 'unframer-website-prod',
         port,
         buildRemotely: true,
+        strategy: 'rolling',
         dockerfile: 'Dockerfile',
         minInstances: 1,
         forceHttps: false,

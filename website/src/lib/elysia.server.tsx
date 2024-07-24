@@ -20,9 +20,10 @@ import {
 import { sleep } from 'website/src/lib/utils'
 import { getWebsiteInfo } from 'website/src/lib/htmlrewrite.server'
 import { db } from 'db/kysely'
-import { generatePassword } from 'website/src/lib/ssr.server'
+import { generatePassword, splitIntoWords } from 'website/src/lib/ssr.server'
 import { getOrgCredits } from 'website/src/lib/credits'
 import { env } from 'website/src/lib/env'
+import { prisma } from 'db/prisma'
 
 const RephraseSchema = t.Object({
     description: t.String(),
@@ -50,6 +51,7 @@ export type RephraseSchema = Static<typeof RephraseSchema>
 const RephraseResultItem = t.Object({
     nodeId: t.String(),
     text: t.String(),
+    href: t.Optional(t.String()),
 })
 
 export type RephraseResultItem = Static<typeof RephraseResultItem>
@@ -258,7 +260,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
     )
     .post(
         '/rephrase',
-        ({ body, store, request }) => {
+        async function* ({ body, store, request }) {
             const userId = store.userId
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
@@ -267,12 +269,36 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 })
             }
             const { description, exampleTextToMigrate, textToReplace } = body
-            return rephrase({
-                description,
-                exampleTextToMigrate,
-                textToReplace,
-                signal: request.signal,
-            })
+            let words = 0
+            let chars = 0
+            try {
+                for await (let chunk of rephrase({
+                    description,
+                    exampleTextToMigrate,
+                    textToReplace,
+                    signal: request.signal,
+                })) {
+                    chars += chunk?.text?.length || 0
+                    words += splitIntoWords(chunk?.text)?.length || 0
+                    yield chunk
+                }
+            } catch (error) {
+                console.error(error)
+                throw error
+            } finally {
+                await Promise.all([
+                    db
+                        .insertInto('Generation')
+                        .values({
+                            words,
+                            orgId: userId,
+                            chars,
+
+                            createdAt: new Date(),
+                        })
+                        .execute(),
+                ])
+            }
         },
         {
             body: RephraseSchema,
@@ -393,7 +419,7 @@ export async function* rephrase({
         temperature: 0.5,
         abortSignal: signal,
     })
-    yield* NDJSONStream({
+    yield* NDJSONStream<RephraseResultItem>({
         stream,
         minTime: 200,
         onToken,
@@ -422,7 +448,7 @@ export function splitStringButKeepChar(str: string, char: string) {
     return result
 }
 
-export async function* NDJSONStream({
+export async function* NDJSONStream<T = any>({
     stream,
     minTime = 0,
     onToken,
@@ -430,7 +456,7 @@ export async function* NDJSONStream({
     stream: StreamTextResult<any>
     minTime?: number
     onToken?: (token: string) => void
-}) {
+}): AsyncGenerator<T, void, unknown> {
     let buffer = ''
     let lastYieldTime = 0
 

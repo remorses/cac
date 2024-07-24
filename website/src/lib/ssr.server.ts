@@ -67,3 +67,7 @@ function formatBytes(bytes, decimals = 2) {
 // export const openai = new OpenAI({
 //     apiKey: process.env.OPENAI_API_KEY,
 // })
+
+export function splitIntoWords(text: string) {
+    return text.split(/\s+/)
+}

@@ -20,6 +20,6 @@ export default defineConfig({
     base: building ? '/plugins/migrate' : undefined,
     build: {
         target: 'ES2020',
-        outDir: 'dist',
+        outDir: 'dist/plugins/migrate',
     },
 })
