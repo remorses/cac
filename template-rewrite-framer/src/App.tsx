@@ -40,199 +40,210 @@ import { NProgressComponent } from '@/components/nprogress'
 import { useIsDocumentVisibile } from '@/lib/hooks'
 import { notifyError } from '@/lib/errors'
 
-const router = createBrowserRouter([
-    {
-        path: '/',
-        id: RouteIds.root,
-        shouldRevalidate: () => {
-            return true
-        },
-        async loader({ request }) {
-            const { data, error } = await supabase.auth.getSession()
-            if (error) {
-                notifyError(error, 'Failed to get session')
-            }
-            const session = data?.session
+const router = createBrowserRouter(
+    [
+        {
+            path: '/',
 
-            return { session }
-        },
+            id: RouteIds.root,
+            shouldRevalidate: () => {
+                return true
+            },
+            async loader({ request }) {
+                const { data, error } = await supabase.auth.getSession()
+                if (error) {
+                    notifyError(error, 'Failed to get session')
+                }
+                const session = data?.session
 
-        Component({}) {
-            const [ref, { height }] = useMeasure()
-            let width = 480
-            const { session } = useLoaderData() as { session: Session }
-            const [handle] = useMatches().filter((match) => match?.handle)
-            const navigate = useNavigate()
+                return { session }
+            },
 
-            const heightMotionValue = useMotionValue(height)
+            Component({}) {
+                const [ref, { height }] = useMeasure()
+                let width = 480
+                const { session } = useLoaderData() as { session: Session }
+                const [handle] = useMatches().filter((match) => match?.handle)
+                const navigate = useNavigate()
 
-            // useMotionValueEvent(heightMotionValue, 'change', () => {
-            //     // console.log('height changed', heightMotionValue.get())
-            //     framer.showUI({
-            //         title: (handle?.handle as any) || '',
-            //         position: 'top left',
-            //         width,
-            //         height: heightMotionValue.get() || 100,
-            //     })
-            // })
+                const heightMotionValue = useMotionValue(height)
 
-            useLayoutEffect(() => {
-                console.log('opening framer ui')
-                framer.showUI({
-                    title: (handle?.handle as any) || '',
-                    position: 'top left',
-                    width,
-                    height: height || 100,
-                })
-            }, [height])
-            // useEffect(() => {
-            //     console.log({ height })
-            // }, [height])
+                // useMotionValueEvent(heightMotionValue, 'change', () => {
+                //     // console.log('height changed', heightMotionValue.get())
+                //     framer.showUI({
+                //         title: (handle?.handle as any) || '',
+                //         position: 'top left',
+                //         width,
+                //         height: heightMotionValue.get() || 100,
+                //     })
+                // })
 
-            const location = useLocation()
-            const showSettings = session && location.pathname !== Paths.settings
-            const revalidator = useRevalidator()
+                useLayoutEffect(() => {
+                    console.log('opening framer ui')
+                    framer.showUI({
+                        title: (handle?.handle as any) || '',
+                        position: 'top left',
+                        width,
+                        height: height || 100,
+                    })
+                }, [height])
+                // useEffect(() => {
+                //     console.log({ height })
+                // }, [height])
 
-            return (
-                <MotionConfig
-                    transition={{ duration: 0.2, type: 'spring', bounce: 0 }}
-                >
-                    <AnimatePresence mode='wait'>
-                        <motion.div
-                            // key={location.pathname}
-                            layoutId='content'
-                            initial={{ opacity: 0 }}
-                            style={{ height: heightMotionValue }}
-                            animate={{
-                                height: height,
-                                opacity: 1,
-                                scale: 1,
-                            }}
-                            exit={{ opacity: 0 }}
-                            // transition={{ duration: 0.5 }}
-                            className='overflow-hidden '
-                        >
-                            <div
-                                ref={ref}
-                                className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
-                            >
-                                <NProgressComponent />
-                                <Outlet />
+                const location = useLocation()
+                const showSettings =
+                    session && location.pathname !== Paths.settings
+                const revalidator = useRevalidator()
 
-                                {showSettings && (
-                                    <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
-                                        <div className='grow'></div>
-                                        <Link to={withMode(Paths.settings)}>
-                                            <Button className='w-auto bg-transparent !py-px text-[11px] '>
-                                                settings
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    </AnimatePresence>
-                </MotionConfig>
-            )
-        },
-
-        ErrorBoundary() {
-            const error = useRouteError() as any
-            NProgress.done()
-            useEffect(() => {
-                notifyError(error, 'ErrorBoundary')
-            }, [error])
-            return (
-                <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
-                    <span className='dark:text-red-300'>
-                        Something went wrong...
-                    </span>
-                    <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                        {error?.message}
-                    </div>
-                    <button
-                        className='w-auto'
-                        type='button'
-                        onClick={() => {
-                            window.location.pathname = '/'
+                return (
+                    <MotionConfig
+                        transition={{
+                            duration: 0.2,
+                            type: 'spring',
+                            bounce: 0,
                         }}
                     >
-                        Try again
-                    </button>
-                </div>
-            )
-        },
+                        <AnimatePresence mode='wait'>
+                            <motion.div
+                                // key={location.pathname}
+                                layoutId='content'
+                                initial={{ opacity: 0 }}
+                                style={{ height: heightMotionValue }}
+                                animate={{
+                                    height: height,
+                                    opacity: 1,
+                                    scale: 1,
+                                }}
+                                exit={{ opacity: 0 }}
+                                // transition={{ duration: 0.5 }}
+                                className='overflow-hidden '
+                            >
+                                <div
+                                    ref={ref}
+                                    className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
+                                >
+                                    <NProgressComponent />
+                                    <Outlet />
 
-        // errorElement: <ErrorPage />,
-        children: [
-            {
-                path: '/',
-                Component() {
-                    return null
-                },
-                async loader({ request }) {
-                    // const url = new URL(request.url)
-                    // if (url.pathname === '/login') {
-                    //     return {}
-                    // }
-                    const { data, error } = await supabase.auth.getSession()
-                    if (error) {
-                        notifyError(error, 'Failed to get session')
-                    }
+                                    {showSettings && (
+                                        <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
+                                            <div className='grow'></div>
+                                            <Link to={withMode(Paths.settings)}>
+                                                <Button className='w-auto bg-transparent !py-px text-[11px] '>
+                                                    settings
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </MotionConfig>
+                )
+            },
 
-                    console.log('supabase session', data)
-                    const session = data?.session
-                    if (!session) {
+            ErrorBoundary() {
+                const error = useRouteError() as any
+                NProgress.done()
+                useEffect(() => {
+                    notifyError(error, 'ErrorBoundary')
+                }, [error])
+                return (
+                    <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
+                        <span className='dark:text-red-300'>
+                            Something went wrong...
+                        </span>
+                        <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
+                            {error?.message}
+                        </div>
+                        <button
+                            className='w-auto'
+                            type='button'
+                            onClick={() => {
+                                window.location.pathname = '/'
+                            }}
+                        >
+                            Try again
+                        </button>
+                    </div>
+                )
+            },
+
+            // errorElement: <ErrorPage />,
+            children: [
+                {
+                    path: '/',
+                    Component() {
+                        return null
+                    },
+                    async loader({ request }) {
+                        // const url = new URL(request.url)
+                        // if (url.pathname === '/login') {
+                        //     return {}
+                        // }
+                        const { data, error } = await supabase.auth.getSession()
+                        if (error) {
+                            notifyError(error, 'Failed to get session')
+                        }
+
+                        console.log('supabase session', data)
+                        const session = data?.session
+                        if (!session) {
+                            console.log(
+                                `redirecting to login because there is no session`,
+                            )
+                            return redirect(withMode(Paths.login))
+                        }
                         console.log(
-                            `redirecting to login because there is no session`,
+                            'redirecting to choose website from / because user is logged in',
                         )
-                        return redirect(withMode(Paths.login))
-                    }
-                    console.log(
-                        'redirecting to choose website from / because user is logged in',
-                    )
-                    // return redirect(withMode(Paths.login))
-                    return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
-                    // setTimeout(() => refreshHeight(), 1)
+                        // return redirect(withMode(Paths.login))
+                        return redirect(
+                            withMode(Paths.doYouAlreadyHaveAWebsite),
+                        )
+                        // setTimeout(() => refreshHeight(), 1)
+                    },
+                    handle: '',
                 },
-                handle: '',
-            },
-            LoginPage(),
-            Settings(),
+                LoginPage(),
+                Settings(),
 
-            {
-                path: Paths.doYouAlreadyHaveAWebsite,
-                element: <AlreadyHaveWebsite />,
-                handle: 'Do you already have an existing website?',
-            },
-            {
-                path: Paths.getWebsiteInfo,
-                element: <GetWebsiteInfo />,
-                handle: 'What is your website url?',
-            },
-            // {
-            //     path: Paths.checkWebsiteIsPublished,
-            //     element: <IsWebsitePublished />,
-            //     loader: async ({}) => {
-            //         const publishInfo = await framer.getPublishInfo()
-            //         let deploymentTime = publishInfo?.staging?.deploymentTime
-            //         let hourAgo = new Date()
-            //         hourAgo.setHours(hourAgo.getHours() - 1)
-            //         if (deploymentTime && new Date(deploymentTime) > hourAgo) {
-            //             return redirect(Paths.getWebsiteInfo)
-            //         }
-            //         framer.notify('Publish your website first', {
-            //             variant: 'error',
-            //         })
+                {
+                    path: Paths.doYouAlreadyHaveAWebsite,
+                    element: <AlreadyHaveWebsite />,
+                    handle: 'Do you already have an existing website?',
+                },
+                {
+                    path: Paths.getWebsiteInfo,
+                    element: <GetWebsiteInfo />,
+                    handle: 'What is your website url?',
+                },
+                // {
+                //     path: Paths.checkWebsiteIsPublished,
+                //     element: <IsWebsitePublished />,
+                //     loader: async ({}) => {
+                //         const publishInfo = await framer.getPublishInfo()
+                //         let deploymentTime = publishInfo?.staging?.deploymentTime
+                //         let hourAgo = new Date()
+                //         hourAgo.setHours(hourAgo.getHours() - 1)
+                //         if (deploymentTime && new Date(deploymentTime) > hourAgo) {
+                //             return redirect(Paths.getWebsiteInfo)
+                //         }
+                //         framer.notify('Publish your website first', {
+                //             variant: 'error',
+                //         })
 
-            //         return {}
-            //     },
-            //     handle: 'Publish your website first',
-            // },
-            SimplePrompt(),
-        ],
-    },
-])
+                //         return {}
+                //     },
+                //     handle: 'Publish your website first',
+                // },
+                SimplePrompt(),
+            ],
+        },
+    ],
+    { basename: import.meta.env.BASE_URL || undefined },
+)
 
 export default function Page() {
     return <RouterProvider router={router} />

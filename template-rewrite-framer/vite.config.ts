@@ -17,9 +17,9 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
-
+    base: building ? '/plugins/migrate' : undefined,
     build: {
-        target: 'ES2022',
+        target: 'ES2020',
         outDir: 'dist',
     },
 })

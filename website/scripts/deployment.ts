@@ -14,9 +14,9 @@ async function main() {
         shell(`pnpm tsc`, {
             env,
         }),
-        // shell(`pnpm --filter template-rewrite-framer build`, {
-        //     env,
-        // }),
+        shell(`pnpm --filter template-rewrite-framer build`, {
+            env,
+        }),
         shell(`pnpm build`, {
             env,
         }),

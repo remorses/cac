@@ -1,6 +1,6 @@
 
 
-FROM --platform=linux/amd64 node:22.5.1-slim
+FROM --platform=linux/amd64 node:18-slim
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN apt update && apt install openssl ca-certificates -y \
     && rm -rf ~/root/.npm/_cacache \
     && rm -rf ~/root/.cache
 
-RUN npm install -g remix-serve-but-not-shit && npm install htmlrewriter @sentry/node
+RUN npm install -g remix-serve-but-not-shit@latest && npm install htmlrewriter @sentry/node
 
 COPY ./build /app/build
 
