@@ -126,7 +126,8 @@ function SimplePromptComponent({}) {
         }
 
         if (!rootNodes?.length) {
-            throw new Error('No desktop found')
+            setError('No desktop found')
+            return
         }
         let oldText = [] as RephraseSchema['textToReplace']
         let i = 0
@@ -190,34 +191,38 @@ function SimplePromptComponent({}) {
 
         try {
             for await (let chunk of eventSource!) {
+                if (!chunk) {
+                    console.log('one chunk is null')
+                    continue
+                }
+
                 console.log('chunk', chunk)
                 await prevNode?.setAttributes({
                     backgroundColor: prevBackground,
                 })
                 // Process each chunk (value)
 
-                const { text, nodeId } = chunk as RephraseResultItem
-                if (nodeId == null) {
+                if (chunk.nodeId == null) {
                     console.log(`no nodeId found: ${chunk}`)
                     return
                 }
 
-                const node = await framer.getNode(nodeId)
+                const node = await framer.getNode(chunk.nodeId)
                 if (!isTextNode(node)) {
-                    console.log(`no text node found for id ${nodeId}`)
+                    console.log(`no text node found for id ${chunk.nodeId}`)
                     continue
                 }
                 if (!node) {
                     console.log(`no node found for id ${name}`)
                     continue
                 }
-                const old = oldText.find((x) => x.nodeId === nodeId)?.text
+                const old = oldText.find((x) => x.nodeId === chunk.nodeId)?.text
                 if (!old) {
-                    console.log(`no old text found for node ${nodeId}`)
+                    console.log(`no old text found for node ${chunk.nodeId}`)
                     continue
                 }
                 console.log(
-                    `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(text)}`,
+                    `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
                 // const parents = await collectGenerator(getParentNodes(node))
@@ -235,10 +240,16 @@ function SimplePromptComponent({}) {
                     prevNode = undefined
                 }
 
-                if (!text) {
-                    continue
+                if (chunk.text) {
+                    await node.setText(chunk.text)
+                } else {
+                    console.log('no text found in chunk', chunk)
                 }
-                await node.setText(text)
+
+                // TODO change href when framer supports it
+                // if (chunk.href) {
+                //     // if (!supports)
+                // }
             }
             await sleep(200)
             await rootNodes[0]?.zoomIntoView({ maxZoom: 0.7 })
