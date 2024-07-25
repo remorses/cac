@@ -35,19 +35,17 @@ export const companyName = 'Unframer'
 export const domain = env.PUBLIC_URL!.replace('https://', '').replace('/', '')
 
 export const plansConfig = [
-    {
-        variantId: 52783,
-        name: '1 hour',
-        usd: 14,
-        limits: { words: 8_000, seats: 1 },
-    },
-
     // test mode
     {
         variantId: 457634,
-        // 1 time
-        name: '1k credits', // an average landing page word length is 1k
-        limits: { words: 1000, seats: 1 }, //
+        name: '10k credits', // an average landing page word length is 1k
+        limits: { words: 12_000 }, //
+    },
+    {
+        // 1 time payment
+        variantId: 457650,
+        name: '10k credits', // an average landing page word length is 1k
+        limits: { words: 10_000 }, //
     },
 ]
 

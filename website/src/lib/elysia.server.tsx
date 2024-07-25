@@ -78,7 +78,7 @@ Instructions:
 5. Use the example content structure below as a reference for style and tone:
 
 Example Content Structure:
-${JSON.stringify(exampleTextToMigrate, null, 2)}
+${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
 Output: Provide an NDJSON list of rephrased content items. Each item should be a valid JSON object on a single line, containing 'nodeId', 'text', 'href' (if applicable), and 'previousText' fields. Ensure that:
 1. All items from the current content are represented in the output.
@@ -97,6 +97,25 @@ Return only NDJSON and not a JSON array, To think step by step you can use comme
 - The meaning of the text must be in line with the new purpose of the website but have similar semantic meaning as before, for example if the previous text was an hero/heading you should keep the same style
 - If the example texts given don't fit the text to replace because too long or too short or different in semantics, you can invent new ones that follow the same theme
 `
+}
+
+function convertExamplesToMarkdownList(
+    examples: RephraseSchema['exampleTextToMigrate'],
+) {
+    if (!examples.length) {
+        return 'No example content provided'
+    }
+    let markdown = ''
+
+    for (let example of examples) {
+        const { content, hierarchy, ...attributes } = example
+        markdown += `- section ${example.hierarchy}: ${JSON.stringify(example.content)}`
+        if (Object.keys(attributes).length) {
+            markdown += `, attributes: ${JSON.stringify(attributes)}`
+        }
+        markdown += '\n'
+    }
+    return markdown
 }
 
 export const app = new Elysia({ prefix: '/api/v1', aot: false })
