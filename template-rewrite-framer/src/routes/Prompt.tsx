@@ -225,8 +225,11 @@ function SimplePromptComponent({}) {
                     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.text)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
-                // const parents = await collectGenerator(getParentNodes(node))
-                if (node.visible) {
+                const parents = await collectGenerator(getParentNodes(node))
+                const isVisible = parents.every(
+                    (x) => !supportsVisible(x) || x.visible,
+                )
+                if (node.visible && isVisible) {
                     await node.zoomIntoView({ maxZoom: 0.9 })
                 }
 

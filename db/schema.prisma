@@ -335,7 +335,10 @@ model ScrapedWebsitePage {
 
   domain String
   data   Json
-  siteId String
+  // siteId String
+
+  byUserId  String   @db.Uuid
+  createdAt DateTime @default(now())
 
   @@schema("public")
 }

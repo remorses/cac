@@ -307,7 +307,6 @@ export interface Org {
   ssoProviderId: string | null;
   stripeCustomerId: string | null;
   updatedAt: Generated<Timestamp>;
-  usersId: string | null;
 }
 
 export interface OrgInviteLink {
@@ -319,7 +318,6 @@ export interface OrgInviteLink {
 }
 
 export interface OrgsUsers {
-  guestSiteIds: string[] | null;
   orgId: string;
   role: Generated<"ADMIN" | "GUEST" | "MEMBER">;
   userId: string;
@@ -433,12 +431,12 @@ export interface RealtimeSubscription {
   subscription_id: string;
 }
 
-export interface Site {
+export interface ScrapedWebsitePage {
+  byUserId: string;
   createdAt: Generated<Timestamp>;
-  installationId: number | null;
-  name: string;
-  orgId: string;
-  siteId: string;
+  data: Json;
+  domain: string;
+  url: string;
 }
 
 export interface StorageBuckets {
@@ -577,7 +575,7 @@ export interface DB {
   "realtime.messages": RealtimeMessages;
   "realtime.schema_migrations": RealtimeSchemaMigrations;
   "realtime.subscription": RealtimeSubscription;
-  Site: Site;
+  ScrapedWebsitePage: ScrapedWebsitePage;
   "storage.buckets": StorageBuckets;
   "storage.migrations": StorageMigrations;
   "storage.objects": StorageObjects;

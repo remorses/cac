@@ -89,6 +89,8 @@ Output: Provide an NDJSON list of rephrased content items. Each item should be a
 
 Note: The example content structure is for reference and may not cover all items in the current content. Use it as a guide for content style and tone, but ensure all current content items are processed and replaced.
 
+If there are example content structure and they fit the current semantics use those texts as replacement for the current content.
+
 Return only NDJSON and not a JSON array, To think step by step you can use comments, start a line with // if you want to reason about an item before writing it, explain why you are replacing the previous text with a new one. The things you should keep in mind when replacing old text with new one is
 
 - The size of the new text should be similar to the old text
@@ -262,6 +264,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
         '/rephrase',
         async function* ({ body, store, request }) {
             const userId = store.userId
+
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
                 throw new Response('No user id found', {
@@ -293,6 +296,9 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     console.log('chunk', chunk)
                     yield chunk
                 }
+            } catch (e) {
+                notifyError(e, 'error rephrasing ')
+                throw e
             } finally {
                 console.log('saving generation on db')
                 await Promise.all([
@@ -342,49 +348,111 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
         async function* scrape({ request, body, store }) {
             let { domain } = body
 
-            let url = domain
-            // if there is no https:// or http:// prefix, add it
-            if (!url.startsWith('https://') && !url.startsWith('http://')) {
-                url = 'https://' + url
+            const userId = store.userId
+            if (!userId) {
+                throw new Response('No user id found', {
+                    status: 401,
+                })
             }
             try {
-                new URL(url)
-            } catch (e) {
-                throw new Response('Invalid url', { status: 400 })
-            }
-
-            // if (!isValidDomain(domain)) {
-            //     throw new AppError('Invalid domain')
-            // }
-
-            yield { message: 'analyzing the website content...', object: null }
-            yield { message: 'taking screenshot of the page...', object: null }
-
-            let emitter = new EventIterator<{
-                object: RephraseSchema['exampleTextToMigrate'][0]
-                message: string
-            }>((queue) => {
-                getWebsiteInfo({
-                    url,
-                    signal: request.signal,
-                    onObject(object) {
-                        console.log('adding object to queue', object)
-                        queue.push({
-                            object,
+                let url = domain
+                // if there is no https:// or http:// prefix, add it
+                if (!url.startsWith('https://') && !url.startsWith('http://')) {
+                    url = 'https://' + url
+                }
+                try {
+                    new URL(url)
+                } catch (e) {
+                    throw new Response('Invalid url', { status: 400 })
+                }
+                const alreadyScraped = await db
+                    .selectFrom('ScrapedWebsitePage')
+                    .where('url', '=', url)
+                    .selectAll()
+                    .executeTakeFirst()
+                if (alreadyScraped) {
+                    // return { message: 'already scraped', object: null }
+                    const data = alreadyScraped?.data as any
+                    if (!Array.isArray(data)) {
+                        throw new Error(
+                            'previously scraped data is not an array',
+                        )
+                    }
+                    for (let object of data) {
+                        yield {
                             message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
+                            object,
+                        }
+                    }
+                    return
+                }
+
+                // if (!isValidDomain(domain)) {
+                //     throw new AppError('Invalid domain')
+                // }
+
+                yield {
+                    message: 'analyzing the website content...',
+                    object: null,
+                }
+                yield {
+                    message: 'taking screenshot of the page...',
+                    object: null,
+                }
+
+                let allObjects = [] as RephraseSchema['exampleTextToMigrate']
+                let emitter = new EventIterator<{
+                    object: RephraseSchema['exampleTextToMigrate'][0]
+                    message: string
+                }>((queue) => {
+                    getWebsiteInfo({
+                        url,
+                        signal: request.signal,
+                        onObject(object) {
+                            console.log('adding object to queue', object)
+                            allObjects.push(object)
+                            queue.push({
+                                object,
+                                message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
+                            })
+                        },
+                    })
+                        .then((result) => {
+                            queue.stop()
                         })
-                    },
+                        .catch((error) => {
+                            queue.fail(error)
+                        })
                 })
-                    .then((result) => {
-                        queue.stop()
-                    })
-                    .catch((error) => {
-                        queue.fail(error)
-                    })
-            })
-            for await (let chunk of emitter) {
-                console.log('chunk', chunk)
-                yield chunk
+
+                for await (let chunk of emitter) {
+                    console.log('chunk', chunk)
+                    yield chunk
+                }
+
+                let host = new URL(url).hostname
+                await Promise.all([
+                    db
+                        .insertInto('ScrapedWebsitePage')
+                        .values({
+                            url,
+                            data: JSON.stringify(allObjects),
+                            // siteId: userId,
+                            domain: host,
+                            byUserId: userId,
+                        })
+                        .onConflict((oc) => {
+                            return oc.columns(['url']).doUpdateSet({
+                                data: JSON.stringify(allObjects),
+                                createdAt: new Date(),
+                                byUserId: userId,
+                            })
+                        })
+                        .execute(),
+                ])
+            } catch (e) {
+                notifyError(e, 'error scraping website ' + domain)
+                throw e
             }
 
             // const res = await fetch(`https://${domain}`)

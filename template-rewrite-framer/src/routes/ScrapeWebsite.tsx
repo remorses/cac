@@ -103,7 +103,7 @@ function ScrapeWebsiteComponent() {
         <div className='flex flex-col justify-start gap-4'>
             <div
                 ref={containerRef}
-                onScroll={() => {
+                onWheel={() => {
                     hasScrolled.current = true
                 }}
                 className='flex h-[200px] overflow-y-auto overflow-x-hidden flex-col grow rounded justify-start gap-px'
