@@ -9,7 +9,7 @@ import { HTMLRewriter } from 'htmlrewriter'
 import { getScreenshotUrl, screenshot } from 'website/src/lib/ssr.server'
 import { env } from 'website/src/lib/env'
 import { NDJSONStream, RephraseSchema } from 'website/src/lib/elysia.server'
-
+import { splitImage } from 'website/src/lib/tile.server'
 
 import('htmlrewriter')
 
@@ -86,10 +86,11 @@ async function fetchHtml(url) {
 }
 
 export async function getWebsiteInfo({ url, signal, onObject }) {
-    const [formattedHtml, { imageUrl }] = await Promise.all([
+    const [formattedHtml, { image }] = await Promise.all([
         fetchHtml(url),
         screenshot(url),
     ])
+    const buffers = await splitImage({ imageBuffer: image })
     const stream = await streamText({
         abortSignal: signal,
         messages: [
@@ -100,11 +101,13 @@ export async function getWebsiteInfo({ url, signal, onObject }) {
             {
                 role: 'user',
                 content: [
-                    {
-                        type: 'image',
-
-                        image: imageUrl,
-                    },
+                    ...buffers.map((buffer) => {
+                        return {
+                            type: 'image' as const,
+                            mimeType: 'image/jpeg',
+                            image: buffer,
+                        }
+                    }),
                 ],
             },
         ],
