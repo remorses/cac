@@ -19,7 +19,7 @@ RUN apt update && apt install openssl ca-certificates -y \
     && rm -rf ~/root/.npm/_cacache \
     && rm -rf ~/root/.cache
 
-RUN npm install -g remix-serve-but-not-shit@latest && npm install htmlrewriter @sentry/node
+RUN npm install -g remix-serve-but-not-shit@latest && npm install htmlrewriter @sentry/node sharp
 
 COPY ./build /app/build
 

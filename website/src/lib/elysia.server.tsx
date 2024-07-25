@@ -308,7 +308,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             words,
                             orgId: userId,
                             chars,
-
+                            arguments: body,
                             createdAt: new Date(),
                         })
                         .execute(),
@@ -370,7 +370,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     .where('url', '=', url)
                     .selectAll()
                     .executeTakeFirst()
-                if (alreadyScraped) {
+                if (process.env.NODE_ENV !== 'development' && alreadyScraped) {
                     // return { message: 'already scraped', object: null }
                     const data = alreadyScraped?.data as any
                     if (!Array.isArray(data)) {
@@ -395,10 +395,10 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     message: 'analyzing the website content...',
                     object: null,
                 }
-                yield {
-                    message: 'taking screenshot of the page...',
-                    object: null,
-                }
+                // yield {
+                //     message: 'taking screenshot of the page...',
+                //     object: null,
+                // }
 
                 let allObjects = [] as RephraseSchema['exampleTextToMigrate']
                 let emitter = new EventIterator<{

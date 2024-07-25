@@ -293,6 +293,7 @@ export interface FramerLoginRequest {
 }
 
 export interface Generation {
+  arguments: Json | null;
   chars: number;
   createdAt: Generated<Timestamp>;
   id: Generated<number>;

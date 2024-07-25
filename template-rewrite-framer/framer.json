@@ -1,8 +1,9 @@
 {
-  "id": "b50ax4",
-  "name": "Template Rewrite Framer",
-  "modes": [
-    "default"
-  ],
-  "icon": "/icon.svg"
+    "id": "b50ax4",
+    "name": "Migrate",
+    "modes": ["default"],
+    "icon": "/plugins/migrate/icon.svg"
 }
+
+
+

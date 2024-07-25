@@ -43,7 +43,7 @@ export default defineConfig({
     ssr: {
         noExternal: building || undefined,
         external: building
-            ? ['@prisma/client', '@sentry/node', 'htmlrewriter']
+            ? ['@prisma/client', '@sentry/node', 'htmlrewriter', 'sharp']
             : undefined,
     },
 

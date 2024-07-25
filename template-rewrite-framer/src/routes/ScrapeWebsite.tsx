@@ -68,7 +68,7 @@ function ScrapeWebsiteComponent() {
                     }
                     console.log('chunk', chunk)
                     if (chunk.object) {
-                        exampleTextToMigrate.push(chunk.object)
+                        // exampleTextToMigrate.push(chunk.object)
                     }
 
                     flushSync(() => {

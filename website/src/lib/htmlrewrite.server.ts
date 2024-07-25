@@ -62,6 +62,7 @@ export async function formatHtmlForPrompt(input: Response) {
                     }
                 }
             },
+
             comments(comment) {
                 comment.remove()
             },
@@ -86,11 +87,15 @@ async function fetchHtml(url) {
 }
 
 export async function getWebsiteInfo({ url, signal, onObject }) {
-    const [formattedHtml, { image }] = await Promise.all([
+    const [
+        formattedHtml, //
+        // { image },
+    ] = await Promise.all([
         fetchHtml(url),
-        screenshot(url),
+
+        // screenshot(url),
     ])
-    const buffers = await splitImage({ imageBuffer: image })
+    // const buffers = await splitImage({ imageBuffer: image })
     const stream = await streamText({
         abortSignal: signal,
         messages: [
@@ -98,22 +103,22 @@ export async function getWebsiteInfo({ url, signal, onObject }) {
                 role: 'user',
                 content: makePrompt({ html: formattedHtml }),
             },
-            {
-                role: 'user',
-                content: [
-                    ...buffers.map((buffer) => {
-                        return {
-                            type: 'image' as const,
-                            mimeType: 'image/jpeg',
-                            image: buffer,
-                        }
-                    }),
-                ],
-            },
+            // {
+            //     role: 'user',
+            //     content: [
+            //         ...buffers.map((buffer) => {
+            //             return {
+            //                 type: 'image' as const,
+            //                 mimeType: 'image/jpeg',
+            //                 image: buffer,
+            //             }
+            //         }),
+            //     ],
+            // },
         ],
 
         // model: anthropic('claude-3-sonnet-20240229'),
-        model: openai('gpt-4o'),
+        model: openai('gpt-4o-mini'),
     })
     let objects = [] as RephraseSchema['exampleTextToMigrate']
     for await (let object of NDJSONStream({

@@ -43,10 +43,23 @@ export const plansConfig = [
     },
 
     // test mode
-    { variantId: 457634, name: '1 hour', limits: { words: 1000, seats: 1 } },
-    { variantId: 457648, name: '1 hour', limits: { words: 500, seats: 1 } },
-    { variantId: 457650, name: '1 hour', limits: { words: 3_000, seats: 1 } },
+    {
+        variantId: 457634,
+        // 1 time
+        name: '1k credits', // an average landing page word length is 1k
+        limits: { words: 1000, seats: 1 }, //
+    },
 ]
+
+const pricingDescription = `
+1 credit = 1 migrated word
+
+An average landing page contains 500 words
+
+Migrating a landing page manually takes around 15 minutes, using the plugin it only takes a few seconds.
+
+- 10k credits are about 20 pages, you save 
+`
 
 export const variantIdToCredits = Object.assign(
     {},
