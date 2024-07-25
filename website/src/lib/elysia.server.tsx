@@ -99,7 +99,7 @@ Return only NDJSON and not a JSON array, To think step by step you can use comme
 `
 }
 
-function convertExamplesToMarkdownList(
+export function convertExamplesToMarkdownList(
     examples: RephraseSchema['exampleTextToMigrate'],
 ) {
     if (!examples.length) {
