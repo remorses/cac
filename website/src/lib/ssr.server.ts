@@ -1,8 +1,9 @@
 import OpenAI from 'openai'
 
 import crypto from 'crypto'
-import { supabaseRef } from 'website/src/lib/env'
+import { env, supabaseRef } from 'website/src/lib/env'
 import { targetHeight, targetWidth } from 'website/src/lib/tile.server'
+import { createOpenAI } from '@ai-sdk/openai'
 
 export function generatePassword(length = 18) {
     const charset =
@@ -114,3 +115,8 @@ function formatBytes(bytes, decimals = 2) {
 export function splitIntoWords(text: string) {
     return text.split(/\s+/)
 }
+
+export const groq = createOpenAI({
+    baseURL: 'https://api.groq.com/openai/v1',
+    apiKey: env.GROQ_API_KEY,
+})

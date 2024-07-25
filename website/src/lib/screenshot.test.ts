@@ -1,10 +1,11 @@
 import { test, describe, it, expect } from 'vitest'
 import fs from 'fs'
 
-import { getBucketUrl, getScreenshotUrl, screenshot } from './ssr.server'
+import { getBucketUrl, getScreenshotUrl, groq, screenshot } from './ssr.server'
 import { splitImage } from 'website/src/lib/tile.server'
 import { streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
+import { anthropic } from '@ai-sdk/anthropic'
 
 describe('screenshot', () => {
     test(
@@ -44,10 +45,10 @@ describe('screenshot', () => {
             const buffers = await splitImage({ imageBuffer: image })
 
             const stream = await streamText({
-                model: openai('gpt-4o'),
+                model: anthropic('claude-3-haiku-20240307'),
                 messages: [
                     {
-                        content: `Give me back all the text from these images. each image is a viewport from a website. For each piece of text, add also the section of the page it is part of`,
+                        content: `Give me back all the text from these images. each image is a viewport from a website. For each piece of text, add also the section of the page it is part of. return ndjson output`,
                         role: 'user',
                     },
                     {
@@ -56,7 +57,7 @@ describe('screenshot', () => {
                             ...buffers.map((buffer) => {
                                 return {
                                     type: 'image' as const,
-                                    mimeType: 'image/jpg',
+                                    mimeType: 'image/jpeg',
                                     image: buffer,
                                 }
                             }),
