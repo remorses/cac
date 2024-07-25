@@ -105,6 +105,7 @@ export async function getWebsiteInfo({ url, signal, onObject }) {
                 content: [
                     {
                         type: 'image',
+
                         image: imageUrl,
                     },
                 ],

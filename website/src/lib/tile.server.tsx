@@ -9,7 +9,7 @@ const parts = (targetHeight * targetWidth) / (512 * 512)
 const openaiTokensCost = 85 + parts * 170
 console.log('openaiTokensCost per image piece', openaiTokensCost)
 
-export async function splitImage({ imageBuffer }) {
+export async function splitImage({ imageBuffer, imageKey = '' }) {
     let buffers = [] as Buffer[]
 
     let image = sharp(imageBuffer)
@@ -24,9 +24,13 @@ export async function splitImage({ imageBuffer }) {
     }
 
     const numImages = Math.ceil(totalHeight / targetHeight)
-    console.log('creating images', numImages)
+    console.log(`splitting into ${numImages} images`)
+    console.time(`splitter ${imageKey}`)
 
     for (let i = 0; i < numImages; i++) {
+        if (i > 0) {
+            image = sharp(imageBuffer)
+        }
         const top = i * targetHeight
         const left = 0
 
@@ -40,13 +44,16 @@ export async function splitImage({ imageBuffer }) {
             //     width: targetWidth,
             //     height: targetHeight,
             //     fit: 'contain',
+            //     position: 'top',
             //     background: { r: 255, g: 255, b: 255, alpha: 1 },
             // })
             .toBuffer()
         buffers.push(outBuffer)
-        image = sharp(imageBuffer)
+        image.destroy()
+
         // console.log(`Image ${outputImage} created successfully.`)
     }
+    console.timeEnd(`splitter ${imageKey}`)
 
     return buffers
 }
