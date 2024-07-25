@@ -98,7 +98,7 @@ export async function getOrgCredits({ orgId }) {
         totalCredits = FREE_CREDITS
     }
     return {
-        remaining: totalCredits - (allWords._sum?.words || 0),
+        remaining: Math.max(totalCredits - (allWords._sum?.words || 0), 0),
         total: totalCredits,
         used,
         free,

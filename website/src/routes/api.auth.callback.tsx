@@ -7,7 +7,6 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const code = url.searchParams.get('code') || ''
     const type = url.searchParams.get('type') || ''
-    const isFramerPlugin = url.searchParams.get('framer-plugin') || ''
 
     const next = url.searchParams.get('next') || '/x'
 
@@ -40,11 +39,18 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
                         name: user.email,
                         orgId: userId,
                         users: {
-                            connect: {
-                                userId_orgId: {
-                                    orgId: userId,
+                            connectOrCreate: {
+                                where: {
+                                    userId_orgId: {
+                                        orgId: userId,
+                                        userId: user.id,
+                                    },
+                                },
+                                create: {
                                     userId: user.id,
                                 },
+
+                                // update: {},
                             },
                         },
                     },
