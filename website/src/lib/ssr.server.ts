@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 
 import crypto from 'crypto'
 import { supabaseRef } from 'website/src/lib/env'
+import { targetHeight, targetWidth } from 'website/src/lib/tile.server'
 
 export function generatePassword(length = 18) {
     const charset =
@@ -37,9 +38,12 @@ export function getScreenshotUrl(url) {
         url,
         full_page: 'true',
         full_page_scroll: 'true',
-        viewport_width: '1920',
-        viewport_height: '1080',
+        // viewport_width: '1920',
+        // viewport_height: '1080',
         device_scale_factor: '1',
+        viewport_width: String(targetWidth),
+        viewport_height: String(targetHeight),
+        // viewport_device: 'ipad_landscape',
         format: 'jpg',
         image_quality: '80',
         block_ads: 'true',
@@ -51,7 +55,9 @@ export function getScreenshotUrl(url) {
         cache: 'true',
         cache_ttl: '14400',
         // async: 'true',
-        response_type: 'json',
+        reduced_motion: 'true',
+        block_chats: 'true',
+        // response_type: 'json',
         // store: 'true',
         // storage_path: p,
     })
@@ -82,11 +88,12 @@ export async function screenshot(url: string) {
             method: 'GET',
         },
     )
-    const json = await res.json()
+    const imageUrl = res.headers.get('x-screenshotone-cache-url') || ''
+    // const json = await res.json()
     console.timeEnd(`screenshot ${url}`)
     // console.log(`image size ${formatBytes(image.byteLength)}`)
-    const imageUrl = json.cache_url
-    return { imageUrl }
+    const image = await res.arrayBuffer()
+    return { imageUrl, image }
 }
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes'
