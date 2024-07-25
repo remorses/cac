@@ -235,7 +235,7 @@ export function createBuyLink({ email, orgId }) {
     let productId = env.PUBLIC_LEMON_PRODUCT!
 
     let url = new URL(
-        `https://tiktoktts.lemonsqueezy.com/checkout/buy/${productId}`,
+        `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
     )
     if (orgId) {
         url.searchParams.set('checkout[custom][orgId]', orgId)
