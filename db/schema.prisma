@@ -275,12 +275,12 @@ model flow_state {
 }
 
 model OrgsUsers {
-  userId       String   @db.Uuid
-  orgId        String
-  role         UserRole @default(MEMBER)
-  guestSiteIds String[]
-  org          Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-  user         users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String   @db.Uuid
+  orgId  String
+  role   UserRole @default(MEMBER)
+  // guestSiteIds String[]
+  org    Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  user   users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, orgId])
   @@index([orgId])
@@ -312,21 +312,30 @@ model Org {
   invitationLinks OrgInviteLink[]
   users           OrgsUsers[]
   payments        PaymentForCredits[]
-  sites           Site[]
+  // sites           Site[]
   subscriptions   Subscription[]
-  usersId         String?             @db.Uuid
 
   @@schema("public")
 }
 
-model Site {
-  siteId         String   @id @default(cuid())
-  name           String
-  createdAt      DateTime @default(now())
-  installationId Int?
-  orgId          String
+// model Site {
+//   siteId         String   @id @default(cuid())
+//   name           String
+//   createdAt      DateTime @default(now())
+//   installationId Int?
+//   orgId          String
 
-  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+//   org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+
+//   @@schema("public")
+// }
+
+model ScrapedWebsitePage {
+  url String @id
+
+  domain String
+  data   Json
+  siteId String
 
   @@schema("public")
 }

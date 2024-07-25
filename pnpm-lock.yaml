@@ -71,6 +71,16 @@ importers:
         specifier: ^1.183.5
         version: 1.183.5
 
+  framer-stealer:
+    dependencies:
+      posthtml:
+        specifier: ^0.16.6
+        version: 0.16.6
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.12
+        version: 20.14.12
+
   new-package-template: {}
 
   remix-serve-but-not-shit:

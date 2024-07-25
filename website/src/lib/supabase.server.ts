@@ -44,7 +44,9 @@ export function getSupabaseWithHeaders({
     response,
 }: SupabaseSessionArgs) {
     const cookies = parse(request.headers.get('Cookie') ?? '')
-    const headers = response?.headers ? new Headers(response.headers) : new Headers()
+    const headers = response?.headers
+        ? new Headers(response.headers)
+        : new Headers()
 
     const supabase = createServerClient(
         env.PUBLIC_SUPABASE_URL!,
@@ -116,3 +118,4 @@ export async function getSupabaseSession({
     const email = user?.email || ''
     return { session, email, headers, supabase, userId, user, redirectTo }
 }
+

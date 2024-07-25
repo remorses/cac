@@ -89,7 +89,7 @@ async function fetchHtml(url) {
 }
 
 export async function getWebsiteInfo({ url, signal, onObject }) {
-    const [formattedHtml, { image }] = await Promise.all([
+    const [formattedHtml, { imageUrl }] = await Promise.all([
         fetchHtml(url),
         screenshot(url),
     ])
@@ -105,7 +105,7 @@ export async function getWebsiteInfo({ url, signal, onObject }) {
                 content: [
                     {
                         type: 'image',
-                        image,
+                        image: imageUrl,
                     },
                 ],
             },

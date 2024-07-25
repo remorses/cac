@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 
 import crypto from 'crypto'
+import { supabaseRef } from 'website/src/lib/env'
 
 export function generatePassword(length = 18) {
     const charset =
@@ -10,8 +11,27 @@ export function generatePassword(length = 18) {
         .reduce((acc, byte) => acc + charset[byte % charset.length], '')
 }
 
+function getBucketFilename(url) {
+    const domain = new URL(url).hostname
+
+    let str = url
+    // remove http
+    str = str.replace(/^https?:\/\//, '')
+    // remove query params
+    str = str.replace(/\?.*/, '')
+    // remove fragment
+    str = str.replace(/#.*/, '')
+    // remove trailing slash
+    str = str.replace(/\/$/, '')
+    str = str.replace(/\//g, '-')
+    str = encodeURIComponent(str)
+    str = str + '.jpg'
+    str = `${domain}/${str}`
+    return str
+}
 export function getScreenshotUrl(url) {
     let u = new URL('https://api.screenshotone.com/take')
+    // let p = getBucketFilename(url)
     const params = new URLSearchParams({
         access_key: 'wr8HEl_Lwza8uQ',
         url,
@@ -30,9 +50,23 @@ export function getScreenshotUrl(url) {
         timeout: '60',
         cache: 'true',
         cache_ttl: '14400',
+        // async: 'true',
+        response_type: 'json',
+        // store: 'true',
+        // storage_path: p,
     })
     u.search = params.toString()
     return u.toString()
+}
+
+export function getBucketUrl(path) {
+    let p = getBucketFilename(path)
+    // if (!p.endsWIth(ext)) {
+    //     p = p + ext
+    // }
+    // https://icmbzyavxvxryaeezqfh.supabase.co/storage/v1/object/public/screenshots/docs.gitbook.com/docs.gitbook.com-integrations-install-an-integration.jpg
+    const res = `https://${supabaseRef}.supabase.co/storage/v1/object/public/screenshots/${p}`
+    return res
 }
 
 export async function screenshot(url: string) {
@@ -48,35 +82,12 @@ export async function screenshot(url: string) {
             method: 'GET',
         },
     )
-    const image = await res.arrayBuffer()
+    const json = await res.json()
     console.timeEnd(`screenshot ${url}`)
-    console.log(`image size ${formatBytes(image.byteLength)}`)
-    return { image }
+    // console.log(`image size ${formatBytes(image.byteLength)}`)
+    const imageUrl = json.cache_url
+    return { imageUrl }
 }
-export async function screenshotAndForget(url: string) {
-    console.log(`screenshotting ${url}`)
-
-    console.time(`screenshot ${url}`)
-    let u = getScreenshotUrl(url)
-    console.log('screenshot url:', u)
-    const ctrl = new AbortController()
-
-    const response = await fetch(url, { signal: ctrl.signal })
-    if (!response.body) {
-        throw new Error('Failed to screenshot')
-    }
-    if (!response.ok) {
-        throw new Error(
-            `Failed to screenshot, ${response.status} ${response.statusText}`,
-        )
-    }
-    // discard the response, i only want to trigger the screenshot fetch
-    ctrl.abort()
-    console.timeEnd(`screenshot ${url}`)
-
-    return u
-}
-
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes'
 

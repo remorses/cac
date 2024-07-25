@@ -39,8 +39,32 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
                     create: {
                         name: user.email,
                         orgId: userId,
+                        users: {
+                            connect: {
+                                userId_orgId: {
+                                    orgId: userId,
+                                    userId: user.id,
+                                },
+                            },
+                        },
                     },
-                    update: {},
+                    update: {
+                        users: {
+                            connectOrCreate: {
+                                where: {
+                                    userId_orgId: {
+                                        orgId: userId,
+                                        userId: user.id,
+                                    },
+                                },
+                                create: {
+                                    userId: user.id,
+                                },
+
+                                // update: {},
+                            },
+                        },
+                    },
                 })
             }
         }

@@ -1,9 +1,1 @@
-const controller = new AbortController()
-const timeoutId = setTimeout(() => controller.abort(), 1000)
-
-fetch('http://localhost:8040/api/test', { signal: controller.signal })
-    .then((response) => response.text())
-    .then((data) => {
-        console.log('Response:', data)
-        clearTimeout(timeoutId)
-    })
+https://framerusercontent.com/modules/8jFow9biiJtXxZV7jt8c/3c5EZIexPmCffbtgqM3n/zOCvedWwi.js
