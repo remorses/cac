@@ -4,8 +4,6 @@ import { Button } from '@/components/Button'
 import { useEffect, useRef } from 'react'
 
 export function AlreadyHaveWebsite() {
-    const firstButtonRef = useRef<any>(null)
-
     return (
         <div className='flex flex-col grow shrink-0 justify-start gap-6'>
             <div className='opacity-70'>
