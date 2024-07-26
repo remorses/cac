@@ -2,7 +2,7 @@ import { prisma } from 'db/prisma'
 import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 
-const FREE_CREDITS = 100
+const FREE_CREDITS = 500
 
 export async function getOrgSubscriptions({ orgId }) {
     const subs = await prisma.subscription.findMany({
