@@ -147,14 +147,17 @@ export async function getDesktop() {
     //     ),
     // )
     const root = await framer.getCanvasRoot()
+    
     const children = await root.getChildren()
+    // console.log('children', children)
     const desktop = children.find((node) => {
         if (isFrameNode(node)) {
-            return node.name === 'Desktop'
+            return !node.isReplica
         }
     })
     return desktop
 }
+Object.assign(globalThis, { getDesktop })
 
 function isRootLevelNode(node: AnyNode) {
     return isComponentNode(node) || isWebPageNode(node)
