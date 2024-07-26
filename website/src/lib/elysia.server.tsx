@@ -90,7 +90,7 @@ ${convertExamplesToMarkdownList(exampleTextToMigrate)}
 Output: Provide an NDJSON list of rephrased content items. Each item should be a valid JSON object on a single line, containing 'nodeId', 'text', 'href' (if applicable), and 'previousText' fields. Ensure that:
 1. All items from the template content should be represented in the output.
 2. Each output item uses the exact nodeId from the corresponding template item.
-3. The 'text' field contains the new content based on the new website description and the migrated website content.
+3. The 'text' field contains the new content based on the new website description and the migrated website content but with similar length to the template text that it replaces.
 4. The 'href' field is updated if present and relevant to the new content.
 5. The 'previousText' field contains the original text from the template.
 
