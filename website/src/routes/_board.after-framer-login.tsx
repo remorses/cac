@@ -1,30 +1,7 @@
-import { zfd } from 'zod-form-data'
-import { z } from 'zod'
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
-import {
-    json,
-    useSubmit,
-    useLoaderData,
-    useSearchParams,
-    redirect,
-    useNavigation,
-    useActionData,
-    Form,
-} from '@remix-run/react'
-import { useState } from 'react'
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-    InputOTPSeparator,
-} from '../components/otp'
-import { getSupabaseSession } from '../lib/supabase.server'
-import { Button } from '@nextui-org/react'
-import { notifyError } from '../lib/errors'
-import { fromZodError } from 'zod-validation-error'
-import NavFramerComponent from '../framer/nav'
+import { LoaderFunctionArgs } from '@remix-run/node'
 import { db } from 'db/kysely'
 import { generatePassword } from 'website/src/lib/ssr.server'
+import { getSupabaseSession } from '../lib/supabase.server'
 
 export default function Page({}) {
     return (

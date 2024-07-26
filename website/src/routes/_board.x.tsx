@@ -1,20 +1,13 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 
+import { Link } from '@nextui-org/react'
 import { json } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import {
-    createSupabaseAdmin,
-    createSupabaseAnon,
-    getSupabaseSession,
-} from '../lib/supabase.server'
-import { RaycastLink } from '../components/RaycastLink'
-import { raycastLink } from '../lib/utils'
-import { Link } from '@nextui-org/react'
-import { framerUrl } from '../lib/env'
-import { BlockWithStep } from '../components/BlockWithStep'
-import { generatePassword } from 'website/src/lib/ssr.server'
-import { notifyError } from '../lib/errors'
 import { db } from 'db/kysely'
+import { generatePassword } from 'website/src/lib/ssr.server'
+import { BlockWithStep } from '../components/BlockWithStep'
+import { framerUrl, installFramerPluginUrl } from '../lib/env'
+import { createSupabaseAnon, getSupabaseSession } from '../lib/supabase.server'
 
 export let loader = async ({ request, response }: LoaderFunctionArgs) => {
     const { headers, supabase, user, redirectTo } = await getSupabaseSession({
@@ -87,39 +80,28 @@ export default function Page() {
 
     return (
         <div className='flex max-w-[500px] flex-col items-center gap-4'>
-            <h1 className='text-2xl font-semibold'>Crisp Setup Completed</h1>
+            <h1 className='text-2xl font-semibold'>Plugin Setup Completed</h1>
             <BlockWithStep step={1}>
                 <div className=''>
                     <Link
                         target='_blank'
-                        href='https://www.raycast.com/?via=tommy'
+                        href={installFramerPluginUrl}
                         className='underline'
                     >
-                        Install Raycast
+                        Install the Framer plugin
                     </Link>{' '}
                     if not already installed
                 </div>
             </BlockWithStep>
-            <BlockWithStep step={2}>
+            <BlockWithStep isLast step={2}>
                 <div className=''>
                     <Link
+                        target='_blank'
                         className='underline'
-                        href='raycast://extensions/xmorse/crisp'
+                        href={framerUrl}
                     >
-                        Install the Crisp Raycast extension
+                        Open Framer and use the plugin
                     </Link>
-                </div>
-            </BlockWithStep>
-            <BlockWithStep step={3} isLast>
-                <Link
-                    className='underline'
-                    href={raycastLink({ session: sessionToPass })}
-                >
-                    Open Raycast Extension
-                </Link>
-                <div className=''>
-                    After opening the Raycast extension you will be logged in
-                    and be able to use it right away
                 </div>
             </BlockWithStep>
         </div>

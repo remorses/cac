@@ -12,7 +12,6 @@ export interface Props {
     layoutId?: string
     "variant"?: 'desktop' | 'mobile'
     "cta"?: string
-    "secondButton"?: string
 }
 
 const HeroFramerComponent = (props: Props) => any

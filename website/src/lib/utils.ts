@@ -14,9 +14,6 @@ export function otpRedirectLink({ email, next = '' }) {
 
     return u.toString()
 }
-export function raycastLink({ session }) {
-    return `raycast://extensions/xmorse/crisp/index?context=${encodeURIComponent(JSON.stringify({ session }))}`
-}
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {
@@ -39,7 +36,3 @@ export function generateSecurePassword() {
         .map((x) => charset[x % charset.length])
         .join('')
 }
-
-
-
-

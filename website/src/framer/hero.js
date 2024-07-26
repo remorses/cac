@@ -1,11 +1,11 @@
 // @ts-nocheck
 /* eslint-disable */
 'use client';
+import { stdin_default, } from './chunk-77TCC3UJ.js';
+import './chunk-BXVXQGVE.js';
 import { className, css, fonts, } from './chunk-CNV3GALY.js';
-import { stdin_default, } from './chunk-KKIRLALR.js';
-import './chunk-KWNUSLWD.js';
 
-// https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/sga3kdjVgY4aPHBjm5Xh/LirT6SjMX.js
+// https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/SvTRsxHyijbaaWmponPL/LirT6SjMX.js
 import { jsx as _jsx, jsxs as _jsxs, } from 'react/jsx-runtime';
 import {
   addFonts,
@@ -68,13 +68,13 @@ var css3 = [
 ];
 var className3 = 'framer-jklmq';
 
-// https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/sga3kdjVgY4aPHBjm5Xh/LirT6SjMX.js
+// https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/SvTRsxHyijbaaWmponPL/LirT6SjMX.js
 var MotionDivWithFX = withFX(motion.div,);
 var RichTextWithFX = withFX(RichText,);
 var ButtonFonts = getFonts(stdin_default,);
 var ImageWithFX = withFX(Image,);
 var cycleOrder = ['vRnRUmMJX', 'Cnq7mk0QR',];
-var serializationHash = 'framer-tGpJb';
+var serializationHash = 'framer-hbWP0';
 var variantClassNames = { Cnq7mk0QR: 'framer-v-1two4n1', vRnRUmMJX: 'framer-v-1mb467i', };
 function addPropertyOverrides(overrides, ...variants) {
   const nextOverrides = {};
@@ -98,7 +98,7 @@ var Transition = ({ value, children, },) => {
 };
 var Variants = motion(React.Fragment,);
 var humanReadableVariantMap = { desktop: 'vRnRUmMJX', mobile: 'Cnq7mk0QR', };
-var getProps = ({ cta, height, id, secondButton, width, ...props },) => {
+var getProps = ({ cta, height, id, width, ...props },) => {
   var _humanReadableVariantMap_props_variant, _ref;
   return {
     ...props,
@@ -111,7 +111,6 @@ var getProps = ({ cta, height, id, secondButton, width, ...props },) => {
               : props.variant) !== null && _ref !== void 0
         ? _ref
         : 'vRnRUmMJX',
-    Y1PuWnmSX: secondButton !== null && secondButton !== void 0 ? secondButton : props.Y1PuWnmSX,
   };
 };
 var createLayoutDependency = (props, variants,) => {
@@ -120,7 +119,7 @@ var createLayoutDependency = (props, variants,) => {
 };
 var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
   const { activeLocale, setLocale, } = useLocaleInfo();
-  const { style, className: className4, layoutId, variant, jxBYhHGta, Y1PuWnmSX, ...restProps } = getProps(props,);
+  const { style, className: className4, layoutId, variant, jxBYhHGta, ...restProps } = getProps(props,);
   const {
     baseVariant,
     classNames,
@@ -256,7 +255,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                                 '--framer-text-color':
                                   'var(--extracted-gdpscs, var(--token-b50174c0-f355-49d1-a882-48c9e51b5466, rgb(255, 255, 255)))',
                               },
-                              children: 'Migrate your website to Framer in minutes, using the best AI',
+                              children: 'Migrate your website to Framer in minutes, using AI',
                             },),
                           },),
                           className: 'framer-olsjb5',
@@ -291,7 +290,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                                   'var(--extracted-r6o4lv, var(--token-b50174c0-f355-49d1-a882-48c9e51b5466, rgb(255, 255, 255)))',
                               },
                               children:
-                                'Unframer Template Rewrite let\'s you replace the content of a website template with new content. Migrate from an existing website or describe the new purpose. Use AI to save tiem and money.',
+                                'Template Migration let\'s you replace the content of a website template with new content. Migrate from an existing website or describe the new purpose. Use AI to save time and money.',
                             },),
                           },),
                           className: 'framer-1h3q3sx',
@@ -313,65 +312,37 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                     },),
                   ],
                 },),
-                /* @__PURE__ */ _jsxs(motion.div, {
+                /* @__PURE__ */ _jsx(motion.div, {
                   className: 'framer-32euzm',
                   'data-framer-name': 'Buttons',
                   layoutDependency,
                   layoutId: 'RvdNBivRW',
-                  children: [
-                    /* @__PURE__ */ _jsx(ComponentViewportProvider, {
-                      children: /* @__PURE__ */ _jsx(MotionDivWithFX, {
-                        __framer__animate: { transition: transition5, },
-                        __framer__animateOnce: true,
-                        __framer__enter: animation1,
-                        __framer__styleAppearEffectEnabled: true,
-                        __framer__threshold: 0.5,
-                        __perspectiveFX: false,
-                        __smartComponentFX: true,
-                        __targetOpacity: 1,
-                        className: 'framer-1bdptwc-container',
-                        layoutDependency,
-                        layoutId: 'RvYP8oKYm-container',
-                        style: { transformPerspective: 1200, },
-                        children: /* @__PURE__ */ _jsx(stdin_default, {
-                          c0gn5OQjt: 'Install Framer Plugin',
-                          FDhu5wZJE: jxBYhHGta,
-                          height: '100%',
-                          id: 'RvYP8oKYm',
-                          layoutId: 'RvYP8oKYm',
-                          qyxXbxBX2: false,
-                          variant: 'HpACQO_27',
-                          width: '100%',
-                        },),
+                  children: /* @__PURE__ */ _jsx(ComponentViewportProvider, {
+                    children: /* @__PURE__ */ _jsx(MotionDivWithFX, {
+                      __framer__animate: { transition: transition5, },
+                      __framer__animateOnce: true,
+                      __framer__enter: animation1,
+                      __framer__styleAppearEffectEnabled: true,
+                      __framer__threshold: 0.5,
+                      __perspectiveFX: false,
+                      __smartComponentFX: true,
+                      __targetOpacity: 1,
+                      className: 'framer-1bdptwc-container',
+                      layoutDependency,
+                      layoutId: 'RvYP8oKYm-container',
+                      style: { transformPerspective: 1200, },
+                      children: /* @__PURE__ */ _jsx(stdin_default, {
+                        c0gn5OQjt: 'Install Framer Plugin',
+                        FDhu5wZJE: jxBYhHGta,
+                        height: '100%',
+                        id: 'RvYP8oKYm',
+                        layoutId: 'RvYP8oKYm',
+                        qyxXbxBX2: false,
+                        variant: 'HpACQO_27',
+                        width: '100%',
                       },),
                     },),
-                    /* @__PURE__ */ _jsx(ComponentViewportProvider, {
-                      children: /* @__PURE__ */ _jsx(MotionDivWithFX, {
-                        __framer__animate: { transition: transition5, },
-                        __framer__animateOnce: true,
-                        __framer__enter: animation1,
-                        __framer__styleAppearEffectEnabled: true,
-                        __framer__threshold: 0.5,
-                        __perspectiveFX: false,
-                        __smartComponentFX: true,
-                        __targetOpacity: 1,
-                        className: 'framer-1jfxqzy-container',
-                        layoutDependency,
-                        layoutId: 'NRjt9PlvN-container',
-                        style: { transformPerspective: 1200, },
-                        children: /* @__PURE__ */ _jsx(stdin_default, {
-                          c0gn5OQjt: 'See How It Works',
-                          FDhu5wZJE: Y1PuWnmSX,
-                          height: '100%',
-                          id: 'NRjt9PlvN',
-                          layoutId: 'NRjt9PlvN',
-                          qyxXbxBX2: true,
-                          variant: 'B3GNqKG_s',
-                          width: '100%',
-                        },),
-                      },),
-                    },),
-                  ],
+                  },),
                 },),
               ],
             },),
@@ -411,33 +382,32 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
 },);
 var css4 = [
   '@supports (aspect-ratio: 1) { body { --framer-aspect-ratio-supported: auto; } }',
-  '.framer-tGpJb.framer-1snacmi, .framer-tGpJb .framer-1snacmi { display: block; }',
-  '.framer-tGpJb.framer-1mb467i { align-content: flex-start; align-items: flex-start; display: flex; flex-direction: row; flex-wrap: nowrap; gap: 80px; height: min-content; justify-content: flex-start; max-width: 1140px; overflow: visible; padding: 0px; position: relative; width: 1140px; }',
-  '.framer-tGpJb .framer-1v6jdq1 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 40px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 53%; }',
-  '.framer-tGpJb .framer-70n4j9 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 14px; height: min-content; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 100%; }',
-  '.framer-tGpJb .framer-owqq5l { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: 37px; justify-content: center; overflow: hidden; padding: 1px; position: relative; width: min-content; will-change: var(--framer-will-change-override, transform); }',
-  '.framer-tGpJb .framer-ugtfhf { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 4px; height: 35px; justify-content: center; overflow: visible; padding: 4px 16px 6px 16px; position: relative; width: min-content; }',
-  '.framer-tGpJb .framer-1kou8yj { flex: none; height: auto; position: relative; white-space: pre; width: auto; }',
-  '.framer-tGpJb .framer-19v84o2 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 20px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
-  '.framer-tGpJb .framer-olsjb5, .framer-tGpJb .framer-1h3q3sx { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
-  '.framer-tGpJb .framer-32euzm { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 32px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
-  '.framer-tGpJb .framer-1bdptwc-container, .framer-tGpJb .framer-1jfxqzy-container { flex: none; height: auto; position: relative; width: auto; }',
-  '.framer-tGpJb .framer-1los5q4 { aspect-ratio: 0.8911353032659409 / 1; bottom: -77px; flex: none; height: var(--framer-aspect-ratio-supported, 643px); position: absolute; right: -109px; top: -130px; width: 50%; z-index: 1; }',
-  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-tGpJb.framer-1mb467i, .framer-tGpJb .framer-1v6jdq1, .framer-tGpJb .framer-70n4j9, .framer-tGpJb .framer-owqq5l, .framer-tGpJb .framer-ugtfhf, .framer-tGpJb .framer-19v84o2, .framer-tGpJb .framer-32euzm { gap: 0px; } .framer-tGpJb.framer-1mb467i > * { margin: 0px; margin-left: calc(80px / 2); margin-right: calc(80px / 2); } .framer-tGpJb.framer-1mb467i > :first-child, .framer-tGpJb .framer-owqq5l > :first-child, .framer-tGpJb .framer-ugtfhf > :first-child, .framer-tGpJb .framer-32euzm > :first-child { margin-left: 0px; } .framer-tGpJb.framer-1mb467i > :last-child, .framer-tGpJb .framer-owqq5l > :last-child, .framer-tGpJb .framer-ugtfhf > :last-child, .framer-tGpJb .framer-32euzm > :last-child { margin-right: 0px; } .framer-tGpJb .framer-1v6jdq1 > * { margin: 0px; margin-bottom: calc(40px / 2); margin-top: calc(40px / 2); } .framer-tGpJb .framer-1v6jdq1 > :first-child, .framer-tGpJb .framer-70n4j9 > :first-child, .framer-tGpJb .framer-19v84o2 > :first-child { margin-top: 0px; } .framer-tGpJb .framer-1v6jdq1 > :last-child, .framer-tGpJb .framer-70n4j9 > :last-child, .framer-tGpJb .framer-19v84o2 > :last-child { margin-bottom: 0px; } .framer-tGpJb .framer-70n4j9 > * { margin: 0px; margin-bottom: calc(14px / 2); margin-top: calc(14px / 2); } .framer-tGpJb .framer-owqq5l > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-tGpJb .framer-ugtfhf > * { margin: 0px; margin-left: calc(4px / 2); margin-right: calc(4px / 2); } .framer-tGpJb .framer-19v84o2 > * { margin: 0px; margin-bottom: calc(20px / 2); margin-top: calc(20px / 2); } .framer-tGpJb .framer-32euzm > * { margin: 0px; margin-left: calc(32px / 2); margin-right: calc(32px / 2); } }',
-  '.framer-tGpJb.framer-v-1two4n1.framer-1mb467i { width: 500px; }',
-  '.framer-tGpJb.framer-v-1two4n1 .framer-1v6jdq1 { width: 100%; }',
+  '.framer-hbWP0.framer-1snacmi, .framer-hbWP0 .framer-1snacmi { display: block; }',
+  '.framer-hbWP0.framer-1mb467i { align-content: flex-start; align-items: flex-start; display: flex; flex-direction: row; flex-wrap: nowrap; gap: 80px; height: min-content; justify-content: flex-start; max-width: 1140px; overflow: visible; padding: 0px; position: relative; width: 1140px; }',
+  '.framer-hbWP0 .framer-1v6jdq1 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 40px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 53%; }',
+  '.framer-hbWP0 .framer-70n4j9 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 14px; height: min-content; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 100%; }',
+  '.framer-hbWP0 .framer-owqq5l { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: 37px; justify-content: center; overflow: hidden; padding: 1px; position: relative; width: min-content; will-change: var(--framer-will-change-override, transform); }',
+  '.framer-hbWP0 .framer-ugtfhf { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 4px; height: 35px; justify-content: center; overflow: visible; padding: 4px 16px 6px 16px; position: relative; width: min-content; }',
+  '.framer-hbWP0 .framer-1kou8yj { flex: none; height: auto; position: relative; white-space: pre; width: auto; }',
+  '.framer-hbWP0 .framer-19v84o2 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 20px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
+  '.framer-hbWP0 .framer-olsjb5, .framer-hbWP0 .framer-1h3q3sx { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
+  '.framer-hbWP0 .framer-32euzm { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 32px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
+  '.framer-hbWP0 .framer-1bdptwc-container { flex: none; height: auto; position: relative; width: auto; }',
+  '.framer-hbWP0 .framer-1los5q4 { aspect-ratio: 0.8911353032659409 / 1; bottom: -77px; flex: none; height: var(--framer-aspect-ratio-supported, 643px); position: absolute; right: -109px; top: -130px; width: 50%; z-index: 1; }',
+  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-hbWP0.framer-1mb467i, .framer-hbWP0 .framer-1v6jdq1, .framer-hbWP0 .framer-70n4j9, .framer-hbWP0 .framer-owqq5l, .framer-hbWP0 .framer-ugtfhf, .framer-hbWP0 .framer-19v84o2, .framer-hbWP0 .framer-32euzm { gap: 0px; } .framer-hbWP0.framer-1mb467i > * { margin: 0px; margin-left: calc(80px / 2); margin-right: calc(80px / 2); } .framer-hbWP0.framer-1mb467i > :first-child, .framer-hbWP0 .framer-owqq5l > :first-child, .framer-hbWP0 .framer-ugtfhf > :first-child, .framer-hbWP0 .framer-32euzm > :first-child { margin-left: 0px; } .framer-hbWP0.framer-1mb467i > :last-child, .framer-hbWP0 .framer-owqq5l > :last-child, .framer-hbWP0 .framer-ugtfhf > :last-child, .framer-hbWP0 .framer-32euzm > :last-child { margin-right: 0px; } .framer-hbWP0 .framer-1v6jdq1 > * { margin: 0px; margin-bottom: calc(40px / 2); margin-top: calc(40px / 2); } .framer-hbWP0 .framer-1v6jdq1 > :first-child, .framer-hbWP0 .framer-70n4j9 > :first-child, .framer-hbWP0 .framer-19v84o2 > :first-child { margin-top: 0px; } .framer-hbWP0 .framer-1v6jdq1 > :last-child, .framer-hbWP0 .framer-70n4j9 > :last-child, .framer-hbWP0 .framer-19v84o2 > :last-child { margin-bottom: 0px; } .framer-hbWP0 .framer-70n4j9 > * { margin: 0px; margin-bottom: calc(14px / 2); margin-top: calc(14px / 2); } .framer-hbWP0 .framer-owqq5l > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-hbWP0 .framer-ugtfhf > * { margin: 0px; margin-left: calc(4px / 2); margin-right: calc(4px / 2); } .framer-hbWP0 .framer-19v84o2 > * { margin: 0px; margin-bottom: calc(20px / 2); margin-top: calc(20px / 2); } .framer-hbWP0 .framer-32euzm > * { margin: 0px; margin-left: calc(32px / 2); margin-right: calc(32px / 2); } }',
+  '.framer-hbWP0.framer-v-1two4n1.framer-1mb467i { width: 500px; }',
+  '.framer-hbWP0.framer-v-1two4n1 .framer-1v6jdq1 { width: 100%; }',
   ...css,
   ...css2,
   ...css3,
 ];
-var FramerLirT6SjMX = withCSS(Component, css4, 'framer-tGpJb',);
+var FramerLirT6SjMX = withCSS(Component, css4, 'framer-hbWP0',);
 var stdin_default2 = FramerLirT6SjMX;
 FramerLirT6SjMX.displayName = 'Hero';
-FramerLirT6SjMX.defaultProps = { height: 496, width: 1140, };
+FramerLirT6SjMX.defaultProps = { height: 465, width: 1140, };
 addPropertyControls(FramerLirT6SjMX, {
   variant: { options: ['vRnRUmMJX', 'Cnq7mk0QR',], optionTitles: ['desktop', 'mobile',], title: 'Variant', type: ControlType.Enum, },
   jxBYhHGta: { title: 'cta', type: ControlType.Link, },
-  Y1PuWnmSX: { title: 'secondButton', type: ControlType.Link, },
 },);
 addFonts(FramerLirT6SjMX, [
   {
@@ -447,35 +417,35 @@ addFonts(FramerLirT6SjMX, [
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F',
-      url: 'https://app.framerstatic.com/Inter-Regular.cyrillic-ext-CFTLRB35.woff2',
+      url: 'https://framerusercontent.com/assets/5vvr9Vy74if2I6bQbJvbw7SY1pQ.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116',
-      url: 'https://app.framerstatic.com/Inter-Regular.cyrillic-KKLZBALH.woff2',
+      url: 'https://framerusercontent.com/assets/EOr0mi4hNtlgWNn9if640EZzXCo.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+1F00-1FFF',
-      url: 'https://app.framerstatic.com/Inter-Regular.greek-ext-ULEBLIFV.woff2',
+      url: 'https://framerusercontent.com/assets/Y9k9QrlZAqio88Klkmbd8VoMQc.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0370-03FF',
-      url: 'https://app.framerstatic.com/Inter-Regular.greek-IRHSNFQB.woff2',
+      url: 'https://framerusercontent.com/assets/OYrD2tBIBPvoJXiIHnLoOXnY9M.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF',
-      url: 'https://app.framerstatic.com/Inter-Regular.latin-ext-VZDUGU3Q.woff2',
+      url: 'https://framerusercontent.com/assets/JeYwfuaPfZHQhEG8U5gtPDZ7WQ.woff2',
       weight: '400',
     }, {
       family: 'Inter',
@@ -483,14 +453,14 @@ addFonts(FramerLirT6SjMX, [
       style: 'normal',
       unicodeRange:
         'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD',
-      url: 'https://app.framerstatic.com/Inter-Regular.latin-JLQMKCHE.woff2',
+      url: 'https://framerusercontent.com/assets/vQyevYAyHtARFwPqUzQGpnDs.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB',
-      url: 'https://app.framerstatic.com/Inter-Regular.vietnamese-QK7VSWXK.woff2',
+      url: 'https://framerusercontent.com/assets/b6Y37FthZeALduNqHicBT6FutY.woff2',
       weight: '400',
     },],
   },

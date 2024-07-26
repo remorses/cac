@@ -286,7 +286,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/PunbTAM0YOoCAxOb0Z6w/lJnVHZiW49Phqk9vljQr/dNJjz5Q4p.js": {
+    "https :https://framerusercontent.com/modules/j7icFaVeLgNEYkdv6UXW/5EVmg4HdKBDpAIaz2YRX/dNJjz5Q4p.js": {
       "bytes": 1310,
       "imports": [
         {
@@ -312,34 +312,8 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js": {
-      "bytes": 1680,
-      "imports": [
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/buffer.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/process.js",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js": {
-      "bytes": 18439,
+    "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js": {
+      "bytes": 20019,
       "imports": [
         {
           "path": "react/jsx-runtime",
@@ -367,14 +341,14 @@
           "original": "https://framerusercontent.com/modules/f0DboytQenYh21kfme7W/zb1zVBMZJKgPMiedOi0y/Feather.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/PunbTAM0YOoCAxOb0Z6w/lJnVHZiW49Phqk9vljQr/dNJjz5Q4p.js",
+          "path": "https :https://framerusercontent.com/modules/j7icFaVeLgNEYkdv6UXW/5EVmg4HdKBDpAIaz2YRX/dNJjz5Q4p.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/PunbTAM0YOoCAxOb0Z6w/lJnVHZiW49Phqk9vljQr/dNJjz5Q4p.js"
+          "original": "https://framerusercontent.com/modules/j7icFaVeLgNEYkdv6UXW/5EVmg4HdKBDpAIaz2YRX/dNJjz5Q4p.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js",
+          "path": "https :https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js"
+          "original": "https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js"
         },
         {
           "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
@@ -394,8 +368,8 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/sga3kdjVgY4aPHBjm5Xh/LirT6SjMX.js": {
-      "bytes": 20179,
+    "https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/SvTRsxHyijbaaWmponPL/LirT6SjMX.js": {
+      "bytes": 19244,
       "imports": [
         {
           "path": "react/jsx-runtime",
@@ -433,9 +407,9 @@
           "original": "https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js",
+          "path": "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js"
+          "original": "https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js"
         },
         {
           "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
@@ -459,9 +433,9 @@
       "bytes": 536,
       "imports": [
         {
-          "path": "https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/sga3kdjVgY4aPHBjm5Xh/LirT6SjMX.js",
+          "path": "https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/SvTRsxHyijbaaWmponPL/LirT6SjMX.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/sga3kdjVgY4aPHBjm5Xh/LirT6SjMX.js"
+          "original": "https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/SvTRsxHyijbaaWmponPL/LirT6SjMX.js"
         },
         {
           "path": "unframer",
@@ -604,7 +578,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/mZoWK8Epp6w0rOOwFwud/A5AavTqKgg8Mu9oMgSrZ/DrH7EbF3F.js": {
+    "https :https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js": {
       "bytes": 1676,
       "imports": [
         {
@@ -630,7 +604,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js": {
+    "https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js": {
       "bytes": 1680,
       "imports": [
         {
@@ -656,7 +630,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/ncTpzEiw3qNOep3VTZcG/3aEAyRlZV6QPh0MaDd3X/IV_7SD635.js": {
+    "https :https://framerusercontent.com/modules/kAkfnSOt04sdReKKUhIh/0u6hZosTUGFGO7PkZ5Zq/IV_7SD635.js": {
       "bytes": 9606,
       "imports": [
         {
@@ -707,7 +681,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/bJ4nouCX6S7ru7M3Mm9n/SL9GMj1xQQGeqnhpBgEj/jqK_GhKTO.js": {
+    "https :https://framerusercontent.com/modules/A6CsajQJnG9pUkwZlatc/L48pimMNsc6uDEEqWtZG/jqK_GhKTO.js": {
       "bytes": 14039,
       "imports": [
         {
@@ -753,8 +727,8 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/4oe8dVmmOUeHIFH61Xz3/NizLRy1Ia.js": {
-      "bytes": 30615,
+    "https :https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/7wWOVOeFNMCjZiLlM9zv/NizLRy1Ia.js": {
+      "bytes": 30504,
       "imports": [
         {
           "path": "react/jsx-runtime",
@@ -777,24 +751,24 @@
           "external": true
         },
         {
-          "path": "https :https://framerusercontent.com/modules/mZoWK8Epp6w0rOOwFwud/A5AavTqKgg8Mu9oMgSrZ/DrH7EbF3F.js",
+          "path": "https :https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/mZoWK8Epp6w0rOOwFwud/A5AavTqKgg8Mu9oMgSrZ/DrH7EbF3F.js"
+          "original": "https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js",
+          "path": "https :https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js"
+          "original": "https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/ncTpzEiw3qNOep3VTZcG/3aEAyRlZV6QPh0MaDd3X/IV_7SD635.js",
+          "path": "https :https://framerusercontent.com/modules/kAkfnSOt04sdReKKUhIh/0u6hZosTUGFGO7PkZ5Zq/IV_7SD635.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/ncTpzEiw3qNOep3VTZcG/3aEAyRlZV6QPh0MaDd3X/IV_7SD635.js"
+          "original": "https://framerusercontent.com/modules/kAkfnSOt04sdReKKUhIh/0u6hZosTUGFGO7PkZ5Zq/IV_7SD635.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/bJ4nouCX6S7ru7M3Mm9n/SL9GMj1xQQGeqnhpBgEj/jqK_GhKTO.js",
+          "path": "https :https://framerusercontent.com/modules/A6CsajQJnG9pUkwZlatc/L48pimMNsc6uDEEqWtZG/jqK_GhKTO.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/bJ4nouCX6S7ru7M3Mm9n/SL9GMj1xQQGeqnhpBgEj/jqK_GhKTO.js"
+          "original": "https://framerusercontent.com/modules/A6CsajQJnG9pUkwZlatc/L48pimMNsc6uDEEqWtZG/jqK_GhKTO.js"
         },
         {
           "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
@@ -818,9 +792,9 @@
       "bytes": 536,
       "imports": [
         {
-          "path": "https :https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/4oe8dVmmOUeHIFH61Xz3/NizLRy1Ia.js",
+          "path": "https :https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/7wWOVOeFNMCjZiLlM9zv/NizLRy1Ia.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/4oe8dVmmOUeHIFH61Xz3/NizLRy1Ia.js"
+          "original": "https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/7wWOVOeFNMCjZiLlM9zv/NizLRy1Ia.js"
         },
         {
           "path": "unframer",
@@ -844,32 +818,6 @@
         },
         {
           "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "https :https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js": {
-      "bytes": 1676,
-      "imports": [
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/buffer.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/process.js",
           "kind": "import-statement",
           "external": true
         }
@@ -904,6 +852,32 @@
     },
     "https :https://framerusercontent.com/modules/ra7z0x7nlqigYbtDhvch/vfdPRWNijyX5SBpnfPsH/s9en4OXwY.js": {
       "bytes": 4001,
+      "imports": [
+        {
+          "path": "unframer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/buffer.js",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/process.js",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "https :https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js": {
+      "bytes": 1680,
       "imports": [
         {
           "path": "unframer",
@@ -1020,7 +994,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/qFPFyM8uFxc3sIIBn5da/FF233TYmj.js": {
+    "https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/9ZeDXZdon4VCVRShAGCH/FF233TYmj.js": {
       "bytes": 16583,
       "imports": [
         {
@@ -1049,9 +1023,9 @@
           "original": "https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js",
+          "path": "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js"
+          "original": "https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js"
         },
         {
           "path": "https :https://framerusercontent.com/modules/kP7xAAicJeYaL0OLSj6s/WcYsne6sasJTjPTuxVr8/THPkjzinl.js",
@@ -1080,9 +1054,9 @@
       "bytes": 536,
       "imports": [
         {
-          "path": "https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/qFPFyM8uFxc3sIIBn5da/FF233TYmj.js",
+          "path": "https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/9ZeDXZdon4VCVRShAGCH/FF233TYmj.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/qFPFyM8uFxc3sIIBn5da/FF233TYmj.js"
+          "original": "https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/9ZeDXZdon4VCVRShAGCH/FF233TYmj.js"
         },
         {
           "path": "unframer",
@@ -1106,57 +1080,6 @@
         },
         {
           "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "https :https://framerusercontent.com/modules/kAkfnSOt04sdReKKUhIh/0u6hZosTUGFGO7PkZ5Zq/IV_7SD635.js": {
-      "bytes": 9606,
-      "imports": [
-        {
-          "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "react",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "https :https://framerusercontent.com/modules/f0DboytQenYh21kfme7W/zb1zVBMZJKgPMiedOi0y/Feather.js",
-          "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/f0DboytQenYh21kfme7W/zb1zVBMZJKgPMiedOi0y/Feather.js"
-        },
-        {
-          "path": "https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js",
-          "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js"
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/buffer.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/process.js",
           "kind": "import-statement",
           "external": true
         }
@@ -1209,8 +1132,8 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/dKg5rDbayEktdJbCwuB1/r0p3rFHc4mjwL7KQFCYm/CvbbKj53l.js": {
-      "bytes": 7129,
+    "https :https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/Z8AcvvGgDiAZeg5bZJQC/QLknypMkX.js": {
+      "bytes": 6850,
       "imports": [
         {
           "path": "react/jsx-runtime",
@@ -1250,53 +1173,7 @@
       ],
       "format": "esm"
     },
-    "https :https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/91RtidN3J7cJm1w6cSTH/QLknypMkX.js": {
-      "bytes": 6309,
-      "imports": [
-        {
-          "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "react",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "https :https://framerusercontent.com/modules/dKg5rDbayEktdJbCwuB1/r0p3rFHc4mjwL7KQFCYm/CvbbKj53l.js",
-          "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/dKg5rDbayEktdJbCwuB1/r0p3rFHc4mjwL7KQFCYm/CvbbKj53l.js"
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/buffer.js",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/process.js",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "https :https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/Dn85CFVPZAvaEjA3D5y3/z1yZy51UW.js": {
+    "https :https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/yAHySWojTfAjQ2RHNLd5/z1yZy51UW.js": {
       "bytes": 20038,
       "imports": [
         {
@@ -1330,14 +1207,14 @@
           "original": "https://framerusercontent.com/modules/5Rc4A3RzO15jP4nzpdGK/WfiHNmASBA7fnb58Gyss/KcSL_pfvh.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js",
+          "path": "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js"
+          "original": "https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js"
         },
         {
-          "path": "https :https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/91RtidN3J7cJm1w6cSTH/QLknypMkX.js",
+          "path": "https :https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/Z8AcvvGgDiAZeg5bZJQC/QLknypMkX.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/91RtidN3J7cJm1w6cSTH/QLknypMkX.js"
+          "original": "https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/Z8AcvvGgDiAZeg5bZJQC/QLknypMkX.js"
         },
         {
           "path": "/Users/morse/Documents/GitHub/unframer-private/node_modules/.pnpm/esbuild-plugin-polyfill-node@0.3.0_esbuild@0.21.5/node_modules/esbuild-plugin-polyfill-node/polyfills/__dirname.js",
@@ -1361,9 +1238,9 @@
       "bytes": 536,
       "imports": [
         {
-          "path": "https :https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/Dn85CFVPZAvaEjA3D5y3/z1yZy51UW.js",
+          "path": "https :https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/yAHySWojTfAjQ2RHNLd5/z1yZy51UW.js",
           "kind": "import-statement",
-          "original": "https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/Dn85CFVPZAvaEjA3D5y3/z1yZy51UW.js"
+          "original": "https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/yAHySWojTfAjQ2RHNLd5/z1yZy51UW.js"
         },
         {
           "path": "unframer",
@@ -1398,15 +1275,15 @@
     "hero.js": {
       "imports": [
         {
+          "path": "chunk-77TCC3UJ.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "chunk-BXVXQGVE.js",
+          "kind": "import-statement"
+        },
+        {
           "path": "chunk-CNV3GALY.js",
-          "kind": "import-statement"
-        },
-        {
-          "path": "chunk-KKIRLALR.js",
-          "kind": "import-statement"
-        },
-        {
-          "path": "chunk-KWNUSLWD.js",
           "kind": "import-statement"
         },
         {
@@ -1455,8 +1332,8 @@
       ],
       "entryPoint": "virtual:hero",
       "inputs": {
-        "https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/sga3kdjVgY4aPHBjm5Xh/LirT6SjMX.js": {
-          "bytesInOutput": 18724
+        "https :https://framerusercontent.com/modules/A4cMUx8LtG8c2WGjeyfL/SvTRsxHyijbaaWmponPL/LirT6SjMX.js": {
+          "bytesInOutput": 17809
         },
         "https :https://framerusercontent.com/modules/pKJd0Qi3zdhzJ6E3DaKg/RJVldUObpL1nZxjjsr66/fCZWqKM9S.js": {
           "bytesInOutput": 2787
@@ -1468,7 +1345,7 @@
           "bytesInOutput": 264
         }
       },
-      "bytes": 26025
+      "bytes": 25110
     },
     "feature-list.js": {
       "imports": [
@@ -1529,60 +1406,23 @@
       },
       "bytes": 29024
     },
-    "chunk-CNV3GALY.js": {
-      "imports": [
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "exports": [
-        "className",
-        "css",
-        "fonts"
-      ],
-      "inputs": {
-        "https :https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js": {
-          "bytesInOutput": 1274
-        }
-      },
-      "bytes": 1418
-    },
     "footer.js": {
       "imports": [
         {
-          "path": "chunk-W6H3PCSD.js",
+          "path": "chunk-OQFSRN63.js",
           "kind": "import-statement"
         },
         {
-          "path": "chunk-KWNUSLWD.js",
+          "path": "chunk-DU2FGXOA.js",
           "kind": "import-statement"
         },
         {
-          "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
+          "path": "chunk-BXVXQGVE.js",
+          "kind": "import-statement"
         },
         {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "react",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
+          "path": "chunk-CNV3GALY.js",
+          "kind": "import-statement"
         },
         {
           "path": "react/jsx-runtime",
@@ -1640,36 +1480,34 @@
       ],
       "entryPoint": "virtual:footer",
       "inputs": {
-        "https :https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/4oe8dVmmOUeHIFH61Xz3/NizLRy1Ia.js": {
-          "bytesInOutput": 29644
+        "https :https://framerusercontent.com/modules/q1D2sJbULK2vEKNABm4p/7wWOVOeFNMCjZiLlM9zv/NizLRy1Ia.js": {
+          "bytesInOutput": 29503
         },
-        "https :https://framerusercontent.com/modules/mZoWK8Epp6w0rOOwFwud/A5AavTqKgg8Mu9oMgSrZ/DrH7EbF3F.js": {
-          "bytesInOutput": 1273
-        },
-        "https :https://framerusercontent.com/modules/ncTpzEiw3qNOep3VTZcG/3aEAyRlZV6QPh0MaDd3X/IV_7SD635.js": {
-          "bytesInOutput": 8481
-        },
-        "https :https://framerusercontent.com/modules/bJ4nouCX6S7ru7M3Mm9n/SL9GMj1xQQGeqnhpBgEj/jqK_GhKTO.js": {
-          "bytesInOutput": 13487
+        "https :https://framerusercontent.com/modules/A6CsajQJnG9pUkwZlatc/L48pimMNsc6uDEEqWtZG/jqK_GhKTO.js": {
+          "bytesInOutput": 13129
         },
         "virtual:footer": {
           "bytesInOutput": 266
         }
       },
-      "bytes": 53918
+      "bytes": 43550
     },
     "pricing-banner.js": {
       "imports": [
         {
-          "path": "chunk-W6H3PCSD.js",
+          "path": "chunk-OQFSRN63.js",
           "kind": "import-statement"
         },
         {
-          "path": "chunk-KKIRLALR.js",
+          "path": "chunk-77TCC3UJ.js",
           "kind": "import-statement"
         },
         {
-          "path": "chunk-KWNUSLWD.js",
+          "path": "chunk-BXVXQGVE.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "chunk-CNV3GALY.js",
           "kind": "import-statement"
         },
         {
@@ -1693,11 +1531,6 @@
           "external": true
         },
         {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "react/jsx-runtime",
           "kind": "import-statement",
           "external": true
@@ -1714,6 +1547,11 @@
         },
         {
           "path": "react",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "unframer",
           "kind": "import-statement",
           "external": true
         },
@@ -1748,20 +1586,20 @@
       ],
       "entryPoint": "virtual:pricing-banner",
       "inputs": {
-        "https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/qFPFyM8uFxc3sIIBn5da/FF233TYmj.js": {
-          "bytesInOutput": 15752
-        },
-        "https :https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js": {
-          "bytesInOutput": 1273
+        "https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/9ZeDXZdon4VCVRShAGCH/FF233TYmj.js": {
+          "bytesInOutput": 15749
         },
         "https :https://framerusercontent.com/modules/kP7xAAicJeYaL0OLSj6s/WcYsne6sasJTjPTuxVr8/THPkjzinl.js": {
-          "bytesInOutput": 19108
+          "bytesInOutput": 19111
         },
         "https :https://framerusercontent.com/modules/4NqcKosvMypnbqlUnR3G/HiBJMUaumlb0qheFrcIP/fCZWqKM9S.js": {
-          "bytesInOutput": 2802
+          "bytesInOutput": 2787
         },
         "https :https://framerusercontent.com/modules/ra7z0x7nlqigYbtDhvch/vfdPRWNijyX5SBpnfPsH/s9en4OXwY.js": {
           "bytesInOutput": 3613
+        },
+        "https :https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js": {
+          "bytesInOutput": 1292
         },
         "https :https://framerusercontent.com/modules/1kgOPaSMvyliLSK49PCs/6SB4wnHvwwrEGryspEpL/XDdZznbn8.js": {
           "bytesInOutput": 2804
@@ -1770,9 +1608,9 @@
           "bytesInOutput": 274
         }
       },
-      "bytes": 46715
+      "bytes": 46749
     },
-    "chunk-W6H3PCSD.js": {
+    "chunk-OQFSRN63.js": {
       "imports": [
         {
           "path": "unframer",
@@ -1786,61 +1624,29 @@
         "fonts"
       ],
       "inputs": {
-        "https :https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js": {
-          "bytesInOutput": 1274
+        "https :https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js": {
+          "bytesInOutput": 1270
         }
       },
-      "bytes": 1418
+      "bytes": 1414
     },
     "nav.js": {
       "imports": [
         {
-          "path": "chunk-KKIRLALR.js",
+          "path": "chunk-DU2FGXOA.js",
           "kind": "import-statement"
         },
         {
-          "path": "chunk-KWNUSLWD.js",
+          "path": "chunk-77TCC3UJ.js",
           "kind": "import-statement"
         },
         {
-          "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
+          "path": "chunk-BXVXQGVE.js",
+          "kind": "import-statement"
         },
         {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "react",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "react/jsx-runtime",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "react",
-          "kind": "import-statement",
-          "external": true
+          "path": "chunk-CNV3GALY.js",
+          "kind": "import-statement"
         },
         {
           "path": "react/jsx-runtime",
@@ -1918,31 +1724,25 @@
       ],
       "entryPoint": "virtual:nav",
       "inputs": {
-        "https :https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/Dn85CFVPZAvaEjA3D5y3/z1yZy51UW.js": {
-          "bytesInOutput": 19086
-        },
-        "https :https://framerusercontent.com/modules/kAkfnSOt04sdReKKUhIh/0u6hZosTUGFGO7PkZ5Zq/IV_7SD635.js": {
-          "bytesInOutput": 8482
+        "https :https://framerusercontent.com/modules/eybPXDR02454eT9wyvqB/yAHySWojTfAjQ2RHNLd5/z1yZy51UW.js": {
+          "bytesInOutput": 19068
         },
         "https :https://framerusercontent.com/modules/5Rc4A3RzO15jP4nzpdGK/WfiHNmASBA7fnb58Gyss/KcSL_pfvh.js": {
-          "bytesInOutput": 6746
+          "bytesInOutput": 6372
         },
-        "https :https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/91RtidN3J7cJm1w6cSTH/QLknypMkX.js": {
-          "bytesInOutput": 5797
-        },
-        "https :https://framerusercontent.com/modules/dKg5rDbayEktdJbCwuB1/r0p3rFHc4mjwL7KQFCYm/CvbbKj53l.js": {
-          "bytesInOutput": 6445
+        "https :https://framerusercontent.com/modules/rsqzAe9J1k1nyPS6N5KP/Z8AcvvGgDiAZeg5bZJQC/QLknypMkX.js": {
+          "bytesInOutput": 6399
         },
         "virtual:nav": {
           "bytesInOutput": 263
         }
       },
-      "bytes": 47744
+      "bytes": 32789
     },
-    "chunk-KKIRLALR.js": {
+    "chunk-DU2FGXOA.js": {
       "imports": [
         {
-          "path": "chunk-KWNUSLWD.js",
+          "path": "chunk-BXVXQGVE.js",
           "kind": "import-statement"
         },
         {
@@ -1975,16 +1775,65 @@
         "stdin_default"
       ],
       "inputs": {
-        "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/Puwg7Zy4LlKgQLP75nhM/n_DVZNexF.js": {
-          "bytesInOutput": 16863
+        "https :https://framerusercontent.com/modules/kAkfnSOt04sdReKKUhIh/0u6hZosTUGFGO7PkZ5Zq/IV_7SD635.js": {
+          "bytesInOutput": 8481
         },
-        "https :https://framerusercontent.com/modules/PunbTAM0YOoCAxOb0Z6w/lJnVHZiW49Phqk9vljQr/dNJjz5Q4p.js": {
+        "https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js": {
+          "bytesInOutput": 1274
+        }
+      },
+      "bytes": 10142
+    },
+    "chunk-77TCC3UJ.js": {
+      "imports": [
+        {
+          "path": "chunk-BXVXQGVE.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "chunk-CNV3GALY.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "react/jsx-runtime",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "unframer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "unframer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "react",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "unframer",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "stdin_default"
+      ],
+      "inputs": {
+        "https :https://framerusercontent.com/modules/4iYP09KuoUPLvHQplCiy/chFKEVHlZUmbFHOpcnPu/n_DVZNexF.js": {
+          "bytesInOutput": 18443
+        },
+        "https :https://framerusercontent.com/modules/j7icFaVeLgNEYkdv6UXW/5EVmg4HdKBDpAIaz2YRX/dNJjz5Q4p.js": {
           "bytesInOutput": 907
         }
       },
-      "bytes": 18186
+      "bytes": 19804
     },
-    "chunk-KWNUSLWD.js": {
+    "chunk-BXVXQGVE.js": {
       "imports": [
         {
           "path": "react/jsx-runtime",
@@ -2025,18 +1874,10 @@
           "path": "unframer",
           "kind": "import-statement",
           "external": true
-        },
-        {
-          "path": "unframer",
-          "kind": "import-statement",
-          "external": true
         }
       ],
       "exports": [
-        "Icon",
-        "className",
-        "css",
-        "fonts"
+        "Icon"
       ],
       "inputs": {
         "https :https://framerusercontent.com/modules/f0DboytQenYh21kfme7W/zb1zVBMZJKgPMiedOi0y/Feather.js": {
@@ -2050,12 +1891,29 @@
         },
         "https :https://framerusercontent.com/modules/Ma20hU0GGRxLxZphbywl/OSpwWF91FHPVFyQJjMHt/utils.js": {
           "bytesInOutput": 1125
-        },
-        "https :https://framerusercontent.com/modules/p7DiPlxwmZRnbXZprlOe/bQ4uYc60D38shC0lhya4/uMdppUE31.js": {
+        }
+      },
+      "bytes": 9092
+    },
+    "chunk-CNV3GALY.js": {
+      "imports": [
+        {
+          "path": "unframer",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "className",
+        "css",
+        "fonts"
+      ],
+      "inputs": {
+        "https :https://framerusercontent.com/modules/uDUxgNxnYMLGnyh9FDBL/oiuq245BO0ladIQocclL/uMdppUE31.js": {
           "bytesInOutput": 1274
         }
       },
-      "bytes": 10499
+      "bytes": 1418
     }
   }
 }

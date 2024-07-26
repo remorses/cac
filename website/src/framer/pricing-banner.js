@@ -1,11 +1,12 @@
 // @ts-nocheck
 /* eslint-disable */
 'use client';
-import { className, css, fonts, } from './chunk-W6H3PCSD.js';
-import { stdin_default, } from './chunk-KKIRLALR.js';
-import { Icon, } from './chunk-KWNUSLWD.js';
+import { className, css, fonts, } from './chunk-OQFSRN63.js';
+import { stdin_default, } from './chunk-77TCC3UJ.js';
+import { Icon, } from './chunk-BXVXQGVE.js';
+import './chunk-CNV3GALY.js';
 
-// https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/qFPFyM8uFxc3sIIBn5da/FF233TYmj.js
+// https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/9ZeDXZdon4VCVRShAGCH/FF233TYmj.js
 import { jsx as _jsx2, jsxs as _jsxs2, } from 'react/jsx-runtime';
 import {
   addFonts as addFonts2,
@@ -25,27 +26,6 @@ import {
 } from 'unframer';
 import { LayoutGroup as LayoutGroup2, motion as motion2, MotionConfigContext as MotionConfigContext2, } from 'unframer';
 import * as React2 from 'react';
-
-// https :https://framerusercontent.com/modules/i8hs5bXe8BVwem7voVOr/IyqkKcKhtyN8fZVIAR2f/DrH7EbF3F.js
-import { fontStore, } from 'unframer';
-fontStore.loadFonts(['GF;Space Grotesk-500', 'GF;Space Grotesk-700',],);
-var fonts2 = [{
-  family: 'Space Grotesk',
-  source: 'google',
-  style: 'normal',
-  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsmNsFjTDJK.woff2',
-  weight: '500',
-}, {
-  family: 'Space Grotesk',
-  source: 'google',
-  style: 'normal',
-  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksmNsFjTDJK.woff2',
-  weight: '700',
-},];
-var css2 = [
-  '.framer-JAvBy .framer-styles-preset-15m69fh:not(.rich-text-wrapper), .framer-JAvBy .framer-styles-preset-15m69fh.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 500; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
-];
-var className2 = 'framer-JAvBy';
 
 // https :https://framerusercontent.com/modules/kP7xAAicJeYaL0OLSj6s/WcYsne6sasJTjPTuxVr8/THPkjzinl.js
 import { jsx as _jsx, jsxs as _jsxs, } from 'react/jsx-runtime';
@@ -68,9 +48,33 @@ import { LayoutGroup, motion, MotionConfigContext, } from 'unframer';
 import * as React from 'react';
 
 // https :https://framerusercontent.com/modules/4NqcKosvMypnbqlUnR3G/HiBJMUaumlb0qheFrcIP/fCZWqKM9S.js
+import { fontStore, } from 'unframer';
+fontStore.loadFonts(['GF;Space Grotesk-700',],);
+var fonts2 = [{
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksmNsFjTDJK.woff2',
+  weight: '700',
+},];
+var css2 = [
+  '.framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 60px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -2px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; }',
+  '@media (max-width: 1439px) and (min-width: 992px) { .framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 48px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -2px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; } }',
+  '@media (max-width: 991px) and (min-width: 768px) { .framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 42px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -2px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; } }',
+  '@media (max-width: 767px) and (min-width: 0px) { .framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 36px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -1px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; } }',
+];
+var className2 = 'framer-EyGGi';
+
+// https :https://framerusercontent.com/modules/ra7z0x7nlqigYbtDhvch/vfdPRWNijyX5SBpnfPsH/s9en4OXwY.js
 import { fontStore as fontStore2, } from 'unframer';
-fontStore2.loadFonts(['GF;Space Grotesk-700',],);
+fontStore2.loadFonts(['GF;Space Grotesk-regular', 'GF;Space Grotesk-700',],);
 var fonts3 = [{
+  family: 'Space Grotesk',
+  source: 'google',
+  style: 'normal',
+  url: 'https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUsmNsFjTDJK.woff2',
+  weight: '400',
+}, {
   family: 'Space Grotesk',
   source: 'google',
   style: 'normal',
@@ -78,14 +82,14 @@ var fonts3 = [{
   weight: '700',
 },];
 var css3 = [
-  '.framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 60px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -2px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; }',
-  '@media (max-width: 1439px) and (min-width: 992px) { .framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 48px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -2px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; } }',
-  '@media (max-width: 991px) and (min-width: 768px) { .framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 42px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -2px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; } }',
-  '@media (max-width: 767px) and (min-width: 0px) { .framer-EyGGi .framer-styles-preset-103wjsp:not(.rich-text-wrapper), .framer-EyGGi .framer-styles-preset-103wjsp.rich-text-wrapper h1 { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 36px; --framer-font-style: normal; --framer-font-weight: 700; --framer-letter-spacing: -1px; --framer-line-height: 1.15em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-ff9d48bd-ec1e-45fc-b308-fcfb34b4089f, #080807); --framer-text-decoration: none; --framer-text-transform: none; } }',
+  '.framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 18px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
+  '@media (max-width: 1439px) and (min-width: 992px) { .framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; } }',
+  '@media (max-width: 991px) and (min-width: 768px) { .framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; } }',
+  '@media (max-width: 767px) and (min-width: 0px) { .framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; } }',
 ];
-var className3 = 'framer-EyGGi';
+var className3 = 'framer-jklmq';
 
-// https :https://framerusercontent.com/modules/ra7z0x7nlqigYbtDhvch/vfdPRWNijyX5SBpnfPsH/s9en4OXwY.js
+// https :https://framerusercontent.com/modules/eamCu0lRHcZggoSU9VNR/MyYQAcAJgrcEGMcsZByn/uMdppUE31.js
 import { fontStore as fontStore3, } from 'unframer';
 fontStore3.loadFonts(['GF;Space Grotesk-regular', 'GF;Space Grotesk-700',],);
 var fonts4 = [{
@@ -102,12 +106,9 @@ var fonts4 = [{
   weight: '700',
 },];
 var css4 = [
-  '.framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 18px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
-  '@media (max-width: 1439px) and (min-width: 992px) { .framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; } }',
-  '@media (max-width: 991px) and (min-width: 768px) { .framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; } }',
-  '@media (max-width: 767px) and (min-width: 0px) { .framer-jklmq .framer-styles-preset-1kx6ka7:not(.rich-text-wrapper), .framer-jklmq .framer-styles-preset-1kx6ka7.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; } }',
+  '.framer-ktWBo .framer-styles-preset-17ww93c:not(.rich-text-wrapper), .framer-ktWBo .framer-styles-preset-17ww93c.rich-text-wrapper p { --framer-font-family: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-family-bold: "Space Grotesk", "Space Grotesk Placeholder", sans-serif; --framer-font-size: 16px; --framer-font-style: normal; --framer-font-style-bold: normal; --framer-font-weight: 400; --framer-font-weight-bold: 700; --framer-letter-spacing: 0em; --framer-line-height: 1.7em; --framer-paragraph-spacing: 0px; --framer-text-alignment: start; --framer-text-color: var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, #e0e8d2); --framer-text-decoration: none; --framer-text-transform: none; }',
 ];
-var className4 = 'framer-jklmq';
+var className4 = 'framer-ktWBo';
 
 // https :https://framerusercontent.com/modules/1kgOPaSMvyliLSK49PCs/6SB4wnHvwwrEGryspEpL/XDdZznbn8.js
 import { fontStore as fontStore4, } from 'unframer';
@@ -211,7 +212,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
   const layoutDependency = createLayoutDependency(props, variants,);
   const ref1 = React.useRef(null,);
   const defaultLayoutId = React.useId();
-  const sharedStyleClassNames = [className, className3, className5, className4,];
+  const sharedStyleClassNames = [className4, className2, className5, className3,];
   const componentViewport = useComponentViewport();
   return /* @__PURE__ */ _jsx(LayoutGroup, {
     id: layoutId !== null && layoutId !== void 0 ? layoutId : defaultLayoutId,
@@ -515,10 +516,10 @@ var css6 = [
   '.framer-eAda1 .framer-1bh5qzz, .framer-eAda1 .framer-1goerhh { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
   '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-eAda1.framer-19ocl1v, .framer-eAda1 .framer-1yamqg4, .framer-eAda1 .framer-19eh289, .framer-eAda1 .framer-1fiuvmr { gap: 0px; } .framer-eAda1.framer-19ocl1v > * { margin: 0px; margin-bottom: calc(14px / 2); margin-top: calc(14px / 2); } .framer-eAda1.framer-19ocl1v > :first-child, .framer-eAda1 .framer-1fiuvmr > :first-child { margin-top: 0px; } .framer-eAda1.framer-19ocl1v > :last-child, .framer-eAda1 .framer-1fiuvmr > :last-child { margin-bottom: 0px; } .framer-eAda1 .framer-1yamqg4 > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-eAda1 .framer-1yamqg4 > :first-child, .framer-eAda1 .framer-19eh289 > :first-child { margin-left: 0px; } .framer-eAda1 .framer-1yamqg4 > :last-child, .framer-eAda1 .framer-19eh289 > :last-child { margin-right: 0px; } .framer-eAda1 .framer-19eh289 > * { margin: 0px; margin-left: calc(4px / 2); margin-right: calc(4px / 2); } .framer-eAda1 .framer-1fiuvmr > * { margin: 0px; margin-bottom: calc(20px / 2); margin-top: calc(20px / 2); } }',
   '.framer-eAda1.framer-v-1tq21ma.framer-19ocl1v, .framer-eAda1.framer-v-1tq21ma .framer-1fiuvmr, .framer-eAda1.framer-v-o4rghs.framer-19ocl1v, .framer-eAda1.framer-v-o4rghs .framer-1fiuvmr { align-content: center; align-items: center; }',
-  ...css,
-  ...css3,
-  ...css5,
   ...css4,
+  ...css2,
+  ...css5,
+  ...css3,
 ];
 var FramerTHPkjzinl = withCSS(Component, css6, 'framer-eAda1',);
 var stdin_default2 = FramerTHPkjzinl;
@@ -603,13 +604,13 @@ addFonts(FramerTHPkjzinl, [
     },],
   },
   ...FeatherFonts,
-  ...getFontsFromSharedStyle(fonts,),
-  ...getFontsFromSharedStyle(fonts3,),
-  ...getFontsFromSharedStyle(fonts5,),
   ...getFontsFromSharedStyle(fonts4,),
+  ...getFontsFromSharedStyle(fonts2,),
+  ...getFontsFromSharedStyle(fonts5,),
+  ...getFontsFromSharedStyle(fonts3,),
 ], { supportsExplicitInterCodegen: true, },);
 
-// https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/qFPFyM8uFxc3sIIBn5da/FF233TYmj.js
+// https :https://framerusercontent.com/modules/8iwmN4zvKpQDKQOhKPP5/9ZeDXZdon4VCVRShAGCH/FF233TYmj.js
 var SectionTitleFonts = getFonts2(stdin_default2,);
 var ButtonFonts = getFonts2(stdin_default,);
 var MotionDivWithFX2 = withFX2(motion2.div,);
@@ -679,7 +680,7 @@ var Component2 = /* @__PURE__ */ React2.forwardRef(function (props, ref,) {
   const layoutDependency = createLayoutDependency2(props, variants,);
   const ref1 = React2.useRef(null,);
   const defaultLayoutId = React2.useId();
-  const sharedStyleClassNames = [className2,];
+  const sharedStyleClassNames = [className,];
   const componentViewport = useComponentViewport2();
   return /* @__PURE__ */ _jsx2(LayoutGroup2, {
     id: layoutId !== null && layoutId !== void 0 ? layoutId : defaultLayoutId,
@@ -959,7 +960,7 @@ var css7 = [
   '.framer-k2Q04.framer-v-7efl8s .framer-1a199pe-container { width: 100%; }',
   '.framer-k2Q04.framer-v-7efl8s .framer-15iblgi { height: 60px; top: 20px; width: 18%; }',
   '.framer-k2Q04.framer-v-7efl8s .framer-qtiat9 { bottom: 0px; height: 60px; width: 18%; }',
-  ...css2,
+  ...css,
 ];
 var FramerFF233TYmj = withCSS2(Component2, css7, 'framer-k2Q04',);
 var stdin_default3 = FramerFF233TYmj;
@@ -1031,7 +1032,7 @@ addFonts2(FramerFF233TYmj, [
   },
   ...SectionTitleFonts,
   ...ButtonFonts,
-  ...getFontsFromSharedStyle2(fonts2,),
+  ...getFontsFromSharedStyle2(fonts,),
 ], { supportsExplicitInterCodegen: true, },);
 
 // virtual:pricing-banner
