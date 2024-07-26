@@ -260,7 +260,7 @@ function SimplePromptComponent({}) {
                 // }
             }
             await sleep(200)
-            await rootNodes[0]?.zoomIntoView({ maxZoom: 0.7 })
+            await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
         } finally {
             await prevNode?.setAttributes({ backgroundColor: prevBackground })
         }

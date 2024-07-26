@@ -72,7 +72,10 @@ ${JSON.stringify(textToReplace, null, 2)}
 This is the current template content. Ignore its meaning; we want to replace it with the content of another website that is being migrated to this template, but still keep the template text length and structure.
 
 Description and instructions from the website owner:
-${description}
+\`\`\`
+${description || 'No description provided'}
+\`\`\`
+
 
 Instructions:
 1. Replace the content of each item with text that fits the above description.
@@ -394,7 +397,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 if (
                     // process.env.NODE_ENV !== 'development' &&
                     alreadyScraped?.extractedDescription &&
-                    alreadyScraped?.data 
+                    alreadyScraped?.data
                 ) {
                     // return { message: 'already scraped', object: null }
                     const data = alreadyScraped?.data as any
@@ -606,6 +609,8 @@ export async function* NDJSONStream<T = any>({
     let buffer = ''
     let lastYieldTime = 0
 
+    let loggedError = false
+    let itemsLen = 0
     for await (const part of stream.textStream) {
         onToken?.(part)
         const parts = splitStringButKeepChar(part, '\n')
@@ -613,15 +618,31 @@ export async function* NDJSONStream<T = any>({
         // console.log('parts', parts)
         for (let p of parts) {
             buffer += p
-            try {
-                let obj = JSON.parse(
-                    stripJsonComments(removeMarkdownSnippets(buffer)),
+            if (!loggedError && buffer.length > 300 && !itemsLen) {
+                loggedError = true
+                console.error(
+                    `cannot parse LLM ndjson:`,
+                    JSON.stringify(buffer),
                 )
+            }
+            try {
+                let probablyJson = stripJsonComments(buffer)
+                if (itemsLen === 0 && probablyJson.includes('```')) {
+                    const lines = probablyJson.split('\n')
+
+                    const lineWithSnippet = lines.findIndex((x) =>
+                        x.startsWith('```'),
+                    )
+                    probablyJson = lines.slice(lineWithSnippet).join('\n')
+                }
+                probablyJson = removeMarkdownSnippets(probablyJson)
+                let obj = JSON.parse(probablyJson)
                 const now = Date.now()
                 if (now - lastYieldTime <= minTime) {
                     await sleep(minTime - (now - lastYieldTime))
                 }
                 // console.log('obj', obj)
+                itemsLen += 1
                 yield obj
 
                 buffer = ''
