@@ -267,3 +267,10 @@ export async function collectGenerator<T>(
     }
     return result
 }
+
+export function formatLargeNumber(x: number) {
+    if (x < 1000) {
+        return x.toFixed(0)
+    }
+    return (x / 1000).toFixed(0) + 'k'
+}

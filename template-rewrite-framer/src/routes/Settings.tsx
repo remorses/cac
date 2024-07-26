@@ -6,6 +6,7 @@ import {
     PluginLoaderData,
     RouteIds,
     createBuyLink,
+    formatLargeNumber,
     pluginApiClient,
     withMode,
 } from '@/lib/utils'
@@ -133,12 +134,6 @@ function Component() {
     )
 }
 
-function formatLargeNumber(x: number) {
-    if (x < 1000) {
-        return x.toFixed(0)
-    }
-    return (x / 1000).toFixed(0) + 'k'
-}
 
 function ProgressBar({ progress, className = '' }) {
     const backgroundColor = (() => {

@@ -7,6 +7,7 @@ import {
     Paths,
     collectGenerator,
     createBuyLink,
+    formatLargeNumber,
     getDesktop,
     getNodePath,
     getParentNodes,
@@ -48,7 +49,7 @@ function SimplePromptComponent({}) {
         useLoaderData() as LoaderReturnType<typeof loader>
     const [description, setDescription] = useState(
         globalState.extractedDescription || '',
-    ) 
+    )
     const [isLoading, setIsLoading] = useState(false)
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
         [],
@@ -375,7 +376,7 @@ function SimplePromptComponent({}) {
             )}
             <div className='text-[11px] opacity-70'>
                 <span className='font-mono font-semibold'>
-                    {remainingCredits}
+                    {formatLargeNumber(remainingCredits)}
                 </span>{' '}
                 credits remaining
             </div>
@@ -500,4 +501,3 @@ async function replaceTextInComponents() {
     //     }
     // }
 }
-
