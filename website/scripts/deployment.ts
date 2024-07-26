@@ -34,13 +34,13 @@ async function main() {
         maxInstances: 2,
         healthCheckPath: '/api/health',
         memorySize: '512mb',
-        statics: [
-            {
-                guest_path: '/app/build/client',
-                url_prefix: '/',
-                index_document: 'index.html',
-            },
-        ],
+        // statics: [
+        //     {
+        //         guest_path: '/app/build/client',
+        //         url_prefix: '/',
+        //         index_document: 'index.html',
+        //     },
+        // ],
         env: {
             ...env,
             NODE_ENV: 'production',

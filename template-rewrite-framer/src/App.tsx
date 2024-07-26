@@ -5,7 +5,13 @@ import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
 import { supabase } from '@/lib/supabase-framer'
-import { Paths, RouteIds, pluginApiClient, withMode } from '@/lib/utils'
+import {
+    Paths,
+    RouteIds,
+    basePath,
+    pluginApiClient,
+    withMode,
+} from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
@@ -185,7 +191,7 @@ const router = createBrowserRouter(
                             className='w-auto'
                             type='button'
                             onClick={() => {
-                                window.location.pathname = '/'
+                                window.location.pathname = basePath
                             }}
                         >
                             Try again
@@ -267,7 +273,7 @@ const router = createBrowserRouter(
             ],
         },
     ],
-    { basename: import.meta.env.BASE_URL || undefined },
+    { basename: basePath },
 )
 
 export default function Page() {

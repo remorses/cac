@@ -5,6 +5,7 @@ import {
     Paths,
     PluginLoaderData,
     RouteIds,
+    basePath,
     createBuyLink,
     formatLargeNumber,
     pluginApiClient,
@@ -88,7 +89,7 @@ function Component() {
                             if (error) {
                                 throw error
                             }
-                            window.location.pathname = '/'
+                            window.location.pathname = basePath
                         } finally {
                             // setIsLoading(false)
                         }
@@ -133,7 +134,6 @@ function Component() {
         </div>
     )
 }
-
 
 function ProgressBar({ progress, className = '' }) {
     const backgroundColor = (() => {

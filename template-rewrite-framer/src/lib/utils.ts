@@ -277,3 +277,6 @@ export function formatLargeNumber(x: number) {
     }
     return (x / 1000).toFixed(0) + 'K'
 }
+
+
+export const basePath = import.meta.env.BASE_URL || '/'
