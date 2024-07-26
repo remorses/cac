@@ -375,7 +375,7 @@ function SimplePromptComponent({}) {
                 </Button>
             )}
             <div className='text-[11px] opacity-70'>
-                <span className='font-mono font-semibold'>
+                <span className='font-mono tracking-wider font-semibold'>
                     {formatLargeNumber(remainingCredits)}
                 </span>{' '}
                 credits remaining
