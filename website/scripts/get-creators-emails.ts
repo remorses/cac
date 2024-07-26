@@ -16,8 +16,9 @@ function ignoreAbortError(e: any) {
 }
 
 function retryFetchTwice(url, init: RequestInit, count = 0) {
-    return fetch(url, init).catch((e) => {
+    return fetch(url, init).catch(async (e) => {
         if (count < 2 && ignoreAbortError(e) === null) {
+            await new Promise((r) => setTimeout(r, 1000))
             console.log('retrying fetch', url)
             return retryFetchTwice(url, init, count + 1)
         } else {
@@ -48,12 +49,12 @@ async function main() {
     })
     console.log(`found ${links.length} creators`)
 
-    links = links.slice(0, 4)
-    for (let link of links) {
+    // links = links.slice(0, 4)
+    for (let creatorLink of links) {
         console.log('........................................................')
         let abortController1 = new AbortController()
-        console.log(`fetching ${link}`)
-        const res = await retryFetchTwice(link, {
+        console.log(`fetching ${creatorLink}`)
+        const res = await retryFetchTwice(creatorLink, {
             signal: abortController1.signal,
             headers: {
                 accept: 'text/html',
@@ -65,14 +66,15 @@ async function main() {
         }
         let firstTemplate = ''
         // what comes after /creator/ in the url
-        let templateCreatorName = link.split('/creator/')[1]
+        let creatorSlug = creatorLink.split('/creator/')[1]
+        let creatorName = ''
         // let templateCreatorName = link.split('/creator/')[1]
         let twitter = ''
 
         const r = await new HTMLRewriter({})
             .on('h1', {
                 text(e) {
-                    templateCreatorName = e.text
+                    creatorName += e.text
                 },
             })
             .on('a', {
@@ -101,7 +103,7 @@ async function main() {
         // console.log({ r })
         // console.log('firstTemplate', firstTemplate)
         if (!firstTemplate) {
-            console.log('no template found for', link)
+            console.log('no template found for', creatorLink)
             continue
         }
         let lastTemplateSubmitted = ''
@@ -178,16 +180,16 @@ async function main() {
             .text()
             .catch(ignoreAbortError)
         if (!emailLink) {
-            console.log('no email found for', templateCreatorName)
+            console.log('no email found for', creatorName)
             continue
         }
         allEmails.push({
             email: emailLink,
-            creatorName: templateCreatorName,
+            creatorName: creatorName,
             exampleTemplate: new URL(firstTemplate, base).toString(),
             twitter,
             lastTemplateSubmitted,
-            otherTemplates: `https://www.framer.com/marketplace/creator/${templateCreatorName}`,
+            otherTemplates: creatorLink,
             ctaLink,
             usesLemonSqueezy,
         })
