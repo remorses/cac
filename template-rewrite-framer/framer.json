@@ -1,9 +1,6 @@
 {
     "id": "b50ax4",
-    "name": "Migrate",
+    "name": "Migrate Template",
     "modes": ["default"],
-    "icon": "/plugins/migrate/icon.svg"
+    "icon": "/plugins/migrate/icon.png"
 }
-
-
-
