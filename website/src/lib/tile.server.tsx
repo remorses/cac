@@ -7,7 +7,7 @@ export const targetHeight = Math.round((targetWidth * 16) / 9) // 1365
 // https://platform.openai.com/docs/guides/vision/calculating-costs
 const parts = (targetHeight * targetWidth) / (512 * 512)
 const openaiTokensCost = 85 + parts * 170
-console.log('openaiTokensCost per image piece', openaiTokensCost)
+// console.log('openaiTokensCost per image piece', openaiTokensCost)
 
 export async function splitImage({ imageBuffer, imageKey = '' }) {
     let buffers = [] as Buffer[]

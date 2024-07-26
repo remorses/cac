@@ -18,7 +18,11 @@ import {
     getSupabaseSession,
 } from 'website/src/lib/supabase.server'
 import { sleep } from 'website/src/lib/utils'
-import { getWebsiteInfo } from 'website/src/lib/htmlrewrite.server'
+import {
+    fetchFormattedHtml,
+    getWebsiteDescription,
+    getWebsiteInfo,
+} from 'website/src/lib/htmlrewrite.server'
 import { db } from 'db/kysely'
 import { generatePassword, splitIntoWords } from 'website/src/lib/ssr.server'
 import { getOrgCredits } from 'website/src/lib/credits'
@@ -62,40 +66,38 @@ function generateMigrationPrompt({
     exampleTextToMigrate,
 }: RephraseSchema): string {
     return `
-Current Website Content:
+Current Template Content (only consider the phrasing, not the content):
 ${JSON.stringify(textToReplace, null, 2)}
 
-This is the current website content from a template. Ignore its meaning; we want to replace it with new content that aligns with the following description of the new website:
+This is the current template content. Ignore its meaning; we want to replace it with the content of another website that is being migrated to this template, but still keep the template text length and structure.
 
-New Website Description:
+Description and instructions from the website owner:
 ${description}
 
 Instructions:
-1. Replace the content of each item with new text that fits the above description.
+1. Replace the content of each item with text that fits the above description.
 2. Maintain similar content length and structure where appropriate.
 3. Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
 4. Update href values if present and relevant to the new content.
-5. Use the example content structure below as a reference for style and tone:
+5. Use the content from current website being migrated if it fits an item in the template structure:
 
-Example Content Structure:
+Content from the website being migrate:
 ${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
 Output: Provide an NDJSON list of rephrased content items. Each item should be a valid JSON object on a single line, containing 'nodeId', 'text', 'href' (if applicable), and 'previousText' fields. Ensure that:
-1. All items from the current content are represented in the output.
-2. Each output item uses the exact nodeId from the corresponding input item.
-3. The 'text' field contains the new content based on the new website description.
+1. All items from the template content should be represented in the output.
+2. Each output item uses the exact nodeId from the corresponding template item.
+3. The 'text' field contains the new content based on the new website description and the migrated website content.
 4. The 'href' field is updated if present and relevant to the new content.
-5. The 'previousText' field contains the original text from the input.
+5. The 'previousText' field contains the original text from the template.
 
-Note: The example content structure is for reference and may not cover all items in the current content. Use it as a guide for content style and tone, but ensure all current content items are processed and replaced.
+Note: The example content structure is for reference and may not cover all items in the template content. Use it as a guide but ensure all current template items are processed and replaced. If a piece of text from the website being migrated fits a spot in the template perfectly use it as it is.
 
-If there are example content structure and they fit the current semantics use those texts as replacement for the current content.
+Return only NDJSON and not a JSON array, think step by step using comment, start a line with // if you want to reason about an item before writing it. 
 
-Return only NDJSON and not a JSON array, To think step by step you can use comments, start a line with // if you want to reason about an item before writing it, explain why you are replacing the previous text with a new one. The things you should keep in mind when replacing old text with new one is
-
-- The size of the new text should be similar to the old text
-- The meaning of the text must be in line with the new purpose of the website but have similar semantic meaning as before, for example if the previous text was an hero/heading you should keep the same style
-- If the example texts given don't fit the text to replace because too long or too short or different in semantics, you can invent new ones that follow the same theme
+The things you should keep in mind when replacing old text with new one is
+- The size of the new text should be similar to the template text
+- If the example texts given don't fit the text to replace because too long or too short or different in semantics, you can invent new ones that follow the same  as the website being migrated
 `
 }
 
@@ -389,7 +391,11 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     .where('url', '=', url)
                     .selectAll()
                     .executeTakeFirst()
-                if (process.env.NODE_ENV !== 'development' && alreadyScraped) {
+                if (
+                    // process.env.NODE_ENV !== 'development' &&
+                    alreadyScraped?.extractedDescription &&
+                    alreadyScraped?.data 
+                ) {
                     // return { message: 'already scraped', object: null }
                     const data = alreadyScraped?.data as any
                     if (!Array.isArray(data)) {
@@ -401,6 +407,14 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                         yield {
                             message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
                             object,
+                        }
+                    }
+                    if (alreadyScraped.extractedDescription) {
+                        yield {
+                            message: '',
+                            object: null,
+                            extractedDescription:
+                                alreadyScraped.extractedDescription,
                         }
                     }
                     return
@@ -419,13 +433,22 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 //     object: null,
                 // }
 
+                const [
+                    html, //
+                    // { image },
+                ] = await Promise.all([
+                    fetchFormattedHtml(url),
+
+                    // screenshot(url),
+                ])
+
                 let allObjects = [] as RephraseSchema['exampleTextToMigrate']
                 let emitter = new EventIterator<{
                     object: RephraseSchema['exampleTextToMigrate'][0]
                     message: string
                 }>((queue) => {
                     getWebsiteInfo({
-                        url,
+                        html,
                         signal: request.signal,
                         onObject(object) {
                             console.log('adding object to queue', object)
@@ -444,9 +467,24 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                         })
                 })
 
+                let descriptionPromise = getWebsiteDescription({
+                    html,
+                    signal: request.signal,
+                })
+
                 for await (let chunk of emitter) {
                     console.log('chunk', chunk)
                     yield chunk
+                }
+                if (request.signal.aborted) {
+                    return
+                }
+
+                const { extractedDescription } = await descriptionPromise
+                yield {
+                    message: '',
+                    object: null,
+                    extractedDescription,
                 }
 
                 let host = new URL(url).hostname
@@ -457,6 +495,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             url,
                             data: JSON.stringify(allObjects),
                             // siteId: userId,
+                            extractedDescription,
                             domain: host,
                             byUserId: userId,
                         })
@@ -464,6 +503,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             return oc.columns(['url']).doUpdateSet({
                                 data: JSON.stringify(allObjects),
                                 createdAt: new Date(),
+                                extractedDescription,
                                 byUserId: userId,
                             })
                         })
@@ -472,6 +512,7 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             } catch (e) {
                 notifyError(e, 'error scraping website ' + domain)
                 throw e
+            } finally {
             }
 
             // const res = await fetch(`https://${domain}`)
@@ -519,7 +560,7 @@ export async function* rephrase({
             textToReplace: oldText,
             exampleTextToMigrate,
         }),
-        model: openai('gpt-4o'),
+        model: anthropic('claude-3-sonnet-20240229'),
         temperature: 0.5,
         abortSignal: signal,
     })
@@ -545,13 +586,14 @@ export function splitStringButKeepChar(str: string, char: string) {
     return result
 }
 
-export function replaceMarkdownSnippets(text: string) {
+export function removeMarkdownSnippets(text: string) {
     // remove lines starting with optional spaces followed by ```lang
     text = text.replace(/^\s*```.*/gm, '')
     // remove lines starting with optional spaces followed by ```
     // text = text.replace(/^\s*```/gm, '')
     return text
 }
+
 export async function* NDJSONStream<T = any>({
     stream,
     minTime = 0,
@@ -573,7 +615,7 @@ export async function* NDJSONStream<T = any>({
             buffer += p
             try {
                 let obj = JSON.parse(
-                    stripJsonComments(replaceMarkdownSnippets(buffer)),
+                    stripJsonComments(removeMarkdownSnippets(buffer)),
                 )
                 const now = Date.now()
                 if (now - lastYieldTime <= minTime) {

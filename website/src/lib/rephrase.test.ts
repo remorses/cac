@@ -6,14 +6,26 @@ import {
     NDJSONStream,
     convertExamplesToMarkdownList,
     rephrase,
-    replaceMarkdownSnippets,
+    removeMarkdownSnippets,
     splitStringButKeepChar,
 } from 'website/src/lib/elysia.server'
+import {
+    fetchFormattedHtml,
+    getWebsiteDescription,
+} from 'website/src/lib/htmlrewrite.server'
+
+test('getWebsiteDescription', async () => {
+    const exampleHtml = await fetchFormattedHtml('https://notaku.so')
+    const res = await getWebsiteDescription({
+        html: exampleHtml,
+        signal: new AbortController().signal,
+    })
+    expect(res.extractedDescription).toMatchInlineSnapshot(`"SaaS website focused on providing a platform to create professional documentation and content management using Notion, with a friendly and approachable tone, in English."`)
+})
 
 test('convertExamplesToMarkdownList', async () => {
-    expect(
-        convertExamplesToMarkdownList(exampleTextToMigrate),
-    ).toMatchInlineSnapshot(`
+    expect(convertExamplesToMarkdownList(exampleTextToMigrate))
+        .toMatchInlineSnapshot(`
       "- section nav/logo: "Notaku", attributes: {"href":"/"}
       - section nav/link: "Product", attributes: {"href":"/product/docs"}
       - section nav/link: "Showcase", attributes: {"href":"/showcase"}
@@ -1242,7 +1254,7 @@ test(
     1000 * 10,
 )
 
-test('replaceMarkdownSnippets', async () => {
+test('removeMarkdownSnippets', async () => {
     let x = dedent`
     # hello
 
@@ -1254,8 +1266,8 @@ test('replaceMarkdownSnippets', async () => {
 
     `
     // console.log(x)
-    expect(replaceMarkdownSnippets(x)).not.toContain('```')
-    expect(replaceMarkdownSnippets(x)).toMatchInlineSnapshot(`
+    expect(removeMarkdownSnippets(x)).not.toContain('```')
+    expect(removeMarkdownSnippets(x)).toMatchInlineSnapshot(`
       "# hello
 
       this is a test

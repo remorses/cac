@@ -437,6 +437,7 @@ export interface ScrapedWebsitePage {
   createdAt: Generated<Timestamp>;
   data: Json;
   domain: string;
+  extractedDescription: string | null;
   url: string;
 }
 

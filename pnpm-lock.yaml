@@ -578,6 +578,9 @@ importers:
       openai:
         specifier: ^4.52.7
         version: 4.52.7
+      picocolors:
+        specifier: ^1.0.1
+        version: 1.0.1
       posthtml:
         specifier: ^0.16.6
         version: 0.16.6

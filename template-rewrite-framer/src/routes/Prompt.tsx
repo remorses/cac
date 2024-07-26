@@ -7,10 +7,10 @@ import {
     Paths,
     collectGenerator,
     createBuyLink,
-    exampleTextToMigrate,
     getDesktop,
     getNodePath,
     getParentNodes,
+    globalState,
     isTruthy,
     pluginApiClient,
 } from '@/lib/utils'
@@ -46,7 +46,9 @@ let abortController = new AbortController()
 function SimplePromptComponent({}) {
     const { shouldShowProgress, buyMoreCreditsUrl, credits } =
         useLoaderData() as LoaderReturnType<typeof loader>
-    const [description, setDescription] = useState('')
+    const [description, setDescription] = useState(
+        globalState.extractedDescription || '',
+    ) 
     const [isLoading, setIsLoading] = useState(false)
     const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
         [],
@@ -169,7 +171,7 @@ function SimplePromptComponent({}) {
                 {
                     description,
                     textToReplace: oldText,
-                    exampleTextToMigrate,
+                    exampleTextToMigrate: globalState.exampleTextToMigrate,
                 },
                 {
                     fetch: {
@@ -244,7 +246,9 @@ function SimplePromptComponent({}) {
                 }
 
                 if (chunk.text) {
+                    let words = chunk.text.split(/\s+/).length
                     await node.setText(chunk.text)
+                    setRemainingCredits(Math.max(0, credits.remaining - words))
                 } else {
                     console.log('no text found in chunk', chunk)
                 }
@@ -272,6 +276,8 @@ function SimplePromptComponent({}) {
         return 'Replace Text On The Page'
     })()
 
+    const [remainingCredits, setRemainingCredits] = useState(credits.remaining)
+
     return (
         <motion.form
             layoutId='content'
@@ -288,7 +294,7 @@ function SimplePromptComponent({}) {
                 e.preventDefault()
                 onSubmit()
             }}
-            className='flex flex-col items-start w-full justify-start gap-4'
+            className='flex flex-col items-start w-full justify-start gap-3'
         >
             <div className='opacity-70'>
                 Describe what your new website is about. The plugin will use
@@ -309,7 +315,7 @@ function SimplePromptComponent({}) {
                         textarea.style.height = `${textarea.scrollHeight}px`
                     }}
                     onChange={(e) => setDescription(e.target.value)}
-                    className='p-2 pb-3 shrink-0 leading-relaxed py-1 w-full min-h-[80px]'
+                    className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
                     placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
                 />
@@ -367,29 +373,12 @@ function SimplePromptComponent({}) {
                     {isLoading ? 'Cancel' : 'Undo Replacement'}
                 </Button>
             )}
-            {shouldShowProgress && (
-                <div className='flex group flex-col hover:opacity-100 transition-opacity duration-100 opacity-60 self-stretch gap-2'>
-                    <div className='flex flex-row-reverse items-center text-[11px] '>
-                        <a target='_blank' href={buyMoreCreditsUrl}>
-                            <button
-                                type='button'
-                                className='group-hover:bg-framer-secondary w-auto text-[11px]  bg-transparent'
-                            >
-                                Buy More Credits
-                            </button>
-                        </a>
-                        <div className='grow'></div>
-                        <div className=''>
-                            {credits.remaining} credits remaining
-                        </div>
-                    </div>
-
-                    <ProgressBar
-                        className=''
-                        progress={credits.used / credits.total || 0}
-                    />
-                </div>
-            )}
+            <div className='text-[11px] opacity-70'>
+                <span className='font-mono font-semibold'>
+                    {remainingCredits}
+                </span>{' '}
+                credits remaining
+            </div>
         </motion.form>
     )
 }
@@ -512,40 +501,3 @@ async function replaceTextInComponents() {
     // }
 }
 
-function ProgressBar({ progress, className = '' }) {
-    const backgroundColor = (() => {
-        if (progress > 0.9) {
-            return 'bg-red-400'
-        }
-        if (progress > 0.6) {
-            return 'bg-yellow-400'
-        }
-
-        return 'bg-green-500'
-    })()
-    if (progress < 0.03) {
-        progress = 0.03
-    }
-    // progress= 0.5
-    return (
-        <div
-            // style={{ backgroundColor }}
-            className={classNames(
-                'relative rounded-md overflow-hidden w-full bg-gray-700 flex h-[8px]',
-                className,
-            )}
-        >
-            <motion.div
-                // layout
-                transition={{ duration: 0.4 }}
-                animate={{
-                    width: Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
-                }}
-                className={classNames(
-                    'h-full bg-gray-200 rounded overflow-hidden',
-                    backgroundColor,
-                )}
-            ></motion.div>
-        </div>
-    )
-}

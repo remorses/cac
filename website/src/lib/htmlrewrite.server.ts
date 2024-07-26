@@ -4,11 +4,15 @@ import { anthropic } from '@ai-sdk/anthropic'
 
 import { z } from 'zod'
 
-import { streamObject, streamText } from 'ai'
+import { streamObject, streamText, generateText } from 'ai'
 import { HTMLRewriter } from 'htmlrewriter'
-import { getScreenshotUrl, screenshot } from 'website/src/lib/ssr.server'
+import { getScreenshotUrl, groq, screenshot } from 'website/src/lib/ssr.server'
 import { env } from 'website/src/lib/env'
-import { NDJSONStream, RephraseSchema } from 'website/src/lib/elysia.server'
+import {
+    NDJSONStream,
+    RephraseSchema,
+    removeMarkdownSnippets,
+} from 'website/src/lib/elysia.server'
 import { splitImage } from 'website/src/lib/tile.server'
 
 import('htmlrewriter')
@@ -75,7 +79,7 @@ export async function formatHtmlForPrompt(input: Response) {
     return newHtml
 }
 
-async function fetchHtml(url) {
+export async function fetchFormattedHtml(url) {
     const res = await fetch(url, {
         headers: {
             accept: 'text/html',
@@ -86,22 +90,19 @@ async function fetchHtml(url) {
     return formattedHtml
 }
 
-export async function getWebsiteInfo({ url, signal, onObject }) {
-    const [
-        formattedHtml, //
-        // { image },
-    ] = await Promise.all([
-        fetchHtml(url),
-
-        // screenshot(url),
-    ])
+export async function getWebsiteInfo({
+    html,
+    signal,
+    onObject,
+    onToken = (x: string) => {},
+}) {
     // const buffers = await splitImage({ imageBuffer: image })
     const stream = await streamText({
         abortSignal: signal,
         messages: [
             {
                 role: 'user',
-                content: makePrompt({ html: formattedHtml }),
+                content: makePrompt({ html: html }),
             },
             // {
             //     role: 'user',
@@ -118,12 +119,13 @@ export async function getWebsiteInfo({ url, signal, onObject }) {
         ],
 
         // model: anthropic('claude-3-sonnet-20240229'),
+        // model: anthropic('claude-3-haiku-20240307'),
         model: openai('gpt-4o-mini'),
     })
     let objects = [] as RephraseSchema['exampleTextToMigrate']
     for await (let object of NDJSONStream({
         stream,
-        // onToken,
+        onToken,
     })) {
         await onObject(object)
         objects.push(object)
@@ -132,6 +134,54 @@ export async function getWebsiteInfo({ url, signal, onObject }) {
     // for await (let chunk of openaiRes.textStream) {
     //     console.log('chunk', JSON.stringify(chunk, null, 2))
     // }
+}
+
+export async function getWebsiteDescription({ html, signal }) {
+    console.time('getWebsiteDescription ' + html.length)
+    const result = await generateText({
+        abortSignal: signal,
+        messages: [
+            {
+                role: 'user',
+                content: makeDescriptionPrompt({ html: html }),
+            },
+        ],
+
+        // model: anthropic('claude-3-sonnet-20240229'),
+        model: openai('gpt-4o-mini'),
+    })
+
+    let extractedDescription = result.text
+    extractedDescription = removeMarkdownSnippets(extractedDescription)
+    console.timeEnd('getWebsiteDescription ' + html.length)
+    return { extractedDescription }
+}
+
+function makeDescriptionPrompt({ html }) {
+    return (
+        `
+I will provide you with an HTML document. Your task is to analyze the content and structure of the website and generate a concise description that includes the following information:
+
+- Type of website (e.g., portfolio, SaaS, e-commerce, blog, etc.)
+- If this is a website for a company, the company name
+- If this is a website for a product, the product name
+- If this is a website for a person portfolio, the person's name
+- Main topic or purpose of the website
+- Tone of the language used (e.g., formal, funny, colloquial, etc.)
+- Language of the website (English or other)
+
+Please provide the description in a single, concise sentence without any additional explanations or context.
+
+The HTML document is:
+
+` +
+        '```html\n' +
+        html +
+        '\n```' +
+        `
+Generate the description now. Do not use terms like "The website is a " or "This document is about", don't add any introduction or conclusion. 
+`
+    )
 }
 
 function makePrompt({ html }) {
@@ -238,7 +288,12 @@ Here is an example output:
 
 You can use comments starting with // in the NDJSON output to think about the hierarchy and content and write more sophisticated and precise hierarchies.
 
-The example above only shows an example of the data format, you should try to get as many text as possible.Notice there is no markdown formatting, only NDJSON, with each JSON object on a new line:
+The example above only shows an example of the data format, you should try to get as many text as possible.Notice there is no markdown formatting, only NDJSON, with each JSON object on a new line.
+
+RETURN ALL THE TEXT THAT IS ON THE PAGE!
+
+DO NOT RETURN ANYTHING ELSE, ONLY NDJSON, DON'T START THE OUTPUT WITH ANYTHING ELSE. RETURN ONLY NDJSON.
+
 
     `
     )

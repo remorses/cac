@@ -340,6 +340,8 @@ model ScrapedWebsitePage {
   byUserId  String   @db.Uuid
   createdAt DateTime @default(now())
 
+  extractedDescription String?
+
   @@schema("public")
 }
 

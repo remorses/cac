@@ -1,12 +1,7 @@
 import { notifyError } from '@/lib/errors'
 import NProgress from 'nprogress'
 import { useRefreshOnVisible } from '@/lib/hooks'
-import {
-    pluginApiClient,
-    exampleTextToMigrate,
-    withMode,
-    Paths,
-} from '@/lib/utils'
+import { pluginApiClient, withMode, Paths, globalState } from '@/lib/utils'
 import { useState, useRef, useEffect, Component } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate, useLocation, RouteObject } from 'react-router'
@@ -61,14 +56,19 @@ function ScrapeWebsiteComponent() {
                     throw error
                 }
 
-                exampleTextToMigrate.length = 0
+                globalState.exampleTextToMigrate.length = 0
                 for await (let chunk of stream) {
                     if (abortController.signal.aborted) {
                         break
                     }
                     console.log('chunk', chunk)
                     if (chunk.object) {
-                        // exampleTextToMigrate.push(chunk.object)
+                        globalState.exampleTextToMigrate.push(chunk.object)
+                    }
+
+                    if (chunk.extractedDescription) {
+                        globalState.extractedDescription =
+                            chunk.extractedDescription
                     }
 
                     flushSync(() => {
@@ -83,10 +83,12 @@ function ScrapeWebsiteComponent() {
                 navigate(withMode(Paths.prompt), { replace: true })
             } catch (e) {
                 setError(String(e))
-                notifyError(e, 'error scraping website')
-            } finally {
                 setIsLoading(false)
                 setLogs([])
+                notifyError(e, 'error scraping website')
+            } finally {
+                // setIsLoading(false)
+                // setLogs([])
             }
         }
 

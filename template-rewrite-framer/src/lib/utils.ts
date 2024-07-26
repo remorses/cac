@@ -250,7 +250,10 @@ export function createBuyLink({ email, orgId }) {
     return url.toString()
 }
 
-export let exampleTextToMigrate = [] as RephraseSchema['exampleTextToMigrate']
+export const globalState = {
+    exampleTextToMigrate: [] as RephraseSchema['exampleTextToMigrate'],
+    extractedDescription: '',
+}
 
 export async function collectGenerator<T>(
     gen: AsyncGenerator<T | null, void, unknown>,
