@@ -558,12 +558,17 @@ export async function* rephrase({
 }) {
     // console.log(oldText)
     const stream = await streamText({
-        prompt: generateMigrationPrompt({
-            description,
-            textToReplace: oldText,
-            exampleTextToMigrate,
-        }),
-        model: anthropic('claude-3-sonnet-20240229'),
+        messages: [
+            {
+                role: 'user',
+                content: generateMigrationPrompt({
+                    description,
+                    textToReplace: oldText,
+                    exampleTextToMigrate,
+                }),
+            },
+        ],
+        model: openai('gpt-4o'),
         temperature: 0.5,
         abortSignal: signal,
     })
