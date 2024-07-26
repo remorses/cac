@@ -187,7 +187,7 @@ function SimplePromptComponent({}) {
         }
 
         // a red background showing we are changing this text, with 0.7 opacity
-        const backgroundColor = 'rgba(255, 255, 0, 0.5)'
+        const backgroundColor = 'rgba(128, 0, 128, 0.3)'
         let prevNode: AnyNode | undefined
 
         let prevBackground = null as string | null
