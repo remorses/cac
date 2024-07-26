@@ -91,11 +91,12 @@ export function useRefreshOnVisible({ enabled = true }) {
 }
 
 export function useFocusOnMount() {
-    function fn() {
+    const handleKeyDown = () => {
         window.document.body.classList.add('show-focus')
+        window.removeEventListener('keydown', handleKeyDown)
     }
-    window.addEventListener('keydown', fn)
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
-        window.removeEventListener('keydown', fn)
+        window.removeEventListener('keydown', handleKeyDown)
     }
 }
