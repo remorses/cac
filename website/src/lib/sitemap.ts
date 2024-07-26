@@ -59,7 +59,7 @@ const fetchSitemap = async (url: string, timeout = 60000): Promise<any> => {
         // Something else, return empty array
         return []
     } catch (e) {
-        console.log(e)
+        throw e
         return []
     } finally {
         clearTimeout(timeoutId)

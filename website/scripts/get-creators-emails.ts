@@ -32,6 +32,8 @@ const allEmails = [] as {
     twitter: string
     otherTemplates: string
     lastTemplateSubmitted: string
+    ctaLink: string
+    usesLemonSqueezy: boolean
 }[]
 async function main() {
     let links = await getSitemapLinks(
@@ -46,7 +48,7 @@ async function main() {
     })
     console.log(`found ${links.length} creators`)
 
-    // links = links.slice(0, 1)
+    links = links.slice(0, 4)
     for (let link of links) {
         console.log('........................................................')
         let abortController1 = new AbortController()
@@ -63,9 +65,16 @@ async function main() {
         }
         let firstTemplate = ''
         // what comes after /creator/ in the url
-        const templateCreatorName = link.split('/creator/')[1]
+        let templateCreatorName = link.split('/creator/')[1]
+        // let templateCreatorName = link.split('/creator/')[1]
         let twitter = ''
+
         const r = await new HTMLRewriter({})
+            .on('h1', {
+                text(e) {
+                    templateCreatorName = e.text
+                },
+            })
             .on('a', {
                 element(e) {
                     const href = e.getAttribute('href')
@@ -106,6 +115,8 @@ async function main() {
         })
         let emailLink = ''
         let lastText = ''
+        let usesLemonSqueezy = false
+        let ctaLink = ''
         await new HTMLRewriter()
             .on('a', {
                 element(e) {
@@ -120,6 +131,25 @@ async function main() {
                         emailLink = extractEmailFromLink(href)
                         // abortController2.abort()
                     }
+                    if (href.includes('lemonsqueezy.com')) {
+                        usesLemonSqueezy = true
+                        // abortController2.abort()
+                    }
+                },
+            })
+            .on('a', {
+                element(e) {
+                    const className = e.getAttribute('class')
+                    if (!className) {
+                        return
+                    }
+                    const target = e.getAttribute('target')
+                    if (target !== '_blank') {
+                        return
+                    }
+                    if (className.includes('btn-primary')) {
+                        ctaLink = e.getAttribute('href') || ''
+                    }
                 },
             })
             .on('p', {
@@ -129,11 +159,17 @@ async function main() {
                         return
                     }
                     if (chunk.text && lastText.includes('Published')) {
-                        console.log(`parsing ${chunk.text}`)
-                        let parsed = Date.parse(
-                            chunk.text.replace('Published ', '').trim(),
-                        )
-                        lastTemplateSubmitted = new Date(parsed).toISOString()
+                        try {
+                            console.log(`parsing ${chunk.text}`)
+                            let parsed = Date.parse(
+                                chunk.text.replace('Published ', '').trim(),
+                            )
+                            lastTemplateSubmitted = new Date(
+                                parsed,
+                            ).toISOString()
+                        } catch (e) {
+                            console.log('error parsing date', chunk.text)
+                        }
                     }
                     lastText = chunk.text
                 },
@@ -147,11 +183,13 @@ async function main() {
         }
         allEmails.push({
             email: emailLink,
+            creatorName: templateCreatorName,
             exampleTemplate: new URL(firstTemplate, base).toString(),
             twitter,
-            creatorName: templateCreatorName,
             lastTemplateSubmitted,
             otherTemplates: `https://www.framer.com/marketplace/creator/${templateCreatorName}`,
+            ctaLink,
+            usesLemonSqueezy,
         })
     }
     return allEmails
