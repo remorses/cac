@@ -2,24 +2,24 @@ import { prisma } from 'db/prisma'
 import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 
-const FREE_CREDITS = 500
+const FREE_CREDITS = 1000
 
-export async function getOrgSubscriptions({ orgId }) {
-    const subs = await prisma.subscription.findMany({
-        where: {
-            orgId,
-            status: {
-                in: [
-                    'active',
-                    'incomplete', // what is incomplete?
-                    'past_due', //
-                    // 'expired',
-                ],
-            },
-        },
-    })
-    return subs
-}
+// export async function getOrgSubscriptions({ orgId }) {
+//     const subs = await prisma.subscription.findMany({
+//         where: {
+//             orgId,
+//             status: {
+//                 in: [
+//                     'active',
+//                     'incomplete', // what is incomplete?
+//                     'past_due', //
+//                     // 'expired',
+//                 ],
+//             },
+//         },
+//     })
+//     return subs
+// }
 // export async function getOrgLimitsAndSubs({ orgId }) {
 //     const subs = await getOrgSubscriptions({ orgId })
 //     const limitsC = plansConfig.filter((x) =>
