@@ -32,6 +32,14 @@ html,
     display: none !important;
 }
 
+.show-focus *:focus-visible {
+    @apply outline-none ring-2 ring-framer-tint;
+}
+
+*:focus {
+    outline: none;
+}
+
 /* main {
     display: flex;
     flex-direction: column;

@@ -1,6 +1,5 @@
 import websiteConfig from 'website/tailwind.config'
 
-
 /** @type {import('tailwindcss').Config} */
 export default {
     ...websiteConfig,
@@ -19,10 +18,10 @@ export default {
                     secondary: 'var(--framer-color-bg-secondary)',
                     tertiary: 'var(--framer-color-bg-tertiary)',
                     divider: 'var(--framer-color-divider)',
-                    tint: 'var(--framer-color-tint)',
                     tintDimmed: 'var(--framer-color-tint-dimmed)',
                     tintDark: 'var(--framer-color-tint-dark)',
                     blackDimmed: 'rgba(0, 0, 0, 0.5)',
+                    tint: 'var(--framer-color-tint)',
                 },
             },
             colors: {
@@ -31,6 +30,7 @@ export default {
                     secondary: 'var(--framer-color-text-secondary)',
                     tertiary: 'var(--framer-color-text-tertiary)',
                     inverted: 'var(--framer-color-text-inverted)',
+                    tint: 'var(--framer-color-tint)',
                 },
             },
             borderColor: {
@@ -43,7 +43,5 @@ export default {
             },
         },
     },
-    plugins: [
-        require('@tailwindcss/forms'),
-    ],
+    plugins: [require('@tailwindcss/forms')],
 }

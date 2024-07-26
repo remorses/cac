@@ -44,7 +44,7 @@ import { Session } from '@supabase/supabase-js'
 import { Button } from '@/components/Button'
 import { Settings } from '@/routes/Settings'
 import { NProgressComponent } from '@/components/nprogress'
-import { useIsDocumentVisibile } from '@/lib/hooks'
+import { useFocusOnMount, useIsDocumentVisibile } from '@/lib/hooks'
 import { notifyError } from '@/lib/errors'
 import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
 
@@ -87,6 +87,7 @@ const router = createBrowserRouter(
                 //         height: heightMotionValue.get() || 100,
                 //     })
                 // })
+                useFocusOnMount()
 
                 useLayoutEffect(() => {
                     console.log('opening framer ui')

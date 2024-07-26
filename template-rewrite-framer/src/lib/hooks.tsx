@@ -89,3 +89,13 @@ export function useRefreshOnVisible({ enabled = true }) {
         }
     }, [documentVisible, enabled, navigation.state, previousVisible])
 }
+
+export function useFocusOnMount() {
+    function fn() {
+        window.document.body.classList.add('show-focus')
+    }
+    window.addEventListener('keydown', fn)
+    return () => {
+        window.removeEventListener('keydown', fn)
+    }
+}
