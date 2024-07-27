@@ -308,12 +308,27 @@ model Org {
   ssoProviderId    String?      @unique @db.Uuid
   generations      Generation[]
 
-  ssoProvider     sso_providers?      @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
+  ssoProvider     sso_providers?        @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
   invitationLinks OrgInviteLink[]
   users           OrgsUsers[]
   payments        PaymentForCredits[]
   // sites           Site[]
   subscriptions   Subscription[]
+  licenses        LemonSqueezyLicense[]
+  scrapedUrls     ScrapedWebsitePage[]
+
+  @@schema("public")
+}
+
+model LemonSqueezyLicense {
+  // id Int @id @default(autoincrement())
+  licenseKey String   @id
+  usedAt     DateTime @default(now())
+  orgId      String
+  meta       Json     @default("{}")
+  org        Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+
+  credits Int @default(0)
 
   @@schema("public")
 }
@@ -337,7 +352,8 @@ model ScrapedWebsitePage {
   data   Json
   // siteId String
 
-  byUserId  String   @db.Uuid
+  orgId     String
+  org       Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   extractedDescription String?

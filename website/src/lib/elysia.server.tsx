@@ -25,7 +25,7 @@ import {
 } from 'website/src/lib/htmlrewrite.server'
 import { db } from 'db/kysely'
 import { generatePassword, splitIntoWords } from 'website/src/lib/ssr.server'
-import { getOrgCredits } from 'website/src/lib/credits'
+import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
 import { env } from 'website/src/lib/env'
 import { prisma } from 'db/prisma'
 
@@ -366,6 +366,35 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             // },
         },
     )
+    .post(
+        '/activateLicense',
+        async ({ body, cookie, store, request }) => {
+            // console.log('cookies', cookie)
+            // const { userId } = await getSupabaseSession({ request })
+            // if (!userId) {
+            //     throw new AppError('No user id')
+            // }
+            const userId = store.userId
+            if (!userId) {
+                throw unauthorizedResponse
+            }
+
+            const { licenseKey } = body
+            const { valid, credits } = await validateLicenseKey({
+                orgId: userId,
+                licenseKey,
+            })
+            return { valid, credits }
+        },
+        {
+            body: t.Object({
+                licenseKey: t.String(),
+            }),
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
 
     .post(
         '/scrapeWebsite',
@@ -500,14 +529,14 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             // siteId: userId,
                             extractedDescription,
                             domain: host,
-                            byUserId: userId,
+                            orgId: userId,
                         })
                         .onConflict((oc) => {
                             return oc.columns(['url']).doUpdateSet({
                                 data: JSON.stringify(allObjects),
                                 createdAt: new Date(),
                                 extractedDescription,
-                                byUserId: userId,
+                                orgId: userId,
                             })
                         })
                         .execute(),
@@ -661,5 +690,6 @@ export async function* NDJSONStream<T = any>({
     }
 }
 
+const unauthorizedResponse = new Response('Unauthorized', { status: 401 })
 app.use(swagger({}))
 export type RouteType = typeof app

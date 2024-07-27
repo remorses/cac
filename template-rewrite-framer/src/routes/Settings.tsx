@@ -17,11 +17,12 @@ import {
     LoaderFunctionArgs,
     Route,
     RouteObject,
+    useActionData,
     useLoaderData,
     useNavigate,
     useRouteLoaderData,
 } from 'react-router'
-import { Link } from 'react-router-dom'
+import { Form, Link, useFetcher } from 'react-router-dom'
 import {
     framerLoginUrl,
     generateSecurePassword,
@@ -56,6 +57,31 @@ export function Settings(): RouteObject {
         path: Paths.settings,
         loader,
         Component,
+        async action({ request }) {
+            const formData = await request.formData()
+            const licenseKey = formData.get('licenseKey')?.toString()
+            console.log(`validating license key ${licenseKey}`)
+            if (!licenseKey) {
+                return {
+                    error: 'No license key provided',
+                }
+            }
+            const { data, error } =
+                await pluginApiClient.api.v1.activateLicense.post({
+                    licenseKey,
+                })
+            if (error) {
+                return {
+                    error: error.value,
+                }
+            }
+            const { credits, valid } = data
+            return {
+                credits,
+                valid,
+                message: `License key activated, ${credits} credits added`,
+            }
+        },
     }
 }
 
@@ -65,8 +91,12 @@ function Component() {
     const { session, buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
         typeof loader
     >
+    const actionData = useActionData() as any
+
     const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
     // const isDocumentVisible = useIsDocumentVisibile()
+
+    const licenseKeyFetcher = useFetcher({})
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-4'>
@@ -113,6 +143,42 @@ function Component() {
                     <Button className='w-auto'>Buy More Credits</Button>
                 </a>
             </div>
+            <Form
+                method='POST'
+                className='flex items-start flex-col justify-between gap-2'
+            >
+                <div className=''>Redeem credits</div>
+                <div className='opacity-60'>
+                    Some Framer templates comes with a plugin license key, you can
+                    redeem them here
+                </div>
+                
+                <input
+                    name='formKey'
+                    value={'licenseKey'}
+                    type='hidden'
+                    hidden
+                />
+
+                <div className='flex grow items-stretch w-full flex-col gap-2'>
+                    <input
+                        required
+                        placeholder='38b1460a-5104-4067-a91d-77b872934d51'
+                        type='text'
+                        name='licenseKey'
+                        className='rounded-md p-2 w-full bg-framer-tertiary'
+                    />
+                    <Button type='submit' className='w-auto'>
+                        Activate License Key
+                    </Button>
+                    {actionData?.error && (
+                        <div className='text-red-400'>{actionData.error}</div>
+                    )}
+                    {actionData?.message && (
+                        <div className=''>{actionData.message}</div>
+                    )}
+                </div>
+            </Form>
             <div className='flex group self-stretch gap-4 flex-row-reverse py-2 items-center'>
                 <ProgressBar
                     className='grow'

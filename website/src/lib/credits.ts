@@ -4,6 +4,44 @@ import { AppError } from 'website/src/lib/errors'
 
 const FREE_CREDITS = 1000
 
+import { validateLicense, activateLicense } from '@lemonsqueezy/lemonsqueezy.js'
+import { db } from 'db/kysely'
+
+export async function validateLicenseKey({ orgId, licenseKey }) {
+    const [{ data, error }, alreadyUsed] = await Promise.all([
+        validateLicense(licenseKey), //
+        db
+            .selectFrom('LemonSqueezyLicense')
+            .where('licenseKey', '=', licenseKey)
+            .executeTakeFirst(),
+    ])
+    if (error) {
+        throw new AppError(`Cannot validate license key: ${error.message}`)
+    }
+    if (alreadyUsed) {
+        throw new AppError('License key already used')
+    }
+    if (!data.valid) {
+        throw new AppError('Invalid license key')
+    }
+
+    let credits = 10_000
+    await db
+        .insertInto('LemonSqueezyLicense')
+        .values({
+            licenseKey,
+            orgId,
+            credits,
+            meta: data.meta,
+        })
+        .onConflict((oc) => {
+            return oc.column('licenseKey').doNothing()
+        })
+        .execute()
+
+    return { valid: data.valid, credits }
+}
+
 // export async function getOrgSubscriptions({ orgId }) {
 //     const subs = await prisma.subscription.findMany({
 //         where: {
@@ -43,7 +81,7 @@ const FREE_CREDITS = 1000
 // }
 
 export async function getOrgCredits({ orgId }) {
-    const [payments, allWords, org] = await Promise.all([
+    const [payments, allWords, licenseCredits] = await Promise.all([
         prisma.paymentForCredits.findMany({
             where: {
                 orgId,
@@ -63,11 +101,22 @@ export async function getOrgCredits({ orgId }) {
                 words: true,
             },
         }),
-        prisma.org.findUnique({
+        prisma.lemonSqueezyLicense.aggregate({
             where: {
-                orgId: orgId,
+                orgId,
+                // createdAt: {
+                //     gt: oneMonthAgo
+                // }
+            },
+            _sum: {
+                credits: true,
             },
         }),
+        // prisma.org.findUnique({
+        //     where: {
+        //         orgId: orgId,
+        //     },
+        // }),
         // prisma.subscription.findFirst({
         //     where: {
         //         orgId,
@@ -80,25 +129,28 @@ export async function getOrgCredits({ orgId }) {
     // const createdAt = org?.createdAt?.getTime() || Date.now()
     // const monthsCredits =
     //     Math.floor((Date.now() - createdAt) / (1000 * 60 * 60 * 24 * 30)) + 1
-    let totalCredits = payments
-        .map((x) => {
-            const num = variantIdToCredits[x.variantId]
-            if (num == null) {
-                throw new AppError(
-                    `Cannot get credits for variantId ${x.variantId}`,
-                )
-            }
-            return num
-        })
-        .reduce((a, b) => a + b, 0)
+    const licenseCreditsValue = licenseCredits._sum?.credits || 0
+    let totalCredits =
+        licenseCreditsValue +
+        payments
+            .map((x) => {
+                const num = variantIdToCredits[x.variantId]
+                if (num == null) {
+                    throw new AppError(
+                        `Cannot get credits for variantId ${x.variantId}`,
+                    )
+                }
+                return num
+            })
+            .reduce((a, b) => a + b, 0)
 
     const used = allWords?._sum?.words || 0
-    let free = !payments?.length
+    let free = !payments?.length && !licenseCreditsValue
     if (free) {
         totalCredits = FREE_CREDITS
     }
     return {
-        remaining: Math.max(totalCredits - (allWords._sum?.words || 0), 0),
+        remaining: Math.max(totalCredits - used, 0),
         total: totalCredits,
         used,
         free,

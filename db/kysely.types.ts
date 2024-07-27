@@ -301,6 +301,14 @@ export interface Generation {
   words: number;
 }
 
+export interface LemonSqueezyLicense {
+  credits: Generated<number>;
+  licenseKey: string;
+  meta: Generated<Json>;
+  orgId: string;
+  usedAt: Generated<Timestamp>;
+}
+
 export interface Org {
   createdAt: Generated<Timestamp>;
   name: Generated<string>;
@@ -433,11 +441,11 @@ export interface RealtimeSubscription {
 }
 
 export interface ScrapedWebsitePage {
-  byUserId: string;
   createdAt: Generated<Timestamp>;
   data: Json;
   domain: string;
   extractedDescription: string | null;
+  orgId: string;
   url: string;
 }
 
@@ -565,6 +573,7 @@ export interface DB {
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
   FramerLoginRequest: FramerLoginRequest;
   Generation: Generation;
+  LemonSqueezyLicense: LemonSqueezyLicense;
   Org: Org;
   OrgInviteLink: OrgInviteLink;
   OrgsUsers: OrgsUsers;

@@ -1,52 +1,36 @@
-import useMeasure from 'react-use-measure'
 import NProgress from 'nprogress'
+import useMeasure from 'react-use-measure'
 
 import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
+import { Button } from '@/components/Button'
+import { NProgressComponent } from '@/components/nprogress'
+import { notifyError } from '@/lib/errors'
+import { useFocusOnMount } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
-import {
-    Paths,
-    RouteIds,
-    basePath,
-    pluginApiClient,
-    withMode,
-} from '@/lib/utils'
-import { LoginPage } from '@/routes/Login'
+import { Paths, RouteIds, basePath, withMode } from '@/lib/utils'
 import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
+import { LoginPage } from '@/routes/Login'
 import { SimplePrompt } from '@/routes/Prompt'
-import { IsWebsitePublished } from '@/routes/PublishWebsite'
-import {
-    AnimatePresence,
-    MotionConfig,
-    motion,
-    useMotionValue,
-    useMotionValueEvent,
-} from 'framer-motion'
+import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
+import { Settings } from '@/routes/Settings'
+import { Session } from '@supabase/supabase-js'
+import { AnimatePresence, MotionConfig, useMotionValue } from 'framer-motion'
 import {
     Outlet,
     RouterProvider,
-    createRoutesFromElements,
     redirect,
     useLoaderData,
     useLocation,
     useMatches,
     useNavigate,
-    useNavigation,
     useNavigationType,
     useRevalidator,
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
-import type { RephraseSchema } from 'website/src/lib/elysia.server'
-import { Session } from '@supabase/supabase-js'
-import { Button } from '@/components/Button'
-import { Settings } from '@/routes/Settings'
-import { NProgressComponent } from '@/components/nprogress'
-import { useFocusOnMount, useIsDocumentVisibile } from '@/lib/hooks'
-import { notifyError } from '@/lib/errors'
-import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
 
 globalThis.framer = framer
 
@@ -146,7 +130,7 @@ const router = createBrowserRouter(
                                     <Outlet />
 
                                     {showSettings && (
-                                        <div className='flex text-[11px] items-center pt-3 opacity-50 justify-between '>
+                                        <div className='flex text-[11px] items-center pt-3 opacity-70 justify-between '>
                                             {canGoBack && (
                                                 <button
                                                     type='button'
