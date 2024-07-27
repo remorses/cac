@@ -209,6 +209,8 @@ main().finally(() => {
     // Convert the data to CSV format with a header
     const csv = Papa.unparse(allEmails, {
         header: true,
+        
+
     })
 
     // Write the CSV data to a file
