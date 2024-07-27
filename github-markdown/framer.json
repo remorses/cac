@@ -1,0 +1,6 @@
+{
+    "id": "cad64x",
+    "name": "Github Markdown",
+    "modes": ["syncCollection", "configureCollection"],
+    "icon": "/rss.png"
+}
