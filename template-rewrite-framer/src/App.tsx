@@ -16,6 +16,7 @@ import { LoginPage } from '@/routes/Login'
 import { SimplePrompt } from '@/routes/Prompt'
 import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
 import { Settings } from '@/routes/Settings'
+import { LicenseKey } from '@/routes/LicenseKey'
 import { Session } from '@supabase/supabase-js'
 import { AnimatePresence, MotionConfig, useMotionValue } from 'framer-motion'
 import {
@@ -255,6 +256,7 @@ const router = createBrowserRouter(
                 //     handle: 'Publish your website first',
                 // },
                 SimplePrompt(),
+                LicenseKey(),
             ],
         },
     ],

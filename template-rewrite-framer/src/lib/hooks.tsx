@@ -83,6 +83,9 @@ export function useRefreshOnVisible({ enabled = true }) {
         if (navigation.state !== 'idle') {
             return
         }
+        if (revalidator.state !== 'idle') {
+            return
+        }
         if (documentVisible && previousVisible === false) {
             console.log(`document visible again, revalidating`)
             revalidator.revalidate()

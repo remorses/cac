@@ -94,6 +94,7 @@ export function withMode(path, query?: Record<string, any>) {
 export enum Paths {
     login = '/login',
     settings = '/settings',
+    licenseKey = '/license-key',
     doYouAlreadyHaveAWebsite = '/do-you-already-have-a-website',
     getWebsiteInfo = '/get-website-info',
     scrapeWebsite = '/scrape-website',
@@ -147,7 +148,7 @@ export async function getDesktop() {
     //     ),
     // )
     const root = await framer.getCanvasRoot()
-    
+
     const children = await root.getChildren()
     // console.log('children', children)
     const desktop = children.find((node) => {
@@ -277,6 +278,5 @@ export function formatLargeNumber(x: number) {
     }
     return (x / 1000).toFixed(0) + 'K'
 }
-
 
 export const basePath = import.meta.env.BASE_URL || '/'
