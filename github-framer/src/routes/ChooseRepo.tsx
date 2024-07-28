@@ -1,5 +1,5 @@
 import { Button } from '@/components/Button'
-import { MapDatabaseFields } from '@/components/MapFields'
+import { MapFields } from '@/components/MapFields'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
 import {
@@ -24,8 +24,8 @@ function Component() {
     useRefreshOnVisible({ enabled: true })
 
     return (
-        <MapDatabaseFields
-            database={{
+        <MapFields
+            frontMatter={{
                 properties: {
                     something: {
                         id: 'something',
@@ -43,7 +43,7 @@ function Component() {
             onSubmit={async (values) => {
                 console.log('values', values)
             }}
-            error={null}
+            error={''}
             pluginContext={{
                 type: 'create',
                 collectionFields: [],

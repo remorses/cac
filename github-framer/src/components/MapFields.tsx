@@ -20,9 +20,10 @@ function IconChevron() {
 }
 
 interface CollectionFieldConfig {
-    field: CollectionField | null
-    isNewField: boolean
-    originalFieldName: string
+    field: CollectionField
+    isDisabled: boolean
+    // isNewField: boolean
+    // originalFieldName: string
 }
 
 function sortField(
@@ -52,21 +53,19 @@ export type FrontMatter = {
 }
 
 type PluginContext = {
-    type: 'update' | 'create'
+    // type: 'update' | 'create'
     collectionFields: CollectionField[]
     ignoredFieldIds: string[]
 }
 
 function createFieldConfig(
-    database: FrontMatter,
+    frontMatter: FrontMatter,
     pluginContext: PluginContext,
 ): CollectionFieldConfig[] {
     const result: CollectionFieldConfig[] = []
 
     const existingFieldIds = new Set(
-        pluginContext.type === 'update'
-            ? pluginContext.collectionFields.map((field) => field.id)
-            : [],
+        pluginContext.collectionFields.map((field) => field.id),
     )
 
     // result.push({
@@ -77,100 +76,61 @@ function createFieldConfig(
     //         !existingFieldIds.has(pageContentField.id),
     // })
 
-    for (const key in database.properties) {
-        const property = database.properties[key]
+    for (const key in frontMatter.properties) {
+        const property = frontMatter.properties[key]
         assert(property)
 
         // Title is always required in CMS API.
         // if (property.type === 'title') continue
 
+        let field = getCollectionFieldForProperty(property)
+        if (!field) {
+            continue
+        }
         result.push({
-            field: getCollectionFieldForProperty(property),
-            originalFieldName: property.name,
-            isNewField:
-                existingFieldIds.size > 0 && !existingFieldIds.has(property.id),
+            field,
+            isDisabled: false,
+            // originalFieldName: property.name,
         })
     }
 
     return result.sort(sortField)
 }
 
-function getFieldNameOverrides(
-    pluginContext: PluginContext,
-): Record<string, string> {
-    const result: Record<string, string> = {}
-    if (pluginContext.type !== 'update') return result
-
-    for (const field of pluginContext.collectionFields) {
-        result[field.id] = field.name
-    }
-
-    return result
-}
-
-function hasFieldConfigurationChanged(
-    currentConfig: CollectionField[],
-    database: FrontMatter,
-    ignoredFieldIds: string[],
-): boolean {
-    const currentFieldsById = new Map<string, CollectionField>()
-    for (const field of currentConfig) {
-        currentFieldsById.set(field.id, field)
-    }
-
-    const suggestedFields = getSuggestedFieldsForDatabase(
-        database,
-        ignoredFieldIds,
-    )
-    if (suggestedFields.length !== currentConfig.length) return true
-
-    const includedFields = suggestedFields.filter((field) =>
-        currentFieldsById.has(field.id),
-    )
-
-    for (const field of includedFields) {
-        const currentField = currentFieldsById.get(field.id)
-
-        if (!currentField) return true
-        if (currentField.type !== field.type) return true
-    }
-
-    return false
-}
-type FieldId = string
-
-function getSuggestedFieldsForDatabase(
-    database: FrontMatter,
-    ignoredFieldIds: FieldId[],
-) {
-    const fields: CollectionField[] = []
-
-    // if (!ignoredFieldIds.includes(pageContentField.id)) {
-    //     fields.push(pageContentField)
-    // }
-
-    for (const key in database.properties) {
-        const property = database.properties[key]
-        assert(property)
-
-        // These fields were ignored by the user
-        if (ignoredFieldIds.includes(property.id)) continue
-
-        // if (property.type === 'title') continue
-
-        const field = getCollectionFieldForProperty(property)
-        if (field) {
-            fields.push(field)
+function getFieldConfigForProp(
+    property: FrontMatterProperty,
+    type: CollectionField['type'] | '',
+): CollectionField {
+    if (!type) {
+        return {
+            type: 'string',
+            id: property.id,
+            name: property.name,
         }
     }
-
-    return fields
+    if (type === 'enum') {
+        return {
+            type: 'enum',
+            cases: [...new Set(property.values)].map((option) => ({
+                id: option.id,
+                name: option.name,
+            })),
+            id: property.id,
+            name: property.name,
+        }
+    }
+    return {
+        type: type,
+        id: property.id,
+        name: property.name,
+    }
 }
 
 /**
  * Given a Notion Database Properties object returns a CollectionField object
  * That maps the Notion Property to the Framer CMS collection property type
  */
+// https://developers.framer.wiki/plugins/docs/cms#adding-fields
 function getCollectionFieldForProperty(property: {
     values: any[]
     name: string
@@ -184,15 +144,14 @@ function getCollectionFieldForProperty(property: {
         onlyType === 'string' &&
         new Set(property.values).size < property.values.length / 3 // low cardinality
     ) {
-        return {
-            type: 'enum',
-            cases: [...new Set(property.values)].map((option) => ({
-                id: option.id,
-                name: option.name,
-            })),
-            id: property.id,
-            name: property.name,
-        }
+        return getFieldConfigForProp(property, 'enum')
+    } else if (
+        onlyType === 'string' &&
+        property.values.every((x) => {
+            return x.startsWith('http://') || x.startsWith('https://')
+        })
+    ) {
+        return getFieldConfigForProp(property, 'link')
     } else if (
         property.values.every((x) => {
             try {
@@ -202,32 +161,15 @@ function getCollectionFieldForProperty(property: {
             }
         })
     ) {
-        return {
-            type: 'date',
-            id: property.id,
-            name: property.name,
-        }
+        return getFieldConfigForProp(property, 'date')
     } else if (onlyType === 'string') {
-        return {
-            type: 'formattedText',
-            id: property.id,
-            name: property.name,
-        }
+        return getFieldConfigForProp(property, 'string')
     } else if (onlyType === 'number') {
-        return {
-            type: 'number',
-            id: property.id,
-            name: property.name,
-        }
+        return getFieldConfigForProp(property, 'number')
     } else if (onlyType === 'boolean') {
-        return {
-            type: 'boolean',
-            id: property.id,
-            name: property.name,
-        }
+        return getFieldConfigForProp(property, 'boolean')
     } else {
-        // More Field types can be added here
-        return null
+        return getFieldConfigForProp(property, 'string')
     }
 }
 
@@ -243,104 +185,33 @@ function Input({ className, ...rest }: ComponentProps<'input'>) {
     )
 }
 
-export interface SynchronizeMutationOptions {
-    fields: CollectionField[]
-    ignoredFieldIds: string[]
-    // lastSyncedTime: string | null
-    // slugFieldId: string
-}
-
-export function MapDatabaseFields({
-    database,
+export function MapFields({
+    frontMatter,
     onSubmit,
     isLoading,
     error,
     pluginContext,
 }: {
-    database: FrontMatter
-    onSubmit: (options: SynchronizeMutationOptions) => void
+    frontMatter: FrontMatter
+    onSubmit: (options: CollectionFieldConfig[]) => void
     isLoading: boolean
-    error: Error | null
+    error?: string
     pluginContext: PluginContext
 }) {
-    // const slugFields = useMemo(
-    //     () => getPossibleSlugFields(database),
-    //     [database],
-    // )
-    // const [slugFieldId, setSlugFieldId] = useState<string | null>(() =>
-    //     getInitialSlugFieldId(pluginContext, slugFields),
-    // )
-    const [fieldConfig] = useState<CollectionFieldConfig[]>(() =>
-        createFieldConfig(database, pluginContext),
+    const [fieldConfig, setFieldConfig] = useState(() =>
+        createFieldConfig(frontMatter, pluginContext),
     )
-    const [disabledFieldIds, setDisabledFieldIds] = useState(
-        () =>
-            new Set<string>(
-                pluginContext.type === 'update'
-                    ? pluginContext.ignoredFieldIds
-                    : [],
-            ),
-    )
-    const [fieldNameOverrides, setFieldNameOverrides] = useState<
-        Record<string, string>
-    >(() => getFieldNameOverrides(pluginContext))
 
     // assert(isFullDatabase(database))
-
-    const handleFieldToggle = (key: string) => {
-        setDisabledFieldIds((current) => {
-            const nextSet = new Set(current)
-            if (nextSet.has(key)) {
-                nextSet.delete(key)
-            } else {
-                nextSet.add(key)
-            }
-
-            return nextSet
-        })
-    }
-
-    const handleFieldNameChange = (id: string, value: string) => {
-        setFieldNameOverrides((current) => ({
-            ...current,
-            [id]: value,
-        }))
-    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
         if (isLoading) return
 
-        const allFields = fieldConfig
-            .filter(
-                (fieldConfig) =>
-                    fieldConfig.field &&
-                    !disabledFieldIds.has(fieldConfig.field.id),
-            )
-            .map((fieldConfig) => fieldConfig.field)
-            .filter(isTruthy)
-            .map((field) => {
-                if (fieldNameOverrides[field.id]) {
-                    field.name = fieldNameOverrides[field.id]
-                }
-
-                return field
-            })
-
         // assert(slugFieldId)
 
-        onSubmit({
-            fields: allFields,
-            ignoredFieldIds: Array.from(disabledFieldIds),
-            // slugFieldId,
-            // lastSyncedTime: getLastSyncedTime(
-            //     pluginContext,
-            //     database,
-            //     // slugFieldId,
-            //     disabledFieldIds,
-            // ),
-        })
+        onSubmit(fieldConfig)
     }
 
     return (
@@ -362,56 +233,80 @@ export function MapDatabaseFields({
                         ))}
                     </select>
                 </div> */}
-                <div className='grid grid-cols-[16px_1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
-                    <span className='col-start-2 col-span-2'>
-                        Front Matter Property
-                    </span>
+                <div className='grid grid-cols-[1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
+                    <span className=' '>Front Matter Property</span>
+                    <div className=''></div>
                     <span>Collection Field</span>
 
                     {fieldConfig.map((fieldConfig) => {
-                        const isUnsupported =
-                            !fieldConfig.field ||
-                            disabledFieldIds.has(fieldConfig.field.id)
+                        const isDisabled = fieldConfig.isDisabled
 
                         return (
-                            <Fragment key={fieldConfig.originalFieldName}>
-                                <Input
-                                    type='checkbox'
-                                    disabled={!fieldConfig.field}
-                                    checked={
-                                        !!fieldConfig.field &&
-                                        !disabledFieldIds.has(
-                                            fieldConfig.field.id,
-                                        )
-                                    }
-                                    className={classNames(
-                                        'mx-auto ',
-                                        isUnsupported && 'opacity-50',
-                                    )}
-                                    onChange={() => {
-                                        assert(fieldConfig.field)
-
-                                        handleFieldToggle(fieldConfig.field.id)
-                                    }}
-                                />
+                            <Fragment key={fieldConfig.field?.id}>
                                 <Input
                                     type='text'
                                     className={classNames(
-                                        'w-full',
-                                        isUnsupported && 'opacity-50',
+                                        'w-full opacity-50',
+                                        isDisabled && 'opacity-50',
                                     )}
                                     disabled
-                                    value={fieldConfig.originalFieldName}
+                                    value={fieldConfig.field?.name || ''}
                                 />
                                 <div
                                     className={classNames(
                                         'flex items-center justify-center',
-                                        isUnsupported && 'opacity-50',
+                                        isDisabled && 'opacity-50',
                                     )}
                                 >
                                     <IconChevron />
                                 </div>
-                                <Input
+                                <select
+                                    // disabled={!fieldConfig.field}
+                                    onChange={(e) => {
+                                        const newType = e.target.value as any
+                                        // if (!newType) return
+                                        let isDisabled = newType === ''
+                                        setFieldConfig((current) => {
+                                            const newConfig = current.map(
+                                                (config) => {
+                                                    if (
+                                                        config.field?.id ===
+                                                        fieldConfig.field?.id
+                                                    ) {
+                                                        const property =
+                                                            frontMatter
+                                                                .properties[
+                                                                config.field.id
+                                                            ]
+                                                        return {
+                                                            isDisabled,
+                                                            field: getFieldConfigForProp(
+                                                                property,
+                                                                newType,
+                                                            ),
+                                                        }
+                                                    }
+                                                    return config
+                                                },
+                                            )
+
+                                            return newConfig
+                                        })
+                                    }}
+                                    className={classNames(
+                                        'w-full',
+                                        isDisabled && 'opacity-50',
+                                    )}
+                                    value={fieldConfig.field?.type || ''}
+                                >
+                                    <option value=''>disable</option>
+                                    {possibleTypes.map((type) => (
+                                        <option key={type} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </select>
+                                {/* <Input
                                     type='text'
                                     className={classNames(
                                         'w-full',
@@ -439,7 +334,7 @@ export function MapDatabaseFields({
                                             e.target.value,
                                         )
                                     }}
-                                ></Input>
+                                ></Input> */}
                             </Fragment>
                         )
                     })}
@@ -447,17 +342,9 @@ export function MapDatabaseFields({
             </div>
             <hr className='' />
             <div className='left-0 bottom-0 w-full flex justify-between sticky items-center max-w-full overflow-hidden'>
-                {/* <div className='inline-flex items-center gap-1 min-w-0'>
-                    {error ? (
-                        <span className='text-red-500'>{error.message}</span>
-                    ) : (
-                        <>
-                            <span className='text-framer-tertiary flex-shrink-0'>
-                                Importing from front matter
-                            </span>
-                        </>
-                    )}
-                </div> */}
+                <div className='inline-flex items-center gap-1 min-w-0'>
+                    {error && <span className='text-red-500'>{error}</span>}
+                </div>
                 <Button
                     variant='primary'
                     isLoading={isLoading}
@@ -471,3 +358,14 @@ export function MapDatabaseFields({
         </form>
     )
 }
+
+const possibleTypes: CollectionField['type'][] = [
+    'boolean',
+    'date',
+    'enum',
+    'formattedText',
+    'link',
+    'number',
+    'image',
+    'color',
+]
