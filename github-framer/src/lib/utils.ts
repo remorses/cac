@@ -144,6 +144,7 @@ export const basePath = import.meta.env.BASE_URL || '/'
 export enum PluginDataKeys {
     githubRepoSlug = 'repoSlug',
     mapFieldsConfig = 'mapFieldsConfig',
+    basePath = 'basePath',
 }
 
 export function simpleHash(input: string) {
@@ -196,6 +197,8 @@ export async function getMarkdownPluginData() {
     const mapFieldsConfigJson = await framer.getPluginData(
         PluginDataKeys.mapFieldsConfig,
     )
-    const mapFieldsConfig: CollectionField[] = safeJsonParse(mapFieldsConfigJson || '[]') || []
-    return { owner, repo, mapFieldsConfig }
+    const basePath = (await framer.getPluginData(PluginDataKeys.basePath)) || ''
+    const mapFieldsConfig: CollectionField[] =
+        safeJsonParse(mapFieldsConfigJson || '[]') || []
+    return { owner, repo, mapFieldsConfig, basePath }
 }

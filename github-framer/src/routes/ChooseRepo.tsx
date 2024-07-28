@@ -13,30 +13,46 @@ import {
     LoaderFunctionArgs,
     redirect,
     RouteObject,
+    useActionData,
     useLoaderData,
 } from 'react-router'
 import { Form } from 'react-router-dom'
 
 function Component() {
     const { repos } = useLoaderData() as LoaderReturnType<typeof loader>
-    const actionData = useLoaderData() as any
+    const actionData = useActionData() as any
     useRefreshOnVisible({ enabled: true })
 
     return (
         <Form method='POST' className='flex flex-col justify-start gap-4'>
             {/* <div className='opacity-70'>Choose repo</div> */}
-            <select className='w-full' name='repoSlug'>
-                <option value=''>Choose a repo</option>
+            <select className='w-full' name={FormFields.repoSlug}>
+                {/* <option value=''>Choose a repo</option> */}
                 {repos.map((repo) => (
                     <option key={repo.url} value={repo.repoSlug}>
                         {repo.repoSlug}
                     </option>
                 ))}
             </select>
-            <Button type='submit'>Import Markdown Files</Button>
-            {actionData.error && (
-                <div className='text-red-500'>{actionData.error}</div>
+            <div className='flex flex-col gap-1'>
+                <div className=''>Markdown files base folder</div>
+                <div className='opacity-70'>
+                    All the markdown files inside this folder will be imported
+                </div>
+                <input
+                    type='text'
+                    name={FormFields.basePath}
+                    defaultValue={'/'}
+                    placeholder='/path/to/files'
+                    className='w-full p-2 mt-1 bg-framer-tertiary rounded-md'
+                />
+            </div>
+            {actionData?.error && (
+                <div className='text-red-400'>{actionData.error}</div>
             )}
+            <Button variant='primary' type='submit'>
+                Import Markdown Files
+            </Button>
         </Form>
     )
 }
@@ -53,6 +69,11 @@ async function loader({}: LoaderFunctionArgs) {
     return { repos }
 }
 
+enum FormFields {
+    repoSlug = 'repoSlug',
+    basePath = 'basePath',
+}
+
 export function ChooseRepo(): RouteObject {
     return {
         handle: 'Choose GitHub Repo',
@@ -61,13 +82,39 @@ export function ChooseRepo(): RouteObject {
         Component: Component,
         async action({ request }) {
             const formData = await request.formData()
-            const repoSlug = formData.get('repoSlug')?.toString() || ''
+            const repoSlug = formData.get(FormFields.repoSlug)?.toString() || ''
+            const basePath = formData.get(FormFields.basePath)?.toString() || ''
             if (!repoSlug) {
                 return {
                     error: 'No repo selected',
                 }
             }
+            console.log('basePath', basePath)
+
+            const [owner, repo] = repoSlug.split('/')
+            console.log('getting files for ', repoSlug)
+            const { data, error } =
+                await pluginApiClient.api.v1.markdownPlugin.checkBasePath.post({
+                    basePath,
+                    owner,
+                    repo,
+                })
+            if (error) {
+                return {
+                    error: String(error.value),
+                }
+            }
+            if (data.error) {
+                return {
+                    error: data.error,
+                }
+            }
+            const { formattedBasePath } = data
             await framer.setPluginData(PluginDataKeys.githubRepoSlug, repoSlug)
+            await framer.setPluginData(
+                PluginDataKeys.basePath,
+                formattedBasePath,
+            )
             return redirect(withMode(Paths.mapFields))
         },
     }

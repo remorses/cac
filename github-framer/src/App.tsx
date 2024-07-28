@@ -195,7 +195,7 @@ const router = createBrowserRouter(
                         )
 
                         if (framer.mode === 'syncCollection' && githubSlug) {
-                            return redirect(withMode(Paths.mapFields)) // TODO remove
+                            // return redirect(withMode(Paths.mapFields)) // TODO remove
                             return redirect(withMode(Paths.sync))
                         }
                         // return redirect(withMode(Paths.login))

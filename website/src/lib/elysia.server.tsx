@@ -644,7 +644,10 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             .post(
                 '/syncGithub',
                 async ({ body, store }) => {
-                    const { owner, repo } = body
+                    let { owner, basePath, repo } = body
+                    if (!basePath) {
+                        basePath = ''
+                    }
                     const userId = store.userId
                     if (!userId) {
                         throw unauthorizedResponse
@@ -678,7 +681,15 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                         owner,
                         repo,
                     })
-                    let withMarkdown = files.map((x) => {
+                    let filtered = files.filter((x) => {
+                        return x?.pagePath?.startsWith(basePath)
+                    })
+                    if (!filtered.length) {
+                        throw new Error(
+                            `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
+                        )
+                    }
+                    let withMarkdown = filtered.map((x) => {
                         if (!x?.content) {
                             return
                         }
@@ -727,6 +738,75 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                     body: t.Object({
                         owner: t.String(),
                         repo: t.String(),
+                        basePath: t.String(),
+                        // userId: t.String(),
+                    }),
+                },
+            )
+            .post(
+                '/checkBasePath',
+                async ({ body, store }) => {
+                    let { owner, basePath, repo } = body
+
+                    const userId = store.userId
+                    if (!userId) {
+                        throw unauthorizedResponse
+                    }
+                    if (basePath === '/') {
+                        basePath = ''
+                    }
+                    if (!basePath.startsWith('/')) {
+                        basePath = '/' + basePath
+                    }
+
+                    const githubInstallation =
+                        await prisma.githubInstallation.findFirst({
+                            where: {
+                                orgId: userId,
+                            },
+                        })
+                    if (!githubInstallation) {
+                        throw new Error('No github installation found')
+                    }
+
+                    const installationId = githubInstallation.installationId
+                    const octokit = await getOctokit({ installationId })
+                    const repoResult = await octokit.rest.repos.get({
+                        owner,
+                        repo,
+                    })
+                    let baseBranch = repoResult.data.default_branch
+                    const files = await getRepoFiles({
+                        filter(file) {
+                            return (
+                                file.path?.endsWith('.md') ||
+                                file.path?.endsWith('.mdx')
+                            )
+                        },
+                        branch: baseBranch,
+                        octokit: octokit.rest,
+                        owner,
+                        repo,
+                    })
+                    const filtered = files.filter((x) => {
+                        return x.pagePath?.startsWith(basePath)
+                    })
+                    if (!filtered.length) {
+                        return {
+                            error: 'No files found in base path, use another one',
+                            formattedBasePath: basePath,
+                        }
+                    }
+                    return {
+                        error: '',
+                        formattedBasePath: basePath,
+                    }
+                },
+                {
+                    body: t.Object({
+                        owner: t.String(),
+                        repo: t.String(),
+                        basePath: t.String(),
                         // userId: t.String(),
                     }),
                 },

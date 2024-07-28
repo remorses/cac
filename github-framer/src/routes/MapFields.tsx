@@ -30,11 +30,12 @@ import {
 } from 'website/src/lib/elysia.server'
 
 async function loader({}: LoaderFunctionArgs) {
-    const { owner, repo } = await getMarkdownPluginData()
+    const { owner, repo, basePath } = await getMarkdownPluginData()
     const { data, error } =
         await pluginApiClient.api.v1.markdownPlugin.syncGithub.post({
             owner,
             repo,
+            basePath,
         })
     if (error) {
         throw error
