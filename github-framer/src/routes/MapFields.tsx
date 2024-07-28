@@ -30,7 +30,8 @@ import {
 } from 'website/src/lib/elysia.server'
 
 async function loader({}: LoaderFunctionArgs) {
-    const { owner, repo, basePath } = await getMarkdownPluginData()
+    const { owner, repo, basePath, mapFieldsConfig } =
+        await getMarkdownPluginData()
     const { data, error } =
         await pluginApiClient.api.v1.markdownPlugin.syncGithub.post({
             owner,
@@ -45,7 +46,7 @@ async function loader({}: LoaderFunctionArgs) {
         console.log('no front matter found, redirecting to sync')
         throw redirect(withMode(Paths.sync))
     }
-    return { frontMatter }
+    return { frontMatter, mapFieldsConfig }
 }
 
 export function MapFieldsPage(): RouteObject {
@@ -216,10 +217,28 @@ function Input({ className, ...rest }: ComponentProps<'input'>) {
 }
 
 export function MapFields({}: {}) {
-    const { frontMatter } = useLoaderData() as LoaderReturnType<typeof loader>
-    const [fieldConfigs, setFieldConfig] = useState(() =>
-        createFieldConfig(frontMatter),
-    )
+    const { frontMatter, mapFieldsConfig: defaultFieldConfigs } =
+        useLoaderData() as LoaderReturnType<typeof loader>
+    const [fieldConfigs, setFieldConfig] = useState(() => {
+        const suggested = createFieldConfig(frontMatter)
+
+        return suggested.map((suggestedField) => {
+            const existingField = defaultFieldConfigs.find(
+                (field) => field.id === suggestedField.id,
+            )
+            if (existingField) {
+                return existingField
+            }
+            // if it was disabled previously, show it as disabled
+            if (defaultFieldConfigs.length) {
+                return {
+                    ...suggestedField,
+                    type: '',
+                }
+            }
+            return suggestedField
+        })
+    })
 
     const actionData = useActionData() as any
     const navigation = useNavigation()

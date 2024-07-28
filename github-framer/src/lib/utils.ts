@@ -188,10 +188,10 @@ export async function getMarkdownPluginData() {
     const [repoSlug, mapFieldsConfigJson, basePath] = await Promise.all([
         framer.getPluginData(PluginDataKeys.githubRepoSlug),
         framer.getPluginData(PluginDataKeys.mapFieldsConfig),
-        framer.getPluginData(PluginDataKeys.basePath),
+        framer.getPluginData(PluginDataKeys.basePath) || '',
     ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
         safeJsonParse(mapFieldsConfigJson || '[]') || []
-    return { owner, repo, mapFieldsConfig, basePath }
+    return { owner, repo, mapFieldsConfig, basePath: basePath || '' }
 }
