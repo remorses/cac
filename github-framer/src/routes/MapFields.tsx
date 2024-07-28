@@ -27,7 +27,7 @@ import { Form, useSubmit } from 'react-router-dom'
 import {
     MarkdownPluginFrontMatter,
     MarkdownPluginFrontMatterProperty,
-} from 'website/src/lib/elysia.server'
+} from 'website/src/lib/elysia-markdown-plugin'
 
 async function loader({}: LoaderFunctionArgs) {
     const { owner, repo, basePath, mapFieldsConfig } =
