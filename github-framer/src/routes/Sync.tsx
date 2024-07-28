@@ -126,7 +126,7 @@ async function loader({}: LoaderFunctionArgs) {
         itemsToAdd.push({
             id,
             slug: item.slug,
-            title: item.slug,
+            title: item.title,
             fieldData: {
                 [CollectionFieldIds.content]: item.html,
                 ...frontMatterFields,
