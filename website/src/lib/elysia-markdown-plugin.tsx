@@ -458,6 +458,9 @@ export async function processMarkdown({
             console.log(`no title found for ${slug}, using page slug for it`)
             title = slug
         }
+        if (grayMatter.data?.title) {
+            title = grayMatter.data.title
+        }
         return {
             html: formattedHtml,
             frontMatter: grayMatter.data,
