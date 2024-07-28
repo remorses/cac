@@ -15,6 +15,7 @@ import {
     PluginDataKeys,
     RouteIds,
     basePath,
+    getMarkdownPluginData,
     withMode,
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
@@ -190,11 +191,9 @@ const router = createBrowserRouter(
                             return redirect(withMode(Paths.login))
                         }
 
-                        let githubSlug = await framer.getPluginData(
-                            PluginDataKeys.githubRepoSlug,
-                        )
+                        const { owner, repo } = await getMarkdownPluginData()
 
-                        if (framer.mode === 'syncCollection' && githubSlug) {
+                        if (framer.mode === 'syncCollection' && owner && repo) {
                             // return redirect(withMode(Paths.mapFields)) // TODO remove
                             return redirect(withMode(Paths.sync))
                         }

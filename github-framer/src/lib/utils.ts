@@ -185,10 +185,11 @@ export function assert(
 }
 
 export async function getMarkdownPluginData() {
+    const collection = await framer.getCollection()
     const [repoSlug, mapFieldsConfigJson, basePath] = await Promise.all([
-        framer.getPluginData(PluginDataKeys.githubRepoSlug),
-        framer.getPluginData(PluginDataKeys.mapFieldsConfig),
-        framer.getPluginData(PluginDataKeys.basePath) || '',
+        collection.getPluginData(PluginDataKeys.githubRepoSlug),
+        collection.getPluginData(PluginDataKeys.mapFieldsConfig),
+        collection.getPluginData(PluginDataKeys.basePath) || '',
     ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =

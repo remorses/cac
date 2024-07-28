@@ -141,7 +141,6 @@ async function loader({}: LoaderFunctionArgs) {
     await collection.removeItems(itemsToDelete)
 
     // Save the data source ID for future plugin runs
-    // await collection.setPluginData(rssSourceStorageKey, sourceId)
     await framer.notify(`Imported ${itemsToAdd.length} files`, {
         variant: 'success',
     })

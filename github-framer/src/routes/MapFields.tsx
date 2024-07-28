@@ -58,7 +58,8 @@ export function MapFieldsPage(): RouteObject {
         async action({ request }) {
             const fieldConfig: CollectionFieldConfig[] = await request.json()
             console.log('saving fieldConfig', fieldConfig)
-            await framer.setPluginData(
+            const collection = await framer.getCollection()
+            await collection.setPluginData(
                 PluginDataKeys.mapFieldsConfig,
                 JSON.stringify(fieldConfig.filter((x) => x?.type)),
             )
