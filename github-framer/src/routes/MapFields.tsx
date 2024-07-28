@@ -171,6 +171,17 @@ function getCollectionFieldForProperty(property: {
         onlyType === 'string' &&
         property.values.every((x) => {
             return x.startsWith('http://') || x.startsWith('https://')
+        }) &&
+        property.values.some(
+            (x) =>
+                x.endsWith('.png') || x.endsWith('.jpg') || x.endsWith('.jpeg'),
+        )
+    ) {
+        return getFieldConfigForProp(property, 'image')
+    } else if (
+        onlyType === 'string' &&
+        property.values.every((x) => {
+            return x.startsWith('http://') || x.startsWith('https://')
         })
     ) {
         return getFieldConfigForProp(property, 'link')

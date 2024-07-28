@@ -712,7 +712,9 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                                     id: key,
                                 }
                             }
-                            properties[key].values.push(value)
+                            if (value != null) {
+                                properties[key].values.push(value)
+                            }
                         }
                     }
                     const frontMatter: MarkdownPluginFrontMatter = {
