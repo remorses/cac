@@ -185,15 +185,16 @@ export function assert(
 }
 
 export async function getMarkdownPluginData() {
-    const repoSlug = await framer.getPluginData(PluginDataKeys.githubRepoSlug)
-    if (!repoSlug) {
-        notifyError(new Error('No repo slug found'), 'sync page')
-        throw redirect(Paths.chooseRepo)
-    }
-    const [owner, repo] = repoSlug.split('/')
-    if (!owner || !repo) {
-        throw new Error('Invalid repo slug found in storage')
-    }
+    const repoSlug =
+        (await framer.getPluginData(PluginDataKeys.githubRepoSlug)) || ''
+    // if (!repoSlug) {
+    //     notifyError(new Error('No repo slug found'), 'sync page')
+    //     throw redirect(Paths.chooseRepo)
+    // }
+    const [owner, repo = ''] = repoSlug?.split('/')
+    // if (!owner || !repo) {
+    //     throw new Error('Invalid repo slug found in storage')
+    // }
     const mapFieldsConfigJson = await framer.getPluginData(
         PluginDataKeys.mapFieldsConfig,
     )

@@ -2,6 +2,7 @@ import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
 import {
+    getMarkdownPluginData,
     LoaderReturnType,
     Paths,
     pluginApiClient,
@@ -20,16 +21,25 @@ import {
 import { Form } from 'react-router-dom'
 
 function Component() {
-    const { repos } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { repos, owner, repo, basePath } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
     useRefreshOnVisible({ enabled: true })
 
+    let defaultRepoSlug = ''
+    if (owner && repo) {
+        defaultRepoSlug = `${owner}/${repo}`
+    }
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     return (
         <Form method='POST' className='flex flex-col justify-start gap-4'>
             {/* <div className='opacity-70'>Choose repo</div> */}
-            <select className='w-full' name={FormFields.repoSlug}>
+            <select
+                defaultValue={defaultRepoSlug}
+                className='w-full'
+                name={FormFields.repoSlug}
+            >
                 {/* <option value=''>Choose a repo</option> */}
                 {repos.map((repo) => (
                     <option key={repo.url} value={repo.repoSlug}>
@@ -45,7 +55,7 @@ function Component() {
                 <input
                     type='text'
                     name={FormFields.basePath}
-                    defaultValue={'/'}
+                    defaultValue={basePath || '/'}
                     placeholder='/path/to/files'
                     className='w-full p-2 mt-1 bg-framer-tertiary rounded-md'
                 />
@@ -61,6 +71,7 @@ function Component() {
 }
 
 async function loader({}: LoaderFunctionArgs) {
+    const { basePath, owner, repo } = await getMarkdownPluginData()
     const { data, error } =
         await pluginApiClient.api.v1.markdownPlugin.githubRepoList.get({})
     if (error) {
@@ -69,7 +80,7 @@ async function loader({}: LoaderFunctionArgs) {
     }
     const { repos } = data
     console.log('repos', repos)
-    return { repos }
+    return { repos, basePath, owner, repo }
 }
 
 enum FormFields {
