@@ -48,7 +48,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
             state: stateStr,
             redirectUrl: new URL(url.pathname!, env.PUBLIC_URL).href,
         })
-        console.log('createToken', JSON.stringify(tokenRes, null, 2))
+        // console.log('createToken', JSON.stringify(tokenRes, null, 2))
         token = tokenRes.authentication.token
     }
 
@@ -67,7 +67,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     )
     const account = installation.data.account
 
-    console.log('account', account)
+    // console.log('account', account)
 
     const accountLogin =
         account && 'login' in account
