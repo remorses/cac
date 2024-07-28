@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import EnvironmentPlugin from 'vite-plugin-environment'
 import tsconfigPaths from 'vite-tsconfig-paths'
+
 import react from '@vitejs/plugin-react-swc'
 import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
@@ -16,4 +17,9 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
+    base: building ? '/plugins/migrate' : undefined,
+    build: {
+        target: 'ES2020',
+        outDir: 'dist/plugins/migrate',
+    },
 })

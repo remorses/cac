@@ -21,8 +21,18 @@ export function sleep(ms: number) {
     })
 }
 
-export function framerLoginUrl({ key }) {
-    let url = new URL('/api/auth/framer-login', env.PUBLIC_URL)
+export enum PluginNames {
+    markdown = 'markdown',
+    migrate = 'migrate',
+}
+
+export function framerLoginUrl({ key, pluginName = PluginNames.migrate }) {
+    let url: URL
+    if (pluginName === PluginNames.markdown) {
+        url = new URL('/api/markdown-plugin/auth/framer-login', env.PUBLIC_URL)
+    } else {
+        url = new URL('/api/auth/framer-login', env.PUBLIC_URL)
+    }
     url.searchParams.set('key', key)
     return url.toString()
 }
@@ -35,4 +45,23 @@ export function generateSecurePassword() {
     return Array.from(crypto.getRandomValues(new Uint32Array(length)))
         .map((x) => charset[x % charset.length])
         .join('')
+}
+
+export function safeJsonParse<T = any>(str: string): T | null {
+    try {
+        return JSON.parse(str)
+    } catch (e) {
+        return null
+    }
+}
+
+export function isTruthy<T>(val: T | undefined | null | false): val is T {
+    return Boolean(val)
+}
+
+export function afterFramerLogin({ key }) {
+    return new URL(
+        '/after-framer-login?key=' + encodeURIComponent(key),
+        env.PUBLIC_URL,
+    ).toString()
 }

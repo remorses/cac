@@ -1,0 +1,6 @@
+{
+    "id": "b50axx",
+    "name": "Github Markdown",
+    "modes": ["configureCollection", "syncCollection"],
+    "icon": "/plugins/migrate/icon.png"
+}

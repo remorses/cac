@@ -1,4 +1,5 @@
 import { Elysia, Static, t } from 'elysia'
+import matter from 'gray-matter'
 import stripJsonComments from 'strip-json-comments'
 
 import { anthropic } from '@ai-sdk/anthropic'
@@ -17,7 +18,7 @@ import {
     createSupabaseAnon,
     getSupabaseSession,
 } from 'website/src/lib/supabase.server'
-import { sleep } from 'website/src/lib/utils'
+import { isTruthy, sleep } from 'website/src/lib/utils'
 import {
     fetchFormattedHtml,
     getWebsiteDescription,
@@ -28,6 +29,10 @@ import { generatePassword, splitIntoWords } from 'website/src/lib/ssr.server'
 import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
 import { env } from 'website/src/lib/env'
 import { prisma } from 'db/prisma'
+import { getOctokit, getRepoFiles } from 'website/src/lib/github.server'
+import { Octokit } from 'octokit'
+import { marked } from 'marked'
+import path from 'path'
 
 const RephraseSchema = t.Object({
     description: t.String(),
@@ -558,6 +563,151 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             // },
         },
     )
+    .group('/markdownPlugin', (group) => {
+        return group
+            .get(
+                '/githubRepoList',
+                async ({ body, store }) => {
+                    const userId = store.userId
+                    if (!userId) {
+                        throw unauthorizedResponse
+                    }
+                    const installation =
+                        await prisma.githubInstallation.findFirst({
+                            where: {
+                                orgId: userId,
+                            },
+                        })
+                    if (!installation) {
+                        throw new Error('No github installation found')
+                    }
+
+                    const installationId = installation.installationId
+                    const octokit = await getOctokit({ installationId })
+                    const repos = await Promise.resolve().then(async () => {
+                        if (installation.accountType === 'ORGANIZATION') {
+                            const { data } =
+                                await octokit.rest.repos.listForOrg({
+                                    org: installation.accountLogin,
+                                    per_page: 100,
+                                    page: 1,
+                                    direction: 'desc',
+                                    type: 'all',
+                                    sort: 'pushed',
+                                })
+                            return data.map((x) => {
+                                const { private: p, url, name, owner } = x
+                                return {
+                                    repo: name,
+                                    owner: owner.login,
+                                    repoSlug: `${owner.login}/${name}`,
+                                    private: p,
+                                    url,
+                                }
+                            })
+                        }
+                        {
+                            const octokit = new Octokit({
+                                auth: installation.oauthToken,
+                            })
+                            const { data } =
+                                await octokit.rest.repos.listForAuthenticatedUser(
+                                    {
+                                        page: 1,
+                                        per_page: 100,
+                                        direction: 'desc',
+                                        sort: 'pushed',
+                                        type: 'all',
+                                    },
+                                )
+                            return data.map((x) => {
+                                const { private: p, url, owner, name } = x
+                                return {
+                                    owner: owner.login,
+                                    repo: name,
+                                    repoSlug: `${owner.login}/${name}`,
+                                    private: p,
+                                    url,
+                                }
+                            })
+                        }
+                    })
+
+                    return { repos }
+                },
+                {
+                    // body: t.Object({
+                    //     // userId: t.String(),
+                    // }),
+                },
+            )
+            .post(
+                '/syncGithub',
+                async ({ body, store }) => {
+                    const { owner, repo } = body
+                    const userId = store.userId
+                    if (!userId) {
+                        throw unauthorizedResponse
+                    }
+                    const githubInstallation =
+                        await prisma.githubInstallation.findFirst({
+                            where: {
+                                orgId: userId,
+                            },
+                        })
+                    if (!githubInstallation) {
+                        throw new Error('No github installation found')
+                    }
+
+                    const installationId = githubInstallation.installationId
+                    const octokit = await getOctokit({ installationId })
+                    const repoResult = await octokit.rest.repos.get({
+                        owner,
+                        repo,
+                    })
+                    let baseBranch = repoResult.data.default_branch
+                    const files = await getRepoFiles({
+                        filter(file) {
+                            return (
+                                file.path?.endsWith('.md') ||
+                                file.path?.endsWith('.mdx')
+                            )
+                        },
+                        branch: baseBranch,
+                        octokit: octokit.rest,
+                        owner,
+                        repo,
+                    })
+                    let withMarkdown = files.map((x) => {
+                        if (!x?.content) {
+                            return
+                        }
+                        try {
+                            const html = marked(x?.content || '')
+                            const { pagePath } = x
+                            const grayMatter = matter(x?.content || '')
+                            let slug = '/' + path.basename(pagePath, '.md')
+                            return {
+                                html,
+                                frontMatter: grayMatter.data,
+                                pagePath,
+                                slug,
+                            }
+                        } catch (e) {
+                            notifyError(e, 'error parsing markdown')
+                        }
+                    })
+                    return { files: withMarkdown.filter(isTruthy) }
+                },
+                {
+                    body: t.Object({
+                        owner: t.String(),
+                        repo: t.String(),
+                        // userId: t.String(),
+                    }),
+                },
+            )
+    })
     .get(
         '/errorExample',
         () => {

@@ -3,36 +3,26 @@ import { supabase } from '@/lib/supabase-framer'
 import {
     LoaderReturnType,
     Paths,
-    PluginLoaderData,
-    RouteIds,
     basePath,
     createBuyLink,
     formatLargeNumber,
     pluginApiClient,
     withMode,
 } from '@/lib/utils'
-import { framer } from 'framer-plugin'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
     LoaderFunctionArgs,
-    Route,
     RouteObject,
     useActionData,
     useLoaderData,
     useNavigate,
-    useRouteLoaderData,
 } from 'react-router'
-import { Form, Link, useFetcher } from 'react-router-dom'
-import {
-    framerLoginUrl,
-    generateSecurePassword,
-    sleep,
-} from 'website/src/lib/utils'
+import { Link } from 'react-router-dom'
 
-import {} from 'react-router'
 import { useRefreshOnVisible } from '@/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
+import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {
     const [session, credits] = await Promise.all([

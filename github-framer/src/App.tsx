@@ -1,4 +1,5 @@
 import NProgress from 'nprogress'
+
 import useMeasure from 'react-use-measure'
 
 import { framer } from 'framer-plugin'
@@ -9,16 +10,16 @@ import { NProgressComponent } from '@/components/nprogress'
 import { notifyError } from '@/lib/errors'
 import { useFocusOnMount } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
-import { Paths, RouteIds, basePath, withMode } from '@/lib/utils'
-import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
-import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
+import {
+    Paths,
+    PluginDataKeys,
+    RouteIds,
+    basePath,
+    withMode,
+} from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
-import { SimplePrompt } from '@/routes/Prompt'
-import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
-import { Settings } from '@/routes/Settings'
-import { LicenseKey } from '@/routes/LicenseKey'
 import { Session } from '@supabase/supabase-js'
-import { AnimatePresence, MotionConfig, useMotionValue } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
     Outlet,
     RouterProvider,
@@ -32,6 +33,8 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
+import { ChooseRepo } from '@/routes/ChooseRepo'
+import { Sync } from '@/routes/Sync'
 
 globalThis.framer = framer
 
@@ -61,17 +64,6 @@ const router = createBrowserRouter(
                 const [handle] = useMatches().filter((match) => match?.handle)
                 const navigate = useNavigate()
 
-                const heightMotionValue = useMotionValue(height)
-
-                // useMotionValueEvent(heightMotionValue, 'change', () => {
-                //     // console.log('height changed', heightMotionValue.get())
-                //     framer.showUI({
-                //         title: (handle?.handle as any) || '',
-                //         position: 'top left',
-                //         width,
-                //         height: heightMotionValue.get() || 100,
-                //     })
-                // })
                 useFocusOnMount()
 
                 useLayoutEffect(() => {
@@ -93,11 +85,9 @@ const router = createBrowserRouter(
                 const revalidator = useRevalidator()
 
                 const navigationType = useNavigationType()
-                const canGoBack = ![
-                    Paths.login,
-                    '/',
-                    Paths.doYouAlreadyHaveAWebsite,
-                ].includes(location.pathname as any)
+                const canGoBack = ![Paths.login, '/'].includes(
+                    location.pathname as any,
+                )
                 // const history = useHistory()
                 return (
                     <MotionConfig
@@ -108,21 +98,7 @@ const router = createBrowserRouter(
                         }}
                     >
                         <AnimatePresence mode='wait'>
-                            <div
-                                // key={location.pathname}
-                                // layoutId='content'
-                                // initial={{ opacity: 0 }}
-                                // style={{ height: heightMotionValue }}
-                                // style={{ height: height }}
-                                // animate={{
-                                //     height: height,
-                                //     opacity: 1,
-                                //     scale: 1,
-                                // }}
-                                // exit={{ opacity: 0 }}
-
-                                className='overflow-hidden '
-                            >
+                            <div className='overflow-hidden '>
                                 <div
                                     ref={ref}
                                     className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
@@ -145,11 +121,11 @@ const router = createBrowserRouter(
                                                 </button>
                                             )}
                                             <div className='grow'></div>
-                                            <Link to={withMode(Paths.settings)}>
+                                            {/* <Link to={withMode(Paths.settings)}>
                                                 <Button className='w-auto bg-transparent !py-px text-[11px] '>
                                                     settings
                                                 </Button>
-                                            </Link>
+                                            </Link> */}
                                         </div>
                                     )}
                                 </div>
@@ -177,7 +153,7 @@ const router = createBrowserRouter(
                             className='w-auto'
                             type='button'
                             onClick={() => {
-                                window.location.pathname = basePath
+                                window.location.pathname = window.location.pathname
                             }}
                         >
                             Try again
@@ -214,49 +190,22 @@ const router = createBrowserRouter(
                         console.log(
                             'redirecting to choose website from / because user is logged in',
                         )
-                        // return redirect(withMode(Paths.login))
-                        return redirect(
-                            withMode(Paths.doYouAlreadyHaveAWebsite),
+                        let githubSlug = await framer.getPluginData(
+                            PluginDataKeys.githubRepoSlug,
                         )
+
+                        if (framer.mode === 'syncCollection' && githubSlug) {
+                            return redirect(withMode(Paths.sync))
+                        }
+                        // return redirect(withMode(Paths.login))
+                        return redirect(withMode(Paths.chooseRepo))
                         // setTimeout(() => refreshHeight(), 1)
                     },
                     handle: '',
                 },
                 LoginPage(),
-                Settings(),
-                ScrapeWebsite(),
-
-                {
-                    path: Paths.doYouAlreadyHaveAWebsite,
-                    element: <AlreadyHaveWebsite />,
-                    handle: 'Do you already have an existing website?',
-                },
-                {
-                    path: Paths.getWebsiteInfo,
-                    element: <GetWebsiteInfo />,
-                    handle: 'What is your website url?',
-                },
-                // {
-                //     path: Paths.checkWebsiteIsPublished,
-                //     element: <IsWebsitePublished />,
-                //     loader: async ({}) => {
-                //         const publishInfo = await framer.getPublishInfo()
-                //         let deploymentTime = publishInfo?.staging?.deploymentTime
-                //         let hourAgo = new Date()
-                //         hourAgo.setHours(hourAgo.getHours() - 1)
-                //         if (deploymentTime && new Date(deploymentTime) > hourAgo) {
-                //             return redirect(Paths.getWebsiteInfo)
-                //         }
-                //         framer.notify('Publish your website first', {
-                //             variant: 'error',
-                //         })
-
-                //         return {}
-                //     },
-                //     handle: 'Publish your website first',
-                // },
-                SimplePrompt(),
-                LicenseKey(),
+                ChooseRepo(),
+                Sync(),
             ],
         },
     ],
@@ -266,7 +215,6 @@ const router = createBrowserRouter(
 export default function Page() {
     return <RouterProvider router={router} />
 }
-
 
 export function BackIcon(props) {
     return (

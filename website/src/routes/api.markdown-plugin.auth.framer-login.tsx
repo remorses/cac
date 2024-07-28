@@ -2,6 +2,7 @@ import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
+import { env } from '../lib/env'
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
@@ -14,13 +15,16 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         throw new Error('URL is malformed, missing key param')
     }
     // const next = url.searchParams.get('next') || '/x'
+    let next = new URL(`/api/markdown-plugin/github/install`, env.PUBLIC_URL)
+
+    next.searchParams.set('next', afterFramerLogin({ key }))
 
     const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: 'github',
         options: {
             skipBrowserRedirect: true,
             redirectTo: loginRedirectUrl({
-                next: afterFramerLogin({ key }),
+                next: next.toString(),
             }),
         },
     })

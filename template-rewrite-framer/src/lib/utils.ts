@@ -72,18 +72,12 @@ export function sleep(ms: number) {
     })
 }
 
-export function Uint8ArrayToBase64(buffer: Uint8Array) {
-    var blob = new Blob([buffer], { type: 'image/png' })
-    var url = URL.createObjectURL(blob)
-    return url
-}
+
 
 export const noop: any = () => {}
 
-export async function isTruthy<T>(
-    x: T | undefined | null | false,
-): Promise<boolean> {
-    return !!x
+export function isTruthy<T>(val: T | undefined | null | false): val is T {
+    return Boolean(val)
 }
 
 export function withMode(path, query?: Record<string, any>) {
@@ -214,9 +208,7 @@ export async function* getParentNodes(node: AnyNode | string | null) {
 
 Object.assign(globalThis, { getRootParentNode, getParentNodes })
 
-export type PluginLoaderData = {
-    session: Session
-}
+
 
 export enum RouteIds {
     root = 'root',

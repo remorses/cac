@@ -1,0 +1,116 @@
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
+import { getGithubApp, getOctokit } from 'website/src/lib/github.server'
+import { App, OAuthApp } from 'octokit'
+
+import { env } from 'website/src/lib/env'
+import { safeJsonParse } from 'website/src/lib/utils'
+import { getSupabaseSession } from '../lib/supabase.server'
+import { GithubAccountType, Prisma, prisma } from 'db/prisma'
+
+export type GithubState = {
+    redirectToPath?: string
+}
+
+export async function loader({ request, response }: LoaderFunctionArgs) {
+    const url = new URL(request.url)
+    const { userId, redirectTo } = await getSupabaseSession({
+        request,
+        response,
+    })
+    if (!userId) {
+        throw new Response('Unauthorized', { status: 401 })
+    }
+    // const userId = session?.user?.id
+    const next = url.searchParams.get('next') || ''
+
+    if (!next) {
+        return new Response('Missing `next` callback', { status: 400 })
+    }
+
+    const query = url.searchParams
+    let stateStr = query.get('state') || ('' as string)
+    const state: GithubState | null = safeJsonParse(
+        decodeURIComponent(stateStr),
+    )
+    console.log(JSON.stringify(state, null, 2))
+
+    if (!state) {
+        return new Response('Missing state', { status: 400 })
+    }
+    const code = (query.get('code') as string) || ''
+
+    let token
+    if (code) {
+        console.log('getting oauth token')
+        const oauthApp = getGithubApp()
+        const tokenRes = await oauthApp.oauth.createToken({
+            code,
+            state: stateStr,
+            redirectUrl: new URL(url.pathname!, env.PUBLIC_URL).href,
+        })
+        console.log('createToken', JSON.stringify(tokenRes, null, 2))
+        token = tokenRes.authentication.token
+    }
+
+    const installationId = Number(query.get('installation_id') || '')
+
+    if (!installationId) {
+        return new Response('Missing installation_id', { status: 400 })
+        // return res.status(400).json({ error: 'Missing installation_id' })
+    }
+    const octokit = await getOctokit({ installationId })
+    const installation = await octokit.request(
+        'GET /app/installations/{installation_id}',
+        {
+            installation_id: installationId,
+        },
+    )
+    const account = installation.data.account
+
+    console.log('account', account)
+
+    const accountLogin =
+        account && 'login' in account
+            ? account.login
+            : account!.slug.replace(/\//g, '-')
+    // let orgId = state.orgId
+    // console.log({ orgId, installationId, userId })
+
+    const appId = String(installation?.data?.app_id || '')
+    let orgId = userId
+    const createInstallation: Prisma.GithubInstallationUncheckedCreateInput = {
+        installationId,
+        orgId,
+        accountLogin,
+        accountAvatarUrl: installation.data.account?.avatar_url || '',
+        oauthToken: token,
+        appId,
+        accountType:
+            account && 'type' in account && account.type === 'User'
+                ? GithubAccountType.USER
+                : GithubAccountType.ORGANIZATION,
+    }
+    await Promise.all([
+        prisma.githubInstallation.upsert({
+            where: {
+                installationId_orgId: {
+                    installationId,
+                    orgId,
+                },
+            },
+            create: createInstallation,
+            update: createInstallation,
+        }),
+        // state.siteId &&
+        //     prisma.site.update({
+        //         where: {
+        //             siteId: state.siteId,
+        //         },
+        //         data: {
+        //             installationId,
+        //         },
+        //     }),
+    ])
+
+    return redirect(next)
+}

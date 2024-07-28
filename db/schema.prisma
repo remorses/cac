@@ -366,6 +366,31 @@ model FramerLoginRequest {
   createdAt    DateTime @default(now())
   usedByUserId String?  @db.Uuid
 
+  // data Json
+
+  @@schema("public")
+}
+
+model GithubInstallation {
+  installationId   Int
+  accountLogin     String            @default("")
+  appId            String?
+  accountAvatarUrl String            @default("")
+  accountType      GithubAccountType @default(USER)
+  createdAt        DateTime          @default(now())
+  orgId            String
+  oauthToken       String?
+  status           String            @default("active")
+  // org               Org                 @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+
+  @@id([installationId, orgId])
+  @@schema("public")
+}
+
+enum GithubAccountType {
+  USER
+  ORGANIZATION
+
   @@schema("public")
 }
 

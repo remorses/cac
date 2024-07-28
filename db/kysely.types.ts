@@ -301,6 +301,18 @@ export interface Generation {
   words: number;
 }
 
+export interface GithubInstallation {
+  accountAvatarUrl: Generated<string>;
+  accountLogin: Generated<string>;
+  accountType: Generated<"ORGANIZATION" | "USER">;
+  appId: string | null;
+  createdAt: Generated<Timestamp>;
+  installationId: number;
+  oauthToken: string | null;
+  orgId: string;
+  status: Generated<string>;
+}
+
 export interface LemonSqueezyLicense {
   credits: Generated<number>;
   licenseKey: string;
@@ -573,6 +585,7 @@ export interface DB {
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
   FramerLoginRequest: FramerLoginRequest;
   Generation: Generation;
+  GithubInstallation: GithubInstallation;
   LemonSqueezyLicense: LemonSqueezyLicense;
   Org: Org;
   OrgInviteLink: OrgInviteLink;
