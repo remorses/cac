@@ -21,6 +21,15 @@ import { safeJsonParse } from 'website/src/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
 
 export const pluginApiClient = treaty<RouteType>(env.PUBLIC_URL!, {
+    // async onResponse(response) {
+    //     if (!response.ok) {
+    //         let text = await response.text()
+    //         console.log('response', text)
+    //         let err = new Error(text)
+    //         throw err
+    //     }
+    //     return response
+    // },
     async onRequest() {
         const {
             data: { session },
@@ -131,6 +140,7 @@ export const basePath = import.meta.env.BASE_URL || '/'
 export enum PluginDataKeys {
     githubRepoSlug = 'repoSlug',
     mapFieldsConfig = 'mapFieldsConfig',
+    githubAccountLogin = 'githubAccountLogin',
     basePath = 'basePath',
 }
 
@@ -173,13 +183,21 @@ export function assert(
 
 export async function getMarkdownPluginData() {
     const collection = await framer.getCollection()
-    const [repoSlug, mapFieldsConfigJson, basePath] = await Promise.all([
-        collection.getPluginData(PluginDataKeys.githubRepoSlug),
-        collection.getPluginData(PluginDataKeys.mapFieldsConfig),
-        collection.getPluginData(PluginDataKeys.basePath) || '',
-    ])
+    const [repoSlug, mapFieldsConfigJson, basePath, githubAccountLogin] =
+        await Promise.all([
+            collection.getPluginData(PluginDataKeys.githubRepoSlug),
+            collection.getPluginData(PluginDataKeys.mapFieldsConfig),
+            collection.getPluginData(PluginDataKeys.basePath) || '',
+            collection.getPluginData(PluginDataKeys.githubAccountLogin) || '',
+        ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
         safeJsonParse(mapFieldsConfigJson || '[]') || []
-    return { owner, repo, mapFieldsConfig, basePath: basePath || '' }
+    return {
+        owner,
+        repo,
+        mapFieldsConfig,
+        basePath: basePath || '',
+        githubAccountLogin: githubAccountLogin || '',
+    }
 }

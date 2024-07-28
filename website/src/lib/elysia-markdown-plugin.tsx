@@ -26,9 +26,10 @@ export const markdownPluginApp = new Elysia({ aot: false })
             .get('/health', () => {
                 return 'ok'
             })
-            .get(
+            .post(
                 '/githubRepoList',
                 async ({ body, store }) => {
+                    const { githubAccountLogin } = body
                     const userId = store.userId
                     if (!userId) {
                         throw unauthorizedResponse
@@ -38,6 +39,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                             where: {
                                 orgId: userId,
                                 status: 'active',
+                                accountLogin: githubAccountLogin,
                             },
                         })
                     if (!installation) {
@@ -98,15 +100,15 @@ export const markdownPluginApp = new Elysia({ aot: false })
                     return { repos }
                 },
                 {
-                    // body: t.Object({
-                    //     // userId: t.String(),
-                    // }),
+                    body: t.Object({
+                        githubAccountLogin: t.String({ minLength: 1 }),
+                    }),
                 },
             )
             .post(
                 '/syncGithub',
                 async ({ body, store }) => {
-                    let { owner, basePath, repo } = body
+                    let { owner, githubAccountLogin, basePath, repo } = body
                     if (!basePath) {
                         basePath = ''
                     }
@@ -119,6 +121,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                             where: {
                                 orgId: userId,
                                 status: 'active',
+                                accountLogin: githubAccountLogin,
                             },
                         })
                     if (!githubInstallation) {
@@ -214,6 +217,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                         owner: t.String(),
                         repo: t.String(),
                         basePath: t.String(),
+                        githubAccountLogin: t.String(),
                         // userId: t.String(),
                     }),
                 },
@@ -221,7 +225,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
             .post(
                 '/checkBasePath',
                 async ({ body, store }) => {
-                    let { owner, basePath, repo } = body
+                    let { owner, githubAccountLogin, basePath, repo } = body
 
                     const userId = store.userId
                     if (!userId) {
@@ -239,6 +243,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                             where: {
                                 orgId: userId,
                                 status: 'active',
+                                accountLogin: githubAccountLogin,
                             },
                         })
                     if (!githubInstallation) {
@@ -287,6 +292,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                         owner: t.String(),
                         repo: t.String(),
                         basePath: t.String(),
+                        githubAccountLogin: t.String(),
                         // userId: t.String(),
                     }),
                 },

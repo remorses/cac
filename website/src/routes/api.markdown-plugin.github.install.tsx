@@ -4,24 +4,95 @@ import {
     getSupabaseWithHeaders,
 } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
-import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
+import {
+    afterFramerLogin,
+    isTruthy,
+    loginRedirectUrl,
+} from 'website/src/lib/utils'
 import { env } from '../lib/env'
 import { prisma } from 'db/prisma'
 import {
     checkGitHubIsInstalled,
     getGithubApp,
+    GithubLoginRequestData,
 } from 'website/src/lib/github.server'
 import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
+import {
+    Form,
+    useLoaderData,
+    useNavigation,
+    useSearchParams,
+} from '@remix-run/react'
+import { Button } from '@nextui-org/react'
+import { Octokit } from 'octokit'
+import { PageContainer } from 'website/src/components/Container'
+
+enum FormNames {
+    chooseAnother = '_chooseAnother',
+    chosenOrg = 'chosenOrg',
+}
+
+export default function ChooseOrg() {
+    const { installations } = useLoaderData<typeof loader>()
+    const [searchParams] = useSearchParams()
+    const navigation = useNavigation()
+    const isLoading = navigation.state !== 'idle'
+    return (
+        <PageContainer>
+            <h1 className='text-2xl max-w-md text-center text-balance'>
+                Choose a GitHub organization or account to connect to Framer
+            </h1>
+            <Form className='flex dark flex-col gap-6'>
+                <select
+                    className='rounded-md py-1 border-0 dark:bg-default-200'
+                    name={FormNames.chosenOrg}
+                >
+                    {installations.map((org) => {
+                        return (
+                            <option
+                                key={org.accountLogin}
+                                value={org.accountLogin}
+                            >
+                                {org.accountLogin}
+                            </option>
+                        )
+                    })}
+                    <option value={FormNames.chooseAnother}>
+                        add another organization
+                    </option>
+                </select>
+                {/* add all other search params with hidden inputs */}
+                {Array.from(searchParams).map(([key, value]) => {
+                    return (
+                        <input
+                            key={key}
+                            type='hidden'
+                            name={key}
+                            value={value}
+                        />
+                    )
+                })}
+
+                <Button isLoading={isLoading} type='submit'>
+                    Connect GitHub
+                </Button>
+            </Form>
+        </PageContainer>
+    )
+}
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
-    const next = url.searchParams.get('next') || ''
+    let afterFramerLoginUrl = url.searchParams.get('next') || ''
 
-    const { supabase, userId, headers } = await getSupabaseSession({
+    const chosenOrg =
+        url.searchParams.get(FormNames.chosenOrg)?.toString() || ''
+
+    const { supabase, session, userId, headers } = await getSupabaseSession({
         request,
         response,
     })
-    if (!next) {
+    if (!afterFramerLoginUrl) {
         throw new Error('URL is malformed, missing next param')
     }
 
@@ -30,27 +101,52 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         throw new Error('User not found')
     }
 
+    const octokit = new Octokit({
+        auth: session?.provider_token,
+    })
+
+    const { data: githubAccount } = await octokit.rest.users.getAuthenticated()
+
     // if it is already installed, redirect to after now, needs database here
-    const [githubInstallation] = await Promise.all([
-        prisma.githubInstallation.findFirst({
+    const [githubInstallations] = await Promise.all([
+        prisma.githubInstallation.findMany({
             where: {
-                orgId,
                 status: 'active',
+                OR: [
+                    { orgId },
+                    { memberLogins: { hasSome: [githubAccount.login] } },
+                ],
             },
         }),
     ])
+    let installations = (
+        await Promise.all(
+            githubInstallations.map(async (installation) => {
+                const ok = await checkGitHubIsInstalled({
+                    installationId: installation.installationId,
+                })
+                if (ok) {
+                    return installation
+                }
+                return null
+            }),
+        )
+    ).filter(isTruthy)
 
-    // TODO if user wants to create 2 collection to 2 different github orgs, the user cannot. he should be able to "select existing org or add another" in an html page
-    // TODO currently if 2 different users want to connect 2 repos on the same org they can't, because it will show "configure" button instead of redirecting to the callback
+    if (installations.some((x) => x.accountLogin === chosenOrg)) {
+        let url = new URL(afterFramerLoginUrl)
+        let data: GithubLoginRequestData = { githubAccountLogin: chosenOrg }
+        url.searchParams.set('data', JSON.stringify(data))
+        return redirect(url.toString(), { headers })
+    }
 
-    if (githubInstallation?.installationId) {
-        const ok = await checkGitHubIsInstalled({
-            installationId: githubInstallation?.installationId,
-        })
-
-        if (githubInstallation && ok) {
-            return redirect(next, { headers })
+    if (!chosenOrg && installations.length) {
+        // render the org selection page
+        return {
+            installations,
         }
+    } else {
+        console.log('adding another github installation')
     }
 
     const githubInstallationUrl = new URL(
@@ -67,7 +163,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         redirectUri.toString(),
     )
     let state: GithubState = {
-        next: next,
+        next: afterFramerLoginUrl,
         // redirectToPath: after.toString()
     }
 

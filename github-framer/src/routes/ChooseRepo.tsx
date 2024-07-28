@@ -71,9 +71,12 @@ function Component() {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    const { basePath, owner, repo } = await getMarkdownPluginData()
+    const { githubAccountLogin, basePath, owner, repo } =
+        await getMarkdownPluginData()
     const { data, error } =
-        await pluginApiClient.api.v1.markdownPlugin.githubRepoList.get({})
+        await pluginApiClient.api.v1.markdownPlugin.githubRepoList.post({
+            githubAccountLogin,
+        })
     if (error) {
         notifyError(error, 'Failed to load repos')
         throw error
@@ -96,6 +99,7 @@ export function ChooseRepo(): RouteObject {
         Component: Component,
         async action({ request }) {
             const formData = await request.formData()
+            const { githubAccountLogin } = await getMarkdownPluginData()
             const repoSlug = formData.get(FormFields.repoSlug)?.toString() || ''
             const basePath = formData.get(FormFields.basePath)?.toString() || ''
             if (!repoSlug) {
@@ -112,6 +116,7 @@ export function ChooseRepo(): RouteObject {
                     basePath,
                     owner,
                     repo,
+                    githubAccountLogin,
                 })
             if (error) {
                 return {

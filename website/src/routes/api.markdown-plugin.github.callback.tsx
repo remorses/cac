@@ -1,5 +1,9 @@
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
-import { getGithubApp, getOctokit } from 'website/src/lib/github.server'
+import {
+    getGithubApp,
+    getOctokit,
+    GithubLoginRequestData,
+} from 'website/src/lib/github.server'
 import { App, OAuthApp } from 'octokit'
 
 import { env } from 'website/src/lib/env'
@@ -26,10 +30,12 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         decodeURIComponent(stateStr),
     )
     // const userId = session?.user?.id
-    let next = state?.next
+    let afterFramerLoginUrl = state?.next
 
-    if (!next) {
-        return new Response('Missing `next` state param callback', { status: 400 })
+    if (!afterFramerLoginUrl) {
+        return new Response('Missing `next` state param callback', {
+            status: 400,
+        })
     }
 
     console.log(JSON.stringify(state, null, 2))
@@ -59,12 +65,11 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         // return res.status(400).json({ error: 'Missing installation_id' })
     }
     const octokit = await getOctokit({ installationId })
-    const installation = await octokit.request(
-        'GET /app/installations/{installation_id}',
-        {
+    const [installation] = await Promise.all([
+        octokit.request('GET /app/installations/{installation_id}', {
             installation_id: installationId,
-        },
-    )
+        }),
+    ])
     const account = installation.data.account
 
     // console.log('account', account)
@@ -73,8 +78,21 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         account && 'login' in account
             ? account.login
             : account!.slug.replace(/\//g, '-')
-    // let orgId = state.orgId
-    // console.log({ orgId, installationId, userId })
+
+    let accountType =
+        account && 'type' in account && account.type === 'User'
+            ? GithubAccountType.USER
+            : GithubAccountType.ORGANIZATION
+
+    let members = [] as string[]
+    if (accountType === GithubAccountType.ORGANIZATION) {
+        const { data: githubMembers } = await octokit.rest.orgs.listMembers({
+            org: accountLogin,
+        })
+        members = githubMembers.map((m) => m.login)
+    } else {
+        members = [accountLogin]
+    }
 
     const appId = String(installation?.data?.app_id || '')
     let orgId = userId
@@ -85,10 +103,8 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         accountAvatarUrl: installation.data.account?.avatar_url || '',
         oauthToken: token,
         appId,
-        accountType:
-            account && 'type' in account && account.type === 'User'
-                ? GithubAccountType.USER
-                : GithubAccountType.ORGANIZATION,
+        accountType,
+        memberLogins: members,
     }
     await Promise.all([
         prisma.githubInstallation.upsert({
@@ -112,5 +128,10 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         //     }),
     ])
 
-    return redirect(next)
+    let redirectUrl = new URL(afterFramerLoginUrl)
+    let data: GithubLoginRequestData = {
+        githubAccountLogin: accountLogin,
+    }
+    redirectUrl.searchParams.set('data', JSON.stringify(data))
+    return redirect(redirectUrl.toString())
 }

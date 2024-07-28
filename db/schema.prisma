@@ -366,7 +366,7 @@ model FramerLoginRequest {
   createdAt    DateTime @default(now())
   usedByUserId String?  @db.Uuid
 
-  // data Json
+  data Json @default("{}")
 
   @@schema("public")
 }
@@ -381,6 +381,7 @@ model GithubInstallation {
   orgId            String
   oauthToken       String?
   status           String            @default("active")
+  memberLogins     String[]          @default([])
   // org               Org                 @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@id([installationId, orgId])

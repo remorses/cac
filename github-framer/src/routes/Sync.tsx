@@ -80,13 +80,15 @@ function getFieldsForFrontMatter(
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    const { owner, repo, basePath, mapFieldsConfig } =
+    const { owner, repo, githubAccountLogin, basePath, mapFieldsConfig } =
         await getMarkdownPluginData()
+    console.log('syncing', owner, repo, githubAccountLogin, basePath)
     const { data, error } =
         await pluginApiClient.api.v1.markdownPlugin.syncGithub.post({
             owner,
             repo,
             basePath,
+            githubAccountLogin,
         })
     if (error) {
         throw error

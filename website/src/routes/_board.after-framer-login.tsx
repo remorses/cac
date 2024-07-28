@@ -2,6 +2,7 @@ import { LoaderFunctionArgs } from '@remix-run/node'
 import { db } from 'db/kysely'
 import { generatePassword } from 'website/src/lib/ssr.server'
 import { getSupabaseSession } from '../lib/supabase.server'
+import { safeJsonParse } from 'website/src/lib/utils'
 
 export default function Page({}) {
     return (
@@ -30,15 +31,22 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
 
     const key = url.searchParams.get('key') || ''
+    let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
+    console.log({ requestData })
     if (!key) {
         throw new Error('No key provided')
     }
     const [framerRequest, authUser] = await Promise.all([
         db
             .insertInto('FramerLoginRequest')
-            .values({ key, createdAt: new Date(), usedByUserId: user.id })
+            .values({
+                key,
+                createdAt: new Date(),
+                usedByUserId: user.id,
+                data: requestData,
+            })
             .onConflict((oc) => {
-                return oc.doNothing()
+                return oc.columns(['key']).doNothing()
             })
             .execute(),
         db

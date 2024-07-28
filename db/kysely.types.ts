@@ -288,6 +288,7 @@ export interface ExtensionsPgStatStatementsInfo {
 
 export interface FramerLoginRequest {
   createdAt: Generated<Timestamp>;
+  data: Generated<Json>;
   key: string;
   usedByUserId: string | null;
 }
@@ -308,6 +309,7 @@ export interface GithubInstallation {
   appId: string | null;
   createdAt: Generated<Timestamp>;
   installationId: number;
+  memberLogins: Generated<string[] | null>;
   oauthToken: string | null;
   orgId: string;
   status: Generated<string>;

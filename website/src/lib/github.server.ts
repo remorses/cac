@@ -6,6 +6,11 @@ import { prisma } from 'db/prisma'
 
 type OctokitRest = Octokit['rest']
 
+// data passed back to framer after login, to tell it what org to use
+export type GithubLoginRequestData = {
+    githubAccountLogin: string
+}
+
 export function getGithubApp(): App {
     const app = new App({
         appId: env.GITHUB_APP_ID!,

@@ -2,7 +2,8 @@ import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
 import { supabase } from '@/lib/supabase-framer'
-import { Paths, pluginApiClient, withMode } from '@/lib/utils'
+import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
+import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
@@ -11,6 +12,7 @@ import {
     useNavigate,
     useRevalidator,
 } from 'react-router'
+import { GithubLoginRequestData } from 'website/src/lib/github.server'
 import {
     framerLoginUrl,
     generateSecurePassword,
@@ -39,7 +41,10 @@ function LoginComponent() {
                     // }
                     setIsLoading(true)
                     try {
-                        const url = framerLoginUrl({ key, pluginName: PluginNames.markdown })
+                        const url = framerLoginUrl({
+                            key,
+                            pluginName: PluginNames.markdown,
+                        })
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
@@ -77,6 +82,18 @@ async function loader({}: LoaderFunctionArgs) {
         console.log('login was completed, got session', data)
         // make it smaller
         // data.session.user = undefined as any
+        const collection = await framer.getCollection()
+        let requestData: GithubLoginRequestData = (data.requestData ||
+            {}) as any
+        if (!requestData?.githubAccountLogin) {
+            console.log('requestData', requestData)
+            throw new Error('No github account login found')
+        }
+        await collection.setPluginData(
+            PluginDataKeys.githubAccountLogin,
+            requestData.githubAccountLogin,
+        )
+
         const { error } = await supabase.auth.setSession(data.session)
         if (error) {
             throw error

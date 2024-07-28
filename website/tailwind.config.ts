@@ -1,4 +1,5 @@
 import { nextui } from '@nextui-org/react'
+import forms from '@tailwindcss/forms'
 import typography from '@tailwindcss/typography'
 
 import colors from 'tailwindcss/colors'
@@ -22,12 +23,13 @@ export default {
     },
     plugins: [
         typography, //
+        forms,
         nextui({
             themes: {
                 dark: {
                     colors: {
                         primary: {
-                            DEFAULT: colors?.blue[300],
+                            // DEFAULT: colors?.blue[300],
                             // foreground: '#000000',
                         },
                     },

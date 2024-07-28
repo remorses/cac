@@ -1,6 +1,9 @@
 import { test, expect } from 'vitest'
 import { processMarkdown } from './elysia-markdown-plugin'
-import { checkGitHubIsInstalled } from 'website/src/lib/github.server'
+import {
+    checkGitHubIsInstalled,
+    getOctokit,
+} from 'website/src/lib/github.server'
 import { prisma } from 'db/prisma'
 
 test('checkGitHubIsInstalled', async () => {
@@ -15,6 +18,24 @@ test('checkGitHubIsInstalled', async () => {
     }
     const installationId = installation.installationId
     const res = await checkGitHubIsInstalled({ installationId })
+})
+test('members', async () => {
+    const installation = await prisma.githubInstallation.findFirst({
+        where: {
+            accountLogin: 'holocron-hq',
+        },
+    })
+    if (!installation) {
+        throw new Error('No installation found')
+    }
+    const installationId = installation.installationId
+    const octokit = await getOctokit({ installationId })
+
+    console.log(installation)
+    const res = await octokit.rest.orgs.listMembers({
+        org: installation.accountLogin,
+    })
+    console.log(res.data)
 })
 
 const exampleMarkdown1 = `---

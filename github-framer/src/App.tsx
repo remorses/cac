@@ -192,9 +192,15 @@ const router = createBrowserRouter(
                             return redirect(withMode(Paths.login))
                         }
 
-                        const { owner, repo } = await getMarkdownPluginData()
+                        const { owner, githubAccountLogin, repo } =
+                            await getMarkdownPluginData()
 
-                        if (framer.mode === 'syncCollection' && owner && repo) {
+                        if (
+                            framer.mode === 'syncCollection' &&
+                            owner &&
+                            repo &&
+                            githubAccountLogin
+                        ) {
                             // return redirect(withMode(Paths.mapFields)) // TODO remove
                             return redirect(withMode(Paths.sync))
                         }

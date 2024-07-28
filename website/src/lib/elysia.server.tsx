@@ -1,43 +1,29 @@
-import { Elysia, Static, t } from 'elysia'
-import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
-import matter from 'gray-matter'
+import { Elysia, Static, t, ValidationError } from 'elysia'
 import stripJsonComments from 'strip-json-comments'
-
-import { anthropic } from '@ai-sdk/anthropic'
+import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 
 import { EventIterator } from 'event-iterator'
 
-import { swagger } from '@elysiajs/swagger'
-import { Session } from '@supabase/supabase-js'
-import { AppError } from 'website/src/lib/errors'
-import { notifyError } from 'website/src/lib/errors'
-import { StreamTextResult, streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { cors } from '@elysiajs/cors'
+import { swagger } from '@elysiajs/swagger'
+import { Session } from '@supabase/supabase-js'
+import { StreamTextResult, streamText } from 'ai'
+import { notifyError } from 'website/src/lib/errors'
 
-import {
-    createSupabaseAnon,
-    getSupabaseSession,
-} from 'website/src/lib/supabase.server'
-import { isTruthy, sleep } from 'website/src/lib/utils'
+import { db } from 'db/kysely'
+import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
 import {
     fetchFormattedHtml,
     getWebsiteDescription,
     getWebsiteInfo,
 } from 'website/src/lib/htmlrewrite.server'
-import { db } from 'db/kysely'
-import { generatePassword, splitIntoWords } from 'website/src/lib/ssr.server'
-import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
-import { env } from 'website/src/lib/env'
-import { prisma } from 'db/prisma'
+import { splitIntoWords } from 'website/src/lib/ssr.server'
 import {
-    getOctokit,
-    getRepoFiles,
-    isMarkdown,
-} from 'website/src/lib/github.server'
-import { Octokit } from 'octokit'
-import { marked } from 'marked'
-import path from 'path'
+    createSupabaseAnon,
+    getSupabaseSession,
+} from 'website/src/lib/supabase.server'
+import { sleep } from 'website/src/lib/utils'
 
 const RephraseSchema = t.Object({
     description: t.String(),
@@ -161,8 +147,14 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             status = 500
             notifyError(error, 'API error')
         }
+        if (error instanceof ValidationError) {
+            return error.toResponse()
+        }
 
-        return new Response(error.message, { status })
+        return new Response(error.message, {
+            status,
+            // headers: { 'Content-Type': 'text/plain' },
+        })
     })
 
     .onRequest(async ({ request, set, store }) => {
@@ -249,14 +241,18 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                 //     password: user.plainPassword,
                 // }),
             ])
-            return { session: sessionToPass }
+            const requestData = framerRequest.data || {}
+            return { session: sessionToPass, requestData }
         },
         {
             body: t.Object({
                 key: t.String(),
             }),
             // response: {
-            //     200: t.AsyncIterator(t.String()),
+            //     200: t.Object({
+            //         data: t.Any(),
+            //         session: t.Any(),
+            //     }),
             // },
         },
     )

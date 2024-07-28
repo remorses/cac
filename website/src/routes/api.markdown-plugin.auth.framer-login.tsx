@@ -24,7 +24,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         options: {
             skipBrowserRedirect: true,
             queryParams: {
-                prompt: 'select_account', // can also be 'consent'
+                // prompt: 'select_account', // can also be 'consent'
             },
             redirectTo: loginRedirectUrl({
                 next: next.toString(),
