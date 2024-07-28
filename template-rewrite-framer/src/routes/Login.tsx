@@ -10,6 +10,7 @@ import {
     RouteObject,
     redirect,
     useNavigate,
+    useNavigation,
     useRevalidator,
 } from 'react-router'
 import {
@@ -25,7 +26,7 @@ let loginCompleted = false
 function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
-    const navigate = useNavigate()
+    const navigation = useNavigation()
     useRefreshOnVisible({ enabled: true })
     return (
         <div className='flex flex-col justify-start gap-4'>
@@ -56,7 +57,7 @@ function LoginComponent() {
                     }
                 }}
                 className='framer-button-primary'
-                isLoading={isLoading}
+                isLoading={isLoading || navigation.state !== 'idle'}
             >
                 Login With Google
             </Button>

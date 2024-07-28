@@ -10,6 +10,7 @@ import {
     RouteObject,
     redirect,
     useNavigate,
+    useNavigation,
     useRevalidator,
 } from 'react-router'
 import { GithubLoginRequestData } from 'website/src/lib/github.server'
@@ -27,7 +28,7 @@ let loginCompleted = false
 function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
-    const navigate = useNavigate()
+    const navigation = useNavigation()
     useRefreshOnVisible({ enabled: true })
     return (
         <div className='flex flex-col justify-start gap-4'>
@@ -61,9 +62,9 @@ function LoginComponent() {
                     }
                 }}
                 className='bg-framer-secondary'
-                isLoading={isLoading}
+                isLoading={isLoading || navigation.state !== 'idle'}
             >
-                Login With Github
+                Login With GitHub
             </Button>
         </div>
     )
