@@ -247,6 +247,7 @@ model users {
   orgs OrgsUsers[]
 
   plainPassword String?
+  githubLogin String?
 
   @@index([instance_id])
   @@index([is_anonymous])

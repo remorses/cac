@@ -209,6 +209,7 @@ export interface AuthUsers {
   email_change_token_new: string | null;
   email_confirmed_at: Timestamp | null;
   encrypted_password: string | null;
+  githubLogin: string | null;
   id: string;
   instance_id: string | null;
   invited_at: Timestamp | null;

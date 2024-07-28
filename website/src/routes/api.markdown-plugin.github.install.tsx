@@ -26,6 +26,7 @@ import {
 import { Button } from '@nextui-org/react'
 import { Octokit } from 'octokit'
 import { PageContainer } from 'website/src/components/Container'
+import { db } from 'db/kysely'
 
 enum FormNames {
     chooseAnother = '_chooseAnother',
@@ -112,12 +113,14 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         prisma.githubInstallation.findMany({
             where: {
                 status: 'active',
-                OR: [
-                    { orgId },
-                    { memberLogins: { hasSome: [githubAccount.login] } },
-                ],
+                memberLogins: { hasSome: [githubAccount.login] },
             },
         }),
+        db
+            .updateTable('auth.users')
+            .where('id', '=', userId)
+            .set({ githubLogin: githubAccount?.login || '' })
+            .execute(),
     ])
     let installations = (
         await Promise.all(

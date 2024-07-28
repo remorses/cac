@@ -1,9 +1,10 @@
 import { Elysia, t } from 'elysia'
-import { HTMLRewriter } from 'htmlrewriter'
 import matter from 'gray-matter'
+import { HTMLRewriter } from 'htmlrewriter'
 
 import { notifyError } from 'website/src/lib/errors'
 
+import { db } from 'db/kysely'
 import { prisma } from 'db/prisma'
 import { marked } from 'marked'
 import { Octokit } from 'octokit'
@@ -21,8 +22,30 @@ const unauthorizedResponse = new Response('Unauthorized', {
 
 export const markdownPluginApp = new Elysia({ aot: false })
     .state('userId', '')
+    .state('githubLogin', '')
+    // .state('session', {} as Session)
     .group('/markdownPlugin', (group) => {
         return group
+            .onRequest(async ({ request, set, store }) => {
+                const userId = store.userId
+                if (!userId) {
+                    throw unauthorizedResponse
+                }
+                const user = await db
+                    .selectFrom('auth.users')
+                    .where('id', '=', userId)
+                    .selectAll()
+                    .executeTakeFirst()
+                if (!user) {
+                    throw new Error('User not found')
+                }
+                store.githubLogin = user.githubLogin || ''
+                if (!store.githubLogin) {
+                    throw new Error(
+                        'Github login for user not found in database',
+                    )
+                }
+            })
             .get('/health', () => {
                 return 'ok'
             })
@@ -31,14 +54,18 @@ export const markdownPluginApp = new Elysia({ aot: false })
                 async ({ body, store }) => {
                     const { githubAccountLogin } = body
                     const userId = store.userId
+
                     if (!userId) {
                         throw unauthorizedResponse
                     }
                     const installation =
                         await prisma.githubInstallation.findFirst({
                             where: {
-                                orgId: userId,
                                 status: 'active',
+                                memberLogins: {
+                                    has: store.githubLogin,
+                                },
+
                                 accountLogin: githubAccountLogin,
                             },
                         })
@@ -119,8 +146,10 @@ export const markdownPluginApp = new Elysia({ aot: false })
                     const githubInstallation =
                         await prisma.githubInstallation.findFirst({
                             where: {
-                                orgId: userId,
                                 status: 'active',
+                                memberLogins: {
+                                    has: store.githubLogin,
+                                },
                                 accountLogin: githubAccountLogin,
                             },
                         })
@@ -241,8 +270,10 @@ export const markdownPluginApp = new Elysia({ aot: false })
                     const githubInstallation =
                         await prisma.githubInstallation.findFirst({
                             where: {
-                                orgId: userId,
                                 status: 'active',
+                                memberLogins: {
+                                    has: store.githubLogin,
+                                },
                                 accountLogin: githubAccountLogin,
                             },
                         })
