@@ -15,6 +15,9 @@ import {
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase-framer'
 import { notifyError } from '@/lib/errors'
+import { redirect } from 'react-router'
+import { safeJsonParse } from 'website/src/lib/utils'
+import { CollectionFieldConfig } from '@/routes/MapFields'
 
 export const pluginApiClient = treaty<RouteType>(env.PUBLIC_URL!, {
     async onRequest() {
@@ -59,6 +62,7 @@ export function withMode(path, query?: Record<string, any>) {
 export enum Paths {
     login = '/login',
     chooseRepo = '/choose-repo',
+    mapFields = '/map-fields',
     sync = '/sync',
     settings = '/settings',
 }
@@ -138,6 +142,7 @@ export const basePath = import.meta.env.BASE_URL || '/'
 
 export enum PluginDataKeys {
     githubRepoSlug = 'repoSlug',
+    mapFieldsConfig = 'mapFieldsConfig',
 }
 
 export function simpleHash(input: string) {
@@ -175,4 +180,21 @@ export function assert(
         }
     }
     throw e
+}
+
+export async function getMarkdownPluginData() {
+    const repoSlug = await framer.getPluginData(PluginDataKeys.githubRepoSlug)
+    if (!repoSlug) {
+        notifyError(new Error('No repo slug found'), 'sync page')
+        throw redirect(Paths.chooseRepo)
+    }
+    const [owner, repo] = repoSlug.split('/')
+    if (!owner || !repo) {
+        throw new Error('Invalid repo slug found in storage')
+    }
+    const mapFieldsConfigJson = await framer.getPluginData(
+        PluginDataKeys.mapFieldsConfig,
+    )
+    const mapFieldsConfig: CollectionFieldConfig[] = safeJsonParse(mapFieldsConfigJson || '[]') || []
+    return { owner, repo, mapFieldsConfig }
 }

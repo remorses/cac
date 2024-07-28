@@ -3,7 +3,13 @@ import slugify from '@sindresorhus/slugify'
 
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
-import { Paths, pluginApiClient, PluginDataKeys, simpleHash } from '@/lib/utils'
+import {
+    getMarkdownPluginData,
+    Paths,
+    pluginApiClient,
+    PluginDataKeys,
+    simpleHash,
+} from '@/lib/utils'
 import { CollectionField, CollectionItem, framer } from 'framer-plugin'
 import { useState } from 'react'
 import {
@@ -25,15 +31,7 @@ function Component() {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    const repoSlug = await framer.getPluginData(PluginDataKeys.githubRepoSlug)
-    if (!repoSlug) {
-        notifyError(new Error('No repo slug found'), 'sync page')
-        return redirect(Paths.chooseRepo)
-    }
-    const [owner, repo] = repoSlug.split('/')
-    if (!owner || !repo) {
-        throw new Error('Invalid repo slug found in storage')
-    }
+    const { owner, repo, mapFieldsConfig } = await getMarkdownPluginData()
     const { data, error } =
         await pluginApiClient.api.v1.markdownPlugin.syncGithub.post({
             owner,

@@ -1,6 +1,7 @@
 import { App, OAuthApp, Octokit } from 'octokit'
 import { env } from './env'
 import { isTruthy } from 'website/src/lib/utils'
+import { Sema } from 'async-sema'
 
 type OctokitRest = Octokit['rest']
 
@@ -85,28 +86,34 @@ export async function getRepoFiles({
     console.log(
         `found ${markdownFiles.length} markdown files in repo ${owner}/${repo}`,
     )
+    const sema = new Sema(10)
     const downloadedFiles = await Promise.all(
         markdownFiles.map(async (file) => {
-            // console.log(`getting blob for ${file.path}`)
-            const { data } = await octokit.git.getBlob({
-                owner,
-                repo,
-                file_sha: file.sha!,
-                baseUrl,
-            })
-            const contents = Buffer.from(data.content, 'base64').toString(
-                'utf-8',
-            )
-            let pagePath = githubPathToPagePath(file.path || '')
-            if (!pagePath) {
-                return
-            }
+            try {
+                await sema.acquire()
+                // console.log(`getting blob for ${file.path}`)
+                const { data } = await octokit.git.getBlob({
+                    owner,
+                    repo,
+                    file_sha: file.sha!,
+                    baseUrl,
+                })
+                const contents = Buffer.from(data.content, 'base64').toString(
+                    'utf-8',
+                )
+                let pagePath = githubPathToPagePath(file.path || '')
+                if (!pagePath) {
+                    return
+                }
 
-            return {
-                pagePath: pagePath,
-                content: contents!,
-                size: file.size,
-                sha: file.sha,
+                return {
+                    pagePath: pagePath,
+                    content: contents!,
+                    size: file.size,
+                    sha: file.sha,
+                }
+            } finally {
+                sema.release()
             }
         }),
     )

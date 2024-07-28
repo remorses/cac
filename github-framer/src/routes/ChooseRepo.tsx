@@ -68,7 +68,7 @@ export function ChooseRepo(): RouteObject {
                 }
             }
             await framer.setPluginData(PluginDataKeys.githubRepoSlug, repoSlug)
-            return redirect(withMode(Paths.sync))
+            return redirect(withMode(Paths.mapFields))
         },
     }
 }

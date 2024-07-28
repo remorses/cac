@@ -697,7 +697,29 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             notifyError(e, 'error parsing markdown')
                         }
                     })
-                    return { files: withMarkdown.filter(isTruthy) }
+                    let properties: MarkdownPluginFrontMatter['properties'] = {}
+                    for (let file of withMarkdown) {
+                        if (!file?.frontMatter) {
+                            continue
+                        }
+                        for (let [key, value] of Object.entries(
+                            file.frontMatter,
+                        )) {
+                            if (!properties[key]) {
+                                properties[key] = {
+                                    values: [],
+                                    name: key,
+                                    id: key,
+                                }
+                            }
+                            properties[key].values.push(value)
+                        }
+                    }
+                    const frontMatter: MarkdownPluginFrontMatter = {
+                        properties,
+                    }
+
+                    return { frontMatter, files: withMarkdown.filter(isTruthy) }
                 },
                 {
                     body: t.Object({
@@ -838,6 +860,16 @@ export async function* NDJSONStream<T = any>({
             }
         }
     }
+}
+
+export type MarkdownPluginFrontMatterProperty = {
+    values: any[]
+    name: string
+    id: string
+}
+
+export type MarkdownPluginFrontMatter = {
+    properties: Record<string, MarkdownPluginFrontMatterProperty>
 }
 
 const unauthorizedResponse = new Response('Unauthorized', { status: 401 })

@@ -2,24 +2,70 @@ import { CollectionField } from 'framer-plugin'
 
 import { ComponentProps, Fragment, useMemo, useState } from 'react'
 import classNames from 'classnames'
-import { assert, isTruthy } from '@/lib/utils'
+import { assert, getMarkdownPluginData, isTruthy } from '@/lib/utils'
 import { Button } from '@/components/Button'
 
-function IconChevron() {
-    return (
-        <svg xmlns='http://www.w3.org/2000/svg' width='5' height='8'>
-            <path
-                d='M 1 1 L 4 4 L 1 7'
-                fill='transparent'
-                strokeWidth='1.5'
-                stroke='currentColor'
-                strokeLinecap='round'
-            ></path>
-        </svg>
-    )
+import { notifyError } from '@/lib/errors'
+import { useRefreshOnVisible } from '@/lib/hooks'
+import {
+    LoaderReturnType,
+    Paths,
+    pluginApiClient,
+    PluginDataKeys,
+    withMode,
+} from '@/lib/utils'
+import { framer } from 'framer-plugin'
+import {
+    LoaderFunctionArgs,
+    redirect,
+    RouteObject,
+    useActionData,
+    useLoaderData,
+    useNavigation,
+} from 'react-router'
+import { Form, useSubmit } from 'react-router-dom'
+import {
+    MarkdownPluginFrontMatter,
+    MarkdownPluginFrontMatterProperty,
+} from 'website/src/lib/elysia.server'
+
+async function loader({}: LoaderFunctionArgs) {
+    const { owner, repo } = await getMarkdownPluginData()
+    const { data, error } =
+        await pluginApiClient.api.v1.markdownPlugin.syncGithub.post({
+            owner,
+            repo,
+        })
+    if (error) {
+        throw error
+    }
+    const { frontMatter } = data
+    if (!Object.keys(frontMatter?.properties).length) {
+        console.log('no front matter found, redirecting to sync')
+        throw redirect(withMode(Paths.sync))
+    }
+    return { frontMatter }
 }
 
-interface CollectionFieldConfig {
+export function MapFieldsPage(): RouteObject {
+    return {
+        handle: 'Front Matter Mapping',
+        path: Paths.mapFields,
+        loader,
+        Component: MapFields,
+        async action({ request }) {
+            const fieldConfig = await request.json()
+            console.log('saving fieldConfig', fieldConfig)
+            await framer.setPluginData(
+                PluginDataKeys.mapFieldsConfig,
+                JSON.stringify(fieldConfig),
+            )
+            return redirect(withMode(Paths.sync))
+        },
+    }
+}
+
+export interface CollectionFieldConfig {
     field: CollectionField
     isDisabled: boolean
     // isNewField: boolean
@@ -41,40 +87,11 @@ function sortField(
 
     return -1
 }
-export type FrontMatterProperty = {
-    values: any[]
-    name: string
-    id: string
-    // type: string
-}
-
-export type FrontMatter = {
-    properties: Record<string, FrontMatterProperty>
-}
-
-type PluginContext = {
-    // type: 'update' | 'create'
-    collectionFields: CollectionField[]
-    ignoredFieldIds: string[]
-}
 
 function createFieldConfig(
-    frontMatter: FrontMatter,
-    pluginContext: PluginContext,
+    frontMatter: MarkdownPluginFrontMatter,
 ): CollectionFieldConfig[] {
     const result: CollectionFieldConfig[] = []
-
-    const existingFieldIds = new Set(
-        pluginContext.collectionFields.map((field) => field.id),
-    )
-
-    // result.push({
-    //     field: pageContentField,
-    //     originalFieldName: pageContentField.name,
-    //     isNewField:
-    //         existingFieldIds.size > 0 &&
-    //         !existingFieldIds.has(pageContentField.id),
-    // })
 
     for (const key in frontMatter.properties) {
         const property = frontMatter.properties[key]
@@ -94,11 +111,16 @@ function createFieldConfig(
         })
     }
 
+    console.log(
+        'createFieldConfig',
+        JSON.stringify(result, null, 2),
+        JSON.stringify(frontMatter.properties, null, 2),
+    )
     return result.sort(sortField)
 }
 
 function getFieldConfigForProp(
-    property: FrontMatterProperty,
+    property: MarkdownPluginFrontMatterProperty,
     type: CollectionField['type'] | '',
 ): CollectionField {
     if (!type) {
@@ -168,9 +190,8 @@ function getCollectionFieldForProperty(property: {
         return getFieldConfigForProp(property, 'number')
     } else if (onlyType === 'boolean') {
         return getFieldConfigForProp(property, 'boolean')
-    } else {
-        return getFieldConfigForProp(property, 'string')
     }
+    return getFieldConfigForProp(property, 'string')
 }
 
 function Input({ className, ...rest }: ComponentProps<'input'>) {
@@ -185,37 +206,31 @@ function Input({ className, ...rest }: ComponentProps<'input'>) {
     )
 }
 
-export function MapFields({
-    frontMatter,
-    onSubmit,
-    isLoading,
-    error,
-    pluginContext,
-}: {
-    frontMatter: FrontMatter
-    onSubmit: (options: CollectionFieldConfig[]) => void
-    isLoading: boolean
-    error?: string
-    pluginContext: PluginContext
-}) {
-    const [fieldConfig, setFieldConfig] = useState(() =>
-        createFieldConfig(frontMatter, pluginContext),
+export function MapFields({}: {}) {
+    const { frontMatter } = useLoaderData() as LoaderReturnType<typeof loader>
+    const [fieldConfigs, setFieldConfig] = useState(() =>
+        createFieldConfig(frontMatter),
     )
 
+    const actionData = useActionData() as any
+    const navigation = useNavigation()
+    const isLoading = navigation.state !== 'idle'
+    const error = String(actionData?.error)
     // assert(isFullDatabase(database))
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-
-        if (isLoading) return
-
-        // assert(slugFieldId)
-
-        onSubmit(fieldConfig)
-    }
-
+    const submit = useSubmit()
     return (
-        <form onSubmit={handleSubmit} className='flex flex-col gap-4 flex-1'>
+        <form
+            onSubmit={(e) => {
+                e.preventDefault()
+                console.log('submit')
+                submit(JSON.stringify(fieldConfigs), {
+                    method: 'post',
+                    encType: 'application/json',
+                })
+            }}
+            className='flex flex-col gap-4 flex-1'
+        >
             <hr className='' />
             <div className='flex-1 flex flex-col gap-4'>
                 {/* <div className='flex flex-col gap-2 w-full'>
@@ -238,7 +253,7 @@ export function MapFields({
                     <div className=''></div>
                     <span>Collection Field</span>
 
-                    {fieldConfig.map((fieldConfig) => {
+                    {fieldConfigs.map((fieldConfig) => {
                         const isDisabled = fieldConfig.isDisabled
 
                         return (
@@ -249,6 +264,8 @@ export function MapFields({
                                         'w-full opacity-50',
                                         isDisabled && 'opacity-50',
                                     )}
+                                    name=''
+                                    readOnly
                                     disabled
                                     value={fieldConfig.field?.name || ''}
                                 />
@@ -368,4 +385,19 @@ const possibleTypes: CollectionField['type'][] = [
     'number',
     'image',
     'color',
+    'string',
 ]
+
+function IconChevron() {
+    return (
+        <svg xmlns='http://www.w3.org/2000/svg' width='5' height='8'>
+            <path
+                d='M 1 1 L 4 4 L 1 7'
+                fill='transparent'
+                strokeWidth='1.5'
+                stroke='currentColor'
+                strokeLinecap='round'
+            ></path>
+        </svg>
+    )
+}

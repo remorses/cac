@@ -35,6 +35,7 @@ import {
 import { Link, createBrowserRouter } from 'react-router-dom'
 import { ChooseRepo } from '@/routes/ChooseRepo'
 import { Sync } from '@/routes/Sync'
+import { MapFieldsPage } from '@/routes/MapFields'
 
 globalThis.framer = framer
 
@@ -147,13 +148,14 @@ const router = createBrowserRouter(
                             Something went wrong...
                         </span>
                         <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                            {error?.message}
+                            {error?.message || String(error)}
                         </div>
                         <button
                             className='w-auto'
                             type='button'
                             onClick={() => {
-                                window.location.pathname = window.location.pathname
+                                window.location.pathname =
+                                    window.location.pathname
                             }}
                         >
                             Try again
@@ -187,14 +189,13 @@ const router = createBrowserRouter(
                             )
                             return redirect(withMode(Paths.login))
                         }
-                        console.log(
-                            'redirecting to choose website from / because user is logged in',
-                        )
+
                         let githubSlug = await framer.getPluginData(
                             PluginDataKeys.githubRepoSlug,
                         )
 
                         if (framer.mode === 'syncCollection' && githubSlug) {
+                            return redirect(withMode(Paths.mapFields)) // TODO remove
                             return redirect(withMode(Paths.sync))
                         }
                         // return redirect(withMode(Paths.login))
@@ -205,6 +206,7 @@ const router = createBrowserRouter(
                 },
                 LoginPage(),
                 ChooseRepo(),
+                MapFieldsPage(),
                 Sync(),
             ],
         },

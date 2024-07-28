@@ -171,7 +171,7 @@ const router = createBrowserRouter(
                             Something went wrong...
                         </span>
                         <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                            {error?.message}
+                            {error?.message || String(error)}
                         </div>
                         <button
                             className='w-auto'
