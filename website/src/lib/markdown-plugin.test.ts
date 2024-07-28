@@ -36,10 +36,10 @@ test('processMarkdown', async () => {
             errors.push(e)
         },
     })
-    console.log(errors)
+    // console.log(errors)
     expect(errors).toHaveLength(0)
 
-    console.log(res)
+    // console.log(res)
     expect(res).toMatchInlineSnapshot(`
       {
         "frontMatter": {
