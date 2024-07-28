@@ -8,6 +8,7 @@ import { prisma } from 'db/prisma'
 import { marked } from 'marked'
 import { Octokit } from 'octokit'
 import {
+    checkGitHubIsInstalled,
     getOctokit,
     getRepoFiles,
     isMarkdown,
@@ -36,6 +37,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                         await prisma.githubInstallation.findFirst({
                             where: {
                                 orgId: userId,
+                                status: 'active',
                             },
                         })
                     if (!installation) {
@@ -116,6 +118,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                         await prisma.githubInstallation.findFirst({
                             where: {
                                 orgId: userId,
+                                status: 'active',
                             },
                         })
                     if (!githubInstallation) {
@@ -124,10 +127,16 @@ export const markdownPluginApp = new Elysia({ aot: false })
 
                     const installationId = githubInstallation.installationId
                     const octokit = await getOctokit({ installationId })
-                    const repoResult = await octokit.rest.repos.get({
-                        owner,
-                        repo,
-                    })
+                    const [repoResult, ok] = await Promise.all([
+                        octokit.rest.repos.get({
+                            owner,
+                            repo,
+                        }),
+                        checkGitHubIsInstalled({ installationId }),
+                    ])
+                    if (!ok) {
+                        throw new Error('Github app no longer installed')
+                    }
                     let branch = repoResult.data.default_branch
                     const files = await getRepoFiles({
                         fetchBlob(pagePath) {
@@ -229,6 +238,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                         await prisma.githubInstallation.findFirst({
                             where: {
                                 orgId: userId,
+                                status: 'active',
                             },
                         })
                     if (!githubInstallation) {
@@ -237,10 +247,12 @@ export const markdownPluginApp = new Elysia({ aot: false })
 
                     const installationId = githubInstallation.installationId
                     const octokit = await getOctokit({ installationId })
-                    const repoResult = await octokit.rest.repos.get({
-                        owner,
-                        repo,
-                    })
+                    const [repoResult] = await Promise.all([
+                        octokit.rest.repos.get({
+                            owner,
+                            repo,
+                        }),
+                    ])
                     let baseBranch = repoResult.data.default_branch
                     const files = await getRepoFiles({
                         fetchBlob(pagePath) {

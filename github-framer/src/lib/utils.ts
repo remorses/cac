@@ -128,19 +128,6 @@ export function formatLargeNumber(x: number) {
 
 export const basePath = import.meta.env.BASE_URL || '/'
 
-// export function getGithubInstallUrl({ redirectToPath = '' }) {
-//     const githubInstallationUrl = new URL(
-//         `https://github.com/apps/unframer/installations/new`,
-//     )
-//     const redirectUri = `${env.PUBLIC_URL}/api/markdown-plugin/github/callback`
-
-//     githubInstallationUrl.searchParams.set('redirect_uri', redirectUri)
-//     let state = { redirectToPath }
-
-//     githubInstallationUrl.searchParams.set('state', JSON.stringify(state))
-//     return githubInstallationUrl.toString()
-// }
-
 export enum PluginDataKeys {
     githubRepoSlug = 'repoSlug',
     mapFieldsConfig = 'mapFieldsConfig',

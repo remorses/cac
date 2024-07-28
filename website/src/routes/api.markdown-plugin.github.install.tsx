@@ -7,6 +7,8 @@ import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 import { env } from '../lib/env'
 import { prisma } from 'db/prisma'
+import { checkGitHubIsInstalled } from 'website/src/lib/github.server'
+import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
@@ -25,30 +27,40 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         throw new Error('User not found')
     }
 
-    // TODO if it is already installed, redirect to after now, needs database here
-    const githubInstallation = await prisma.githubInstallation.findFirst({
-        where: {
-            orgId,
-        },
-    })
-    if (githubInstallation) {
-        return redirect(next, { headers })
+    // if it is already installed, redirect to after now, needs database here
+    const [githubInstallation] = await Promise.all([
+        prisma.githubInstallation.findFirst({
+            where: {
+                orgId,
+                status: 'active',
+            },
+        }),
+    ])
+    if (githubInstallation?.installationId) {
+        const ok = await checkGitHubIsInstalled({
+            installationId: githubInstallation?.installationId,
+        })
+
+        if (githubInstallation && ok) {
+            return redirect(next, { headers })
+        }
     }
 
     const githubInstallationUrl = new URL(
-        `https://github.com/apps/unframer/installations/new`,
+        `https://github.com/apps/${env.GITHUB_APP_NAME}/installations/new`,
     )
     const redirectUri = new URL(
         '/api/markdown-plugin/github/callback',
         env.PUBLIC_URL,
     )
-    redirectUri.searchParams.set('next', next)
+    // redirectUri.searchParams.set('next', next)
 
     githubInstallationUrl.searchParams.set(
         'redirect_uri',
         redirectUri.toString(),
     )
-    let state = {
+    let state: GithubState = {
+        next: next,
         // redirectToPath: after.toString()
     }
 

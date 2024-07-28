@@ -40,7 +40,7 @@ export function framerLoginUrl({ key, pluginName = PluginNames.migrate }) {
 export function generateSecurePassword() {
     const length = 32 // Fixed length for high entropy
     const charset =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?'
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
     return Array.from(crypto.getRandomValues(new Uint32Array(length)))
         .map((x) => charset[x % charset.length])

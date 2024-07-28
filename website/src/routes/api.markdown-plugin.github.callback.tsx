@@ -8,7 +8,7 @@ import { getSupabaseSession } from '../lib/supabase.server'
 import { GithubAccountType, Prisma, prisma } from 'db/prisma'
 
 export type GithubState = {
-    redirectToPath?: string
+    next?: string
 }
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
@@ -20,18 +20,18 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     if (!userId) {
         throw new Response('Unauthorized', { status: 401 })
     }
-    // const userId = session?.user?.id
-    const next = url.searchParams.get('next') || ''
-
-    if (!next) {
-        return new Response('Missing `next` callback', { status: 400 })
-    }
-
     const query = url.searchParams
     let stateStr = query.get('state') || ('' as string)
     const state: GithubState | null = safeJsonParse(
         decodeURIComponent(stateStr),
     )
+    // const userId = session?.user?.id
+    let next = state?.next
+
+    if (!next) {
+        return new Response('Missing `next` state param callback', { status: 400 })
+    }
+
     console.log(JSON.stringify(state, null, 2))
 
     if (!state) {

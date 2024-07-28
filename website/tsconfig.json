@@ -1,4 +1,5 @@
 {
+    "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "lib": ["DOM", "DOM.Iterable", "ES2022"],
         "types": ["@remix-run/node", "vite/client"],
@@ -14,6 +15,7 @@
         "strict": true,
         "allowJs": true,
         "skipLibCheck": true,
+        "useUnknownInCatchVariables": false,
         "forceConsistentCasingInFileNames": true,
         "baseUrl": ".",
         "noImplicitAny": false,

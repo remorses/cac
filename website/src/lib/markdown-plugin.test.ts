@@ -1,5 +1,21 @@
 import { test, expect } from 'vitest'
 import { processMarkdown } from './elysia-markdown-plugin'
+import { checkGitHubIsInstalled } from 'website/src/lib/github.server'
+import { prisma } from 'db/prisma'
+
+test('checkGitHubIsInstalled', async () => {
+    const installation = await prisma.githubInstallation.findFirst({
+        where: {
+            accountLogin: 'remorses',
+        },
+    })
+    if (!installation) {
+        console.error('No installation found')
+        return
+    }
+    const installationId = installation.installationId
+    const res = await checkGitHubIsInstalled({ installationId })
+})
 
 const exampleMarkdown1 = `---
 title: Example Markdown

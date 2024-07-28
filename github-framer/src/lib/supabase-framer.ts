@@ -30,8 +30,9 @@ export const supabase = createClient(
 
                 async getItem(key: string) {
                     const keys = getKeys(key)
+                    const collection = await framer.getCollection()
                     const values = await Promise.all(
-                        keys.map((key) => framer.getPluginData(key) || ''),
+                        keys.map((key) => collection.getPluginData(key) || ''),
                     )
                     const data = values.join('')
                     return data || null
@@ -39,20 +40,19 @@ export const supabase = createClient(
 
                 async removeItem(key: string) {
                     const keys = getKeys(key)
+                    const collection = await framer.getCollection()
                     await Promise.all(
-                        keys.map((key) => framer.setPluginData(key, null)),
+                        keys.map((key) => collection.setPluginData(key, null)),
                     )
                 },
 
                 async setItem(key: string, value: string) {
                     const keys = getKeys(key)
-                    const values = [
-                        value.slice(0, 2048),
-                        value.slice(2048),
-                    ]
+                    const collection = await framer.getCollection()
+                    const values = [value.slice(0, 2048), value.slice(2048)]
                     await Promise.all(
                         values.map((value, index) =>
-                            framer.setPluginData(keys[index], value),
+                            collection.setPluginData(keys[index], value),
                         ),
                     )
                 },

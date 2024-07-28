@@ -2,6 +2,7 @@ import { App, OAuthApp, Octokit } from 'octokit'
 import { env } from './env'
 import { isTruthy } from 'website/src/lib/utils'
 import { Sema } from 'async-sema'
+import { prisma } from 'db/prisma'
 
 type OctokitRest = Octokit['rest']
 
@@ -21,6 +22,30 @@ export function getGithubApp(): App {
         },
     })
     return app
+}
+
+export async function checkGitHubIsInstalled({ installationId }) {
+    try {
+        const octokit = await getGithubApp()
+
+        const installation = await octokit.octokit.rest.apps.getInstallation({
+            installation_id: installationId,
+        })
+        return !!installation.data.id
+    } catch (e) {
+        if (e.status === 404) {
+            await prisma.githubInstallation.updateMany({
+                where: {
+                    installationId: installationId,
+                },
+                data: {
+                    status: 'suspended',
+                },
+            })
+            return false
+        }
+        throw e
+    }
 }
 
 export async function getOctokit({ installationId }): Promise<Octokit> {

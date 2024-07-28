@@ -55,7 +55,7 @@ function LoginComponent() {
                         // revalidator.revalidate()
                     }
                 }}
-                className='framer-button-primary'
+                className='bg-framer-secondary'
                 isLoading={isLoading}
             >
                 Login With Github
