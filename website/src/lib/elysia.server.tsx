@@ -694,9 +694,9 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             return
                         }
                         try {
-                            const html = marked(x?.content || '')
                             const { pagePath } = x
                             const grayMatter = matter(x?.content || '')
+                            const html = marked(grayMatter?.content || '')
                             let slug = '/' + path.basename(pagePath, '.md')
                             return {
                                 html,
