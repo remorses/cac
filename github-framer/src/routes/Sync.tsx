@@ -1,25 +1,14 @@
 import { Spinner } from '@/components/Spinner'
-import slugify from '@sindresorhus/slugify'
 
-import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from '@/lib/hooks'
 import {
     getMarkdownPluginData,
     Paths,
     pluginApiClient,
-    PluginDataKeys,
     simpleHash,
 } from '@/lib/utils'
+import { CollectionFieldConfig } from '@/routes/MapFields'
 import { CollectionField, CollectionItem, framer } from 'framer-plugin'
-import { useState } from 'react'
-import {
-    LoaderFunctionArgs,
-    redirect,
-    RouteObject,
-    useNavigate,
-    useRevalidator,
-} from 'react-router'
-import { generateSecurePassword } from 'website/src/lib/utils'
+import { LoaderFunctionArgs, RouteObject } from 'react-router'
 
 function Component() {
     // useRefreshOnVisible({ enabled: true })
@@ -28,6 +17,60 @@ function Component() {
             <Spinner />
         </div>
     )
+}
+
+function mapValueToFieldValue(value: any, field: CollectionField) {
+    if (field.type === 'string') {
+        return String(value) || ''
+    }
+    if (field.type === 'number') {
+        return Number(value) ?? null
+    }
+    if (field.type === 'boolean') {
+        return Boolean(value)
+    }
+    if (field.type === 'date') {
+        try {
+            return new Date(Date.parse(value))
+        } catch (e) {
+            return null
+        }
+    }
+    if (field.type === 'enum') {
+        return String(value) || ''
+    }
+    if (field.type === 'formattedText') {
+        return String(value) || ''
+    }
+    if (field.type === 'color') {
+        return String(value) || ''
+    }
+    if (field.type === 'link') {
+        return String(value) || ''
+    }
+    if (field.type === 'image') {
+        return String(value) || ''
+    }
+}
+
+function getFieldsForFrontMatter(
+    frontMatter: Record<string, any>,
+    mapFieldsConfig: CollectionFieldConfig[],
+) {
+    if (!frontMatter) {
+        return {}
+    }
+    const fields = {} as any
+    for (const field of mapFieldsConfig) {
+        if (field.isDisabled) {
+            continue
+        }
+        const value = frontMatter[field.field.id]
+        if (value) {
+            fields[field.field.id] = mapValueToFieldValue(value, field.field)
+        }
+    }
+    return fields
 }
 
 async function loader({}: LoaderFunctionArgs) {
@@ -49,6 +92,7 @@ async function loader({}: LoaderFunctionArgs) {
     const unseenItemIds = new Set(await collection.getItemIds())
 
     const itemsToAdd: CollectionItem[] = []
+
     for (const item of files) {
         if (!item?.html) {
             continue
@@ -58,12 +102,18 @@ async function loader({}: LoaderFunctionArgs) {
 
         unseenItemIds.delete(id)
 
+        let frontMatterFields = getFieldsForFrontMatter(
+            item.frontMatter,
+            mapFieldsConfig,
+        )
+
         itemsToAdd.push({
             id,
             slug: item.slug,
             title: item.slug,
             fieldData: {
                 [CollectionFieldIds.content]: item.html,
+                ...frontMatterFields,
             },
         })
     }
