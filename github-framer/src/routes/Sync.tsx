@@ -19,7 +19,13 @@ function Component() {
     )
 }
 
-function mapValueToFieldValue(value: any, field: CollectionField) {
+function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
+    if (!field?.type) {
+        return null
+    }
+    if (value == null) {
+        return null
+    }
     if (field.type === 'string') {
         return String(value) || ''
     }
@@ -62,12 +68,12 @@ function getFieldsForFrontMatter(
     }
     const fields = {} as any
     for (const field of mapFieldsConfig) {
-        if (field.isDisabled) {
+        if (!field) {
             continue
         }
-        const value = frontMatter[field.field.id]
+        const value = frontMatter[field.id]
         if (value) {
-            fields[field.field.id] = mapValueToFieldValue(value, field.field)
+            fields[field.id] = mapValueToFieldValue(value, field)
         }
     }
     return fields
@@ -86,8 +92,16 @@ async function loader({}: LoaderFunctionArgs) {
     const { files } = data
     const collection = await framer.getCollection()
 
-    const fields = getCollectionFields()
-    await collection.setFields(fields)
+    await collection.setFields([
+        {
+            type: 'formattedText' as const,
+            name: 'Content',
+            id: CollectionFieldIds.content,
+        },
+        ...mapFieldsConfig
+            .filter((field) => field?.type)
+            .filter((x) => x.id !== CollectionFieldIds.content),
+    ])
 
     const unseenItemIds = new Set(await collection.getItemIds())
 
@@ -135,17 +149,6 @@ async function loader({}: LoaderFunctionArgs) {
 
 enum CollectionFieldIds {
     content = 'content',
-}
-
-// Creates fields in the CMS collection for every key in the "RSSEntry" type.
-function getCollectionFields(): CollectionField[] {
-    return [
-        {
-            type: 'formattedText',
-            name: 'Content',
-            id: CollectionFieldIds.content,
-        },
-    ]
 }
 
 export function Sync(): RouteObject {

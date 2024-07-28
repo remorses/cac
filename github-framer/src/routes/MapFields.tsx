@@ -54,34 +54,35 @@ export function MapFieldsPage(): RouteObject {
         loader,
         Component: MapFields,
         async action({ request }) {
-            const fieldConfig = await request.json()
+            const fieldConfig: CollectionFieldConfig[] = await request.json()
             console.log('saving fieldConfig', fieldConfig)
             await framer.setPluginData(
                 PluginDataKeys.mapFieldsConfig,
-                JSON.stringify(fieldConfig),
+                JSON.stringify(fieldConfig.filter((x) => x?.type)),
             )
             return redirect(withMode(Paths.sync))
         },
     }
 }
 
-export interface CollectionFieldConfig {
-    field: CollectionField
-    isDisabled: boolean
-    // isNewField: boolean
-    // originalFieldName: string
-}
+export type CollectionFieldConfig =
+    | CollectionField
+    | {
+          type: ''
+          id: string
+          name: string
+      }
 
 function sortField(
     fieldA: CollectionFieldConfig,
     fieldB: CollectionFieldConfig,
 ): number {
     // Sort unsupported fields to bottom
-    if (!fieldA.field && !fieldB.field) {
+    if (!fieldA && !fieldB) {
         return 0
-    } else if (!fieldA.field) {
+    } else if (!fieldA) {
         return 1
-    } else if (!fieldB.field) {
+    } else if (!fieldB) {
         return -1
     }
 
@@ -104,11 +105,7 @@ function createFieldConfig(
         if (!field) {
             continue
         }
-        result.push({
-            field,
-            isDisabled: false,
-            // originalFieldName: property.name,
-        })
+        result.push(field)
     }
 
     console.log(
@@ -122,10 +119,10 @@ function createFieldConfig(
 function getFieldConfigForProp(
     property: MarkdownPluginFrontMatterProperty,
     type: CollectionField['type'] | '',
-): CollectionField {
+): CollectionFieldConfig {
     if (!type) {
         return {
-            type: 'string',
+            type: '',
             id: property.id,
             name: property.name,
         }
@@ -157,7 +154,7 @@ function getCollectionFieldForProperty(property: {
     values: any[]
     name: string
     id: string
-}): CollectionField | null {
+}): CollectionFieldConfig | null {
     const allTypes = new Set(property.values.map((property) => typeof property))
 
     const onlyType = allTypes.size === 1 ? allTypes.values().next().value : null
@@ -226,7 +223,7 @@ export function MapFields({}: {}) {
     const actionData = useActionData() as any
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
-    const error = String(actionData?.error)
+    const error = String(actionData?.error || '')
     // assert(isFullDatabase(database))
 
     const submit = useSubmit()
@@ -265,10 +262,10 @@ export function MapFields({}: {}) {
                     <span>Collection Field</span>
 
                     {fieldConfigs.map((fieldConfig) => {
-                        const isDisabled = fieldConfig.isDisabled
+                        const isDisabled = fieldConfig.type === ''
 
                         return (
-                            <Fragment key={fieldConfig.field?.id}>
+                            <Fragment key={fieldConfig?.id}>
                                 <Input
                                     type='text'
                                     className={classNames(
@@ -278,7 +275,7 @@ export function MapFields({}: {}) {
                                     name=''
                                     readOnly
                                     disabled
-                                    value={fieldConfig.field?.name || ''}
+                                    value={fieldConfig?.name || ''}
                                 />
                                 <div
                                     className={classNames(
@@ -289,7 +286,7 @@ export function MapFields({}: {}) {
                                     <IconChevron />
                                 </div>
                                 <select
-                                    // disabled={!fieldConfig.field}
+                                    // disabled={!fieldConfig}
                                     onChange={(e) => {
                                         const newType = e.target.value as any
                                         // if (!newType) return
@@ -298,21 +295,18 @@ export function MapFields({}: {}) {
                                             const newConfig = current.map(
                                                 (config) => {
                                                     if (
-                                                        config.field?.id ===
-                                                        fieldConfig.field?.id
+                                                        config?.id ===
+                                                        fieldConfig?.id
                                                     ) {
                                                         const property =
                                                             frontMatter
                                                                 .properties[
-                                                                config.field.id
+                                                                config.id
                                                             ]
-                                                        return {
-                                                            isDisabled,
-                                                            field: getFieldConfigForProp(
-                                                                property,
-                                                                newType,
-                                                            ),
-                                                        }
+                                                        return getFieldConfigForProp(
+                                                            property,
+                                                            newType,
+                                                        )
                                                     }
                                                     return config
                                                 },
@@ -325,7 +319,7 @@ export function MapFields({}: {}) {
                                         'w-full',
                                         isDisabled && 'opacity-50',
                                     )}
-                                    value={fieldConfig.field?.type || ''}
+                                    value={fieldConfig?.type || ''}
                                 >
                                     <option value=''>disable</option>
                                     {possibleTypes.map((type) => (
@@ -341,24 +335,24 @@ export function MapFields({}: {}) {
                                         isUnsupported && 'opacity-50',
                                     )}
                                     disabled={
-                                        !fieldConfig.field ||
+                                        !fieldConfig ||
                                         disabledFieldIds.has(
-                                            fieldConfig.field.id,
+                                            fieldConfig.id,
                                         )
                                     }
                                     placeholder={fieldConfig.originalFieldName}
                                     value={
-                                        !fieldConfig.field
+                                        !fieldConfig
                                             ? 'Unsupported Field'
                                             : (fieldNameOverrides[
-                                                  fieldConfig.field.id
+                                                  fieldConfig.id
                                               ] ?? '')
                                     }
                                     onChange={(e) => {
-                                        assert(fieldConfig.field)
+                                        assert(fieldConfig)
 
                                         handleFieldNameChange(
-                                            fieldConfig.field.id,
+                                            fieldConfig.id,
                                             e.target.value,
                                         )
                                     }}

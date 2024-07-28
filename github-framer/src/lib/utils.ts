@@ -11,6 +11,7 @@ import {
     isComponentNode,
     isWebPageNode,
     isTextNode,
+    CollectionField,
 } from 'framer-plugin'
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase-framer'
@@ -195,6 +196,6 @@ export async function getMarkdownPluginData() {
     const mapFieldsConfigJson = await framer.getPluginData(
         PluginDataKeys.mapFieldsConfig,
     )
-    const mapFieldsConfig: CollectionFieldConfig[] = safeJsonParse(mapFieldsConfigJson || '[]') || []
+    const mapFieldsConfig: CollectionField[] = safeJsonParse(mapFieldsConfigJson || '[]') || []
     return { owner, repo, mapFieldsConfig }
 }
