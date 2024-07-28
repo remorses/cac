@@ -44,7 +44,7 @@ export async function getRepoFiles({
     repo,
     octokit,
     commitSha,
-    filter,
+    fetchBlob,
     baseUrl,
 }: {
     octokit: OctokitRest
@@ -53,7 +53,7 @@ export async function getRepoFiles({
     branch: string
     commitSha?: string
     baseUrl?: string
-    filter: (file: { path?: string; size?: number }) => any
+    fetchBlob: (p: string) => boolean
 }) {
     if (!commitSha) {
         console.log(`getting current commit for ${branch}`)
@@ -78,9 +78,9 @@ export async function getRepoFiles({
         if (file.type !== 'blob') {
             return false
         }
-        if (filter) {
-            return filter(file)
-        }
+        // if (filter) {
+        //     return filter(file)
+        // }
         return true
     })
     console.log(
@@ -91,7 +91,17 @@ export async function getRepoFiles({
         markdownFiles.map(async (file) => {
             try {
                 await sema.acquire()
+                let pagePath = githubPathToPagePath(file.path || '')
+                if (!pagePath) {
+                    return
+                }
                 // console.log(`getting blob for ${file.path}`)
+                if (!fetchBlob(pagePath)) {
+                    return {
+                        pagePath,
+                        size: file.size,
+                    }
+                }
                 const { data } = await octokit.git.getBlob({
                     owner,
                     repo,
@@ -101,10 +111,6 @@ export async function getRepoFiles({
                 const contents = Buffer.from(data.content, 'base64').toString(
                     'utf-8',
                 )
-                let pagePath = githubPathToPagePath(file.path || '')
-                if (!pagePath) {
-                    return
-                }
 
                 return {
                     pagePath: pagePath,
@@ -120,6 +126,7 @@ export async function getRepoFiles({
     return downloadedFiles.filter(isTruthy)
 }
 
+// always adds the / at the front
 export function githubPathToPagePath(path?: string) {
     if (!path) {
         return ''
@@ -158,4 +165,8 @@ export const getCurrentCommit = async ({
         commitSha,
         treeSha: commitData.tree.sha,
     }
+}
+
+export function isMarkdown(p: string) {
+    return p.endsWith('.md') || p.endsWith('.markdown') || p.endsWith('.mdx')
 }
