@@ -15,6 +15,7 @@ import {
     RouteObject,
     useActionData,
     useLoaderData,
+    useNavigation,
 } from 'react-router'
 import { Form } from 'react-router-dom'
 
@@ -23,6 +24,8 @@ function Component() {
     const actionData = useActionData() as any
     useRefreshOnVisible({ enabled: true })
 
+    const navigation = useNavigation()
+    const isLoading = navigation.state !== 'idle'
     return (
         <Form method='POST' className='flex flex-col justify-start gap-4'>
             {/* <div className='opacity-70'>Choose repo</div> */}
@@ -50,7 +53,7 @@ function Component() {
             {actionData?.error && (
                 <div className='text-red-400'>{actionData.error}</div>
             )}
-            <Button variant='primary' type='submit'>
+            <Button isLoading={isLoading} variant='primary' type='submit'>
                 Import Markdown Files
             </Button>
         </Form>

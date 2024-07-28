@@ -697,6 +697,8 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
                             const { pagePath } = x
                             const grayMatter = matter(x?.content || '')
                             const html = marked(grayMatter?.content || '')
+                            // TODO map relative links to absolute links using the same slug mapper
+                            // TODO map relative image urls to github signed urls, make a proxy that also caches the images
                             let slug = '/' + path.basename(pagePath, '.md')
                             return {
                                 html,
