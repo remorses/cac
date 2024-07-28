@@ -8,12 +8,14 @@ import {
     afterFramerLogin,
     isTruthy,
     loginRedirectUrl,
+    safeJsonParse,
 } from 'website/src/lib/utils'
 import { env } from '../lib/env'
 import { prisma } from 'db/prisma'
 import {
     checkGitHubIsInstalled,
     getGithubApp,
+    getGithubUserLogin,
     GithubLoginRequestData,
 } from 'website/src/lib/github.server'
 import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
@@ -101,25 +103,19 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     if (!orgId) {
         throw new Error('User not found')
     }
-
-    const octokit = new Octokit({
-        auth: session?.provider_token,
-    })
-
-    const { data: githubAccount } = await octokit.rest.users.getAuthenticated()
-
+    const githubLogin = await getGithubUserLogin({ userId })
     // if it is already installed, redirect to after now, needs database here
     const [githubInstallations] = await Promise.all([
         prisma.githubInstallation.findMany({
             where: {
                 status: 'active',
-                memberLogins: { hasSome: [githubAccount.login] },
+                memberLogins: { hasSome: [githubLogin] },
             },
         }),
         db
             .updateTable('auth.users')
             .where('id', '=', userId)
-            .set({ githubLogin: githubAccount?.login || '' })
+            .set({ githubLogin: githubLogin })
             .execute(),
     ])
     let installations = (

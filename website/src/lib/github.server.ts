@@ -3,6 +3,7 @@ import { env } from './env'
 import { isTruthy } from 'website/src/lib/utils'
 import { Sema } from 'async-sema'
 import { prisma } from 'db/prisma'
+import { db } from 'db/kysely'
 
 type OctokitRest = Octokit['rest']
 
@@ -199,4 +200,21 @@ export const getCurrentCommit = async ({
 
 export function isMarkdown(p: string) {
     return p.endsWith('.md') || p.endsWith('.markdown') || p.endsWith('.mdx')
+}
+
+export async function getGithubUserLogin({ userId }) {
+    const githubAccount = await db
+        .selectFrom('auth.identities')
+        .where('provider', '=', 'github')
+        .where('user_id', '=', userId)
+        .selectAll()
+        .executeTakeFirst()
+    if (!githubAccount) {
+        throw new Error('Github account not found for user')
+    }
+    const githubLogin = (githubAccount?.identity_data as any)?.user_name
+    if (!githubLogin) {
+        throw new Error('Github login not found for user')
+    }
+    return githubLogin || ''
 }

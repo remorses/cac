@@ -10,6 +10,7 @@ import { marked } from 'marked'
 import { Octokit } from 'octokit'
 import {
     checkGitHubIsInstalled,
+    getGithubUserLogin,
     getOctokit,
     getRepoFiles,
     isMarkdown,
@@ -29,22 +30,15 @@ export const markdownPluginApp = new Elysia({ aot: false })
             .onRequest(async ({ request, set, store }) => {
                 const userId = store.userId
                 if (!userId) {
-                    throw unauthorizedResponse
+                    return
                 }
-                const user = await db
-                    .selectFrom('auth.users')
-                    .where('id', '=', userId)
-                    .selectAll()
-                    .executeTakeFirst()
-                if (!user) {
-                    throw new Error('User not found')
-                }
-                store.githubLogin = user.githubLogin || ''
-                if (!store.githubLogin) {
+                const githubLogin = await getGithubUserLogin({ userId })
+                if (!githubLogin) {
                     throw new Error(
                         'Github login for user not found in database',
                     )
                 }
+                store.githubLogin = githubLogin
             })
             .get('/health', () => {
                 return 'ok'
