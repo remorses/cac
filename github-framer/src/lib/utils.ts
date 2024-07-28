@@ -185,20 +185,12 @@ export function assert(
 }
 
 export async function getMarkdownPluginData() {
-    const repoSlug =
-        (await framer.getPluginData(PluginDataKeys.githubRepoSlug)) || ''
-    // if (!repoSlug) {
-    //     notifyError(new Error('No repo slug found'), 'sync page')
-    //     throw redirect(Paths.chooseRepo)
-    // }
-    const [owner, repo = ''] = repoSlug?.split('/')
-    // if (!owner || !repo) {
-    //     throw new Error('Invalid repo slug found in storage')
-    // }
-    const mapFieldsConfigJson = await framer.getPluginData(
-        PluginDataKeys.mapFieldsConfig,
-    )
-    const basePath = (await framer.getPluginData(PluginDataKeys.basePath)) || ''
+    const [repoSlug, mapFieldsConfigJson, basePath] = await Promise.all([
+        framer.getPluginData(PluginDataKeys.githubRepoSlug),
+        framer.getPluginData(PluginDataKeys.mapFieldsConfig),
+        framer.getPluginData(PluginDataKeys.basePath),
+    ])
+    const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
         safeJsonParse(mapFieldsConfigJson || '[]') || []
     return { owner, repo, mapFieldsConfig, basePath }
