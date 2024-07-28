@@ -13,9 +13,12 @@ import {
     isMarkdown,
 } from 'website/src/lib/github.server'
 import { isTruthy } from 'website/src/lib/utils'
-import { unauthorizedResponse } from './elysia.server'
 
-export const markdownPluginApp = new Elysia()
+const unauthorizedResponse = new Response('Unauthorized', {
+    status: 401,
+})
+
+export const markdownPluginApp = new Elysia({ aot: false })
     .state('userId', '')
     .group('/markdownPlugin', (group) => {
         return group
@@ -156,105 +159,19 @@ export const markdownPluginApp = new Elysia()
                             if (!x?.content) {
                                 return
                             }
-                            try {
-                                const { pagePath } = x
-                                const grayMatter = matter(x?.content || '')
-                                const html = await marked(
-                                    grayMatter?.content || '',
-                                )
-
-                                let formattedHtml = await new HTMLRewriter()
-                                    .on('a', {
-                                        element(element) {
-                                            // map relative links to absolute links using the same slug mapper
-                                            const href =
-                                                element.getAttribute('href')
-                                            if (!href) {
-                                                return
-                                            }
-                                            const match = findMatchInPaths({
-                                                filePath: href,
-                                                paths: allAssetPaths,
-                                            })
-                                            if (match) {
-                                                let newHref =
-                                                    turnPagePathIntoSlug(
-                                                        match,
-                                                        basePath,
-                                                    )
-                                                console.log(
-                                                    `replaced link href from ${JSON.stringify(href)} to ${JSON.stringify(newHref)}`,
-                                                )
-                                                element.setAttribute(
-                                                    'href',
-                                                    newHref,
-                                                )
-                                            }
-                                        },
-                                    })
-                                    .on('img', {
-                                        element(element) {
-                                            try {
-                                                //  map relative image sources to absolute links
-                                                const src =
-                                                    element.getAttribute('src')
-                                                if (!src) {
-                                                    return
-                                                }
-                                                let imgPath = findMatchInPaths({
-                                                    filePath: src,
-                                                    paths: allAssetPaths,
-                                                })
-                                                if (imgPath) {
-                                                    console.log(
-                                                        `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
-                                                    )
-                                                    let newSrc = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
-                                                    element.setAttribute(
-                                                        'src',
-                                                        newSrc,
-                                                    )
-                                                }
-                                            } catch (e) {
-                                                notifyError(
-                                                    e,
-                                                    'error transforming image src',
-                                                )
-                                            }
-                                        },
-                                    })
-                                    .transform(new Response(html))
-                                    .text()
-                                    .catch((e) => {
-                                        notifyError(
-                                            e,
-                                            'error transforming html',
-                                        )
-                                        return html
-                                    })
-
-                                if (!formattedHtml && html) {
-                                    notifyError(
-                                        new Error(
-                                            `htmlrewriter returned empty html`,
-                                        ),
-                                        'error transforming html',
-                                    )
-                                }
-                                // TODO map relative image urls to github signed urls, make a proxy that also caches the images
-                                let slug = turnPagePathIntoSlug(
-                                    pagePath,
-                                    basePath,
-                                )
-                                return {
-                                    html: formattedHtml,
-                                    frontMatter: grayMatter.data,
-                                    pagePath,
-                                    slug,
-                                }
-                            } catch (e) {
-                                notifyError(e, 'error parsing markdown')
-                            }
+                            const data = processMarkdown({
+                                basePath,
+                                allAssetPaths,
+                                owner,
+                                repo,
+                                branch,
+                                pagePath: x.pagePath,
+                                content: x.content,
+                                onError(e) {
+                                    notifyError(e, 'error parsing markdown')
+                                },
+                            })
+                            return data
                         }),
                     )
                     let properties: MarkdownPluginFrontMatter['properties'] = {}
@@ -383,6 +300,9 @@ function turnPagePathIntoSlug(pagePath: string, basePath) {
     return res
 }
 function isAbsoluteUrl(url: string) {
+    if (!url) {
+        return false
+    }
     let abs = [
         '#',
         'https://',
@@ -444,4 +364,108 @@ export type MarkdownPluginFrontMatterProperty = {
 
 export type MarkdownPluginFrontMatter = {
     properties: Record<string, MarkdownPluginFrontMatterProperty>
+}
+
+export async function processMarkdown({
+    basePath,
+    allAssetPaths,
+    owner,
+    repo,
+    branch,
+    pagePath,
+    onError,
+    content,
+}) {
+    try {
+        const grayMatter = matter(content || '')
+        const html = await marked(grayMatter?.content || '')
+
+        let title = ''
+        let foundParagraph = false
+        let formattedHtml = await new HTMLRewriter()
+            .on('p,h2,h3', {
+                element(element) {
+                    foundParagraph = true
+                },
+            })
+            .on('h1:first-child', {
+                text(text) {
+                    if (!foundParagraph) {
+                        title += text.text
+                    }
+                },
+            })
+            .on('a', {
+                element(element) {
+                    // map relative links to absolute links using the same slug mapper
+                    const href = element.getAttribute('href')
+                    if (!href) {
+                        return
+                    }
+                    const match = findMatchInPaths({
+                        filePath: href,
+                        paths: allAssetPaths,
+                    })
+                    if (match) {
+                        let newHref = turnPagePathIntoSlug(match, basePath)
+                        console.log(
+                            `replaced link href from ${JSON.stringify(href)} to ${JSON.stringify(newHref)}`,
+                        )
+                        element.setAttribute('href', newHref)
+                    }
+                },
+            })
+            .on('img', {
+                element(element) {
+                    try {
+                        //  map relative image sources to absolute links
+                        const src = element.getAttribute('src')
+                        if (!src) {
+                            return
+                        }
+                        let imgPath = findMatchInPaths({
+                            filePath: src,
+                            paths: allAssetPaths,
+                        })
+                        if (imgPath) {
+                            console.log(
+                                `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
+                            )
+                            let newSrc = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
+                            element.setAttribute('src', newSrc)
+                        }
+                    } catch (e) {
+                        notifyError(e, 'error transforming image src')
+                    }
+                },
+            })
+            .transform(new Response(html))
+            .text()
+            .catch((e) => {
+                notifyError(e, 'error transforming html')
+                return html
+            })
+
+        if (!formattedHtml && html) {
+            notifyError(
+                new Error(`htmlrewriter returned empty html`),
+                'error transforming html',
+            )
+        }
+        // TODO map relative image urls to github signed urls, make a proxy that also caches the images
+        let slug = turnPagePathIntoSlug(pagePath, basePath)
+        if (!title) {
+            console.log(`no title found for ${slug}, using page slug for it`)
+            title = slug
+        }
+        return {
+            html: formattedHtml,
+            frontMatter: grayMatter.data,
+            pagePath,
+            slug,
+            title,
+        }
+    } catch (e) {
+        onError?.(e)
+    }
 }
