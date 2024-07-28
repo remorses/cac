@@ -1,0 +1,150 @@
+import { Button } from '@/components/Button'
+import { supabase } from '@/lib/supabase-framer'
+import {
+    LoaderReturnType,
+    Paths,
+    basePath,
+    createBuyLink,
+    formatLargeNumber,
+    pluginApiClient,
+    withMode,
+} from '@/lib/utils'
+import { useState } from 'react'
+import {
+    LoaderFunctionArgs,
+    RouteObject,
+    useActionData,
+    useLoaderData,
+    useNavigate,
+} from 'react-router'
+import { Link } from 'react-router-dom'
+
+import { useRefreshOnVisible } from '@/lib/hooks'
+import classNames from 'classnames'
+import { motion } from 'framer-motion'
+import {} from 'react-router'
+
+async function loader({}: LoaderFunctionArgs) {
+    const [session, credits] = await Promise.all([
+        supabase.auth.getSession().then(({ data }) => data.session),
+        null,
+        // pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
+        //     if (error) {
+        //         throw error
+        //     }
+        //     return data
+        // }),
+    ])
+    let buyMoreCreditsUrl = createBuyLink({
+        email: session?.user?.email,
+        orgId: session?.user?.id,
+    })
+    return { credits, session, buyMoreCreditsUrl }
+}
+
+export function Settings(): RouteObject {
+    return {
+        handle: 'Plugin settings',
+        path: Paths.settings,
+        loader,
+        Component,
+    }
+}
+
+function Component() {
+    const [isLoading, setIsLoading] = useState(false)
+    useRefreshOnVisible({ enabled: !isLoading })
+    const { session, buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
+    const actionData = useActionData() as any
+
+    const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
+    // const isDocumentVisible = useIsDocumentVisibile()
+
+    const navigate = useNavigate()
+    return (
+        <div className='flex flex-col justify-start gap-4'>
+            <hr className='' />
+            <div className='flex items-center'>
+                <div className=''>
+                    Currently logged in as{' '}
+                    <span className='font-semibold inline'>
+                        {session?.user?.email}
+                    </span>
+                </div>
+                <div className='grow'></div>
+                <Button
+                    onClick={async () => {
+                        // if (isLoading) {
+                        //     return
+                        // }
+                        setIsLoading(true)
+                        try {
+                            const { error } = await supabase.auth.signOut()
+                            if (error) {
+                                throw error
+                            }
+                            // await framer.closePlugin()
+                            window.location.pathname = basePath
+                        } finally {
+                            // setIsLoading(false)
+                        }
+                    }}
+                    className='w-auto'
+                    isLoading={isLoading}
+                >
+                    Sign Out
+                </Button>
+            </div>
+            <hr className='' />
+
+            <Button
+                onClick={() => {
+                    navigate(-1)
+                }}
+                className=''
+            >
+                Go Back
+            </Button>
+        </div>
+    )
+}
+
+function ProgressBar({ progress, className = '' }) {
+    const backgroundColor = (() => {
+        if (progress > 0.9) {
+            return 'bg-red-400'
+        }
+        if (progress > 0.6) {
+            return 'bg-yellow-400'
+        }
+
+        return 'bg-green-500'
+    })()
+    if (progress < 0.03) {
+        progress = 0.03
+    }
+    // progress= 0.5
+    return (
+        <div
+            // style={{ backgroundColor }}
+            className={classNames(
+                'relative rounded-md overflow-hidden w-full bg-gray-700 flex h-[8px]',
+                className,
+            )}
+        >
+            <motion.div
+                // layout
+                transition={{ duration: 0.4 }}
+                animate={{
+                    width: Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
+                }}
+                className={classNames(
+                    'h-full bg-gray-200 rounded overflow-hidden',
+                    backgroundColor,
+                )}
+            ></motion.div>
+        </div>
+    )
+}

@@ -37,6 +37,7 @@ import { Link, createBrowserRouter } from 'react-router-dom'
 import { ChooseRepo } from '@/routes/ChooseRepo'
 import { Sync } from '@/routes/Sync'
 import { MapFieldsPage } from '@/routes/MapFields'
+import { Settings } from '@/routes/Settings'
 
 globalThis.framer = framer
 
@@ -123,11 +124,11 @@ const router = createBrowserRouter(
                                                 </button>
                                             )}
                                             <div className='grow'></div>
-                                            {/* <Link to={withMode(Paths.settings)}>
+                                            <Link to={withMode(Paths.settings)}>
                                                 <Button className='w-auto bg-transparent !py-px text-[11px] '>
                                                     settings
                                                 </Button>
-                                            </Link> */}
+                                            </Link>
                                         </div>
                                     )}
                                 </div>
@@ -207,6 +208,7 @@ const router = createBrowserRouter(
                 ChooseRepo(),
                 MapFieldsPage(),
                 Sync(),
+                Settings(),
             ],
         },
     ],

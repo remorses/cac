@@ -7,7 +7,10 @@ import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 import { env } from '../lib/env'
 import { prisma } from 'db/prisma'
-import { checkGitHubIsInstalled } from 'website/src/lib/github.server'
+import {
+    checkGitHubIsInstalled,
+    getGithubApp,
+} from 'website/src/lib/github.server'
 import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
@@ -36,6 +39,10 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
             },
         }),
     ])
+
+    // TODO if user wants to create 2 collection to 2 different github orgs, the user cannot. he should be able to "select existing org or add another" in an html page
+    // TODO currently if 2 different users want to connect 2 repos on the same org they can't, because it will show "configure" button instead of redirecting to the callback
+
     if (githubInstallation?.installationId) {
         const ok = await checkGitHubIsInstalled({
             installationId: githubInstallation?.installationId,

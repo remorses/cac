@@ -23,6 +23,9 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         provider: 'github',
         options: {
             skipBrowserRedirect: true,
+            queryParams: {
+                prompt: 'select_account', // can also be 'consent'
+            },
             redirectTo: loginRedirectUrl({
                 next: next.toString(),
             }),
