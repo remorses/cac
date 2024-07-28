@@ -1,4 +1,5 @@
 import { Elysia, t } from 'elysia'
+import { HTMLRewriter } from 'htmlrewriter'
 import matter from 'gray-matter'
 
 import { notifyError } from 'website/src/lib/errors'
@@ -18,7 +19,7 @@ export const markdownPluginApp = new Elysia()
     .state('userId', '')
     .group('/markdownPlugin', (group) => {
         return group
-            .get('/test', () => {
+            .get('/health', () => {
                 return 'ok'
             })
             .get(
@@ -162,7 +163,7 @@ export const markdownPluginApp = new Elysia()
                                     grayMatter?.content || '',
                                 )
 
-                                let formattedHtml = new HTMLRewriter()
+                                let formattedHtml = await new HTMLRewriter()
                                     .on('a', {
                                         element(element) {
                                             // map relative links to absolute links using the same slug mapper
@@ -232,6 +233,14 @@ export const markdownPluginApp = new Elysia()
                                         return html
                                     })
 
+                                if (!formattedHtml && html) {
+                                    notifyError(
+                                        new Error(
+                                            `htmlrewriter returned empty html`,
+                                        ),
+                                        'error transforming html',
+                                    )
+                                }
                                 // TODO map relative image urls to github signed urls, make a proxy that also caches the images
                                 let slug = turnPagePathIntoSlug(
                                     pagePath,
@@ -271,7 +280,7 @@ export const markdownPluginApp = new Elysia()
                     const frontMatter: MarkdownPluginFrontMatter = {
                         properties,
                     }
-
+                    console.log(`finished syncing ${owner}/${repo}`)
                     return { frontMatter, files: withMarkdown.filter(isTruthy) }
                 },
                 {
@@ -356,6 +365,9 @@ export const markdownPluginApp = new Elysia()
     })
 
 function turnPagePathIntoSlug(pagePath: string, basePath) {
+    if (isAbsoluteUrl(pagePath)) {
+        return pagePath
+    }
     if (pagePath.startsWith(basePath)) {
         pagePath = pagePath.slice(basePath.length)
     }
@@ -370,7 +382,15 @@ function turnPagePathIntoSlug(pagePath: string, basePath) {
             .replace(/\//g, '-') // framer does not support folders inside CMS, you will need to create separate collections for each folderF
     return res
 }
-
+function isAbsoluteUrl(url: string) {
+    let abs = [
+        '#',
+        'https://',
+        'http://',
+        'mailto:', //
+    ].some((x) => url.startsWith(x))
+    return abs
+}
 export function findMatchInPaths({
     filePath,
     paths,
@@ -382,14 +402,7 @@ export function findMatchInPaths({
     if (!filePath) {
         return ''
     }
-    if (
-        [
-            '#',
-            'https://',
-            'http://',
-            'mailto:', //
-        ].some((x) => filePath.startsWith(x))
-    ) {
+    if (isAbsoluteUrl(filePath)) {
         return filePath
     }
     const normalized = normalizeFilePathForSearch(filePath)
