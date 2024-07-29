@@ -614,6 +614,9 @@ importers:
       '@nextui-org/theme':
         specifier: ^2.2.6
         version: 2.2.6(tailwindcss@3.4.5)
+      '@octokit/webhooks':
+        specifier: ^13.3.0
+        version: 13.3.0
       '@prisma/client':
         specifier: ^5.17.0
         version: 5.17.0(prisma@5.17.0)
