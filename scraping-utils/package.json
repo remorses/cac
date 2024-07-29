@@ -1,0 +1,30 @@
+{
+    "name": "scraping-utils",
+    "version": "0.0.0",
+    "description": "",
+    "main": "dist/index.js",
+    "module": "esm/index.js",
+    "types": "dist/index.d.ts",
+    "repository": "https://github.com/remorses/",
+    "scripts": {
+        "build": "tsc && tsc -m es6 --outDir esm",
+        "generate-ph": "genql --esm -e https://ph-graph-api-explorer.herokuapp.com/graphql -o src/producthunt/ph-genql",
+        "watch": "tsc -w"
+    },
+    "files": [
+        "dist",
+        "src",
+        "esm"
+    ],
+    "keywords": [],
+    "author": "Tommaso De Rossi, morse <beats.by.morse@gmail.com>",
+    "license": "",
+    "dependencies": {
+        "@devmehq/email-validator-js": "^1.0.19",
+        "@genql/cli": "^6.3.3",
+        "@genql/runtime": "^2.10.0",
+        "p-ratelimit": "^1.0.1",
+        "parse-domain": "^8.2.1",
+        "playwright": "^1.45.2"
+    }
+}
