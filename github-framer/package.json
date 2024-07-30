@@ -1,7 +1,6 @@
 {
     "name": "github-framer",
     "private": true,
-    "version": "0.0.0",
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",
@@ -46,7 +45,6 @@
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react-swc": "^3.7.0",
-        
         "vite": "^5.3.4",
         "vite-plugin-framer": "^0.0.10"
     }

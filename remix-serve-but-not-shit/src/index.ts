@@ -73,6 +73,10 @@ async function run() {
     let app = express()
     app.disable('x-powered-by')
     // app.use(compression())
+    app.use((req, res, next) => {
+        res.setHeader('X-Frame-Options', 'ALLOWALL') // or 'deny' or 'ALLOW-FROM https://example.com/'
+        next()
+    })
     app.use(
         build.publicPath,
         express.static(build.assetsBuildDirectory, {

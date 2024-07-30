@@ -1,7 +1,6 @@
 {
     "name": "template-rewrite-framer",
     "private": true,
-    "version": "0.0.0",
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",

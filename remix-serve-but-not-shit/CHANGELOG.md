@@ -1,5 +1,11 @@
 # remix-serve-but-not-shit
 
+## 0.0.4
+
+### Patch Changes
+
+-   Allow iframe use
+
 ## 0.0.3
 
 ### Patch Changes
