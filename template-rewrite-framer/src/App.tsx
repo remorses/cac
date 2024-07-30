@@ -4,10 +4,10 @@ import useMeasure from 'react-use-measure'
 import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
-import { Button } from '@/components/Button'
-import { NProgressComponent } from '@/components/nprogress'
-import { notifyError } from '@/lib/errors'
-import { useFocusOnMount } from '@/lib/hooks'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
+
 
 import {
     LoaderReturnType,
@@ -16,14 +16,14 @@ import {
     basePath,
     getPluginData,
     withMode,
-} from '@/lib/utils'
-import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
-import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
-import { LoginPage } from '@/routes/Login'
-import { SimplePrompt } from '@/routes/Prompt'
-import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
-import { Settings } from '@/routes/Settings'
-import { LicenseKey } from '@/routes/LicenseKey'
+} from 'template-rewrite-framer/src/lib/utils'
+import { AlreadyHaveWebsite } from 'template-rewrite-framer/src/routes/AlreadyHaveWebsite'
+import { GetWebsiteInfo } from 'template-rewrite-framer/src/routes/GetWebsiteInfo'
+import { LoginPage } from 'template-rewrite-framer/src/routes/Login'
+import { SimplePrompt } from 'template-rewrite-framer/src/routes/Prompt'
+import { ScrapeWebsite } from 'template-rewrite-framer/src/routes/ScrapeWebsite'
+import { Settings } from 'template-rewrite-framer/src/routes/Settings'
+import { LicenseKey } from 'template-rewrite-framer/src/routes/LicenseKey'
 
 import { AnimatePresence, MotionConfig, useMotionValue } from 'framer-motion'
 import {
@@ -39,6 +39,7 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
+import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
 globalThis.framer = framer
 async function loader({ request }) {
@@ -65,15 +66,6 @@ const router = createBrowserRouter(
                 const [handle] = useMatches().filter((match) => match?.handle)
                 const navigate = useNavigate()
 
-                // useMotionValueEvent(heightMotionValue, 'change', () => {
-                //     // console.log('height changed', heightMotionValue.get())
-                //     framer.showUI({
-                //         title: (handle?.handle as any) || '',
-                //         position: 'top left',
-                //         width,
-                //         height: heightMotionValue.get() || 100,
-                //     })
-                // })
                 useFocusOnMount()
 
                 useLayoutEffect(() => {
@@ -161,34 +153,8 @@ const router = createBrowserRouter(
                 )
             },
 
-            ErrorBoundary() {
-                const error = useRouteError() as any
-                NProgress.done()
-                useEffect(() => {
-                    notifyError(error, 'ErrorBoundary')
-                }, [error])
-                return (
-                    <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
-                        <span className='dark:text-red-300'>
-                            Something went wrong...
-                        </span>
-                        <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                            {error?.message || String(error)}
-                        </div>
-                        <button
-                            className='w-auto'
-                            type='button'
-                            onClick={() => {
-                                window.location.pathname = basePath
-                            }}
-                        >
-                            Try again
-                        </button>
-                    </div>
-                )
-            },
+            ErrorBoundary,
 
-            // errorElement: <ErrorPage />,
             children: [
                 {
                     path: '/',
@@ -196,10 +162,6 @@ const router = createBrowserRouter(
                         return null
                     },
                     async loader({ request }) {
-                        // const url = new URL(request.url)
-                        // if (url.pathname === '/login') {
-                        //     return {}
-                        // }
                         const { sessionKey } = await getPluginData()
 
                         console.log(' session key', sessionKey)
@@ -214,11 +176,10 @@ const router = createBrowserRouter(
                         console.log(
                             'redirecting to choose website from / because user is logged in',
                         )
-                        // return redirect(withMode(Paths.login))
+
                         return redirect(
                             withMode(Paths.doYouAlreadyHaveAWebsite),
                         )
-                        // setTimeout(() => refreshHeight(), 1)
                     },
                     handle: '',
                 },
@@ -236,25 +197,7 @@ const router = createBrowserRouter(
                     element: <GetWebsiteInfo />,
                     handle: 'What is your website url?',
                 },
-                // {
-                //     path: Paths.checkWebsiteIsPublished,
-                //     element: <IsWebsitePublished />,
-                //     loader: async ({}) => {
-                //         const publishInfo = await framer.getPublishInfo()
-                //         let deploymentTime = publishInfo?.staging?.deploymentTime
-                //         let hourAgo = new Date()
-                //         hourAgo.setHours(hourAgo.getHours() - 1)
-                //         if (deploymentTime && new Date(deploymentTime) > hourAgo) {
-                //             return redirect(Paths.getWebsiteInfo)
-                //         }
-                //         framer.notify('Publish your website first', {
-                //             variant: 'error',
-                //         })
 
-                //         return {}
-                //     },
-                //     handle: 'Publish your website first',
-                // },
                 SimplePrompt(),
                 LicenseKey(),
             ],
@@ -281,5 +224,30 @@ export function BackIcon(props) {
                 d='M10 22L0 12L10 2l1.775 1.775L3.55 12l8.225 8.225z'
             ></path>
         </svg>
+    )
+}
+
+export function ErrorBoundary() {
+    const error = useRouteError() as any
+    NProgress.done()
+    useEffect(() => {
+        notifyError(error, 'ErrorBoundary')
+    }, [error])
+    return (
+        <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
+            <span className='dark:text-red-300'>Something went wrong...</span>
+            <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
+                {error?.message || String(error)}
+            </div>
+            <button
+                className='w-auto'
+                type='button'
+                onClick={() => {
+                    window.location.pathname = basePath
+                }}
+            >
+                Try again
+            </button>
+        </div>
     )
 }

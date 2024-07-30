@@ -1,6 +1,6 @@
-import { Button } from '@/components/Button'
-import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from '@/lib/hooks'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
 import {
     LoaderReturnType,
@@ -15,7 +15,7 @@ import {
     globalState,
     isTruthy,
     pluginApiClient,
-} from '@/lib/utils'
+} from 'template-rewrite-framer/src/lib/utils'
 
 import classNames from 'classnames'
 import { motion } from 'framer-motion'

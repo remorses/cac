@@ -1,5 +1,5 @@
-import { Button } from '@/components/Button'
-import { Paths, formatLargeNumber, pluginApiClient } from '@/lib/utils'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { Paths, formatLargeNumber, pluginApiClient } from 'template-rewrite-framer/src/lib/utils'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -8,7 +8,7 @@ import {
 } from 'react-router'
 import { Form } from 'react-router-dom'
 
-import { useRefreshOnVisible } from '@/lib/hooks'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {

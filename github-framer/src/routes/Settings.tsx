@@ -1,4 +1,4 @@
-import { Button } from '@/components/Button'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 
 import {
     LoaderReturnType,
@@ -16,7 +16,7 @@ import {
     useNavigate,
 } from 'react-router'
 
-import { useRefreshOnVisible } from '@/lib/hooks'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'

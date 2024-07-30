@@ -1,4 +1,4 @@
-import { Spinner } from '@/components/Spinner'
+
 
 import {
     getMarkdownPluginData,
@@ -9,6 +9,7 @@ import {
 import { CollectionFieldConfig } from '@/routes/MapFields'
 import { CollectionField, CollectionItem, framer } from 'framer-plugin'
 import { LoaderFunctionArgs, RouteObject } from 'react-router'
+import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
 
 function Component() {
     // useRefreshOnVisible({ enabled: true })

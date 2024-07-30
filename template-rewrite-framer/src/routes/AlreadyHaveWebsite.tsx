@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Paths, withMode } from '@/lib/utils'
-import { Button } from '@/components/Button'
+import { Paths, withMode } from 'template-rewrite-framer/src/lib/utils'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 import { useEffect, useRef } from 'react'
 
 export function AlreadyHaveWebsite() {

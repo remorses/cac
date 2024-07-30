@@ -1,5 +1,5 @@
-import '@/styles/globals.css'
-import '@/styles/reset.css'
+import 'template-rewrite-framer/src/styles/globals.css'
+import 'template-rewrite-framer/src/styles/reset.css'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 

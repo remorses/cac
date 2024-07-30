@@ -1,5 +1,5 @@
-import { Button } from '@/components/Button'
-import { Paths, withMode } from '@/lib/utils'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { Paths, withMode } from 'template-rewrite-framer/src/lib/utils'
 
 import { useLocation, useNavigate } from 'react-router'
 

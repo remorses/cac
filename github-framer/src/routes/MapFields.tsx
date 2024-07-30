@@ -1,12 +1,10 @@
 import { CollectionField } from 'framer-plugin'
 
-import { ComponentProps, Fragment, useMemo, useState } from 'react'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { getMarkdownPluginData } from '@/lib/utils'
 import classNames from 'classnames'
-import { assert, getMarkdownPluginData, isTruthy } from '@/lib/utils'
-import { Button } from '@/components/Button'
+import { ComponentProps, Fragment, useState } from 'react'
 
-import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from '@/lib/hooks'
 import {
     LoaderReturnType,
     Paths,
@@ -23,7 +21,7 @@ import {
     useLoaderData,
     useNavigation,
 } from 'react-router'
-import { Form, useSubmit } from 'react-router-dom'
+import { useSubmit } from 'react-router-dom'
 import {
     MarkdownPluginFrontMatter,
     MarkdownPluginFrontMatterProperty,
@@ -100,7 +98,6 @@ function createFieldConfig(
 
     for (const key in frontMatter.properties) {
         const property = frontMatter.properties[key]
-        assert(property)
 
         // Title is always required in CMS API.
         // if (property.type === 'title') continue

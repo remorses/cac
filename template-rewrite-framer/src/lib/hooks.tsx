@@ -1,8 +1,9 @@
 // show toasts on success and failure and manages loading state
 
-import { notifyError } from '@/lib/errors'
+
 import { useState, useEffect, useRef } from 'react'
 import { useRevalidator, useNavigation } from 'react-router'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 
 // you can skip showing the toast on failure putting a field skipToast: true in the error
 export function useThrowingFn({

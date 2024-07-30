@@ -1,6 +1,6 @@
-import { Button } from '@/components/Button'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from '@/lib/hooks'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import {
     getMarkdownPluginData,
     LoaderReturnType,

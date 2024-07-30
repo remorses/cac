@@ -1,19 +1,18 @@
 import NProgress from 'nprogress'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
+import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
 import useMeasure from 'react-use-measure'
 
 import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
-import { Button } from '@/components/Button'
-import { NProgressComponent } from '@/components/nprogress'
 import { notifyError } from '@/lib/errors'
-import { useFocusOnMount } from '@/lib/hooks'
 
 import {
     LoaderReturnType,
     Paths,
-    PluginDataKeys,
     RouteIds,
     basePath,
     getMarkdownPluginData,
@@ -21,6 +20,10 @@ import {
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 
+import { ChooseRepo } from '@/routes/ChooseRepo'
+import { MapFieldsPage } from '@/routes/MapFields'
+import { Settings } from '@/routes/Settings'
+import { Sync } from '@/routes/Sync'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
     Outlet,
@@ -35,10 +38,6 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
-import { ChooseRepo } from '@/routes/ChooseRepo'
-import { Sync } from '@/routes/Sync'
-import { MapFieldsPage } from '@/routes/MapFields'
-import { Settings } from '@/routes/Settings'
 
 globalThis.framer = framer
 

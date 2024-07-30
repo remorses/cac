@@ -1,7 +1,7 @@
-import { Button } from '@/components/Button'
-import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from '@/lib/hooks'
-import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import { Paths, pluginApiClient, PluginDataKeys, withMode } from 'template-rewrite-framer/src/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {

@@ -1,4 +1,4 @@
-import { Button } from '@/components/Button'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 
 import {
     LoaderReturnType,
@@ -9,7 +9,7 @@ import {
     formatLargeNumber,
     pluginApiClient,
     withMode,
-} from '@/lib/utils'
+} from 'template-rewrite-framer/src/lib/utils'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
@@ -20,7 +20,7 @@ import {
 } from 'react-router'
 import { Link } from 'react-router-dom'
 
-import { useRefreshOnVisible } from '@/lib/hooks'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import {} from 'react-router'

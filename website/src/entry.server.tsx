@@ -13,7 +13,7 @@ import type {
     LoaderFunctionArgs,
 } from '@remix-run/node'
 import { createReadableStreamFromReadable } from '@remix-run/node'
-import { RemixServer } from '@remix-run/react'
+import { isRouteErrorResponse, RemixServer } from '@remix-run/react'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { notifyError } from './lib/errors'
@@ -152,7 +152,7 @@ export function handleError(
     { request, params, context }: LoaderFunctionArgs | ActionFunctionArgs,
 ) {
     // https://github.com/remix-run/remix/discussions/8933
-    if (request.signal.aborted || error.data?.includes?.('No route match')) {
+    if (request.signal.aborted || isRouteErrorResponse(error)) {
         return
     }
     if (error instanceof Error) {

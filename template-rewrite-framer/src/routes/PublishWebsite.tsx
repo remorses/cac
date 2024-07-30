@@ -1,4 +1,4 @@
-import { Button } from '@/components/Button'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 import { useNavigate } from 'react-router'
 import { Form } from 'react-router-dom'
 
