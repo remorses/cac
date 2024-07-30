@@ -70,7 +70,7 @@ function LoginComponent() {
 
 async function loader({}: LoaderFunctionArgs) {
     console.log('login loader')
-    const { data, error } = await pluginApiClient.api.v1.getSessionForKey.post({
+    const { data, error } = await pluginApiClient.api.plugins.getSessionForKey.post({
         key,
     })
     if (error) {

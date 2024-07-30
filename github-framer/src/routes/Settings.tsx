@@ -24,14 +24,14 @@ import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {
     const [org, credits] = await Promise.all([
-        pluginApiClient.api.v1.currentOrg.post({}).then(({ data, error }) => {
+        pluginApiClient.api.plugins.currentOrg.post({}).then(({ data, error }) => {
             if (error) {
                 throw error
             }
             return data
         }),
         null,
-        // pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
+        // pluginApiClient.api.plugins.getCredits.post({}).then(({ data, error }) => {
         //     if (error) {
         //         throw error
         //     }

@@ -74,7 +74,7 @@ async function loader({}: LoaderFunctionArgs) {
     const { githubAccountLogin, basePath, owner, repo } =
         await getMarkdownPluginData()
     const { data, error } =
-        await pluginApiClient.api.v1.markdownPlugin.githubRepoList.post({
+        await pluginApiClient.api.plugins.markdownPlugin.githubRepoList.post({
             githubAccountLogin,
         })
     if (error) {
@@ -112,7 +112,7 @@ export function ChooseRepo(): RouteObject {
             const [owner, repo] = repoSlug.split('/')
             console.log('getting files for ', repoSlug)
             const { data, error } =
-                await pluginApiClient.api.v1.markdownPlugin.checkBasePath.post({
+                await pluginApiClient.api.plugins.markdownPlugin.checkBasePath.post({
                     basePath,
                     owner,
                     repo,

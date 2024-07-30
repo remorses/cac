@@ -31,7 +31,7 @@ export function LicenseKey(): RouteObject {
                 }
             }
             const { data, error } =
-                await pluginApiClient.api.v1.activateLicense.post({
+                await pluginApiClient.api.plugins.activateLicense.post({
                     licenseKey,
                 })
             if (error) {

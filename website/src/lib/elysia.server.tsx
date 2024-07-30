@@ -119,7 +119,7 @@ export function convertExamplesToMarkdownList(
     return markdown
 }
 
-export const app = new Elysia({ prefix: '/api/v1', aot: false })
+export const app = new Elysia({ prefix: '/api/plugins', aot: false })
     .state('userId', '')
     .state('orgId', '')
 

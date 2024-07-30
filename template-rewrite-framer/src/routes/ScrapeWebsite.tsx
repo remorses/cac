@@ -46,7 +46,7 @@ function ScrapeWebsiteComponent() {
             NProgress.start()
             try {
                 const { error, data: stream } =
-                    await pluginApiClient.api.v1.scrapeWebsite.post(
+                    await pluginApiClient.api.plugins.scrapeWebsite.post(
                         {
                             domain,
                         },

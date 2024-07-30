@@ -84,7 +84,7 @@ async function loader({}: LoaderFunctionArgs) {
         await getMarkdownPluginData()
     console.log('syncing', owner, repo, githubAccountLogin, basePath)
     const { data, error } =
-        await pluginApiClient.api.v1.markdownPlugin.syncGithub.post({
+        await pluginApiClient.api.plugins.markdownPlugin.syncGithub.post({
             owner,
             repo,
             basePath,
