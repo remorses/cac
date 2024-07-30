@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia'
 import matter from 'gray-matter'
-import { HTMLRewriter } from 'htmlrewriter'
 
 import { notifyError } from 'website/src/lib/errors'
 
@@ -436,6 +435,7 @@ export async function processMarkdown({
 
         let title = ''
         let foundParagraph = false
+        const { HTMLRewriter } = await import('htmlrewriter')
         let formattedHtml = await new HTMLRewriter()
             .on('p,h2,h3', {
                 element(element) {

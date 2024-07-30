@@ -377,17 +377,6 @@ model FramerLoginSession {
   @@schema("public")
 }
 
-// @debrecated
-model FramerLoginRequest {
-  key          String   @id
-  createdAt    DateTime @default(now())
-  usedByUserId String?  @db.Uuid
-
-  data Json @default("{}")
-
-  @@schema("public")
-}
-
 
 model GithubInstallation {
   installationId   Int
