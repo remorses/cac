@@ -169,7 +169,7 @@ function SimplePromptComponent({}) {
         // return
 
         const { data: eventSource, error } =
-            await pluginApiClient.api.plugins.rephrase.post(
+            await pluginApiClient.api.plugins.rewritePlugin.rephrase.post(
                 {
                     description,
                     textToReplace: oldText,
@@ -398,13 +398,13 @@ export function SimplePrompt(): RouteObject {
 async function loader({}: LoaderFunctionArgs) {
     let [shouldShowProgress, credits, { email, orgId }] = await Promise.all([
         framer.getPluginData(PluginDataKeys.usedThePlugin).then(Boolean),
-        pluginApiClient.api.plugins.getCredits.post({}).then(({ data, error }) => {
+        pluginApiClient.api.plugins.rewritePlugin.getCredits.post({}).then(({ data, error }) => {
             if (error) {
                 throw error
             }
             return data
         }),
-        pluginApiClient.api.plugins.currentOrg.post({}).then(({ data, error }) => {
+        pluginApiClient.api.plugins.rewritePlugin.currentOrg.post({}).then(({ data, error }) => {
             if (error) {
                 throw error
             }
