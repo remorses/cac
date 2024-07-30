@@ -17,10 +17,11 @@ export default function Page({}) {
 }
 
 export async function loader({ request, response }: LoaderFunctionArgs) {
-    const { headers, supabase, user, redirectTo } = await getSupabaseSession({
-        request,
-        response,
-    })
+    const { headers, userId, supabase, user, redirectTo } =
+        await getSupabaseSession({
+            request,
+            response,
+        })
     if (redirectTo) {
         console.log('redirecting to login')
         return redirectTo
@@ -36,14 +37,26 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     if (!key) {
         throw new Error('No key provided')
     }
+    let orgId = userId
+    await db
+        .insertInto('Org')
+        .values({
+            orgId,
+        })
+        .onConflict((oc) => {
+            return oc.columns(['orgId']).doNothing()
+        })
+        .execute()
+
     const [framerRequest, authUser] = await Promise.all([
         db
-            .insertInto('FramerLoginRequest')
+            .insertInto('FramerLoginSession')
             .values({
                 key,
                 createdAt: new Date(),
                 usedByUserId: user.id,
                 data: requestData,
+                orgId,
             })
             .onConflict((oc) => {
                 return oc.columns(['key']).doNothing()
@@ -62,26 +75,6 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     ])
     if (!authUser) {
         throw new Error('No auth user found for user')
-    }
-    if (!authUser.plainPassword) {
-        console.log('Creating user password')
-        let password = generatePassword()
-        const {
-            data: {},
-            error,
-        } = await supabase.auth.updateUser({
-            password,
-        })
-
-        if (error) {
-            console.error('Failed to create user password')
-            throw error
-        }
-        await db
-            .updateTable('auth.users')
-            .set('plainPassword', password)
-            .where('id', '=', user.id)
-            .execute()
     }
 
     return {}

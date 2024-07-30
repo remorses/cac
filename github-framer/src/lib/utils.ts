@@ -1,54 +1,32 @@
-import { createClient } from 'website/src/lib/api-client'
-import { env, supabaseRef } from 'website/src/lib/env'
+import { env } from 'website/src/lib/env'
 
-import { treaty } from '@elysiajs/eden'
+import { Treaty, treaty } from '@elysiajs/eden'
 
-import type { RephraseSchema, RouteType } from 'website/src/lib/elysia.server'
-import {
-    AnyNode,
-    framer,
-    isFrameNode,
-    isComponentNode,
-    isWebPageNode,
-    isTextNode,
-    CollectionField,
-} from 'framer-plugin'
-import { Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase-framer'
-import { notifyError } from '@/lib/errors'
-import { redirect } from 'react-router'
+import { CollectionField, framer } from 'framer-plugin'
+import type { RouteType } from 'website/src/lib/elysia.server'
+
 import { safeJsonParse } from 'website/src/lib/utils'
-import { CollectionFieldConfig } from '@/routes/MapFields'
 
-export const pluginApiClient = treaty<RouteType>(env.PUBLIC_URL!, {
-    // async onResponse(response) {
-    //     if (!response.ok) {
-    //         let text = await response.text()
-    //         console.log('response', text)
-    //         let err = new Error(text)
-    //         throw err
-    //     }
-    //     return response
-    // },
-    async onRequest() {
-        const {
-            data: { session },
-            error,
-        } = await supabase.auth.getSession()
-        if (error) {
-            notifyError(error, 'Error getting session')
-        }
-        if (!session) {
-            console.log('no session found')
-        }
-        return {
-            // credentials: 'include',
-            headers: {
-                pluginCookie: `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`,
-            },
-        }
+export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
+    env.PUBLIC_URL!,
+    {
+        async onResponse(response) {
+            if (response.status === 401) {
+                const collection = await framer.getCollection()
+                console.log('clearing session because api returned 401')
+                await collection.setPluginData(PluginDataKeys.sessionKey, null)
+            }
+        },
+        async onRequest() {
+            const { sessionKey } = await getMarkdownPluginData()
+            return {
+                headers: {
+                    sessionKey,
+                },
+            }
+        },
     },
-})
+)
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {
@@ -87,32 +65,6 @@ export type LoaderReturnType<T extends Function> = T extends (
     ? R
     : never
 
-export function createBuyLink({ email, orgId }) {
-    if (!email) {
-        throw new Error('No email for buy link')
-    }
-    if (!orgId) {
-        throw new Error('No orgId for buy link')
-    }
-
-    let productId = env.PUBLIC_LEMON_PRODUCT!
-
-    let url = new URL(
-        `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
-    )
-    if (orgId) {
-        url.searchParams.set('checkout[custom][orgId]', orgId)
-    }
-    url.searchParams.set('embed', '0')
-    url.searchParams.set('logo', '0')
-    url.searchParams.set('dark', '1')
-
-    if (email) {
-        url.searchParams.set('checkout[email]', email)
-    }
-    return url.toString()
-}
-
 export const globalState = {}
 
 export async function collectGenerator<T>(
@@ -138,6 +90,7 @@ export function formatLargeNumber(x: number) {
 export const basePath = import.meta.env.BASE_URL || '/'
 
 export enum PluginDataKeys {
+    sessionKey = 'sessionKey',
     githubRepoSlug = 'repoSlug',
     mapFieldsConfig = 'mapFieldsConfig',
     githubAccountLogin = 'githubAccountLogin',
@@ -183,13 +136,19 @@ export function assert(
 
 export async function getMarkdownPluginData() {
     const collection = await framer.getCollection()
-    const [repoSlug, mapFieldsConfigJson, basePath, githubAccountLogin] =
-        await Promise.all([
-            collection.getPluginData(PluginDataKeys.githubRepoSlug),
-            collection.getPluginData(PluginDataKeys.mapFieldsConfig),
-            collection.getPluginData(PluginDataKeys.basePath) || '',
-            collection.getPluginData(PluginDataKeys.githubAccountLogin) || '',
-        ])
+    const [
+        repoSlug,
+        mapFieldsConfigJson,
+        basePath,
+        githubAccountLogin,
+        sessionKey,
+    ] = await Promise.all([
+        collection.getPluginData(PluginDataKeys.githubRepoSlug),
+        collection.getPluginData(PluginDataKeys.mapFieldsConfig),
+        collection.getPluginData(PluginDataKeys.basePath) || '',
+        collection.getPluginData(PluginDataKeys.githubAccountLogin) || '',
+        collection.getPluginData(PluginDataKeys.sessionKey) || '',
+    ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
         safeJsonParse(mapFieldsConfigJson || '[]') || []
@@ -199,5 +158,6 @@ export async function getMarkdownPluginData() {
         mapFieldsConfig,
         basePath: basePath || '',
         githubAccountLogin: githubAccountLogin || '',
+        sessionKey: sessionKey || '',
     }
 }

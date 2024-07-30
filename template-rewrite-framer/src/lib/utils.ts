@@ -17,19 +17,7 @@ import { supabase } from '@/lib/supabase-framer'
 import { notifyError } from '@/lib/errors'
 
 export const pluginApiClient = treaty<RouteType>(env.PUBLIC_URL!, {
-    // async fetch(input, requestInit) {
-    //     const res = await fetch(input, requestInit)
-    //     if (!res.ok) {
-    //         throw new Error(await res.text())
-    //     }
-    //     return res
-    // },
-    // async onResponse(response) {
-    //     if (!response.ok) {
-    //         throw new Error(await response.text())
-    //     }
-    //     return response
-    // },
+    
     async onRequest() {
         const {
             data: { session },
@@ -71,8 +59,6 @@ export function sleep(ms: number) {
         setTimeout(resolve, ms)
     })
 }
-
-
 
 export const noop: any = () => {}
 
@@ -207,8 +193,6 @@ export async function* getParentNodes(node: AnyNode | string | null) {
 }
 
 Object.assign(globalThis, { getRootParentNode, getParentNodes })
-
-
 
 export enum RouteIds {
     root = 'root',

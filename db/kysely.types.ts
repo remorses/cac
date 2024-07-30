@@ -294,6 +294,14 @@ export interface FramerLoginRequest {
   usedByUserId: string | null;
 }
 
+export interface FramerLoginSession {
+  createdAt: Generated<Timestamp>;
+  data: Generated<Json>;
+  key: string;
+  orgId: string;
+  usedByUserId: string | null;
+}
+
 export interface Generation {
   arguments: Json | null;
   chars: number;
@@ -587,6 +595,7 @@ export interface DB {
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
   FramerLoginRequest: FramerLoginRequest;
+  FramerLoginSession: FramerLoginSession;
   Generation: Generation;
   GithubInstallation: GithubInstallation;
   LemonSqueezyLicense: LemonSqueezyLicense;

@@ -22,34 +22,62 @@ const unauthorizedResponse = new Response('Unauthorized', {
 })
 
 export const markdownPluginApp = new Elysia({ aot: false })
-    .state('userId', '')
-    .state('githubLogin', '')
+    // .state('sessionKey', '')
+    .state('githubUserLogin', '')
+    .state('orgId', '')
     // .state('session', {} as Session)
     .group('/markdownPlugin', (group) => {
         return group
             .onRequest(async ({ request, set, store }) => {
-                const userId = store.userId
-                if (!userId) {
+                const sessionKey = request.headers.get('sessionKey')
+
+                const session = await db
+                    .selectFrom('FramerLoginSession')
+                    .where('key', '=', sessionKey)
+                    .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
+                    .selectAll()
+                    .executeTakeFirst()
+                if (!session) {
                     return
                 }
-                const githubLogin = await getGithubUserLogin({ userId })
-                if (!githubLogin) {
+                const userId = session.usedByUserId
+                const orgId = session.orgId
+                store.orgId = orgId
+                const githubUserLogin = await getGithubUserLogin({ userId })
+                if (!githubUserLogin) {
                     throw new Error(
                         'Github login for user not found in database',
                     )
                 }
-                store.githubLogin = githubLogin
+                store.githubUserLogin = githubUserLogin
             })
             .get('/health', () => {
                 return 'ok'
+            })
+            .post('/currentOrg', async ({ store }) => {
+                const orgId = store.orgId
+                const orgAndUser = await db
+                    .selectFrom('Org')
+                    .where('orgId', '=', orgId)
+                    .leftJoin('auth.users', (join) =>
+                        join.on('Org.orgId', '=', orgId),
+                    )
+                    .selectAll()
+                    .executeTakeFirst()
+                if (!orgAndUser) {
+                    throw unauthorizedResponse
+                }
+                const email = orgAndUser.email
+
+                return { orgId, email }
             })
             .post(
                 '/githubRepoList',
                 async ({ body, store }) => {
                     const { githubAccountLogin } = body
-                    const userId = store.userId
+                    const orgId = store.orgId
 
-                    if (!userId) {
+                    if (!orgId) {
                         throw unauthorizedResponse
                     }
                     const installation =
@@ -57,7 +85,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                             where: {
                                 status: 'active',
                                 memberLogins: {
-                                    has: store.githubLogin,
+                                    has: store.githubUserLogin,
                                 },
 
                                 accountLogin: githubAccountLogin,
@@ -133,8 +161,8 @@ export const markdownPluginApp = new Elysia({ aot: false })
                     if (!basePath) {
                         basePath = ''
                     }
-                    const userId = store.userId
-                    if (!userId) {
+                    const orgId = store.orgId
+                    if (!orgId) {
                         throw unauthorizedResponse
                     }
                     const githubInstallation =
@@ -142,7 +170,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                             where: {
                                 status: 'active',
                                 memberLogins: {
-                                    has: store.githubLogin,
+                                    has: store.githubUserLogin,
                                 },
                                 accountLogin: githubAccountLogin,
                             },
@@ -250,8 +278,8 @@ export const markdownPluginApp = new Elysia({ aot: false })
                 async ({ body, store }) => {
                     let { owner, githubAccountLogin, basePath, repo } = body
 
-                    const userId = store.userId
-                    if (!userId) {
+                    const orgId = store.orgId
+                    if (!orgId) {
                         throw unauthorizedResponse
                     }
                     if (basePath === '/') {
@@ -266,7 +294,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                             where: {
                                 status: 'active',
                                 memberLogins: {
-                                    has: store.githubLogin,
+                                    has: store.githubUserLogin,
                                 },
                                 accountLogin: githubAccountLogin,
                             },

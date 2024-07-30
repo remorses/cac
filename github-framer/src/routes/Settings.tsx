@@ -1,13 +1,11 @@
 import { Button } from '@/components/Button'
-import { supabase } from '@/lib/supabase-framer'
+
 import {
     LoaderReturnType,
     Paths,
+    PluginDataKeys,
     basePath,
-    createBuyLink,
-    formatLargeNumber,
-    pluginApiClient,
-    withMode,
+    pluginApiClient
 } from '@/lib/utils'
 import { useState } from 'react'
 import {
@@ -17,16 +15,23 @@ import {
     useLoaderData,
     useNavigate,
 } from 'react-router'
-import { Link } from 'react-router-dom'
 
 import { useRefreshOnVisible } from '@/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
-import {} from 'react-router'
+import { framer } from 'framer-plugin'
+import { } from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [session, credits] = await Promise.all([
-        supabase.auth.getSession().then(({ data }) => data.session),
+    const [org, credits] = await Promise.all([
+        pluginApiClient.api.v1.markdownPlugin.currentOrg
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
         null,
         // pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
         //     if (error) {
@@ -35,11 +40,8 @@ async function loader({}: LoaderFunctionArgs) {
         //     return data
         // }),
     ])
-    let buyMoreCreditsUrl = createBuyLink({
-        email: session?.user?.email,
-        orgId: session?.user?.id,
-    })
-    return { credits, session, buyMoreCreditsUrl }
+    const { email, orgId } = org
+    return { credits, email, orgId }
 }
 
 export function Settings(): RouteObject {
@@ -54,9 +56,7 @@ export function Settings(): RouteObject {
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
-    const { session, buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { email } = useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
 
     const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
@@ -69,9 +69,7 @@ function Component() {
             <div className='flex items-center'>
                 <div className=''>
                     Currently logged in as{' '}
-                    <span className='font-semibold inline'>
-                        {session?.user?.email}
-                    </span>
+                    <span className='font-semibold inline'>{email}</span>
                 </div>
                 <div className='grow'></div>
                 <Button
@@ -81,10 +79,11 @@ function Component() {
                         // }
                         setIsLoading(true)
                         try {
-                            const { error } = await supabase.auth.signOut()
-                            if (error) {
-                                throw error
-                            }
+                            const collection = await framer.getCollection()
+                            await collection.setPluginData(
+                                PluginDataKeys.sessionKey,
+                                null,
+                            )
                             // await framer.closePlugin()
                             window.location.pathname = basePath
                         } finally {

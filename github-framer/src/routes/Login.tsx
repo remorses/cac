@@ -1,15 +1,13 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
-import { supabase } from '@/lib/supabase-framer'
 import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
-    RouteObject,
     redirect,
-    useNavigate,
+    RouteObject,
     useNavigation,
     useRevalidator,
 } from 'react-router'
@@ -79,28 +77,23 @@ async function loader({}: LoaderFunctionArgs) {
         notifyError(error, 'Error logging in for framer')
         throw error
     }
-    if (data.session) {
+    if (data.key) {
         console.log('login was completed, got session', data)
-        // make it smaller
-        // data.session.user = undefined as any
+
         const collection = await framer.getCollection()
         let requestData: GithubLoginRequestData = (data.requestData ||
             {}) as any
-        if (!requestData?.githubAccountLogin) {
-            console.log('requestData', requestData)
-            throw new Error('No github account login found')
-        }
+
         await collection.setPluginData(
             PluginDataKeys.githubAccountLogin,
             requestData.githubAccountLogin,
         )
+        await collection.setPluginData(PluginDataKeys.sessionKey, data.key)
 
-        const { error } = await supabase.auth.setSession(data.session)
-        if (error) {
-            throw error
-        }
         loginCompleted = true
         return redirect(withMode(Paths.chooseRepo))
+    } else {
+        console.log(data)
     }
     return {}
 }

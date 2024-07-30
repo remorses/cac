@@ -187,62 +187,38 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
             }
             const hourAgo = new Date()
             hourAgo.setHours(hourAgo.getHours() - 1)
-            const [framerRequest] = await Promise.all([
+            const [framerSession] = await Promise.all([
                 db
-                    .selectFrom('FramerLoginRequest')
+                    .selectFrom('FramerLoginSession')
                     .where('key', '=', body.key)
                     .where('usedByUserId', 'is not', null)
                     .where('createdAt', '>', hourAgo)
                     .selectAll()
                     .executeTakeFirst(),
             ])
-            if (!framerRequest) {
+            if (!framerSession) {
+                console.log('no framer session found')
                 return { error: 'No valid framer request found' }
             }
             const user = await db
                 .selectFrom('auth.users')
-                .where('id', '=', framerRequest.usedByUserId)
+                .where('id', '=', framerSession.usedByUserId)
                 .selectAll()
                 .executeTakeFirst()
 
             if (!user) {
+                console.log('no user found for framer session')
                 throw new Error('No user found for request')
             }
-            if (!user.plainPassword) {
-                throw new Error('No user password found for user')
-            }
+
             if (!user.email) {
                 throw new Error('No user email found for user')
             }
-
-            async function createTempSession() {
-                const tempSupabase = createSupabaseAnon()
-                // i am logging in again with password because supabase will log out the user if the refresh token is used in 2 places at the same time
-                const {
-                    data: { session: sessionToPass },
-                    error: signInError,
-                } = await tempSupabase.auth.signInWithPassword({
-                    email: user!.email!,
-                    password: user!.plainPassword!,
-                })
-                if (signInError) {
-                    console.error('Failed to sign in')
-                    throw signInError
-                }
-                if (!sessionToPass) {
-                    throw new Error('No session')
-                }
-                return sessionToPass
-            }
-            const [sessionToPass] = await Promise.all([
-                createTempSession(),
-                // supabase.auth.signInWithPassword({
-                //     email: user.email,
-                //     password: user.plainPassword,
-                // }),
-            ])
-            const requestData = framerRequest.data || {}
-            return { session: sessionToPass, requestData }
+            const { orgId, key } = framerSession
+            const { email } = user
+            console.log('found user for session', email)
+            const requestData = framerSession.data || {}
+            return { orgId, email, key, requestData }
         },
         {
             body: t.Object({

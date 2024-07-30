@@ -9,8 +9,9 @@ import { Button } from '@/components/Button'
 import { NProgressComponent } from '@/components/nprogress'
 import { notifyError } from '@/lib/errors'
 import { useFocusOnMount } from '@/lib/hooks'
-import { supabase } from '@/lib/supabase-framer'
+
 import {
+    LoaderReturnType,
     Paths,
     PluginDataKeys,
     RouteIds,
@@ -19,7 +20,7 @@ import {
     withMode,
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
-import { Session } from '@supabase/supabase-js'
+
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
     Outlet,
@@ -41,6 +42,12 @@ import { Settings } from '@/routes/Settings'
 
 globalThis.framer = framer
 
+async function loader({ request }) {
+    const { sessionKey } = await getMarkdownPluginData()
+
+    return { sessionKey }
+}
+
 const router = createBrowserRouter(
     [
         {
@@ -50,20 +57,14 @@ const router = createBrowserRouter(
             shouldRevalidate: () => {
                 return true
             },
-            async loader({ request }) {
-                const { data, error } = await supabase.auth.getSession()
-                if (error) {
-                    notifyError(error, 'Failed to get session')
-                }
-                const session = data?.session
-
-                return { session }
-            },
+            loader,
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
                 let width = 480
-                const { session } = useLoaderData() as { session: Session }
+                const { sessionKey } = useLoaderData() as LoaderReturnType<
+                    typeof loader
+                >
                 const [handle] = useMatches().filter((match) => match?.handle)
                 const navigate = useNavigate()
 
@@ -84,7 +85,7 @@ const router = createBrowserRouter(
 
                 const location = useLocation()
                 const showSettings =
-                    session && location.pathname !== Paths.settings
+                    sessionKey && location.pathname !== Paths.settings
                 const revalidator = useRevalidator()
 
                 const navigationType = useNavigationType()
@@ -174,18 +175,11 @@ const router = createBrowserRouter(
                         return null
                     },
                     async loader({ request }) {
-                        // const url = new URL(request.url)
-                        // if (url.pathname === '/login') {
-                        //     return {}
-                        // }
-                        const { data, error } = await supabase.auth.getSession()
-                        if (error) {
-                            notifyError(error, 'Failed to get session')
-                        }
+                        const { sessionKey } = await getMarkdownPluginData()
 
-                        console.log('supabase session', data)
-                        const session = data?.session
-                        if (!session) {
+                        console.log(' session key', sessionKey)
+
+                        if (!sessionKey) {
                             console.log(
                                 `redirecting to login because there is no session`,
                             )

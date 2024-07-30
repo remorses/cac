@@ -246,8 +246,8 @@ model users {
   // siteOperators               siteOperators[]
   orgs OrgsUsers[]
 
-  plainPassword String?
-  githubLogin String?
+  // plainPassword String?
+  githubLogin   String?
 
   @@index([instance_id])
   @@index([is_anonymous])
@@ -317,6 +317,7 @@ model Org {
   subscriptions   Subscription[]
   licenses        LemonSqueezyLicense[]
   scrapedUrls     ScrapedWebsitePage[]
+  framerSessions  FramerLoginSession[]
 
   @@schema("public")
 }
@@ -362,6 +363,21 @@ model ScrapedWebsitePage {
   @@schema("public")
 }
 
+model FramerLoginSession {
+  key          String   @id
+  createdAt    DateTime @default(now())
+  usedByUserId String?  @db.Uuid
+  orgId        String
+
+  data Json @default("{}")
+
+  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+
+
+  @@schema("public")
+}
+
+// @debrecated
 model FramerLoginRequest {
   key          String   @id
   createdAt    DateTime @default(now())
@@ -371,6 +387,7 @@ model FramerLoginRequest {
 
   @@schema("public")
 }
+
 
 model GithubInstallation {
   installationId   Int

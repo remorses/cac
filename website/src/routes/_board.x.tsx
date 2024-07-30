@@ -30,54 +30,10 @@ export let loader = async ({ request, response }: LoaderFunctionArgs) => {
         throw new Error('No operator found for user')
     }
 
-    const password = await Promise.resolve().then(async () => {
-        if (authUser.plainPassword) {
-            return authUser.plainPassword
-        }
-        console.log('Creating user password')
-        let password = generatePassword()
-        const {
-            data: {},
-            error,
-        } = await supabase.auth.updateUser({
-            password,
-        })
-
-        if (error) {
-            console.error('Failed to create user password')
-            throw error
-        }
-        await db
-            .updateTable('auth.users')
-            .set('plainPassword', password)
-            .where('id', '=', user.id)
-            .execute()
-
-        return password
-    })
-    const tempSupabase = createSupabaseAnon()
-    // i am logging in again with password because supabase will log out the user if the refresh token is used in 2 places at the same time
-    const {
-        data: { session: sessionToPass },
-        error: signInError,
-    } = await tempSupabase.auth.signInWithPassword({
-        email: user.email,
-        password,
-    })
-    if (signInError) {
-        console.error('Failed to sign in')
-        throw signInError
-    }
-    if (!sessionToPass) {
-        throw new Error('No session')
-    }
-
-    return json({ sessionToPass }, { headers })
+    return json({}, { headers })
 }
 
 export default function Page() {
-    const { sessionToPass } = useLoaderData<any>()
-
     return (
         <div className='flex max-w-[500px] flex-col items-center gap-4'>
             <h1 className='text-2xl font-semibold'>Plugin Setup Completed</h1>
