@@ -28,18 +28,22 @@ import { framer } from 'framer-plugin'
 
 async function loader({}: LoaderFunctionArgs) {
     const [{ email, orgId }, credits] = await Promise.all([
-        pluginApiClient.api.plugins.rewritePlugin.currentOrg.post({}).then(({ data, error }) => {
-            if (error) {
-                throw error
-            }
-            return data
-        }),
-        pluginApiClient.api.plugins.rewritePlugin.getCredits.post({}).then(({ data, error }) => {
-            if (error) {
-                throw error
-            }
-            return data
-        }),
+        pluginApiClient.api.plugins.currentOrg
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
+        pluginApiClient.api.plugins.rewritePlugin.getCredits
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
     ])
     let buyMoreCreditsUrl = createBuyLink({
         email,

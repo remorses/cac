@@ -39,7 +39,7 @@ import {
 import {
     RephraseSchema,
     RephraseResultItem,
-} from 'website/src/lib/elysia.server'
+} from 'website/src/lib/elysia-rewrite-plugin'
 
 import { sleep } from 'website/src/lib/utils'
 
@@ -398,18 +398,22 @@ export function SimplePrompt(): RouteObject {
 async function loader({}: LoaderFunctionArgs) {
     let [shouldShowProgress, credits, { email, orgId }] = await Promise.all([
         framer.getPluginData(PluginDataKeys.usedThePlugin).then(Boolean),
-        pluginApiClient.api.plugins.rewritePlugin.getCredits.post({}).then(({ data, error }) => {
-            if (error) {
-                throw error
-            }
-            return data
-        }),
-        pluginApiClient.api.plugins.rewritePlugin.currentOrg.post({}).then(({ data, error }) => {
-            if (error) {
-                throw error
-            }
-            return data
-        }),
+        pluginApiClient.api.plugins.rewritePlugin.getCredits
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
+        pluginApiClient.api.plugins.currentOrg
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
     ])
 
     const buyMoreCreditsUrl = createBuyLink({

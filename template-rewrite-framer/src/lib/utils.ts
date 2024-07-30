@@ -10,7 +10,8 @@ import {
     isTextNode,
     isWebPageNode,
 } from 'framer-plugin'
-import type { RephraseSchema, RouteType } from 'website/src/lib/elysia.server'
+import type { RouteType } from 'website/src/lib/elysia.server'
+import { RephraseSchema } from 'website/src/lib/elysia-rewrite-plugin'
 
 export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
     env.PUBLIC_URL!,
