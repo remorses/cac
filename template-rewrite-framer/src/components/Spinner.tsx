@@ -1,4 +1,5 @@
 import cx from "classnames"
+// @ts-ignore
 import styles from "./spinner.module.css"
 
 export interface SpinnerProps {
