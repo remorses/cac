@@ -520,9 +520,6 @@ export async function* NDJSONStream<T = any>({
     }
 }
 
-export const unauthorizedResponse = new Response('Unauthorized', {
+const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
-
-app.use(swagger({}))
-export type RouteType = typeof app

@@ -8,7 +8,7 @@ import {
     rephrase,
     removeMarkdownSnippets,
     splitStringButKeepChar,
-} from 'website/src/lib/elysia.server'
+} from 'website/src/lib/elysia-rewrite-plugin'
 import {
     fetchFormattedHtml,
     getWebsiteDescription,

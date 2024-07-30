@@ -1,19 +1,9 @@
-import { createOpenAI, openai } from '@ai-sdk/openai'
-import { Static, t } from 'elysia'
-import { anthropic } from '@ai-sdk/anthropic'
+import { openai } from '@ai-sdk/openai'
 
-import { z } from 'zod'
 
-import { streamObject, streamText, generateText } from 'ai'
-import { HTMLRewriter } from 'htmlrewriter'
-import { getScreenshotUrl, groq, screenshot } from 'website/src/lib/ssr.server'
-import { env } from 'website/src/lib/env'
-import {
-    NDJSONStream,
-    RephraseSchema,
-    removeMarkdownSnippets,
-} from 'website/src/lib/elysia.server'
-import { splitImage } from 'website/src/lib/tile.server'
+import { generateText, streamText } from 'ai'
+import { RephraseSchema, NDJSONStream, removeMarkdownSnippets } from 'website/src/lib/elysia-rewrite-plugin'
+import { } from 'website/src/lib/elysia.server'
 
 import('htmlrewriter')
 
