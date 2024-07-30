@@ -6,6 +6,7 @@
         "build": "NODE_ENV=production doppler run -- pnpm concurrently 'pnpm remix vite:build' 'pnpm tsc' && pnpm copy-prisma",
         "fly": "fly --app unframer-website-prod",
         "deployment": "pnpm tsx scripts/deployment.ts",
+        "check": "pnpm tsc --incremental",
         "copy-prisma": "cp ../db/schema.prisma ./build/",
         "gen-client": "export DIR=../crisp-raycast/src/generated/ && rm -rf dist && tsc && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/client.* $DIR",
         "test": "doppler run -- vitest",

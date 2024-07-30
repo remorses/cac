@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",
+        "check": "pnpm tsc --incremental",
         "copy-plugin": "export OUT=../website/public/ && mkdir -p $OUT && cp -r ./dist/ $OUT",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build && pnpm copy-plugin",
         "deployment_": "pnpm build && pnpm wrangler pages deploy dist",
@@ -45,7 +46,7 @@
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react-swc": "^3.7.0",
-        "typescript": "^5.5.3",
+        
         "vite": "^5.3.4",
         "vite-plugin-framer": "^0.0.10"
     }
