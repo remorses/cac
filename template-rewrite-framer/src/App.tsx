@@ -8,8 +8,15 @@ import { Button } from '@/components/Button'
 import { NProgressComponent } from '@/components/nprogress'
 import { notifyError } from '@/lib/errors'
 import { useFocusOnMount } from '@/lib/hooks'
-import { supabase } from '@/lib/supabase-framer'
-import { Paths, RouteIds, basePath, withMode } from '@/lib/utils'
+
+import {
+    LoaderReturnType,
+    Paths,
+    RouteIds,
+    basePath,
+    getPluginData,
+    withMode,
+} from '@/lib/utils'
 import { AlreadyHaveWebsite } from '@/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from '@/routes/GetWebsiteInfo'
 import { LoginPage } from '@/routes/Login'
@@ -17,7 +24,7 @@ import { SimplePrompt } from '@/routes/Prompt'
 import { ScrapeWebsite } from '@/routes/ScrapeWebsite'
 import { Settings } from '@/routes/Settings'
 import { LicenseKey } from '@/routes/LicenseKey'
-import { Session } from '@supabase/supabase-js'
+
 import { AnimatePresence, MotionConfig, useMotionValue } from 'framer-motion'
 import {
     Outlet,
@@ -34,7 +41,11 @@ import {
 import { Link, createBrowserRouter } from 'react-router-dom'
 
 globalThis.framer = framer
+async function loader({ request }) {
+    const { sessionKey } = await getPluginData()
 
+    return { sessionKey }
+}
 const router = createBrowserRouter(
     [
         {
@@ -44,24 +55,15 @@ const router = createBrowserRouter(
             shouldRevalidate: () => {
                 return true
             },
-            async loader({ request }) {
-                const { data, error } = await supabase.auth.getSession()
-                if (error) {
-                    notifyError(error, 'Failed to get session')
-                }
-                const session = data?.session
-
-                return { session }
-            },
-
+            loader,
             Component({}) {
                 const [ref, { height }] = useMeasure()
                 let width = 480
-                const { session } = useLoaderData() as { session: Session }
+                const { sessionKey } = useLoaderData() as LoaderReturnType<
+                    typeof loader
+                >
                 const [handle] = useMatches().filter((match) => match?.handle)
                 const navigate = useNavigate()
-
-                const heightMotionValue = useMotionValue(height)
 
                 // useMotionValueEvent(heightMotionValue, 'change', () => {
                 //     // console.log('height changed', heightMotionValue.get())
@@ -89,7 +91,7 @@ const router = createBrowserRouter(
 
                 const location = useLocation()
                 const showSettings =
-                    session && location.pathname !== Paths.settings
+                    sessionKey && location.pathname !== Paths.settings
                 const revalidator = useRevalidator()
 
                 const navigationType = useNavigationType()
@@ -198,19 +200,17 @@ const router = createBrowserRouter(
                         // if (url.pathname === '/login') {
                         //     return {}
                         // }
-                        const { data, error } = await supabase.auth.getSession()
-                        if (error) {
-                            notifyError(error, 'Failed to get session')
-                        }
+                        const { sessionKey } = await getPluginData()
 
-                        console.log('supabase session', data)
-                        const session = data?.session
-                        if (!session) {
+                        console.log(' session key', sessionKey)
+
+                        if (!sessionKey) {
                             console.log(
                                 `redirecting to login because there is no session`,
                             )
                             return redirect(withMode(Paths.login))
                         }
+
                         console.log(
                             'redirecting to choose website from / because user is logged in',
                         )
@@ -266,7 +266,6 @@ const router = createBrowserRouter(
 export default function Page() {
     return <RouterProvider router={router} />
 }
-
 
 export function BackIcon(props) {
     return (

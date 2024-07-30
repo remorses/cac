@@ -1,10 +1,11 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from '@/lib/hooks'
-import { supabase } from '@/lib/supabase-framer'
+
 import {
     LoaderReturnType,
     Paths,
+    PluginDataKeys,
     collectGenerator,
     createBuyLink,
     formatLargeNumber,
@@ -85,7 +86,7 @@ function SimplePromptComponent({}) {
         }
         abortController = new AbortController()
         setIsLoading(true)
-        framer.setPluginData('usedThePlugin', 'true')
+        framer.setPluginData(PluginDataKeys.usedThePlugin, 'true')
         try {
             await Promise.all([
                 // replaceImagesClient(), //
@@ -395,25 +396,25 @@ export function SimplePrompt(): RouteObject {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    let [shouldShowProgress, credits, session] = await Promise.all([
-        framer.getPluginData('usedThePlugin').then(Boolean),
+    let [shouldShowProgress, credits, { email, orgId }] = await Promise.all([
+        framer.getPluginData(PluginDataKeys.usedThePlugin).then(Boolean),
         pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
             if (error) {
                 throw error
             }
             return data
         }),
-        supabase.auth.getSession().then(({ data, error }) => {
+        pluginApiClient.api.v1.currentOrg.post({}).then(({ data, error }) => {
             if (error) {
                 throw error
             }
-            return data.session
+            return data
         }),
     ])
 
     const buyMoreCreditsUrl = createBuyLink({
-        email: session?.user?.email,
-        orgId: session?.user?.id,
+        email,
+        orgId,
     })
 
     // credits = {

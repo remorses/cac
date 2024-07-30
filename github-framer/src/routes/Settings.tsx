@@ -5,7 +5,7 @@ import {
     Paths,
     PluginDataKeys,
     basePath,
-    pluginApiClient
+    pluginApiClient,
 } from '@/lib/utils'
 import { useState } from 'react'
 import {
@@ -20,18 +20,16 @@ import { useRefreshOnVisible } from '@/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
-import { } from 'react-router'
+import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {
     const [org, credits] = await Promise.all([
-        pluginApiClient.api.v1.markdownPlugin.currentOrg
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
+        pluginApiClient.api.v1.currentOrg.post({}).then(({ data, error }) => {
+            if (error) {
+                throw error
+            }
+            return data
+        }),
         null,
         // pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
         //     if (error) {

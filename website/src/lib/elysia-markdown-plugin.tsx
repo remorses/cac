@@ -25,24 +25,23 @@ export const markdownPluginApp = new Elysia({ aot: false })
     // .state('sessionKey', '')
     .state('githubUserLogin', '')
     .state('orgId', '')
+    .state('userId', '')
     // .state('session', {} as Session)
     .group('/markdownPlugin', (group) => {
         return group
             .onRequest(async ({ request, set, store }) => {
-                const sessionKey = request.headers.get('sessionKey')
-
-                const session = await db
-                    .selectFrom('FramerLoginSession')
-                    .where('key', '=', sessionKey)
-                    .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
-                    .selectAll()
-                    .executeTakeFirst()
-                if (!session) {
+                const pathname = new URL(request.url).pathname
+                if (!pathname.includes('/markdownPlugin')) {
                     return
                 }
-                const userId = session.usedByUserId
-                const orgId = session.orgId
-                store.orgId = orgId
+                const orgId = store.orgId
+                if (!orgId) {
+                    return
+                }
+                const userId = store.userId
+                if (!userId) {
+                    return
+                }
                 const githubUserLogin = await getGithubUserLogin({ userId })
                 if (!githubUserLogin) {
                     throw new Error(
@@ -54,23 +53,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
             .get('/health', () => {
                 return 'ok'
             })
-            .post('/currentOrg', async ({ store }) => {
-                const orgId = store.orgId
-                const orgAndUser = await db
-                    .selectFrom('Org')
-                    .where('orgId', '=', orgId)
-                    .leftJoin('auth.users', (join) =>
-                        join.on('Org.orgId', '=', orgId),
-                    )
-                    .selectAll()
-                    .executeTakeFirst()
-                if (!orgAndUser) {
-                    throw unauthorizedResponse
-                }
-                const email = orgAndUser.email
 
-                return { orgId, email }
-            })
             .post(
                 '/githubRepoList',
                 async ({ body, store }) => {

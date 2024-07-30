@@ -11,7 +11,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@elysiajs/eden": "remorses/elysia-eden#dist",
+        "@elysiajs/eden": "github:remorses/elysia-eden#dist",
         "@headlessui/tailwindcss": "^0.2.1",
         "@sentry/browser": "^8.19.0",
         "@sinclair/typebox": "^0.32.34",
@@ -21,7 +21,7 @@
         "ai": "^3.2.26",
         "classnames": "^2.5.1",
         "db": "workspace:^",
-        "elysia": "remorses/elysia#dist",
+        "elysia": "github:remorses/elysia#dist",
         "eventsource-parser": "^1.1.2",
         "framer-motion": "^11.3.8",
         "framer-plugin": "^0.2.9",

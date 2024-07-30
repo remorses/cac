@@ -1,21 +1,20 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
-import { useIsDocumentVisibile, useRefreshOnVisible } from '@/lib/hooks'
-import { supabase } from '@/lib/supabase-framer'
-import { Paths, pluginApiClient, withMode } from '@/lib/utils'
+import { useRefreshOnVisible } from '@/lib/hooks'
+import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
     LoaderFunctionArgs,
-    RouteObject,
     redirect,
-    useNavigate,
+    RouteObject,
     useNavigation,
     useRevalidator,
 } from 'react-router'
 import {
     framerLoginUrl,
     generateSecurePassword,
+    PluginNames,
     sleep,
 } from 'website/src/lib/utils'
 
@@ -35,12 +34,12 @@ function LoginComponent() {
             </div>
             <Button
                 onClick={async () => {
-                    // if (isLoading) {
-                    //     return
-                    // }
                     setIsLoading(true)
                     try {
-                        const url = framerLoginUrl({ key })
+                        const url = framerLoginUrl({
+                            key,
+                            pluginName: PluginNames.migrate,
+                        })
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
@@ -56,7 +55,7 @@ function LoginComponent() {
                         // revalidator.revalidate()
                     }
                 }}
-                className='framer-button-primary'
+                variant='primary'
                 isLoading={isLoading || navigation.state !== 'idle'}
             >
                 Login With Google
@@ -74,16 +73,17 @@ async function loader({}: LoaderFunctionArgs) {
         notifyError(error, 'Error logging in for framer')
         throw error
     }
-    if (data.session) {
+    if (data.key) {
         console.log('login was completed, got session', data)
-        // make it smaller
-        // data.session.user = undefined as any
-        const { error } = await supabase.auth.setSession(data.session)
-        if (error) {
-            throw error
-        }
+
+        let requestData: any = (data.requestData || {}) as any
+
+        await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
+
         loginCompleted = true
         return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
+    } else {
+        console.log(data)
     }
     return {}
 }

@@ -17,6 +17,11 @@ async function main() {
         shell(`pnpm --filter template-rewrite-framer build`, {
             env,
         }),
+        shell(`pnpm --filter github-framer build`, {
+            env,
+        }),
+    ])
+    await Promise.all([
         shell(`pnpm build`, {
             env,
         }),

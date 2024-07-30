@@ -1,58 +1,48 @@
-import { createClient } from 'website/src/lib/api-client'
-import { env, supabaseRef } from 'website/src/lib/env'
+import { env } from 'website/src/lib/env'
 
-import { treaty } from '@elysiajs/eden'
+import { Treaty, treaty } from '@elysiajs/eden'
 
-import type { RephraseSchema, RouteType } from 'website/src/lib/elysia.server'
 import {
     AnyNode,
     framer,
-    isFrameNode,
     isComponentNode,
-    isWebPageNode,
+    isFrameNode,
     isTextNode,
+    isWebPageNode,
 } from 'framer-plugin'
-import { Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase-framer'
-import { notifyError } from '@/lib/errors'
+import type { RephraseSchema, RouteType } from 'website/src/lib/elysia.server'
 
-export const pluginApiClient = treaty<RouteType>(env.PUBLIC_URL!, {
-    
-    async onRequest() {
-        const {
-            data: { session },
-            error,
-        } = await supabase.auth.getSession()
-        if (error) {
-            notifyError(error, 'Error getting session')
-        }
-        if (!session) {
-            console.log('no session found')
-        }
-        return {
-            // credentials: 'include',
-            headers: {
-                pluginCookie: `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`,
-            },
-        }
-        // let str = JSON.stringify(session)
-        // // split the str in 3kb parts, create an array with the parts
-        // let parts = [] as string[]
-        // for (let i = 0; i < str.length; i += 3000) {
-        //     parts.push(encodeURIComponent(str.substring(i, i + 3000)))
-        // }
-        // const cookie = parts
-        //     .map((part, i) => `sb-${supabaseRef}-auth-token.${i}=${part}`)
-        //     .join('; ')
-        // console.log('cookie', cookie)
-        // return {
-        //     // credentials: 'include',
-        //     headers: {
-        //         pluginCookie: cookie,
-        //     },
-        // }
+export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
+    env.PUBLIC_URL!,
+    {
+        async onResponse(response) {
+            if (response.status === 401) {
+                console.log('clearing session because api returned 401')
+                await framer.setPluginData(PluginDataKeys.sessionKey, null)
+            }
+        },
+        async onRequest() {
+            const { sessionKey } = await getPluginData()
+            return {
+                headers: {
+                    sessionKey,
+                },
+            }
+        },
     },
-})
+)
+
+export async function getPluginData() {
+    const [sessionKey] = await Promise.all([
+        framer.getPluginData(PluginDataKeys.sessionKey),
+    ])
+    return { sessionKey: sessionKey || '' }
+}
+
+export enum PluginDataKeys {
+    sessionKey = 'sessionKey',
+    usedThePlugin = 'usedThePlugin',
+}
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {

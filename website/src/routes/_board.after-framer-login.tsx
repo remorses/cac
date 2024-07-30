@@ -33,7 +33,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
 
     const key = url.searchParams.get('key') || ''
     let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
-    console.log({ requestData })
+    // console.log({ requestData })
     if (!key) {
         throw new Error('No key provided')
     }

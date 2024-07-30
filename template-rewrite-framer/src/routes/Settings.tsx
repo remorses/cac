@@ -1,8 +1,9 @@
 import { Button } from '@/components/Button'
-import { supabase } from '@/lib/supabase-framer'
+
 import {
     LoaderReturnType,
     Paths,
+    PluginDataKeys,
     basePath,
     createBuyLink,
     formatLargeNumber,
@@ -23,10 +24,16 @@ import { useRefreshOnVisible } from '@/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import {} from 'react-router'
+import { framer } from 'framer-plugin'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [session, credits] = await Promise.all([
-        supabase.auth.getSession().then(({ data }) => data.session),
+    const [{ email, orgId }, credits] = await Promise.all([
+        pluginApiClient.api.v1.currentOrg.post({}).then(({ data, error }) => {
+            if (error) {
+                throw error
+            }
+            return data
+        }),
         pluginApiClient.api.v1.getCredits.post({}).then(({ data, error }) => {
             if (error) {
                 throw error
@@ -35,10 +42,10 @@ async function loader({}: LoaderFunctionArgs) {
         }),
     ])
     let buyMoreCreditsUrl = createBuyLink({
-        email: session?.user?.email,
-        orgId: session?.user?.id,
+        email,
+        orgId,
     })
-    return { credits, session, buyMoreCreditsUrl }
+    return { credits, email, buyMoreCreditsUrl }
 }
 
 export function Settings(): RouteObject {
@@ -53,12 +60,14 @@ export function Settings(): RouteObject {
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
-    const { session, buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
+    const { buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
         typeof loader
     >
     const actionData = useActionData() as any
 
-    const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { credits, email } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
     // const isDocumentVisible = useIsDocumentVisibile()
 
     const navigate = useNavigate()
@@ -68,9 +77,7 @@ function Component() {
             <div className='flex items-center'>
                 <div className=''>
                     Currently logged in as{' '}
-                    <span className='font-semibold inline'>
-                        {session?.user?.email}
-                    </span>
+                    <span className='font-semibold inline'>{email}</span>
                 </div>
                 <div className='grow'></div>
                 <Button
@@ -80,10 +87,10 @@ function Component() {
                         // }
                         setIsLoading(true)
                         try {
-                            const { error } = await supabase.auth.signOut()
-                            if (error) {
-                                throw error
-                            }
+                            await framer.setPluginData(
+                                PluginDataKeys.sessionKey,
+                                null,
+                            )
                             window.location.pathname = basePath
                         } finally {
                             // setIsLoading(false)

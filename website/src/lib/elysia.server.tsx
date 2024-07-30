@@ -121,7 +121,8 @@ export function convertExamplesToMarkdownList(
 
 export const app = new Elysia({ prefix: '/api/v1', aot: false })
     .state('userId', '')
-    .state('session', {} as Session)
+    .state('orgId', '')
+
     .use(
         cors({
             // credentials: true,
@@ -158,24 +159,36 @@ export const app = new Elysia({ prefix: '/api/v1', aot: false })
     })
 
     .onRequest(async ({ request, set, store }) => {
-        const response = new Response()
-        let pluginCookie = request.headers.get('pluginCookie')
-        if (pluginCookie) {
-            // console.log('setting cookie', pluginCookie)
-            request.headers.set('Cookie', pluginCookie)
-        }
-        const { userId, session } = await getSupabaseSession({
-            request,
-            response,
-        })
+        const sessionKey = request.headers.get('sessionKey')
 
-        for (let [header, value] of response.headers.entries()) {
-            // console.log('setting header', header, value)
-            set.headers[header] = value
+        const session = await db
+            .selectFrom('FramerLoginSession')
+            .where('key', '=', sessionKey)
+            .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
+            .selectAll()
+            .executeTakeFirst()
+        if (!session) {
+            return
         }
-
+        const userId = session.usedByUserId
+        const orgId = session.orgId
+        store.orgId = orgId || ''
         store.userId = userId || ''
-        store.session = session!
+    })
+    .post('/currentOrg', async ({ store }) => {
+        const orgId = store.orgId
+        const orgAndUser = await db
+            .selectFrom('Org')
+            .where('orgId', '=', orgId)
+            .leftJoin('auth.users', (join) => join.on('Org.orgId', '=', orgId))
+            .selectAll()
+            .executeTakeFirst()
+        if (!orgAndUser) {
+            throw unauthorizedResponse
+        }
+        const email = orgAndUser.email
+
+        return { orgId, email }
     })
     .post(
         '/getSessionForKey',
