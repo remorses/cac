@@ -17,7 +17,7 @@
         "gen": "doppler run -- concurrently 'pnpm prisma generate' 'pnpm gen:kysely' ",
         "push:prod": "doppler run -c production -- prisma db push && prisma generate",
         "pull": "doppler run -c dev -- prisma db pull && pnpm gen",
-        "postinstall": "prisma generate",
+        "prepare": "prisma generate",
         "pull:prod": "doppler run -c production -- prisma db pull --schemas auth"
     },
     "keywords": [],

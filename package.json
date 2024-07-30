@@ -3,9 +3,9 @@
     "private": true,
     "scripts": {
         "test": "NODE_ENV=test vitest",
-        "postinstall": "pnpm --filter unframer build",
+        "prepare": "pnpm --filter unframer build",
         "watch": "pnpm -r watch",
-        "check": "pnpm -r check",
+        "check": "pnpm -r --parallel check",
         "build": "pnpm -r build",
         "release": "pnpm build && changeset"
     },
