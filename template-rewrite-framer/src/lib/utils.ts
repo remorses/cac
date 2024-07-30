@@ -203,7 +203,7 @@ export function createBuyLink({ email, orgId }) {
         throw new Error('No orgId for buy link')
     }
 
-    let productId = env.PUBLIC_LEMON_PRODUCT!
+    let productId = env.PUBLIC_LEMON_PRODUCT_MIGRATE!
 
     let url = new URL(
         `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
