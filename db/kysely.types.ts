@@ -225,7 +225,6 @@ export interface AuthUsers {
   phone_change_sent_at: Timestamp | null;
   phone_change_token: Generated<string | null>;
   phone_confirmed_at: Timestamp | null;
-  plainPassword: string | null;
   raw_app_meta_data: Json | null;
   raw_user_meta_data: Json | null;
   reauthentication_sent_at: Timestamp | null;
@@ -285,13 +284,6 @@ export interface ExtensionsPgStatStatements {
 export interface ExtensionsPgStatStatementsInfo {
   dealloc: Int8 | null;
   stats_reset: Timestamp | null;
-}
-
-export interface FramerLoginRequest {
-  createdAt: Generated<Timestamp>;
-  data: Generated<Json>;
-  key: string;
-  usedByUserId: string | null;
 }
 
 export interface FramerLoginSession {
@@ -594,7 +586,6 @@ export interface DB {
   "auth.users": AuthUsers;
   "extensions.pg_stat_statements": ExtensionsPgStatStatements;
   "extensions.pg_stat_statements_info": ExtensionsPgStatStatementsInfo;
-  FramerLoginRequest: FramerLoginRequest;
   FramerLoginSession: FramerLoginSession;
   Generation: Generation;
   GithubInstallation: GithubInstallation;
