@@ -15,6 +15,7 @@ import {
     isMarkdown,
 } from 'website/src/lib/github.server'
 import { isTruthy } from 'website/src/lib/utils'
+import { env } from 'website/src/lib/env'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -69,6 +70,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                                 memberLogins: {
                                     has: store.githubUserLogin,
                                 },
+                                appId: env.GITHUB_APP_ID,
 
                                 accountLogin: githubAccountLogin,
                             },
@@ -154,6 +156,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                                 memberLogins: {
                                     has: store.githubUserLogin,
                                 },
+                                appId: env.GITHUB_APP_ID,
                                 accountLogin: githubAccountLogin,
                             },
                         })
@@ -278,6 +281,7 @@ export const markdownPluginApp = new Elysia({ aot: false })
                                 memberLogins: {
                                     has: store.githubUserLogin,
                                 },
+                                appId: env.GITHUB_APP_ID,
                                 accountLogin: githubAccountLogin,
                             },
                         })

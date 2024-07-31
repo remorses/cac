@@ -43,6 +43,7 @@ export async function checkGitHubIsInstalled({ installationId }) {
             await prisma.githubInstallation.updateMany({
                 where: {
                     installationId: installationId,
+                    // appId: env.GITHUB_APP_ID,
                 },
                 data: {
                     status: 'suspended',

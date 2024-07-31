@@ -109,6 +109,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         prisma.githubInstallation.findMany({
             where: {
                 status: 'active',
+                appId: env.GITHUB_APP_ID,
                 memberLogins: { hasSome: [githubLogin] },
             },
         }),

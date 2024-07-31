@@ -381,7 +381,7 @@ model FramerLoginSession {
 model GithubInstallation {
   installationId   Int
   accountLogin     String            @default("")
-  appId            String?
+  appId            String
   accountAvatarUrl String            @default("")
   accountType      GithubAccountType @default(USER)
   createdAt        DateTime          @default(now())
@@ -390,6 +390,7 @@ model GithubInstallation {
   status           String            @default("active")
   memberLogins     String[]          @default([])
   // org               Org                 @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+
 
   @@id([installationId, orgId])
   @@schema("public")

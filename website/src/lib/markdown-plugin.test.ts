@@ -5,11 +5,13 @@ import {
     getOctokit,
 } from 'website/src/lib/github.server'
 import { prisma } from 'db/prisma'
+import { env } from 'website/src/lib/env'
 
 test('checkGitHubIsInstalled', async () => {
     const installation = await prisma.githubInstallation.findFirst({
         where: {
             accountLogin: 'remorses',
+            appId: env.GITHUB_APP_ID,
         },
     })
     if (!installation) {
@@ -23,6 +25,7 @@ test('members', async () => {
     const installation = await prisma.githubInstallation.findFirst({
         where: {
             accountLogin: 'holocron-hq',
+            appId: env.GITHUB_APP_ID,
         },
     })
     if (!installation) {

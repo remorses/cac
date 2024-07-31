@@ -307,7 +307,7 @@ export interface GithubInstallation {
   accountAvatarUrl: Generated<string>;
   accountLogin: Generated<string>;
   accountType: Generated<"ORGANIZATION" | "USER">;
-  appId: string | null;
+  appId: string;
   createdAt: Generated<Timestamp>;
   installationId: number;
   memberLogins: Generated<string[] | null>;
