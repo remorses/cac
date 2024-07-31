@@ -7,6 +7,7 @@ import { env } from '../lib/env'
 export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const key = url.searchParams.get('key') || ''
+    const code = url.searchParams.get('code') || ''
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
         response,
@@ -17,7 +18,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
     // const next = url.searchParams.get('next') || '/x'
     let next = new URL(`/api/markdown-plugin/github/install`, env.PUBLIC_URL)
 
-    next.searchParams.set('next', afterFramerLogin({ key }))
+    next.searchParams.set('next', afterFramerLogin({ key, code }))
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',

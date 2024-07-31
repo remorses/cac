@@ -87,14 +87,14 @@ export const app = new Elysia({ prefix: '/api/plugins', aot: false })
             if (!body.key) {
                 return { error: 'No key provided' }
             }
-            const hourAgo = new Date()
-            hourAgo.setHours(hourAgo.getHours() - 1)
+            // const hourAgo = new Date()
+            // hourAgo.setHours(hourAgo.getHours() - 1)
             const [framerSession] = await Promise.all([
                 db
                     .selectFrom('FramerLoginSession')
                     .where('key', '=', body.key)
                     .where('usedByUserId', 'is not', null)
-                    .where('createdAt', '>', hourAgo)
+                    // .where('createdAt', '>', hourAgo)
                     .selectAll()
                     .executeTakeFirst(),
             ])
@@ -116,6 +116,7 @@ export const app = new Elysia({ prefix: '/api/plugins', aot: false })
             if (!user.email) {
                 throw new Error('No user email found for user')
             }
+            
             const { orgId, key } = framerSession
             const { email } = user
             console.log('found user for session', email)

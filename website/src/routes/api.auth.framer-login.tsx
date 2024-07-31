@@ -6,6 +6,7 @@ import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 export async function loader({ request, response }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const key = url.searchParams.get('key') || ''
+    const code = url.searchParams.get('code') || ''
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
         response,
@@ -20,7 +21,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
         options: {
             skipBrowserRedirect: true,
             redirectTo: loginRedirectUrl({
-                next: afterFramerLogin({ key }),
+                next: afterFramerLogin({ key, code }),
             }),
         },
     })

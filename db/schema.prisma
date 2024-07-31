@@ -247,7 +247,7 @@ model users {
   orgs OrgsUsers[]
 
   // plainPassword String?
-  githubLogin   String?
+  githubLogin String?
 
   @@index([instance_id])
   @@index([is_anonymous])
@@ -366,17 +366,15 @@ model ScrapedWebsitePage {
 model FramerLoginSession {
   key          String   @id
   createdAt    DateTime @default(now())
-  usedByUserId String?  @db.Uuid
+  usedByUserId String   @db.Uuid
   orgId        String
 
   data Json @default("{}")
 
   org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
-
   @@schema("public")
 }
-
 
 model GithubInstallation {
   installationId   Int
@@ -390,7 +388,6 @@ model GithubInstallation {
   status           String            @default("active")
   memberLogins     String[]          @default([])
   // org               Org                 @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-
 
   @@id([installationId, orgId])
   @@schema("public")

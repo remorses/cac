@@ -1,7 +1,12 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { Paths, pluginApiClient, PluginDataKeys, withMode } from 'template-rewrite-framer/src/lib/utils'
+import {
+    Paths,
+    pluginApiClient,
+    PluginDataKeys,
+    withMode,
+} from 'template-rewrite-framer/src/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {
@@ -14,11 +19,13 @@ import {
 import {
     framerLoginUrl,
     generateSecurePassword,
+    generateShortOtpCode,
     PluginNames,
     sleep,
 } from 'website/src/lib/utils'
 
 const key = generateSecurePassword()
+let code = generateShortOtpCode()
 
 let loginCompleted = false
 
@@ -26,20 +33,53 @@ function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
     const navigation = useNavigation()
-    useRefreshOnVisible({ enabled: true })
+    const url = framerLoginUrl({
+        key,
+        pluginName: PluginNames.migrate,
+        code,
+    })
+    useRefreshOnVisible({ enabled: !isLoading })
     return (
         <div className='flex flex-col justify-start gap-4'>
-            <div className='opacity-70'>
-                Login so we can keep your website data and progress
-            </div>
+            {!isLoading ? (
+                <div className='opacity-70'>
+                    Login so we can keep your website data and progress
+                </div>
+            ) : (
+                <div className='opacity-70'>
+                    This is your login confirmation code, click "confirm code"
+                    in your browser
+                </div>
+            )}
+            {isLoading && (
+                <div className='flex flex-col gap-4'>
+                    <div className='flex font-mono flex-row gap-2 text-xl'>
+                        {code.split('').map((char, i) => {
+                            return (
+                                <div
+                                    key={i}
+                                    className='p-px rounded-md bg-framer-tertiary px-2'
+                                >
+                                    {char}
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <div className='opacity-70'>
+                        Click{' '}
+                        <a href={url} target='_blank'>
+                            here
+                        </a>{' '}
+                        if you are not automatically redirected
+                    </div>
+                </div>
+            )}
+
             <Button
                 onClick={async () => {
                     setIsLoading(true)
                     try {
-                        const url = framerLoginUrl({
-                            key,
-                            pluginName: PluginNames.migrate,
-                        })
+                        await sleep(1_000)
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
@@ -66,9 +106,10 @@ function LoginComponent() {
 
 async function loader({}: LoaderFunctionArgs) {
     console.log('login loader')
-    const { data, error } = await pluginApiClient.api.plugins.getSessionForKey.post({
-        key,
-    })
+    const { data, error } =
+        await pluginApiClient.api.plugins.getSessionForKey.post({
+            key,
+        })
     if (error) {
         notifyError(error, 'Error logging in for framer')
         throw error

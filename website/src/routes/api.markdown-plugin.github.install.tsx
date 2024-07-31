@@ -1,34 +1,23 @@
+import { Button } from '@nextui-org/react'
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
-import {
-    getSupabaseSession,
-    getSupabaseWithHeaders,
-} from '../lib/supabase.server'
-import { notifyError } from '../lib/errors'
-import {
-    afterFramerLogin,
-    isTruthy,
-    loginRedirectUrl,
-    safeJsonParse,
-} from 'website/src/lib/utils'
-import { env } from '../lib/env'
-import { prisma } from 'db/prisma'
-import {
-    checkGitHubIsInstalled,
-    getGithubApp,
-    getGithubUserLogin,
-    GithubLoginRequestData,
-} from 'website/src/lib/github.server'
-import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
 import {
     Form,
     useLoaderData,
     useNavigation,
     useSearchParams,
 } from '@remix-run/react'
-import { Button } from '@nextui-org/react'
-import { Octokit } from 'octokit'
-import { PageContainer } from 'website/src/components/Container'
 import { db } from 'db/kysely'
+import { prisma } from 'db/prisma'
+import { PageContainer } from 'website/src/components/Container'
+import {
+    checkGitHubIsInstalled,
+    getGithubUserLogin,
+    GithubLoginRequestData,
+} from 'website/src/lib/github.server'
+import { isTruthy } from 'website/src/lib/utils'
+import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
+import { env } from '../lib/env'
+import { getSupabaseSession } from '../lib/supabase.server'
 
 enum FormNames {
     chooseAnother = '_chooseAnother',

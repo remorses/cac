@@ -291,7 +291,7 @@ export interface FramerLoginSession {
   data: Generated<Json>;
   key: string;
   orgId: string;
-  usedByUserId: string | null;
+  usedByUserId: string;
 }
 
 export interface Generation {
