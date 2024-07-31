@@ -46,12 +46,10 @@ async function loader({ request }) {
 
     return { sessionKey }
 }
-
 const router = createBrowserRouter(
     [
         {
             path: '/',
-
             id: RouteIds.root,
             shouldRevalidate: () => {
                 return true
@@ -73,25 +71,21 @@ const router = createBrowserRouter(
                     console.log('opening framer ui')
                     framer.showUI({
                         title: (handle?.handle as any) || '',
-                        position: 'top left',
+                        position: 'top lefgit',
                         width,
                         height: height || 100,
                     })
                 }, [height])
-                // useEffect(() => {
-                //     console.log({ height })
-                // }, [height])
 
                 const location = useLocation()
                 const showSettings =
                     sessionKey && location.pathname !== Paths.settings
                 const revalidator = useRevalidator()
 
-                const navigationType = useNavigationType()
+                const navigationType = useNavigationType()
                 const canGoBack = ![Paths.login, '/'].includes(
                     location.pathname as any,
                 )
-                // const history = useHistory()
                 return (
                     <MotionConfig
                         transition={{
@@ -166,41 +160,13 @@ const router = createBrowserRouter(
                 )
             },
 
-            // errorElement: <ErrorPage />,
             children: [
                 {
                     path: '/',
                     Component() {
                         return null
                     },
-                    async loader({ request }) {
-                        const { sessionKey } = await getMarkdownPluginData()
-
-                        console.log(' session key', sessionKey)
-
-                        if (!sessionKey) {
-                            console.log(
-                                `redirecting to login because there is no session`,
-                            )
-                            return redirect(withMode(Paths.login))
-                        }
-
-                        const { owner, githubAccountLogin, repo } =
-                            await getMarkdownPluginData()
-
-                        if (
-                            framer.mode === 'syncCollection' &&
-                            owner &&
-                            repo &&
-                            githubAccountLogin
-                        ) {
-                            // return redirect(withMode(Paths.mapFields)) // TODO remove
-                            return redirect(withMode(Paths.sync))
-                        }
-                        // return redirect(withMode(Paths.login))
-                        return redirect(withMode(Paths.chooseRepo))
-                        // setTimeout(() => refreshHeight(), 1)
-                    },
+                    loader: rootLoader,
                     handle: '',
                 },
                 LoginPage(),
@@ -214,6 +180,29 @@ const router = createBrowserRouter(
     { basename: basePath },
 )
 
+async function rootLoader({ request }) {
+    const { sessionKey } = await getMarkdownPluginData()
+
+    console.log(' session key', sessionKey)
+
+    if (!sessionKey) {
+        console.log(`redirecting to login because there is no session`)
+        return redirect(withMode(Paths.login))
+    }
+
+    const { owner, githubAccountLogin, repo } = await getMarkdownPluginData()
+
+    if (
+        framer.mode === 'syncCollection' &&
+        owner &&
+        repo &&
+        githubAccountLogin
+    ) {
+        return redirect(withMode(Paths.sync))
+    }
+    return redirect(withMode(Paths.chooseRepo))
+}
+
 export default function Page() {
     return <RouterProvider router={router} />
 }
@@ -221,6 +210,7 @@ export default function Page() {
 export function BackIcon(props) {
     return (
         <svg
+
             xmlns='http://www.w3.org/2000/svg'
             // width='1em'
             // height='1em'
@@ -228,6 +218,7 @@ export function BackIcon(props) {
             {...props}
         >
             <path
+                el
                 fill='currentColor'
                 d='M10 22L0 12L10 2l1.775 1.775L3.55 12l8.225 8.225z'
             ></path>
