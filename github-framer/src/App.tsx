@@ -71,7 +71,7 @@ const router = createBrowserRouter(
                     console.log('opening framer ui')
                     framer.showUI({
                         title: (handle?.handle as any) || '',
-                        position: 'top lefgit',
+                        position: 'top left',
                         width,
                         height: height || 100,
                     })
@@ -82,7 +82,7 @@ const router = createBrowserRouter(
                     sessionKey && location.pathname !== Paths.settings
                 const revalidator = useRevalidator()
 
-                const navigationType = useNavigationType()
+                const navigationType = useNavigationType()
                 const canGoBack = ![Paths.login, '/'].includes(
                     location.pathname as any,
                 )
@@ -218,7 +218,6 @@ export function BackIcon(props) {
             {...props}
         >
             <path
-                el
                 fill='currentColor'
                 d='M10 22L0 12L10 2l1.775 1.775L3.55 12l8.225 8.225z'
             ></path>

@@ -39,6 +39,7 @@ async function main() {
         maxInstances: 2,
         healthCheckPath: '/api/health',
         memorySize: '512mb',
+        depot: true,
         // statics: [
         //     {
         //         guest_path: '/app/build/client',
