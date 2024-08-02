@@ -1,9 +1,9 @@
-import { Button } from 'template-rewrite-framer/src/components/Button'
+import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
-import { framer } from 'framer-plugin'
-import { useState } from 'react'
+import { Paths, pluginApiClient } from '@/lib/utils'
+import { LinkHints } from '@/lib/vimium'
+
+import { useEffect, useState } from 'react'
 import {
     LoaderFunctionArgs,
     redirect,
@@ -11,7 +11,7 @@ import {
     useNavigation,
     useRevalidator,
 } from 'react-router'
-import { GithubLoginRequestData } from 'website/src/lib/github.server'
+
 import {
     framerLoginUrl,
     generateSecurePassword,
@@ -29,12 +29,20 @@ function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
     const navigation = useNavigation()
+
     const url = framerLoginUrl({
         key,
         pluginName: PluginNames.migrate,
         code,
     })
-    useRefreshOnVisible({ enabled: !isLoading })
+    useEffect(() => {
+        let mods = new LinkHints([])
+        mods.toggleHints({ modeIndex: 0 })
+        return () => {
+            mods.deactivate()
+        }
+    }, [])
+
     return (
         <div className='flex flex-col justify-start gap-4'>
             {!isLoading ? (
@@ -113,20 +121,7 @@ async function loader({}: LoaderFunctionArgs) {
         throw error
     }
     if (data.key) {
-        console.log('login was completed, got session', data)
-
-        const collection = await framer.getCollection()
-        let requestData: GithubLoginRequestData = (data.requestData ||
-            {}) as any
-
-        await collection.setPluginData(
-            PluginDataKeys.githubAccountLogin,
-            requestData.githubAccountLogin,
-        )
-        await collection.setPluginData(PluginDataKeys.sessionKey, data.key)
-
-        loginCompleted = true
-        return redirect(withMode(Paths.chooseRepo))
+        return redirect(Paths.settings)
     } else {
         console.log(data)
     }
