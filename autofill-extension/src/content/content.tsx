@@ -31,7 +31,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 case ChromeMessages.setHintValue: {
                     let data: SetHintValueMessage = request.data
                     console.log('setHintValue', data)
-
+                    if (!data.value) {
+                        sendResponse({
+                            status: 'error',
+                            error: 'No value provided',
+                        })
+                        return
+                    }
                     const findRes = findHint({ label: data.label })
                     if (!findRes.element) {
                         sendResponse(findRes)
@@ -63,13 +69,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 case ChromeMessages.highlightInputFound: {
                     let data: SetHintValueMessage = request.data
                     console.log('setHintValue', data)
-                    if (!data.value) {
-                        sendResponse({
-                            status: 'error',
-                            error: 'No value provided',
-                        })
-                        return
-                    }
+
 
                     const findRes = findHint({ label: data.label })
                     if (!findRes.element) {
@@ -80,7 +80,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     if (el instanceof HTMLInputElement) {
                         el.focus()
                         el.style.backgroundColor = 'rgba(255, 255, 0, 0.5)'
-                        await sleep(100)
                         sendResponse({ status: 'completed' })
                     }
                     return
