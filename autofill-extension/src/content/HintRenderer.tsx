@@ -69,24 +69,6 @@ export function setHintRenderSettings({
 }`
 }
 
-type State = {
-    hints: HintType[]
-    inputKeys: string
-}
-
-let hintChars = 'adsfghjklzxcvbnm'
-function generateHintStrings({ characters = hintChars, count }) {
-    const hints = ['']
-    let offset = 0
-    while (hints.length - offset < count || hints.length === 1) {
-        const hint = hints[offset++]
-        for (const c of characters) {
-            hints.push(hint + c)
-        }
-    }
-    return hints
-}
-
 const HintRenderer = () => {
     const [hints, setHints] = useState<HintType[]>([])
 
@@ -99,10 +81,6 @@ const HintRenderer = () => {
             setHints([])
         }
     }, [])
-
-    let strings = generateHintStrings({
-        count: hints.length,
-    })
 
     return h(
         'div',
@@ -117,7 +95,7 @@ const HintRenderer = () => {
         },
         hints.map((hint, i) =>
             h(Hint, {
-                hintString: strings[i],
+                hintString: hint.label,
                 rect: hint.rect,
                 computedStyle: hint.computedStyle,
                 horizontalPlacement: horizontalPlacement,

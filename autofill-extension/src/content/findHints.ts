@@ -1,3 +1,5 @@
+import { isTruthy } from '@/lib/utils'
+
 let detectByCursorStyle = false
 
 export function setHintFindSettings(settings) {
@@ -17,13 +19,39 @@ function demandComputedStyle(element) {
     }
 }
 
-
 export type Hint = {
     element: Element
-    rect: ClientRect
+    rect: {
+        // x: number
+        // y: number
+        left: number
+        right: number
+        top: number
+        bottom: number
+        width: number
+        height: number
+    }
+    label: string
     // hintString?: string
     computedStyle: CSSStyleDeclaration
 }
+
+let hintChars = 'adsfghjklzxcvbnm'
+
+function permutations(chars: string, length: number) {
+    if (length === 1) {
+        return chars.split('')
+    }
+    const result = [] as string[]
+    for (const char of chars) {
+        const tails = permutations(chars, length - 1)
+        for (const tail of tails) {
+            result.push(char + tail)
+        }
+    }
+    return result
+}
+const all2Permutations = permutations(hintChars, 2)
 
 /**
  * Finds hints
@@ -39,27 +67,35 @@ export function findHints(hintType = '*') {
         computedStyles = new WeakMap()
         // allElements.forEach((element) => computedStyles.set(element, getComputedStyle(element)));
         // 2. find hintable elements
-        const hintableElements = [] as Hint[]
-        allElements.forEach((element) => {
-            if (isClickable(element)) {
-                const rect = firstVisibleRect(element)
-                if (rect) {
-                    const computedStyle = demandComputedStyle(element)
-                    hintableElements.push({
-                        element,
-                        rect: removeRectPaddingAndBorders(
-                            element,
-                            rect,
-                            computedStyle,
-                        ),
-                        computedStyle,
-                    })
+
+        let index = 0
+        let hints = [...allElements]
+            .map((element) => {
+                if (!isClickable(element)) {
+                    return
                 }
-            }
-        })
+                index += 1
+                const rect = firstVisibleRect(element)
+                if (!rect) {
+                    return
+                }
+                const label = all2Permutations[index - 1]
+                const computedStyle = demandComputedStyle(element)
+                return {
+                    element,
+                    rect: removeRectPaddingAndBorders(
+                        element,
+                        rect,
+                        computedStyle,
+                    ),
+                    label,
+                    computedStyle,
+                }
+            })
+            .filter(isTruthy)
         computedStyles = undefined
+        return hints
         // if (SAKA_DEBUG) console.log(hintableElements)
-        return hintableElements
     } catch (e) {
         console.error(e)
         return []
@@ -67,11 +103,11 @@ export function findHints(hintType = '*') {
 }
 
 // based on https://github.com/guyht/vimari/blob/master/vimari.safariextension/linkHints.js
-function isClickable(element: Element, ) {
+function isClickable(element: Element) {
     // clickable html elements
     switch (element.nodeName) {
-        case 'A':
-        case 'BUTTON':
+        // case 'A':
+        // case 'BUTTON':
         case 'SELECT':
         case 'TEXTAREA':
             return true
@@ -94,15 +130,15 @@ function isClickable(element: Element, ) {
     }
     // ARIA roles implying clickability
     switch (element.getAttribute('role')) {
-        case 'button':
+        // case 'button':
         case 'checkbox':
         case 'combobox':
-        case 'link':
+        // case 'link':
         case 'menuitem':
         case 'menuitemcheckbox':
         case 'menuitemradio':
         case 'radio':
-        case 'tab':
+        // case 'tab':
         case 'textbox':
             return true
     }

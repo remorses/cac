@@ -1,4 +1,6 @@
 import { Button } from '@/components/Button'
+import { streamText } from 'ai'
+import { useChat } from 'ai/react'
 import { notifyError } from '@/lib/errors'
 import { ChromeMessages, Paths } from '@/lib/utils'
 
@@ -18,11 +20,6 @@ import {
     PluginNames,
     sleep,
 } from 'website/src/lib/utils'
-
-const key = generateSecurePassword()
-let code = generateShortOtpCode()
-
-let loginCompleted = false
 
 function LoginComponent() {
     const revalidator = useRevalidator()
@@ -48,30 +45,9 @@ async function loader({}: LoaderFunctionArgs) {
     return {}
 }
 async function action({}: LoaderFunctionArgs) {
-    console.log('login action')
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-    const activeTab = tabs[0]
-    if (!activeTab.id) {
-        console.error('No active tab')
-        return
-    }
-    console.log('sending message to screenshot')
-    await chrome.tabs.sendMessage(activeTab.id, {
-        action: ChromeMessages.beforeScreenshot,
-        options: { format: 'png' },
-    })
+    await chrome.runtime.sendMessage({ action: ChromeMessages.start })
     return {}
 }
-
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    if (request.action === ChromeMessages.captureScreenshot) {
-        const dataUrl = await new Promise<string>((res) =>
-            chrome.tabs.captureVisibleTab(request.options, res),
-        )
-        
-        sendResponse({ status: 'completed' })
-    }
-})
 
 export function LoginPage(): RouteObject {
     return {

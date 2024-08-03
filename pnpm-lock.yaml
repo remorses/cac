@@ -67,6 +67,9 @@ importers:
 
   autofill-extension:
     dependencies:
+      '@ai-sdk/openai':
+        specifier: ^0.0.37
+        version: 0.0.37(zod@3.23.8)
       '@crxjs/vite-plugin':
         specifier: 2.0.0-beta.25
         version: 2.0.0-beta.25

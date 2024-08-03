@@ -47,6 +47,13 @@ export async function getMarkdownPluginData() {
 }
 
 export enum ChromeMessages {
-    beforeScreenshot = 'beforeScreenshot',
-    captureScreenshot = 'captureScreenshot',
+    showHints = 'showHints',
+    hideHints = 'hideHints',
+    setHintValue = 'setHintValue',
+    start = 'start',
+}
+
+export type SetHintValueMessage = {
+    label: string
+    value: string
 }
