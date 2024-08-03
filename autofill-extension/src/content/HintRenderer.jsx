@@ -6,32 +6,32 @@ export let showHints
 export let hideHints
 export let advanceHints
 
-let fontSize
-let useTargetSize
-let horizontalPlacement
-let verticalPlacement
+let fontSize = 11
+let useTargetSize = false
+let horizontalPlacement = 'left'
+let verticalPlacement = 'top'
 
 let hintRenderOptions = {
-    hintUseTargetSize: true,
+    hintUseTargetSize: false,
     hintHorizontalPlacement: 'left',
+    hintVerticalPlacement: 'top',
     hintHorizontalTranslation: 0,
     hintVerticalTranslation: 0,
-    hintVerticalPlacement: 'center',
-    hintUseCustomCSS: false,
-    hintTextColor: '#3f51F5',
+    hintUseCustomCSS: true,
+    hintTextColor: '#ff4081',
     hintBackgroundColor: '#ffffff',
-    hintBorderColor: '#ffffff',
+    hintBorderColor: '#ff4081',
     hintOpacity: '1',
     hintFontFamily: 'Roboto, sans-serif',
-    hintFontSize: 12,
-    hintFontWeight: '900',
+    hintFontSize: 11,
+    hintFontWeight: '500',
     hintHorizontalPadding: 0.25,
     hintVerticalPadding: 0.15,
-    hintBorderWidth: 0,
+    hintBorderWidth: 1,
     hintBorderRadius: 4,
     hintShadow: true,
     hintCSS:
-        'font-family: Roboto, sans-serif;\nfont-size: 0.8rem;\npadding: 0.15rem 0.25rem;\ncolor: #3f51F5;\nbackground-color: rgb(255, 255, 255);\nborder-radius: 4px;\ntext-align: center;\ntext-decoration: none;\ntext-transform: uppercase;\nvertical-align: middle;\nbox-shadow: 0px 1px 1px 1px rgba(0, 0, 0, 0.25);\ntransform: translate3d(0, -50%, 0);\nfont-weight: bold;',
+        'font-family: Helvetica, Arial, sans-serif;\nfont-weight: 100;\nfont-size: 12px;\npadding: 0px 2px;\nbackground: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFF785), color-stop(100%,#FFC542));\nborder: 1px solid #E3BE23;\nborder-radius: 4px;\ncolor: black;\nfont-weight: bold;\ntext-align: center;\ntext-decoration: none;\ntext-transform: uppercase;\nvertical-align: middle;\ntext-shadow: rgba(255, 255, 255, 0.6) 0px 1px 0px;\nfont-weight: bold;',
     hintNormalCharCSS: '',
     hintActiveCharCSS: 'opacity: 0.5;',
 }
