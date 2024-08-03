@@ -1,6 +1,8 @@
 
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import '@/styles/reset.css'
+import '@/styles/global.css'
 
 // import 'framer-plugin/framer.css'
 

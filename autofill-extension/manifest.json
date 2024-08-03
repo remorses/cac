@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "$schema": "https://json.schemastore.org/chrome-manifest.json",
+    "name": "AutoFill",
+    "version": "1.0",
+    "description": "Captures a screenshot of the current tab with options",
+    "permissions": ["activeTab", "tabs", "storage"],
+    "action": {
+        "default_popup": "index.html"
+    },
+    "content_scripts": [
+        {
+            "js": ["src/content.tsx"],
+            "matches": ["<all_urls>"]
+        }
+    ]
+}

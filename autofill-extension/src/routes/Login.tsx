@@ -1,16 +1,15 @@
 import { Button } from '@/components/Button'
 import { notifyError } from '@/lib/errors'
-import { Paths, pluginApiClient } from '@/lib/utils'
-import { LinkHints } from '@/lib/vimium'
+import { ChromeMessages, Paths } from '@/lib/utils'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
     LoaderFunctionArgs,
-    redirect,
     RouteObject,
     useNavigation,
     useRevalidator,
 } from 'react-router'
+import { Form } from 'react-router-dom'
 
 import {
     framerLoginUrl,
@@ -26,113 +25,65 @@ let code = generateShortOtpCode()
 let loginCompleted = false
 
 function LoginComponent() {
-    const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
     const navigation = useNavigation()
-
-    const url = framerLoginUrl({
-        key,
-        pluginName: PluginNames.migrate,
-        code,
-    })
-    useEffect(() => {
-        let mods = new LinkHints([])
-        mods.toggleHints({ modeIndex: 0 })
-        return () => {
-            mods.deactivate()
-        }
-    }, [])
+    const isLoading = navigation.state !== 'idle'
 
     return (
-        <div className='flex flex-col justify-start gap-4'>
-            {!isLoading ? (
-                <div className='opacity-70'>
-                    Login so we can keep your website data and progress
-                </div>
-            ) : (
-                <div className='opacity-70'>
-                    This is your login confirmation code, click "confirm code"
-                    in your browser
-                </div>
-            )}
-            {isLoading && (
-                <div className='flex flex-col gap-4'>
-                    <div className='flex font-mono flex-row gap-2 text-xl'>
-                        {code.split('').map((char, i) => {
-                            return (
-                                <div
-                                    key={i}
-                                    className='p-px rounded-md bg-framer-tertiary px-2'
-                                >
-                                    {char}
-                                </div>
-                            )
-                        })}
-                    </div>
-                    <div className='opacity-70'>
-                        Click{' '}
-                        <a href={url} target='_blank'>
-                            here
-                        </a>{' '}
-                        if you are not automatically redirected
-                    </div>
-                </div>
-            )}
+        <Form method='POST' className='flex flex-col justify-start gap-4'>
             <Button
-                onClick={async () => {
-                    // if (isLoading) {
-                    //     return
-                    // }
-                    setIsLoading(true)
-                    try {
-                        await sleep(1_000)
-                        window.open(url, '_blank')
-
-                        while (!loginCompleted) {
-                            // slow because i already check when the iframe becomes visible
-                            await sleep(7_000)
-                            console.log('checking if login was completed')
-                            revalidator.revalidate()
-                        }
-                    } catch (e) {
-                        notifyError(e, 'failed to login')
-                    } finally {
-                        setIsLoading(false)
-                        // revalidator.revalidate()
-                    }
-                }}
+                type='submit'
                 className='bg-framer-secondary'
                 isLoading={isLoading || navigation.state !== 'idle'}
             >
-                Login With GitHub
+                Screenshot
             </Button>
-        </div>
+        </Form>
     )
 }
 
 async function loader({}: LoaderFunctionArgs) {
     console.log('login loader')
-    const { data, error } =
-        await pluginApiClient.api.plugins.getSessionForKey.post({
-            key,
-        })
-    if (error) {
-        notifyError(error, 'Error logging in for framer')
-        throw error
-    }
-    if (data.key) {
-        return redirect(Paths.settings)
-    } else {
-        console.log(data)
-    }
+
     return {}
 }
+async function action({}: LoaderFunctionArgs) {
+    console.log('login action')
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+    const activeTab = tabs[0]
+    if (!activeTab.id) {
+        console.error('No active tab')
+        return
+    }
+    console.log('sending message to screenshot')
+    await chrome.tabs.sendMessage(activeTab.id, {
+        action: ChromeMessages.beforeScreenshot,
+        options: { format: 'png' },
+    })
+    return {}
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === ChromeMessages.captureScreenshot) {
+        chrome.tabs.captureVisibleTab(request.options, (dataUrl) => {
+            const link = document.createElement('a')
+            link.download = 'screenshot.png'
+            link.href = dataUrl
+            // link.click()
+            console.log('screenshot captured')
+            return {
+                ok: true,
+            }
+        })
+    }
+})
 
 export function LoginPage(): RouteObject {
     return {
         handle: 'Login',
         path: Paths.login,
         loader,
+        action,
         Component: LoginComponent,
     }
 }

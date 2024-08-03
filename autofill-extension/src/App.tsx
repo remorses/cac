@@ -1,6 +1,5 @@
 import NProgress from 'nprogress'
 
-
 import useMeasure from 'react-use-measure'
 
 import { useEffect } from 'react'
@@ -16,11 +15,12 @@ import {
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 
-import { Settings } from '@/routes/Settings'
+import { Button } from '@/components/Button'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
     Outlet,
     RouterProvider,
+    createMemoryRouter,
     redirect,
     useLoaderData,
     useLocation,
@@ -31,14 +31,13 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
-import { Button } from '@/components/Button'
 
 async function loader({ request }) {
     const { sessionKey } = await getMarkdownPluginData()
 
     return { sessionKey }
 }
-const router = createBrowserRouter(
+const router = createMemoryRouter(
     [
         {
             path: '/',
@@ -50,14 +49,12 @@ const router = createBrowserRouter(
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 480
+
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
                     typeof loader
                 >
                 const [handle] = useMatches().filter((match) => match?.handle)
                 const navigate = useNavigate()
-
-
 
                 const location = useLocation()
                 const showSettings =
@@ -77,12 +74,11 @@ const router = createBrowserRouter(
                         }}
                     >
                         <AnimatePresence mode='wait'>
-                            <div className='overflow-hidden '>
+                            <div className='min-w-[400px] h-[300px] '>
                                 <div
                                     ref={ref}
                                     className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
                                 >
-
                                     <Outlet />
 
                                     {showSettings && (
@@ -126,7 +122,8 @@ const router = createBrowserRouter(
                             Something went wrong...
                         </span>
                         <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                            {error?.message || String(error)}
+                            {error?.message || JSON.stringify(error)}
+                            {error?.stack}
                         </div>
                         <button
                             className='w-auto'
@@ -152,8 +149,6 @@ const router = createBrowserRouter(
                     handle: '',
                 },
                 LoginPage(),
-
-                Settings(),
             ],
         },
     ],
@@ -170,7 +165,7 @@ async function rootLoader({ request }) {
         return redirect(Paths.login)
     }
 
-    return redirect(Paths.settings)
+    return redirect(Paths.login)
 }
 
 export default function Page() {
