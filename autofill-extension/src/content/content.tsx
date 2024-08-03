@@ -6,18 +6,6 @@ import {
 } from '@/content/HintRenderer'
 import { ChromeMessages, sleep } from '@/lib/utils'
 
-let hintChars = 'adsfghjkl'
-function generateHintStrings({ characters = hintChars, count }) {
-    const hints = ['']
-    let offset = 0
-    while (hints.length - offset < count || hints.length === 1) {
-        const hint = hints[offset++]
-        for (const c of characters) {
-            hints.push(hint + c)
-        }
-    }
-    return hints.slice(offset, offset + count)
-}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     Promise.resolve().then(async () => {
@@ -26,10 +14,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.log('beforeScreenshot')
                 const hints = findHints()
                 console.log('hints', hints)
-                let strings = generateHintStrings({
-                    count: hints.length,
-                })
-                showHints(hints, strings)
+               
+                showHints(hints, )
                 const res = await chrome.runtime.sendMessage({
                     action: ChromeMessages.captureScreenshot,
                     options: request.options,

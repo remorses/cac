@@ -17,6 +17,14 @@ function demandComputedStyle(element) {
     }
 }
 
+
+export type Hint = {
+    element: Element
+    rect: ClientRect
+    // hintString?: string
+    computedStyle: CSSStyleDeclaration
+}
+
 /**
  * Finds hints
  * @param {string} hintType - the type of elements to find (currently unused)
@@ -31,7 +39,7 @@ export function findHints(hintType = '*') {
         computedStyles = new WeakMap()
         // allElements.forEach((element) => computedStyles.set(element, getComputedStyle(element)));
         // 2. find hintable elements
-        const hintableElements = []
+        const hintableElements = [] as Hint[]
         allElements.forEach((element) => {
             if (isClickable(element)) {
                 const rect = firstVisibleRect(element)
@@ -59,7 +67,7 @@ export function findHints(hintType = '*') {
 }
 
 // based on https://github.com/guyht/vimari/blob/master/vimari.safariextension/linkHints.js
-function isClickable(element, computedStyle) {
+function isClickable(element: Element, ) {
     // clickable html elements
     switch (element.nodeName) {
         case 'A':
@@ -67,8 +75,22 @@ function isClickable(element, computedStyle) {
         case 'SELECT':
         case 'TEXTAREA':
             return true
-        case 'INPUT':
-            return element.type !== 'hidden'
+        case 'INPUT': {
+            let el = element as HTMLInputElement
+            if (el.type === 'hidden') {
+                return false
+            }
+            if (el.type === 'file') {
+                return false
+            }
+            if (el.readOnly) {
+                return false
+            }
+            // if (el.disabled) {
+            //     return false
+            // }
+            return true
+        }
     }
     // ARIA roles implying clickability
     switch (element.getAttribute('role')) {
@@ -101,6 +123,7 @@ function isClickable(element, computedStyle) {
 
 // based on https://github.com/guyht/vimari/blob/master/vimari.safariextension/linkHints.js
 function isVisible(element, clientRect) {
+    return true
     const computedStyle = demandComputedStyle(element)
     // remove elements that are barely within the viewport, tiny, or invisible
     switch (true) {
@@ -203,6 +226,8 @@ function removeRectPaddingAndBorders(element, rect, computedStyle) {
         parseFloat(computedStyle.paddingBottom) -
         parseFloat(computedStyle.borderBottomWidth)
     return {
+        x: left,
+        y: right,
         left,
         right,
         top,

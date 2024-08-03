@@ -1,4 +1,5 @@
 import { Component, render, h } from 'preact'
+import { Hint as HintType } from './findHints'
 import { guiRoot } from './gui'
 // import { activate } from './activate'
 
@@ -67,56 +68,56 @@ export function setHintRenderSettings({
 }`
 }
 
-class HintRenderer extends Component {
+type State = {
+    hints: HintType[]
+    inputKeys: string
+}
+
+let hintChars = 'adsfghjklzxcvbnm'
+function generateHintStrings({ characters = hintChars, count }) {
+    const hints = ['']
+    let offset = 0
+    while (hints.length - offset < count || hints.length === 1) {
+        const hint = hints[offset++]
+        for (const c of characters) {
+            hints.push(hint + c)
+        }
+    }
+    return hints
+}
+
+class HintRenderer extends Component<{}, State> {
     constructor() {
         super()
         this.state = {
             hints: [],
-            filteredHints: [],
-            inputKeys: [],
+            // hints: [],
+            inputKeys: '',
         }
     }
 
     componentDidMount() {
-        showHints = (hints, hintStrings) => {
-            const labeledHints = hints.map((hint, i) =>
-                Object.assign(hint, { hintString: hintStrings[i] }),
-            )
+        showHints = (hints) => {
             this.setState({
-                hints: labeledHints,
-                filteredHints: labeledHints,
+                hints: hints,
+
                 inputKeys: '',
             })
         }
 
-        advanceHints = (event) => {
-            const hints = this.state.hints
-            const inputKeys = this.state.inputKeys + event.key
-            const filteredHints = this.state.hints.filter((hint) => {
-                return hint.hintString.startsWith(inputKeys)
-            })
-            this.setState({
-                hints,
-                filteredHints,
-                inputKeys,
-            })
-            return filteredHints.length === 1 &&
-                inputKeys === filteredHints[0].hintString
-                ? activate(event, filteredHints[0].element)
-                : filteredHints.length === 0
-                  ? 'Filtered'
-                  : 'Same'
-        }
         hideHints = () => {
             this.setState({
                 hints: [],
-                filteredHints: [],
+
                 inputKeys: '',
             })
         }
     }
 
     render() {
+        let strings = generateHintStrings({
+            count: this.state.hints.length,
+        })
         return h(
             'div',
             {
@@ -128,9 +129,9 @@ class HintRenderer extends Component {
                     bottom: 0,
                 },
             },
-            this.state.filteredHints.map((hint) =>
+            this.state.hints.map((hint, i) =>
                 h(Hint, {
-                    hintString: hint.hintString,
+                    hintString: strings[i],
                     rect: hint.rect,
                     computedStyle: hint.computedStyle,
                     horizontalPlacement: horizontalPlacement,
@@ -163,14 +164,14 @@ const Hint = ({
                 position: 'absolute',
                 left: `${
                     horizontalPlacement === 'left'
-                        ? window.scrollX + rect.left
+                        ? window.scrollX + rect.left - 16
                         : horizontalPlacement === 'right'
                           ? window.scrollX + rect.left + rect.width
                           : window.scrollX + rect.left + rect.width / 2
                 }px`,
                 top: `${
                     verticalPlacement === 'top'
-                        ? window.scrollY + rect.top
+                        ? window.scrollY + rect.top - 16
                         : verticalPlacement === 'bottom'
                           ? window.scrollY + rect.top + rect.height
                           : window.scrollY + rect.top + rect.height / 2
