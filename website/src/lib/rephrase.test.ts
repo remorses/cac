@@ -2,8 +2,9 @@ import { openai } from '@ai-sdk/openai'
 import dedent from 'dedent'
 import { streamText } from 'ai'
 import { expect, test } from 'vitest'
+import { NDJSONStream } from 'website/src/lib/ndjson'
 import {
-    NDJSONStream,
+
     convertExamplesToMarkdownList,
     rephrase,
     removeMarkdownSnippets,

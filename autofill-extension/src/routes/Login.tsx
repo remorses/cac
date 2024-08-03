@@ -4,7 +4,7 @@ import { useChat } from 'ai/react'
 import { notifyError } from '@/lib/errors'
 import { ChromeMessages, Paths } from '@/lib/utils'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -25,6 +25,20 @@ function LoginComponent() {
     const revalidator = useRevalidator()
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
+    const [inputs, setInputs] = useState([] as string[])
+    useEffect(() => {
+        const callback = async (message, sender, sendResponse) => {
+            console.log('message', message)
+            if (message.action === ChromeMessages.formInputFound) {
+                setInputs((inputs) => [...inputs, message.data.description])
+                sendResponse({ ok: true })
+            }
+        }
+        chrome.runtime.onMessage.addListener(callback)
+        return () => {
+            chrome.runtime.onMessage.removeListener(callback)
+        }
+    }, [])
 
     return (
         <Form method='POST' className='flex flex-col justify-start gap-4'>
@@ -35,6 +49,7 @@ function LoginComponent() {
             >
                 Screenshot
             </Button>
+            <pre>{JSON.stringify(inputs, null, 2)}</pre>
         </Form>
     )
 }

@@ -85,7 +85,7 @@ Output: Provide an NDJSON list of rephrased content items. Each item should be a
 
 Note: The example content structure is for reference and may not cover all items in the template content. Use it as a guide but ensure all current template items are processed and replaced. If a piece of text from the website being migrated fits a spot in the template perfectly use it as it is.
 
-Return only NDJSON and not a JSON array, think step by step using comment, start a line with // if you want to reason about an item before writing it. 
+Return only NDJSON and not a JSON array, think step by step using comment, start a line with // if you want to reason about an item before writing it.
 
 The things you should keep in mind when replacing old text with new one is
 - The size of the new text should be similar to the template text
@@ -436,88 +436,6 @@ export async function* rephrase({
         minTime: 200,
         onToken,
     })
-}
-
-export function splitStringButKeepChar(str: string, char: string) {
-    const result = [] as string[]
-    let start = 0
-    for (let i = 0; i < str.length; i++) {
-        if (str[i] === char) {
-            result.push(str.slice(start, i + 1))
-            start = i + 1
-        }
-    }
-    if (start < str.length) {
-        result.push(str.slice(start))
-    }
-    return result
-}
-
-export function removeMarkdownSnippets(text: string) {
-    // remove lines starting with optional spaces followed by ```lang
-    text = text.replace(/^\s*```.*/gm, '')
-    // remove lines starting with optional spaces followed by ```
-    // text = text.replace(/^\s*```/gm, '')
-    return text
-}
-
-export async function* NDJSONStream<T = any>({
-    stream,
-    minTime = 0,
-    onToken,
-}: {
-    stream: StreamTextResult<any>
-    minTime?: number
-    onToken?: (token: string) => void
-}): AsyncGenerator<T, void, unknown> {
-    let buffer = ''
-    let lastYieldTime = 0
-
-    let loggedError = false
-    let itemsLen = 0
-    for await (const part of stream.textStream) {
-        onToken?.(part)
-        const parts = splitStringButKeepChar(part, '\n')
-
-        // console.log('parts', parts)
-        for (let p of parts) {
-            buffer += p
-            if (!loggedError && buffer.length > 300 && !itemsLen) {
-                loggedError = true
-                console.error(
-                    `cannot parse LLM ndjson:`,
-                    JSON.stringify(buffer),
-                )
-            }
-            try {
-                let probablyJson = stripJsonComments(buffer)
-                if (itemsLen === 0 && probablyJson.includes('```')) {
-                    const lines = probablyJson.split('\n')
-
-                    const lineWithSnippet = lines.findIndex((x) =>
-                        x.startsWith('```'),
-                    )
-                    probablyJson = lines.slice(lineWithSnippet).join('\n')
-                }
-                probablyJson = removeMarkdownSnippets(probablyJson)
-                let obj = JSON.parse(probablyJson)
-                const now = Date.now()
-                if (now - lastYieldTime <= minTime) {
-                    await sleep(minTime - (now - lastYieldTime))
-                }
-                // console.log('obj', obj)
-                itemsLen += 1
-                yield obj
-
-                buffer = ''
-                lastYieldTime = Date.now()
-            } catch {
-                // if (buffer.includes('\n')) {
-                //     console.log('error', buffer)
-                // }
-            }
-        }
-    }
 }
 
 const unauthorizedResponse = new Response('Unauthorized', {

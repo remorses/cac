@@ -2,7 +2,8 @@ import { openai } from '@ai-sdk/openai'
 
 
 import { generateText, streamText } from 'ai'
-import { RephraseSchema, NDJSONStream, removeMarkdownSnippets } from 'website/src/lib/elysia-rewrite-plugin'
+import { RephraseSchema,  } from 'website/src/lib/elysia-rewrite-plugin'
+import { NDJSONStream, removeMarkdownSnippets } from 'website/src/lib/ndjson'
 import { } from 'website/src/lib/elysia.server'
 
 import('htmlrewriter')
@@ -169,7 +170,7 @@ The HTML document is:
         html +
         '\n```' +
         `
-Generate the description now. Do not use terms like "The website is a " or "This document is about", don't add any introduction or conclusion. 
+Generate the description now. Do not use terms like "The website is a " or "This document is about", don't add any introduction or conclusion.
 `
     )
 }

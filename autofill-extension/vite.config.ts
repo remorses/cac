@@ -16,6 +16,7 @@ export default defineConfig({
         react(),
         // mkcert(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
+        EnvironmentPlugin('all'),
         tsconfigPaths(),
         crx({ manifest }),
     ],

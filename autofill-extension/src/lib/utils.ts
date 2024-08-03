@@ -50,6 +50,7 @@ export enum ChromeMessages {
     showHints = 'showHints',
     hideHints = 'hideHints',
     setHintValue = 'setHintValue',
+    formInputFound = 'formInputFound',
     start = 'start',
 }
 
