@@ -25,6 +25,5 @@ init({
 export function notifyError(error, msg?: string) {
     // framer.notify(String(error.message || error), { variant: 'error' })
     console.error(error)
-    captureException(error, { extra: { msg } })
     // captureException(error, { extra: { msg } })
 }

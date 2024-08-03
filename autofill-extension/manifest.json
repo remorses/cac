@@ -10,7 +10,7 @@
     },
     "content_scripts": [
         {
-            "js": ["src/content.tsx"],
+            "js": ["src/content/content.tsx"],
             "matches": ["<all_urls>"]
         }
     ]
