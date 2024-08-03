@@ -10,6 +10,7 @@
     },
     "background": {
         "service_worker": "src/background/background.ts",
+        "persistent": true,
         "type": "module"
     },
     "content_scripts": [

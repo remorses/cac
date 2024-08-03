@@ -22,7 +22,14 @@ import {
 } from 'website/src/lib/utils'
 
 function LoginComponent() {
-    const revalidator = useRevalidator()
+    const [fileName, setFileName] = useState(null as string | null)
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0]
+        if (file) {
+            setFileName(file.name)
+        }
+    }
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     const [inputs, setInputs] = useState([] as string[])
@@ -30,7 +37,11 @@ function LoginComponent() {
         const callback = async (message, sender, sendResponse) => {
             console.log('message', message)
             if (message.action === ChromeMessages.formInputFound) {
-                setInputs((inputs) => [...inputs, message.data.description])
+                let text = message.data.description
+                if (message.data.value) {
+                    text = `filling ${text} with ${message.data.value}`
+                }
+                setInputs((inputs) => [...inputs, text])
                 sendResponse({ ok: true })
             }
         }
@@ -41,7 +52,11 @@ function LoginComponent() {
     }, [])
 
     return (
-        <Form method='POST' className='flex flex-col justify-start gap-4'>
+        <Form
+            encType='multipart/form-data'
+            method='POST'
+            className='flex flex-col justify-start gap-4'
+        >
             <Button
                 type='submit'
                 className='bg-framer-secondary'
@@ -49,6 +64,24 @@ function LoginComponent() {
             >
                 Screenshot
             </Button>
+            <div>
+                <input
+                    type='file'
+                    name='fileInput'
+                    onChange={handleFileChange}
+                />
+                {fileName && (
+                    <div>
+                        <p>File Data URL:</p>
+                        <textarea
+                            value={fileName}
+                            readOnly
+                            rows={10}
+                            cols={50}
+                        />
+                    </div>
+                )}
+            </div>
             <pre>{JSON.stringify(inputs, null, 2)}</pre>
         </Form>
     )
@@ -59,9 +92,33 @@ async function loader({}: LoaderFunctionArgs) {
 
     return {}
 }
-async function action({}: LoaderFunctionArgs) {
-    await chrome.runtime.sendMessage({ action: ChromeMessages.start })
+async function action({ request }: LoaderFunctionArgs) {
+    const formData = await request.formData()
+    const file = formData.get('fileInput') as File
+    const dataUrl = await getFileDataUrl(file)
+    const image: ImageActionData = {
+        name: file.name,
+        dataUrl,
+    }
+    await chrome.runtime.sendMessage({
+        action: ChromeMessages.start,
+        files: [image],
+    })
     return {}
+}
+
+export type ImageActionData = {
+    name: string
+    dataUrl: string
+}
+
+const getFileDataUrl = (file) => {
+    return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e: any) => resolve(e.target.result)
+        reader.onerror = (e) => reject(e)
+        reader.readAsDataURL(file)
+    })
 }
 
 export function LoginPage(): RouteObject {

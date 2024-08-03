@@ -47,14 +47,20 @@ export async function getMarkdownPluginData() {
 }
 
 export enum ChromeMessages {
+    // content handled messages
     showHints = 'showHints',
     hideHints = 'hideHints',
+    highlightInputFound = 'highlightInputFound',
     setHintValue = 'setHintValue',
+    dehilightAll = 'dehilightAll',
+    // popup handled messages
     formInputFound = 'formInputFound',
+    // background handled messages
     start = 'start',
 }
 
 export type SetHintValueMessage = {
     label: string
+    descriptin: string
     value: string
 }

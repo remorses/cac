@@ -24,46 +24,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 case ChromeMessages.hideHints: {
                     console.log('hideHints')
-                    hideHints()
+                    // hideHints()
                     sendResponse({ status: 'completed', hints })
                     return
                 }
                 case ChromeMessages.setHintValue: {
-
                     let data: SetHintValueMessage = request.data
                     console.log('setHintValue', data)
 
-                    if (!hints.length) {
-                        console.error('No hints found')
-                        sendResponse({
-                            status: 'error',
-                            error: 'No hints found',
-                        })
+                    const findRes = findHint({ label: data.label })
+                    if (!findRes.element) {
+                        sendResponse(findRes)
                         return
                     }
-                    const foundHint = hints.find(
-                        (hint) => hint.label === data.label,
-                    )
-                    if (!foundHint) {
-                        console.error('Hint not found', data.label)
-                        sendResponse({
-                            status: 'error',
-                            error: 'Hint not found',
-                        })
-                        return
-                    }
-                    const el = foundHint.element
-                    if (!el) {
-                        console.error('Element not found', data.label)
-                        sendResponse({
-                            status: 'error',
-                            error: 'Element not found',
-                        })
-                        return
-                    }
+                    let el = findRes.element
                     if (el instanceof HTMLInputElement) {
-                        el.value = data.value
                         el.focus()
+                        // change the background color to indicate the element is focused
+                        let prevBackground = el.style.backgroundColor
+                        el.style.backgroundColor = 'rgba(255, 255, 0, 0.5)'
+                        el.value = data.value
+                        await sleep(100)
+                        el.style.backgroundColor = prevBackground
+                        sendResponse({ status: 'completed' })
+                        return
                     } else if (false) {
                         //
                     } else {
@@ -73,6 +57,43 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             error: 'Unhandled element type',
                         })
                         return
+                    }
+                    return
+                }
+                case ChromeMessages.highlightInputFound: {
+                    let data: SetHintValueMessage = request.data
+                    console.log('setHintValue', data)
+                    if (!data.value) {
+                        sendResponse({
+                            status: 'error',
+                            error: 'No value provided',
+                        })
+                        return
+                    }
+
+                    const findRes = findHint({ label: data.label })
+                    if (!findRes.element) {
+                        sendResponse(findRes)
+                        return
+                    }
+                    let el = findRes.element
+                    if (el instanceof HTMLInputElement) {
+                        el.focus()
+                        el.style.backgroundColor = 'rgba(255, 255, 0, 0.5)'
+                        await sleep(100)
+                        sendResponse({ status: 'completed' })
+                    }
+                    return
+                }
+                case ChromeMessages.dehilightAll: {
+                    for (let hint of hints) {
+                        if (hint.element instanceof HTMLInputElement) {
+                            try {
+                                hint.element.style.backgroundColor = ''
+                            } catch (error) {
+                                console.error('Error dehighlighting', error)
+                            }
+                        }
                     }
                     return
                 }
@@ -90,3 +111,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true // Keeps the message channel open
 })
+function findHint({ label }) {
+    if (!hints.length) {
+        console.error('No hints found')
+        return { status: 'error', error: 'No hints found' }
+    }
+    const foundHint = hints.find(
+        (hint) => hint.label.toLowerCase() === label.toLowerCase(),
+    )
+    if (!foundHint) {
+        console.error('Hint not found for', label)
+        console.log(
+            `label ${label} not founf in ${JSON.stringify(hints.map((x) => x.label))}`,
+        )
+        return { status: 'error', error: 'Hint not found' }
+    }
+    const el = foundHint.element
+    if (!el) {
+        console.error('Element not found', label)
+        return { status: 'error', error: 'Element not found' }
+    }
+    return { status: 'success', element: el }
+}

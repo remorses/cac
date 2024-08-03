@@ -32,6 +32,7 @@ export type Hint = {
         height: number
     }
     label: string
+    prevBackgroundColor: string
     // hintString?: string
     computedStyle: CSSStyleDeclaration
 }
@@ -70,7 +71,7 @@ export function findHints(hintType = '*') {
 
         let index = 0
         let hints = [...allElements]
-            .map((element) => {
+            .map((element: Element) => {
                 if (!isClickable(element)) {
                     return
                 }
@@ -81,7 +82,7 @@ export function findHints(hintType = '*') {
                 }
                 const label = all2Permutations[index - 1]
                 const computedStyle = demandComputedStyle(element)
-                return {
+                let hint: Hint = {
                     element,
                     rect: removeRectPaddingAndBorders(
                         element,
@@ -89,8 +90,11 @@ export function findHints(hintType = '*') {
                         computedStyle,
                     ),
                     label,
+                    prevBackgroundColor: (element as any).style
+                        ?.backgroundColor,
                     computedStyle,
                 }
+                return hint
             })
             .filter(isTruthy)
         computedStyles = undefined

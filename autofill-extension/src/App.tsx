@@ -74,7 +74,7 @@ const router = createMemoryRouter(
                         }}
                     >
                         <AnimatePresence mode='wait'>
-                            <div className='min-w-[400px] h-[300px] '>
+                            <div className=' '>
                                 <div
                                     ref={ref}
                                     className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
