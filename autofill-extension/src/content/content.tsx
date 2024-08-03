@@ -16,6 +16,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.log('hints', hints)
                
                 showHints(hints, )
+                await sleep(1)
                 const res = await chrome.runtime.sendMessage({
                     action: ChromeMessages.captureScreenshot,
                     options: request.options,
@@ -25,7 +26,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 await sleep(200)
 
                 console.log('deactivating')
-                // hideHints()
+                hideHints()
                 sendResponse({ status: 'completed', result: res })
             } catch (error) {
                 console.error('Error capturing screenshot', error)

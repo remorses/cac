@@ -1,6 +1,7 @@
 import { Component, render, h } from 'preact'
 import { Hint as HintType } from './findHints'
 import { guiRoot } from './gui'
+import { useEffect, useState } from 'preact/hooks'
 // import { activate } from './activate'
 
 export let showHints
@@ -86,61 +87,45 @@ function generateHintStrings({ characters = hintChars, count }) {
     return hints
 }
 
-class HintRenderer extends Component<{}, State> {
-    constructor() {
-        super()
-        this.state = {
-            hints: [],
-            // hints: [],
-            inputKeys: '',
-        }
-    }
+const HintRenderer = () => {
+    const [hints, setHints] = useState<HintType[]>([])
 
-    componentDidMount() {
+    useEffect(() => {
         showHints = (hints) => {
-            this.setState({
-                hints: hints,
-
-                inputKeys: '',
-            })
+            setHints(hints)
         }
 
         hideHints = () => {
-            this.setState({
-                hints: [],
-
-                inputKeys: '',
-            })
+            setHints([])
         }
-    }
+    }, [])
 
-    render() {
-        let strings = generateHintStrings({
-            count: this.state.hints.length,
-        })
-        return h(
-            'div',
-            {
-                style: {
-                    position: 'absolute',
-                    left: '0',
-                    top: '0',
-                    right: 0,
-                    bottom: 0,
-                },
+    let strings = generateHintStrings({
+        count: hints.length,
+    })
+
+    return h(
+        'div',
+        {
+            style: {
+                position: 'absolute',
+                left: '0',
+                top: '0',
+                right: 0,
+                bottom: 0,
             },
-            this.state.hints.map((hint, i) =>
-                h(Hint, {
-                    hintString: strings[i],
-                    rect: hint.rect,
-                    computedStyle: hint.computedStyle,
-                    horizontalPlacement: horizontalPlacement,
-                    verticalPlacement: verticalPlacement,
-                    seen: this.state.inputKeys.length,
-                }),
-            ),
-        )
-    }
+        },
+        hints.map((hint, i) =>
+            h(Hint, {
+                hintString: strings[i],
+                rect: hint.rect,
+                computedStyle: hint.computedStyle,
+                horizontalPlacement: horizontalPlacement,
+                verticalPlacement: verticalPlacement,
+                seen: false,
+            }),
+        ),
+    )
 }
 
 function generateFontSize(computedStyle) {

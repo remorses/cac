@@ -63,18 +63,13 @@ async function action({}: LoaderFunctionArgs) {
     return {}
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === ChromeMessages.captureScreenshot) {
-        chrome.tabs.captureVisibleTab(request.options, (dataUrl) => {
-            const link = document.createElement('a')
-            link.download = 'screenshot.png'
-            link.href = dataUrl
-            // link.click()
-            console.log('screenshot captured')
-            return {
-                ok: true,
-            }
-        })
+        const dataUrl = await new Promise<string>((res) =>
+            chrome.tabs.captureVisibleTab(request.options, res),
+        )
+        
+        sendResponse({ status: 'completed' })
     }
 })
 
