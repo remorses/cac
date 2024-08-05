@@ -61,8 +61,10 @@ describe('screenshot', () => {
                                     image: buffer,
                                 }
                             }),
+
                         ],
                     },
+
                 ],
             })
             for await (let chunk of stream.textStream) {

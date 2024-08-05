@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 case ChromeMessages.hideHints: {
                     console.log('hideHints')
-                    // hideHints()
+                    hideHints()
                     sendResponse({ status: 'completed', hints })
                     return
                 }
@@ -116,7 +116,7 @@ function findHint({ label }) {
         return { status: 'error', error: 'No hints found' }
     }
     const foundHint = hints.find(
-        (hint) => hint.label.toLowerCase() === label.toLowerCase(),
+        (hint) => hint.label.toUpperCase() === label.toUpperCase(),
     )
     if (!foundHint) {
         console.error('Hint not found for', label)

@@ -13,6 +13,7 @@ export function createSupabaseAdmin() {
         {
             auth: {
                 persistSession: false,
+
                 autoRefreshToken: false,
                 detectSessionInUrl: false,
             }, //
@@ -118,4 +119,3 @@ export async function getSupabaseSession({
     const email = user?.email || ''
     return { session, email, headers, supabase, userId, user, redirectTo }
 }
-

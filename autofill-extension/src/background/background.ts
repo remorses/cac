@@ -1,5 +1,6 @@
 import { Hint } from '@/content/findHints'
 import { openai } from '@ai-sdk/openai'
+import { anthropic } from '@ai-sdk/anthropic'
 import { ChromeMessages, SetHintValueMessage } from '@/lib/utils'
 
 import { CoreMessage, streamText } from 'ai'
@@ -49,7 +50,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 ]
                 let extractionText = ''
                 const res = await streamText({
-                    model: openai('gpt-4o'),
+                    model: anthropic('claude-3-5-sonnet-20240620'),
                     onFinish({ text }) {
                         console.log('extract form llm response', text)
                         extractionText = text
@@ -78,7 +79,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     })
                 }
                 const stream2 = await streamText({
-                    model: openai('gpt-4o'),
+                    model: anthropic('claude-3-5-sonnet-20240620'),
                     onFinish({ text }) {
                         console.log('fill value llm response', text)
                     },
@@ -92,6 +93,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             role: 'user',
                             content: fillValuePrompt,
                         },
+
                         {
                             role: 'user',
                             content: files.map((file) => ({
@@ -140,6 +142,8 @@ Return NDJSON objects with the following fields:
 - value: The value to fill in the web form based on the image content.
 - description: The description of the form input field found in the image.
 
+For the description you should include the parent section that you can extrapolate from the context, for example for an italian F24 tax form you would include sections like
+
 ### Requirements:
 1. Identify the relevant information from the image based on labels and descriptions.
 2. Skip fields that should remain empty; not all information in the image should be filled into the web form and some form inputs may already be filled.
@@ -149,16 +153,18 @@ Return NDJSON objects with the following fields:
 
 you don't need to fill all the form values, just fill the ones relevant to the data in the image.
 
+Make use of commas for decimal values, if the contextual data contains commas in the numbers add them in the form input too,
+
 ### Example NDJSON Output:
 
-{"label": "AB", "description": "Full Name", "value": "John Doe"}
-{"label": "CD", "description": "Street Address", "value": "123 Main St"}
-{"label": "EF", "description": "Apartment, suite, unit, building, floor, etc.", "value": "Apt 4B"}
+{"label": "FN", "description": "Full Name", "value": "John Doe"}
+{"label": "AS", "description": "Street Address", "value": "123 Main St"}
+{"label": "DF", "description": "Apartment, suite, unit, building, floor, etc.", "value": "Apt 4B"}
 {"label": "GH", "description": "City", "value": "Springfield"}
-{"label": "IJ", "description": "State", "value": "IL"}
-{"label": "KL", "description": "ZIP Code", "value": "62704"}
-{"label": "MN", "description": "Phone Number", "value": "555-1234"}
-{"label": "OP", "description": "Email Address", "value": "john.doe@example.com"}
+{"label": "JK", "description": "State", "value": "IL"}
+{"label": "LZ", "description": "ZIP Code", "value": "62704"}
+{"label": "XC", "description": "Phone Number", "value": "555-1234"}
+{"label": "VB", "description": "Email Address", "value": "john.doe@example.com"}
   `
 
 const promptExtract = `
@@ -175,27 +181,24 @@ const promptExtract = `
   ### Requirements:
   1. Extract and return labels and descriptions in the order a human would fill the form, top to bottom.
   2. Group related values together, ensuring items in a list or table rows are close to each other.
-  3. Append item numbers for duplicate form items that are part of a list.
+  3. Append item numbers for duplicate form items that are part of a list. the item number should be the same for related items, items related to a single identity
   4. Use comments (//) to reason about specific elements if necessary.
 
   ### Example NDJSON Output:
 
-  {"label": "AB", "description": "Full Name"}
-  {"label": "CD", "description": "Street Address"}
-  {"label": "EF", "description": "Apartment, suite, unit, building, floor, etc."}
-  {"label": "GH", "description": "City"}
-  {"label": "IJ", "description": "State"}
-  {"label": "KL", "description": "ZIP Code"}
-  {"label": "MN", "description": "Phone Number"}
-  {"label": "OP", "description": "Email Address"}
-  {"label": "QR_1", "description": "Item 1 Description"}
-  {"label": "QR_2", "description": "Item 2 Description"}
-  {"label": "QR_3", "description": "Item 3 Description"}
+  {"label": "AS", "description": "Full Name"}
+  {"label": "DF", "description": "Street Address"}
+  {"label": "GH", "description": "Apartment, suite, unit, building, floor, etc."}
+  {"label": "JK", "description": "City"}
+  {"label": "FG", "description": "State"}
+  {"label": "HJ", "description": "ZIP Code"}
+  {"label": "KD", "description": "Phone Number"}
+  {"label": "SA", "description": "Email Address"}
 
 Skip fields that are already filled or unrelated to the data in the image;
 
-Make use of commas for decimal values
+use uppercase letters for the labels so they are dislplayed exactly like in vimium
 
-Fill form inputs from top to bottom, always try to fill the firm form inputs first and leave blank additional ones on the bottom.
+extract form inputs from top to bottom, always try to fill the firm form inputs first and leave blank additional ones on the bottom.
 
 `

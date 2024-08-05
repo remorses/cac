@@ -67,6 +67,9 @@ importers:
 
   autofill-extension:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^0.0.30
+        version: 0.0.30(zod@3.23.8)
       '@ai-sdk/openai':
         specifier: ^0.0.37
         version: 0.0.37(zod@3.23.8)

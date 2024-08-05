@@ -8,7 +8,7 @@ export let showHints
 export let hideHints
 export let advanceHints
 
-let fontSize = 11
+let fontSize = 18
 let useTargetSize = false
 let horizontalPlacement = 'left'
 let verticalPlacement = 'top'
@@ -25,7 +25,7 @@ let hintRenderOptions = {
     hintBorderColor: '#ff4081',
     hintOpacity: '1',
     hintFontFamily: 'Roboto, sans-serif',
-    hintFontSize: 11,
+    hintFontSize: 18,
     hintFontWeight: '500',
     hintHorizontalPadding: 0.25,
     hintVerticalPadding: 0.15,
