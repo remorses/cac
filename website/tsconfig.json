@@ -2,7 +2,7 @@
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "lib": ["DOM", "DOM.Iterable", "ES2022"],
-        "types": ["@remix-run/node", "chrome"],
+        "types": ["@remix-run/node"],
         "isolatedModules": true,
         "rootDir": "src",
         "outDir": "dist",
