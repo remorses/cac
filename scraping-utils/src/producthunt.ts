@@ -53,7 +53,7 @@ export async function getProductHuntCompanies({
 
     const hist = filtered
         .filter(Boolean)
-        .map((x) => safeURL(x?.website).hostname)
+        .map((x) => safeURL(x?.website)?.hostname)
         .filter(Boolean)
         // create a hist obj
         .reduce(
@@ -81,7 +81,7 @@ export async function getProductHuntCompanies({
 
     const hostnameToIndexes = {}
     filtered.filter(Boolean).forEach((x, i) => {
-        const host = safeURL(x.website).hostname!
+        const host = safeURL(x.website)?.hostname!
         if (hostnameToIndexes[host]) {
             hostnameToIndexes[host].push(i)
         } else {
@@ -127,15 +127,14 @@ export function getCachedProductHuntCompanies(): Post[] {
 }
 const client = createClient({
     headers: {
-        authorization: `Bearer ${token}`
-    }
+        authorization: `Bearer ${token}`,
+    },
 })
 export async function getPosts({
     after = undefined as string | undefined,
     url = undefined as string | undefined,
     lastNHours = 0,
 }) {
-    
     const json = await limit(() =>
         client.query({
             posts: [

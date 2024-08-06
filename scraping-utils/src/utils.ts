@@ -5,6 +5,7 @@ import { Locator } from 'playwright'
 
 import { parseDomain, ParseResultType } from 'parse-domain'
 import { verifyEmail } from '@devmehq/email-validator-js'
+import { ScrapeResult } from './types'
 
 export async function verifySmtpEmail(email: string) {
     const res = await verifyEmail({
@@ -235,61 +236,6 @@ export async function resolveWebsiteRedirect(url?: string, timeout = 1000 * 5) {
     }
     return url
 }
-
-// export type PoweredBy = 'gitbook' | 'super.so' | 'popsy' | 'unknown'
-export async function getPoweredBy(url: string, timeout = 1000 * 10) {
-    const controller = new AbortController()
-    const id = setTimeout(() => controller.abort(), timeout)
-    try {
-        const res = await fetch(url, {
-            headers: { accept: 'text/html' },
-            redirect: 'follow',
-            signal: controller.signal,
-        })
-        const powered = (res.headers.get('x-powered-by') || '')
-            ?.toString()
-            .toLowerCase()
-
-        if (powered === 'gitbook') {
-            return 'gitbook' as const
-        }
-
-        if (res.headers.get('content-type')?.startsWith('text/html')) {
-            const text = await res.text()
-            // console.log(text)
-            if (text.includes('framerusercontent.com')) {
-                return 'framer' as const
-            }
-            if (
-                text.includes('cdn.prod.website-files.com') &&
-                text.includes('webflow')
-            ) {
-                return 'webflow' as const
-            }
-            if (text.includes('/cluster/style.css')) {
-                return 'super.so-cluster' as const
-            }
-            if (text.includes('/aether/style.css')) {
-                return 'super.so-aether' as const
-            }
-            if (
-                text.includes('https://super-static-assets.s3.amazonaws.com/')
-            ) {
-                return 'super.so' as const
-            }
-            if (text.includes('https://api.popsy.co')) {
-                return 'popsy' as const
-            }
-        }
-        return 'unknown' as const
-        // console.log(res)
-    } catch (e) {
-        clearTimeout(id)
-        console.log(`${url} getPoweredBy:`, e.message)
-        return 'unknown' as const
-    }
-}
-
 // favours personal emails instead of support emails
 export function getEmailRank(email: string, website?: string) {
     const host = website && safeURL(website)?.hostname
@@ -453,40 +399,13 @@ export async function checkGmailAcc(
     }
 }
 
-export function safeURL(url: string | undefined) {
+export function safeURL(url: string | undefined, base?: string) {
     try {
-        return new URL(url as any)
+        return new URL(url as any, base)
     } catch {
         console.warn(`Could not parse to URL: ${url}`)
-        return {
-            toString() {
-                return ''
-            },
-        } as Partial<URL>
+        return
     }
-}
-
-export function transferSitesWithNoDocs() {
-    return transferTo(sheets.companiesWithoutDocsSite.id, (x) => {
-        if (x.docsSite) {
-            return
-        }
-        if (!x.website) {
-            return
-        }
-        if (!x.emails?.length) {
-            return
-        }
-        return {
-            allEmails: x.emails,
-            email: x.emails?.sort((a, b) => {
-                return getEmailRank(b, x.website) - getEmailRank(a, x.website)
-            })?.[0],
-            company: x.company.split('.')[0], // do not add links or it would end up in spam
-            website: x.website,
-            twitter: x.twitters?.[0] || '',
-        }
-    })
 }
 
 export async function present(loc: Locator) {

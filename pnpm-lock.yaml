@@ -370,6 +370,12 @@ importers:
       '@genql/runtime':
         specifier: ^2.10.0
         version: 2.10.0(graphql@16.9.0)
+      esbuild:
+        specifier: ^0.21.5
+        version: 0.21.5
+      htmlrewriter:
+        specifier: ^0.0.9
+        version: 0.0.9
       p-ratelimit:
         specifier: ^1.0.1
         version: 1.0.1
