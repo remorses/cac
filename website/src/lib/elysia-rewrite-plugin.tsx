@@ -17,6 +17,7 @@ import {
 } from 'website/src/lib/htmlrewrite.server'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { sleep } from 'website/src/lib/utils'
+import { NDJSONStream } from 'website/src/lib/ndjson'
 
 const RephraseSchema = t.Object({
     description: t.String(),
