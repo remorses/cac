@@ -8,7 +8,7 @@ import { notifyError } from 'website/src/lib/errors'
 import { db } from 'db/kysely'
 import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 
-export const app = new Elysia({ prefix: '/api/plugins', aot: false })
+export const app = new Elysia({ prefix: '/api/framer-plugin', aot: false })
     .state('userId', '')
     .state('orgId', '')
 

@@ -2,13 +2,10 @@ import { openai } from '@ai-sdk/openai'
 import dedent from 'dedent'
 import { streamText } from 'ai'
 import { expect, test } from 'vitest'
-import { NDJSONStream } from 'website/src/lib/ndjson'
+import { NDJSONStream, removeMarkdownSnippets, splitStringButKeepChar } from 'website/src/lib/ndjson'
 import {
-
     convertExamplesToMarkdownList,
     rephrase,
-    removeMarkdownSnippets,
-    splitStringButKeepChar,
 } from 'website/src/lib/elysia-rewrite-plugin'
 import {
     fetchFormattedHtml,
@@ -21,7 +18,9 @@ test('getWebsiteDescription', async () => {
         html: exampleHtml,
         signal: new AbortController().signal,
     })
-    expect(res.extractedDescription).toMatchInlineSnapshot(`"SaaS website focused on providing a platform to create professional documentation and content management using Notion, with a friendly and approachable tone, in English."`)
+    expect(res.extractedDescription).toMatchInlineSnapshot(
+        `"SaaS website focused on providing a platform to create professional documentation and content management using Notion, with a friendly and approachable tone, in English."`,
+    )
 })
 
 test('convertExamplesToMarkdownList', async () => {

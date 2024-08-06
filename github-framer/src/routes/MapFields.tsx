@@ -150,7 +150,7 @@ function getFieldConfigForProp(
  * Given a Notion Database Properties object returns a CollectionField object
  * That maps the Notion Property to the Framer CMS collection property type
  */
-// https://developers.framer.wiki/plugins/docs/cms#adding-fields
+// https://developers.framer.wiki/framer-plugin/docs/cms#adding-fields
 function getCollectionFieldForProperty(property: {
     values: any[]
     name: string

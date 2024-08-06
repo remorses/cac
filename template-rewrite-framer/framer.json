@@ -2,5 +2,5 @@
     "id": "b50ax4",
     "name": "Migrate Template",
     "modes": ["default"],
-    "icon": "/plugins/migrate/icon.png"
+    "icon": "/framer-plugin/migrate/icon.png"
 }

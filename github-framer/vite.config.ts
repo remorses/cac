@@ -8,7 +8,7 @@ import framer from 'vite-plugin-framer'
 
 const building = process.env.NODE_ENV === 'production'
 
-const basePath = '/plugins/github'
+const basePath = '/framer-plugin/github'
 
 // https://vitejs.dev/config/
 export default defineConfig({

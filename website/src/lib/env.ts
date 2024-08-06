@@ -35,13 +35,13 @@ export const supabaseRef = env
 
 export const framerUrl = 'https://framer.com?via=xmorse'
 export const framerPluginUrl = new URL(
-    '/plugins/migrate',
+    '/framer-plugin/migrate',
     env.PUBLIC_URL,
 ).toString()
 
 // TODO use the framer marketplace url
 export const installFramerPluginUrl = new URL(
-    '/plugins/migrate',
+    '/framer-plugin/migrate',
     env.PUBLIC_URL,
 ).toString()
 
