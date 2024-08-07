@@ -31,9 +31,9 @@
         "@nextui-org/theme": "^2.2.6",
         "@octokit/webhooks": "^13.3.0",
         "@prisma/client": "^5.17.0",
-        "@remix-run/node": "^2.11.1",
-        "@remix-run/react": "^2.11.1",
-        "@remix-run/serve": "^2.11.1",
+        "@remix-run/node": "2.10.3",
+        "@remix-run/react": "2.10.3",
+        "@remix-run/serve": "2.10.3",
         "@sentry/node": "^8.17.0",
         "@sinclair/typebox": "^0.32.34",
         "@supabase/ssr": "^0.3.0",
@@ -83,7 +83,7 @@
         "zod-validation-error": "^3.3.0"
     },
     "devDependencies": {
-        "@remix-run/dev": "^2.11.1",
+        "@remix-run/dev": "2.10.3",
         "@types/node": "^20.14.10",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",

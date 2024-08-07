@@ -5,7 +5,7 @@ import HeroFramerComponent from '../framer/hero'
 import NavFramerComponent from '../framer/nav'
 import PricingBannerFramerComponent from '../framer/pricing-banner'
 import { installFramerPluginUrl, framerUrl, env } from '../lib/env'
-import orgImg from 'website/public/ogimage.jpeg'
+import orgImg from 'website/public/migrate-plugin-assets/ogimage.jpeg'
 
 export const meta: MetaFunction = () => {
     return [

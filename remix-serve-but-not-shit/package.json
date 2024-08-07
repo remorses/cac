@@ -22,11 +22,11 @@
     "author": "Tommaso De Rossi, morse <beats.by.morse@gmail.com>",
     "license": "",
     "devDependencies": {
-        "@remix-run/node": "^2.11.1",
-        "@types/node": "^20.14.12"
+        "@types/node": "^20.14.12",
+        "@remix-run/node": "2.10.3"
     },
     "dependencies": {
-        "@remix-run/express": "^2.11.1",
+        "@remix-run/express": "2.10.3",
         "express": "^4.19.2",
         "morgan": "^1.10.0"
     }

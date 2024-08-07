@@ -192,13 +192,12 @@ async function rootLoader({ request }) {
 
     const { owner, githubAccountLogin, repo } = await getMarkdownPluginData()
 
-    if (
-        framer.mode === 'syncCollection' &&
-        owner &&
-        repo &&
-        githubAccountLogin
-    ) {
+    let canRedirect = owner && repo && githubAccountLogin
+    if (framer.mode === 'syncCollection' && canRedirect) {
         return redirect(withMode(Paths.sync))
+    }
+    if (framer.mode === 'configureCollection' && canRedirect) {
+        return redirect(withMode(Paths.mapFields))
     }
     return redirect(withMode(Paths.chooseRepo))
 }
@@ -210,7 +209,6 @@ export default function Page() {
 export function BackIcon(props) {
     return (
         <svg
-
             xmlns='http://www.w3.org/2000/svg'
             // width='1em'
             // height='1em'
