@@ -22,7 +22,7 @@ export function sleep(ms: number) {
 }
 
 export enum PluginNames {
-    markdown = 'markdown',
+    github = 'github',
     migrate = 'migrate',
 }
 
@@ -32,7 +32,7 @@ export function framerLoginUrl({
     pluginName = PluginNames.migrate,
 }) {
     let url: URL
-    if (pluginName === PluginNames.markdown) {
+    if (pluginName === PluginNames.github) {
         url = new URL('/api/markdown-plugin/auth/framer-login', env.PUBLIC_URL)
     } else {
         url = new URL('/api/auth/framer-login', env.PUBLIC_URL)

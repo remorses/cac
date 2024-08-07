@@ -343,7 +343,9 @@ export function MapFields({}: {}) {
                                     <option value=''>disable</option>
                                     {possibleTypes.map((type) => (
                                         <option key={type} value={type}>
-                                            {type}
+                                            {mapCollectionFieldToReadableName(
+                                                type,
+                                            )}
                                         </option>
                                     ))}
                                 </select>
@@ -411,6 +413,34 @@ const possibleTypes: CollectionField['type'][] = [
     'color',
     'string',
 ]
+function mapCollectionFieldToReadableName(
+    field: CollectionField['type'],
+): string {
+    switch (field) {
+        case 'string':
+            return 'Text'
+        case 'number':
+            return 'Number'
+        case 'boolean':
+            return 'Toggle'
+        case 'date':
+            return 'Date'
+        case 'enum':
+            return 'Option'
+        case 'formattedText':
+            return 'Formatted Text'
+        case 'link':
+            return 'Link'
+        case 'image':
+            return 'Image'
+        case 'color':
+            return 'Color'
+        // case 'file':
+        //     return 'File'
+        default:
+            return field
+    }
+}
 
 function IconChevron() {
     return (

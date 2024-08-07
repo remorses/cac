@@ -5,7 +5,7 @@ export default {
     ...websiteConfig,
     content: [
         './src/**/*.{js,ts,jsx,tsx}', //
-        // '../website/src/**/*.{js,ts,jsx,tsx}', //
+        '../template-rewrite-framer/src/**/*.{js,ts,jsx,tsx}', //
         // '../website/node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
         // '../beskar/src/**/*.{js,ts,jsx,tsx}', //
     ],

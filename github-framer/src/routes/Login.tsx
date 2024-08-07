@@ -31,7 +31,7 @@ function LoginComponent() {
     const navigation = useNavigation()
     const url = framerLoginUrl({
         key,
-        pluginName: PluginNames.migrate,
+        pluginName: PluginNames.github,
         code,
     })
     useRefreshOnVisible({ enabled: !isLoading })
@@ -119,10 +119,12 @@ async function loader({}: LoaderFunctionArgs) {
         let requestData: GithubLoginRequestData = (data.requestData ||
             {}) as any
 
-        await collection.setPluginData(
-            PluginDataKeys.githubAccountLogin,
-            requestData.githubAccountLogin,
-        )
+        if (requestData.githubAccountLogin) {
+            await collection.setPluginData(
+                PluginDataKeys.githubAccountLogin,
+                requestData.githubAccountLogin,
+            )
+        }
         await collection.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
