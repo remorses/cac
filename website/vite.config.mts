@@ -14,6 +14,19 @@ export default defineConfig({
     define: {
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     },
+
+    test: {
+        pool: 'threads',
+        exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],
+        // disableConsoleIntercept: true,
+
+        poolOptions: {
+            threads: {
+                isolate: false,
+                // useAtomics: true,
+            },
+        },
+    },
     plugins: [
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         Inspect(),

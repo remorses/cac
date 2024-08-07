@@ -1,6 +1,6 @@
-import { StreamTextResult } from "ai"
-import stripJsonComments from "strip-json-comments"
-import { sleep } from "./utils"
+import { StreamTextResult } from 'ai'
+import stripJsonComments from 'strip-json-comments'
+import { sleep } from './utils'
 
 export function splitStringButKeepChar(str: string, char: string) {
     const result = [] as string[]
@@ -15,6 +15,69 @@ export function splitStringButKeepChar(str: string, char: string) {
         result.push(str.slice(start))
     }
     return result
+}
+
+export async function* yieldMaxEveryMs<T>({
+    ms,
+    stream,
+}: {
+    ms: number
+    stream: AsyncIterable<T>
+}): AsyncIterable<T> {
+    let start = Date.now()
+    let lastObj: T | undefined
+    for await (let obj of stream) {
+        let now = Date.now()
+        if (now - start > ms) {
+            yield obj
+            start = now
+            lastObj = undefined
+        } else {
+            lastObj = obj
+        }
+    }
+    if (lastObj !== undefined) {
+        yield lastObj
+    }
+}
+
+type UnwrapArray<T> = T extends Array<infer U> ? U : T
+export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
+    arrayField,
+    stream,
+}: {
+    arrayField: Field
+    stream: AsyncIterable<T>
+}): AsyncIterable<UnwrapArray<T[Field]>> {
+    let previousLength = 0
+    let lastItem: any = null
+
+    for await (const partialObject of stream) {
+        const currentArray = partialObject[arrayField] || []
+        if (!Array.isArray(currentArray)) {
+            console.error(
+                `objectStream[${arrayField}] is not an array:`,
+                currentArray,
+            )
+            continue
+        }
+        const currentLengthWithoutLast = currentArray.length - 1
+        lastItem = currentArray[currentArray.length - 1]
+        if (currentLengthWithoutLast > previousLength) {
+            // Yield new items, excluding the last one
+            for (let i = previousLength; i < currentLengthWithoutLast; i++) {
+                yield currentArray[i]
+            }
+
+            // Update previousLength and lastItem
+            previousLength = currentLengthWithoutLast
+        }
+    }
+
+    // Yield the last item after the stream is complete
+    if (lastItem != null) {
+        yield lastItem
+    }
 }
 
 export function removeMarkdownSnippets(text: string) {

@@ -11,376 +11,325 @@ test(
     async ({}) => {
         console.log('fetching formatted html')
         const html = await fetchFormattedHtml('https://holocron.so')
-        const res = await getWebsiteInfo({
+        console.log('extracting content')
+        const stream = await getWebsiteInfo({
             html,
-            onObject(obj) {
-                console.log('object', blue(JSON.stringify(obj)))
-            },
+
             signal: new AbortController().signal,
 
             onToken(token) {
                 process.stdout.write(token)
             },
         })
+        let res
+        for await (let message of stream) {
+            console.log(message)
+            if (message.finalObject) {
+                res = message.finalObject
+            }
+        }
         expect(res).toMatchInlineSnapshot(`
-          [
-            {
-              "content": "holocron",
-              "hierarchy": "nav/logo",
-            },
-            {
-              "content": "Home",
-              "hierarchy": "nav/link1",
-              "href": "./",
-            },
-            {
-              "content": "Blog",
-              "hierarchy": "nav/link2",
-              "href": "./",
-            },
-            {
-              "content": "Signup or Login",
-              "hierarchy": "nav/link3",
-              "href": "https://holocron.so/login?",
-            },
-            {
-              "content": "Notion like editor for your markdown files",
-              "hierarchy": "hero/heading",
-            },
-            {
-              "content": "Make your markdown files editable by everyone. Let non technical team members write docs, save 1000+ hours of your engineers time!",
-              "hierarchy": "hero/description",
-            },
-            {
-              "content": "Start Writing Now",
-              "hierarchy": "hero/button1",
-              "href": "https://holocron.so/login",
-            },
-            {
-              "content": "Wanna Talk?",
-              "hierarchy": "hero/button2",
-              "href": "/cdn-cgi/l/email-protection#11657e7c7c68517f7e65707a643f627e2e6264737b7472652c797e7d7e72637e7f",
-            },
-            {
-              "content": "",
-              "hierarchy": "hero/statistics/avatars",
-            },
-            {
-              "content": "Write,
-          Edit &
-          Publish",
-              "hierarchy": "text-only/heading1",
-            },
-            {
-              "content": "Create, Edit &
-          Push.",
-              "hierarchy": "text-only/heading2",
-            },
-            {
-              "content": "Create, Edit & Collaborate.",
-              "hierarchy": "text-only/heading3",
-            },
-            {
-              "content": "Platform to create, edit and publish your Markdown docs. Works with any codebase, easy collaboration, always in sync with your GitHub repo.",
-              "hierarchy": "text-only/description1",
-            },
-            {
-              "content": "Easier way to create, distribute, and monetize podcasts. Create your show using one platform. Use one tool to edit, collaborate on episodes, and publish at any time.",
-              "hierarchy": "text-only/description2",
-            },
-            {
-              "content": "Easier way to create, distribute, and monetize podcasts. Create your show using one platform. Use one tool to edit, collaborate on episodes, and publish at any time.",
-              "hierarchy": "text-only/description3",
-            },
-            {
-              "content": "Support for Markdown and MDX",
-              "hierarchy": "features/feature1/title",
-            },
-            {
-              "content": "Support for all popular website generators: Docusaurus, Mkdocs, Nextra, Vitepress and your own custom codebase.",
-              "hierarchy": "features/feature1/description",
-            },
-            {
-              "content": "10x faster onboarding",
-              "hierarchy": "features/feature2/title",
-            },
-            {
-              "content": "Non techincal team members no longer need to learn git, markdown, VSCode.",
-              "hierarchy": "features/feature2/description",
-            },
-            {
-              "content": "Sync with GitHub",
-              "hierarchy": "features-image-right/title",
-            },
-            {
-              "content": "Holocron changes back to GitHub",
-              "hierarchy": "features-image-right/description1",
-            },
-            {
-              "content": "All your holocron edits are automatically committed to your Github repository on standard MDX or markdown files. Custom components are just npm React components",
-              "hierarchy": "features-image-right/description2",
-            },
-            {
-              "content": "Holocron listens for any change from GitHub",
-              "hierarchy": "features-image-right/description3",
-            },
-            {
-              "content": "Automatic conflict resolution",
-              "hierarchy": "features-image-right/description4",
-            },
-            {
-              "content": "Let everyone edit your markdown files",
-              "hierarchy": "features/feature3/title",
-            },
-            {
-              "content": "Non techincal team members can now write Markdown",
-              "hierarchy": "features/feature3/description",
-            },
-            {
-              "content": "Real Time Collaboration",
-              "hierarchy": "features/feature4/title",
-            },
-            {
-              "content": "Support for all popular website generators: Docusaurus, Mkdocs, Nextra, Vitepress and your own custom codebase.",
-              "hierarchy": "features/feature4/description",
-            },
-            {
-              "content": "Own Your Content",
-              "hierarchy": "mobile-highlight/title1",
-            },
-            {
-              "content": "Don't let a third party store all your data, your docs are valuable as much as your code, you should keep them together on GitHub",
-              "hierarchy": "mobile-highlight/description1",
-            },
-            {
-              "content": "Listen us from our users",
-              "hierarchy": "mobile-highlight/title2",
-            },
-            {
-              "content": "We can't explain ourselves like our customers and their numbers can. Listen us from them.",
-              "hierarchy": "mobile-highlight/description2",
-            },
-            {
-              "content": "without Holocron",
-              "hierarchy": "chats/without-holocron/title",
-            },
-            {
-              "content": "Based on a true story",
-              "hierarchy": "chats/without-holocron/description",
-            },
-            {
-              "content": "Hey, I need to edit the docs, how can i do it?",
-              "hierarchy": "chats/without-holocron/chat1",
-            },
-            {
-              "content": "We keep our docs on Github, you will need to download the repo and commit your changes",
-              "hierarchy": "chats/without-holocron/chat2",
-            },
-            {
-              "content": "I created my Github account, now what?",
-              "hierarchy": "chats/without-holocron/chat3",
-            },
-            {
-              "content": "This is gonna be hard, go to our repo and download it",
-              "hierarchy": "chats/without-holocron/chat4",
-            },
-            {
-              "content": "Ok i downloaded the folder but it's full of .md files, how do i edit them?",
-              "hierarchy": "chats/without-holocron/chat5",
-            },
-            {
-              "content": "Download VSCode and open the folder, you will also have to learn markdown, search for a cheatsheet",
-              "hierarchy": "chats/without-holocron/chat6",
-            },
-            {
-              "content": "Ok that took quite a bit, i did my edits (i hope i didn't break anything), how do i publish?",
-              "hierarchy": "chats/without-holocron/chat7",
-            },
-            {
-              "content": "Stage, commit and push your changes with Git",
-              "hierarchy": "chats/without-holocron/chat8",
-            },
-            {
-              "content": "I need to login to Github with Git, do you know how to do it?",
-              "hierarchy": "chats/without-holocron/chat9",
-            },
-            {
-              "content": "Download Github Desktop it will make things easier",
-              "hierarchy": "chats/without-holocron/chat10",
-            },
-            {
-              "content": "Ok I pushed my changes to Github finally 🚀",
-              "hierarchy": "chats/without-holocron/chat11",
-            },
-            {
-              "content": "You took down prod, don't force push to main next time 😬",
-              "hierarchy": "chats/without-holocron/chat12",
-            },
-            {
-              "content": "with Holocron",
-              "hierarchy": "chats/with-holocron/title",
-            },
-            {
-              "content": "Hey, I need to edit the docs, how can i do it?",
-              "hierarchy": "chats/with-holocron/chat1",
-            },
-            {
-              "content": "Hey! Sign up to Holocron at this link and start writing https://holoc...",
-              "hierarchy": "chats/with-holocron/chat2",
-            },
-            {
-              "content": "Done, that was fast!",
-              "hierarchy": "chats/with-holocron/chat3",
-            },
-            {
-              "content": "Pricing",
-              "hierarchy": "pricing/title",
-            },
-            {
-              "content": "Pricing that scale with your team and company size",
-              "hierarchy": "pricing/description",
-            },
-            {
-              "content": "For Open Source",
-              "hierarchy": "pricing/plan1/title",
-            },
-            {
-              "content": "Free for open source projects",
-              "hierarchy": "pricing/plan1/description",
-            },
-            {
-              "content": "Starts at
-          $0
-          / per month",
-              "hierarchy": "pricing/plan1/price",
-            },
-            {
-              "content": "Real Time Collaboration",
-              "hierarchy": "pricing/plan1/feature1",
-            },
-            {
-              "content": "Sync with Github",
-              "hierarchy": "pricing/plan1/feature2",
-            },
-            {
-              "content": "MDX components",
-              "hierarchy": "pricing/plan1/feature3",
-            },
-            {
-              "content": "Request access",
-              "hierarchy": "pricing/plan1/cta",
-              "href": "/cdn-cgi/l/email-protection#f4809b99998db49c9b989b97869b9ada879bcb8781969e919780c99c9b989b97869b9ad1c6c49b84919ad1c6c4879b81869791",
-            },
-            {
-              "content": "Seat based",
-              "hierarchy": "pricing/plan2/title",
-            },
-            {
-              "content": "For companies and startups",
-              "hierarchy": "pricing/plan2/description",
-            },
-            {
-              "content": "Starts at
-          $6
-          / per seat per month (min 6 seats)",
-              "hierarchy": "pricing/plan2/price",
-            },
-            {
-              "content": "Real Time Collaboration",
-              "hierarchy": "pricing/plan2/feature1",
-            },
-            {
-              "content": "Sync with Github",
-              "hierarchy": "pricing/plan2/feature2",
-            },
-            {
-              "content": "MDX components",
-              "hierarchy": "pricing/plan2/feature3",
-            },
-            {
-              "content": "Get started now",
-              "hierarchy": "pricing/plan2/cta",
-              "href": "https://holocron.so/login",
-            },
-            {
-              "content": "Enterprise",
-              "hierarchy": "pricing/plan3/title",
-            },
-            {
-              "content": "For personalized needs",
-              "hierarchy": "pricing/plan3/description",
-            },
-            {
-              "content": "Starts at
-          Custom
-          / per month",
-              "hierarchy": "pricing/plan3/price",
-            },
-            {
-              "content": "Real Time Collaboration",
-              "hierarchy": "pricing/plan3/feature1",
-            },
-            {
-              "content": "Sync with Github",
-              "hierarchy": "pricing/plan3/feature2",
-            },
-            {
-              "content": "MDX components",
-              "hierarchy": "pricing/plan3/feature3",
-            },
-            {
-              "content": "Request access",
-              "hierarchy": "pricing/plan3/cta",
-              "href": "/cdn-cgi/l/email-protection#2652494b4b5f66484952474d53085549195553444c4345521b4e494a4945544948",
-            },
-            {
-              "content": "Need help?",
-              "hierarchy": "faq/title",
-            },
-            {
-              "content": "Don't worry, we got you. Here are some answers for your questions.",
-              "hierarchy": "faq/description",
-            },
-            {
-              "content": "What Markdown features are supported?",
-              "hierarchy": "faq/question1",
-            },
-            {
-              "content": "How does the GitHub Integration works?",
-              "hierarchy": "faq/question2",
-            },
-            {
-              "content": "How do i publish my docs to a website?",
-              "hierarchy": "faq/question3",
-            },
-            {
-              "content": "Do you support real time collaboration?",
-              "hierarchy": "faq/question4",
-            },
-            {
-              "content": "holocron",
-              "hierarchy": "footer/logo",
-            },
-            {
-              "content": "The editing platform for Markdown. Make your markdown files editable by everyone. Let non technical team members write docs, save 1000+ hours of your engineers time!",
-              "hierarchy": "footer/description",
-            },
-            {
-              "content": "Home",
-              "hierarchy": "footer/link1",
-              "href": "https://holocron.so/?",
-            },
-            {
-              "content": "Pricing",
-              "hierarchy": "footer/link2",
-              "href": "https://holocron.so/#pricing",
-            },
-            {
-              "content": "About",
-              "hierarchy": "footer/link3",
-              "href": "https://holocron.so/?",
-            },
-          ]
+          {
+            "extractedContent": [
+              {
+                "content": "holocron",
+                "hierarchy": "nav/logo",
+              },
+              {
+                "content": "Home",
+                "hierarchy": "nav/link1",
+                "href": "./",
+              },
+              {
+                "content": "Blog",
+                "hierarchy": "nav/link2",
+                "href": "./",
+              },
+              {
+                "content": "Signup or Login",
+                "hierarchy": "nav/button",
+                "href": "https://holocron.so/login?",
+              },
+              {
+                "content": "holocron is now in alpha",
+                "hierarchy": "header/news",
+              },
+              {
+                "content": "Notion like editor for your markdown files",
+                "hierarchy": "header/heading",
+              },
+              {
+                "content": "Start Writing Now",
+                "hierarchy": "header/button1",
+                "href": "https://holocron.so/login",
+              },
+              {
+                "content": "Wanna Talk?",
+                "hierarchy": "header/button2",
+                "href": "/cdn-cgi/l/email-protection#95e1faf8f8ecd5fbfae1f4fee0bbe6faaae6e0f7fff0f6e1a8fdfaf9faf6e7fafb",
+              },
+              {
+                "content": "Wanna Talk?",
+                "hierarchy": "header/button3",
+                "href": "/cdn-cgi/l/email-protection#285c474545516846475c49435d065b47175b5d4a424d4b5c15404744474b5a4746",
+              },
+              {
+                "content": "Make your markdown files editable by everyone. Let non technical team members write docs, save 1000+ hours of your engineers time!",
+                "hierarchy": "header/description",
+              },
+              {
+                "content": "Support for all popular website generators: Docusaurus, Mkdocs, Nextra, Vitepress and your own custom codebase.",
+                "hierarchy": "header/statistics",
+              },
+              {
+                "content": "Hero Image",
+                "hierarchy": "hero/image",
+              },
+              {
+                "content": "Write, Edit & Publish",
+                "hierarchy": "textOnlySection/title1",
+              },
+              {
+                "content": "Create, Edit & Push.",
+                "hierarchy": "textOnlySection/title2",
+              },
+              {
+                "content": "Create, Edit & Collaborate.",
+                "hierarchy": "textOnlySection/subheading",
+              },
+              {
+                "content": "Platform to create, edit and publish your Markdown docs. Works with any codebase, easy collaboration, always in sync with your GitHub repo.",
+                "hierarchy": "textOnlySection/description1",
+              },
+              {
+                "content": "Easier way to create, distribute, and monetize podcasts. Create your show using one platform. Use one tool to edit, collaborate on episodes, and publish at any time.",
+                "hierarchy": "textOnlySection/description2",
+              },
+              {
+                "content": "Easier way to create, distribute, and monetize podcasts. Create your show using one platform. Use one tool to edit, collaborate on episodes, and publish at any time.",
+                "hierarchy": "textOnlySection/description3",
+              },
+              {
+                "content": "Support for Markdown and MDX",
+                "hierarchy": "featureCards/feature1/title",
+              },
+              {
+                "content": "Support for all popular website generators: Docusaurus, Mkdocs, Nextra, Vitepress and your own custom codebase.",
+                "hierarchy": "featureCards/feature1/description",
+              },
+              {
+                "content": "10x faster onboarding",
+                "hierarchy": "featureCards/feature2/title",
+              },
+              {
+                "content": "Non techincal team members no longer need to learn git, markdown, VSCode.",
+                "hierarchy": "featureCards/feature2/description",
+              },
+              {
+                "content": "Let everyone edit your markdown files",
+                "hierarchy": "featureCards/feature3/title",
+              },
+              {
+                "content": "Non techincal team members can now write Markdown",
+                "hierarchy": "featureCards/feature3/description",
+              },
+              {
+                "content": "Own Your Content",
+                "hierarchy": "mobileHighlight/title1",
+              },
+              {
+                "content": "Listen us from our users",
+                "hierarchy": "mobileHighlight/title2",
+              },
+              {
+                "content": "Don't let a third party store all your data, your docs are valuable as much as your code, you should keep them together on GitHub",
+                "hierarchy": "mobileHighlight/description1",
+              },
+              {
+                "content": "We can't explain ourselves like our customers and their numbers can. Listen us from them.",
+                "hierarchy": "mobileHighlight/description2",
+              },
+              {
+                "content": "without Holocron",
+                "hierarchy": "chats/withoutHolocron/title",
+              },
+              {
+                "content": "Hey, I need to edit the docs, how can i do it?",
+                "hierarchy": "chats/withoutHolocron/message1",
+              },
+              {
+                "content": "We keep our docs on Github, you will need to download the repo and commit your changes",
+                "hierarchy": "chats/withoutHolocron/message2",
+              },
+              {
+                "content": "I created my Github account, now what?",
+                "hierarchy": "chats/withoutHolocron/message3",
+              },
+              {
+                "content": "This is gonna be hard, go to our repo and download it",
+                "hierarchy": "chats/withoutHolocron/message4",
+              },
+              {
+                "content": "Ok i downloaded the folder but it's full of .md files, how do i edit them?",
+                "hierarchy": "chats/withoutHolocron/message5",
+              },
+              {
+                "content": "Download VSCode and open the folder, you will also have to learn markdown, search for a cheatsheet",
+                "hierarchy": "chats/withoutHolocron/message6",
+              },
+              {
+                "content": "Ok that took quite a bit, i did my edits (i hope i didn't break anything), how do i publish?",
+                "hierarchy": "chats/withoutHolocron/message7",
+              },
+              {
+                "content": "Stage, commit and push your changes with Git",
+                "hierarchy": "chats/withoutHolocron/message8",
+              },
+              {
+                "content": "with Holocron",
+                "hierarchy": "chats/withHolocron/title",
+              },
+              {
+                "content": "Hey! Sign up to Holocron at this link and start writing https://holoc...",
+                "hierarchy": "chats/withHolocron/message1",
+              },
+              {
+                "content": "Done, that was fast!",
+                "hierarchy": "chats/withHolocron/message2",
+              },
+              {
+                "content": "Pricing",
+                "hierarchy": "pricing/title",
+              },
+              {
+                "content": "Pricing that scale with your team and company size",
+                "hierarchy": "pricing/description",
+              },
+              {
+                "content": "For Open Source",
+                "hierarchy": "pricing/plan1/title",
+              },
+              {
+                "content": "Free for open source projects",
+                "hierarchy": "pricing/plan1/description",
+              },
+              {
+                "content": "$0 / per month",
+                "hierarchy": "pricing/plan1/price",
+              },
+              {
+                "content": "Real Time Collaboration",
+                "hierarchy": "pricing/plan1/feature1",
+              },
+              {
+                "content": "Sync with Github",
+                "hierarchy": "pricing/plan1/feature2",
+              },
+              {
+                "content": "MDX components",
+                "hierarchy": "pricing/plan1/feature3",
+              },
+              {
+                "content": "Seat based",
+                "hierarchy": "pricing/plan2/title",
+              },
+              {
+                "content": "For companies and startups",
+                "hierarchy": "pricing/plan2/description",
+              },
+              {
+                "content": "$6 / per seat per month (min 6 seats)",
+                "hierarchy": "pricing/plan2/price",
+              },
+              {
+                "content": "Real Time Collaboration",
+                "hierarchy": "pricing/plan2/feature1",
+              },
+              {
+                "content": "Sync with Github",
+                "hierarchy": "pricing/plan2/feature2",
+              },
+              {
+                "content": "MDX components",
+                "hierarchy": "pricing/plan2/feature3",
+              },
+              {
+                "content": "Enterprise",
+                "hierarchy": "pricing/enterprise/title",
+              },
+              {
+                "content": "For personalized needs",
+                "hierarchy": "pricing/enterprise/description",
+              },
+              {
+                "content": "Custom / per month",
+                "hierarchy": "pricing/enterprise/price",
+              },
+              {
+                "content": "Need help?",
+                "hierarchy": "faq/title",
+              },
+              {
+                "content": "Don't worry, we got you. Here are some answers for your questions.",
+                "hierarchy": "faq/description",
+              },
+              {
+                "content": "What Markdown features are supported?",
+                "hierarchy": "faq/question1",
+              },
+              {
+                "content": "How does the GitHub Integration works?",
+                "hierarchy": "faq/question2",
+              },
+              {
+                "content": "How do i publish my docs to a website?",
+                "hierarchy": "faq/question3",
+              },
+              {
+                "content": "Do you support real time collaboration?",
+                "hierarchy": "faq/question4",
+              },
+              {
+                "content": "holocron",
+                "hierarchy": "footer/company",
+              },
+              {
+                "content": "The editing platform for Markdown. Make your markdown files editable by everyone. Let non technical team members write docs, save 1000+ hours of your engineers time!",
+                "hierarchy": "footer/description",
+              },
+              {
+                "content": "Home",
+                "hierarchy": "footer/product/link1",
+                "href": "https://holocron.so/?",
+              },
+              {
+                "content": "Pricing",
+                "hierarchy": "footer/product/link2",
+                "href": "https://holocron.so/#pricing",
+              },
+              {
+                "content": "About",
+                "hierarchy": "footer/company/link1",
+                "href": "https://holocron.so/?",
+              },
+              {
+                "content": "Blog",
+                "hierarchy": "footer/company/link2",
+                "href": "https://holocron.so/blog?",
+              },
+              {
+                "content": "Privacy",
+                "hierarchy": "footer/legal/link1",
+                "href": "https://holocron.so/privacy?",
+              },
+              {
+                "content": "Terms",
+                "hierarchy": "footer/legal/link2",
+                "href": "https://holocron.so/terms?x",
+              },
+            ],
+            "websiteDescription": "This is a SaaS website for the company Holocron, offering a platform to create, edit, and publish Markdown documents. The main purpose is to provide a collaborative editing experience for non-technical team members, saving time for engineers. The tone of the language is professional and informative. The website is in English.",
+          }
         `)
     },
     1000 * 100,

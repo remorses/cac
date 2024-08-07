@@ -78,3 +78,5 @@ export function afterFramerLogin({ key, code }) {
     url.searchParams.set('code', code)
     return url.toString()
 }
+
+export type Iterated<T> = T extends AsyncIterable<infer U> ? U : never

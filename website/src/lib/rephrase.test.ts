@@ -2,7 +2,11 @@ import { openai } from '@ai-sdk/openai'
 import dedent from 'dedent'
 import { streamText } from 'ai'
 import { expect, test } from 'vitest'
-import { NDJSONStream, removeMarkdownSnippets, splitStringButKeepChar } from 'website/src/lib/ndjson'
+import {
+    NDJSONStream,
+    removeMarkdownSnippets,
+    splitStringButKeepChar,
+} from 'website/src/lib/ndjson'
 import {
     convertExamplesToMarkdownList,
     rephrase,
@@ -11,17 +15,6 @@ import {
     fetchFormattedHtml,
     getWebsiteDescription,
 } from 'website/src/lib/htmlrewrite.server'
-
-test('getWebsiteDescription', async () => {
-    const exampleHtml = await fetchFormattedHtml('https://notaku.so')
-    const res = await getWebsiteDescription({
-        html: exampleHtml,
-        signal: new AbortController().signal,
-    })
-    expect(res.extractedDescription).toMatchInlineSnapshot(
-        `"SaaS website focused on providing a platform to create professional documentation and content management using Notion, with a friendly and approachable tone, in English."`,
-    )
-})
 
 test('convertExamplesToMarkdownList', async () => {
     expect(convertExamplesToMarkdownList(exampleTextToMigrate))
@@ -121,23 +114,28 @@ test(
         for await (let chunk of stream) {
             let prevLen = resultNodeIds.size
 
-            resultNodeIds.add(chunk.nodeId!)
-            if (resultNodeIds.size === prevLen) {
-                console.error('XXX duplicate nodeId', chunk)
-            }
-            const node = textToReplace.find((x) => x.nodeId === chunk.nodeId)
-            if (!node) {
-                console.error(
-                    'XXX LLM returned text for a non existent previous node',
-                    chunk,
+            let object = chunk.object
+            if (object) {
+                resultNodeIds.add(object.nodeId!)
+                if (resultNodeIds.size === prevLen) {
+                    console.error('XXX duplicate nodeId', object)
+                }
+                const node = textToReplace.find(
+                    (x) => x.nodeId === object.nodeId,
                 )
+                if (!node) {
+                    console.error(
+                        'XXX LLM returned text for a non existent previous node',
+                        object,
+                    )
+                }
+                const { nodeId, ...interestingFields } = object
+                results.push({
+                    name: node?.name,
+                    previousTextReal: node?.text,
+                    ...interestingFields,
+                })
             }
-            const { nodeId, ...interestingFields } = chunk
-            results.push({
-                name: node?.name,
-                previousTextReal: node?.text,
-                ...interestingFields,
-            })
 
             // console.log('chunk', { previous: node?.text, ...chunk })
         }
@@ -151,358 +149,249 @@ test(
         expect(results).toMatchInlineSnapshot(`
           [
             {
-              "nodeId": "SS1_IlbK4",
-              "previousText": "Get Real Estate income, without owning a house",
+              "content": "Turn Notion into a professional docs website",
+              "name": "Hero/Text Content/Heading/Heading",
               "previousTextReal": "Get Real Estate income, without owning a house",
-              "text": "Turn Notion into a professional docs website",
             },
             {
-              "nodeId": "r85QKi2A3",
-              "previousText": "Average return on investment of 7%",
+              "content": "Publish awesome websites using Notion to manage content.",
+              "name": "Hero/Text Content/Heading/List/Item/Text",
               "previousTextReal": "Average return on investment of 7%",
-              "text": "Publish awesome websites with Notion",
             },
             {
-              "nodeId": "xNZzVo4o8",
-              "previousText": "Withdraw your funds every 3 months",
+              "content": "Save 500+ hours of dev work.",
+              "name": "Hero/Text Content/Heading/List/Item/Text",
               "previousTextReal": "Withdraw your funds every 3 months",
-              "text": "Save 500+ hours of dev work",
             },
             {
-              "nodeId": "Pm2TsJPFV",
-              "previousText": "Investment selection from qualified SGRs",
+              "content": "No design or code skills required.",
+              "name": "Hero/Text Content/Heading/List/Item/Text",
               "previousTextReal": "Investment selection from qualified SGRs",
-              "text": "No design or code skills required",
             },
             {
-              "nodeId": "OGQRRyVtY",
-              "previousText": "Helping teams at the world's best companies",
+              "content": "Helping teams create stunning websites effortlessly.",
+              "name": "Customers/Supporting text",
               "previousTextReal": "Helping teams at the world's best companies",
-              "text": "Empowering creators at top companies",
             },
             {
-              "nodeId": "VcP2b7dBO",
-              "previousText": "Invest in income-generating real estate, easily.",
+              "content": "Everything you need to publish awesome content",
+              "name": "How-it-works/Heading",
               "previousTextReal": "Invest in income-generating real estate, easily.",
-              "text": "Everything you need to publish awesome content",
             },
             {
-              "nodeId": "PFUEfzvNa",
-              "previousText": "1",
+              "content": "1",
+              "name": "How-it-works/Text Content/Item/Step no./1",
               "previousTextReal": "1",
-              "text": "1",
             },
             {
-              "nodeId": "RdJFsLG7c",
-              "previousText": "Create your profile in 3 minutes",
+              "content": "Create your site in minutes",
+              "name": "How-it-works/Text Content/Item/Text",
               "previousTextReal": "Create your profile in 3 minutes",
-              "text": "Connect your Notion account",
             },
             {
-              "nodeId": "Y1bWcTLsu",
-              "previousText": "2",
+              "content": "Utilize built-in templates for your content",
+              "name": "How-it-works/Text Content/Item/Step no./2",
               "previousTextReal": "2",
-              "text": "2",
             },
             {
-              "nodeId": "Bssk7Dw7Y",
-              "previousText": "Invest in our real estate portfolio",
+              "content": "2",
+              "name": "How-it-works/Text Content/Item/Text",
               "previousTextReal": "Invest in our real estate portfolio",
-              "text": "Choose a template",
             },
             {
-              "nodeId": "gaujCenE2",
-              "previousText": "3",
+              "content": "Customize your website effortlessly",
+              "name": "How-it-works/Text Content/Item/Step no./3",
               "previousTextReal": "3",
-              "text": "3",
             },
             {
-              "nodeId": "sgSdApz6H",
-              "previousText": "View the trend of collected rents and appreciation",
+              "content": "3",
+              "name": "How-it-works/Text Content/Item/Text",
               "previousTextReal": "View the trend of collected rents and appreciation",
-              "text": "Customize your content",
             },
             {
-              "nodeId": "KmUWluNGN",
-              "previousText": "4",
+              "content": "Publish and share your site instantly",
+              "name": "How-it-works/Text Content/Item/Step no./4",
               "previousTextReal": "4",
-              "text": "4",
             },
             {
-              "nodeId": "MRzIAF1Ol",
-              "previousText": "Request redemption every 3 months, or reinvest your earnings",
+              "content": "4",
+              "name": "How-it-works/Text Content/Item/Text",
               "previousTextReal": "Request redemption every 3 months, or reinvest your earnings",
-              "text": "Publish and track your site",
             },
             {
-              "nodeId": "QLIAZsMFx",
-              "previousText": "Evaluate your potential return",
+              "content": "Get feedback and improve your content",
+              "name": "Simulator/Heading and supporting text/Heading and icon/Heading",
               "previousTextReal": "Evaluate your potential return",
-              "text": "Evaluate your website's performance",
             },
             {
-              "nodeId": "v5GFm72p8",
-              "previousText": "Whether it's building a passive income stream through rental properties or capitalizing on property appreciation.",
+              "content": "Explore the features that make Notaku unique",
+              "name": "Simulator/Heading and supporting text/Supporting text",
               "previousTextReal": "Whether it's building a passive income stream through rental properties or capitalizing on property appreciation.",
-              "text": "Monitor engagement and analytics to optimize your content.",
             },
             {
-              "nodeId": "gGZMdPVcX",
-              "previousText": "More accessible and secure than going solo",
+              "content": "More accessible and efficient than traditional methods",
+              "name": "Benefits/Heading",
               "previousTextReal": "More accessible and secure than going solo",
-              "text": "More accessible and secure than traditional site builders",
             },
             {
-              "nodeId": "BIOg3Ncg2",
-              "previousText": "Start without the need for large sums",
+              "content": "Start without technical expertise",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Text",
               "previousTextReal": "Start without the need for large sums",
-              "text": "Start without the need for coding skills",
             },
             {
-              "nodeId": "XAJKcOOW8",
-              "previousText": "Begin with just $1,500, instead of purchasing an entire property.",
+              "content": "Build your site starting from just $0",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Supporting text",
               "previousTextReal": "Begin with just $1,500, instead of purchasing an entire property.",
-              "text": "Begin with just a Notion account, no coding required.",
             },
             {
-              "nodeId": "uVCb29QJD",
-              "previousText": "Forget about operational management",
+              "content": "Forget about complex setups",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Text",
               "previousTextReal": "Forget about operational management",
-              "text": "Forget about technical maintenance",
             },
             {
-              "nodeId": "WuRl6Hyhg",
-              "previousText": "No tenant management or unexpected site issues. We take care of it.",
+              "content": "No need for hosting or domain management.",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Supporting text",
               "previousTextReal": "No tenant management or unexpected site issues. We take care of it.",
-              "text": "No server management or unexpected technical issues. We handle it all.",
             },
             {
-              "nodeId": "dF7KU7H_S",
-              "previousText": "Get liquidity in 3 months",
+              "content": "Get updates and improve your site easily",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Text",
               "previousTextReal": "Get liquidity in 3 months",
-              "text": "Get real-time updates",
             },
             {
-              "nodeId": "GUjrtdfZu",
-              "previousText": "No longer depend on agencies or market conditions.",
+              "content": "No more reliance on developers or designers.",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Supporting text",
               "previousTextReal": "No longer depend on agencies or market conditions.",
-              "text": "No longer depend on developers or technical staff.",
             },
             {
-              "nodeId": "PvcCFRx0p",
-              "previousText": "Benefit from diversification",
+              "content": "Benefit from a variety of templates",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Text",
               "previousTextReal": "Benefit from diversification",
-              "text": "Benefit from a variety of templates",
             },
             {
-              "nodeId": "OvsbDInDl",
-              "previousText": "Avoid concentrating your capital in a single property.",
+              "content": "Avoid the hassle of coding your website.",
+              "name": "Benefits/Text Content/Item/_Feature text/Text and supporting text/Supporting text",
               "previousTextReal": "Avoid concentrating your capital in a single property.",
-              "text": "Avoid spending time designing from scratch.",
             },
             {
-              "nodeId": "nk5stNgwE",
-              "previousText": "Impact",
+              "content": "Impact",
+              "name": "Benefits/Item/Text and supporting text/Text",
               "previousTextReal": "Impact",
-              "text": "Impact",
             },
             {
-              "nodeId": "ZNSqRTPTe",
-              "previousText": "We want to enable everyone to build wealth through real estate.",
+              "content": "We empower everyone to create their own websites.",
+              "name": "Benefits/Item/Text and supporting text/Supporting text",
               "previousTextReal": "We want to enable everyone to build wealth through real estate.",
-              "text": "We aim to empower everyone to create professional websites.",
             },
             {
-              "nodeId": "vBnw_mEnl",
-              "previousText": "Transparency",
+              "content": "Transparency",
+              "name": "Benefits/Item/Text and supporting text/Text",
               "previousTextReal": "Transparency",
-              "text": "Transparency",
             },
             {
-              "nodeId": "N0spmch6X",
-              "previousText": "We operate with utmost transparency with our investors. No surprises.",
+              "content": "We are clear about our processes and features.",
+              "name": "Benefits/Item/Text and supporting text/Supporting text",
               "previousTextReal": "We operate with utmost transparency with our investors. No surprises.",
-              "text": "We operate with full transparency. No hidden fees.",
             },
             {
-              "nodeId": "ZtpzDReuy",
-              "previousText": "Simplicity",
+              "content": "Simplicity",
+              "name": "Benefits/Item/Text and supporting text/Text",
               "previousTextReal": "Simplicity",
-              "text": "Simplicity",
             },
             {
-              "nodeId": "Ez7GQFDih",
-              "previousText": "We focus our energies on making the complex simple.",
+              "content": "We make website creation straightforward.",
+              "name": "Benefits/Item/Text and supporting text/Supporting text",
               "previousTextReal": "We focus our energies on making the complex simple.",
-              "text": "We focus on making website creation simple.",
             },
             {
-              "nodeId": "sBye5dU0E",
-              "previousText": "Reliability",
+              "content": "Reliability",
+              "name": "Benefits/Item/Text and supporting text/Text",
               "previousTextReal": "Reliability",
-              "text": "Reliability",
             },
             {
-              "nodeId": "sLHXEyRh6",
-              "previousText": "We work to provide the safest investment experience.",
+              "content": "We ensure a smooth experience for all users.",
+              "name": "Benefits/Item/Text and supporting text/Supporting text",
               "previousTextReal": "We work to provide the safest investment experience.",
-              "text": "We work to provide the most reliable website creation experience.",
             },
             {
-              "nodeId": "DXU4V16vB",
-              "previousText": "Optimise your return rate and retain more of your income",
+              "content": "Optimize your website for better visibility",
+              "name": "Metrics/Heading/Heading",
               "previousTextReal": "Optimise your return rate and retain more of your income",
-              "text": "Optimize your website's performance",
             },
             {
-              "nodeId": "igHOKwwEG",
-              "previousText": "Secure premium profits. We seamlessly provide you with the highest returns. Keep up to an extra 17.6% after taxes. Some of your earnings could be exempt from local and city taxes.",
+              "content": "Achieve great performance and speed with Notaku.",
+              "name": "Metrics/Subheading/Text",
               "previousTextReal": "Secure premium profits. We seamlessly provide you with the highest returns. Keep up to an extra 17.6% after taxes. Some of your earnings could be exempt from local and city taxes.",
-              "text": "Maximize your website's reach and user engagement with our tools.",
             },
             {
-              "nodeId": "EipHOyo0G",
-              "previousText": "11.7x",
+              "content": "11.7x",
+              "name": "Metrics/Item/Number",
               "previousTextReal": "11.7x",
-              "text": "10x",
             },
             {
-              "nodeId": "kHlbTp9Qv",
-              "previousText": "Attain prime returns. We effortlessly secure the utmost proceeds possible for you on here",
+              "content": "Enjoy enhanced features and seamless usability.",
+              "name": "Metrics/Item/Text",
               "previousTextReal": "Attain prime returns. We effortlessly secure the utmost proceeds possible for you on here",
-              "text": "Achieve top results. We ensure the best possible outcomes for your site.",
             },
             {
-              "nodeId": "JyH1PN0Mv",
-              "previousText": "17.6%",
+              "content": "17.6%",
+              "name": "Metrics/Item/Number",
               "previousTextReal": "17.6%",
-              "text": "20%",
             },
             {
-              "nodeId": "Vwox3zTmj",
-              "previousText": "Retain Up To 17.6% More, Post-Tax. A portion of your income may be free from state and local taxes.",
+              "content": "Retain more of your income with efficient tools.",
+              "name": "Metrics/Item/Text",
               "previousTextReal": "Retain Up To 17.6% More, Post-Tax. A portion of your income may be free from state and local taxes.",
-              "text": "Increase your engagement by up to 20%.",
             },
             {
-              "nodeId": "cJAcsVl7T",
-              "previousText": "0.45%",
+              "content": "0.45%",
+              "name": "Metrics/Item/Number",
               "previousTextReal": "0.45%",
-              "text": "0.5%",
             },
             {
-              "nodeId": "W6AjogO7U",
-              "previousText": "Minor fee. We shift your funds when a superior rate emerges from our Premium feature set.",
+              "content": "Minimal fees for premium services.",
+              "name": "Metrics/Item/Text",
               "previousTextReal": "Minor fee. We shift your funds when a superior rate emerges from our Premium feature set.",
-              "text": "Minimal fee. We continuously improve your site's performance.",
             },
             {
-              "nodeId": "GdtktOrDy",
-              "previousText": "Real estate is the cornerstone to build your wealth.",
+              "content": "Notion is the foundation for building your online presence.",
+              "name": "Features/Heading",
               "previousTextReal": "Real estate is the cornerstone to build your wealth.",
-              "text": "Turn Notion into the foundation of your online presence.",
             },
             {
-              "nodeId": "nmbjLnYjg",
-              "previousText": "Improved stability",
+              "content": "Improved flexibility",
+              "name": "Features/Item/Text Content/Text",
               "previousTextReal": "Improved stability",
-              "text": "Enhanced stability",
             },
             {
-              "nodeId": "Rwuqt5rvG",
-              "previousText": "Historically, real estate has provided lower volatility compared to stock investments.",
+              "content": "Notion provides a versatile platform for your content.",
+              "name": "Features/Item/Text Content/Supporting text",
               "previousTextReal": "Historically, real estate has provided lower volatility compared to stock investments.",
-              "text": "Historically, Notion-based sites provide stable performance compared to custom-built sites.",
             },
             {
-              "nodeId": "L9Y61DsaF",
-              "previousText": "Steady income",
+              "content": "Steady updates",
+              "name": "Features/Item/Text Content/Text",
               "previousTextReal": "Steady income",
-              "text": "Consistent updates",
             },
             {
-              "nodeId": "tefWgIUuj",
-              "previousText": "Generate a consistent income through renting without being correlated to the market trends.",
+              "content": "Receive continuous improvements and new features.",
+              "name": "Features/Item/Text Content/Supporting text",
               "previousTextReal": "Generate a consistent income through renting without being correlated to the market trends.",
-              "text": "Ensure your content remains up-to-date without constant manual intervention.",
             },
             {
-              "nodeId": "aV2icA9HT",
-              "previousText": "Inflation protection",
+              "content": "Protection from changes",
+              "name": "Features/Item/Text Content/Text",
               "previousTextReal": "Inflation protection",
-              "text": "Future-proof",
             },
             {
-              "nodeId": "ZtwUSI4jD",
-              "previousText": "Safeguard your investment against inflation with our built-in inflation protection toolset.",
+              "content": "Safeguard your website against unwanted changes.",
+              "name": "Features/Item/Text Content/Supporting text",
               "previousTextReal": "Safeguard your investment against inflation with our built-in inflation protection toolset.",
-              "text": "Protect your website from becoming outdated with our tools.",
             },
             {
-              "nodeId": "qXzMW4gBj",
-              "previousText": "Offriamo ai piccoli investitori la qualità degli investitori istituzionali.",
-              "previousTextReal": "Offriamo ai piccoli investitori la qualità degli investitori istituzionali.",
-              "text": "We offer top-tier quality for all users.",
-            },
-            {
-              "nodeId": "OEdynltbl",
-              "previousText": "Entità vigilata  da Banca di Italia",
-              "previousTextReal": "Entità vigilata  da Banca di Italia",
-              "text": "Regulated by top authorities",
-            },
-            {
-              "nodeId": "GpjQuak_P",
-              "previousText": "Siamo una SICAF approvata da Banca di Italia e Consob, vigilata costantemente dalle autorità.",
-              "previousTextReal": "Siamo una SICAF approvata da Banca di Italia e Consob, vigilata costantemente dalle autorità.",
-              "text": "We are a certified platform, constantly monitored by industry authorities.",
-            },
-            {
-              "nodeId": "co7B89zmA",
-              "previousText": "Learn more",
-              "previousTextReal": "Learn more",
-              "text": "Learn more",
-            },
-            {
-              "nodeId": "pr9zJKxIX",
-              "previousText": "Massima trasparenza",
-              "previousTextReal": "Massima trasparenza",
-              "text": "Maximum transparency",
-            },
-            {
-              "nodeId": "Cg2oZ9zMm",
-              "previousText": "Monitora i tuoi investimenti, scopri i dettagli delle operazioni. Tutto dalla nostra App.",
-              "previousTextReal": "Monitora i tuoi investimenti, scopri i dettagli delle operazioni. Tutto dalla nostra App.",
-              "text": "Track your site's performance and details. All from our dashboard.",
-            },
-            {
-              "nodeId": "sYqVHjGdV",
-              "previousText": "Learn more",
-              "previousTextReal": "Learn more",
-              "text": "Learn more",
-            },
-            {
-              "nodeId": "XoLRo8GTw",
-              "previousText": "Sicurezza e affidabilità",
-              "previousTextReal": "Sicurezza e affidabilità",
-              "text": "Security and reliability",
-            },
-            {
-              "nodeId": "pb7BQRxcQ",
-              "previousText": "I tuoi investimenti sono distinti dal capitale di Part App e in caso di cessazione di operatività non perd",
-              "previousTextReal": "I tuoi investimenti sono distinti dal capitale di Part App e in caso di cessazione di operatività non perd",
-              "text": "Your site data is distinct from Notaku's assets and remains safe under all circumstances.",
-            },
-            {
-              "nodeId": "ZYlpRrMcv",
-              "previousText": "Learn more",
-              "previousTextReal": "Learn more",
-              "text": "Learn more",
-            },
-            {
-              "nodeId": "NCu7_Gelj",
-              "previousText": "Invest in real estate today and start build your wealth",
+              "content": "Explore Notaku today and start building your site",
+              "name": "CTA section/Heading",
               "previousTextReal": "Invest in real estate today and start build your wealth",
-              "text": "Create your Notaku website today and start reaching your audience",
             },
           ]
         `)

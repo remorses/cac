@@ -1,10 +1,16 @@
 import { openai } from '@ai-sdk/openai'
 
-
-import { generateText, streamText } from 'ai'
-import { RephraseSchema,  } from 'website/src/lib/elysia-rewrite-plugin'
-import { NDJSONStream, removeMarkdownSnippets } from 'website/src/lib/ndjson'
-import { } from 'website/src/lib/elysia.server'
+import { generateText, streamObject, streamText } from 'ai'
+import { RephraseSchema } from 'website/src/lib/elysia-rewrite-plugin'
+import {
+    NDJSONStream,
+    removeMarkdownSnippets,
+    yieldMaxEveryMs,
+    yieldNewArrayItems,
+} from 'website/src/lib/ndjson'
+import {} from 'website/src/lib/elysia.server'
+import { z } from 'zod'
+import dedent from 'dedent'
 
 import('htmlrewriter')
 
@@ -81,19 +87,37 @@ export async function fetchFormattedHtml(url) {
     return formattedHtml
 }
 
-export async function getWebsiteInfo({
+enum GetWebsiteInfoObjectFields {
+    websiteDescription = 'websiteDescription',
+    extractedContent = 'extractedContent',
+}
+
+export async function* getWebsiteInfo({
     html,
     signal,
-    onObject,
+    yieldEveryMs = 100,
     onToken = (x: string) => {},
 }) {
     // const buffers = await splitImage({ imageBuffer: image })
-    const stream = await streamText({
+    let schema = z.object({
+        [GetWebsiteInfoObjectFields.websiteDescription]: z.string(),
+        [GetWebsiteInfoObjectFields.extractedContent]: z.array(
+            z.object({
+                content: z.string(),
+                hierarchy: z.string(),
+                href: z.string().optional(),
+            }),
+        ),
+    })
+
+    const stream1 = await streamObject({
         abortSignal: signal,
+        schema,
+
         messages: [
             {
                 role: 'user',
-                content: makePrompt({ html: html }),
+                content: makeExtractPrompt({ html: html }),
             },
             // {
             //     role: 'user',
@@ -108,20 +132,106 @@ export async function getWebsiteInfo({
             //     ],
             // },
         ],
+        mode: 'json',
+        // model: anthropic('claude-3-sonnet-20240229'),
+        // model: anthropic('claude-3-haiku-20240307'),
+        model: openai('gpt-4o-mini'),
+    })
+    // Promise.resolve().then(async () => {
+    //     for await (let chunk of stream.textStream) {
+    //         await onToken(chunk)
+    //     }
+    // })
+    for await (let chunk of yieldNewArrayItems({
+        arrayField: GetWebsiteInfoObjectFields.extractedContent,
+        stream: yieldMaxEveryMs({
+            ms: 200,
+            stream: stream1.partialObjectStream,
+        }),
+    })) {
+        yield {
+            object: chunk,
+        }
+    }
+    let finalObject = await stream1.object
+
+    const stream2 = await streamObject({
+        abortSignal: signal,
+
+        schema: schema
+            .extend({
+                reasoning: z.array(z.string()),
+            })
+            .pick({
+                reasoning: true,
+                [GetWebsiteInfoObjectFields.extractedContent]: true,
+            }),
+
+        messages: [
+            {
+                role: 'user',
+                content: makeExtractPrompt({ html: html }),
+            },
+            {
+                role: 'assistant',
+                content: JSON.stringify(finalObject, null, 2),
+            },
+            {
+                role: 'user',
+                content: dedent`Did you extract all the content on the page? Respond with JSON object with a field "reasoning" 
+                that explains why you think you did extract all the content or not. 
+                If you already extracted all the content respond with a JSON object with an empty array for "extractedContent". 
+                Only return new items, don't repeat the old ones. Return the "reasoning" field first.
+                `,
+            },
+            // {
+            //     role: 'user',
+            //     content: [
+            //         ...buffers.map((buffer) => {
+            //             return {
+            //                 type: 'image' as const,
+            //                 mimeType: 'image/jpeg',
+            //                 image: buffer,
+            //             }
+            //         }),
+            //     ],
+            // },
+        ],
+        mode: 'json',
 
         // model: anthropic('claude-3-sonnet-20240229'),
         // model: anthropic('claude-3-haiku-20240307'),
         model: openai('gpt-4o-mini'),
     })
-    let objects = [] as RephraseSchema['exampleTextToMigrate']
-    for await (let object of NDJSONStream({
-        stream,
-        onToken,
+    stream2.fullStream
+
+    for await (let chunk of yieldNewArrayItems({
+        arrayField: GetWebsiteInfoObjectFields.extractedContent,
+        stream: yieldMaxEveryMs({
+            ms: 200,
+            stream: stream2.partialObjectStream,
+        }),
     })) {
-        await onObject(object)
-        objects.push(object)
+        yield {
+            object: chunk,
+        }
     }
-    return objects
+    let finalObject2 = await stream2.object
+
+    if (finalObject2.extractedContent?.length) {
+        console.log(
+            `the LLM did not finish, had to run 2 times to get ${finalObject2.extractedContent.length} extracted content`,
+        )
+        finalObject.extractedContent.push(...finalObject2.extractedContent)
+    } else {
+        console.log(
+            'the LLM already returned all objects on the first run',
+            finalObject2.reasoning,
+        )
+    }
+
+    yield { finalObject }
+
     // for await (let chunk of openaiRes.textStream) {
     //     console.log('chunk', JSON.stringify(chunk, null, 2))
     // }
@@ -175,7 +285,7 @@ Generate the description now. Do not use terms like "The website is a " or "This
     )
 }
 
-function makePrompt({ html }) {
+function makeExtractPrompt({ html }) {
     return (
         `
 You are a web scraper tasked with extracting structured content from an HTML document. Your goal is to prepare this content for migration to a new website template, preserving its hierarchical structure. Follow these steps:
@@ -237,13 +347,13 @@ You are a web scraper tasked with extracting structured content from an HTML doc
 
 5. Ensure the hierarchy accurately reflects the document structure and content relationships. Use the image to understand the hierarchy, for example if a text is small in the screenshot don't use a heading hierarchy, but a paragraph hierarchy. Notice that each element in the hierarchy is a node in a tree-like structure, and the hierarchy itself is a tree. Some elements will have common prefix if they are part of the same section or subsection, such as "section/heading" or "section/paragraph".
 
-6. Output the results as NDJSON (newline-delimited JSON objects).
+6. Output the results as an object with an array field "${GetWebsiteInfoObjectFields.extractedContent}" of extracted objects.
 
 7. Include all text content on the page, your output should include all the text content from the HTML. Don't skip any text that is in the screenshot, even if small or with low contrast. Include text that is hidden, for example text inside a FAQ accordion. Sometimes a section is hidden in the screenshot because of an appear animation, but it's still important to include the text.
 
 8. Use the screenshot for context when determining the appropriate hierarchy and content type.
 
-9. Do not include any explanatory text or markdown formatting in the output like \`\`\`. Only output the NDJSON objects so i can easily parse the results.
+9. Do not include any explanatory text or markdown formatting in the output like \`\`\`. Only output json
 
 HTML Content:
 
@@ -277,13 +387,23 @@ Here is an example output:
     "hierarchy": "hero/heading",
 }
 
-You can use comments starting with // in the NDJSON output to think about the hierarchy and content and write more sophisticated and precise hierarchies.
 
-The example above only shows an example of the data format, you should try to get as many text as possible.Notice there is no markdown formatting, only NDJSON, with each JSON object on a new line.
+also generate a short description of what the website is about and return it before the extracted content, as a string in the "${GetWebsiteInfoObjectFields.websiteDescription}" field. 
+This description should include the following information:
+- Type of website (e.g., portfolio, SaaS, e-commerce, blog, etc.)
+- If this is a website for a company, the company name
+- If this is a website for a product, the product name
+- If this is a website for a person portfolio, the person's name
+- Main topic or purpose of the website
+- Tone of the language used (e.g., formal, funny, colloquial, etc.)
+- Language of the website (English or other)
+
+
+The example above only shows an example of the data format, you should try to get as many text as possible. 
 
 RETURN ALL THE TEXT THAT IS ON THE PAGE!
 
-DO NOT RETURN ANYTHING ELSE, ONLY NDJSON, DON'T START THE OUTPUT WITH ANYTHING ELSE. RETURN ONLY NDJSON.
+DO NOT RETURN ANYTHING ELSE, ONLY JSON, DON'T START THE OUTPUT WITH ANYTHING ELSE. RETURN ONLY JSON.
 
 
     `

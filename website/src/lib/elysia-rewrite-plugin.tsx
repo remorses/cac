@@ -1,11 +1,12 @@
 import { Elysia, Static, t } from 'elysia'
+import { z } from 'zod'
 import stripJsonComments from 'strip-json-comments'
 
 import { EventIterator } from 'event-iterator'
 
 import { openai } from '@ai-sdk/openai'
 import { swagger } from '@elysiajs/swagger'
-import { streamText, StreamTextResult } from 'ai'
+import { streamObject, streamText, StreamTextResult } from 'ai'
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
@@ -16,15 +17,19 @@ import {
     getWebsiteInfo,
 } from 'website/src/lib/htmlrewrite.server'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { sleep } from 'website/src/lib/utils'
-import { NDJSONStream } from 'website/src/lib/ndjson'
+import { Iterated, sleep } from 'website/src/lib/utils'
+import {
+    NDJSONStream,
+    yieldMaxEveryMs,
+    yieldNewArrayItems,
+} from 'website/src/lib/ndjson'
 
 const RephraseSchema = t.Object({
     description: t.String(),
     textToReplace: t.Array(
         t.Object({
-            name: t.Optional(t.String()),
-            text: t.Optional(t.String()),
+            // name: t.Optional(t.String()),
+            content: t.Optional(t.String()),
             nodeId: t.Optional(t.String()),
             href: t.Optional(t.String()),
             // index: t.Number(),
@@ -42,55 +47,54 @@ const RephraseSchema = t.Object({
 
 export type RephraseSchema = Static<typeof RephraseSchema>
 
-const RephraseResultItem = t.Object({
-    nodeId: t.Optional(t.String()),
-    text: t.Optional(t.String()),
-    href: t.Optional(t.String()),
-})
-
-export type RephraseResultItem = Static<typeof RephraseResultItem>
-
 function generateMigrationPrompt({
     description,
     textToReplace,
     exampleTextToMigrate,
 }: RephraseSchema): string {
     return `
-Current Template Content (only consider the phrasing, not the content):
+You are an AI assistant tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
+
+Current Template Structure:
 ${JSON.stringify(textToReplace, null, 2)}
 
-This is the current template content. Ignore its meaning; we want to replace it with the content of another website that is being migrated to this template, but still keep the template text length and structure.
-
-Description and instructions from the website owner:
+Website Owner's Description and Instructions:
 \`\`\`
-${description || 'No description provided'}
+${description || 'No specific instructions provided'}
 \`\`\`
 
-
-Instructions:
-1. Replace the content of each item with text that fits the above description.
-2. Maintain similar content length and structure where appropriate.
-3. Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
-4. Update href values if present and relevant to the new content.
-5. Use the content from current website being migrated if it fits an item in the template structure:
-
-Content from the website being migrate:
+Content from Website Being Migrated:
 ${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
-Output: Provide an NDJSON list of rephrased content items. Each item should be a valid JSON object on a single line, containing 'nodeId', 'text', 'href' (if applicable), and 'previousText' fields. Ensure that:
-1. All items from the template content should be represented in the output.
-2. Each output item uses the exact nodeId from the corresponding template item.
-3. The 'text' field contains the new content based on the new website description and the migrated website content but with similar length to the template text that it replaces.
-4. The 'href' field is updated if present and relevant to the new content.
-5. The 'previousText' field contains the original text from the template.
+Instructions:
+• Replace the content of each item in the template with text that aligns with the website owner's description and the migrated content.
+• Maintain similar content length and structure to the original template where appropriate.
+• Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
+• Update href values if present and relevant to the new content.
+• Use content from the website being migrated if it fits well within the template structure.
+• If the migrated content doesn't fit perfectly, create new content that matches the style and intent of the website being migrated.
 
-Note: The example content structure is for reference and may not cover all items in the template content. Use it as a guide but ensure all current template items are processed and replaced. If a piece of text from the website being migrated fits a spot in the template perfectly use it as it is.
+Output: Provide a JSON object with two main fields:
 
-Return only NDJSON and not a JSON array, think step by step using comment, start a line with // if you want to reason about an item before writing it.
+• "${RephraseObjectFields.stepByStepReasoning}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
 
-The things you should keep in mind when replacing old text with new one is
-- The size of the new text should be similar to the template text
-- If the example texts given don't fit the text to replace because too long or too short or different in semantics, you can invent new ones that follow the same  as the website being migrated
+• "${RephraseObjectFields.convertedItems}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
+  - "content": The new or migrated content
+  - "nodeId": The identifier from the original template item
+  - "href": Updated link if applicable (optional)
+
+Remember:
+• Aim for a similar text length to the original template items.
+• Ensure all items from the template are represented in the output.
+• Balance between using migrated content and creating new content that fits the template and owner's description.
+• Maintain the overall tone and style of the website being migrated.
+
+Please provide a well-structured and valid JSON object as your response, adhering to the schema defined.
+
+Provide a new text replacement for all the current template text items.
+
+"${RephraseObjectFields.convertedItems}" should come before "${RephraseObjectFields.stepByStepReasoning}" in the JSON object.
+
 `
 }
 
@@ -142,21 +146,32 @@ export const rewritePluginApp = new Elysia({
                         body
                     let words = 0
                     let chars = 0
+                    let objectStream = rephrase({
+                        description,
+                        exampleTextToMigrate,
+                        textToReplace,
+                        onToken(token) {
+                            // process.stdout.write(token)
+                        },
+                        signal: request.signal,
+                    })
+                    let finalObject: Iterated<
+                        typeof objectStream
+                    >['finalObject']
                     try {
-                        for await (let chunk of rephrase({
-                            description,
-                            exampleTextToMigrate,
-                            textToReplace,
-                            onToken(token) {
-                                // process.stdout.write(token)
-                            },
-                            signal: request.signal,
-                        })) {
-                            chars += chunk?.text?.length || 0
-                            words +=
-                                splitIntoWords(chunk?.text || '')?.length || 0
-                            console.log('chunk', chunk)
-                            yield chunk
+                        for await (let chunk of objectStream) {
+                            let object = chunk.object
+                            if (object) {
+                                chars += object?.content?.length || 0
+                                words +=
+                                    splitIntoWords(object.content || '')
+                                        ?.length || 0
+                                console.log('object', object)
+                                yield object
+                            }
+                            if (chunk.finalObject) {
+                                finalObject = chunk.finalObject
+                            }
                         }
                     } catch (e) {
                         notifyError(e, 'error rephrasing ')
@@ -315,44 +330,34 @@ export const rewritePluginApp = new Elysia({
                             // screenshot(url),
                         ])
 
-                        let allObjects =
-                            [] as RephraseSchema['exampleTextToMigrate']
-                        let emitter = new EventIterator<{
-                            object: RephraseSchema['exampleTextToMigrate'][0]
-                            message: string
-                        }>((queue) => {
-                            getWebsiteInfo({
-                                html,
-                                signal: request.signal,
-                                onObject(object) {
-                                    console.log(
-                                        'adding object to queue',
-                                        object,
-                                    )
-                                    allObjects.push(object)
-                                    queue.push({
-                                        object,
-                                        message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
-                                    })
-                                },
-                            })
-                                .then((result) => {
-                                    queue.stop()
-                                })
-                                .catch((error) => {
-                                    queue.fail(error)
-                                })
+                        let stream = getWebsiteInfo({
+                            html,
+                            signal: request.signal,
                         })
+                        let finalObject: Iterated<typeof stream>['finalObject']
+                        for await (let chunk of stream) {
+                            if (chunk.finalObject) {
+                                finalObject = chunk.finalObject
+                                const websiteDescription =
+                                    chunk.finalObject.websiteDescription
+                                yield {
+                                    websiteDescription,
+                                }
+                            }
+                            let object = chunk.object
+                            if (object) {
+                                yield {
+                                    object,
+                                    message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
+                                }
+                            }
+                        }
 
                         let descriptionPromise = getWebsiteDescription({
                             html,
                             signal: request.signal,
                         })
 
-                        for await (let chunk of emitter) {
-                            console.log('chunk', chunk)
-                            yield chunk
-                        }
                         if (request.signal.aborted) {
                             return
                         }
@@ -366,6 +371,12 @@ export const rewritePluginApp = new Elysia({
                         }
 
                         let host = new URL(url).hostname
+                        const allObjects = finalObject?.extractedContent || []
+                        if (!allObjects.length) {
+                            console.log(
+                                `getWebsiteInfo did not return any objects`,
+                            )
+                        }
                         await Promise.all([
                             db
                                 .insertInto('ScrapedWebsitePage')
@@ -406,6 +417,11 @@ export const rewritePluginApp = new Elysia({
             )
     })
 
+enum RephraseObjectFields {
+    convertedItems = 'convertedItems',
+    stepByStepReasoning = 'stepByStepReasoning',
+}
+
 export async function* rephrase({
     exampleTextToMigrate,
     description,
@@ -417,7 +433,17 @@ export async function* rephrase({
     onToken?: (token: string) => void
 }) {
     // console.log(oldText)
-    const stream = await streamText({
+    let schema = z.object({
+        [RephraseObjectFields.stepByStepReasoning]: z.array(z.string()),
+        [RephraseObjectFields.convertedItems]: z.array(
+            z.object({
+                content: z.string(),
+                nodeId: z.string(),
+                href: z.string().optional(),
+            }),
+        ),
+    })
+    const stream1 = await streamObject({
         messages: [
             {
                 role: 'user',
@@ -428,15 +454,27 @@ export async function* rephrase({
                 }),
             },
         ],
-        model: openai('gpt-4o'),
+        schema,
+        model: openai('gpt-4o-mini'),
         temperature: 0.5,
         abortSignal: signal,
     })
-    yield* NDJSONStream<RephraseResultItem>({
-        stream,
-        minTime: 200,
-        onToken,
+    let objectStream = yieldNewArrayItems({
+        arrayField: RephraseObjectFields.convertedItems,
+        stream: yieldMaxEveryMs({
+            ms: 200,
+            stream: stream1.partialObjectStream,
+        }),
     })
+    for await (let object of objectStream) {
+        yield {
+            object: object,
+        }
+    }
+    let finalObject = await stream1.object
+    yield {
+        finalObject,
+    }
 }
 
 const unauthorizedResponse = new Response('Unauthorized', {
