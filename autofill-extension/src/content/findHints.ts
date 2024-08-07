@@ -164,55 +164,7 @@ function isClickable(element: Element) {
 // based on https://github.com/guyht/vimari/blob/master/vimari.safariextension/linkHints.js
 function isVisible(element, clientRect) {
     return true
-    const computedStyle = demandComputedStyle(element)
-    // remove elements that are barely within the viewport, tiny, or invisible
-    switch (true) {
-        case !clientRect:
-        case clientRect.top < 0:
-        case clientRect.top >= innerHeight - 4:
-        case clientRect.left < 0:
-        case clientRect.left >= innerWidth - 4:
-        case clientRect.width < 3:
-        case clientRect.height < 3:
-        case computedStyle.visibility !== 'visible':
-        case computedStyle.display === 'none':
-            return false
-    }
-
-    // Eliminate elements hidden by another overlapping element.
-    // To do that, get topmost element at some offset from upper-left corner of clientRect
-    // and check whether it is the element itself or one of its descendants.
-    // The offset is needed to account for coordinates truncation and elements with rounded borders.
-    //
-    // Coordinates truncation occurs when using zoom. In that case, clientRect coords should be float,
-    // but we get integers instead. That makes so that elementFromPoint(clientRect.left, clientRect.top)
-    // sometimes returns an element different from the one clientRect was obtained from.
-    // So we introduce an offset to make sure elementFromPoint hits the right element.
-    //
-    // For elements with a rounded top-left border, the upper-left corner lies outside the element.
-    // Then, we need an offset to get to the point nearest to the upper-left corner, but within border.
-    const coordTruncationOffset = 2 // A value of 1 has been observed not to be enough,
-    // so we heuristically choose 2, which seems to work well.
-    // We know a value of 2 is still safe (lies within the element) because,
-    // from the code above, width & height are >= 3.
-    const radius = parseFloat(computedStyle.borderTopLeftRadius)
-    const roundedBorderOffset = Math.ceil(radius * (1 - Math.sin(Math.PI / 4)))
-    const offset = Math.max(coordTruncationOffset, roundedBorderOffset)
-    if (offset >= clientRect.width || offset >= clientRect.height) {
-        return false
-    }
-    let el = document.elementFromPoint(
-        clientRect.left + offset,
-        clientRect.top + offset,
-    )
-    while (el && el !== element) {
-        el = el.parentNode
-    }
-    if (!el) {
-        return false
-    }
-
-    return true
+    
 }
 
 /**

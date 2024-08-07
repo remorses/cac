@@ -11,7 +11,7 @@ import {
     Paths,
     RouteIds,
     basePath,
-    getMarkdownPluginData,
+    getExtensionData,
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 
@@ -33,7 +33,7 @@ import {
 import { Link, createBrowserRouter } from 'react-router-dom'
 
 async function loader({ request }) {
-    const { sessionKey } = await getMarkdownPluginData()
+    const { sessionKey } = await getExtensionData()
 
     return { sessionKey }
 }
@@ -156,7 +156,7 @@ const router = createMemoryRouter(
 )
 
 async function rootLoader({ request }) {
-    const { sessionKey } = await getMarkdownPluginData()
+    const { sessionKey } = await getExtensionData()
 
     console.log(' session key', sessionKey)
 

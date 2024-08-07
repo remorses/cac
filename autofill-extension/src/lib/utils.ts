@@ -42,8 +42,8 @@ export function formatLargeNumber(x: number) {
 
 export const basePath = import.meta.env.BASE_URL || '/'
 
-export async function getMarkdownPluginData() {
-    return {}
+export async function getExtensionData() {
+    return { sessionKey: '' }
 }
 
 export enum ChromeMessages {
