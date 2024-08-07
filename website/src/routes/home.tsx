@@ -4,14 +4,20 @@ import FooterFramerComponent from '../framer/footer'
 import HeroFramerComponent from '../framer/hero'
 import NavFramerComponent from '../framer/nav'
 import PricingBannerFramerComponent from '../framer/pricing-banner'
-import { installFramerPluginUrl, framerUrl } from '../lib/env'
+import { installFramerPluginUrl, framerUrl, env } from '../lib/env'
+import orgImg from 'website/public/ogimage.jpeg'
 
 export const meta: MetaFunction = () => {
     return [
-        { title: 'Unframer - Framer Plugins' },
+        { title: 'Migrate Template - Framer Plugin' },
         {
             name: 'description',
-            content: 'Framer Plugins to make Framer more powerful',
+            content:
+                'Framer Plugin to migrate content from your existing website to a new Framer template, or start from scratch with a description of your new website. Save hours of work',
+        },
+        {
+            property: 'og:image',
+            content: new URL(orgImg, env.PUBLIC_URL).href,
         },
     ]
 }
