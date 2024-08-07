@@ -49,14 +49,10 @@ export type RephraseSchema = Static<typeof RephraseSchema>
 
 function generateMigrationPrompt({
     description,
-    textToReplace,
     exampleTextToMigrate,
-}: RephraseSchema): string {
+}): string {
     return `
 You are an AI assistant tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
-
-Current Template Structure:
-${JSON.stringify(textToReplace, null, 2)}
 
 Website Owner's Description and Instructions:
 \`\`\`
@@ -422,6 +418,17 @@ enum RephraseObjectFields {
     convertedItems = 'convertedItems',
     stepByStepReasoning = 'stepByStepReasoning',
 }
+
+const ITEMS_PER_ITERATION = 25
+
+function splitArrayInChunks(arr: any[], chunkSize: number) {
+    let result = [] as any[][]
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        result.push(arr.slice(i, i + chunkSize))
+    }
+    return result
+}
+
 export async function* rephrase({
     exampleTextToMigrate,
     description,
@@ -452,26 +459,38 @@ export async function* rephrase({
             role: 'user',
             content: generateMigrationPrompt({
                 description,
-                textToReplace: oldText,
                 exampleTextToMigrate,
             }),
         },
     ]
 
-    let shouldContinue = missedItems.length > 0 || iterationsCount === 0
-    while (shouldContinue && iterationsCount < 3) {
-        if (missedItems.length > 0) {
-            console.log(`missed ${missedItems.length} items, trying again`)
+    const chunkedOldText = splitArrayInChunks(oldText, ITEMS_PER_ITERATION)
+
+    while (iterationsCount < chunkedOldText.length || missedItems.length > 0) {
+        console.log('iterationsCount', iterationsCount)
+        let currentChunk = [] as any[]
+        if (iterationsCount < chunkedOldText.length) {
+            currentChunk = chunkedOldText[iterationsCount]
+            console.log(`asking to convert ${currentChunk.length} items`)
             messages.push({
                 role: 'user',
-                content: `You missed ${missedItems.length} items, return an object with these new items text converted: ${JSON.stringify(missedItems)}`,
+                content: `Please convert the following template items:\n${JSON.stringify(currentChunk, null, 2)}`,
             })
+        } else if (missedItems.length > 0) {
+            console.log(`asking to convert ${missedItems.length} missing items`)
+            currentChunk = missedItems
+            messages.push({
+                role: 'user',
+                content: `You missed ${missedItems.length} items, please convert these remaining template items:\n${JSON.stringify(missedItems, null, 2)}`,
+            })
+        } else {
+            throw new Error('No more items to convert')
         }
 
         const stream = await streamObject({
             messages,
             schema,
-            model: openai('gpt-4o-mini'),
+            model: openai('gpt-4o'),
             temperature: 0.5,
             abortSignal: signal,
         })
@@ -491,9 +510,22 @@ export async function* rephrase({
         }
 
         const iterationObject = await stream.object
+
+        if (
+            iterationObject[RephraseObjectFields.convertedItems].length !==
+            currentChunk.length
+        ) {
+            console.log(
+                `LLM returned different number of items than we asked for: ${currentChunk.length} vs ${iterationObject[RephraseObjectFields.convertedItems].length}`,
+            )
+        }
+
         if (!finalObject) {
             finalObject = iterationObject
         } else {
+            finalObject.stepByStepReasoning.push(
+                ...iterationObject.stepByStepReasoning,
+            )
             finalObject.convertedItems.push(...iterationObject.convertedItems)
         }
 
@@ -502,14 +534,15 @@ export async function* rephrase({
             content: JSON.stringify(iterationObject, null, 2),
         })
 
+        iterationsCount++
+
+        // Update missed items
         missedItems = oldText.filter(
             (oldItem) =>
                 !finalObject!.convertedItems.some(
                     (newItem) => newItem.nodeId === oldItem.nodeId,
                 ),
         )
-
-        iterationsCount++
     }
 
     yield {
