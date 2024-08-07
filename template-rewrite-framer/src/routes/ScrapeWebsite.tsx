@@ -1,7 +1,12 @@
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import NProgress from 'nprogress'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { pluginApiClient, withMode, Paths, globalState } from 'template-rewrite-framer/src/lib/utils'
+import {
+    pluginApiClient,
+    withMode,
+    Paths,
+    globalState,
+} from 'template-rewrite-framer/src/lib/utils'
 import { useState, useRef, useEffect, Component } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate, useLocation, RouteObject } from 'react-router'
@@ -72,7 +77,7 @@ function ScrapeWebsiteComponent() {
                     }
 
                     flushSync(() => {
-                        setLogs((logs) => [...logs, chunk.message])
+                        setLogs((logs) => [...logs, chunk.message || ''])
                     })
                     // scroll to bottom
                     const container = containerRef.current

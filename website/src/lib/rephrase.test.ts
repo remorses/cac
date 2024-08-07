@@ -1,20 +1,13 @@
 import { openai } from '@ai-sdk/openai'
-import dedent from 'dedent'
 import { streamText } from 'ai'
+import dedent from 'dedent'
 import { expect, test } from 'vitest'
+import { convertExamplesToMarkdownList, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import {
     NDJSONStream,
     removeMarkdownSnippets,
     splitStringButKeepChar,
 } from 'website/src/lib/ndjson'
-import {
-    convertExamplesToMarkdownList,
-    rephrase,
-} from 'website/src/lib/elysia-rewrite-plugin'
-import {
-    fetchFormattedHtml,
-    getWebsiteDescription,
-} from 'website/src/lib/htmlrewrite.server'
 
 test('convertExamplesToMarkdownList', async () => {
     expect(convertExamplesToMarkdownList(exampleTextToMigrate))
@@ -97,9 +90,9 @@ test('convertExamplesToMarkdownList', async () => {
 })
 
 test(
-    'rephrase a test template',
+    'rewrite a test template',
     async () => {
-        const stream = await rephrase({
+        const stream = await rewriteTemplateContent({
             description:
                 'A website to generate websites from Notion called Notaku',
             textToReplace,

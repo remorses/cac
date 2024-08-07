@@ -11,7 +11,7 @@ import {
     isWebPageNode,
 } from 'framer-plugin'
 import type { RouteType } from 'website/src/lib/elysia.server'
-import { RephraseSchema } from 'website/src/lib/elysia-rewrite-plugin'
+import { RewriteSchema } from 'website/src/lib/rewrite'
 
 export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
     env.PUBLIC_URL!,
@@ -219,7 +219,7 @@ export function createBuyLink({ email, orgId }) {
 }
 
 export const globalState = {
-    exampleTextToMigrate: [] as RephraseSchema['exampleTextToMigrate'],
+    exampleTextToMigrate: [] as RewriteSchema['exampleTextToMigrate'],
     extractedDescription: '',
 }
 

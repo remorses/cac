@@ -36,10 +36,7 @@ import {
     useRevalidator,
 } from 'react-router'
 
-import {
-    RephraseSchema,
-    RephraseResultItem,
-} from 'website/src/lib/elysia-rewrite-plugin'
+import { RewriteSchema } from 'website/src/lib/rewrite'
 
 import { sleep } from 'website/src/lib/utils'
 
@@ -52,9 +49,7 @@ function SimplePromptComponent({}) {
         globalState.extractedDescription || '',
     )
     const [isLoading, setIsLoading] = useState(false)
-    const [oldNodes, setOldNodes] = useState<RephraseSchema['textToReplace']>(
-        [],
-    )
+    const [oldNodes, setOldNodes] = useState<RewriteSchema['textToReplace']>([])
 
     useEffect(() => {
         // abort when leaving the page
@@ -133,7 +128,7 @@ function SimplePromptComponent({}) {
             setError('No desktop found')
             return
         }
-        let oldText = [] as RephraseSchema['textToReplace']
+        let oldText = [] as RewriteSchema['textToReplace']
         let i = 0
 
         for (let rootNode of rootNodes) {
@@ -146,11 +141,11 @@ function SimplePromptComponent({}) {
                     const text = await node.getText()
                     let nodeId = node.id
                     if (text) {
-                        const textData: RephraseSchema['textToReplace'][number] =
+                        const textData: RewriteSchema['textToReplace'][number] =
                             {
                                 // index: i,
                                 nodeId,
-                                text,
+                                content: text,
                                 name: await getNodePath(node),
                             }
                         setOldNodes((oldNodes) => [...oldNodes, textData])
@@ -220,13 +215,15 @@ function SimplePromptComponent({}) {
                     console.log(`no node found for id ${name}`)
                     continue
                 }
-                const old = oldText.find((x) => x.nodeId === chunk.nodeId)?.text
+                const old = oldText.find(
+                    (x) => x.nodeId === chunk.nodeId,
+                )?.content
                 if (!old) {
                     console.log(`no old text found for node ${chunk.nodeId}`)
                     continue
                 }
                 console.log(
-                    `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.text)}`,
+                    `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
                 )
                 let currentParent = (await node.getParent()) || undefined
                 const parents = await collectGenerator(getParentNodes(node))
@@ -247,9 +244,9 @@ function SimplePromptComponent({}) {
                     prevNode = undefined
                 }
 
-                if (chunk.text) {
-                    let words = chunk.text.split(/\s+/).length
-                    await node.setText(chunk.text)
+                if (chunk.content) {
+                    let words = chunk.content.split(/\s+/).length
+                    await node.setText(chunk.content)
                     setRemainingCredits(Math.max(0, credits.remaining - words))
                 } else {
                     console.log('no text found in chunk', chunk)
@@ -348,8 +345,8 @@ function SimplePromptComponent({}) {
                         }
                         await Promise.all(
                             oldNodes.map(async (node) => {
-                                const { nodeId, text } = node
-                                if (!text || !nodeId) {
+                                const { nodeId, content } = node
+                                if (!content || !nodeId) {
                                     return
                                 }
 
@@ -357,12 +354,12 @@ function SimplePromptComponent({}) {
                                     const framerNode =
                                         await framer.getNode(nodeId)
                                     if (isTextNode(framerNode)) {
-                                        await framerNode.setText(text)
+                                        await framerNode.setText(content)
                                     }
                                 } catch (e) {
                                     console.log(
                                         'error undoing text for ',
-                                        text,
+                                        content,
                                         e,
                                     )
                                 }
