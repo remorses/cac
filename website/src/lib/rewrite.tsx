@@ -1,28 +1,10 @@
-import { Elysia, Static, t } from 'elysia'
+import { Static, t } from 'elysia'
 import { z } from 'zod'
-import stripJsonComments from 'strip-json-comments'
-
-import { EventIterator } from 'event-iterator'
 
 import { openai } from '@ai-sdk/openai'
-import { swagger } from '@elysiajs/swagger'
-import { CoreMessage, streamObject, streamText, StreamTextResult } from 'ai'
-import { notifyError } from 'website/src/lib/errors'
+import { CoreMessage, streamObject } from 'ai'
 
-import { db } from 'db/kysely'
-import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
-import {
-    fetchFormattedHtml,
-    getWebsiteDescription,
-    getWebsiteInfo,
-} from 'website/src/lib/htmlrewrite.server'
-import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { Iterated, sleep } from 'website/src/lib/utils'
-import {
-    NDJSONStream,
-    yieldMaxEveryMs,
-    yieldNewArrayItems,
-} from 'website/src/lib/ndjson'
+import { yieldMaxEveryMs, yieldNewArrayItems } from 'website/src/lib/ndjson'
 
 export const RewriteSchema = t.Object({
     description: t.String(),
