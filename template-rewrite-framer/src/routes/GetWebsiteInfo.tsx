@@ -19,9 +19,10 @@ export function GetWebsiteInfo() {
         >
             <div className='flex flex-col justify-start gap-4'>
                 <div className='opacity-70'>
-                    The website's content will be extracted to apply to this new
-                    website.
+                    The plugin will apply your existing website content to the current page or add
+                    new text based on your website context.
                 </div>
+
                 <input
                     placeholder='example.com'
                     type='text'

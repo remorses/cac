@@ -1,13 +1,15 @@
+import { anthropic } from '@ai-sdk/anthropic'
 import { openai } from '@ai-sdk/openai'
 
 import { generateText, streamObject } from 'ai'
 import dedent from 'dedent'
-import { } from 'website/src/lib/elysia.server'
+import {} from 'website/src/lib/elysia.server'
 import {
     removeMarkdownSnippets,
     yieldMaxEveryMs,
-    yieldNewArrayItems
+    yieldNewArrayItems,
 } from 'website/src/lib/ndjson'
+import { groq } from 'website/src/lib/ssr.server'
 import { z } from 'zod'
 
 import('htmlrewriter')
@@ -176,10 +178,9 @@ export async function* getWebsiteInfo({
             },
             {
                 role: 'user',
-                content: dedent`Did you extract all the content on the page? Respond with JSON object with a field "reasoning" 
-                that explains why you think you did extract all the content or not. 
-                If you already extracted all the content respond with a JSON object with an empty array for "extractedContent". 
-                Only return new items, don't repeat the old ones. Return the "reasoning" field first.
+                content: dedent`Did you extract all the content on the page?  
+                Respond with a JSON object and add all the missing extracted content on the page in a "extractedContent" array field. 
+                Only return new items, don't repeat the old ones. Return the "reasoning" field first to think step by step what fields are missing and why.
                 `,
             },
             // {
@@ -200,8 +201,8 @@ export async function* getWebsiteInfo({
         // model: anthropic('claude-3-sonnet-20240229'),
         // model: anthropic('claude-3-haiku-20240307'),
         model: openai('gpt-4o-mini'),
+        // model: anthropic('claude-3-haiku-20240307'),
     })
-    stream2.fullStream
 
     for await (let chunk of yieldNewArrayItems({
         arrayField: GetWebsiteInfoObjectFields.extractedContent,

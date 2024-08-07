@@ -243,16 +243,19 @@ export const rewritePluginApp = new Elysia({
                             signal: request.signal,
                         })
                         let finalObject: Iterated<typeof stream>['finalObject']
+                        let extractedDescription = ''
                         for await (let chunk of stream) {
                             if (chunk.finalObject) {
                                 finalObject = chunk.finalObject
                                 const websiteDescription =
                                     chunk.finalObject.websiteDescription
+                                extractedDescription = websiteDescription
                                 yield {
-                                    websiteDescription,
+                                    extractedDescription,
                                     message: 'scraped website description',
                                 }
                             }
+
                             let object = chunk.object
                             if (object) {
                                 yield {
@@ -262,21 +265,8 @@ export const rewritePluginApp = new Elysia({
                             }
                         }
 
-                        let descriptionPromise = getWebsiteDescription({
-                            html,
-                            signal: request.signal,
-                        })
-
                         if (request.signal.aborted) {
                             return
-                        }
-
-                        const { extractedDescription } =
-                            await descriptionPromise
-                        yield {
-                            message: '',
-                            object: null,
-                            extractedDescription,
                         }
 
                         let host = new URL(url).hostname
