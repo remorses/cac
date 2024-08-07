@@ -6,7 +6,7 @@ import { EventIterator } from 'event-iterator'
 
 import { openai } from '@ai-sdk/openai'
 import { swagger } from '@elysiajs/swagger'
-import { streamObject, streamText, StreamTextResult } from 'ai'
+import { CoreMessage, streamObject, streamText, StreamTextResult } from 'ai'
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
@@ -67,33 +67,34 @@ Content from Website Being Migrated:
 ${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
 Instructions:
-• Replace the content of each item in the template with text that aligns with the website owner's description and the migrated content.
-• Maintain similar content length and structure to the original template where appropriate.
-• Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
-• Update href values if present and relevant to the new content.
-• Use content from the website being migrated if it fits well within the template structure.
-• If the migrated content doesn't fit perfectly, create new content that matches the style and intent of the website being migrated.
+* Replace the content of each item in the template with text that aligns with the website owner's description and the migrated content.
+* Maintain similar content length and structure to the original template where appropriate.
+* Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
+* Update href values if present and relevant to the new content.
+* Use content from the website being migrated if it fits well within the template structure.
+* If the migrated content doesn't fit perfectly, create new content that matches the style and intent of the website being migrated.
 
 Output: Provide a JSON object with two main fields:
 
-• "${RephraseObjectFields.stepByStepReasoning}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
+* "${RephraseObjectFields.stepByStepReasoning}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
 
-• "${RephraseObjectFields.convertedItems}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
-  - "content": The new or migrated content
+* "${RephraseObjectFields.convertedItems}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
+  - "previousContent": The content from the template now being replaced, this field should come first in the object
+  - "content": The new or migrated content, should have similar length to the template content
   - "nodeId": The identifier from the original template item
   - "href": Updated link if applicable (optional)
 
 Remember:
-• Aim for a similar text length to the original template items.
-• Ensure all items from the template are represented in the output.
-• Balance between using migrated content and creating new content that fits the template and owner's description.
-• Maintain the overall tone and style of the website being migrated.
+* Aim for a similar text length to the original template items. If you can't find an example content from the examples rephrase it or invent a new one
+* Ensure all items from the template are represented in the output.
+* Balance between using migrated content and creating new content that fits the template and owner's description.
+* Maintain the overall tone and style of the website being migrated.
 
 Please provide a well-structured and valid JSON object as your response, adhering to the schema defined.
 
 Provide a new text replacement for all the current template text items.
 
-"${RephraseObjectFields.convertedItems}" should come before "${RephraseObjectFields.stepByStepReasoning}" in the JSON object.
+"${RephraseObjectFields.stepByStepReasoning}" should come before "${RephraseObjectFields.convertedItems}" in the JSON object.
 
 `
 }
@@ -421,7 +422,6 @@ enum RephraseObjectFields {
     convertedItems = 'convertedItems',
     stepByStepReasoning = 'stepByStepReasoning',
 }
-
 export async function* rephrase({
     exampleTextToMigrate,
     description,
@@ -432,7 +432,6 @@ export async function* rephrase({
     signal: AbortSignal
     onToken?: (token: string) => void
 }) {
-    // console.log(oldText)
     let schema = z.object({
         [RephraseObjectFields.stepByStepReasoning]: z.array(z.string()),
         [RephraseObjectFields.convertedItems]: z.array(
@@ -443,35 +442,76 @@ export async function* rephrase({
             }),
         ),
     })
-    const stream1 = await streamObject({
-        messages: [
-            {
+
+    let finalObject: z.infer<typeof schema> | undefined
+    let missedItems: any[] = []
+    let iterationsCount = 0
+
+    let messages: CoreMessage[] = [
+        {
+            role: 'user',
+            content: generateMigrationPrompt({
+                description,
+                textToReplace: oldText,
+                exampleTextToMigrate,
+            }),
+        },
+    ]
+
+    let shouldContinue = missedItems.length > 0 || iterationsCount === 0
+    while (shouldContinue && iterationsCount < 3) {
+        if (missedItems.length > 0) {
+            console.log(`missed ${missedItems.length} items, trying again`)
+            messages.push({
                 role: 'user',
-                content: generateMigrationPrompt({
-                    description,
-                    textToReplace: oldText,
-                    exampleTextToMigrate,
-                }),
-            },
-        ],
-        schema,
-        model: openai('gpt-4o-mini'),
-        temperature: 0.5,
-        abortSignal: signal,
-    })
-    let objectStream = yieldNewArrayItems({
-        arrayField: RephraseObjectFields.convertedItems,
-        stream: yieldMaxEveryMs({
-            ms: 200,
-            stream: stream1.partialObjectStream,
-        }),
-    })
-    for await (let object of objectStream) {
-        yield {
-            object: object,
+                content: `You missed ${missedItems.length} items, return an object with these new items text converted: ${JSON.stringify(missedItems)}`,
+            })
         }
+
+        const stream = await streamObject({
+            messages,
+            schema,
+            model: openai('gpt-4o-mini'),
+            temperature: 0.5,
+            abortSignal: signal,
+        })
+
+        let objectStream = yieldNewArrayItems({
+            arrayField: RephraseObjectFields.convertedItems,
+            stream: yieldMaxEveryMs({
+                ms: 200,
+                stream: stream.partialObjectStream,
+            }),
+        })
+
+        for await (let object of objectStream) {
+            yield {
+                object: object,
+            }
+        }
+
+        const iterationObject = await stream.object
+        if (!finalObject) {
+            finalObject = iterationObject
+        } else {
+            finalObject.convertedItems.push(...iterationObject.convertedItems)
+        }
+
+        messages.push({
+            role: 'assistant',
+            content: JSON.stringify(iterationObject, null, 2),
+        })
+
+        missedItems = oldText.filter(
+            (oldItem) =>
+                !finalObject!.convertedItems.some(
+                    (newItem) => newItem.nodeId === oldItem.nodeId,
+                ),
+        )
+
+        iterationsCount++
     }
-    let finalObject = await stream1.object
+
     yield {
         finalObject,
     }
