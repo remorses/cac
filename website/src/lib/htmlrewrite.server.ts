@@ -8,6 +8,7 @@ import {
     removeMarkdownSnippets,
     yieldMaxEveryMs,
     yieldNewArrayItems,
+    yieldObjectStream,
 } from 'website/src/lib/ndjson'
 import { groq } from 'website/src/lib/ssr.server'
 import { z } from 'zod'
@@ -142,12 +143,10 @@ export async function* getWebsiteInfo({
     //         await onToken(chunk)
     //     }
     // })
+
     for await (let chunk of yieldNewArrayItems({
         arrayField: GetWebsiteInfoObjectFields.extractedContent,
-        stream: yieldMaxEveryMs({
-            ms: 200,
-            stream: stream1.partialObjectStream,
-        }),
+        stream: yieldObjectStream({ stream: stream1.fullStream, onToken }),
     })) {
         yield {
             object: chunk,
@@ -206,10 +205,7 @@ export async function* getWebsiteInfo({
 
     for await (let chunk of yieldNewArrayItems({
         arrayField: GetWebsiteInfoObjectFields.extractedContent,
-        stream: yieldMaxEveryMs({
-            ms: 200,
-            stream: stream2.partialObjectStream,
-        }),
+        stream: yieldObjectStream({ stream: stream2.fullStream, onToken }),
     })) {
         yield {
             object: chunk,

@@ -4,7 +4,11 @@ import { z } from 'zod'
 import { openai } from '@ai-sdk/openai'
 import { CoreMessage, streamObject } from 'ai'
 
-import { yieldMaxEveryMs, yieldNewArrayItems } from 'website/src/lib/ndjson'
+import {
+    yieldMaxEveryMs,
+    yieldNewArrayItems,
+    yieldObjectStream,
+} from 'website/src/lib/ndjson'
 
 export const RewriteSchema = t.Object({
     description: t.String(),
@@ -169,7 +173,7 @@ export async function* rewriteTemplateContent({
             throw new Error('No more items to convert')
         }
 
-        const stream = await streamObject({
+        const stream1 = await streamObject({
             messages,
             schema,
             model: openai('gpt-4o'),
@@ -179,9 +183,9 @@ export async function* rewriteTemplateContent({
 
         let objectStream = yieldNewArrayItems({
             arrayField: RephraseObjectFields.convertedItems,
-            stream: yieldMaxEveryMs({
-                ms: 200,
-                stream: stream.partialObjectStream,
+            stream: yieldObjectStream({
+                stream: stream1.fullStream,
+                onToken,
             }),
         })
 
@@ -191,7 +195,7 @@ export async function* rewriteTemplateContent({
             }
         }
 
-        const iterationObject = await stream.object
+        const iterationObject = await stream1.object
 
         if (
             iterationObject[RephraseObjectFields.convertedItems].length !==

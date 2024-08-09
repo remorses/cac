@@ -1,4 +1,4 @@
-import { StreamTextResult } from 'ai'
+import { ObjectStreamPart, StreamTextResult } from 'ai'
 import stripJsonComments from 'strip-json-comments'
 import { sleep } from './utils'
 
@@ -41,9 +41,47 @@ export async function* yieldMaxEveryMs<T>({
     }
 }
 
+export async function* yieldObjectStream<T>({
+    onToken,
+    onError,
+    stream,
+    ms = 200,
+}: {
+    onToken?: Function
+    onError?: Function
+    stream: AsyncIterable<ObjectStreamPart<T>>
+    ms?: number
+}): AsyncIterable<T> {
+    let start = Date.now()
+    let lastObj: T | undefined
+
+    for await (let obj of stream) {
+        let now = Date.now()
+        if (obj.type === 'object') {
+            if (now - start > ms) {
+                yield obj.object as T
+                start = now
+                lastObj = undefined
+            } else {
+                lastObj = obj.object as T
+            }
+        } else if (obj.type === 'error') {
+            if (onError) {
+                onError(new Error((obj.error as any) || ''))
+            }
+        } else if (obj.type === 'text-delta') {
+            if (onToken) {
+                onToken(obj.textDelta)
+            }
+        }
+    }
+
+    if (lastObj !== undefined) {
+        yield lastObj
+    }
+}
+
 type UnwrapArray<T> = T extends Array<infer U> ? U : T
-
-
 
 export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
     arrayField,
