@@ -64,16 +64,17 @@ export const plansConfig = [
 ]
 
 const pricingDescription = `
-1 credit = 1 migrated word
-
-An average landing page contains 500 words
+Each credit corresponds to 1 word of generated content. An average landing page contains 500 words.
 
 Migrating a landing page manually takes around 15 minutes, using the plugin it only takes a few seconds.
 
-- 10k credits are about 20 pages, you save 
+10k credits are about 20 pages of an average website, you save about 10 hours of work
+
+20k credits are about 40 pages of an average website, you save about 20 hours of work
 `
 
 export const variantIdToCredits = Object.assign(
     {},
     ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
 )
+
