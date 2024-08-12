@@ -34,22 +34,22 @@ export default defineConfig({
             appDirectory: 'src',
             serverModuleFormat: 'cjs',
             future: {
-                v3_fetcherPersist: true,
-                unstable_singleFetch: true,
-                v3_relativeSplatPath: true,
-                v3_throwAbortReason: true,
+                // v3_fetcherPersist: true,
+                // unstable_singleFetch: true,
+                // v3_relativeSplatPath: true,
+                // v3_throwAbortReason: true,
             },
         }),
         tsconfigPaths(),
-        {
-            apply(config, env) {
-                if (env.isSsrBuild) {
-                    return true
-                }
-                return false
-            },
-            ...visualizer({ filename: 'build/trace.html' }),
-        },
+        // {
+        //     apply(config, env) {
+        //         if (env.isSsrBuild) {
+        //             return true
+        //         }
+        //         return false
+        //     },
+        //     ...visualizer({ filename: 'build/trace.html' }),
+        // },
         // bundleGraphPlugin(),
     ],
 
