@@ -43,7 +43,6 @@
         "concurrently": "^8.2.2",
         "db": "workspace:*",
         "dedent": "^1.5.3",
-        
         "event-iterator": "^2.0.0",
         "fast-xml-parser": "^4.4.0",
         "gray-matter": "^4.0.3",

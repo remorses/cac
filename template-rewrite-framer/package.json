@@ -20,7 +20,6 @@
         "ai": "^3.3.7",
         "classnames": "^2.5.1",
         "db": "workspace:^",
-        
         "eventsource-parser": "^1.1.2",
         "framer-motion": "^11.3.8",
         "framer-plugin": "^0.3.0",
