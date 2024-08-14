@@ -11,8 +11,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@ai-sdk/anthropic": "^0.0.30",
-        "@ai-sdk/openai": "^0.0.37",
+        "@ai-sdk/anthropic": "^0.0.41",
+        "@ai-sdk/openai": "^0.0.46",
         "@crxjs/vite-plugin": "2.0.0-beta.25",
         "@elysiajs/eden": "github:remorses/elysia-eden#dist",
         "@headlessui/tailwindcss": "^0.2.1",
@@ -21,7 +21,7 @@
         "@sindresorhus/slugify": "^2.2.1",
         "@supabase/supabase-js": "^2.44.4",
         "@tailwindcss/forms": "^0.5.7",
-        "ai": "^3.2.26",
+        "ai": "^3.3.7",
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "elysia": "github:remorses/elysia#dist",

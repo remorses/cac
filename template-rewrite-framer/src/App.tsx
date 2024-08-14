@@ -8,7 +8,6 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 
-
 import {
     LoaderReturnType,
     Paths,

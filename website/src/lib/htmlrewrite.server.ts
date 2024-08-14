@@ -106,7 +106,7 @@ export async function* getWebsiteInfo({
             z.object({
                 content: z.string(),
                 hierarchy: z.string(),
-                href: z.string().optional(),
+                href: z.string().nullable(),
             }),
         ),
     })
@@ -133,10 +133,11 @@ export async function* getWebsiteInfo({
             //     ],
             // },
         ],
-        mode: 'json',
+        // mode: 'json',
+
         // model: anthropic('claude-3-sonnet-20240229'),
         // model: anthropic('claude-3-haiku-20240307'),
-        model: openai('gpt-4o-mini'),
+        model: openai('gpt-4o-2024-08-06', { structuredOutputs: true }),
     })
     // Promise.resolve().then(async () => {
     //     for await (let chunk of stream.textStream) {
@@ -195,11 +196,11 @@ export async function* getWebsiteInfo({
             //     ],
             // },
         ],
-        mode: 'json',
+        // mode: 'json',
 
         // model: anthropic('claude-3-sonnet-20240229'),
         // model: anthropic('claude-3-haiku-20240307'),
-        model: openai('gpt-4o-mini'),
+        model: openai('gpt-4o-mini', { structuredOutputs: true }),
         // model: anthropic('claude-3-haiku-20240307'),
     })
 
@@ -244,7 +245,7 @@ export async function getWebsiteDescription({ html, signal }) {
         ],
 
         // model: anthropic('claude-3-sonnet-20240229'),
-        model: openai('gpt-4o-mini'),
+        model: openai('gpt-4o'),
     })
 
     let extractedDescription = result.text

@@ -131,7 +131,7 @@ export async function* rewriteTemplateContent({
             z.object({
                 content: z.string(),
                 nodeId: z.string(),
-                href: z.string().optional(),
+                href: z.string().nullable().optional(),
             }),
         ),
     })
@@ -235,5 +235,3 @@ export async function* rewriteTemplateContent({
         finalObject,
     }
 }
-
-

@@ -19,8 +19,8 @@
         "start": "PORT=8040 doppler run -- remix-serve ./build/server/index.js"
     },
     "dependencies": {
-        "@ai-sdk/anthropic": "^0.0.30",
-        "@ai-sdk/openai": "^0.0.37",
+        "@ai-sdk/anthropic": "^0.0.41",
+        "@ai-sdk/openai": "^0.0.46",
         "@elysiajs/cors": "^1.1.0",
         "@elysiajs/eden": "github:remorses/elysia-eden#dist",
         "@elysiajs/static": "^1.1.0",
@@ -42,7 +42,7 @@
         "@tailwindcss/typography": "^0.5.13",
         "@types/marked": "^6.0.0",
         "@xmorse/deployment-utils": "^0.2.5",
-        "ai": "^3.2.26",
+        "ai": "^3.3.7",
         "async-sema": "^3.1.1",
         "clsx": "^2.1.1",
         "concurrently": "^8.2.2",

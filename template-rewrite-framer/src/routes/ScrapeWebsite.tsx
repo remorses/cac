@@ -117,15 +117,15 @@ function ScrapeWebsiteComponent() {
             >
                 <div className='grow'></div>
                 {logs.map((log, i) => (
-                    <pre key={i} className='text-[11px] opacity-60'>
+                    <div key={i} className='text-[11px] opacity-60 font-mono max-w-full'>
                         {log}
-                    </pre>
+                    </div>
                 ))}
                 {error && (
                     <div className=' text-sm flex flex-col gap-2'>
-                        <pre className='text-red-300 text-[11px] overflow-hidden'>
+                        <div className='text-red-300 text-[11px] font-mono overflow-hidden'>
                             {error}
-                        </pre>
+                        </div>
                         <button
                             className='w-auto'
                             type='button'

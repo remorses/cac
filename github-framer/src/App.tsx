@@ -139,11 +139,11 @@ const router = createBrowserRouter(
                     notifyError(error, 'ErrorBoundary')
                 }, [error])
                 return (
-                    <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
+                    <div className='flex max-w-full flex-col w-full h-full gap-2 items-center justify-center'>
                         <span className='dark:text-red-300'>
                             Something went wrong...
                         </span>
-                        <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
+                        <div className='text-[11px] text-red-400 text-center font-mono mx-4 max-w-full'>
                             {error?.message || String(error)}
                         </div>
                         <button
