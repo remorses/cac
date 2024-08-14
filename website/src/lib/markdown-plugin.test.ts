@@ -59,16 +59,16 @@ This is an example markdown file.
 ## another h2
 
 # @elysiajs/eden
-Fully type-safe Elysia client refers to the [documentation](https://elysiajs.com/eden/overview)
+Fully type-safe Spiceflow client refers to the [documentation](https://elysiajs.com/eden/overview)
 
 
 ## Example
 \`\`\`typescript
 // server.ts
-import { Elysia, t } from 'spiceflow'
+import { Spiceflow, t } from 'spiceflow'
 
-const app = new Elysia()
-    .get('/', () => 'Hi Elysia')
+const app = new Spiceflow()
+    .get('/', () => 'Hi Spiceflow')
     .get('/id/:id', ({ params: { id } }) => id)
     .post('/mirror', ({ body }) => body, {
         schema: {
@@ -120,13 +120,13 @@ test('processMarkdown', async () => {
       <h1>This should not be a title</h1>
       <h2>another h2</h2>
       <h1>@elysiajs/eden</h1>
-      <p>Fully type-safe Elysia client refers to the <a href="https://elysiajs.com/eden/overview">documentation</a></p>
+      <p>Fully type-safe Spiceflow client refers to the <a href="https://elysiajs.com/eden/overview">documentation</a></p>
       <h2>Example</h2>
       <pre><code class="language-typescript">// server.ts
-      import { Elysia, t } from &#39;elysia&#39;
+      import { Spiceflow, t } from &#39;elysia&#39;
 
-      const app = new Elysia()
-          .get(&#39;/&#39;, () =&gt; &#39;Hi Elysia&#39;)
+      const app = new Spiceflow()
+          .get(&#39;/&#39;, () =&gt; &#39;Hi Spiceflow&#39;)
           .get(&#39;/id/:id&#39;, ({ params: { id } }) =&gt; id)
           .post(&#39;/mirror&#39;, ({ body }) =&gt; body, {
               schema: {

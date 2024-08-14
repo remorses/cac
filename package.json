@@ -10,10 +10,7 @@
         "release": "pnpm build && changeset"
     },
     "pnpm": {
-        "overrides": {
-            "elysia": "remorses/elysia#dist",
-            "@elysiajs/eden": "remorses/elysia-eden#dist"
-        }
+        "overrides": {}
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.7",
