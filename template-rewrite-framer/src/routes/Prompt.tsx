@@ -137,7 +137,15 @@ function SimplePromptComponent({}) {
             }
             for await (let node of rootNode.walk()) {
                 i += 1
+
                 if (isTextNode(node)) {
+                    const parents = await collectGenerator(getParentNodes(node))
+                    const isVisible = parents.every(
+                        (x) => !supportsVisible(x) || x.visible,
+                    )
+                    if (!isVisible) {
+                        continue
+                    }
                     const text = await node.getText()
                     let nodeId = node.id
                     if (text) {
