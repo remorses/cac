@@ -1,5 +1,3 @@
-
-
 import {
     getMarkdownPluginData,
     Paths,
@@ -7,7 +5,7 @@ import {
     simpleHash,
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
-import { CollectionField, CollectionItem, framer } from 'framer-plugin'
+import { CollectionField, CollectionItem, CollectionItemData, framer } from 'framer-plugin'
 import { LoaderFunctionArgs, RouteObject } from 'react-router'
 import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
 
@@ -95,7 +93,7 @@ async function loader({}: LoaderFunctionArgs) {
         throw error
     }
     const { files } = data
-    const collection = await framer.getCollection()
+    const collection = await framer.getManagedCollection()
 
     await collection.setFields([
         {
@@ -110,7 +108,7 @@ async function loader({}: LoaderFunctionArgs) {
 
     const unseenItemIds = new Set(await collection.getItemIds())
 
-    const itemsToAdd: CollectionItem[] = []
+    const itemsToAdd: CollectionItemData[] = []
 
     for (const item of files) {
         if (!item?.html) {
@@ -129,8 +127,9 @@ async function loader({}: LoaderFunctionArgs) {
         itemsToAdd.push({
             id,
             slug: item.slug,
-            title: item.title,
+
             fieldData: {
+                // title: item.title,
                 [CollectionFieldIds.content]: item.html,
                 ...frontMatterFields,
             },

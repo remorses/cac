@@ -1,6 +1,6 @@
 {
     "id": "b50axx",
     "name": "GitHub Sync",
-    "modes": ["configureCollection", "syncCollection"],
+    "modes": ["configureManagedCollection", "syncManagedCollection"],
     "icon": "/framer-plugin/github/icon.png"
 }

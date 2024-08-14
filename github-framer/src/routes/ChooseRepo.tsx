@@ -129,7 +129,7 @@ export function ChooseRepo(): RouteObject {
                 }
             }
             const { formattedBasePath } = data
-            const collection = await framer.getCollection()
+            const collection = await framer. getManagedCollection()
             await collection.setPluginData(
                 PluginDataKeys.githubRepoSlug,
                 repoSlug,

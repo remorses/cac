@@ -115,7 +115,7 @@ async function loader({}: LoaderFunctionArgs) {
     if (data.key) {
         console.log('login was completed, got session', data)
 
-        const collection = await framer.getCollection()
+        const collection = await framer. getManagedCollection()
         let requestData: GithubLoginRequestData = (data.requestData ||
             {}) as any
 

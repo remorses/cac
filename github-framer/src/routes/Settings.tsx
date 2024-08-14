@@ -77,7 +77,7 @@ function Component() {
                         // }
                         setIsLoading(true)
                         try {
-                            const collection = await framer.getCollection()
+                            const collection = await framer. getManagedCollection()
                             await collection.setPluginData(
                                 PluginDataKeys.sessionKey,
                                 null,

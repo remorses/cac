@@ -193,10 +193,10 @@ async function rootLoader({ request }) {
     const { owner, githubAccountLogin, repo } = await getMarkdownPluginData()
 
     let canRedirect = owner && repo && githubAccountLogin
-    if (framer.mode === 'syncCollection' && canRedirect) {
+    if (framer.mode === 'syncManagedCollection' && canRedirect) {
         return redirect(withMode(Paths.sync))
     }
-    if (framer.mode === 'configureCollection' && canRedirect) {
+    if (framer.mode === 'configureManagedCollection' && canRedirect) {
         return redirect(withMode(Paths.mapFields))
     }
     return redirect(withMode(Paths.chooseRepo))

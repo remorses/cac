@@ -12,7 +12,7 @@ export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
     {
         async onResponse(response) {
             if (response.status === 401) {
-                const collection = await framer.getCollection()
+                const collection = await framer. getManagedCollection()
                 console.log('clearing session because api returned 401')
                 await collection.setPluginData(PluginDataKeys.sessionKey, null)
             }
@@ -108,7 +108,7 @@ export function simpleHash(input: string) {
 }
 
 export async function getMarkdownPluginData() {
-    const collection = await framer.getCollection()
+    const collection = await framer. getManagedCollection()
     const [
         repoSlug,
         mapFieldsConfigJson,
