@@ -1,4 +1,4 @@
-import { Elysia, t } from 'elysia'
+import { Elysia, t } from 'spiceflow'
 import matter from 'gray-matter'
 
 import { notifyError } from 'website/src/lib/errors'
@@ -21,322 +21,310 @@ const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
 
-export const markdownPluginApp = new Elysia({ aot: false })
+export const markdownPluginApp = new Elysia({ basePath: '/markdownPlugin' })
     // .state('sessionKey', '')
     .state('githubUserLogin', '')
     .state('orgId', '')
     .state('userId', '')
     // .state('session', {} as Session)
-    .group('/markdownPlugin', (group) => {
-        return group
-            .onRequest(async ({ request, set, store }) => {
-                const pathname = new URL(request.url).pathname
-                if (!pathname.includes('/markdownPlugin')) {
-                    return
-                }
-                const orgId = store.orgId
-                if (!orgId) {
-                    return
-                }
-                const userId = store.userId
-                if (!userId) {
-                    return
-                }
-                const githubUserLogin = await getGithubUserLogin({ userId })
-                if (!githubUserLogin) {
-                    throw new Error(
-                        'Github login for user not found in database',
-                    )
-                }
-                store.githubUserLogin = githubUserLogin
-            })
-            .get('/health', () => {
-                return 'ok'
-            })
 
-            .post(
-                '/githubRepoList',
-                async ({ body, store }) => {
-                    const { githubAccountLogin } = body
-                    const orgId = store.orgId
-
-                    if (!orgId) {
-                        throw unauthorizedResponse
-                    }
-                    const installation =
-                        await prisma.githubInstallation.findFirst({
-                            where: {
-                                status: 'active',
-                                memberLogins: {
-                                    has: store.githubUserLogin,
-                                },
-                                appId: env.GITHUB_APP_ID,
-
-                                accountLogin: githubAccountLogin,
-                            },
-                        })
-                    if (!installation) {
-                        throw new Error('No github installation found')
-                    }
-
-                    const installationId = installation.installationId
-                    const octokit = await getOctokit({ installationId })
-                    const repos = await Promise.resolve().then(async () => {
-                        if (installation.accountType === 'ORGANIZATION') {
-                            const { data } =
-                                await octokit.rest.repos.listForOrg({
-                                    org: installation.accountLogin,
-                                    per_page: 100,
-                                    page: 1,
-                                    direction: 'desc',
-                                    type: 'all',
-                                    sort: 'pushed',
-                                })
-                            return data.map((x) => {
-                                const { private: p, url, name, owner } = x
-                                return {
-                                    repo: name,
-                                    owner: owner.login,
-                                    repoSlug: `${owner.login}/${name}`,
-                                    private: p,
-                                    url,
-                                }
-                            })
-                        }
-                        {
-                            const octokit = new Octokit({
-                                auth: installation.oauthToken,
-                            })
-                            const { data } =
-                                await octokit.rest.repos.listForAuthenticatedUser(
-                                    {
-                                        page: 1,
-                                        per_page: 100,
-                                        direction: 'desc',
-                                        sort: 'pushed',
-                                        type: 'all',
-                                    },
-                                )
-                            return data.map((x) => {
-                                const { private: p, url, owner, name } = x
-                                return {
-                                    owner: owner.login,
-                                    repo: name,
-                                    repoSlug: `${owner.login}/${name}`,
-                                    private: p,
-                                    url,
-                                }
-                            })
-                        }
-                    })
-
-                    return { repos }
-                },
-                {
-                    body: t.Object({
-                        githubAccountLogin: t.String({ minLength: 1 }),
-                    }),
-                },
-            )
-            .post(
-                '/syncGithub',
-                async ({ body, store }) => {
-                    let { owner, githubAccountLogin, basePath, repo } = body
-                    if (!basePath) {
-                        basePath = ''
-                    }
-                    const orgId = store.orgId
-                    if (!orgId) {
-                        throw unauthorizedResponse
-                    }
-                    const githubInstallation =
-                        await prisma.githubInstallation.findFirst({
-                            where: {
-                                status: 'active',
-                                memberLogins: {
-                                    has: store.githubUserLogin,
-                                },
-                                appId: env.GITHUB_APP_ID,
-                                accountLogin: githubAccountLogin,
-                            },
-                        })
-                    if (!githubInstallation) {
-                        throw new Error('No github installation found')
-                    }
-
-                    const installationId = githubInstallation.installationId
-                    const octokit = await getOctokit({ installationId })
-                    const [repoResult, ok] = await Promise.all([
-                        octokit.rest.repos.get({
-                            owner,
-                            repo,
-                        }),
-                        checkGitHubIsInstalled({ installationId }),
-                    ])
-                    if (!ok) {
-                        throw new Error('Github app no longer installed')
-                    }
-                    let branch = repoResult.data.default_branch
-                    const files = await getRepoFiles({
-                        fetchBlob(pagePath) {
-                            return (
-                                pagePath?.startsWith(basePath) &&
-                                isMarkdown(pagePath)
-                            )
-                        },
-                        branch: branch,
-                        octokit: octokit.rest,
-                        owner,
-                        repo,
-                    })
-                    let allAssetPaths = files.map((x) => x.pagePath)
-                    let filtered = files.filter((x) => {
-                        return (
-                            x?.pagePath?.startsWith(basePath) &&
-                            isMarkdown(x.pagePath)
-                        )
-                    })
-
-                    if (!filtered.length) {
-                        throw new Error(
-                            `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
-                        )
-                    }
-                    let withMarkdown = await Promise.all(
-                        filtered.map(async (x) => {
-                            if (!x?.content) {
-                                return
-                            }
-                            const data = processMarkdown({
-                                basePath,
-                                allAssetPaths,
-                                owner,
-                                repo,
-                                branch,
-                                pagePath: x.pagePath,
-                                content: x.content,
-                                onError(e) {
-                                    notifyError(e, 'error parsing markdown')
-                                },
-                            })
-                            return data
-                        }),
-                    )
-                    let properties: MarkdownPluginFrontMatter['properties'] = {}
-                    for (let file of withMarkdown) {
-                        if (!file?.frontMatter) {
-                            continue
-                        }
-                        for (let [key, value] of Object.entries(
-                            file.frontMatter,
-                        )) {
-                            if (!properties[key]) {
-                                properties[key] = {
-                                    values: [],
-                                    name: key,
-                                    id: key,
-                                }
-                            }
-                            if (value != null) {
-                                properties[key].values.push(value)
-                            }
-                        }
-                    }
-                    const frontMatter: MarkdownPluginFrontMatter = {
-                        properties,
-                    }
-                    console.log(`finished syncing ${owner}/${repo}`)
-                    return { frontMatter, files: withMarkdown.filter(isTruthy) }
-                },
-                {
-                    body: t.Object({
-                        owner: t.String(),
-                        repo: t.String(),
-                        basePath: t.String(),
-                        githubAccountLogin: t.String(),
-                        // userId: t.String(),
-                    }),
-                },
-            )
-            .post(
-                '/checkBasePath',
-                async ({ body, store }) => {
-                    let { owner, githubAccountLogin, basePath, repo } = body
-
-                    const orgId = store.orgId
-                    if (!orgId) {
-                        throw unauthorizedResponse
-                    }
-                    if (basePath === '/') {
-                        basePath = ''
-                    }
-                    if (!basePath.startsWith('/')) {
-                        basePath = '/' + basePath
-                    }
-
-                    const githubInstallation =
-                        await prisma.githubInstallation.findFirst({
-                            where: {
-                                status: 'active',
-                                memberLogins: {
-                                    has: store.githubUserLogin,
-                                },
-                                appId: env.GITHUB_APP_ID,
-                                accountLogin: githubAccountLogin,
-                            },
-                        })
-                    if (!githubInstallation) {
-                        throw new Error('No github installation found')
-                    }
-
-                    const installationId = githubInstallation.installationId
-                    const octokit = await getOctokit({ installationId })
-                    const [repoResult] = await Promise.all([
-                        octokit.rest.repos.get({
-                            owner,
-                            repo,
-                        }),
-                    ])
-                    let baseBranch = repoResult.data.default_branch
-                    const files = await getRepoFiles({
-                        fetchBlob(pagePath) {
-                            return false
-                        },
-                        branch: baseBranch,
-                        octokit: octokit.rest,
-                        owner,
-                        repo,
-                    })
-                    const filtered = files
-                        .filter((x) => {
-                            return x.pagePath?.startsWith(basePath)
-                        })
-                        .filter((x) => {
-                            let pagePath = x.pagePath
-                            return isMarkdown(pagePath)
-                        })
-                    if (!filtered.length) {
-                        return {
-                            error: 'No files found in base path, use another one',
-                            formattedBasePath: basePath,
-                        }
-                    }
-                    return {
-                        error: '',
-                        formattedBasePath: basePath,
-                    }
-                },
-                {
-                    body: t.Object({
-                        owner: t.String(),
-                        repo: t.String(),
-                        basePath: t.String(),
-                        githubAccountLogin: t.String(),
-                        // userId: t.String(),
-                    }),
-                },
-            )
+    .onRequest(async ({ request, store }) => {
+        const pathname = new URL(request.url).pathname
+        if (!pathname.includes('/markdownPlugin')) {
+            return
+        }
+        const orgId = store.orgId
+        if (!orgId) {
+            return
+        }
+        const userId = store.userId
+        if (!userId) {
+            return
+        }
+        const githubUserLogin = await getGithubUserLogin({ userId })
+        if (!githubUserLogin) {
+            throw new Error('Github login for user not found in database')
+        }
+        store.githubUserLogin = githubUserLogin
     })
+    .get('/health', () => {
+        return 'ok'
+    })
+
+    .post(
+        '/githubRepoList',
+        async ({ body, store }) => {
+            const { githubAccountLogin } = body
+            const orgId = store.orgId
+
+            if (!orgId) {
+                throw unauthorizedResponse
+            }
+            const installation = await prisma.githubInstallation.findFirst({
+                where: {
+                    status: 'active',
+                    memberLogins: {
+                        has: store.githubUserLogin,
+                    },
+                    appId: env.GITHUB_APP_ID,
+
+                    accountLogin: githubAccountLogin,
+                },
+            })
+            if (!installation) {
+                throw new Error('No github installation found')
+            }
+
+            const installationId = installation.installationId
+            const octokit = await getOctokit({ installationId })
+            const repos = await Promise.resolve().then(async () => {
+                if (installation.accountType === 'ORGANIZATION') {
+                    const { data } = await octokit.rest.repos.listForOrg({
+                        org: installation.accountLogin,
+                        per_page: 100,
+                        page: 1,
+                        direction: 'desc',
+                        type: 'all',
+                        sort: 'pushed',
+                    })
+                    return data.map((x) => {
+                        const { private: p, url, name, owner } = x
+                        return {
+                            repo: name,
+                            owner: owner.login,
+                            repoSlug: `${owner.login}/${name}`,
+                            private: p,
+                            url,
+                        }
+                    })
+                }
+                {
+                    const octokit = new Octokit({
+                        auth: installation.oauthToken,
+                    })
+                    const { data } =
+                        await octokit.rest.repos.listForAuthenticatedUser({
+                            page: 1,
+                            per_page: 100,
+                            direction: 'desc',
+                            sort: 'pushed',
+                            type: 'all',
+                        })
+                    return data.map((x) => {
+                        const { private: p, url, owner, name } = x
+                        return {
+                            owner: owner.login,
+                            repo: name,
+                            repoSlug: `${owner.login}/${name}`,
+                            private: p,
+                            url,
+                        }
+                    })
+                }
+            })
+
+            return { repos }
+        },
+        {
+            body: t.Object({
+                githubAccountLogin: t.String({ minLength: 1 }),
+            }),
+        },
+    )
+    .post(
+        '/syncGithub',
+        async ({ body, store }) => {
+            let { owner, githubAccountLogin, basePath, repo } = body
+            if (!basePath) {
+                basePath = ''
+            }
+            const orgId = store.orgId
+            if (!orgId) {
+                throw unauthorizedResponse
+            }
+            const githubInstallation =
+                await prisma.githubInstallation.findFirst({
+                    where: {
+                        status: 'active',
+                        memberLogins: {
+                            has: store.githubUserLogin,
+                        },
+                        appId: env.GITHUB_APP_ID,
+                        accountLogin: githubAccountLogin,
+                    },
+                })
+            if (!githubInstallation) {
+                throw new Error('No github installation found')
+            }
+
+            const installationId = githubInstallation.installationId
+            const octokit = await getOctokit({ installationId })
+            const [repoResult, ok] = await Promise.all([
+                octokit.rest.repos.get({
+                    owner,
+                    repo,
+                }),
+                checkGitHubIsInstalled({ installationId }),
+            ])
+            if (!ok) {
+                throw new Error('Github app no longer installed')
+            }
+            let branch = repoResult.data.default_branch
+            const files = await getRepoFiles({
+                fetchBlob(pagePath) {
+                    return (
+                        pagePath?.startsWith(basePath) && isMarkdown(pagePath)
+                    )
+                },
+                branch: branch,
+                octokit: octokit.rest,
+                owner,
+                repo,
+            })
+            let allAssetPaths = files.map((x) => x.pagePath)
+            let filtered = files.filter((x) => {
+                return (
+                    x?.pagePath?.startsWith(basePath) && isMarkdown(x.pagePath)
+                )
+            })
+
+            if (!filtered.length) {
+                throw new Error(
+                    `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
+                )
+            }
+            let withMarkdown = await Promise.all(
+                filtered.map(async (x) => {
+                    if (!x?.content) {
+                        return
+                    }
+                    const data = processMarkdown({
+                        basePath,
+                        allAssetPaths,
+                        owner,
+                        repo,
+                        branch,
+                        pagePath: x.pagePath,
+                        content: x.content,
+                        onError(e) {
+                            notifyError(e, 'error parsing markdown')
+                        },
+                    })
+                    return data
+                }),
+            )
+            let properties: MarkdownPluginFrontMatter['properties'] = {}
+            for (let file of withMarkdown) {
+                if (!file?.frontMatter) {
+                    continue
+                }
+                for (let [key, value] of Object.entries(file.frontMatter)) {
+                    if (!properties[key]) {
+                        properties[key] = {
+                            values: [],
+                            name: key,
+                            id: key,
+                        }
+                    }
+                    if (value != null) {
+                        properties[key].values.push(value)
+                    }
+                }
+            }
+            const frontMatter: MarkdownPluginFrontMatter = {
+                properties,
+            }
+            console.log(`finished syncing ${owner}/${repo}`)
+            return { frontMatter, files: withMarkdown.filter(isTruthy) }
+        },
+        {
+            body: t.Object({
+                owner: t.String(),
+                repo: t.String(),
+                basePath: t.String(),
+                githubAccountLogin: t.String(),
+                // userId: t.String(),
+            }),
+        },
+    )
+    .post(
+        '/checkBasePath',
+        async ({ body, store }) => {
+            let { owner, githubAccountLogin, basePath, repo } = body
+
+            const orgId = store.orgId
+            if (!orgId) {
+                throw unauthorizedResponse
+            }
+            if (basePath === '/') {
+                basePath = ''
+            }
+            if (!basePath.startsWith('/')) {
+                basePath = '/' + basePath
+            }
+
+            const githubInstallation =
+                await prisma.githubInstallation.findFirst({
+                    where: {
+                        status: 'active',
+                        memberLogins: {
+                            has: store.githubUserLogin,
+                        },
+                        appId: env.GITHUB_APP_ID,
+                        accountLogin: githubAccountLogin,
+                    },
+                })
+            if (!githubInstallation) {
+                throw new Error('No github installation found')
+            }
+
+            const installationId = githubInstallation.installationId
+            const octokit = await getOctokit({ installationId })
+            const [repoResult] = await Promise.all([
+                octokit.rest.repos.get({
+                    owner,
+                    repo,
+                }),
+            ])
+            let baseBranch = repoResult.data.default_branch
+            const files = await getRepoFiles({
+                fetchBlob(pagePath) {
+                    return false
+                },
+                branch: baseBranch,
+                octokit: octokit.rest,
+                owner,
+                repo,
+            })
+            const filtered = files
+                .filter((x) => {
+                    return x.pagePath?.startsWith(basePath)
+                })
+                .filter((x) => {
+                    let pagePath = x.pagePath
+                    return isMarkdown(pagePath)
+                })
+            if (!filtered.length) {
+                return {
+                    error: 'No files found in base path, use another one',
+                    formattedBasePath: basePath,
+                }
+            }
+            return {
+                error: '',
+                formattedBasePath: basePath,
+            }
+        },
+        {
+            body: t.Object({
+                owner: t.String(),
+                repo: t.String(),
+                basePath: t.String(),
+                githubAccountLogin: t.String(),
+                // userId: t.String(),
+            }),
+        },
+    )
 
 function turnPagePathIntoSlug(pagePath: string, basePath) {
     if (isAbsoluteUrl(pagePath)) {

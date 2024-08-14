@@ -1,13 +1,13 @@
 import { env } from 'website/src/lib/env'
 
-import { Treaty, treaty } from '@elysiajs/eden'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/dist/client'
 
 import { CollectionField, framer } from 'framer-plugin'
 import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
 
-export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
+export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(
     env.PUBLIC_URL!,
     {
         async onResponse(response) {

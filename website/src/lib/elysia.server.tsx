@@ -1,27 +1,26 @@
-import { Elysia, t, ValidationError } from 'spiceflow'
+import { Elysia, t } from 'spiceflow'
 import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 
-import { cors } from '@elysiajs/cors'
-import { swagger } from '@elysiajs/swagger'
+
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
 import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 
-export const app = new Elysia({ prefix: '/api/plugins', aot: false })
+export const app = new Elysia({ basePath: '/api/plugins' })
     .state('userId', '')
     .state('orgId', '')
 
-    .use(
-        cors({
-            // credentials: true,
-            // origin: env.PUBLIC_URL,
-            // exposeHeaders: '*',
-            maxAge: 60 * 60 * 24,
-            preflight: true,
-            // allowedHeaders: '*',
-        }),
-    )
+    // .use(
+    //     cors({
+    //         // credentials: true,
+    //         // origin: env.PUBLIC_URL,
+    //         // exposeHeaders: '*',
+    //         maxAge: 60 * 60 * 24,
+    //         preflight: true,
+    //         // allowedHeaders: '*',
+    //     }),
+    // )
     .onError(({ code, error }) => {
         if (error instanceof Response) {
             return error
@@ -37,9 +36,9 @@ export const app = new Elysia({ prefix: '/api/plugins', aot: false })
             status = 500
             notifyError(error, 'API error')
         }
-        if (error instanceof ValidationError) {
-            return error.toResponse()
-        }
+        // if (error instanceof ValidationError) {
+        //     return error.toResponse()
+        // }
 
         return new Response(error.message, {
             status,
@@ -47,7 +46,7 @@ export const app = new Elysia({ prefix: '/api/plugins', aot: false })
         })
     })
 
-    .onRequest(async ({ request, set, store }) => {
+    .onRequest(async ({ request, store }) => {
         const sessionKey = request.headers.get('sessionKey')
 
         const session = await db
@@ -116,7 +115,7 @@ export const app = new Elysia({ prefix: '/api/plugins', aot: false })
             if (!user.email) {
                 throw new Error('No user email found for user')
             }
-            
+
             const { orgId, key } = framerSession
             const { email } = user
             console.log('found user for session', email)
@@ -193,5 +192,5 @@ const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
 
-app.use(swagger({}))
+// app.use(swagger({}))
 export type RouteType = typeof app

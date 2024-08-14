@@ -1,6 +1,6 @@
 import { env } from 'website/src/lib/env'
 
-import { Treaty, treaty } from '@elysiajs/eden'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/dist/client'
 
 import type { RouteType } from 'website/src/lib/elysia.server'
 

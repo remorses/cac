@@ -65,7 +65,7 @@ Fully type-safe Elysia client refers to the [documentation](https://elysiajs.com
 ## Example
 \`\`\`typescript
 // server.ts
-import { Elysia, t } from 'elysia'
+import { Elysia, t } from 'spiceflow'
 
 const app = new Elysia()
     .get('/', () => 'Hi Elysia')

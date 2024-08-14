@@ -1,10 +1,10 @@
-import { treaty } from '@elysiajs/eden'
+import { createSpiceflowClient,  } from 'spiceflow/dist/client'
 
 import { RouteType } from 'website/src/lib/elysia.server'
 import { env } from 'website/src/lib/env'
 
 export function createClient({ url }: { url: string }) {
-    const client = treaty<RouteType>(url, {
+    const client = createSpiceflowClient<RouteType>(url, {
         // async fetch(input, requestInit) {
         //     const res = await fetch(input, requestInit)
         //     if (!res.ok) {

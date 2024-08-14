@@ -1,4 +1,4 @@
-import { Static, t } from 'elysia'
+import { Static, t } from 'spiceflow'
 import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'

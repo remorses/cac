@@ -1,6 +1,6 @@
 import { env } from 'website/src/lib/env'
 
-import { Treaty, treaty } from '@elysiajs/eden'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/dist/client'
 
 import {
     AnyNode,
@@ -13,7 +13,7 @@ import {
 import type { RouteType } from 'website/src/lib/elysia.server'
 import { RewriteSchema } from 'website/src/lib/rewrite'
 
-export const pluginApiClient: Treaty.Create<RouteType> = treaty<RouteType>(
+export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(
     env.PUBLIC_URL!,
     {
         async onResponse(response) {
