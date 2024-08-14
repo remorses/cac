@@ -1,4 +1,4 @@
-import { Elysia, t } from 'spiceflow'
+import { Spiceflow, t } from 'spiceflow'
 
 import { notifyError } from 'website/src/lib/errors'
 
@@ -12,7 +12,7 @@ import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { Iterated } from 'website/src/lib/utils'
 
-export const rewritePluginApp = new Elysia({
+export const rewritePluginApp = new Spiceflow({
     basePath: '/rewritePlugin',
 })
     .state('userId', '')

@@ -1,4 +1,4 @@
-import { Elysia, t } from 'spiceflow'
+import { Spiceflow, t } from 'spiceflow'
 import matter from 'gray-matter'
 
 import { notifyError } from 'website/src/lib/errors'
@@ -21,7 +21,7 @@ const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
 
-export const markdownPluginApp = new Elysia({ basePath: '/markdownPlugin' })
+export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     // .state('sessionKey', '')
     .state('githubUserLogin', '')
     .state('orgId', '')

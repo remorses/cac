@@ -1,4 +1,4 @@
-import { Elysia, t } from 'spiceflow'
+import { Spiceflow, t } from 'spiceflow'
 import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 
 
@@ -7,7 +7,7 @@ import { notifyError } from 'website/src/lib/errors'
 import { db } from 'db/kysely'
 import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 
-export const app = new Elysia({ basePath: '/api/plugins' })
+export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
     .state('orgId', '')
 
