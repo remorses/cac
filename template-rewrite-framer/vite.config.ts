@@ -21,6 +21,7 @@ export default defineConfig({
     base: building ? basePath : undefined,
     build: {
         target: 'ES2020',
+        sourcemap: true,
         outDir: 'dist' + basePath,
     },
 })

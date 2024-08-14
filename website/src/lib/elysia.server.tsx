@@ -1,4 +1,4 @@
-import { Elysia, t, ValidationError } from 'elysia'
+import { Elysia, t, ValidationError } from 'spiceflow'
 import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 
 import { cors } from '@elysiajs/cors'

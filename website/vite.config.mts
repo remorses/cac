@@ -64,6 +64,7 @@ export default defineConfig({
         // include: ['@sentry/node'],
     },
     build: {
+        sourcemap: true,
         commonjsOptions: {
             transformMixedEsModules: true,
         },
