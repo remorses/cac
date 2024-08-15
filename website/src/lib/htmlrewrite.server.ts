@@ -80,10 +80,22 @@ export async function formatHtmlForPrompt(input: Response) {
 export async function fetchFormattedHtml(url) {
     const res = await fetch(url, {
         headers: {
-            accept: 'text/html',
-            agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            Connection: 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+
+            Referer: 'https://www.google.com/',
+
+            'User-Agent':
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
         },
     })
+    if (!res.ok) {
+        throw new Error(
+            `Could not fetch website html for ${url}, error ${res.status}`,
+        )
+    }
     const formattedHtml = await formatHtmlForPrompt(res)
     return formattedHtml
 }

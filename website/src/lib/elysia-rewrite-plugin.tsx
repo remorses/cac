@@ -167,7 +167,7 @@ export const rewritePluginApp = new Spiceflow({
                     .selectAll()
                     .executeTakeFirst()
                 if (
-                    // process.env.NODE_ENV !== 'development' &&
+                    process.env.NODE_ENV !== 'development' &&
                     alreadyScraped?.extractedDescription &&
                     alreadyScraped?.data
                 ) {
