@@ -64,6 +64,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         store.orgId = orgId || ''
         store.userId = userId || ''
     })
+
     .post('/currentOrg', async ({ store }) => {
         const orgId = store.orgId
         const orgAndUser = await db
