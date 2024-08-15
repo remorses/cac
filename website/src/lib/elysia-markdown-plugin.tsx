@@ -16,6 +16,7 @@ import {
 } from 'website/src/lib/github.server'
 import { isTruthy } from 'website/src/lib/utils'
 import { env } from 'website/src/lib/env'
+import { z } from 'zod'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -126,8 +127,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             return { repos }
         },
         {
-            body: t.Object({
-                githubAccountLogin: t.String({ minLength: 1 }),
+            body: z.object({
+                githubAccountLogin: z.string().min(1),
             }),
         },
     )
@@ -238,12 +239,12 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             return { frontMatter, files: withMarkdown.filter(isTruthy) }
         },
         {
-            body: t.Object({
-                owner: t.String(),
-                repo: t.String(),
-                basePath: t.String(),
-                githubAccountLogin: t.String(),
-                // userId: t.String(),
+            body: z.object({
+                owner: z.string(),
+                repo: z.string(),
+                basePath: z.string(),
+                githubAccountLogin: z.string(),
+                // userId: z.string(),
             }),
         },
     )
@@ -316,12 +317,12 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
         },
         {
-            body: t.Object({
-                owner: t.String(),
-                repo: t.String(),
-                basePath: t.String(),
-                githubAccountLogin: t.String(),
-                // userId: t.String(),
+            body: z.object({
+                owner: z.string(),
+                repo: z.string(),
+                basePath: z.string(),
+                githubAccountLogin: z.string(),
+                // userId: z.string(),
             }),
         },
     )

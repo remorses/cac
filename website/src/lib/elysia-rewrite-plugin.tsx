@@ -11,6 +11,7 @@ import {
 import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { Iterated } from 'website/src/lib/utils'
+import { z } from 'zod'
 
 export const rewritePluginApp = new Spiceflow({
     basePath: '/rewritePlugin',
@@ -23,7 +24,6 @@ export const rewritePluginApp = new Spiceflow({
         async function* ({ body, store, request }) {
             const userId = store.userId
 
-            
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
                 throw new Response('No user id found', {
@@ -104,7 +104,6 @@ export const rewritePluginApp = new Spiceflow({
             return credits
         },
         {
-            body: t.Object({}),
             // response: {
             //     200: t.AsyncIterator(t.String()),
             // },
@@ -131,8 +130,8 @@ export const rewritePluginApp = new Spiceflow({
             return { valid, credits }
         },
         {
-            body: t.Object({
-                licenseKey: t.String(),
+            body: z.object({
+                licenseKey: z.string(),
             }),
             // response: {
             //     200: t.AsyncIterator(t.String()),
@@ -284,8 +283,8 @@ export const rewritePluginApp = new Spiceflow({
             // const res = await fetch(`https://${domain}`)
         },
         {
-            body: t.Object({
-                domain: t.String(),
+            body: z.object({
+                domain: z.string(),
             }),
             // response: {
             //     200: t.AsyncIterator(t.String()),

@@ -12,29 +12,23 @@ import {
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
-    textToReplace: z
-        .array(
-            z.object({
-                name: z.string().optional().nullable(),
-                content: z.string().optional().nullable(),
-                nodeId: z.string().optional().nullable(),
-                href: z.string().optional().nullable(),
-                // index: z.number(),
-            }),
-        )
-        .optional()
-        .nullable(),
-    exampleTextToMigrate: z
-        .array(
-            z.object({
-                hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
-                content: z.string().optional().nullable(),
-                href: z.string().optional().nullable(),
-                // other possible fields like price for price plans, etc
-            }),
-        )
-        .optional()
-        .nullable(),
+    textToReplace: z.array(
+        z.object({
+            name: z.string().optional().nullable(),
+            content: z.string().optional().nullable(),
+            nodeId: z.string().optional().nullable(),
+            href: z.string().optional().nullable(),
+            // index: z.number(),
+        }),
+    ),
+    exampleTextToMigrate: z.array(
+        z.object({
+            hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
+            content: z.string().optional().nullable(),
+            href: z.string().optional().nullable(),
+            // other possible fields like price for price plans, etc
+        }),
+    ),
 })
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
@@ -90,7 +84,7 @@ Provide a new text replacement for all the current template text items.
 export function convertExamplesToMarkdownList(
     examples: RewriteSchema['exampleTextToMigrate'],
 ) {
-    if (!examples.length) {
+    if (!examples?.length) {
         return 'No example content provided'
     }
     let markdown = ''
@@ -124,7 +118,7 @@ function splitArrayInChunks(arr: any[], chunkSize: number) {
 export async function* rewriteTemplateContent({
     exampleTextToMigrate,
     description,
-    textToReplace: oldText,
+    textToReplace: oldText = [],
     signal,
     onToken,
 }: RewriteSchema & {
@@ -156,7 +150,10 @@ export async function* rewriteTemplateContent({
         },
     ]
 
-    const chunkedOldText = splitArrayInChunks(oldText, ITEMS_PER_ITERATION)
+    const chunkedOldText = splitArrayInChunks(
+        oldText || [],
+        ITEMS_PER_ITERATION,
+    )
 
     while (iterationsCount < chunkedOldText.length || missedItems.length > 0) {
         console.log('iterationsCount', iterationsCount)
@@ -229,12 +226,13 @@ export async function* rewriteTemplateContent({
         iterationsCount++
 
         // Update missed items
-        missedItems = oldText.filter(
-            (oldItem) =>
-                !finalObject!.convertedItems.some(
-                    (newItem) => newItem.nodeId === oldItem.nodeId,
-                ),
-        )
+        missedItems =
+            oldText?.filter(
+                (oldItem) =>
+                    !finalObject!.convertedItems.some(
+                        (newItem) => newItem.nodeId === oldItem.nodeId,
+                    ),
+            ) || []
     }
 
     yield {
