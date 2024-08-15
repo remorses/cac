@@ -28,7 +28,7 @@ import {
     supportsVisible,
     supportsName,
 } from 'framer-plugin'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -284,7 +284,17 @@ function SimplePromptComponent({}) {
     })()
 
     const [remainingCredits, setRemainingCredits] = useState(credits.remaining)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+    useEffect(() => {
+        if (textareaRef.current) {
+            adjustHeight(textareaRef.current)
+        }
+    }, [])
 
+    const adjustHeight = (element) => {
+        element.style.height = 'auto'
+        element.style.height = `${element.scrollHeight}px`
+    }
     return (
         <motion.form
             layoutId='content'
@@ -309,19 +319,15 @@ function SimplePromptComponent({}) {
             </div>
             <div className='w-full'>
                 <textarea
+                    ref={textareaRef}
                     value={description}
                     disabled={buyCreditsInstead}
                     // isRequired
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            onSubmit()
-                        }
-                        const textarea = e.target as HTMLTextAreaElement
-                        // textarea.style.height = '26px'
-                        textarea.style.height = `${textarea.scrollHeight}px`
+
+                    onChange={(e) => {
+                        setDescription(e.target.value)
+                        adjustHeight(e.target)
                     }}
-                    onChange={(e) => setDescription(e.target.value)}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
                     placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
