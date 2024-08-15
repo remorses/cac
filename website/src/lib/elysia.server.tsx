@@ -47,9 +47,10 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         })
     })
 
-    .onRequest(async ({ request, store }) => {
+    .onRequest(async function checkSession({ request, store }) {
         const sessionKey = request.headers.get('sessionKey')
 
+        // console.log(`checking session key`)
         const session = await db
             .selectFrom('FramerLoginSession')
             .where('key', '=', sessionKey)

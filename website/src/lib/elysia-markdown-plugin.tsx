@@ -29,7 +29,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     .state('userId', '')
     // .state('session', {} as Session)
 
-    .onRequest(async ({ request, store }) => {
+    .onRequest(async function addGithubUserLogin({ request, store }) {
         const pathname = new URL(request.url).pathname
         if (!pathname.includes('/markdownPlugin')) {
             return
@@ -42,6 +42,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         if (!userId) {
             return
         }
+        // console.log('getting github user login')
         const githubUserLogin = await getGithubUserLogin({ userId })
         if (!githubUserLogin) {
             throw new Error('Github login for user not found in database')
@@ -73,7 +74,9 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 },
             })
             if (!installation) {
-                throw new Error('No github installation found')
+                throw new Error(
+                    `No github installation found for ${githubAccountLogin} with user "${store.githubUserLogin}"`,
+                )
             }
 
             const installationId = installation.installationId
