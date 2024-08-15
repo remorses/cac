@@ -10,28 +10,34 @@ import {
     yieldObjectStream,
 } from 'website/src/lib/ndjson'
 
-export const RewriteSchema = t.Object({
-    description: t.String(),
-    textToReplace: t.Array(
-        t.Object({
-            name: t.Optional(t.String()),
-            content: t.Optional(t.String()),
-            nodeId: t.Optional(t.String()),
-            href: t.Optional(t.String()),
-            // index: t.Number(),
-        }),
-    ),
-    exampleTextToMigrate: t.Array(
-        t.Object({
-            hierarchy: t.Optional(t.String()), // for example "hero/heading" or "features/paragraph"
-            content: t.Optional(t.String()),
-            href: t.Optional(t.String()),
-            // other possible fields like price for price plans, etc
-        }),
-    ),
+export const RewriteSchema = z.object({
+    description: z.string().optional().nullable(),
+    textToReplace: z
+        .array(
+            z.object({
+                name: z.string().optional().nullable(),
+                content: z.string().optional().nullable(),
+                nodeId: z.string().optional().nullable(),
+                href: z.string().optional().nullable(),
+                // index: z.number(),
+            }),
+        )
+        .optional()
+        .nullable(),
+    exampleTextToMigrate: z
+        .array(
+            z.object({
+                hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
+                content: z.string().optional().nullable(),
+                href: z.string().optional().nullable(),
+                // other possible fields like price for price plans, etc
+            }),
+        )
+        .optional()
+        .nullable(),
 })
 
-export type RewriteSchema = Static<typeof RewriteSchema>
+export type RewriteSchema = z.infer<typeof RewriteSchema>
 
 function generateMigrationPrompt({
     description,

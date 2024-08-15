@@ -23,6 +23,7 @@ export const rewritePluginApp = new Spiceflow({
         async function* ({ body, store, request }) {
             const userId = store.userId
 
+            
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
                 throw new Response('No user id found', {
