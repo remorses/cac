@@ -1,6 +1,6 @@
 import { Spiceflow, t } from 'spiceflow'
 import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
-
+import { openapi } from 'spiceflow/dist/openapi'
 
 import { notifyError } from 'website/src/lib/errors'
 
@@ -10,6 +10,7 @@ import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
     .state('orgId', '')
+    .use(openapi({ path: '/openapi' }))
 
     // .use(
     //     cors({
