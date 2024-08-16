@@ -55,8 +55,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
 
     .post(
         '/githubRepoList',
-        async ({ body, store }) => {
-            const { githubAccountLogin } = body
+        async ({ request, store }) => {
+            const { githubAccountLogin } = await request.json()
             const orgId = store.orgId
 
             if (!orgId) {
@@ -137,10 +137,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     )
     .post(
         '/syncGithub',
-        async ({ body, store }) => {
-            let { owner, githubAccountLogin, basePath, repo } = body
+        async ({ request, store }) => {
+            const body = await request.json();
+            let { owner, githubAccountLogin, basePath, repo } = body;
             if (!basePath) {
-                basePath = ''
+                basePath = '';
             }
             const orgId = store.orgId
             if (!orgId) {
@@ -253,7 +254,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     )
     .post(
         '/checkBasePath',
-        async ({ body, store }) => {
+        async ({ request, store }) => {
+            const body = await request.json();
             let { owner, githubAccountLogin, basePath, repo } = body
 
             const orgId = store.orgId

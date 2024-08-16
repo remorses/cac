@@ -83,7 +83,8 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
     })
     .post(
         '/getSessionForKey',
-        async ({ body, request }) => {
+        async ({ request }) => {
+            let body = await request.json()
             // check in database if user with key has logged in, if yes, generate a supabase session for it
 
             if (!body.key) {
