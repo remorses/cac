@@ -92,7 +92,8 @@ async function loader({}: LoaderFunctionArgs) {
 
     return {}
 }
-async function action({ request }: LoaderFunctionArgs) {
+async function action({ request, context }: LoaderFunctionArgs) {
+
     const formData = await request.formData()
     const file = formData.get('fileInput') as File
     const dataUrl = await getFileDataUrl(file)
