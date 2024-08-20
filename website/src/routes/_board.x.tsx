@@ -9,10 +9,10 @@ import { BlockWithStep } from '../components/BlockWithStep'
 import { framerUrl, installFramerPluginUrl } from '../lib/env'
 import { createSupabaseAnon, getSupabaseSession } from '../lib/supabase.server'
 
-export let loader = async ({ request, response }: LoaderFunctionArgs) => {
+export let loader = async ({ request, }:LoaderFunctionArgs) => {
     const { headers, supabase, user, redirectTo } = await getSupabaseSession({
         request,
-        response,
+       
     })
     if (redirectTo) {
         console.log('redirecting to login')

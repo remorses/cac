@@ -1,7 +1,5 @@
 import { LoaderFunctionArgs } from '@remix-run/node'
-import {
-    useLoaderData
-} from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import { getOrgCredits } from 'website/src/lib/credits'
 import { getSupabaseSession } from '../lib/supabase.server'
 
@@ -21,10 +19,9 @@ export default function Page({}) {
     )
 }
 
-export async function loader({ request, response }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
     const { headers, supabase, user, redirectTo } = await getSupabaseSession({
         request,
-        response,
     })
     if (redirectTo) {
         console.log('redirecting to login')

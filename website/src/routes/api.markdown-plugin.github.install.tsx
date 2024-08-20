@@ -73,7 +73,7 @@ export default function ChooseOrg() {
     )
 }
 
-export async function loader({ request, response }: LoaderFunctionArgs) {
+export async function loader({ request, }:LoaderFunctionArgs) {
     const url = new URL(request.url)
     let afterFramerLoginUrl = url.searchParams.get('next') || ''
 
@@ -82,7 +82,7 @@ export async function loader({ request, response }: LoaderFunctionArgs) {
 
     const { supabase, session, userId, headers } = await getSupabaseSession({
         request,
-        response,
+       
     })
     if (!afterFramerLoginUrl) {
         throw new Error('URL is malformed, missing next param')

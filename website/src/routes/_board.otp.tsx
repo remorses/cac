@@ -30,11 +30,11 @@ const otpSchema = zfd.formData({
     next: z.string(),
 })
 
-export async function action({ request, response }: ActionFunctionArgs) {
+export async function action({ request, }:ActionFunctionArgs) {
     try {
         const { headers, supabase, userId } = await getSupabaseSession({
             request,
-            response,
+           
         })
 
         const form = await request.formData()

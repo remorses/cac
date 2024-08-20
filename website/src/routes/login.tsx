@@ -3,12 +3,12 @@ import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { loginRedirectUrl } from 'website/src/lib/utils'
 
-export async function loader({ request, response }: LoaderFunctionArgs) {
+export async function loader({ request, }:LoaderFunctionArgs) {
     const url = new URL(request.url)
 
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
-        response,
+       
     })
 
     // const next = url.searchParams.get('next') || '/x'

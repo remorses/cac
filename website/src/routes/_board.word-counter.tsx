@@ -54,7 +54,7 @@ export default function Page({}) {
     )
 }
 
-export async function action({ request, response }: ActionFunctionArgs) {
+export async function action({ request, }:ActionFunctionArgs) {
     const data = await request.formData()
     const url = data.get('url')?.toString()
     if (!url) {

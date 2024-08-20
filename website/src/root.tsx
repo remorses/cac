@@ -11,6 +11,8 @@ import './framer/styles.css'
 
 import { NextUIProvider } from '@nextui-org/react'
 import { PageContainer } from './components/Container'
+import { LoaderFunctionArgs } from '@remix-run/node'
+import { getSupabaseSession } from 'website/src/lib/supabase.server'
 
 function Providers({ children }) {
     return (
@@ -23,6 +25,13 @@ function Providers({ children }) {
             </div>
         </div>
     )
+}
+
+// refresh token if necessary
+export async function loader({ request }: LoaderFunctionArgs) {
+    const response = Response.json({})
+    const {} = await getSupabaseSession({ request, response })
+    return response
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

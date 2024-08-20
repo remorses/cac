@@ -15,11 +15,11 @@ export type GithubState = {
     next?: string
 }
 
-export async function loader({ request, response }: LoaderFunctionArgs) {
+export async function loader({ request, }:LoaderFunctionArgs) {
     const url = new URL(request.url)
     const { userId, redirectTo } = await getSupabaseSession({
         request,
-        response,
+       
     })
     if (!userId) {
         throw new Response('Unauthorized', { status: 401 })
