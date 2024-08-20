@@ -92,6 +92,15 @@ async function run() {
         createRequestHandler({
             build,
             mode: process.env.NODE_ENV,
+
+            // getLoadContext(req, res) {
+            //     const headers = new HeadersProxy(res)
+            //     return {
+            //         response: {
+            //             headers,
+            //         },
+            //     }
+            // },
         }),
     )
 
@@ -102,4 +111,64 @@ async function run() {
     ;['SIGTERM', 'SIGINT'].forEach((signal) => {
         process.once(signal, () => server?.close(console.error))
     })
+}
+
+class HeadersProxy implements Omit<Headers, 'constructor'> {
+    nodeRes: express.Response
+    headers: Headers
+    constructor(nodeRes: express.Response) {
+        this.nodeRes = nodeRes
+        this.headers = new Headers(
+            nodeRes.getHeaders() as Record<string, string>,
+        )
+    }
+
+    getSetCookie() {
+        return this.headers.getSetCookie()
+    }
+
+    set(name, value) {
+        this.nodeRes.setHeader(name, value)
+        this.headers.set(name, value)
+        return this
+    }
+    append(name, value) {
+        this.nodeRes.append(name, value)
+        this.headers.append(name, value)
+        return this
+    }
+
+    get(name) {
+        return this.headers.get(name)
+    }
+
+    has(name) {
+        return this.headers.has(name)
+    }
+
+    delete(name) {
+        this.nodeRes.removeHeader(name)
+        this.headers.delete(name)
+        return this
+    }
+
+    forEach(callback, thisArg) {
+        this.headers.forEach(callback, thisArg)
+    }
+
+    entries() {
+        return this.headers.entries()
+    }
+
+    keys() {
+        return this.headers.keys()
+    }
+
+    values() {
+        return this.headers.values()
+    }
+
+    [Symbol.iterator]() {
+        return this.headers[Symbol.iterator]()
+    }
 }

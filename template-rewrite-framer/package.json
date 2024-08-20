@@ -16,7 +16,7 @@
         "@sinclair/typebox": "^0.33.7",
         "@supabase/supabase-js": "^2.44.4",
         "@tailwindcss/forms": "^0.5.7",
-        "ai": "^3.3.7",
+        "ai": "^3.3.12",
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "eventsource-parser": "^1.1.2",

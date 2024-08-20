@@ -5,6 +5,7 @@
         "target": "ESNext",
         "module": "Node16",
         "moduleResolution": "Node16",
+        "lib": ["DOM", "DOM.Iterable", "ES2022"],
         "allowSyntheticDefaultImports": true,
         "outDir": "dist"
     },
