@@ -78,10 +78,16 @@ async function run() {
         next()
     })
     app.use(
-        build.publicPath,
-        express.static(build.assetsBuildDirectory, {
+        path.join(build.publicPath, './assets'),
+        express.static(path.join(build.assetsBuildDirectory, './assets'), {
             immutable: true,
             maxAge: '1y',
+        }),
+    )
+    app.use(
+        build.publicPath,
+        express.static(build.assetsBuildDirectory, {
+            maxAge: '1h',
         }),
     )
     app.use(express.static('public', { maxAge: '1h' }))
