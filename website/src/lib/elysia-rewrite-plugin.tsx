@@ -1,4 +1,4 @@
-import { Spiceflow, t } from 'spiceflow'
+import { Spiceflow } from 'spiceflow'
 
 import { notifyError } from 'website/src/lib/errors'
 

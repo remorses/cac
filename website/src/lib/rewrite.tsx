@@ -1,14 +1,9 @@
-import { Static, t } from 'spiceflow'
 import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'
 import { CoreMessage, streamObject } from 'ai'
 
-import {
-    yieldMaxEveryMs,
-    yieldNewArrayItems,
-    yieldObjectStream,
-} from 'website/src/lib/ndjson'
+import { yieldNewArrayItems, yieldObjectStream } from 'website/src/lib/ndjson'
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
