@@ -1,4 +1,4 @@
-import { Spiceflow, t } from 'spiceflow'
+import { Spiceflow } from 'spiceflow'
 import matter from 'gray-matter'
 
 import { notifyError } from 'website/src/lib/errors'
@@ -29,7 +29,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     .state('userId', '')
     // .state('session', {} as Session)
 
-    .onRequest(async function addGithubUserLogin({ request, store }) {
+    .use(async function addGithubUserLogin({ request, store }) {
         const pathname = new URL(request.url).pathname
         if (!pathname.includes('/markdownPlugin')) {
             return
@@ -138,10 +138,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     .post(
         '/syncGithub',
         async ({ request, store }) => {
-            const body = await request.json();
-            let { owner, githubAccountLogin, basePath, repo } = body;
+            const body = await request.json()
+            let { owner, githubAccountLogin, basePath, repo } = body
             if (!basePath) {
-                basePath = '';
+                basePath = ''
             }
             const orgId = store.orgId
             if (!orgId) {
@@ -255,7 +255,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     .post(
         '/checkBasePath',
         async ({ request, store }) => {
-            const body = await request.json();
+            const body = await request.json()
             let { owner, githubAccountLogin, basePath, repo } = body
 
             const orgId = store.orgId

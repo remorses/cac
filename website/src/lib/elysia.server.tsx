@@ -1,4 +1,4 @@
-import { Spiceflow, t } from 'spiceflow'
+import { Spiceflow } from 'spiceflow'
 import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 import { openapi } from 'spiceflow/dist/openapi'
 
@@ -6,6 +6,7 @@ import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
 import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
+import { z } from 'zod'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
@@ -47,7 +48,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         })
     })
 
-    .onRequest(async function checkSession({ request, store }) {
+    .use(async function checkSession({ request, store }) {
         const sessionKey = request.headers.get('sessionKey')
 
         // console.log(`checking session key`)
@@ -127,8 +128,8 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             return { orgId, email, key, requestData }
         },
         {
-            body: t.Object({
-                key: t.String(),
+            body: z.object({
+                key: z.string(),
             }),
             // response: {
             //     200: t.Object({
@@ -153,8 +154,8 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         {
             type: 'application/json',
             response: {
-                200: t.Object({
-                    ok: t.Boolean(),
+                200: z.object({
+                    ok: z.boolean(),
                 }),
             },
             description: 'Health check',
@@ -184,8 +185,8 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         {
             type: 'application/json',
             response: {
-                200: t.Object({
-                    ok: t.Boolean(),
+                200: z.object({
+                    ok: z.boolean(),
                 }),
             },
             description: 'Health check',
