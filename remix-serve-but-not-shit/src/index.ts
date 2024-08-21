@@ -87,10 +87,10 @@ async function run() {
     app.use(
         build.publicPath,
         express.static(build.assetsBuildDirectory, {
-            maxAge: '1h',
+            maxAge: '5m',
         }),
     )
-    app.use(express.static('public', { maxAge: '1h' }))
+    app.use(express.static('public', { maxAge: '5m' }))
     app.use(morgan('tiny'))
 
     app.all(

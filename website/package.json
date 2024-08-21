@@ -8,7 +8,6 @@
         "deployment": "pnpm tsx scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
         "copy-prisma": "cp ../db/schema.prisma ./build/",
-        "gen-client": "export DIR=../crisp-raycast/src/generated/ && rm -rf dist && tsc && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/client.* $DIR",
         "test": "doppler run -- vitest",
         "tunnel": "echo 'listening to https://tunnel.unframer.co' && cloudflared tunnel run --url http://localhost:8040 unframer-local",
         "tunnel-token": "cloudflared tunnel token --cred-file ~/.cloudflared/bcb47212-d8bc-49cb-8f05-eb66f280f76e.json unframer-local",
@@ -16,7 +15,7 @@
         "dev": "doppler run -- remix vite:dev -p 8040",
         "serve-plugin": "serve public --cors --ssl-cert localhost.pem --ssl-key localhost-key.pem",
         "dev:prod": "doppler run -c production -- remix vite:dev -p 8040",
-        "start": "PORT=8040 doppler run -- remix-serve ./build/server/index.js"
+        "start": "PORT=8040 doppler run --command 'pnpm prisma generate --schema=../db/schema.prisma && pnpm remix-serve-but-not-shit ./build/server/index.js'"
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.41",
@@ -25,7 +24,7 @@
         "@nextui-org/react": "2.4.2",
         "@nextui-org/theme": "^2.2.6",
         "@octokit/webhooks": "^13.3.0",
-        "@prisma/client": "^5.17.0",
+        "@prisma/client": "^5.18.0",
         "@remix-run/node": "^2.11.2",
         "@remix-run/react": "^2.11.2",
         "@remix-run/serve": "^2.11.2",
