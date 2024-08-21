@@ -1,6 +1,6 @@
 {
     "id": "b50ax4",
     "name": "Migrate Template",
-    "modes": ["default"],
+    "modes": ["canvas"],
     "icon": "/framer-plugin/migrate/icon.jpg"
 }
