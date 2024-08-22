@@ -5,7 +5,7 @@ import {
     simpleHash,
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
-import { CollectionField, CollectionItem, CollectionItemData, framer } from 'framer-plugin'
+import { CollectionItemData, framer } from 'framer-plugin'
 import { LoaderFunctionArgs, RouteObject } from 'react-router'
 import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
 
@@ -101,9 +101,9 @@ async function loader({}: LoaderFunctionArgs) {
             name: 'Content',
             id: CollectionFieldIds.content,
         },
-        ...mapFieldsConfig
+        ...(mapFieldsConfig
             .filter((field) => field?.type)
-            .filter((x) => x.id !== CollectionFieldIds.content),
+            .filter((x) => x.id !== CollectionFieldIds.content) as any[]),
     ])
 
     const unseenItemIds = new Set(await collection.getItemIds())
