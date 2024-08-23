@@ -61,6 +61,23 @@ export const plansConfig = [
         name: '10k credits', // an average landing page word length is 1k
         limits: { words: 10_000 }, //
     },
+
+    // production, subscription
+    {
+        variantId: 495826,
+
+        limits: { words: 2_000 },
+    },
+    {
+        variantId: 495827,
+
+        limits: { words: 5_000 },
+    },
+    {
+        variantId: 495828,
+
+        limits: { words: 10_000 },
+    },
 ]
 
 const pricingDescription = `
@@ -77,4 +94,3 @@ export const variantIdToCredits = Object.assign(
     {},
     ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
 )
-
