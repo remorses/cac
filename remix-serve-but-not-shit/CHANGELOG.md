@@ -1,5 +1,11 @@
 # remix-serve-but-not-shit
 
+## 0.0.6
+
+### Patch Changes
+
+-   Longer cache time
+
 ## 0.0.5
 
 ### Patch Changes

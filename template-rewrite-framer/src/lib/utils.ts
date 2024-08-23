@@ -13,9 +13,8 @@ import {
 import type { RouteType } from 'website/src/lib/elysia.server'
 import { RewriteSchema } from 'website/src/lib/rewrite'
 
-export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(
-    env.PUBLIC_URL!,
-    {
+export const pluginApiClient: SpiceflowClient.Create<RouteType> =
+    createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
             if (response.status === 401) {
                 console.log('clearing session because api returned 401')
@@ -30,8 +29,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflo
                 },
             }
         },
-    },
-)
+    })
 
 export async function getPluginData() {
     const [sessionKey] = await Promise.all([
