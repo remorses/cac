@@ -113,12 +113,19 @@ export async function* getWebsiteInfo({
 }) {
     // const buffers = await splitImage({ imageBuffer: image })
     let schema = z.object({
-        [GetWebsiteInfoObjectFields.websiteDescription]: z.string(),
+        [GetWebsiteInfoObjectFields.websiteDescription]: z
+            .string()
+            .describe('website description, should be short and concise'),
         [GetWebsiteInfoObjectFields.extractedContent]: z.array(
             z.object({
-                content: z.string(),
+                content: z.string().describe('extracted text content'),
                 hierarchy: z.string(),
-                href: z.string().nullable(),
+                href: z
+                    .string()
+                    .nullable()
+                    .describe(
+                        'href of the element, null if not a link element',
+                    ),
             }),
         ),
     })

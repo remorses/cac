@@ -169,8 +169,14 @@ export const rewritePluginApp = new Spiceflow({
                     .where('url', '=', url)
                     .selectAll()
                     .executeTakeFirst()
+                let shouldScrape = true
+                if (process.env.NODE_ENV !== 'development') {
+                    shouldScrape = false
+                }
+                // TODO enable cache later
+                shouldScrape = false
                 if (
-                    // process.env.NODE_ENV !== 'development' &&
+                    shouldScrape &&
                     alreadyScraped?.extractedDescription &&
                     alreadyScraped?.data
                 ) {
