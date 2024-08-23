@@ -242,7 +242,7 @@ export function ErrorBoundary() {
                 className='w-auto'
                 type='button'
                 onClick={() => {
-                    window.location.pathname = basePath
+                    window.location.pathname = withMode(basePath)
                 }}
             >
                 Try again
