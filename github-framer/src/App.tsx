@@ -150,8 +150,7 @@ const router = createBrowserRouter(
                             className='w-auto'
                             type='button'
                             onClick={() => {
-                                window.location.pathname =
-                                    window.location.pathname
+                                window.location.pathname = basePath
                             }}
                         >
                             Try again
