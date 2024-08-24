@@ -35,7 +35,7 @@
         "@tailwindcss/forms": "^0.5.7",
         "@tailwindcss/typography": "^0.5.13",
         "@types/marked": "^6.0.0",
-        "@xmorse/deployment-utils": "^0.2.5",
+        "@xmorse/deployment-utils": "^0.2.6",
         "ai": "^3.3.13",
         "async-sema": "^3.1.1",
         "clsx": "^2.1.1",
