@@ -87,11 +87,21 @@ export default function Page({}) {
     )
 }
 
-export async function action({ request, }:LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
+    const { headers, userId, user, redirectTo } = await getSupabaseSession({
+        request,
+    })
+
+    if (redirectTo) {
+        return redirectTo
+    }
+    return {}
+}
+
+export async function action({ request }: LoaderFunctionArgs) {
     const { headers, userId, supabase, user, redirectTo } =
         await getSupabaseSession({
             request,
-           
         })
     if (redirectTo) {
         console.log('redirecting to login')
