@@ -3,7 +3,7 @@ import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { prisma } from 'db/prisma'
 
-export async function loader({ request, }:LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const code = url.searchParams.get('code') || ''
     const type = url.searchParams.get('type') || ''
@@ -13,7 +13,6 @@ export async function loader({ request, }:LoaderFunctionArgs) {
     if (code) {
         const { headers, supabase } = getSupabaseWithHeaders({
             request,
-           
         })
 
         const {
@@ -80,7 +79,6 @@ export async function loader({ request, }:LoaderFunctionArgs) {
     if (type === 'magiclink') {
         const { headers, supabase } = getSupabaseWithHeaders({
             request,
-           
         })
         const token_hash = url.searchParams.get('token_hash') || ''
         const { error } = await supabase.auth.verifyOtp({ token_hash, type })
