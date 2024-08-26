@@ -56,7 +56,10 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
 }
 
 export function withMode(path, query?: Record<string, any>) {
-    const searchParams = new URLSearchParams({ mode: 'default', ...query })
+    let mode =
+        new URL(window.location.href).searchParams.get('mode') || 'canvas'
+    console.log('using mode', mode)
+    const searchParams = new URLSearchParams({ mode, ...query })
     return `${path}?${searchParams.toString()}`
 }
 

@@ -7,6 +7,8 @@ import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
 
+export { withMode } from 'template-rewrite-framer/src/lib/utils'
+
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
@@ -36,13 +38,6 @@ export const noop: any = () => {}
 
 export function isTruthy<T>(val: T | undefined | null | false): val is T {
     return Boolean(val)
-}
-
-export function withMode(path, query?: Record<string, any>) {
-    let mode =
-        new URL(window.location.href).searchParams.get('mode') || 'canvas'
-    const searchParams = new URLSearchParams({ mode, ...query })
-    return `${path}?${searchParams.toString()}`
 }
 
 export enum Paths {
