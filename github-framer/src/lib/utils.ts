@@ -7,12 +7,11 @@ import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
 
-export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(
-    env.PUBLIC_URL!,
-    {
+export const pluginApiClient: SpiceflowClient.Create<RouteType> =
+    createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
             if (response.status === 401) {
-                const collection = await framer. getManagedCollection()
+                const collection = await framer.getManagedCollection()
                 console.log('clearing session because api returned 401')
                 await collection.setPluginData(PluginDataKeys.sessionKey, null)
             }
@@ -25,8 +24,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflo
                 },
             }
         },
-    },
-)
+    })
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {
@@ -42,7 +40,7 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
 
 export function withMode(path, query?: Record<string, any>) {
     let mode =
-        new URL(window.location.href).searchParams.get('mode') || 'default'
+        new URL(window.location.href).searchParams.get('mode') || 'canvas'
     const searchParams = new URLSearchParams({ mode, ...query })
     return `${path}?${searchParams.toString()}`
 }
@@ -109,7 +107,7 @@ export function simpleHash(input: string) {
 }
 
 export async function getMarkdownPluginData() {
-    const collection = await framer. getManagedCollection()
+    const collection = await framer.getManagedCollection()
     const [
         repoSlug,
         mapFieldsConfigJson,
