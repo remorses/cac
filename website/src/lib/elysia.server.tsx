@@ -69,6 +69,9 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
 
     .post('/currentOrg', async ({ store }) => {
         const orgId = store.orgId
+        if (!orgId) {
+            throw unauthorizedResponse
+        }
         const orgAndUser = await db
             .selectFrom('Org')
             .where('orgId', '=', orgId)

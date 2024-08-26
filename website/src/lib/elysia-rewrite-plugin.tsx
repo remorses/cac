@@ -27,9 +27,7 @@ export const rewritePluginApp = new Spiceflow({
 
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
-                throw new Response('No user id found', {
-                    status: 401,
-                })
+                throw unauthorizedResponse
             }
             request.signal.addEventListener('abort', () => {
                 console.log('aborting rephrase')
@@ -100,6 +98,9 @@ export const rewritePluginApp = new Spiceflow({
             //     throw new AppError('No user id')
             // }
             const userId = store.userId
+            if (!userId) {
+                throw unauthorizedResponse
+            }
             const credits = await getOrgCredits({ orgId: userId })
 
             return credits
@@ -149,9 +150,7 @@ export const rewritePluginApp = new Spiceflow({
 
             const userId = store.userId
             if (!userId) {
-                throw new Response('No user id found', {
-                    status: 401,
-                })
+                throw unauthorizedResponse
             }
             try {
                 let url = domain
