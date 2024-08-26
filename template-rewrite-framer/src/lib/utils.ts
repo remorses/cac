@@ -243,3 +243,7 @@ export function formatLargeNumber(x: number) {
 
 // @ts-ignore
 export const basePath = import.meta.env.BASE_URL || '/'
+
+export function reload() {
+    window.location.href = withMode(basePath)
+}

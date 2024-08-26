@@ -38,6 +38,7 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
+import { reload } from 'template-rewrite-framer/src/lib/utils'
 
 globalThis.framer = framer
 
@@ -150,7 +151,7 @@ const router = createBrowserRouter(
                             className='w-auto'
                             type='button'
                             onClick={() => {
-                                window.location.pathname = withMode(basePath)
+                                reload()
                             }}
                         >
                             Try again

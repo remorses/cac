@@ -1,4 +1,5 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
+import { reload } from 'template-rewrite-framer/src/lib/utils'
 
 import {
     LoaderReturnType,
@@ -24,12 +25,14 @@ import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {
     const [org, credits] = await Promise.all([
-        pluginApiClient.api.plugins.currentOrg.post({}).then(({ data, error }) => {
-            if (error) {
-                throw error
-            }
-            return data
-        }),
+        pluginApiClient.api.plugins.currentOrg
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
         null,
         // pluginApiClient.api.plugins.getCredits.post({}).then(({ data, error }) => {
         //     if (error) {
@@ -77,13 +80,14 @@ function Component() {
                         // }
                         setIsLoading(true)
                         try {
-                            const collection = await framer. getManagedCollection()
+                            const collection =
+                                await framer.getManagedCollection()
                             await collection.setPluginData(
                                 PluginDataKeys.sessionKey,
                                 null,
                             )
                             // await framer.closePlugin()
-                            window.location.pathname = basePath
+                            reload()
                         } finally {
                             // setIsLoading(false)
                         }

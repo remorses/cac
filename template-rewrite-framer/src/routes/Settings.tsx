@@ -8,6 +8,7 @@ import {
     createBuyLink,
     formatLargeNumber,
     pluginApiClient,
+    reload,
     withMode,
 } from 'template-rewrite-framer/src/lib/utils'
 import { useState } from 'react'
@@ -95,7 +96,7 @@ function Component() {
                                 PluginDataKeys.sessionKey,
                                 null,
                             )
-                            window.location.pathname = basePath
+                            reload()
                         } finally {
                             // setIsLoading(false)
                         }

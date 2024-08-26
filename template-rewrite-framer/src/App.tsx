@@ -14,6 +14,7 @@ import {
     RouteIds,
     basePath,
     getPluginData,
+    reload,
     withMode,
 } from 'template-rewrite-framer/src/lib/utils'
 import { AlreadyHaveWebsite } from 'template-rewrite-framer/src/routes/AlreadyHaveWebsite'
@@ -242,7 +243,7 @@ export function ErrorBoundary() {
                 className='w-auto'
                 type='button'
                 onClick={() => {
-                    window.location.pathname = withMode(basePath)
+                    reload()
                 }}
             >
                 Try again
