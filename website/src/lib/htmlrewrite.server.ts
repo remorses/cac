@@ -197,7 +197,7 @@ export async function* getWebsiteInfo({
             },
             {
                 role: 'user',
-                content: dedent`Did you extract all the content on the page?  
+                content: dedent`Did you extract all the content on the page? Ignore images alts.
                 Respond with a JSON object and add all the missing extracted content on the page in a "extractedContent" array field. 
                 Only return new items, don't repeat the old ones. Return the "reasoning" field first to think step by step what fields are missing and why.
                 `,
@@ -368,7 +368,7 @@ You are a web scraper tasked with extracting structured content from an HTML doc
 
 8. Use the screenshot for context when determining the appropriate hierarchy and content type.
 
-9. Do not include any explanatory text or markdown formatting in the output like \`\`\`. Only output json
+
 
 HTML Content:
 

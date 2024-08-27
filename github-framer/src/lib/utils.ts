@@ -1,6 +1,6 @@
 import { env } from 'website/src/lib/env'
 
-import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/dist/client'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
 import { CollectionField, framer } from 'framer-plugin'
 import type { RouteType } from 'website/src/lib/elysia.server'

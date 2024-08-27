@@ -27,6 +27,8 @@ import {
     isComponentNode,
     supportsVisible,
     supportsName,
+    ComponentInstanceNode,
+    isComponentInstanceNode,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -131,6 +133,30 @@ function SimplePromptComponent({}) {
         let oldText = [] as RewriteSchema['textToReplace']
         let i = 0
 
+        async function handleNode(node: AnyNode) {
+            if (isTextNode(node)) {
+                const parents = await collectGenerator(getParentNodes(node))
+                const isVisible = parents.every(
+                    (x) => !supportsVisible(x) || x.visible,
+                )
+                if (!isVisible) {
+                    return
+                }
+                const text = await node.getText()
+                let nodeId = node.id
+                if (text) {
+                    const textData: RewriteSchema['textToReplace'][number] = {
+                        // index: i,
+                        nodeId,
+                        content: text,
+                        name: await getNodePath(node),
+                    }
+                    setOldNodes((oldNodes) => [...oldNodes, textData])
+                    oldText.push(textData)
+                }
+            }
+        }
+
         for (let rootNode of rootNodes) {
             if (!rootNode) {
                 continue
@@ -138,30 +164,13 @@ function SimplePromptComponent({}) {
             for await (let node of rootNode.walk()) {
                 i += 1
 
-                if (isTextNode(node)) {
-                    const parents = await collectGenerator(getParentNodes(node))
-                    const isVisible = parents.every(
-                        (x) => !supportsVisible(x) || x.visible,
-                    )
-                    if (!isVisible) {
-                        continue
-                    }
-                    const text = await node.getText()
-                    let nodeId = node.id
-                    if (text) {
-                        const textData: RewriteSchema['textToReplace'][number] =
-                            {
-                                // index: i,
-                                nodeId,
-                                content: text,
-                                name: await getNodePath(node),
-                            }
-                        setOldNodes((oldNodes) => [...oldNodes, textData])
-                        oldText.push(textData)
-                    }
+                for await (let child of recurseIntoComponent(node)) {
+                    await handleNode(child)
                 }
+                await handleNode(node)
             }
         }
+
         console.log('oldText', JSON.stringify(oldText, null, 2))
 
         if (!oldText.length) {
@@ -235,9 +244,16 @@ function SimplePromptComponent({}) {
                 )
                 let currentParent = (await node.getParent()) || undefined
                 const parents = await collectGenerator(getParentNodes(node))
-                const isVisible = parents.every(
-                    (x) => !supportsVisible(x) || x.visible,
-                )
+                const isVisible = parents.every((parent) => {
+                    // TODO remove this hack, now component children cannot be zoomed, later they will be zoomed
+                    if (isComponentNode(parent)) {
+                        return false
+                    }
+                    if (supportsVisible(parent)) {
+                        return parent.visible
+                    }
+                    return true
+                })
                 if (node.visible && isVisible) {
                     await node.zoomIntoView({ maxZoom: 0.9 })
                 }
@@ -445,75 +461,40 @@ async function loader({}: LoaderFunctionArgs) {
     }
 }
 
-async function replaceTextInComponents() {
-    const desktop = await getDesktop()
-
-    if (!desktop) {
-        throw new Error('No desktop found')
+async function* recurseIntoComponent(componentInstance: AnyNode) {
+    if (!isComponentInstanceNode(componentInstance)) {
+        console.log('not a component instance node', componentInstance)
+        return
     }
-
-    // components in the current page
-    const componentInstances = await desktop.getNodesWithType(
-        'ComponentInstanceNode',
+    if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
+        console.log(
+            `component ${componentInstance.componentIdentifier} is not a local module`,
+        )
+        return false
+    }
+    const regex = /local-module:.*\/(.*):.*/
+    const match = componentInstance.componentIdentifier.match(regex)
+    if (!match) {
+        console.log(
+            `component ${componentInstance.componentIdentifier} does not match regex to get component id`,
+        )
+        return false
+    }
+    const componentId = match[1]
+    const componentNode = await framer.getNode(componentId)
+    if (!componentNode || !isComponentNode(componentNode)) {
+        console.log(`could not find component node for ${componentId}`)
+        return false
+    }
+    console.log('found component node', await componentNode.getChildren())
+    const primary = (await componentNode.getChildren()).find(
+        (x) => isFrameNode(x) && !x.isReplica,
     )
-
-    let componentNodesInThePage = new Set<string>()
-    console.log('components', componentInstances)
-    for (let componentInstance of componentInstances) {
-        if (
-            !componentInstance.componentIdentifier.startsWith('local-module:')
-        ) {
-            console.log(
-                `component ${componentInstance.componentIdentifier} is not a local module`,
-            )
-            continue
-        }
-        // regex to extract lWUcIJP0H from "local-module:canvasComponent/lWUcIJP0H:default"
-        const regex = /local-module:.*\/(.*):.*/
-        const match = componentInstance.componentIdentifier.match(regex)
-        if (!match) {
-            console.log(
-                `component ${componentInstance.componentIdentifier} does not match regex to get component id`,
-            )
-            continue
-        }
-        const componentId = match[1]
-        const componentNode = await framer.getNode(componentId)
-        if (!componentNode || !isComponentNode(componentNode)) {
-            console.log(`could not find component node for ${componentId}`)
-            continue
-        }
-        componentNodesInThePage.add(componentId)
-        // console.log('-----')
-        // console.log('componentNode', componentNode)
-
-        // for await (let child of componentNode.walk()) {
-        //     console.log(await getNodePath(child), child)
-        // }
+    if (!primary) {
+        console.log('no primary child for component found')
+        return false
     }
-    // TODO change text inside the components too when you can access children of them
-    // const allTextNodes = await framer.getNodesWithType('TextNode')
-    // for (let textNode of allTextNodes) {
-    //     const rootParentId = await getRootParentId(textNode)
-    //     console.log(rootParentId)
-    //     if (!componentNodesInThePage.has(rootParentId)) {
-    //         // console.log(
-    //         //     `text node ${textNode.id} is not in local components`,
-    //         // )
-    //         continue
-    //     }
-    //     console.log('component text:', await textNode.getText())
-    // }
-
-    // recurse inside the components on the page
-    // for (let componentId of componentNodesInThePage) {
-    //     const componentNode = await framer.getNode(componentId)
-    //     if (!componentNode || !isComponentNode(componentNode)) {
-    //         console.log(`could not find component node for ${componentId}`)
-    //         continue
-    //     }
-    //     for await (let child of componentNode.walk()) {
-
-    //     }
-    // }
+    for await (let child of primary.walk()) {
+        yield child
+    }
 }

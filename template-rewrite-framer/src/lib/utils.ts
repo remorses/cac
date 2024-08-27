@@ -1,6 +1,6 @@
 import { env } from 'website/src/lib/env'
 
-import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/dist/client'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
 import {
     AnyNode,
