@@ -32,8 +32,6 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             status = 400
         } else if (code === 'PARSE') {
             status = 400
-        } else if (code === 'NOT_FOUND') {
-            status = 404
         } else {
             status = 500
             notifyError(error, 'API error')
@@ -48,7 +46,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         })
     })
 
-    .use(async function checkSession({ request, store }) {
+    .use(async function checkSession({ request, state: store }) {
         const sessionKey = request.headers.get('sessionKey')
 
         // console.log(`checking session key`)
@@ -67,7 +65,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         store.userId = userId || ''
     })
 
-    .post('/currentOrg', async ({ store }) => {
+    .post('/currentOrg', async ({ state: store }) => {
         const orgId = store.orgId
         if (!orgId) {
             throw unauthorizedResponse

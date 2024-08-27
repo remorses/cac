@@ -1,4 +1,4 @@
-import { createSpiceflowClient,  } from 'spiceflow/dist/client'
+import { createSpiceflowClient } from 'spiceflow/client'
 
 import { RouteType } from 'website/src/lib/elysia.server'
 import { env } from 'website/src/lib/env'

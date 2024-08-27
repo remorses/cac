@@ -1,0 +1,5 @@
+---
+'spiceflow': patch
+---
+
+fix middleware

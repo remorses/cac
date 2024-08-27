@@ -21,7 +21,7 @@ export const rewritePluginApp = new Spiceflow({
 
     .post(
         '/rephrase',
-        async function* ({ store, request }) {
+        async function* ({ state: store, request }) {
             let body = await request.json()
             const userId = store.userId
 
@@ -91,7 +91,7 @@ export const rewritePluginApp = new Spiceflow({
     )
     .post(
         '/getCredits',
-        async ({ store, request }) => {
+        async ({ state: store, request }) => {
             // console.log('cookies', cookie)
             // const { userId } = await getSupabaseSession({ request })
             // if (!userId) {
@@ -113,7 +113,7 @@ export const rewritePluginApp = new Spiceflow({
     )
     .post(
         '/activateLicense',
-        async ({ store, request }) => {
+        async ({ state: store, request }) => {
             let body = await request.json()
             // console.log('cookies', cookie)
             // const { userId } = await getSupabaseSession({ request })
@@ -144,7 +144,7 @@ export const rewritePluginApp = new Spiceflow({
 
     .post(
         '/scrapeWebsite',
-        async function* scrape({ request, store }) {
+        async function* scrape({ request, state: store }) {
             let body = await request.json()
             let { domain } = body
 
