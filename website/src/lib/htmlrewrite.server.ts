@@ -219,7 +219,7 @@ export async function* getWebsiteInfo({
 
         // model: anthropic('claude-3-sonnet-20240229'),
         // model: anthropic('claude-3-haiku-20240307'),
-        model: openai('gpt-4o-mini', { structuredOutputs: true }),
+        model: openai('gpt-4o-2024-08-06', { structuredOutputs: true }),
         // model: anthropic('claude-3-haiku-20240307'),
     })
 

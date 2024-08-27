@@ -32,13 +32,13 @@ async function main() {
         appName: 'unframer-website-prod',
         port,
         buildRemotely: true,
-        strategy: 'rolling',
+        // strategy: 'rolling',
         dockerfile: 'Dockerfile',
         minInstances: 1,
         forceHttps: false,
         maxInstances: 2,
         healthCheckPath: '/api/health',
-        memorySize: '512mb',
+        memorySize: '1gb',
         depot: true,
         // statics: [
         //     {
