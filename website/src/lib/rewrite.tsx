@@ -183,6 +183,7 @@ export async function* rewriteTemplateContent({
             arrayField: RephraseObjectFields.convertedItems,
             stream: yieldObjectStream({
                 stream: stream1.fullStream,
+                ms: 700,
                 onToken,
             }),
         })
