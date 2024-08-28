@@ -73,7 +73,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         const orgAndUser = await db
             .selectFrom('Org')
             .where('orgId', '=', orgId)
-            .leftJoin('auth.users', (join) => join.on('Org.orgId', '=', orgId))
+            .innerJoin('auth.users', (join) => join.on('Org.orgId', '=', orgId))
             .selectAll()
             .executeTakeFirst()
         if (!orgAndUser) {

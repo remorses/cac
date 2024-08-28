@@ -17,6 +17,9 @@ async function main() {
         shell(`pnpm --filter template-rewrite-framer build`, {
             env,
         }),
+        shell(`pnpm --filter spiceflow build`, {
+            env,
+        }),
         shell(`pnpm --filter github-framer build`, {
             env,
         }),

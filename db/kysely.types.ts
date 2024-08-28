@@ -6,7 +6,7 @@ export type AuthCodeChallengeMethod = "plain" | "s256";
 
 export type AuthFactorStatus = "unverified" | "verified";
 
-export type AuthFactorType = "totp" | "webauthn";
+export type AuthFactorType = "phone" | "totp" | "webauthn";
 
 export type AuthOneTimeTokenType = "confirmation_token" | "email_change_token_current" | "email_change_token_new" | "phone_change_token" | "reauthentication_token" | "recovery_token";
 
@@ -95,6 +95,7 @@ export interface AuthMfaChallenges {
   factor_id: string;
   id: string;
   ip_address: string;
+  otp_code: string | null;
   verified_at: Timestamp | null;
 }
 
@@ -103,6 +104,8 @@ export interface AuthMfaFactors {
   factor_type: AuthFactorType;
   friendly_name: string | null;
   id: string;
+  last_challenged_at: Timestamp | null;
+  phone: string | null;
   secret: string | null;
   status: AuthFactorStatus;
   updated_at: Timestamp;
@@ -501,6 +504,7 @@ export interface StorageObjects {
   owner_id: string | null;
   path_tokens: Generated<string[] | null>;
   updated_at: Generated<Timestamp | null>;
+  user_metadata: Json | null;
   version: string | null;
 }
 
@@ -512,6 +516,7 @@ export interface StorageS3MultipartUploads {
   key: string;
   owner_id: string | null;
   upload_signature: string;
+  user_metadata: Json | null;
   version: string;
 }
 

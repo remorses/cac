@@ -463,9 +463,9 @@ async function loader({}: LoaderFunctionArgs) {
 
 async function* recurseIntoComponent(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
-        console.log('not a component instance node', componentInstance)
         return
     }
+    // console.log('controls', componentInstance.controls)
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
         console.log(
             `component ${componentInstance.componentIdentifier} is not a local module`,
@@ -480,13 +480,14 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
         )
         return false
     }
+
     const componentId = match[1]
     const componentNode = await framer.getNode(componentId)
     if (!componentNode || !isComponentNode(componentNode)) {
         console.log(`could not find component node for ${componentId}`)
         return false
     }
-    console.log('found component node', await componentNode.getChildren())
+
     const primary = (await componentNode.getChildren()).find(
         (x) => isFrameNode(x) && !x.isReplica,
     )
@@ -494,7 +495,34 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
         console.log('no primary child for component found')
         return false
     }
+    const nodeIdToText = new Map<string, string | null>()
     for await (let child of primary.walk()) {
+        if (isTextNode(child)) {
+            const text = await child.getText()
+            nodeIdToText.set(child.id, text)
+        }
+
         yield child
     }
+    // const nonPrimary = (await componentNode.getChildren()).filter(
+    //     (x) => isFrameNode(x) && x.isReplica,
+    // )
+
+    // for (let child of nonPrimary) {
+    //     for await (let grandChild of child.walk()) {
+    //         if (isTextNode(grandChild)) {
+    //             const primaryText = nodeIdToText.get(grandChild.id)
+    //             console.log('primaryText', primaryText)
+    //             const text = await grandChild.getText()
+    //             if (primaryText !== text) {
+    //                 console.log('text mismatch', text, primaryText)
+    //                 yield grandChild
+    //             }
+    //         }
+    //         if (!grandChild.isReplica) {
+    //             console.log('non primary child', grandChild)
+    //             yield grandChild
+    //         }
+    //     }
+    // }
 }

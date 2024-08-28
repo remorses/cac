@@ -148,6 +148,7 @@ export async function action({ request }: LoaderFunctionArgs) {
             .where('id', '=', user.id)
             .selectAll()
             .executeTakeFirst(),
+
         // db
         //     .updateTable('auth.users')
         //     .where('id', '=', user.id)
