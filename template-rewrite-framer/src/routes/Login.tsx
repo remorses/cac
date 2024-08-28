@@ -69,7 +69,7 @@ function LoginComponent() {
                 </div>
 
                 <Button variant='primary' disabled>
-                    loading...
+                    Loading...
                 </Button>
             </div>
         )
@@ -81,7 +81,7 @@ function LoginComponent() {
         >
             <img src={logo} className='mx-auto shrink-0 -my-12 size-[230px]' />
             <div className='text-center  mx-auto items-center gap-2 flex flex-col max-w-xs'>
-                <div className=''>Connect to Migrate</div>
+                <div className='font-semibold'>Connect to Migrate</div>
                 <div className='opacity-70 text-balance'>
                     Add your website content to your project in a single click.
                 </div>

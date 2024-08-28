@@ -7,7 +7,7 @@ export function AlreadyHaveWebsite() {
     return (
         <div className='flex flex-col grow shrink-0 justify-start gap-6'>
             <div className='flex grow items-center justify-center gap-2 flex-col text-balance text-center'>
-                <div className=''>Do you already have a website?</div>
+                <div className='font-semibold'>Do you already have a website?</div>
                 <div className='opacity-70 max-w-[180px]'>
                     This plugin can use your existing site content and migrate
                     it to a project.
