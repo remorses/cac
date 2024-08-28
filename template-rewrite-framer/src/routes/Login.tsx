@@ -1,4 +1,6 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
+// @ts-ignore
+import logo from 'template-rewrite-framer/public/gradient-icon.png'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import {
@@ -39,20 +41,11 @@ function LoginComponent() {
         code,
     })
     useRefreshOnVisible({ enabled: !isLoading })
-    return (
-        <div className='flex flex-col justify-start gap-4'>
-            {!isLoading ? (
-                <div className='opacity-70'>
-                    Login so we can keep your website data and progress
-                </div>
-            ) : (
-                <div className='opacity-70'>
-                    This is your login confirmation code, click "confirm code"
-                    in your browser
-                </div>
-            )}
-            {isLoading && (
-                <div className='flex flex-col gap-4'>
+    let containerStyle: React.CSSProperties = {}
+    if (isLoading) {
+        return (
+            <div style={containerStyle} className='flex flex-col grow gap-4'>
+                <div className='flex grow shrink-0 justify-center h-full flex-col gap-4 items-center'>
                     <div className='flex font-mono flex-row gap-2 text-xl'>
                         {code.split('').map((char, i) => {
                             return (
@@ -65,15 +58,34 @@ function LoginComponent() {
                             )
                         })}
                     </div>
-                    <div className='opacity-70'>
-                        Click{' '}
+                    <div className='opacity-70 text-balance text-center'>
+                        This is your login confirmation code. Click{' '}
                         <a href={url} target='_blank'>
                             here
                         </a>{' '}
-                        if you are not automatically redirected
+                        if you’re not automatically redirected. Confirm in your
+                        browser.
                     </div>
                 </div>
-            )}
+
+                <Button variant='primary' disabled>
+                    loading...
+                </Button>
+            </div>
+        )
+    }
+    return (
+        <div
+            style={containerStyle}
+            className='flex flex-col justify-end grow gap-8'
+        >
+            <img src={logo} className='mx-auto shrink-0 -my-12 size-[230px]' />
+            <div className='text-center  mx-auto items-center gap-2 flex flex-col max-w-xs'>
+                <div className=''>Connect to Migrate</div>
+                <div className='opacity-70 text-balance'>
+                    Add your website content to your project in a single click.
+                </div>
+            </div>
 
             <Button
                 onClick={async () => {

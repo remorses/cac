@@ -184,6 +184,7 @@ button {
     cursor: pointer;
     font-weight: 600;
     width: 100%;
+    text-wrap: nowrap;
     user-select: none;
     background-color: var(--framer-color-bg-tertiary);
     transition: background-color 0.2s;

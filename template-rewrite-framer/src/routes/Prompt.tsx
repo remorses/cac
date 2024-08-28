@@ -15,26 +15,25 @@ import {
     globalState,
     isTruthy,
     pluginApiClient,
+    withMode,
 } from 'template-rewrite-framer/src/lib/utils'
 
-import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import {
-    framer,
-    isTextNode,
     AnyNode,
-    isFrameNode,
-    isComponentNode,
-    supportsVisible,
-    supportsName,
-    ComponentInstanceNode,
+    framer,
     isComponentInstanceNode,
+    isComponentNode,
+    isFrameNode,
+    isTextNode,
+    supportsVisible,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
     useLoaderData,
+    useNavigate,
     useRevalidator,
 } from 'react-router'
 
@@ -294,9 +293,9 @@ function SimplePromptComponent({}) {
             return 'Buy More Credits'
         }
         if (selectedNodes.length) {
-            return 'Replace Text On Selected Layers'
+            return 'Replace Selection'
         }
-        return 'Replace Text On The Page'
+        return 'Replace'
     })()
 
     const [remainingCredits, setRemainingCredits] = useState(credits.remaining)
@@ -306,6 +305,7 @@ function SimplePromptComponent({}) {
             adjustHeight(textareaRef.current)
         }
     }, [])
+    const navigate = useNavigate()
 
     const adjustHeight = (element) => {
         element.style.height = 'auto'
@@ -327,19 +327,21 @@ function SimplePromptComponent({}) {
                 e.preventDefault()
                 onSubmit()
             }}
-            className='flex flex-col items-start w-full justify-start gap-3'
+            className='flex grow flex-col items-start w-full justify-start gap-3'
         >
-            <div className='opacity-70'>
-                Describe what your new website is about. The plugin will use
-                this description to replace content on teh page.
+            <div className='flex flex-col items-center w-full min-h-[80px] grow justify-center gap-3 text-center text-balance'>
+                <div className='font-semibold'>Add a description</div>
+                <div className='opacity-70'>
+                    The plugin will use this description to replace content on
+                    your page.
+                </div>
             </div>
             <div className='w-full'>
                 <textarea
                     ref={textareaRef}
                     value={description}
                     disabled={buyCreditsInstead}
-                    // isRequired
-
+                    required
                     onChange={(e) => {
                         setDescription(e.target.value)
                         adjustHeight(e.target)
@@ -351,23 +353,28 @@ function SimplePromptComponent({}) {
             </div>
 
             {error && <div className='text-red-300 '>{error}</div>}
-            <Button
-                // submit on enter
-                isLoading={isLoading}
-                // startContent={
-                //     !isLoading && <MaterialSymbolsMagicButton className='w-4' />
-                // }
-                disabled={disabled}
-                // isLoading={isLoading}
-                type='submit'
-                className='framer-button-primary'
-            >
-                {buttonText}
-            </Button>
+            <div className='flex justify-stretch w-full gap-3'>
+                <Button
+                    className='w-auto block grow'
+                    onClick={() => {
+                        navigate(withMode(Paths.settings))
+                    }}
+                    type='button'
+                >
+                    Settings
+                </Button>
+                <Button
+                    isLoading={isLoading}
+                    // disabled={disabled}
+                    type='submit'
+                    className='w-auto block grow framer-button-primary'
+                >
+                    {buttonText}
+                </Button>
+            </div>
             {oldNodes.length > 0 && (
                 <Button
-                    // isLoading={isLoading}
-                    // disabled={isLoading}
+                    // className='bg-transparent'
                     onClick={async () => {
                         if (isLoading) {
                             abortController.abort()
@@ -402,12 +409,12 @@ function SimplePromptComponent({}) {
                     {isLoading ? 'Cancel' : 'Undo Replacement'}
                 </Button>
             )}
-            <div className='text-[11px] opacity-70'>
+            {/* <div className='text-[11px] opacity-70'>
                 <span className='font-mono tracking-wider font-semibold'>
                     {formatLargeNumber(remainingCredits)}
                 </span>{' '}
                 credits remaining
-            </div>
+            </div> */}
         </motion.form>
     )
 }

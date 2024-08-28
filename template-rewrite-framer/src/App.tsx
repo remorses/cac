@@ -4,7 +4,6 @@ import useMeasure from 'react-use-measure'
 import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
-import { Button } from 'template-rewrite-framer/src/components/Button'
 import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 
@@ -19,13 +18,13 @@ import {
 } from 'template-rewrite-framer/src/lib/utils'
 import { AlreadyHaveWebsite } from 'template-rewrite-framer/src/routes/AlreadyHaveWebsite'
 import { GetWebsiteInfo } from 'template-rewrite-framer/src/routes/GetWebsiteInfo'
+import { LicenseKey } from 'template-rewrite-framer/src/routes/LicenseKey'
 import { LoginPage } from 'template-rewrite-framer/src/routes/Login'
 import { SimplePrompt } from 'template-rewrite-framer/src/routes/Prompt'
 import { ScrapeWebsite } from 'template-rewrite-framer/src/routes/ScrapeWebsite'
 import { Settings } from 'template-rewrite-framer/src/routes/Settings'
-import { LicenseKey } from 'template-rewrite-framer/src/routes/LicenseKey'
 
-import { AnimatePresence, MotionConfig, useMotionValue } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
     Outlet,
     RouterProvider,
@@ -38,7 +37,7 @@ import {
     useRevalidator,
     useRouteError,
 } from 'react-router'
-import { Link, createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
 globalThis.framer = framer
@@ -59,7 +58,7 @@ const router = createBrowserRouter(
             loader,
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 480
+                let width = 270
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
                     typeof loader
                 >
@@ -71,15 +70,12 @@ const router = createBrowserRouter(
                 useLayoutEffect(() => {
                     console.log('opening framer ui')
                     framer.showUI({
-                        title: (handle?.handle as any) || '',
+                        title: 'Migrate',
                         position: 'top left',
                         width,
                         height: height || 100,
                     })
                 }, [height])
-                // useEffect(() => {
-                //     console.log({ height })
-                // }, [height])
 
                 const location = useLocation()
                 const showSettings =
@@ -117,35 +113,16 @@ const router = createBrowserRouter(
 
                                 className='overflow-hidden '
                             >
+                                <div className='px-4 w-full'>
+                                    <hr className='' />
+                                </div>
+
                                 <div
                                     ref={ref}
-                                    className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
+                                    className='min-h-[320px] flex shrink-0 h-full pt-4 grow justify-stretch flex-col p-4 w-full '
                                 >
                                     <NProgressComponent />
                                     <Outlet />
-
-                                    {showSettings && (
-                                        <div className='flex text-[11px] items-center pt-3 opacity-70 justify-between '>
-                                            {canGoBack && (
-                                                <button
-                                                    type='button'
-                                                    onClick={() => {
-                                                        navigate(-1)
-                                                    }}
-                                                    className='w-auto flex flex-row items-center -ml-2 gap-1 bg-transparent !py-px text-[11px] '
-                                                >
-                                                    <BackIcon className='w-2' />
-                                                    <div className=''>back</div>
-                                                </button>
-                                            )}
-                                            <div className='grow'></div>
-                                            <Link to={withMode(Paths.settings)}>
-                                                <Button className='w-auto bg-transparent !py-px text-[11px] '>
-                                                    settings
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </AnimatePresence>

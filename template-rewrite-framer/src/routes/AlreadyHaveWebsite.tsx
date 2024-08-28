@@ -6,10 +6,14 @@ import { useEffect, useRef } from 'react'
 export function AlreadyHaveWebsite() {
     return (
         <div className='flex flex-col grow shrink-0 justify-start gap-6'>
-            <div className='opacity-70'>
-                This plugin can use your existing website content to migrate it
-                to Framer
+            <div className='flex grow items-center justify-center gap-2 flex-col text-balance text-center'>
+                <div className=''>Do you already have a website?</div>
+                <div className='opacity-70 max-w-[180px]'>
+                    This plugin can use your existing site content and migrate
+                    it to a project.
+                </div>
             </div>
+
             <div className='flex gap-4  '>
                 <Link
                     tabIndex={-1}
@@ -21,7 +25,7 @@ export function AlreadyHaveWebsite() {
                         autoFocus
                         className='flex justify-center items-center w-full gap-2 px-4 py-2 rounded-md'
                     >
-                        Yes, use existing site content
+                        Yes
                     </Button>
                 </Link>
                 <Link
@@ -30,7 +34,7 @@ export function AlreadyHaveWebsite() {
                     to={withMode(Paths.prompt)}
                 >
                     <Button className='flex justify-center items-center w-full gap-2 px-4 py-2 rounded-md'>
-                        No, start from scratch
+                        No
                     </Button>
                 </Link>
             </div>

@@ -15,23 +15,27 @@ export function GetWebsiteInfo() {
                 const domain = data.get('domain')?.toString() || ''
                 navigate(withMode(Paths.scrapeWebsite, { domain }), {})
             }}
-            className='flex flex-col justify-start gap-4'
+            className='flex flex-col grow justify-start gap-4'
         >
-            <div className='flex flex-col justify-start gap-4'>
-                <div className='opacity-70'>
-                    The plugin will apply your existing website content to the current page or add
-                    new text based on your website context.
+            <div className='flex grow flex-col justify-start gap-3'>
+                <div className='grow flex justify-center flex-col text-balance text-center gap-2'>
+                    <div className='font-semibold'>Add your website</div>
+                    <div className='opacity-70'>
+                        The plugin will apply your content to the current page,
+                        or add new text based on your website.
+                    </div>
                 </div>
 
                 <input
-                    placeholder='example.com'
+                    placeholder='www.framer.com/home'
                     type='text'
                     autoFocus
+                    required
                     name='domain'
                     className='rounded-md p-2 w-full bg-framer-tertiary'
                 />
                 <Button type='submit' className='framer-button-primary'>
-                    Get Website Content
+                    Get Content
                 </Button>
             </div>
         </form>

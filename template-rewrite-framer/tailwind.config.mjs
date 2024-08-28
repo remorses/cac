@@ -41,6 +41,9 @@ export default {
             fontSize: {
                 '2xs': '10px',
             },
+            gap: {
+                3: '10px',
+            },
         },
     },
     plugins: [require('@tailwindcss/forms')],

@@ -78,11 +78,10 @@ function Component() {
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-4'>
-            <hr className='' />
-            <div className='flex items-center'>
-                <div className=''>
+            <div className='flex gap-1 items-center'>
+                <div className='truncate'>
                     Currently logged in as{' '}
-                    <span className='font-semibold inline'>{email}</span>
+                    <span className='font-semibold truncate max-w-full block'>{email}</span>
                 </div>
                 <div className='grow'></div>
                 <Button
@@ -108,7 +107,7 @@ function Component() {
                 </Button>
             </div>
             <hr className='' />
-            <div className='flex items-center'>
+            <div className='flex gap-2 items-center'>
                 <div className=''>
                     <span className='font-semibold inline'>
                         {credits.remaining}
@@ -122,11 +121,11 @@ function Component() {
                 </a>
             </div>
             <hr className='' />
-            <div className='flex items-center'>
+            <div className='flex gap-2 items-center'>
                 <div className=''>Redeem third party credits</div>
                 <div className='grow'></div>
                 <Link to={withMode(Paths.licenseKey)}>
-                    <Button className='w-auto'>Redeem License Key</Button>
+                    <Button className='w-auto'>Redeem License</Button>
                 </Link>
             </div>
             <hr className='' />

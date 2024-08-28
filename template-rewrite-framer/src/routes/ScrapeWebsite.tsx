@@ -10,6 +10,7 @@ import {
 import { useState, useRef, useEffect, Component } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate, useLocation, RouteObject } from 'react-router'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 
 let abortController = new AbortController()
 
@@ -107,37 +108,50 @@ function ScrapeWebsiteComponent() {
     let hasScrolled = useRef(false)
 
     return (
-        <div className='flex flex-col justify-start gap-4'>
+        <div className='flex flex-col grow justify-start gap-3'>
             <div
                 ref={containerRef}
                 onWheel={() => {
                     hasScrolled.current = true
                 }}
-                className='flex h-[200px] overflow-y-auto overflow-x-hidden flex-col grow rounded justify-start gap-px'
+                className='flex h-[180px] overflow-y-auto overflow-x-hidden flex-col grow rounded justify-start gap-px'
             >
                 <div className='grow'></div>
                 {logs.map((log, i) => (
-                    <div key={i} className='text-[11px] opacity-60 font-mono max-w-full'>
+                    <div
+                        key={i}
+                        className='text-[11px] opacity-60 font-mono max-w-full'
+                    >
                         {log}
                     </div>
                 ))}
-                {error && (
-                    <div className=' text-sm flex flex-col gap-2'>
-                        <div className='text-red-300 text-[11px] font-mono overflow-hidden'>
-                            {error}
-                        </div>
-                        <button
-                            className='w-auto'
-                            type='button'
-                            onClick={() => {
-                                navigate(-1)
-                            }}
-                        >
-                            Try again
-                        </button>
-                    </div>
-                )}
             </div>
+            {error && (
+                <div className=' text-sm flex flex-col gap-2'>
+                    <div className='text-red-300 text-[11px] font-mono overflow-hidden'>
+                        {error}
+                    </div>
+                    <button
+                        className='w-auto'
+                        type='button'
+                        onClick={() => {
+                            navigate(-1)
+                        }}
+                    >
+                        Try again
+                    </button>
+                </div>
+            )}
+            {isLoading && (
+                <Button
+                    onClick={() => {
+                        abortController.abort()
+                        navigate(-1)
+                    }}
+                >
+                    Cancel
+                </Button>
+            )}
         </div>
     )
 }
