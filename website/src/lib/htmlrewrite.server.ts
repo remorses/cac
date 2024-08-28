@@ -108,7 +108,6 @@ enum GetWebsiteInfoObjectFields {
 export async function* getWebsiteInfo({
     html,
     signal,
-    yieldEveryMs = 100,
     onToken = (x: string) => {},
 }) {
     // const buffers = await splitImage({ imageBuffer: image })
@@ -166,7 +165,11 @@ export async function* getWebsiteInfo({
 
     for await (let chunk of yieldNewArrayItems({
         arrayField: GetWebsiteInfoObjectFields.extractedContent,
-        stream: yieldObjectStream({ stream: stream1.fullStream, onToken }),
+        stream: yieldObjectStream({
+            stream: stream1.fullStream,
+            onToken,
+            ms: 10,
+        }),
     })) {
         yield {
             object: chunk,
