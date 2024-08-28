@@ -1,15 +1,12 @@
-import {
-    shell,
-    getDopplerEnv,
-    getCurrentStage,
-    deployFly,
-} from '@xmorse/deployment-utils'
-import path from 'path'
+import { deployFly, getDopplerEnv, shell } from '@xmorse/deployment-utils'
 
 async function main() {
     // const stage = getCurrentStage()
     const env = await getDopplerEnv({ stage: 'production', project: 'website' })
     env.FORCE_COLOR = '1'
+    await shell(`pnpm --filter spiceflow build`, {
+        env,
+    })
     await Promise.all([
         shell(`pnpm tsc`, {
             env,
@@ -17,9 +14,7 @@ async function main() {
         shell(`pnpm --filter template-rewrite-framer build`, {
             env,
         }),
-        shell(`pnpm --filter spiceflow build`, {
-            env,
-        }),
+
         shell(`pnpm --filter github-framer build`, {
             env,
         }),

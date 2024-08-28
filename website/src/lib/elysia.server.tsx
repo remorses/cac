@@ -70,12 +70,20 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         if (!orgId) {
             throw unauthorizedResponse
         }
-        const orgAndUser = await db
-            .selectFrom('Org')
-            .where('orgId', '=', orgId)
-            .innerJoin('auth.users', (join) => join.on('Org.orgId', '=', orgId))
-            .selectAll()
-            .executeTakeFirst()
+        const [org, user] = await Promise.all([
+            db
+                .selectFrom('Org')
+                .where('orgId', '=', orgId)
+                .selectAll()
+                .executeTakeFirst(),
+            db
+                .selectFrom('auth.users')
+                .where('id', '=', orgId)
+                .selectAll()
+                .executeTakeFirst(),
+        ])
+        const orgAndUser = { ...org, ...user }
+
         if (!orgAndUser) {
             throw unauthorizedResponse
         }
