@@ -110,7 +110,7 @@ function LoginComponent() {
                 variant='primary'
                 isLoading={isLoading || navigation.state !== 'idle'}
             >
-                Login With Google
+                Login with Google
             </Button>
         </div>
     )
@@ -126,6 +126,9 @@ async function loader({}: LoaderFunctionArgs) {
         notifyError(error, 'Error logging in for framer')
         throw error
     }
+    // if (loginCompleted) {
+    //     return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
+    // }
     if (data.key) {
         console.log('login was completed, got session', data)
 
