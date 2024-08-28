@@ -2,5 +2,5 @@
     "id": "b50ax4",
     "name": "Migrate",
     "modes": ["canvas"],
-    "icon": "/framer-plugin/migrate/icon.png"
+    "icon": "/framer-plugin/migrate/icon.svg"
 }
