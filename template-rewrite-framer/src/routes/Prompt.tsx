@@ -348,7 +348,7 @@ function SimplePromptComponent({}) {
                     }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
-                    placeholder='A landing page for the everything app X. Use casual language and a friendly tone.'
+                    placeholder='Framer is a web design tool...'
                 />
             </div>
 
