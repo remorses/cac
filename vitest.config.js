@@ -10,7 +10,6 @@ export default defineConfig({
         pool: 'threads',
         exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],
         // disableConsoleIntercept: true,
-
         poolOptions: {
             threads: {
                 isolate: false,

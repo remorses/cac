@@ -51,14 +51,15 @@ export const rewritePluginApp = new Spiceflow({
             let finalObject: Iterated<typeof objectStream>['finalObject']
             try {
                 for await (let chunk of objectStream) {
+                    // console.log('chunk', chunk)
+                    yield chunk
                     let object = chunk.object
                     if (object) {
                         chars += object?.content?.length || 0
                         words +=
                             splitIntoWords(object.content || '')?.length || 0
-                        console.log('object', object)
-                        yield object
                     }
+
                     if (chunk.finalObject) {
                         finalObject = chunk.finalObject
                     }

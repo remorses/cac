@@ -83,15 +83,29 @@ export async function* yieldObjectStream<T>({
 
 type UnwrapArray<T> = T extends Array<infer U> ? U : T
 
+type ArrayItemYield<T> =
+    | {
+          fullItem: T
+          partialItem: undefined
+      }
+    | {
+          fullItem: undefined
+          partialItem: Partial<T>
+      }
+
 export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
     arrayField,
     stream,
 }: {
     arrayField: Field
+    // onPartialItem?: (
+    //     partialObject: UnwrapArray<T[Field]>,
+    //     index: number,
+    // ) => void
     stream: AsyncIterable<T>
-}): AsyncIterable<UnwrapArray<T[Field]>> {
+}): AsyncIterable<ArrayItemYield<UnwrapArray<T[Field]>>> {
     let previousLength = 0
-    let lastItem: any = null
+    let lastItem: UnwrapArray<T[Field]> | null = null
 
     for await (const partialObject of stream) {
         const currentArray = partialObject[arrayField] || []
@@ -104,20 +118,35 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
         }
         const currentLengthWithoutLast = currentArray.length - 1
         lastItem = currentArray[currentArray.length - 1]
+        // TODO here not all  items are yielded
+        if (lastItem) {
+            yield {
+                partialItem: lastItem,
+                fullItem: undefined,
+            }
+        }
         if (currentLengthWithoutLast > previousLength) {
-            // Yield new items, excluding the last one
             for (let i = previousLength; i < currentLengthWithoutLast; i++) {
-                yield currentArray[i]
+                yield {
+                    partialItem: currentArray[i],
+                    fullItem: undefined,
+                }
+                yield {
+                    fullItem: currentArray[i],
+                    partialItem: undefined,
+                }
             }
 
-            // Update previousLength and lastItem
             previousLength = currentLengthWithoutLast
         }
     }
 
     // Yield the last item after the stream is complete
     if (lastItem != null) {
-        yield lastItem
+        yield {
+            fullItem: lastItem,
+            partialItem: undefined,
+        }
     }
 }
 

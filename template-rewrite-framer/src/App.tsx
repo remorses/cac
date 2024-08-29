@@ -58,7 +58,7 @@ const router = createBrowserRouter(
             loader,
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 270
+                let width = 260
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
                     typeof loader
                 >
@@ -119,7 +119,7 @@ const router = createBrowserRouter(
 
                                 <div
                                     ref={ref}
-                                    className='min-h-[320px] flex shrink-0 h-full pt-4 grow justify-stretch flex-col p-4 w-full '
+                                    className='min-h-[320px] flex shrink-0 h-full pt-3 grow justify-stretch flex-col p-4 w-full '
                                 >
                                     <NProgressComponent />
                                     <Outlet />

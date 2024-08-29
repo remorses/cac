@@ -77,11 +77,13 @@ function Component() {
 
     const navigate = useNavigate()
     return (
-        <div className='flex flex-col justify-start gap-4'>
-            <div className='flex gap-1 items-center'>
+        <div className='flex flex-col grow justify-between pt-1 gap-4'>
+            <div className='flex gap-1 items-center '>
                 <div className='truncate'>
                     Currently logged in as{' '}
-                    <span className='font-semibold truncate max-w-full block'>{email}</span>
+                    <span className='font-semibold truncate max-w-full block'>
+                        {email}
+                    </span>
                 </div>
                 <div className='grow'></div>
                 <Button
@@ -129,7 +131,7 @@ function Component() {
                 </Link>
             </div>
             <hr className='' />
-            <div className='flex group self-stretch gap-4 flex-row-reverse py-2 items-center'>
+            <div className='flex group self-stretch gap-4 flex-row-reverse items-center'>
                 <ProgressBar
                     className='grow'
                     progress={credits.used / credits.total || 0}
@@ -138,7 +140,7 @@ function Component() {
                     {credits.used} / {formatLargeNumber(credits.total)}
                 </div>
             </div>
-
+            {/* <div className='grow'></div> */}
             <Button
                 onClick={() => {
                     navigate(-1)

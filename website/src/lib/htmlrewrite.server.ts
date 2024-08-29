@@ -171,8 +171,10 @@ export async function* getWebsiteInfo({
             ms: 10,
         }),
     })) {
-        yield {
-            object: chunk,
+        if (chunk.fullItem) {
+            yield {
+                object: chunk.fullItem,
+            }
         }
     }
     let finalObject = await stream1.object
@@ -230,8 +232,10 @@ export async function* getWebsiteInfo({
         arrayField: GetWebsiteInfoObjectFields.extractedContent,
         stream: yieldObjectStream({ stream: stream2.fullStream, onToken }),
     })) {
-        yield {
-            object: chunk,
+        if (chunk.fullItem) {
+            yield {
+                object: chunk.fullItem,
+            }
         }
     }
     let finalObject2 = await stream2.object

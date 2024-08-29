@@ -24,6 +24,16 @@ init({
 })
 
 export function notifyError(error, msg?: string) {
+    if (error instanceof Error && error.name === 'AbortError') {
+        return
+    }
+    if (
+        error instanceof Error &&
+        error.message === 'BodyStreamBuffer was aborted'
+    ) {
+        return
+    }
+
     framer.notify(String(error.message || error), { variant: 'error' })
     console.error(error)
     captureException(error, { extra: { msg } })

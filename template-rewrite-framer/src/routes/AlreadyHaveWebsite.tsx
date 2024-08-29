@@ -7,17 +7,19 @@ export function AlreadyHaveWebsite() {
     return (
         <div className='flex flex-col grow shrink-0 justify-start gap-6'>
             <div className='flex grow items-center justify-center gap-2 flex-col text-balance text-center'>
-                <div className='font-semibold'>Do you already have a website?</div>
+                <div className='font-semibold'>
+                    Do you already have a website?
+                </div>
                 <div className='opacity-70 max-w-[180px]'>
                     This plugin can use your existing site content and migrate
                     it to a project.
                 </div>
             </div>
 
-            <div className='flex gap-4  '>
+            <div className='flex gap-3'>
                 <Link
                     tabIndex={-1}
-                    className='w-full'
+                    className='w-full block'
                     to={withMode(Paths.getWebsiteInfo)}
                 >
                     <Button
@@ -30,7 +32,7 @@ export function AlreadyHaveWebsite() {
                 </Link>
                 <Link
                     tabIndex={-1}
-                    className='w-full'
+                    className='w-full block'
                     to={withMode(Paths.prompt)}
                 >
                     <Button className='flex justify-center items-center w-full gap-2 px-4 py-2 rounded-md'>

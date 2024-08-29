@@ -28,6 +28,10 @@ export const RewriteSchema = z.object({
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
 
+const STEP_BY_STEP_REASONING = 'stepByStepReasoning'
+const CONVERTED_ITEMS = 'convertedItems'
+const framerIdLen = 9
+
 function generateMigrationPrompt({
     description,
     exampleTextToMigrate,
@@ -53,9 +57,9 @@ Instructions:
 
 Output: Provide a JSON object with two main fields:
 
-* "${RephraseObjectFields.stepByStepReasoning}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
+* "${STEP_BY_STEP_REASONING}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
 
-* "${RephraseObjectFields.convertedItems}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
+* "${CONVERTED_ITEMS}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
   - "previousContent": The content from the template now being replaced, this field should come first in the object
   - "content": The new or migrated content, should have similar length to the template content
   - "nodeId": The identifier from the original template item
@@ -71,7 +75,7 @@ Please provide a well-structured and valid JSON object as your response, adherin
 
 Provide a new text replacement for all the current template text items.
 
-"${RephraseObjectFields.stepByStepReasoning}" should come before "${RephraseObjectFields.convertedItems}" in the JSON object.
+"${STEP_BY_STEP_REASONING}" should come before "${CONVERTED_ITEMS}" in the JSON object.
 
 `
 }
@@ -95,11 +99,6 @@ export function convertExamplesToMarkdownList(
     return markdown
 }
 
-enum RephraseObjectFields {
-    convertedItems = 'convertedItems',
-    stepByStepReasoning = 'stepByStepReasoning',
-}
-
 const ITEMS_PER_ITERATION = 25
 
 function splitArrayInChunks(arr: any[], chunkSize: number) {
@@ -109,6 +108,8 @@ function splitArrayInChunks(arr: any[], chunkSize: number) {
     }
     return result
 }
+
+type YieldType = ReturnType<typeof rewriteTemplateContent>
 
 export async function* rewriteTemplateContent({
     exampleTextToMigrate,
@@ -121,8 +122,8 @@ export async function* rewriteTemplateContent({
     onToken?: (token: string) => void
 }) {
     let schema = z.object({
-        [RephraseObjectFields.stepByStepReasoning]: z.array(z.string()),
-        [RephraseObjectFields.convertedItems]: z.array(
+        [STEP_BY_STEP_REASONING]: z.array(z.string()),
+        [CONVERTED_ITEMS]: z.array(
             z.object({
                 content: z.string(),
                 nodeId: z.string(),
@@ -180,28 +181,45 @@ export async function* rewriteTemplateContent({
         })
 
         let objectStream = yieldNewArrayItems({
-            arrayField: RephraseObjectFields.convertedItems,
+            arrayField: CONVERTED_ITEMS,
+
             stream: yieldObjectStream({
                 stream: stream1.fullStream,
-                ms: 700,
+                ms: 10,
                 onToken,
             }),
         })
-
-        for await (let object of objectStream) {
-            yield {
-                object: object,
+        let lastId = ''
+        for await (let { fullItem, partialItem } of objectStream) {
+            if (
+                partialItem?.nodeId?.length === framerIdLen &&
+                partialItem?.nodeId !== lastId
+            ) {
+                yield {
+                    nextItemId: partialItem.nodeId,
+                    finalObject: undefined,
+                }
+                lastId = partialItem.nodeId
             }
+            if (fullItem) {
+                yield {
+                    object: fullItem,
+                    finalObject: undefined,
+                }
+            }
+            // if (fullItem) {
+            //     yield {
+            //         object: fullItem,
+            //         finalObject: undefined,
+            //     }
+            // }
         }
 
         const iterationObject = await stream1.object
 
-        if (
-            iterationObject[RephraseObjectFields.convertedItems].length !==
-            currentChunk.length
-        ) {
+        if (iterationObject[CONVERTED_ITEMS].length !== currentChunk.length) {
             console.log(
-                `LLM returned different number of items than we asked for: ${currentChunk.length} vs ${iterationObject[RephraseObjectFields.convertedItems].length}`,
+                `LLM returned different number of items than we asked for: ${currentChunk.length} vs ${iterationObject[CONVERTED_ITEMS].length}`,
             )
         }
 
@@ -229,9 +247,5 @@ export async function* rewriteTemplateContent({
                         (newItem) => newItem.nodeId === oldItem.nodeId,
                     ),
             ) || []
-    }
-
-    yield {
-        finalObject,
     }
 }

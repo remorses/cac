@@ -2,7 +2,7 @@
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "lib": ["DOM", "DOM.Iterable", "ES2022"],
-        
+        "outDir": "esm",
         "isolatedModules": true,
         "rootDir": "src",
         "esModuleInterop": true,
@@ -21,7 +21,7 @@
         "paths": {
             "template-rewrite-framer/*": ["./*"]
         },
-        "noEmit": true
+        "noEmit": false
     },
     "include": ["src"]
 }

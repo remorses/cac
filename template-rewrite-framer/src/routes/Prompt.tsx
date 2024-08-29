@@ -26,6 +26,7 @@ import {
     isComponentNode,
     isFrameNode,
     isTextNode,
+    supportsBackgroundColor,
     supportsVisible,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
@@ -134,10 +135,7 @@ function SimplePromptComponent({}) {
 
         async function handleNode(node: AnyNode) {
             if (isTextNode(node)) {
-                const parents = await collectGenerator(getParentNodes(node))
-                const isVisible = parents.every(
-                    (x) => !supportsVisible(x) || x.visible,
-                )
+                const isVisible = await isNodeVisible(node)
                 if (!isVisible) {
                     return
                 }
@@ -203,23 +201,51 @@ function SimplePromptComponent({}) {
         let prevNode: AnyNode | undefined
 
         let prevBackground = null as string | null
-
+        let lastTimeZoomed = Date.now()
+        let minTimeOnNode = 700
         try {
-            for await (let chunk of eventSource!) {
+            for await (let { object: chunk, nextItemId } of eventSource!) {
+                console.log({ chunk, nextItemId })
+                if (nextItemId) {
+                    let node = await framer.getNode(nextItemId)
+                    if (!node) {
+                        console.log('no node to zoom found for id', nextItemId)
+                        continue
+                    }
+
+                    await prevNode?.setAttributes({
+                        backgroundColor: prevBackground,
+                    })
+                    let currentParent = (await node.getParent()) || undefined
+                    const isVisible = await isNodeVisible(node)
+                    if (!isVisible) {
+                        console.log('node not visible, skipping zoom')
+                        continue
+                    }
+                    lastTimeZoomed = Date.now()
+                    await node.zoomIntoView({ maxZoom: 0.9 })
+
+                    if (
+                        !currentParent ||
+                        !supportsBackgroundColor(currentParent)
+                    ) {
+                        continue
+                    }
+
+                    prevBackground = currentParent?.backgroundColor || null
+                    await currentParent?.setAttributes({ backgroundColor })
+
+                    prevNode = currentParent
+                }
                 if (!chunk) {
-                    console.log('one chunk is null')
                     continue
                 }
 
-                console.log('chunk', chunk)
-                await prevNode?.setAttributes({
-                    backgroundColor: prevBackground,
-                })
                 // Process each chunk (value)
 
                 if (chunk.nodeId == null) {
                     console.log(`no nodeId found: ${chunk}`)
-                    return
+                    continue
                 }
 
                 const node = await framer.getNode(chunk.nodeId)
@@ -238,33 +264,14 @@ function SimplePromptComponent({}) {
                     console.log(`no old text found for node ${chunk.nodeId}`)
                     continue
                 }
-                console.log(
-                    `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
-                )
-                let currentParent = (await node.getParent()) || undefined
-                const parents = await collectGenerator(getParentNodes(node))
-                const isVisible = parents.every((parent) => {
-                    // TODO remove this hack, now component children cannot be zoomed, later they will be zoomed
-                    if (isComponentNode(parent)) {
-                        return false
-                    }
-                    if (supportsVisible(parent)) {
-                        return parent.visible
-                    }
-                    return true
-                })
-                if (node.visible && isVisible) {
-                    await node.zoomIntoView({ maxZoom: 0.9 })
-                }
+                // console.log(
+                //     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
+                // )
 
-                if (currentParent && isFrameNode(currentParent)) {
-                    prevBackground = currentParent?.backgroundColor || null
-
-                    await currentParent?.setAttributes({ backgroundColor })
-                    prevNode = currentParent
-                } else {
-                    prevBackground = null
-                    prevNode = undefined
+                if (Date.now() - lastTimeZoomed < minTimeOnNode) {
+                    let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
+                    console.log('waiting before zooming', time)
+                    await sleep(time)
                 }
 
                 if (chunk.content) {
@@ -532,4 +539,19 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
     //         }
     //     }
     // }
+}
+
+async function isNodeVisible(node: AnyNode) {
+    const parents = await collectGenerator(getParentNodes(node))
+    const isVisible = parents.every((parent) => {
+        // TODO remove this hack, now component children cannot be zoomed, later they will be zoomed
+        if (isComponentNode(parent)) {
+            return false
+        }
+        if (supportsVisible(parent)) {
+            return parent.visible
+        }
+        return true
+    })
+    return isVisible && (!supportsVisible(node) || node.visible)
 }

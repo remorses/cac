@@ -79,7 +79,7 @@ function LoginComponent() {
             style={containerStyle}
             className='flex flex-col justify-end grow gap-8'
         >
-            <img src={logo} className='mx-auto shrink-0 -my-12 size-[230px]' />
+            <img src={logo} className='mx-auto shrink-0 -my-8 size-[230px]' />
             <div className='text-center  mx-auto items-center gap-2 flex flex-col max-w-xs'>
                 <div className='font-semibold'>Connect to Migrate</div>
                 <div className='opacity-70 text-balance'>

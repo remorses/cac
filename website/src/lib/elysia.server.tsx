@@ -7,12 +7,15 @@ import { notifyError } from 'website/src/lib/errors'
 import { db } from 'db/kysely'
 import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 import { z } from 'zod'
+import { cors } from 'spiceflow/cors'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
     .state('orgId', '')
     .use(openapi({ path: '/openapi' }))
-
+    .use(cors())
+    .use(rewritePluginApp)
+    .use(markdownPluginApp)
     // .use(
     //     cors({
     //         // credentials: true,
@@ -183,8 +186,6 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         },
     )
 
-    .use(rewritePluginApp)
-    .use(markdownPluginApp)
     .get(
         '/errorExample',
         () => {
