@@ -21,6 +21,8 @@ import {
 import { motion } from 'framer-motion'
 import {
     AnyNode,
+    ComponentInstanceNode,
+    ComponentNode,
     framer,
     isComponentInstanceNode,
     isComponentNode,
@@ -43,6 +45,11 @@ import { RewriteSchema } from 'website/src/lib/rewrite'
 import { sleep } from 'website/src/lib/utils'
 
 let abortController = new AbortController()
+
+let instanceNodes = new Map<
+    string,
+    { node: ComponentInstanceNode; controlKey: string }
+>()
 
 function SimplePromptComponent({}) {
     const { shouldShowProgress, buyMoreCreditsUrl, credits } =
@@ -133,6 +140,17 @@ function SimplePromptComponent({}) {
         let oldText = [] as RewriteSchema['textToReplace']
         let i = 0
 
+        function addText({ nodeId, text, name }) {
+            const textData: RewriteSchema['textToReplace'][number] = {
+                // index: i,
+                nodeId,
+                content: text,
+                name,
+            }
+            setOldNodes((oldNodes) => [...oldNodes, textData])
+            oldText.push(textData)
+        }
+
         async function handleNode(node: AnyNode) {
             if (isTextNode(node)) {
                 const isVisible = await isNodeVisible(node)
@@ -142,14 +160,45 @@ function SimplePromptComponent({}) {
                 const text = await node.getText()
                 let nodeId = node.id
                 if (text) {
-                    const textData: RewriteSchema['textToReplace'][number] = {
-                        // index: i,
+                    addText({
                         nodeId,
-                        content: text,
+                        text,
                         name: await getNodePath(node),
+                    })
+                }
+            }
+            if (isComponentInstanceNode(node)) {
+                const isVisible = await isNodeVisible(node)
+                if (!isVisible) {
+                    return
+                }
+                const _component = await getInstanceComponent(node)
+                if (!_component) {
+                    return
+                }
+                const controls = Object.entries(node.controls)
+                // let updatedControls = { ...node.controls }
+
+                for (let [key, value] of controls) {
+                    if (
+                        typeof value === 'string' &&
+                        // TODO check type when framer supports it
+                        possibleInstanceTextFields.includes(
+                            key.toLocaleLowerCase(),
+                        )
+                    ) {
+                        let name = (await getNodePath(node)) + '/' + key
+                        let nodeId = nineCharsRandomString()
+                        instanceNodes.set(nodeId, {
+                            node,
+                            controlKey: key,
+                        })
+                        addText({
+                            nodeId,
+                            text: value,
+                            name,
+                        })
                     }
-                    setOldNodes((oldNodes) => [...oldNodes, textData])
-                    oldText.push(textData)
                 }
             }
         }
@@ -202,14 +251,22 @@ function SimplePromptComponent({}) {
 
         let prevBackground = null as string | null
         let lastTimeZoomed = Date.now()
-        let minTimeOnNode = 700
+        let minTimeOnNode = 10
         try {
-            for await (let { object: chunk, nextItemId } of eventSource!) {
+            for await (let {
+                partialItem: chunk,
+                object: completeObj,
+                nextItemId,
+            } of eventSource!) {
                 console.log({ chunk, nextItemId })
                 if (nextItemId) {
-                    let node = await framer.getNode(nextItemId)
+                    let node =
+                        instanceNodes.get(nextItemId)?.node ||
+                        (await framer.getNode(nextItemId))
+
                     if (!node) {
                         console.log('no node to zoom found for id', nextItemId)
+
                         continue
                     }
 
@@ -248,11 +305,10 @@ function SimplePromptComponent({}) {
                     continue
                 }
 
-                const node = await framer.getNode(chunk.nodeId)
-                if (!isTextNode(node)) {
-                    console.log(`no text node found for id ${chunk.nodeId}`)
-                    continue
-                }
+                const node =
+                    instanceNodes.get(chunk.nodeId)?.node ||
+                    (await framer.getNode(chunk.nodeId))
+
                 if (!node) {
                     console.log(`no node found for id ${name}`)
                     continue
@@ -274,12 +330,29 @@ function SimplePromptComponent({}) {
                     await sleep(time)
                 }
 
-                if (chunk.content) {
-                    let words = chunk.content.split(/\s+/).length
-                    await node.setText(chunk.content)
-                    setRemainingCredits(Math.max(0, credits.remaining - words))
-                } else {
+                if (!chunk.content) {
                     console.log('no text found in chunk', chunk)
+                    continue
+                }
+                if (isTextNode(node)) {
+                    await node.setText(chunk.content)
+                }
+                if (isComponentInstanceNode(node)) {
+                    const instance = instanceNodes.get(chunk.nodeId)
+                    if (!instance) {
+                        console.log('no instance found for node', chunk.nodeId)
+                        continue
+                    }
+                    let key = instance.controlKey
+                    let controls = { ...node.controls }
+                    controls[key] = chunk.content
+                    console.log('setting node control', key)
+                    await node.setAttributes({ controls })
+                }
+
+                if (completeObj?.content) {
+                    let words = completeObj.content.split(/\s+/).length
+                    setRemainingCredits(Math.max(0, credits.remaining - words))
                 }
 
                 // TODO change href when framer supports it
@@ -389,21 +462,31 @@ function SimplePromptComponent({}) {
                         }
                         await Promise.all(
                             oldNodes.map(async (node) => {
-                                const { nodeId, content } = node
-                                if (!content || !nodeId) {
+                                const { nodeId, content: oldContent } = node
+                                if (!oldContent || !nodeId) {
                                     return
                                 }
 
                                 try {
+                                    // TODO undo controls too
                                     const framerNode =
                                         await framer.getNode(nodeId)
                                     if (isTextNode(framerNode)) {
-                                        await framerNode.setText(content)
+                                        await framerNode.setText(oldContent)
+                                    }
+                                    let instance = instanceNodes.get(nodeId)
+                                    if (instance) {
+                                        const { node, controlKey } = instance
+                                        let controls = { ...node.controls }
+                                        controls[controlKey] = oldContent
+                                        await node.setAttributes({
+                                            controls,
+                                        })
                                     }
                                 } catch (e) {
                                     console.log(
                                         'error undoing text for ',
-                                        content,
+                                        oldContent,
                                         e,
                                     )
                                 }
@@ -475,7 +558,7 @@ async function loader({}: LoaderFunctionArgs) {
     }
 }
 
-async function* recurseIntoComponent(componentInstance: AnyNode) {
+async function getInstanceComponent(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
         return
     }
@@ -484,7 +567,7 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
         console.log(
             `component ${componentInstance.componentIdentifier} is not a local module`,
         )
-        return false
+        return
     }
     const regex = /local-module:.*\/(.*):.*/
     const match = componentInstance.componentIdentifier.match(regex)
@@ -492,22 +575,54 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
         console.log(
             `component ${componentInstance.componentIdentifier} does not match regex to get component id`,
         )
-        return false
+        return
     }
 
     const componentId = match[1]
     const componentNode = await framer.getNode(componentId)
     if (!componentNode || !isComponentNode(componentNode)) {
         console.log(`could not find component node for ${componentId}`)
-        return false
+        return
     }
 
+    return componentNode
+}
+
+export async function getComponentCodeUrl(componentNode?: AnyNode) {
+    // example is https://framer.com/m/FAQ-Row-Copy-FR9A9RBHB.js
+    // https://framer.com/m/AccordionOne-V8Wz.js@FR9A9RBHB
+    if (isComponentInstanceNode(componentNode)) {
+        return await getComponentCodeUrl(
+            await getInstanceComponent(componentNode),
+        )
+    }
+    if (isComponentNode(componentNode)) {
+        let nameEncoding = componentNode.name || ''
+        if (!nameEncoding) {
+            return
+        }
+
+        // turn FAQ Row Copy into FAQ-Row-Copy, replace space with -
+        nameEncoding = nameEncoding.replace(/ +/g, '-')
+        nameEncoding = encodeURIComponent(nameEncoding)
+        let id = componentNode.id
+        return `https://framer.com/m/${nameEncoding}-${id}.js`
+    }
+    console.log('not a component node', componentNode?.constructor?.name)
+}
+Object.assign(globalThis, { getComponentCodeUrl })
+
+async function* recurseIntoComponent(componentInstance: AnyNode) {
+    const componentNode = await getInstanceComponent(componentInstance)
+    if (!componentNode) {
+        return
+    }
     const primary = (await componentNode.getChildren()).find(
         (x) => isFrameNode(x) && !x.isReplica,
     )
     if (!primary) {
         console.log('no primary child for component found')
-        return false
+        return
     }
     const nodeIdToText = new Map<string, string | null>()
     for await (let child of primary.walk()) {
@@ -554,4 +669,19 @@ async function isNodeVisible(node: AnyNode) {
         return true
     })
     return isVisible && (!supportsVisible(node) || node.visible)
+}
+
+const possibleInstanceTextFields = [
+    'text',
+    'placeholder',
+    'label',
+    'title',
+    'description',
+    'hint',
+    'question',
+    'buttontext',
+]
+
+function nineCharsRandomString() {
+    return Math.random().toString(36).substring(2, 10)
 }

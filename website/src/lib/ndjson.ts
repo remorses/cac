@@ -119,12 +119,7 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
         const currentLengthWithoutLast = currentArray.length - 1
         lastItem = currentArray[currentArray.length - 1]
         // TODO here not all  items are yielded
-        if (lastItem) {
-            yield {
-                partialItem: lastItem,
-                fullItem: undefined,
-            }
-        }
+
         if (currentLengthWithoutLast > previousLength) {
             for (let i = previousLength; i < currentLengthWithoutLast; i++) {
                 yield {
@@ -138,6 +133,12 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
             }
 
             previousLength = currentLengthWithoutLast
+        }
+        if (lastItem) {
+            yield {
+                partialItem: lastItem,
+                fullItem: undefined,
+            }
         }
     }
 

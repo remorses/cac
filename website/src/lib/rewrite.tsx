@@ -54,15 +54,16 @@ Instructions:
 * Update href values if present and relevant to the new content.
 * Use content from the website being migrated if it fits well within the template structure.
 * If the migrated content doesn't fit perfectly, create new content that matches the style and intent of the website being migrated.
+* remove anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should not be always replaced.
 
 Output: Provide a JSON object with two main fields:
 
 * "${STEP_BY_STEP_REASONING}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
 
 * "${CONVERTED_ITEMS}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
-  - "previousContent": The content from the template now being replaced, this field should come first in the object
+  - "nodeId": The identifier from the original template item, this field should come first in the object
+  - "previousContent": The content from the template now being replaced, should be second field in the object
   - "content": The new or migrated content, should have similar length to the template content
-  - "nodeId": The identifier from the original template item
   - "href": Updated link if applicable (optional)
 
 Remember:
@@ -201,18 +202,16 @@ export async function* rewriteTemplateContent({
                 }
                 lastId = partialItem.nodeId
             }
+            yield {
+                partialItem: partialItem,
+                finalObject: undefined,
+            }
             if (fullItem) {
                 yield {
                     object: fullItem,
                     finalObject: undefined,
                 }
             }
-            // if (fullItem) {
-            //     yield {
-            //         object: fullItem,
-            //         finalObject: undefined,
-            //     }
-            // }
         }
 
         const iterationObject = await stream1.object
