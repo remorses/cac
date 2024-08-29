@@ -432,7 +432,7 @@ function SimplePromptComponent({}) {
                 />
             </div>
 
-            {error && <div className='text-red-300 '>{error}</div>}
+            {error && <div className='text-red-300 text-[11px] font-mono'>{error}</div>}
             <div className='flex justify-stretch w-full gap-3'>
                 <Button
                     className='w-auto block grow'
@@ -680,6 +680,7 @@ const possibleInstanceTextFields = [
     'hint',
     'question',
     'buttontext',
+    'content',
 ]
 
 function nineCharsRandomString() {
