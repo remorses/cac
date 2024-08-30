@@ -108,9 +108,9 @@ test(
             let prevLen = resultNodeIds.size
 
             let object = chunk.object
-            if (chunk.finalObject) {
-                console.log('reasoning', chunk.finalObject.stepByStepReasoning)
-            }
+            // if (chunk.finalObject) {
+            //     console.log('reasoning', chunk.finalObject.stepByStepReasoning)
+            // }
             if (object) {
                 console.log('object', object)
                 resultNodeIds.add(object.nodeId!)
