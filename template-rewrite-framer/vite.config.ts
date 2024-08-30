@@ -19,8 +19,11 @@ export default defineConfig({
         tsconfigPaths(),
     ],
     base: building ? basePath : undefined,
+
     build: {
         target: 'ES2020',
+        // 30kb in bytes
+        assetsInlineLimit: 30720,
         sourcemap: true,
         outDir: 'dist' + basePath,
     },

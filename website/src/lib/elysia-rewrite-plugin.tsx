@@ -169,14 +169,16 @@ export const rewritePluginApp = new Spiceflow({
                     .where('url', '=', url)
                     .selectAll()
                     .executeTakeFirst()
-                let shouldScrape = true
+                let shouldUseCache = true
                 if (process.env.NODE_ENV !== 'development') {
-                    shouldScrape = false
+                    shouldUseCache = false
                 }
-                // TODO enable cache later
-                shouldScrape = false
+                const dayAgo = new Date().getTime() - 1000 * 60 * 60 * 24
+                // shouldUseCache = false
                 if (
-                    shouldScrape &&
+                    alreadyScraped &&
+                    new Date(alreadyScraped?.createdAt).getTime() > dayAgo &&
+                    shouldUseCache &&
                     alreadyScraped?.extractedDescription &&
                     alreadyScraped?.data
                 ) {
