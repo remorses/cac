@@ -152,13 +152,19 @@ function SimplePromptComponent({}) {
         }
 
         async function handleNode(node: AnyNode) {
+            // console.log('node', node.constructor.name)
             if (isTextNode(node)) {
                 const isVisible = await isNodeVisible(node)
                 if (!isVisible) {
+                    console.log('node not visible', node.id)
                     return
                 }
                 const text = await node.getText()
                 let nodeId = node.id
+                if (!text) {
+                    console.log('no text found for node', node.id)
+                    return
+                }
                 if (text) {
                     addText({
                         nodeId,
@@ -170,6 +176,7 @@ function SimplePromptComponent({}) {
             if (isComponentInstanceNode(node)) {
                 const isVisible = await isNodeVisible(node)
                 if (!isVisible) {
+                    console.log('node not visible', node.id)
                     return
                 }
                 const _component = await getInstanceComponent(node)
@@ -251,7 +258,7 @@ function SimplePromptComponent({}) {
 
         let prevBackground = null as string | null
         let lastTimeZoomed = Date.now()
-        let minTimeOnNode = 10
+        let minTimeOnNode = 200
         try {
             for await (let {
                 partialItem: chunk,
@@ -274,13 +281,16 @@ function SimplePromptComponent({}) {
                         backgroundColor: prevBackground,
                     })
                     let currentParent = (await node.getParent()) || undefined
-                    const isVisible = await isNodeVisible(node)
+                    const isVisible = await isNodeZoomable(node)
                     if (!isVisible) {
                         console.log('node not visible, skipping zoom')
                         continue
                     }
                     lastTimeZoomed = Date.now()
                     await node.zoomIntoView({ maxZoom: 0.9 })
+                    if (isTextNode(node)) {
+                        // await node.setText('')
+                    }
 
                     if (
                         !currentParent ||
@@ -426,13 +436,23 @@ function SimplePromptComponent({}) {
                         setDescription(e.target.value)
                         adjustHeight(e.target)
                     }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault()
+                            onSubmit()
+                        }
+                    }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
                     placeholder='Framer is a web design tool...'
                 />
             </div>
 
-            {error && <div className='text-red-300 text-[11px] font-mono'>{error}</div>}
+            {error && (
+                <div className='text-red-300 text-[11px] font-mono'>
+                    {error}
+                </div>
+            )}
             <div className='flex justify-stretch w-full gap-3'>
                 <Button
                     className='w-auto block grow'
@@ -624,14 +644,10 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
         console.log('no primary child for component found')
         return
     }
-    const nodeIdToText = new Map<string, string | null>()
-    for await (let child of primary.walk()) {
-        if (isTextNode(child)) {
-            const text = await child.getText()
-            nodeIdToText.set(child.id, text)
-        }
 
+    for await (let child of primary.walk()) {
         yield child
+        yield* recurseIntoComponent(child)
     }
     // const nonPrimary = (await componentNode.getChildren()).filter(
     //     (x) => isFrameNode(x) && x.isReplica,
@@ -659,16 +675,25 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
 async function isNodeVisible(node: AnyNode) {
     const parents = await collectGenerator(getParentNodes(node))
     const isVisible = parents.every((parent) => {
-        // TODO remove this hack, now component children cannot be zoomed, later they will be zoomed
-        if (isComponentNode(parent)) {
-            return false
-        }
         if (supportsVisible(parent)) {
             return parent.visible
         }
         return true
     })
     return isVisible && (!supportsVisible(node) || node.visible)
+}
+async function isNodeZoomable(node: AnyNode) {
+    if (!(await isNodeVisible(node))) {
+        return false
+    }
+    const parents = await collectGenerator(getParentNodes(node))
+    const componentChild = parents.some((parent) => {
+        if (isComponentNode(parent)) {
+            return true
+        }
+        return false
+    })
+    return !componentChild
 }
 
 const possibleInstanceTextFields = [
