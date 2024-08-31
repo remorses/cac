@@ -97,7 +97,9 @@ chrome.runtime.onMessage.addListener(
                                     const options = Array.from(el.options).map(
                                         (option) => {
                                             return {
-                                                title: option.textContent || '',
+                                                title:
+                                                    option.textContent?.trim() ||
+                                                    '',
                                                 value: option.value || '',
                                             }
                                         },

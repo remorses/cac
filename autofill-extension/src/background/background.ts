@@ -170,6 +170,12 @@ chrome.runtime.onMessage.addListener(
                                 response.action === 'enrichedElement' &&
                                 response.data
                             ) {
+                                console.log(
+                                    'enriching element',
+                                    chunk.fullItem?.description,
+
+                                    JSON.stringify(response.data, null, 2),
+                                )
                                 Object.assign(chunk.fullItem, response.data)
                             }
                             foundHints.push(chunk.fullItem)
@@ -246,7 +252,8 @@ chrome.runtime.onMessage.addListener(
                                 const option =
                                     originalHint.possibleOptions?.find((x) => {
                                         return (
-                                            x.title === chunk?.fullItem?.value
+                                            x.title.trim() ===
+                                            chunk?.fullItem?.value.trim()
                                         )
                                     })
                                 if (option) {
