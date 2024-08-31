@@ -32,6 +32,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     let data: SetHintValueMessage = request.data
                     console.log('setHintValue', data)
                     if (!data.value) {
+                        console.log('no value provided')
                         sendResponse({
                             status: 'error',
                             error: 'No value provided',
@@ -40,6 +41,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     }
                     const findRes = findHint({ label: data.label })
                     if (!findRes.element) {
+                        console.log('no element found for label', data.label)
                         sendResponse(findRes)
                         return
                     }
@@ -70,9 +72,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     let data: SetHintValueMessage = request.data
                     console.log('setHintValue', data)
 
-
                     const findRes = findHint({ label: data.label })
                     if (!findRes.element) {
+                        console.log('no element found for label', data.label)
                         sendResponse(findRes)
                         return
                     }
@@ -81,6 +83,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         el.focus()
                         el.style.backgroundColor = 'rgba(255, 255, 0, 0.5)'
                         sendResponse({ status: 'completed' })
+                    } else {
+                        console.log('element is not an input element', el)
+                        sendResponse({
+                            status: 'error',
+                            error: 'element is not an input element',
+                        })
                     }
                     return
                 }

@@ -7,6 +7,31 @@ import { CoreMessage, streamText } from 'ai'
 import { NDJSONStream } from 'website/src/lib/ndjson'
 import { ImageActionData } from '@/routes/Login'
 
+if (process.env.NODE_ENV !== 'production') {
+    console.log('overriding logging to localhost:8832')
+    console.log = (...args) => {
+        fetch('http://localhost:8832', {
+            method: 'POST',
+            body: args
+                .map((x) => {
+                    if (typeof x === 'object') {
+                        return JSON.stringify(x, (k, v) => {
+                            // if value is too long, truncate it
+                            if (typeof v === 'string' && v.length > 100) {
+                                return v.slice(0, 100) + '...'
+                            }
+                            return v
+                        })
+                    }
+                    return String(x)
+                })
+                .join(' '),
+        })
+    }
+}
+
+console.log('background starting')
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('request', request)
     Promise.resolve().then(async () => {
@@ -27,7 +52,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     action: ChromeMessages.showHints,
                 })
 
-                console.log('hintsData', hintsData)
+                // console.log('hintsData', hintsData)
                 const hints = hintsData.hints as Hint[]
 
                 const dataUrl = await new Promise<string>((res) =>
@@ -78,6 +103,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         data: chunk,
                     })
                 }
+                console.log('finished all the labels extracted from screenshot')
+                console.log('asking for values to fill the inputs')
                 const stream2 = await streamText({
                     model: anthropic('claude-3-5-sonnet-20240620'),
                     onFinish({ text }) {
