@@ -1,5 +1,5 @@
 import { Button } from '@/components/Button'
-import { ChromeMessages, Paths } from '@/lib/utils'
+import { ChromeMessages, ChromeMessageType, Paths } from '@/lib/utils'
 
 import { useEffect, useState } from 'react'
 import { LoaderFunctionArgs, RouteObject, useNavigation } from 'react-router'
@@ -18,18 +18,29 @@ function LoginComponent() {
     const isLoading = navigation.state !== 'idle'
     const [inputs, setInputs] = useState([] as string[])
     useEffect(() => {
-        const callback = async (message, sender, sendResponse) => {
-            console.log('message', message)
-            if (message.action === ChromeMessages.formInputFound) {
-                let text = message.data.description
-                if (message.data.value) {
-                    text = `filling ${text} with ${message.data.value}`
-                }
-                setInputs((inputs) => [...inputs, text])
-                sendResponse({ ok: true })
-            }
+        const callback = (request: ChromeMessageType, sender, sendResponse) => {
+            console.log('message', request)
+            Promise.resolve()
+                .then(async () => {
+                    switch (request.action) {
+                        case ChromeMessages.formInputFound: {
+                            let text = request.data.description
+                            if (request.data.value) {
+                                text = `filling ${text} with ${request.data.value}`
+                            }
+                            setInputs((inputs) => [...inputs, text])
+                            return { ok: true }
+                        }
+                    }
+                })
+                .then((response) => sendResponse(response))
+                .catch((error) => {
+                    console.error('Error processing message', error)
+                    sendResponse({ status: 'error', error: error.message })
+                })
+
+            return true
         }
-        chrome.runtime.onMessage.addListener(callback)
         return () => {
             chrome.runtime.onMessage.removeListener(callback)
         }

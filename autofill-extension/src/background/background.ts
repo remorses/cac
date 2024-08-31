@@ -1,7 +1,12 @@
 import { Hint } from '@/content/findHints'
 import { openai } from '@ai-sdk/openai'
 import { anthropic } from '@ai-sdk/anthropic'
-import { ChromeMessages, SetHintValueMessage } from '@/lib/utils'
+import {
+    ChromeMessages,
+    ChromeMessageType,
+    ExtractedFormInput,
+    SetHintValueMessage,
+} from '@/lib/utils'
 
 import { CoreMessage, streamText } from 'ai'
 import { NDJSONStream } from 'website/src/lib/ndjson'
@@ -31,128 +36,140 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 console.log('background starting')
+chrome.runtime.onMessage.addListener(
+    (request: ChromeMessageType, sender, sendResponse) => {
+        console.log('background request', request)
+        Promise.resolve()
+            .then(async () => {
+                switch (request.action) {
+                    case ChromeMessages.start: {
+                        const files = request.files
+                        const tabs = await chrome.tabs.query({
+                            active: true,
+                            currentWindow: true,
+                        })
+                        const activeTab = tabs[0]
+                        if (!activeTab.id) {
+                            console.error('No active tab')
+                            return { status: 'error', error: 'No active tab' }
+                        }
+                        console.log('sending message to screenshot')
+                        const hintsData = await chrome.tabs.sendMessage(
+                            activeTab.id,
+                            {
+                                action: ChromeMessages.showHints,
+                            },
+                        )
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('request', request)
-    Promise.resolve().then(async () => {
-        switch (request.action) {
-            case ChromeMessages.start: {
-                const files = request.files as ImageActionData[]
-                const tabs = await chrome.tabs.query({
-                    active: true,
-                    currentWindow: true,
-                })
-                const activeTab = tabs[0]
-                if (!activeTab.id) {
-                    console.error('No active tab')
-                    return
+                        // console.log('hintsData', hintsData)
+                        const hints = hintsData.hints as Hint[]
+
+                        const dataUrl = await new Promise<string>((res) =>
+                            chrome.tabs.captureVisibleTab(request.options, res),
+                        )
+                        await chrome.tabs.sendMessage(activeTab.id, {
+                            action: ChromeMessages.hideHints,
+                        })
+                        const initialMessages: CoreMessage[] = [
+                            {
+                                role: 'user',
+                                content: [
+                                    { image: dataUrl, type: 'image' }, //
+                                ],
+                            },
+                            {
+                                role: 'user',
+                                content: promptExtract,
+                            },
+                        ]
+                        let extractionText = ''
+                        const res = await streamText({
+                            model: anthropic('claude-3-5-sonnet-20240620'),
+                            onFinish({ text }) {
+                                console.log('extract form llm response', text)
+                                extractionText = text
+                            },
+                            messages: [...initialMessages],
+                        })
+
+                        const foundHints = [] as ExtractedFormInput[]
+                        for await (let chunk of NDJSONStream<ExtractedFormInput>(
+                            {
+                                stream: res,
+                            },
+                        )) {
+                            console.log('chunk', chunk)
+                            foundHints.push(chunk)
+                            await chrome.tabs.sendMessage(activeTab.id, {
+                                action: ChromeMessages.highlightInputFound,
+                                data: chunk,
+                            })
+                            // don't await here, so popup can be closed
+                            chrome.runtime.sendMessage({
+                                action: ChromeMessages.formInputFound,
+                                data: chunk,
+                            })
+                        }
+                        console.log(
+                            'finished all the labels extracted from screenshot',
+                        )
+                        console.log('asking for values to fill the inputs')
+                        const stream2 = await streamText({
+                            model: anthropic('claude-3-5-sonnet-20240620'),
+                            onFinish({ text }) {
+                                console.log('fill value llm response', text)
+                            },
+                            messages: [
+                                ...initialMessages,
+                                {
+                                    role: 'assistant',
+                                    content: extractionText,
+                                },
+                                {
+                                    role: 'user',
+                                    content: fillValuePrompt,
+                                },
+
+                                {
+                                    role: 'user',
+                                    content: files.map((file) => ({
+                                        image: file.dataUrl,
+                                        type: 'image',
+                                    })),
+                                },
+                            ],
+                        })
+
+                        for await (let chunk of NDJSONStream<SetHintValueMessage>(
+                            {
+                                stream: stream2,
+                            },
+                        )) {
+                            console.log('chunk', chunk)
+                            await chrome.tabs.sendMessage(activeTab.id, {
+                                action: ChromeMessages.setHintValue,
+                                data: chunk,
+                            })
+                        }
+                        await chrome.tabs.sendMessage(activeTab.id, {
+                            action: ChromeMessages.dehilightAll,
+                        })
+
+                        console.log('dataUrl', dataUrl)
+
+                        return { status: 'completed' }
+                    }
                 }
-                console.log('sending message to screenshot')
-                const hintsData = await chrome.tabs.sendMessage(activeTab.id, {
-                    action: ChromeMessages.showHints,
-                })
+            })
+            .then((response) => sendResponse(response))
+            .catch((error) => {
+                console.error('Error processing message', error)
+                sendResponse({ status: 'error', error: error.message })
+            })
 
-                // console.log('hintsData', hintsData)
-                const hints = hintsData.hints as Hint[]
-
-                const dataUrl = await new Promise<string>((res) =>
-                    chrome.tabs.captureVisibleTab(request.options, res),
-                )
-                await chrome.tabs.sendMessage(activeTab.id, {
-                    action: ChromeMessages.hideHints,
-                })
-                const initialMessages: CoreMessage[] = [
-                    {
-                        role: 'user',
-                        content: [
-                            { image: dataUrl, type: 'image' }, //
-                        ],
-                    },
-                    {
-                        role: 'user',
-                        content: promptExtract,
-                    },
-                ]
-                let extractionText = ''
-                const res = await streamText({
-                    model: anthropic('claude-3-5-sonnet-20240620'),
-                    onFinish({ text }) {
-                        console.log('extract form llm response', text)
-                        extractionText = text
-                    },
-                    messages: [...initialMessages],
-                })
-                type Chunk = {
-                    label: string
-                    description: string
-                }
-
-                const foundHints = [] as Chunk[]
-                for await (let chunk of NDJSONStream<Chunk>({
-                    stream: res,
-                })) {
-                    console.log('chunk', chunk)
-                    foundHints.push(chunk)
-                    await chrome.tabs.sendMessage(activeTab.id, {
-                        action: ChromeMessages.highlightInputFound,
-                        data: chunk,
-                    })
-                    // don't await here, so popup can be closed
-                    chrome.runtime.sendMessage({
-                        action: ChromeMessages.formInputFound,
-                        data: chunk,
-                    })
-                }
-                console.log('finished all the labels extracted from screenshot')
-                console.log('asking for values to fill the inputs')
-                const stream2 = await streamText({
-                    model: anthropic('claude-3-5-sonnet-20240620'),
-                    onFinish({ text }) {
-                        console.log('fill value llm response', text)
-                    },
-                    messages: [
-                        ...initialMessages,
-                        {
-                            role: 'assistant',
-                            content: extractionText,
-                        },
-                        {
-                            role: 'user',
-                            content: fillValuePrompt,
-                        },
-
-                        {
-                            role: 'user',
-                            content: files.map((file) => ({
-                                image: file.dataUrl,
-                                type: 'image',
-                            })),
-                        },
-                    ],
-                })
-
-                for await (let chunk of NDJSONStream<SetHintValueMessage>({
-                    stream: stream2,
-                })) {
-                    console.log('chunk', chunk)
-                    await chrome.tabs.sendMessage(activeTab.id, {
-                        action: ChromeMessages.setHintValue,
-                        data: chunk,
-                    })
-                }
-                await chrome.tabs.sendMessage(activeTab.id, {
-                    action: ChromeMessages.dehilightAll,
-                })
-
-                console.log('dataUrl', dataUrl)
-
-                sendResponse({ status: 'completed' })
-                return
-            }
-        }
-    })
-    return true
-})
+        return true
+    },
+)
 
 const fillValuePrompt = `
 Now that you extracted the possible form input elements and their vimium labels you will have to fill the inputs with the content from another image containing relevant data for the form.
