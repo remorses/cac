@@ -103,7 +103,7 @@ chrome.runtime.onMessage.addListener(
                                 }
                             }
                         }
-                        case ChromeMessages.dehilightAll: {
+                        case ChromeMessages.dehighlightAll: {
                             for (let hint of hints) {
                                 if (isFillableElement(hint.element)) {
                                     try {

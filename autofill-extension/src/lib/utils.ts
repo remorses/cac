@@ -54,7 +54,7 @@ export enum ChromeMessages {
     hideHints = 'hideHints',
     highlightInputFound = 'highlightInputFound',
     setHintValue = 'setHintValue',
-    dehilightAll = 'dehilightAll',
+    dehighlightAll = 'dehilightAll',
     // popup handled messages
     formInputFound = 'formInputFound',
     // background handled messages
@@ -66,7 +66,7 @@ export type ChromeMessageType =
     | { action: ChromeMessages.hideHints }
     | { action: ChromeMessages.highlightInputFound; data: ExtractedFormInput }
     | { action: ChromeMessages.setHintValue; data: SetHintValueMessage }
-    | { action: ChromeMessages.dehilightAll }
+    | { action: ChromeMessages.dehighlightAll }
     | { action: ChromeMessages.formInputFound; data: ExtractedFormInput }
     | { action: ChromeMessages.start; files: ImageActionData[] }
 

@@ -152,7 +152,7 @@ chrome.runtime.onMessage.addListener(
                             } satisfies ChromeMessageType)
                         }
                         await chrome.tabs.sendMessage(activeTab.id, {
-                            action: ChromeMessages.dehilightAll,
+                            action: ChromeMessages.dehighlightAll,
                         } satisfies ChromeMessageType)
 
                         console.log('dataUrl', dataUrl)
