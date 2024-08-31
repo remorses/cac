@@ -83,9 +83,13 @@ export async function* yieldObjectStream<T>({
 
 type UnwrapArray<T> = T extends Array<infer U> ? U : T
 
+type Required<T> = {
+    [K in keyof T]-?: T[K]
+}
+
 type ArrayItemYield<T> =
     | {
-          fullItem: T
+          fullItem: Required<T>
           partialItem: undefined
       }
     | {
@@ -98,10 +102,6 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
     stream,
 }: {
     arrayField: Field
-    // onPartialItem?: (
-    //     partialObject: UnwrapArray<T[Field]>,
-    //     index: number,
-    // ) => void
     stream: AsyncIterable<T>
 }): AsyncIterable<ArrayItemYield<UnwrapArray<T[Field]>>> {
     let previousLength = 0
@@ -142,7 +142,6 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
         }
     }
 
-    // Yield the last item after the stream is complete
     if (lastItem != null) {
         yield {
             fullItem: lastItem,

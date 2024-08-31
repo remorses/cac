@@ -1,4 +1,6 @@
 import { Hint } from '@/content/findHints'
+
+import { z } from 'zod'
 import { openai } from '@ai-sdk/openai'
 import { anthropic } from '@ai-sdk/anthropic'
 import {
@@ -8,8 +10,8 @@ import {
     SetHintValueMessage,
 } from '@/lib/utils'
 
-import { CoreMessage, streamText } from 'ai'
-import { NDJSONStream } from 'website/src/lib/ndjson'
+import { CoreMessage, streamObject, streamText } from 'ai'
+import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 import { ImageActionData } from '@/routes/Login'
 
 if (process.env.NODE_ENV !== 'production') {
@@ -45,6 +47,17 @@ if (process.env.NODE_ENV !== 'production') {
 console.log('background starting')
 
 let screenshots = [] as ImageActionData[]
+export const extractedFormInputSchema = z.object({
+    label: z.string(),
+    description: z.string(),
+    value: z.string(),
+})
+
+export const filledFormInputSchema = z.object({
+    label: z.string(),
+    description: z.string(),
+    value: z.string(),
+})
 
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
@@ -123,34 +136,35 @@ chrome.runtime.onMessage.addListener(
                             },
                         ]
                         screenshots = []
-                        let extractionText = ''
-                        console.log('starting llm extraction of the labels')
-                        const res = await streamText({
-                            model: anthropic('claude-3-5-sonnet-20240620'),
-                            onFinish({ text }) {
-                                console.log('extract form llm response', text)
-                                extractionText = text
-                            },
 
+                        console.log('starting llm extraction of the labels')
+                        const res = await streamObject({
+                            model: anthropic('claude-3-5-sonnet-20240620'),
+
+                            schema: z.object({
+                                elements: z.array(extractedFormInputSchema),
+                            }),
                             messages: [...initialMessages],
                         })
 
                         const foundHints = [] as ExtractedFormInput[]
-                        for await (let chunk of NDJSONStream<ExtractedFormInput>(
-                            {
-                                stream: res,
-                            },
-                        )) {
+                        for await (let chunk of yieldNewArrayItems({
+                            stream: res.partialObjectStream,
+                            arrayField: 'elements',
+                        })) {
+                            if (chunk.fullItem === undefined) {
+                                continue
+                            }
                             console.log('chunk', chunk)
-                            foundHints.push(chunk)
+                            foundHints.push(chunk.fullItem)
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: ChromeMessages.highlightInputFound,
-                                data: chunk,
+                                data: chunk.fullItem,
                             } satisfies ChromeMessageType)
                             // don't await here, so popup can be closed
                             chrome.runtime.sendMessage({
                                 action: ChromeMessages.formInputFound,
-                                data: chunk,
+                                data: chunk.fullItem,
                             } satisfies ChromeMessageType)
                         }
                         console.log(
@@ -162,7 +176,11 @@ chrome.runtime.onMessage.addListener(
                             ...initialMessages,
                             {
                                 role: 'assistant',
-                                content: extractionText,
+                                content: JSON.stringify(
+                                    await res.object,
+                                    null,
+                                    2,
+                                ),
                             },
                             {
                                 role: 'user',
@@ -178,23 +196,31 @@ chrome.runtime.onMessage.addListener(
                                 })),
                             })
                         }
-                        const stream2 = await streamText({
+                        const stream2 = await streamObject({
                             model: anthropic('claude-3-5-sonnet-20240620'),
-                            onFinish({ text }) {
-                                console.log('fill value llm response', text)
+                            onFinish({ object, rawResponse }) {
+                                console.log(
+                                    'fill value llm response',
+                                    JSON.stringify(object, null, 2),
+                                )
                             },
+                            schema: z.object({
+                                elements: z.array(filledFormInputSchema),
+                            }),
                             messages,
                         })
 
-                        for await (let chunk of NDJSONStream<SetHintValueMessage>(
-                            {
-                                stream: stream2,
-                            },
-                        )) {
+                        for await (let chunk of yieldNewArrayItems({
+                            stream: stream2.partialObjectStream,
+                            arrayField: 'elements',
+                        })) {
+                            if (chunk.fullItem === undefined) {
+                                continue
+                            }
                             console.log('chunk', chunk)
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: ChromeMessages.setHintValue,
-                                data: chunk,
+                                data: chunk.fullItem,
                             } satisfies ChromeMessageType)
                         }
                         console.log('completed the llm call to fill the inputs')

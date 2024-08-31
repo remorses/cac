@@ -4,6 +4,11 @@ import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
 import type { RouteType } from 'website/src/lib/elysia.server'
 import { ImageActionData } from '@/routes/Login'
+import { z } from 'zod'
+import {
+    extractedFormInputSchema,
+    filledFormInputSchema,
+} from '@/background/background'
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {
@@ -70,18 +75,10 @@ export type ChromeMessageType =
     | { action: ChromeMessages.formInputFound; data: ExtractedFormInput }
     | { action: ChromeMessages.start; files: ImageActionData[] }
     | { action: 'captureVisibleTab'; index: number }
-    // | { action: 'captureVisibleTabComplete'; data: ImageActionData }
+// | { action: 'captureVisibleTabComplete'; data: ImageActionData }
 
-export type SetHintValueMessage = {
-    label: string
-    description: string
-    value: string
-}
-
-export type ExtractedFormInput = {
-    label: string
-    description: string
-}
+export type SetHintValueMessage = z.infer<typeof filledFormInputSchema>
+export type ExtractedFormInput = z.infer<typeof extractedFormInputSchema>
 
 export function isFillableElement(el: any): el is HTMLInputElement {
     if (el instanceof HTMLInputElement) {
