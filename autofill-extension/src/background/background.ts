@@ -58,18 +58,18 @@ chrome.runtime.onMessage.addListener(
                             activeTab.id,
                             {
                                 action: ChromeMessages.showHints,
-                            },
+                            } satisfies ChromeMessageType,
                         )
 
                         // console.log('hintsData', hintsData)
                         const hints = hintsData.hints as Hint[]
 
                         const dataUrl = await new Promise<string>((res) =>
-                            chrome.tabs.captureVisibleTab(request.options, res),
+                            chrome.tabs.captureVisibleTab({}, res),
                         )
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: ChromeMessages.hideHints,
-                        })
+                        } satisfies ChromeMessageType)
                         const initialMessages: CoreMessage[] = [
                             {
                                 role: 'user',
@@ -103,12 +103,12 @@ chrome.runtime.onMessage.addListener(
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: ChromeMessages.highlightInputFound,
                                 data: chunk,
-                            })
+                            } satisfies ChromeMessageType)
                             // don't await here, so popup can be closed
                             chrome.runtime.sendMessage({
                                 action: ChromeMessages.formInputFound,
                                 data: chunk,
-                            })
+                            } satisfies ChromeMessageType)
                         }
                         console.log(
                             'finished all the labels extracted from screenshot',
@@ -149,11 +149,11 @@ chrome.runtime.onMessage.addListener(
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: ChromeMessages.setHintValue,
                                 data: chunk,
-                            })
+                            } satisfies ChromeMessageType)
                         }
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: ChromeMessages.dehilightAll,
-                        })
+                        } satisfies ChromeMessageType)
 
                         console.log('dataUrl', dataUrl)
 

@@ -25,9 +25,9 @@ function LoginComponent() {
                     switch (request.action) {
                         case ChromeMessages.formInputFound: {
                             let text = request.data.description
-                            if (request.data.value) {
-                                text = `filling ${text} with ${request.data.value}`
-                            }
+                            // if (request.data.value) {
+                            //     text = `filling ${text} with ${request.data.value}`
+                            // }
                             setInputs((inputs) => [...inputs, text])
                             return { ok: true }
                         }
@@ -105,7 +105,7 @@ async function action({ request, context }: LoaderFunctionArgs) {
                 }
             }),
         ),
-    })
+    } satisfies ChromeMessageType)
     return {}
 }
 
