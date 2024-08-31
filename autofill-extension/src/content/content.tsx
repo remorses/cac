@@ -163,10 +163,9 @@ function findHint({ label }) {
     }
     return { status: 'success', element: el }
 }
-
 async function takeViewportScreenshots() {
+    const interpolation = 0.86
     const viewportWidth = window.innerWidth
-
     const viewportHeight = window.innerHeight
     const fullHeight = Math.max(
         document.body.scrollHeight,
@@ -177,16 +176,19 @@ async function takeViewportScreenshots() {
         document.documentElement.clientHeight,
     )
 
-    const numScreenshots = Math.ceil(fullHeight / viewportHeight)
+    const numScreenshots = Math.ceil(
+        fullHeight / (viewportHeight * interpolation),
+    ) // 20% overlap
+    const originalScrollPosition = window.scrollY
 
     for (let i = 0; i < numScreenshots; i++) {
-        window.scrollTo(0, i * viewportHeight)
+        window.scrollTo(0, i * viewportHeight * interpolation) // 20% overlap
         const visible = getAllVIsibleInputElements()
         if (!visible.length) {
             console.log(
                 'no visible elements found on page',
                 i,
-                i * viewportHeight,
+                i * viewportHeight * interpolation,
             )
             continue
         }
@@ -195,6 +197,8 @@ async function takeViewportScreenshots() {
             index: i,
         } satisfies ChromeMessageType)
     }
+
+    window.scrollTo(0, originalScrollPosition)
     console.log('done screen shotting the page')
 }
 
