@@ -157,7 +157,7 @@ chrome.runtime.onMessage.addListener(
                             'finished all the labels extracted from screenshot',
                         )
                         console.log('asking for values to fill the inputs')
-                        console.log('initialMessages', initialMessages)
+                        // console.log('initialMessages', initialMessages)
                         const messages: CoreMessage[] = [
                             ...initialMessages,
                             {
@@ -197,6 +197,7 @@ chrome.runtime.onMessage.addListener(
                                 data: chunk,
                             } satisfies ChromeMessageType)
                         }
+                        console.log('completed the llm call to fill the inputs')
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: ChromeMessages.dehighlightAll,
                         } satisfies ChromeMessageType)

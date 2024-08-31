@@ -92,19 +92,26 @@ async function loader({}: LoaderFunctionArgs) {
 }
 async function action({ request, context }: LoaderFunctionArgs) {
     const formData = await request.formData()
-    const files = formData.getAll('fileInput') as File[]
-
-    await chrome.runtime.sendMessage({
-        action: ChromeMessages.start,
-        files: await Promise.all(
-            files.map(async (file) => {
+    const filesInputs = formData.getAll('fileInput') as File[]
+    const files = await Promise.all(
+        filesInputs
+            .filter((file) => {
+                // skip empty files
+                return file.size > 0
+            })
+            .map(async (file) => {
                 const dataUrl = await getFileDataUrl(file)
                 return {
                     name: file.name,
                     dataUrl,
                 }
             }),
-        ),
+    )
+    console.log('files', files)
+
+    await chrome.runtime.sendMessage({
+        action: ChromeMessages.start,
+        files,
     } satisfies ChromeMessageType)
     return {}
 }
