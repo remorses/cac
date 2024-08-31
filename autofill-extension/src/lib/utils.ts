@@ -80,3 +80,17 @@ export type ExtractedFormInput = {
     label: string
     description: string
 }
+
+export function isFillableElement(el: any): el is HTMLInputElement {
+    if (el instanceof HTMLInputElement) {
+        return true
+    }
+    if (el instanceof HTMLTextAreaElement) {
+        return true
+    }
+    if (el instanceof HTMLSelectElement) {
+        return true
+    }
+
+    return false
+}

@@ -7,6 +7,7 @@ import {
 import {
     ChromeMessages,
     ChromeMessageType,
+    isFillableElement,
     SetHintValueMessage,
     sleep,
 } from '@/lib/utils'
@@ -52,7 +53,7 @@ chrome.runtime.onMessage.addListener(
                                 return findRes
                             }
                             let el = findRes.element
-                            if (el instanceof HTMLInputElement) {
+                            if (isFillableElement(el)) {
                                 el.focus()
                                 // change the background color to indicate the element is focused
                                 let prevBackground = el.style.backgroundColor
@@ -86,7 +87,7 @@ chrome.runtime.onMessage.addListener(
                                 return findRes
                             }
                             let el = findRes.element
-                            if (el instanceof HTMLInputElement) {
+                            if (isFillableElement(el)) {
                                 el.focus()
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
@@ -104,7 +105,7 @@ chrome.runtime.onMessage.addListener(
                         }
                         case ChromeMessages.dehilightAll: {
                             for (let hint of hints) {
-                                if (hint.element instanceof HTMLInputElement) {
+                                if (isFillableElement(hint.element)) {
                                     try {
                                         hint.element.style.backgroundColor = ''
                                     } catch (error) {
