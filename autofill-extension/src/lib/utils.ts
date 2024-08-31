@@ -69,6 +69,8 @@ export type ChromeMessageType =
     | { action: ChromeMessages.dehighlightAll }
     | { action: ChromeMessages.formInputFound; data: ExtractedFormInput }
     | { action: ChromeMessages.start; files: ImageActionData[] }
+    | { action: 'captureVisibleTab'; index: number }
+    // | { action: 'captureVisibleTabComplete'; data: ImageActionData }
 
 export type SetHintValueMessage = {
     label: string

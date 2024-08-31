@@ -4,7 +4,7 @@
     "name": "AutoFill",
     "version": "1.0",
     "description": "Captures a screenshot of the current tab with options",
-    "permissions": ["activeTab", "tabs", "storage"],
+    "permissions": ["activeTab", "tabs", "storage", "downloads"],
     "action": {
         "default_popup": "index.html"
     },

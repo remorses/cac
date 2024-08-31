@@ -11,6 +11,7 @@ import {
     SetHintValueMessage,
     sleep,
 } from '@/lib/utils'
+import { ImageActionData } from '@/routes/Login'
 
 let hints = [] as Hint[]
 chrome.runtime.onMessage.addListener(
@@ -26,6 +27,7 @@ chrome.runtime.onMessage.addListener(
 
                             showHints(hints)
                             await sleep(1)
+                            await takeViewportScreenshots()
 
                             return { status: 'completed', hints }
                         }
@@ -160,4 +162,54 @@ function findHint({ label }) {
         return { status: 'error', error: 'Element not found' }
     }
     return { status: 'success', element: el }
+}
+
+async function takeViewportScreenshots() {
+    const viewportWidth = window.innerWidth
+
+    const viewportHeight = window.innerHeight
+    const fullHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight,
+        document.body.clientHeight,
+        document.documentElement.clientHeight,
+    )
+
+    const numScreenshots = Math.ceil(fullHeight / viewportHeight)
+
+    for (let i = 0; i < numScreenshots; i++) {
+        window.scrollTo(0, i * viewportHeight)
+        const visible = getAllVIsibleInputElements()
+        if (!visible.length) {
+            console.log(
+                'no visible elements found on page',
+                i,
+                i * viewportHeight,
+            )
+            continue
+        }
+        const message: ChromeMessageType = await chrome.runtime.sendMessage({
+            action: 'captureVisibleTab',
+            index: i,
+        } satisfies ChromeMessageType)
+    }
+    console.log('done screen shotting the page')
+}
+
+function getAllVIsibleInputElements() {
+    const elements = Array.from(
+        document.querySelectorAll('input, textarea, select'),
+    ) as HTMLElement[]
+
+    return elements.filter((el) => {
+        const style = window.getComputedStyle(el)
+        return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            el.offsetWidth > 0 &&
+            el.offsetHeight > 0
+        )
+    })
 }

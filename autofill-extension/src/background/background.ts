@@ -14,11 +14,14 @@ import { ImageActionData } from '@/routes/Login'
 
 if (process.env.NODE_ENV !== 'production') {
     console.log('overriding logging to localhost:8832')
-    console.log = (...args) => {
+    const cb = (...args) => {
         fetch('http://localhost:8832', {
             method: 'POST',
             body: args
                 .map((x) => {
+                    if (x instanceof Error) {
+                        return `Error: ${x.message}`
+                    }
                     if (typeof x === 'object') {
                         return JSON.stringify(x, (k, v) => {
                             // if value is too long, truncate it
@@ -29,19 +32,49 @@ if (process.env.NODE_ENV !== 'production') {
                         })
                     }
                     return String(x)
-                })
+                }, 2)
                 .join(' '),
         })
     }
+    console.log = cb
+    console.error = cb
+    console.warn = cb
+    console.info = cb
 }
 
 console.log('background starting')
+
+let screenshots = [] as ImageActionData[]
+
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
         console.log('background request', request)
         Promise.resolve()
             .then(async () => {
                 switch (request.action) {
+                    case 'captureVisibleTab': {
+                        const dataUrl = await new Promise<string>((res, rej) =>
+                            chrome.tabs.captureVisibleTab(
+                                { format: 'png' },
+                                res,
+                            ),
+                        )
+                        if (!dataUrl) {
+                            console.log('no data url found after capture')
+                            return {}
+                        }
+                        if (process.env.NODE_ENV !== 'production') {
+                            // chrome.downloads.download({
+                            //     url: dataUrl,
+                            //     filename: `screenshot_${request.index}.png`,
+                            // })
+                        }
+                        screenshots.push({
+                            name: request.index.toString(),
+                            dataUrl: dataUrl,
+                        })
+                        return {}
+                    }
                     case ChromeMessages.start: {
                         const files = request.files
                         const tabs = await chrome.tabs.query({
@@ -54,27 +87,34 @@ chrome.runtime.onMessage.addListener(
                             return { status: 'error', error: 'No active tab' }
                         }
                         console.log('sending message to screenshot')
-                        const hintsData = await chrome.tabs.sendMessage(
-                            activeTab.id,
-                            {
+                        const message: ChromeMessageType =
+                            await chrome.tabs.sendMessage(activeTab.id, {
                                 action: ChromeMessages.showHints,
-                            } satisfies ChromeMessageType,
-                        )
+                            } satisfies ChromeMessageType)
 
-                        // console.log('hintsData', hintsData)
-                        const hints = hintsData.hints as Hint[]
-
-                        const dataUrl = await new Promise<string>((res) =>
-                            chrome.tabs.captureVisibleTab({}, res),
-                        )
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: ChromeMessages.hideHints,
                         } satisfies ChromeMessageType)
+                        if (!screenshots.length) {
+                            console.log(
+                                'no screenshots found, aborting extraction',
+                            )
+                            return { status: 'error', error: 'No screenshots' }
+                        }
+                        console.log('screenshots', screenshots)
                         const initialMessages: CoreMessage[] = [
                             {
                                 role: 'user',
                                 content: [
-                                    { image: dataUrl, type: 'image' }, //
+                                    ...screenshots
+                                        .filter(Boolean)
+                                        .filter((x) => x.dataUrl)
+                                        .map((screenshot, index) => {
+                                            return {
+                                                image: screenshot.dataUrl,
+                                                type: 'image' as const,
+                                            }
+                                        }),
                                 ],
                             },
                             {
@@ -82,13 +122,16 @@ chrome.runtime.onMessage.addListener(
                                 content: promptExtract,
                             },
                         ]
+                        screenshots = []
                         let extractionText = ''
+                        console.log('starting llm extraction of the labels')
                         const res = await streamText({
                             model: anthropic('claude-3-5-sonnet-20240620'),
                             onFinish({ text }) {
                                 console.log('extract form llm response', text)
                                 extractionText = text
                             },
+
                             messages: [...initialMessages],
                         })
 
@@ -114,30 +157,33 @@ chrome.runtime.onMessage.addListener(
                             'finished all the labels extracted from screenshot',
                         )
                         console.log('asking for values to fill the inputs')
+                        console.log('initialMessages', initialMessages)
+                        const messages: CoreMessage[] = [
+                            ...initialMessages,
+                            {
+                                role: 'assistant',
+                                content: extractionText,
+                            },
+                            {
+                                role: 'user',
+                                content: fillValuePrompt,
+                            },
+                        ]
+                        if (files.length) {
+                            messages.push({
+                                role: 'user',
+                                content: files.filter(Boolean).map((file) => ({
+                                    image: file.dataUrl,
+                                    type: 'image',
+                                })),
+                            })
+                        }
                         const stream2 = await streamText({
                             model: anthropic('claude-3-5-sonnet-20240620'),
                             onFinish({ text }) {
                                 console.log('fill value llm response', text)
                             },
-                            messages: [
-                                ...initialMessages,
-                                {
-                                    role: 'assistant',
-                                    content: extractionText,
-                                },
-                                {
-                                    role: 'user',
-                                    content: fillValuePrompt,
-                                },
-
-                                {
-                                    role: 'user',
-                                    content: files.map((file) => ({
-                                        image: file.dataUrl,
-                                        type: 'image',
-                                    })),
-                                },
-                            ],
+                            messages,
                         })
 
                         for await (let chunk of NDJSONStream<SetHintValueMessage>(
@@ -154,8 +200,6 @@ chrome.runtime.onMessage.addListener(
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: ChromeMessages.dehighlightAll,
                         } satisfies ChromeMessageType)
-
-                        console.log('dataUrl', dataUrl)
 
                         return { status: 'completed' }
                     }
