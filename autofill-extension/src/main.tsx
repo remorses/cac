@@ -1,8 +1,10 @@
-
 import NProgress from 'nprogress'
+import './chrome-emulator'
 import 'nprogress/nprogress.css'
+import 'tailwindcss/tailwind.css'
 import '@/styles/reset.css'
 import '@/styles/global.css'
+import '@/styles/framer-env.css'
 
 // import 'framer-plugin/framer.css'
 

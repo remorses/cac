@@ -1,25 +1,9 @@
 import { Button } from '@/components/Button'
-import { streamText } from 'ai'
-import { useChat } from 'ai/react'
-import { notifyError } from '@/lib/errors'
 import { ChromeMessages, Paths } from '@/lib/utils'
 
 import { useEffect, useState } from 'react'
-import {
-    LoaderFunctionArgs,
-    RouteObject,
-    useNavigation,
-    useRevalidator,
-} from 'react-router'
+import { LoaderFunctionArgs, RouteObject, useNavigation } from 'react-router'
 import { Form } from 'react-router-dom'
-
-import {
-    framerLoginUrl,
-    generateSecurePassword,
-    generateShortOtpCode,
-    PluginNames,
-    sleep,
-} from 'website/src/lib/utils'
 
 function LoginComponent() {
     const [fileName, setFileName] = useState(null as string | null)
@@ -52,38 +36,40 @@ function LoginComponent() {
     }, [])
 
     return (
-        <Form
-            encType='multipart/form-data'
-            method='POST'
-            className='flex flex-col justify-start gap-4'
-        >
-            <Button
-                type='submit'
-                className='bg-framer-secondary'
-                isLoading={isLoading || navigation.state !== 'idle'}
+        <div className='flex flex-col '>
+            <Form
+                encType='multipart/form-data'
+                method='POST'
+                className='flex flex-col p-4 justify-start gap-4'
             >
-                Screenshot
-            </Button>
-            <div>
-                <input
-                    type='file'
-                    name='fileInput'
-                    onChange={handleFileChange}
-                />
-                {fileName && (
-                    <div>
-                        <p>File Data URL:</p>
-                        <textarea
-                            value={fileName}
-                            readOnly
-                            rows={10}
-                            cols={50}
-                        />
-                    </div>
-                )}
-            </div>
-            <pre>{JSON.stringify(inputs, null, 2)}</pre>
-        </Form>
+                <Button
+                    type='submit'
+                    variant='primary'
+                    isLoading={isLoading || navigation.state !== 'idle'}
+                >
+                    Screenshot
+                </Button>
+                <div>
+                    <input
+                        type='file'
+                        name='fileInput'
+                        onChange={handleFileChange}
+                    />
+                    {fileName && (
+                        <div>
+                            <p>File Data URL:</p>
+                            <textarea
+                                value={fileName}
+                                readOnly
+                                rows={10}
+                                cols={50}
+                            />
+                        </div>
+                    )}
+                </div>
+                <pre>{JSON.stringify(inputs, null, 2)}</pre>
+            </Form>
+        </div>
     )
 }
 
@@ -93,7 +79,6 @@ async function loader({}: LoaderFunctionArgs) {
     return {}
 }
 async function action({ request, context }: LoaderFunctionArgs) {
-
     const formData = await request.formData()
     const file = formData.get('fileInput') as File
     const dataUrl = await getFileDataUrl(file)
