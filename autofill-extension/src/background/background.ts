@@ -6,6 +6,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import {
     ChromeMessages,
     ChromeMessageType,
+    EnrichedElementPart,
     ExtractedFormInput,
     SetHintValueMessage,
 } from '@/lib/utils'
@@ -138,16 +139,19 @@ chrome.runtime.onMessage.addListener(
                         screenshots = []
 
                         console.log('starting llm extraction of the labels')
+                        const schema = z.object({
+                            elements: z.array(extractedFormInputSchema),
+                        })
                         const res = await streamObject({
                             model: anthropic('claude-3-5-sonnet-20240620'),
 
-                            schema: z.object({
-                                elements: z.array(extractedFormInputSchema),
-                            }),
+                            schema,
                             messages: [...initialMessages],
                         })
 
-                        const foundHints = [] as ExtractedFormInput[]
+                        const foundHints = [] as Array<
+                            ExtractedFormInput & EnrichedElementPart
+                        >
                         for await (let chunk of yieldNewArrayItems({
                             stream: res.partialObjectStream,
                             arrayField: 'elements',
@@ -156,11 +160,19 @@ chrome.runtime.onMessage.addListener(
                                 continue
                             }
                             console.log('chunk', chunk)
+
+                            const response: ChromeMessageType =
+                                await chrome.tabs.sendMessage(activeTab.id, {
+                                    action: ChromeMessages.highlightInputFound,
+                                    data: chunk.fullItem,
+                                } satisfies ChromeMessageType)
+                            if (
+                                response.action === 'enrichedElement' &&
+                                response.data
+                            ) {
+                                Object.assign(chunk.fullItem, response.data)
+                            }
                             foundHints.push(chunk.fullItem)
-                            await chrome.tabs.sendMessage(activeTab.id, {
-                                action: ChromeMessages.highlightInputFound,
-                                data: chunk.fullItem,
-                            } satisfies ChromeMessageType)
                             // don't await here, so popup can be closed
                             chrome.runtime.sendMessage({
                                 action: ChromeMessages.formInputFound,
@@ -177,7 +189,9 @@ chrome.runtime.onMessage.addListener(
                             {
                                 role: 'assistant',
                                 content: JSON.stringify(
-                                    await res.object,
+                                    {
+                                        elements: foundHints,
+                                    } satisfies z.infer<typeof schema>,
                                     null,
                                     2,
                                 ),
@@ -218,6 +232,27 @@ chrome.runtime.onMessage.addListener(
                                 continue
                             }
                             console.log('chunk', chunk)
+                            const originalHint = foundHints.find(
+                                (x) => x.label === chunk.fullItem?.label,
+                            )
+                            const options = originalHint?.possibleOptions || []
+                            if (
+                                originalHint &&
+                                options.length &&
+                                !options.find(
+                                    (x) => x.value === chunk?.fullItem?.value,
+                                )
+                            ) {
+                                const option =
+                                    originalHint.possibleOptions?.find((x) => {
+                                        return (
+                                            x.title === chunk?.fullItem?.value
+                                        )
+                                    })
+                                if (option) {
+                                    chunk.fullItem.value = option.value
+                                }
+                            }
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: ChromeMessages.setHintValue,
                                 data: chunk.fullItem,

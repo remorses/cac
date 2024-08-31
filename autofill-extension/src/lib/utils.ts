@@ -66,6 +66,12 @@ export enum ChromeMessages {
     start = 'start',
 }
 
+export type EnrichedElementPart = {
+    possibleOptions?: { title: string; value: string }[]
+    regexPattern?: string
+    type?: string
+}
+
 export type ChromeMessageType =
     | { action: ChromeMessages.showHints }
     | { action: ChromeMessages.hideHints }
@@ -75,6 +81,7 @@ export type ChromeMessageType =
     | { action: ChromeMessages.formInputFound; data: ExtractedFormInput }
     | { action: ChromeMessages.start; files: ImageActionData[] }
     | { action: 'captureVisibleTab'; index: number }
+    | { action: 'enrichedElement'; data: EnrichedElementPart }
 // | { action: 'captureVisibleTabComplete'; data: ImageActionData }
 
 export type SetHintValueMessage = z.infer<typeof filledFormInputSchema>
