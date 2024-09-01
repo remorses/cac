@@ -17,12 +17,11 @@ import {
     useRevalidator,
 } from 'react-router'
 import { Form } from 'react-router-dom'
-
-enum FormFields {
-    description = 'description',
-    fileInput = 'fileInput',
-    saveAsPreset = 'saveAsPreset',
-}
+const FormFields = {
+    description: 'description',
+    filesInput: 'filesInput',
+    saveAsPreset: 'saveAsPreset',
+} as const
 
 function LoginComponent() {
     const { canUndo, presets } = useLoaderData() as LoaderReturnType<
@@ -83,7 +82,7 @@ function LoginComponent() {
     async function updatePreset() {
         const prompt = textareaRef.current?.value || 'Empty prompt'
         const filesInput: HTMLInputElement =
-            formRef.current?.elements.namedItem('fileInput') as any
+            formRef.current?.elements.namedItem(FormFields.filesInput) as any
 
         await chrome.storage.local.set({
             presets: [
@@ -120,7 +119,7 @@ function LoginComponent() {
                             }
                             const promptInput: HTMLInputElement =
                                 formRef.current?.elements.namedItem(
-                                    'description',
+                                    FormFields.description,
                                 ) as any
                             if (promptInput) {
                                 promptInput.value = preset.prompt
@@ -129,7 +128,7 @@ function LoginComponent() {
 
                             const fileInput: HTMLInputElement =
                                 formRef.current?.elements.namedItem(
-                                    'fileInput',
+                                    FormFields.filesInput,
                                 ) as any
                             if (!fileInput) {
                                 return
@@ -172,7 +171,7 @@ function LoginComponent() {
                         form.
                     </div>
                     <textarea
-                        name='description'
+                        name={FormFields.description}
                         ref={textareaRef}
                         required
                         onChange={(e) => {
@@ -196,7 +195,7 @@ function LoginComponent() {
                     <input
                         type='file'
                         className='max-w-max'
-                        name='fileInput'
+                        name={FormFields.filesInput}
                         multiple
                     />
                 </div>
@@ -218,10 +217,13 @@ function LoginComponent() {
                                 revalidator.revalidate()
                             }}
                             type='checkbox'
-                            id='saveAsPreset'
-                            name='saveAsPreset'
+                            id={FormFields.saveAsPreset}
+                            name={FormFields.saveAsPreset}
                         />
-                        <label htmlFor='saveAsPreset' className='ml-2'>
+                        <label
+                            htmlFor={FormFields.saveAsPreset}
+                            className='ml-2'
+                        >
                             Save as preset
                         </label>
                     </div>
@@ -264,7 +266,7 @@ async function loader({}: LoaderFunctionArgs) {
 }
 async function action({ request, context }: LoaderFunctionArgs) {
     const formData = await request.formData()
-    const filesInputs = formData.getAll('fileInput') as File[]
+    const filesInputs = formData.getAll(FormFields.filesInput) as File[]
     const files = await Promise.all(
         filesInputs
             .filter((file) => {
