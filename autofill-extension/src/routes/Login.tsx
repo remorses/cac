@@ -18,6 +18,12 @@ import {
 } from 'react-router'
 import { Form } from 'react-router-dom'
 
+enum FormFields {
+    description = 'description',
+    fileInput = 'fileInput',
+    saveAsPreset = 'saveAsPreset',
+}
+
 function LoginComponent() {
     const { canUndo, presets } = useLoaderData() as LoaderReturnType<
         typeof loader
@@ -104,8 +110,47 @@ function LoginComponent() {
                 <div className='flex items-center'>
                     <div className='grow'></div>
                     <select
-                        onChange={(e) => {
+                        onChange={async (e) => {
                             setPresetId(e.target.value)
+                            const preset = presets?.find(
+                                (x) => x.id === e.target.value,
+                            )
+                            if (!preset) {
+                                return
+                            }
+                            const promptInput: HTMLInputElement =
+                                formRef.current?.elements.namedItem(
+                                    'description',
+                                ) as any
+                            if (promptInput) {
+                                promptInput.value = preset.prompt
+                            }
+                            const files = preset.files.filter(Boolean)
+
+                            const fileInput: HTMLInputElement =
+                                formRef.current?.elements.namedItem(
+                                    'fileInput',
+                                ) as any
+                            if (!fileInput) {
+                                return
+                            }
+                            const dataTransfer = new DataTransfer()
+                            for (const file of files) {
+                                const response = await fetch(file.dataUrl)
+                                if (!response.ok) {
+                                    console.error(
+                                        'cannot fetch file',
+                                        file.dataUrl.slice(0, 100),
+                                    )
+                                    continue
+                                }
+                                const blob = await response.blob()
+
+                                dataTransfer.items.add(
+                                    new File([blob], file.name),
+                                )
+                            }
+                            fileInput.files = dataTransfer.files
                         }}
                         value={presetId}
                         name='preset'
@@ -158,6 +203,7 @@ function LoginComponent() {
                 <div className=''>
                     <div className='flex items-center'>
                         <input
+                            checked={!!presets?.find((x) => x.id === presetId)}
                             onChange={async (e) => {
                                 if (!e.target.checked) {
                                     await chrome.storage.local.set({
