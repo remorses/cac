@@ -147,3 +147,5 @@ export function debounce<T extends (...args: any[]) => Promise<any>>(
 }
 
 export const DATA_LLM_ID = 'data-llm-id'
+
+export const DATA_LLM_ID_LENGTH = 9

@@ -3,6 +3,7 @@ import { hideHints, showHints } from '@/content/HintRenderer'
 import {
     ChromeMessageType,
     DATA_LLM_ID,
+    DATA_LLM_ID_LENGTH,
     generateRandomString,
     isFillableElement,
     sleep,
@@ -31,7 +32,8 @@ chrome.runtime.onMessage.addListener(
                                     style.display !== 'none' &&
                                     style.visibility !== 'hidden'
                                 ) {
-                                    const id = generateRandomString(9)
+                                    const id =
+                                        generateRandomString(DATA_LLM_ID_LENGTH)
                                     el.setAttribute(DATA_LLM_ID, id)
                                     console.log(
                                         'found visible element, setting llm id',
@@ -72,9 +74,7 @@ chrome.runtime.onMessage.addListener(
                                     error: 'No value provided',
                                 }
                             }
-                            const findRes =
-                                visibleElementsMap.get(data.label) ||
-                                findHint({ label: data.label })
+                            const findRes = findHint({ label: data.label })
                             if (!findRes?.element) {
                                 console.log(
                                     'no element found for label',
@@ -109,7 +109,7 @@ chrome.runtime.onMessage.addListener(
                             console.log('highlightInputFound', data)
 
                             const findRes = findHint({ label: data.label })
-                            if (!findRes.element) {
+                            if (!findRes?.element) {
                                 console.log(
                                     'no element found for label',
                                     data.label,
@@ -204,6 +204,9 @@ chrome.runtime.onMessage.addListener(
     },
 )
 function findHint({ label }) {
+    if (visibleElementsMap.has(label)) {
+        return visibleElementsMap.get(label)
+    }
     if (!hints.length) {
         console.error('No hints found')
         return { status: 'error', error: 'No hints found' }

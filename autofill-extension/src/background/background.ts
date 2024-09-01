@@ -1,6 +1,7 @@
 import {
     ChromeMessageType,
     DATA_LLM_ID,
+    DATA_LLM_ID_LENGTH,
     EnrichedElementPart,
     ExtractedFormInput,
     FileObject,
@@ -322,7 +323,13 @@ chrome.runtime.onMessage.addListener(
                             stream: stream2.partialObjectStream,
                             arrayField: 'elements',
                         })) {
-                            if (chunk.fullItem === undefined) {
+                            if (chunk.fullItem !== undefined) {
+                                filledFormInputs.push(chunk.fullItem)
+                            }
+                            if (
+                                chunk.partialItem?.label?.length !==
+                                DATA_LLM_ID_LENGTH
+                            ) {
                                 continue
                             }
                             console.log('chunk', chunk)
@@ -345,14 +352,18 @@ chrome.runtime.onMessage.addListener(
                                         )
                                     })
                                 if (option) {
-                                    chunk.fullItem.value = option.value
+                                    chunk.partialItem.value = option.value || ''
                                 }
                             }
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: 'setHintValue',
-                                data: chunk.fullItem,
+                                data: {
+                                    value: '',
+                                    description: '',
+                                    label: '',
+                                    ...chunk.partialItem,
+                                },
                             } satisfies ChromeMessageType)
-                            filledFormInputs.push(chunk.fullItem)
                         }
                         console.log('completed the llm call to fill the inputs')
                         await chrome.tabs.sendMessage(activeTab.id, {
