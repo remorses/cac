@@ -1,9 +1,12 @@
-
 import classNames from 'classnames'
 
 export type ButtonProps = React.ComponentProps<'button'> & {
     isLoading?: boolean
     variant?: 'primary' | 'normal'
+}
+
+function Spinner() {
+    return <div className='framer-spinner'></div>
 }
 
 export function Button({
@@ -30,9 +33,7 @@ export function Button({
             </span>
             {isLoading && (
                 <div className='absolute top-0 right-0 left-0 bottom-0 flex items-center justify-center'>
-                    {/* <Spinner
-                        color={variant === 'primary' ? 'light' : 'system'}
-                    /> */}
+                    <Spinner />
                 </div>
             )}
         </button>

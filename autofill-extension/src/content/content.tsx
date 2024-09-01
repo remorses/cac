@@ -1,17 +1,13 @@
 import { findHints, Hint } from '@/content/findHints'
 import {
     hideHints,
-    showHints,
-    setHintRenderSettings,
+    showHints
 } from '@/content/HintRenderer'
 import {
-    ChromeMessages,
     ChromeMessageType,
     isFillableElement,
-    SetHintValueMessage,
-    sleep,
+    sleep
 } from '@/lib/utils'
-import { ImageActionData } from '@/routes/Login'
 
 let hints = [] as Hint[]
 chrome.runtime.onMessage.addListener(
@@ -20,7 +16,7 @@ chrome.runtime.onMessage.addListener(
             .then(async () => {
                 try {
                     switch (request.action) {
-                        case ChromeMessages.showHints: {
+                        case 'showHints': {
                             console.log('showHints')
                             hints = findHints()
                             console.log('hints', hints)
@@ -31,12 +27,12 @@ chrome.runtime.onMessage.addListener(
 
                             return { status: 'completed', hints }
                         }
-                        case ChromeMessages.hideHints: {
+                        case 'hideHints': {
                             console.log('hideHints')
                             hideHints()
                             return { status: 'completed', hints }
                         }
-                        case ChromeMessages.setHintValue: {
+                        case 'setHintValue': {
                             let data = request.data
                             console.log('setHintValue', data)
                             if (!data.value) {
@@ -76,7 +72,7 @@ chrome.runtime.onMessage.addListener(
                             }
                             return
                         }
-                        case ChromeMessages.highlightInputFound: {
+                        case 'highlightInputFound': {
                             let data = request.data
                             console.log('highlightInputFound', data)
 
@@ -137,7 +133,7 @@ chrome.runtime.onMessage.addListener(
                                 }
                             }
                         }
-                        case ChromeMessages.dehighlightAll: {
+                        case 'dehighlightAll': {
                             for (let hint of hints) {
                                 if (isFillableElement(hint.element)) {
                                     try {

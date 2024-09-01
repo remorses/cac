@@ -1,19 +1,15 @@
-import { Hint } from '@/content/findHints'
-
-import { z } from 'zod'
-import { openai } from '@ai-sdk/openai'
-import { anthropic } from '@ai-sdk/anthropic'
 import {
-    ChromeMessages,
     ChromeMessageType,
     EnrichedElementPart,
     ExtractedFormInput,
     SetHintValueMessage,
 } from '@/lib/utils'
+import { anthropic } from '@ai-sdk/anthropic'
+import { z } from 'zod'
 
-import { CoreMessage, streamObject, streamText } from 'ai'
-import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 import { ImageActionData } from '@/routes/Login'
+import { CoreMessage, streamObject } from 'ai'
+import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 
 if (process.env.NODE_ENV !== 'production') {
     console.log('overriding logging to localhost:8832')
@@ -48,6 +44,9 @@ if (process.env.NODE_ENV !== 'production') {
 console.log('background starting')
 
 let screenshots = [] as ImageActionData[]
+
+let filledFormInputs = [] as SetHintValueMessage[]
+
 export const extractedFormInputSchema = z.object({
     label: z.string(),
     description: z.string(),
@@ -59,6 +58,8 @@ export const filledFormInputSchema = z.object({
     description: z.string(),
     value: z.string(),
 })
+
+const model = anthropic('claude-3-5-sonnet-20240620')
 
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
@@ -89,7 +90,30 @@ chrome.runtime.onMessage.addListener(
                         })
                         return {}
                     }
-                    case ChromeMessages.start: {
+                    case 'popupLoader': {
+                        const canUndo = filledFormInputs.length > 0
+                        const msg: ChromeMessageType = {
+                            action: 'popupLoader',
+                            data: {
+                                canUndo,
+                            },
+                        }
+                        return msg
+                    }
+                    case 'undoFilling': {
+                        for (let filledFormInput of filledFormInputs) {
+                            chrome.runtime.sendMessage({
+                                action: 'setHintValue',
+                                data: {
+                                    ...filledFormInput,
+                                    value: '',
+                                },
+                            } satisfies ChromeMessageType)
+                        }
+                        filledFormInputs = []
+                        return {}
+                    }
+                    case 'start': {
                         const files = request.files
                         const tabs = await chrome.tabs.query({
                             active: true,
@@ -103,11 +127,11 @@ chrome.runtime.onMessage.addListener(
                         console.log('sending message to screenshot')
                         const message: ChromeMessageType =
                             await chrome.tabs.sendMessage(activeTab.id, {
-                                action: ChromeMessages.showHints,
+                                action: 'showHints',
                             } satisfies ChromeMessageType)
 
                         await chrome.tabs.sendMessage(activeTab.id, {
-                            action: ChromeMessages.hideHints,
+                            action: 'hideHints',
                         } satisfies ChromeMessageType)
                         if (!screenshots.length) {
                             console.log(
@@ -143,7 +167,7 @@ chrome.runtime.onMessage.addListener(
                             elements: z.array(extractedFormInputSchema),
                         })
                         const res = await streamObject({
-                            model: anthropic('claude-3-5-sonnet-20240620'),
+                            model,
 
                             schema,
                             messages: [...initialMessages],
@@ -163,7 +187,7 @@ chrome.runtime.onMessage.addListener(
 
                             const response: ChromeMessageType =
                                 await chrome.tabs.sendMessage(activeTab.id, {
-                                    action: ChromeMessages.highlightInputFound,
+                                    action: 'highlightInputFound',
                                     data: chunk.fullItem,
                                 } satisfies ChromeMessageType)
                             if (
@@ -181,7 +205,7 @@ chrome.runtime.onMessage.addListener(
                             foundHints.push(chunk.fullItem)
                             // don't await here, so popup can be closed
                             chrome.runtime.sendMessage({
-                                action: ChromeMessages.formInputFound,
+                                action: 'formInputFound',
                                 data: chunk.fullItem,
                             } satisfies ChromeMessageType)
                         }
@@ -217,7 +241,7 @@ chrome.runtime.onMessage.addListener(
                             })
                         }
                         const stream2 = await streamObject({
-                            model: anthropic('claude-3-5-sonnet-20240620'),
+                            model,
                             onFinish({ object, rawResponse }) {
                                 console.log(
                                     'fill value llm response',
@@ -229,6 +253,7 @@ chrome.runtime.onMessage.addListener(
                             }),
                             messages,
                         })
+                        filledFormInputs = []
 
                         for await (let chunk of yieldNewArrayItems({
                             stream: stream2.partialObjectStream,
@@ -261,13 +286,14 @@ chrome.runtime.onMessage.addListener(
                                 }
                             }
                             await chrome.tabs.sendMessage(activeTab.id, {
-                                action: ChromeMessages.setHintValue,
+                                action: 'setHintValue',
                                 data: chunk.fullItem,
                             } satisfies ChromeMessageType)
+                            filledFormInputs.push(chunk.fullItem)
                         }
                         console.log('completed the llm call to fill the inputs')
                         await chrome.tabs.sendMessage(activeTab.id, {
-                            action: ChromeMessages.dehighlightAll,
+                            action: 'dehighlightAll',
                         } satisfies ChromeMessageType)
 
                         return { status: 'completed' }

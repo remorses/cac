@@ -1,7 +1,6 @@
 html,
 body {
-    width: 700px;
-    height: 400px;
-    overflow: hidden;
-    border-radius: 10px;
+    width: 400px;
+    height: auto;
+    border: 0px;
 }

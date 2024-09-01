@@ -52,20 +52,6 @@ export const basePath = import.meta.env.BASE_URL || '/'
 export async function getExtensionData() {
     return { sessionKey: '' }
 }
-
-export enum ChromeMessages {
-    // content handled messages
-    showHints = 'showHints',
-    hideHints = 'hideHints',
-    highlightInputFound = 'highlightInputFound',
-    setHintValue = 'setHintValue',
-    dehighlightAll = 'dehilightAll',
-    // popup handled messages
-    formInputFound = 'formInputFound',
-    // background handled messages
-    start = 'start',
-}
-
 export type EnrichedElementPart = {
     possibleOptions?: { title: string; value: string }[]
     regexPattern?: string
@@ -73,16 +59,22 @@ export type EnrichedElementPart = {
 }
 
 export type ChromeMessageType =
-    | { action: ChromeMessages.showHints }
-    | { action: ChromeMessages.hideHints }
-    | { action: ChromeMessages.highlightInputFound; data: ExtractedFormInput }
-    | { action: ChromeMessages.setHintValue; data: SetHintValueMessage }
-    | { action: ChromeMessages.dehighlightAll }
-    | { action: ChromeMessages.formInputFound; data: ExtractedFormInput }
-    | { action: ChromeMessages.start; files: ImageActionData[] }
+    | { action: 'showHints' }
+    | { action: 'hideHints' }
+    | { action: 'highlightInputFound'; data: ExtractedFormInput }
+    | { action: 'setHintValue'; data: SetHintValueMessage }
+    | { action: 'dehighlightAll' }
+    | { action: 'formInputFound'; data: ExtractedFormInput }
+    | { action: 'start'; files: ImageActionData[] }
     | { action: 'captureVisibleTab'; index: number }
     | { action: 'enrichedElement'; data: EnrichedElementPart }
+    | { action: 'popupLoader'; data?: PopupLoaderData }
+    | { action: 'undoFilling' }
 // | { action: 'captureVisibleTabComplete'; data: ImageActionData }
+
+export type PopupLoaderData = {
+    canUndo: boolean
+}
 
 export type SetHintValueMessage = z.infer<typeof filledFormInputSchema>
 export type ExtractedFormInput = z.infer<typeof extractedFormInputSchema>

@@ -77,7 +77,7 @@ const router = createMemoryRouter(
                             <div className=' '>
                                 <div
                                     ref={ref}
-                                    className='shrink-0 grow flex-col p-4 pt-[2px] w-full justify-start '
+                                    className='shrink-0 grow flex-col p-4 w-full justify-start '
                                 >
                                     <Outlet />
 

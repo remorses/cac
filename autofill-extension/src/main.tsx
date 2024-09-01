@@ -6,8 +6,6 @@ import '@/styles/reset.css'
 import '@/styles/global.css'
 import '@/styles/framer-env.css'
 
-// import 'framer-plugin/framer.css'
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'

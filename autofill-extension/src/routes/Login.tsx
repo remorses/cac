@@ -1,19 +1,24 @@
 import { Button } from '@/components/Button'
-import { ChromeMessages, ChromeMessageType, Paths } from '@/lib/utils'
+import {
+    ChromeMessageType,
+    LoaderReturnType,
+    Paths,
+    PopupLoaderData,
+} from '@/lib/utils'
 
-import { useEffect, useState } from 'react'
-import { LoaderFunctionArgs, RouteObject, useNavigation } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import {
+    LoaderFunctionArgs,
+    RouteObject,
+    useLoaderData,
+    useNavigation,
+    useRevalidator,
+} from 'react-router'
 import { Form } from 'react-router-dom'
 
 function LoginComponent() {
-    const [fileName, setFileName] = useState(null as string | null)
+    const { canUndo } = useLoaderData() as LoaderReturnType<typeof loader>
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0]
-        if (file) {
-            setFileName(file.name)
-        }
-    }
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     const [inputs, setInputs] = useState([] as string[])
@@ -23,12 +28,21 @@ function LoginComponent() {
             Promise.resolve()
                 .then(async () => {
                     switch (request.action) {
-                        case ChromeMessages.formInputFound: {
+                        case 'formInputFound': {
                             let text = request.data.description
                             // if (request.data.value) {
                             //     text = `filling ${text} with ${request.data.value}`
                             // }
                             setInputs((inputs) => [...inputs, text])
+                            return { ok: true }
+                        }
+                        case 'setHintValue': {
+                            let text = request.data.description
+                            // if (request.data.value) {
+                            //     text = `filling ${text} with ${request.data.value}`
+                            // }
+                            setInputs((inputs) => [...inputs, text])
+                            revalidator.revalidate()
                             return { ok: true }
                         }
                     }
@@ -45,50 +59,86 @@ function LoginComponent() {
             chrome.runtime.onMessage.removeListener(callback)
         }
     }, [])
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const adjustHeight = (element) => {
+        element.style.height = 'auto'
+        element.style.height = `${element.scrollHeight}px`
+    }
+
+    const revalidator = useRevalidator()
+    const formRef = useRef<HTMLFormElement>(null)
 
     return (
         <div className='flex flex-col '>
             <Form
                 encType='multipart/form-data'
                 method='POST'
-                className='flex flex-col p-4 justify-start gap-4'
+                ref={formRef}
+                className='flex flex-col justify-start gap-3'
             >
+                <div className='flex flex-col gap-1'>
+                    <div className=''>
+                        Write here the content that should be submitted in the
+                        form.
+                    </div>
+                    <textarea
+                        name='description'
+                        ref={textareaRef}
+                        required
+                        onChange={(e) => {
+                            // setDescription(e.target.value)
+                            adjustHeight(e.target)
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                e.preventDefault()
+                                formRef.current?.submit()
+                            }
+                        }}
+                        className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
+                        autoFocus
+                        placeholder={`Company name: x \nTwitter url: https://twitter.com/x\nLinkedin url: https://linkedin.com/x`}
+                    />
+                </div>
+                <div className='flex flex-col gap-1'>
+                    <div className=''>Add files for AI to use</div>
+                    <input type='file' name='fileInput' multiple />
+                </div>
                 <Button
                     type='submit'
                     variant='primary'
                     isLoading={isLoading || navigation.state !== 'idle'}
                 >
-                    Screenshot
+                    Start Filling Form
                 </Button>
-                <div>
-                    <input
-                        type='file'
-                        name='fileInput'
-                        multiple
-                        onChange={handleFileChange}
-                    />
-                    {fileName && (
-                        <div>
-                            <p>File Data URL:</p>
-                            <textarea
-                                value={fileName}
-                                readOnly
-                                rows={10}
-                                cols={50}
-                            />
-                        </div>
-                    )}
-                </div>
-                <pre>{JSON.stringify(inputs, null, 2)}</pre>
+                {canUndo && (
+                    <Button
+                        type='button'
+                        onClick={async () => {
+                            await chrome.runtime.sendMessage({
+                                action: 'undoFilling',
+                            } satisfies ChromeMessageType)
+                            revalidator.revalidate()
+                        }}
+                        isLoading={isLoading || navigation.state !== 'idle'}
+                    >
+                        Undo Filling
+                    </Button>
+                )}
             </Form>
         </div>
     )
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    console.log('login loader')
-
-    return {}
+    const res: ChromeMessageType = await chrome.runtime.sendMessage({
+        action: 'popupLoader',
+    } satisfies ChromeMessageType)
+    if (res.action === 'popupLoader' && res.data) {
+        return res.data!
+    }
+    return { canUndo: false } satisfies PopupLoaderData
 }
 async function action({ request, context }: LoaderFunctionArgs) {
     const formData = await request.formData()
@@ -110,7 +160,7 @@ async function action({ request, context }: LoaderFunctionArgs) {
     console.log('files', files)
 
     await chrome.runtime.sendMessage({
-        action: ChromeMessages.start,
+        action: 'start',
         files,
     } satisfies ChromeMessageType)
     return {}
