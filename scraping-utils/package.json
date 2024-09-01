@@ -23,7 +23,7 @@
         "@genql/cli": "^6.3.3",
         "@genql/runtime": "^2.10.0",
         "esbuild": "^0.21.5",
-        "htmlrewriter": "^0.0.9",
+        "htmlrewriter": "^0.0.12",
         "p-ratelimit": "^1.0.1",
         "parse-domain": "^8.2.1",
         "playwright": "^1.45.2"

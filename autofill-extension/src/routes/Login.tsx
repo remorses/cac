@@ -26,11 +26,18 @@ const FormFields = {
 } as const
 
 function LoginComponent() {
-    const { canUndo, presets } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { canUndo, presets, lastUsedPresetId } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     console.log('presets', presets)
-    let [presetId, setPresetId] = useState(() => generateRandomString(10))
+    let [presetId, setPresetId] = useState(() => {
+        if (
+            lastUsedPresetId &&
+            presets?.find((x) => x.id === lastUsedPresetId)
+        ) {
+            return lastUsedPresetId
+        }
+        return generateRandomString(10)
+    })
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     const [inputs, setInputs] = useState([] as string[])
@@ -87,6 +94,7 @@ function LoginComponent() {
             formRef.current?.elements.namedItem(FormFields.filesInput) as any
 
         await chrome.storage.local.set({
+            lastUsedPresetId: presetId,
             presets: [
                 ...(presets || []),
                 {
@@ -101,7 +109,7 @@ function LoginComponent() {
         } satisfies ExtensionStorage)
         revalidator.revalidate()
     }
-    const debouncedUpdatePreset = useRef(debounce(updatePreset, 300))
+    const debouncedUpdatePreset = useRef(debounce(updatePreset, 100))
     return (
         <div className='flex flex-col '>
             <Form
@@ -244,7 +252,7 @@ function LoginComponent() {
                 >
                     Start Filling Form
                 </Button>
-                {canUndo && (
+                {canUndo && !isLoading && (
                     <Button
                         type='button'
                         onClick={async () => {

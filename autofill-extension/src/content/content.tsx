@@ -1,8 +1,15 @@
 import { findHints, Hint } from '@/content/findHints'
 import { hideHints, showHints } from '@/content/HintRenderer'
-import { ChromeMessageType, isFillableElement, sleep } from '@/lib/utils'
+import {
+    ChromeMessageType,
+    DATA_LLM_ID,
+    generateRandomString,
+    isFillableElement,
+    sleep,
+} from '@/lib/utils'
 
 let hints = [] as Hint[]
+const visibleElementsMap = new Map<string, { element: HTMLElement }>()
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
         Promise.resolve()
@@ -12,13 +19,43 @@ chrome.runtime.onMessage.addListener(
                         case 'showHints': {
                             console.log('showHints')
                             hints = findHints()
+
+                            visibleElementsMap.clear()
+                            const formElements = document.querySelectorAll(
+                                'input, textarea, select',
+                            )
+
+                            formElements.forEach((el, index) => {
+                                const style = window.getComputedStyle(el)
+                                if (
+                                    style.display !== 'none' &&
+                                    style.visibility !== 'hidden'
+                                ) {
+                                    const id = generateRandomString(9)
+                                    el.setAttribute(DATA_LLM_ID, id)
+                                    console.log(
+                                        'found visible element, setting llm id',
+                                        el,
+                                    )
+                                    visibleElementsMap.set(id, {
+                                        element: el as HTMLElement,
+                                    })
+                                }
+                            })
+                            let documentHtml =
+                                document.documentElement.outerHTML
+                            let msg: ChromeMessageType = {
+                                action: 'showHints',
+                                // hints,
+                                documentHtml,
+                            }
+                            return msg
+
                             console.log('hints', hints)
 
                             showHints(hints)
                             await sleep(1)
                             await takeViewportScreenshots()
-
-                            return { status: 'completed', hints }
                         }
                         case 'hideHints': {
                             console.log('hideHints')
@@ -35,8 +72,10 @@ chrome.runtime.onMessage.addListener(
                                     error: 'No value provided',
                                 }
                             }
-                            const findRes = findHint({ label: data.label })
-                            if (!findRes.element) {
+                            const findRes =
+                                visibleElementsMap.get(data.label) ||
+                                findHint({ label: data.label })
+                            if (!findRes?.element) {
                                 console.log(
                                     'no element found for label',
                                     data.label,
@@ -79,7 +118,9 @@ chrome.runtime.onMessage.addListener(
                             }
                             let el = findRes.element
                             if (isFillableElement(el)) {
-                                el.focus()
+                                if (document.activeElement !== el) {
+                                    el.focus()
+                                }
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
                                 if (el instanceof HTMLSelectElement) {

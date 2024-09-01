@@ -1,4 +1,3 @@
-import { anthropic } from '@ai-sdk/anthropic'
 import { openai } from '@ai-sdk/openai'
 
 import { generateText, streamObject } from 'ai'
@@ -6,18 +5,22 @@ import dedent from 'dedent'
 import {} from 'website/src/lib/elysia.server'
 import {
     removeMarkdownSnippets,
-    yieldMaxEveryMs,
     yieldNewArrayItems,
     yieldObjectStream,
 } from 'website/src/lib/ndjson'
-import { groq } from 'website/src/lib/ssr.server'
 import { z } from 'zod'
 
-import('htmlrewriter')
+export async function formatHtmlForPrompt(
+    input: Response,
+    HTMLRewriter_?: typeof import('htmlrewriter').HTMLRewriter,
+) {
+    let HTMLRewriter = HTMLRewriter_
+    if (!HTMLRewriter) {
+        console.log('importing htmlrewriter')
+        HTMLRewriter = await import('htmlrewriter').then((x) => x.HTMLRewriter)
+    }
 
-export async function formatHtmlForPrompt(input: Response) {
-    const { HTMLRewriter } = await import('htmlrewriter')
-    const rewriter = new HTMLRewriter()
+    const rewriter = new HTMLRewriter!()
 
     // remove all the attributes and tags that are not useful for an AI prompt, that don't show what the website is about, like style, link, script, meta, noscript, svg, head, and footer tags
 
@@ -31,6 +34,23 @@ export async function formatHtmlForPrompt(input: Response) {
         'head',
         // 'head',
     ]
+    const attributesToKeep = [
+        'data-framer-name',
+        // 'class',
+        // 'id',
+        'label',
+        'title',
+        'alt',
+        'href',
+        'name',
+        'value',
+        'placeholder',
+        'type',
+        'role',
+        // 'src', // Added
+        'target', // Added
+        'data-llm-id',
+    ]
 
     const res = rewriter
         .on('*', {
@@ -39,22 +59,7 @@ export async function formatHtmlForPrompt(input: Response) {
                     element.remove()
                     return
                 }
-                const attributesToKeep = [
-                    'data-framer-name',
-                    // 'class',
-                    // 'id',
-                    'label',
-                    'title',
-                    'alt',
-                    'href',
-                    'name',
-                    'value',
-                    'placeholder',
-                    'type',
-                    'role',
-                    // 'src', // Added
-                    'target', // Added
-                ]
+
                 for (const [attr] of element.attributes) {
                     if (
                         !attr.startsWith('aria-') &&

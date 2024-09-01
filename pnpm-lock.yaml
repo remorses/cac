@@ -22,10 +22,10 @@ importers:
         version: 5.5.4
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vitest:
         specifier: ^2.0.3
-        version: 2.0.3(@types/node@22.5.1)
+        version: 2.0.3(@types/node@22.5.2)
 
   autofill-extension:
     dependencies:
@@ -74,6 +74,9 @@ importers:
       framer-motion:
         specifier: ^11.3.8
         version: 11.3.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      htmlrewriter:
+        specifier: ^0.0.12
+        version: 0.0.12
       is-hotkey:
         specifier: 0.2.0
         version: 0.2.0
@@ -89,6 +92,9 @@ importers:
       openai:
         specifier: ^4.52.7
         version: 4.52.7
+      posthtml:
+        specifier: ^0.16.6
+        version: 0.16.6
       preact:
         specifier: ^10.23.1
         version: 10.23.1
@@ -118,13 +124,13 @@ importers:
         version: 3.4.6
       vite-plugin-environment:
         specifier: ^1.1.3
-        version: 1.1.3(vite@5.4.2(@types/node@22.5.1))
+        version: 1.1.3(vite@5.4.2(@types/node@22.5.2))
       vite-plugin-mkcert:
         specifier: ^1.17.5
-        version: 1.17.5(vite@5.4.2(@types/node@22.5.1))
+        version: 1.17.5(vite@5.4.2(@types/node@22.5.2))
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1))
+        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2))
       website:
         specifier: workspace:^
         version: link:../website
@@ -146,16 +152,16 @@ importers:
         version: 18.3.0
       '@vitejs/plugin-react':
         specifier: ^4.3.1
-        version: 4.3.1(vite@5.4.2(@types/node@22.5.1))
+        version: 4.3.1(vite@5.4.2(@types/node@22.5.2))
       '@vitejs/plugin-react-swc':
         specifier: ^3.7.0
-        version: 3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.1))
+        version: 3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.2))
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vite-plugin-framer:
         specifier: ^0.0.10
-        version: 0.0.10(vite@5.4.2(@types/node@22.5.1))
+        version: 0.0.10(vite@5.4.2(@types/node@22.5.2))
 
   chrome-renderer:
     dependencies:
@@ -273,13 +279,13 @@ importers:
         version: link:../template-rewrite-framer
       vite-plugin-environment:
         specifier: ^1.1.3
-        version: 1.1.3(vite@5.4.2(@types/node@22.5.1))
+        version: 1.1.3(vite@5.4.2(@types/node@22.5.2))
       vite-plugin-mkcert:
         specifier: ^1.17.5
-        version: 1.17.5(vite@5.4.2(@types/node@22.5.1))
+        version: 1.17.5(vite@5.4.2(@types/node@22.5.2))
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1))
+        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2))
       website:
         specifier: workspace:^
         version: link:../website
@@ -295,13 +301,13 @@ importers:
         version: 18.3.0
       '@vitejs/plugin-react-swc':
         specifier: ^3.7.0
-        version: 3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.1))
+        version: 3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.2))
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vite-plugin-framer:
         specifier: ^0.0.10
-        version: 0.0.10(vite@5.4.2(@types/node@22.5.1))
+        version: 0.0.10(vite@5.4.2(@types/node@22.5.2))
 
   new-package-template: {}
 
@@ -342,8 +348,8 @@ importers:
         specifier: ^0.21.5
         version: 0.21.5
       htmlrewriter:
-        specifier: ^0.0.9
-        version: 0.0.9
+        specifier: ^0.0.12
+        version: 0.0.12
       p-ratelimit:
         specifier: ^1.0.1
         version: 1.0.1
@@ -373,10 +379,10 @@ importers:
         version: 5.5.4
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@22.5.1)
+        version: 1.6.0(@types/node@22.5.2)
 
   spiceflow/spiceflow:
     dependencies:
@@ -491,13 +497,13 @@ importers:
         version: 'link:'
       vite-plugin-environment:
         specifier: ^1.1.3
-        version: 1.1.3(vite@5.4.2(@types/node@22.5.1))
+        version: 1.1.3(vite@5.4.2(@types/node@22.5.2))
       vite-plugin-mkcert:
         specifier: ^1.17.5
-        version: 1.17.5(vite@5.4.2(@types/node@22.5.1))
+        version: 1.17.5(vite@5.4.2(@types/node@22.5.2))
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1))
+        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2))
       website:
         specifier: workspace:^
         version: link:../website
@@ -513,13 +519,13 @@ importers:
         version: 18.3.0
       '@vitejs/plugin-react-swc':
         specifier: ^3.7.0
-        version: 3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.1))
+        version: 3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.2))
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vite-plugin-framer:
         specifier: ^0.0.10
-        version: 0.0.10(vite@5.4.2(@types/node@22.5.1))
+        version: 0.0.10(vite@5.4.2(@types/node@22.5.2))
 
   unframer:
     devDependencies:
@@ -540,10 +546,10 @@ importers:
         version: 4.16.2
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@22.5.1)
+        version: 1.6.0(@types/node@22.5.2)
 
   unframer/nextjs-app:
     dependencies:
@@ -610,7 +616,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.2
-        version: 2.11.2(@remix-run/react@2.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@remix-run/serve@2.11.2(typescript@5.5.4))(@types/node@22.5.1)(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1))(wrangler@3.73.0)
+        version: 2.11.2(@remix-run/react@2.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@remix-run/serve@2.11.2(typescript@5.5.4))(@types/node@22.5.2)(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2))(wrangler@3.73.0)
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.3
@@ -652,10 +658,10 @@ importers:
         version: 3.3.2
       vite:
         specifier: ^5.4.2
-        version: 5.4.2(@types/node@22.5.1)
+        version: 5.4.2(@types/node@22.5.2)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1))
+        version: 4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2))
 
   unframer/unframer:
     dependencies:
@@ -853,8 +859,8 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       htmlrewriter:
-        specifier: ^0.0.9
-        version: 0.0.9
+        specifier: ^0.0.12
+        version: 0.0.12
       input-otp:
         specifier: ^1.2.4
         version: 1.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -4121,8 +4127,8 @@ packages:
   '@types/node@22.5.0':
     resolution: {integrity: sha512-DkFrJOe+rfdHTqqMg0bSNlGlQ85hSoh2TPzZyhHsXnMtligRWpxUySiyw8FY14ITt24HVCiQPWxS3KO/QlGmWg==}
 
-  '@types/node@22.5.1':
-    resolution: {integrity: sha512-KkHsxej0j9IW1KKOOAA/XBA0z08UFSrRQHErzEfA3Vgq57eXIMYboIlHJuYIfd+lwCQjtKqUu3UnmKbtUc9yRw==}
+  '@types/node@22.5.2':
+    resolution: {integrity: sha512-acJsPTEqYqulZS/Yp/S3GgeE6GZ0qYODUR8aVr/DkhHQ8l9nd4j5x1/ZJy9/gHrRlFMqkO6i0I3E27Alu4jjPg==}
 
   '@types/nprogress@0.2.3':
     resolution: {integrity: sha512-k7kRA033QNtC+gLc4VPlfnue58CM1iQLgn1IMAU8VPHGOj7oIHPp9UlhedEnD/Gl8evoCjwkZjlBORtZ3JByUA==}
@@ -5998,8 +6004,8 @@ packages:
   htmlparser2@9.1.0:
     resolution: {integrity: sha512-5zfg6mHUoaer/97TxnGpxmbR7zJtPwIYFMZ/H5ucTlPZhKvtum05yiPK3Mgai3a0DyVxv7qYqoweaEd2nrYQzQ==}
 
-  htmlrewriter@0.0.9:
-    resolution: {integrity: sha512-KJCafoOtKeJ6difDDo8u1rnwT8hZiPqzEHkBC0ZwAcinL2zQJ3xCIPLNXXkbhzHq0dqRau2dJdCUMqjaAg9Z1g==}
+  htmlrewriter@0.0.12:
+    resolution: {integrity: sha512-Tw+wORUlNL9+JQCIo7J4SuX/T3M1xRAC/0XaifnRPLHCX95jbZy/0CI06n7BhuFQJhSdNA7ZoxnStJmF31FZRw==}
 
   http-errors@2.0.0:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}
@@ -12830,7 +12836,7 @@ snapshots:
       - ts-node
       - utf-8-validate
 
-  '@remix-run/dev@2.11.2(@remix-run/react@2.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@remix-run/serve@2.11.2(typescript@5.5.4))(@types/node@22.5.1)(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1))(wrangler@3.73.0)':
+  '@remix-run/dev@2.11.2(@remix-run/react@2.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@remix-run/serve@2.11.2(typescript@5.5.4))(@types/node@22.5.2)(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2))(wrangler@3.73.0)':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/generator': 7.25.5
@@ -12847,7 +12853,7 @@ snapshots:
       '@remix-run/router': 1.19.1
       '@remix-run/server-runtime': 2.11.2(typescript@5.5.4)
       '@types/mdx': 2.0.13
-      '@vanilla-extract/integration': 6.5.0(@types/node@22.5.1)
+      '@vanilla-extract/integration': 6.5.0(@types/node@22.5.2)
       arg: 5.0.2
       cacache: 17.1.4
       chalk: 4.1.2
@@ -12889,7 +12895,7 @@ snapshots:
     optionalDependencies:
       '@remix-run/serve': 2.11.2(typescript@5.5.4)
       typescript: 5.5.4
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
       wrangler: 3.73.0
     transitivePeerDependencies:
       - '@types/node'
@@ -13486,7 +13492,7 @@ snapshots:
 
   '@types/node-forge@1.3.11':
     dependencies:
-      '@types/node': 22.5.1
+      '@types/node': 20.14.12
     optional: true
 
   '@types/node@12.20.55': {}
@@ -13517,7 +13523,7 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@22.5.1':
+  '@types/node@22.5.2':
     dependencies:
       undici-types: 6.19.8
     optional: true
@@ -13703,7 +13709,7 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.6
+      esbuild: 0.17.19
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -13724,21 +13730,21 @@ snapshots:
       - supports-color
       - terser
 
-  '@vanilla-extract/integration@6.5.0(@types/node@22.5.1)':
+  '@vanilla-extract/integration@6.5.0(@types/node@22.5.2)':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.6
+      esbuild: 0.17.19
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
       lodash: 4.17.21
       mlly: 1.7.1
       outdent: 0.8.0
-      vite: 5.4.2(@types/node@22.5.1)
-      vite-node: 1.6.0(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
+      vite-node: 1.6.0(@types/node@22.5.2)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -13753,21 +13759,21 @@ snapshots:
 
   '@vanilla-extract/private@1.0.6': {}
 
-  '@vitejs/plugin-react-swc@3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.1))':
+  '@vitejs/plugin-react-swc@3.7.0(@swc/helpers@0.5.12)(vite@5.4.2(@types/node@22.5.2))':
     dependencies:
       '@swc/core': 1.7.0(@swc/helpers@0.5.12)
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitejs/plugin-react@4.3.1(vite@5.4.2(@types/node@22.5.1))':
+  '@vitejs/plugin-react@4.3.1(vite@5.4.2(@types/node@22.5.2))':
     dependencies:
       '@babel/core': 7.24.9
       '@babel/plugin-transform-react-jsx-self': 7.24.7(@babel/core@7.24.9)
       '@babel/plugin-transform-react-jsx-source': 7.24.7(@babel/core@7.24.9)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -15067,7 +15073,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.17.19
       '@esbuild/win32-ia32': 0.17.19
       '@esbuild/win32-x64': 0.17.19
-    optional: true
 
   esbuild@0.17.6:
     optionalDependencies:
@@ -15904,7 +15909,7 @@ snapshots:
       domutils: 3.1.0
       entities: 4.5.0
 
-  htmlrewriter@0.0.9: {}
+  htmlrewriter@0.0.12: {}
 
   http-errors@2.0.0:
     dependencies:
@@ -19073,13 +19078,13 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@1.6.0(@types/node@22.5.1):
+  vite-node@1.6.0(@types/node@22.5.2):
     dependencies:
       cac: 6.7.14
       debug: 4.3.6
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -19091,13 +19096,13 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@2.0.3(@types/node@22.5.1):
+  vite-node@2.0.3(@types/node@22.5.2):
     dependencies:
       cac: 6.7.14
       debug: 4.3.5
       pathe: 1.1.2
       tinyrainbow: 1.2.0
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -19113,14 +19118,14 @@ snapshots:
     dependencies:
       vite: 5.4.2(@types/node@20.14.10)
 
-  vite-plugin-environment@1.1.3(vite@5.4.2(@types/node@22.5.1)):
+  vite-plugin-environment@1.1.3(vite@5.4.2(@types/node@22.5.2)):
     dependencies:
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
 
-  vite-plugin-framer@0.0.10(vite@5.4.2(@types/node@22.5.1)):
+  vite-plugin-framer@0.0.10(vite@5.4.2(@types/node@22.5.2)):
     dependencies:
       picocolors: 1.0.1
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
 
   vite-plugin-inspect@0.8.4(rollup@4.21.2)(vite@5.4.2(@types/node@20.14.10)):
     dependencies:
@@ -19138,13 +19143,13 @@ snapshots:
       - rollup
       - supports-color
 
-  vite-plugin-mkcert@1.17.5(vite@5.4.2(@types/node@22.5.1)):
+  vite-plugin-mkcert@1.17.5(vite@5.4.2(@types/node@22.5.2)):
     dependencies:
       '@octokit/rest': 20.1.1
       axios: 1.7.2(debug@4.3.5)
       debug: 4.3.5
       picocolors: 1.0.1
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -19159,13 +19164,13 @@ snapshots:
       - supports-color
       - typescript
 
-  vite-tsconfig-paths@4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.1)):
+  vite-tsconfig-paths@4.3.2(typescript@5.5.4)(vite@5.4.2(@types/node@22.5.2)):
     dependencies:
       debug: 4.3.5
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.5.4)
     optionalDependencies:
-      vite: 5.4.2(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -19179,16 +19184,16 @@ snapshots:
       '@types/node': 20.14.10
       fsevents: 2.3.3
 
-  vite@5.4.2(@types/node@22.5.1):
+  vite@5.4.2(@types/node@22.5.2):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.41
       rollup: 4.21.1
     optionalDependencies:
-      '@types/node': 22.5.1
+      '@types/node': 22.5.2
       fsevents: 2.3.3
 
-  vitest@1.6.0(@types/node@22.5.1):
+  vitest@1.6.0(@types/node@22.5.2):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
@@ -19207,11 +19212,11 @@ snapshots:
       strip-literal: 2.1.0
       tinybench: 2.8.0
       tinypool: 0.8.4
-      vite: 5.4.2(@types/node@22.5.1)
-      vite-node: 1.6.0(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
+      vite-node: 1.6.0(@types/node@22.5.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.5.1
+      '@types/node': 22.5.2
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -19222,7 +19227,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.0.3(@types/node@22.5.1):
+  vitest@2.0.3(@types/node@22.5.2):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.3
@@ -19240,11 +19245,11 @@ snapshots:
       tinybench: 2.8.0
       tinypool: 1.0.0
       tinyrainbow: 1.2.0
-      vite: 5.4.2(@types/node@22.5.1)
-      vite-node: 2.0.3(@types/node@22.5.1)
+      vite: 5.4.2(@types/node@22.5.2)
+      vite-node: 2.0.3(@types/node@22.5.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.5.1
+      '@types/node': 22.5.2
     transitivePeerDependencies:
       - less
       - lightningcss

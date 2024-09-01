@@ -1,4 +1,5 @@
 import { defineConfig, Plugin } from 'vite'
+import fs from 'fs'
 import fkill from 'fkill'
 import http, { Server } from 'http'
 import { crx } from '@crxjs/vite-plugin'
@@ -56,6 +57,26 @@ function logsPlugin(): Plugin {
     }
 }
 
+function wasmPlugin(): Plugin {
+    return {
+        name: 'wasm-plugin',
+        resolveId(source, importer) {
+            if (source.endsWith('.wasm')) {
+                return this.resolve(source, importer, { skipSelf: true })
+            }
+            return null
+        },
+        async load(id) {
+            if (id.endsWith('.wasm')) {
+                const data = await fs.promises.readFile(id)
+                const base64 = data.toString('base64')
+                return `export default "data:application/wasm;base64,${base64}"`
+            }
+            return null
+        },
+    }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
     server: {
@@ -65,9 +86,18 @@ export default defineConfig({
             port: 5174,
         },
     },
+    // assetsInclude: ['**/*.wasm'],
+    // build: {
+    //     assetsInlineLimit(filePath, content) {
+    //         if (filePath.endsWith('.wasm')) {
+    //             return true
+    //         }
+    //         return undefined
+    //     },
+    // },
     plugins: [
         react(),
-        // mkcert(),
+        wasmPlugin(),
         logsPlugin(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all'),

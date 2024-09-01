@@ -1,16 +1,31 @@
 import {
     ChromeMessageType,
+    DATA_LLM_ID,
     EnrichedElementPart,
     ExtractedFormInput,
     FileObject,
     SetHintValueMessage,
     sleep,
 } from '@/lib/utils'
+
 import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 
 import { CoreMessage, streamObject } from 'ai'
 import { yieldNewArrayItems } from 'website/src/lib/ndjson'
+import { formatHtmlForPrompt } from 'website/src/lib/htmlrewrite.server'
+
+import init from 'htmlrewriter/dist/html_rewriter.js'
+
+import { HTMLRewriterWrapper } from 'htmlrewriter/dist/html_rewriter_wrapper.js'
+
+// @ts-ignore
+import wasm from 'htmlrewriter/dist/html_rewriter_bg.wasm'
+import { openai } from '@ai-sdk/openai'
+
+console.log('wasm', wasm)
+
+export const HTMLRewriter = HTMLRewriterWrapper(init(wasm))
 
 if (process.env.NODE_ENV !== 'production') {
     console.log('overriding logging to localhost:8832')
@@ -51,7 +66,6 @@ let filledFormInputs = [] as SetHintValueMessage[]
 export const extractedFormInputSchema = z.object({
     label: z.string(),
     description: z.string(),
-    value: z.string(),
 })
 
 export const filledFormInputSchema = z.object({
@@ -60,8 +74,13 @@ export const filledFormInputSchema = z.object({
     value: z.string(),
 })
 
-const model = anthropic('claude-3-5-sonnet-20240620', {
-    cacheControl: true,
+let model = anthropic('claude-3-5-sonnet-20240620', {
+    // cacheControl: true,
+})
+
+model = openai('gpt-4o-2024-08-06', {
+    structuredOutputs: true,
+    // cacheControl: true,
 })
 
 chrome.runtime.onMessage.addListener(
@@ -147,16 +166,30 @@ chrome.runtime.onMessage.addListener(
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: 'showHints',
                             } satisfies ChromeMessageType)
+                        let documentHtml = ''
+                        if (
+                            message.action === 'showHints' &&
+                            message.documentHtml
+                        ) {
+                            documentHtml = await formatHtmlForPrompt(
+                                new Response(message.documentHtml),
+                                HTMLRewriter,
+                            )
+                        }
+                        if (!documentHtml) {
+                            console.log('no documentHtml found')
+                        }
+                        console.log('documentHtml', documentHtml)
 
                         if (!screenshots.length) {
                             console.log(
                                 'no screenshots found, aborting extraction',
                             )
-                            return { status: 'error', error: 'No screenshots' }
                         }
                         console.log('screenshots', screenshots)
-                        const initialMessages: CoreMessage[] = [
-                            {
+                        const initialMessages: CoreMessage[] = []
+                        if (screenshots.length) {
+                            initialMessages.push({
                                 role: 'user',
                                 content: [
                                     ...screenshots
@@ -169,17 +202,22 @@ chrome.runtime.onMessage.addListener(
                                             }
                                         }),
                                 ],
+                            })
+                        }
+
+                        initialMessages.push({
+                            role: 'user',
+                            content: promptExtractFromHtml({
+                                description,
+                                documentHtml,
+                            }),
+                            experimental_providerMetadata: {
+                                // anthropic: {
+                                //     cacheControl: { type: 'ephemeral' },
+                                // },
                             },
-                            {
-                                role: 'user',
-                                content: promptExtract({ description }),
-                                experimental_providerMetadata: {
-                                    anthropic: {
-                                        cacheControl: { type: 'ephemeral' },
-                                    },
-                                },
-                            },
-                        ]
+                        })
+
                         screenshots = []
 
                         console.log('starting llm extraction of the labels')
@@ -385,7 +423,7 @@ Make use of commas for decimal values, if the contextual data contains commas in
 {"label": "VB", "description": "Email Address", "value": "john.doe@example.com"}
   `
 
-const promptExtract = ({ description }) => `
+const promptExtract = ({ description, documentHtml }) => `
   Given a screenshot with Vimium labels for each form element, extract the form descriptions for each form input. Ensure the output follows the logical order of filling, top to bottom, with related values grouped together.
 
   ### Input:
@@ -418,5 +456,37 @@ Skip fields that are already filled or unrelated to the data in the image;
 use uppercase letters for the labels so they are dislplayed exactly like in vimium
 
 extract form inputs from top to bottom, always try to fill the firm form inputs first and leave blank additional ones on the bottom.
+
+`
+const promptExtractFromHtml = ({ description, documentHtml }) => `
+Given an HTML document with form elements, extract the form descriptions for each form input. Some input elements will have a data-llm-id attribute. Ensure the output follows the logical order of filling, top to bottom, with related values grouped together.
+
+### Input:
+1. HTML document with form elements.
+
+### Output:
+Return a JSON object with the following fields:
+- label: The ${DATA_LLM_ID} attribute of the form field.
+- description: The form input description, guessed from surrounding html tags and elements.
+
+### Requirements:
+1. Extract and return labels and descriptions in the order a human would fill the form, top to bottom.
+2. Group related values together, ensuring items in a list or table rows are close to each other.
+
+Skip fields that are already filled or unrelated to the data in the HTML document;
+
+use the ${DATA_LLM_ID} attribute for the labels;
+
+extract form inputs from top to bottom, always try to fill the main form inputs first and leave blank additional ones on the bottom.
+
+each input description should completely describe what should be filled in the input, include the type of input (text, number, email, etc.), and any other relevant information like pattern or placeholder.
+
+You should only extract inputs that are user input, the user is searching inputs that should be filled in the document. Ignore inputs like search bars and buttons, which are not data collection inputs.
+
+Here is the HTML document:
+
+
+${documentHtml}
+
 
 `

@@ -59,7 +59,7 @@ export type EnrichedElementPart = {
 }
 
 export type ChromeMessageType =
-    | { action: 'showHints' }
+    | { action: 'showHints'; documentHtml?: string }
     | { action: 'hideHints' }
     | { action: 'highlightInputFound'; data: ExtractedFormInput }
     | { action: 'setHintValue'; data: SetHintValueMessage }
@@ -98,6 +98,11 @@ type Preset = {
     id: string
     files: FileObject[]
 }
+export type ExtensionStorage = {
+    presets?: Preset[]
+    lastUsedPresetId?: string
+}
+
 
 export function generateRandomString(length: number) {
     let result = ''
@@ -112,9 +117,6 @@ export function generateRandomString(length: number) {
     return result
 }
 
-export type ExtensionStorage = {
-    presets?: Preset[]
-}
 
 export type FileObject = {
     name: string
@@ -143,3 +145,5 @@ export function debounce<T extends (...args: any[]) => Promise<any>>(
         }, delay)
     }) as any
 }
+
+export const DATA_LLM_ID = 'data-llm-id'
