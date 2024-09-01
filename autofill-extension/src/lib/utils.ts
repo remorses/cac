@@ -66,7 +66,7 @@ export type ChromeMessageType =
     | { action: 'dehighlightAll' }
     | { action: 'formInputFound'; data: ExtractedFormInput }
     | { action: 'start'; files: FileObject[]; description: string }
-    | { action: 'captureVisibleTab'; index: number }
+    | { action: 'captureVisibleTab'; index: number; dataUrl?: string }
     | { action: 'enrichedElement'; data: EnrichedElementPart }
     | { action: 'popupLoader'; data?: PopupLoaderData }
     | { action: 'undoFilling' }

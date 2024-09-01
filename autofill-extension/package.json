@@ -10,7 +10,7 @@
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.48",
-        "@ai-sdk/openai": "^0.0.46",
+        "@ai-sdk/openai": "^0.0.54",
         "@crxjs/vite-plugin": "2.0.0-beta.25",
         "@headlessui/tailwindcss": "^0.2.1",
         "@sentry/browser": "^8.19.0",

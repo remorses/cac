@@ -4,6 +4,7 @@ import {
     ExtractedFormInput,
     FileObject,
     SetHintValueMessage,
+    sleep,
 } from '@/lib/utils'
 import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
@@ -59,7 +60,9 @@ export const filledFormInputSchema = z.object({
     value: z.string(),
 })
 
-const model = anthropic('claude-3-5-sonnet-20240620')
+const model = anthropic('claude-3-5-sonnet-20240620', {
+    cacheControl: true,
+})
 
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
@@ -68,10 +71,19 @@ chrome.runtime.onMessage.addListener(
             .then(async () => {
                 switch (request.action) {
                     case 'captureVisibleTab': {
+                        // fix for MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND
+                        await sleep(500)
                         const dataUrl = await new Promise<string>((res, rej) =>
                             chrome.tabs.captureVisibleTab(
-                                { format: 'png' },
-                                res,
+                                { format: 'jpeg' },
+                                (result) => {
+                                    if (chrome.runtime.lastError) {
+                                        console.log(chrome.runtime.lastError)
+                                        rej(chrome.runtime.lastError)
+                                    } else {
+                                        res(result)
+                                    }
+                                },
                             ),
                         )
                         if (!dataUrl) {
@@ -88,7 +100,12 @@ chrome.runtime.onMessage.addListener(
                             name: request.index.toString(),
                             dataUrl: dataUrl,
                         })
-                        return {}
+                        const msg: ChromeMessageType = {
+                            action: 'captureVisibleTab',
+                            index: request.index,
+                            dataUrl,
+                        }
+                        return msg
                     }
                     case 'popupLoader': {
                         const canUndo = filledFormInputs.length > 0
@@ -131,9 +148,6 @@ chrome.runtime.onMessage.addListener(
                                 action: 'showHints',
                             } satisfies ChromeMessageType)
 
-                        await chrome.tabs.sendMessage(activeTab.id, {
-                            action: 'hideHints',
-                        } satisfies ChromeMessageType)
                         if (!screenshots.length) {
                             console.log(
                                 'no screenshots found, aborting extraction',
@@ -159,6 +173,11 @@ chrome.runtime.onMessage.addListener(
                             {
                                 role: 'user',
                                 content: promptExtract({ description }),
+                                experimental_providerMetadata: {
+                                    anthropic: {
+                                        cacheControl: { type: 'ephemeral' },
+                                    },
+                                },
                             },
                         ]
                         screenshots = []
@@ -169,7 +188,12 @@ chrome.runtime.onMessage.addListener(
                         })
                         const res = await streamObject({
                             model,
-
+                            onFinish({ object, rawResponse }) {
+                                console.log(
+                                    'extract inputs llm response',
+                                    JSON.stringify(object, null, 2),
+                                )
+                            },
                             schema,
                             messages: [...initialMessages],
                         })
@@ -295,6 +319,9 @@ chrome.runtime.onMessage.addListener(
                         console.log('completed the llm call to fill the inputs')
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: 'dehighlightAll',
+                        } satisfies ChromeMessageType)
+                        await chrome.tabs.sendMessage(activeTab.id, {
+                            action: 'hideHints',
                         } satisfies ChromeMessageType)
 
                         return { status: 'completed' }

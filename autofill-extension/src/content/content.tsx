@@ -1,13 +1,6 @@
 import { findHints, Hint } from '@/content/findHints'
-import {
-    hideHints,
-    showHints
-} from '@/content/HintRenderer'
-import {
-    ChromeMessageType,
-    isFillableElement,
-    sleep
-} from '@/lib/utils'
+import { hideHints, showHints } from '@/content/HintRenderer'
+import { ChromeMessageType, isFillableElement, sleep } from '@/lib/utils'
 
 let hints = [] as Hint[]
 chrome.runtime.onMessage.addListener(
@@ -191,10 +184,56 @@ function findHint({ label }) {
     }
     return { status: 'success', element: el }
 }
+
+let debugId = 'autofill-debug-panel'
+function renderDebugPanel({ screenshots = [] as string[] }) {
+    if (document.getElementById(debugId)) {
+        console.log('Debug panel already exists')
+        document.body.removeChild(document.getElementById(debugId)!)
+    }
+    const debugPanel = document.createElement('div')
+    debugPanel.id = debugId
+    debugPanel.style.position = 'fixed'
+    debugPanel.style.top = '0'
+    debugPanel.style.left = '0'
+    // debugPanel.style.width = '100%'
+    // debugPanel.style.height = '100%'
+    debugPanel.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+    debugPanel.style.zIndex = '1000'
+    debugPanel.style.display = 'flex'
+    debugPanel.style.justifyContent = 'center'
+    debugPanel.style.alignItems = 'center'
+    // debugPanel.style.flexDirection = 'column'
+    debugPanel.style.gap = '10px'
+    const closeButton = document.createElement('button')
+    closeButton.innerText = 'X'
+    closeButton.style.position = 'absolute'
+    closeButton.style.top = '10px'
+    closeButton.style.right = '10px'
+    closeButton.style.backgroundColor = 'red'
+    closeButton.style.color = 'white'
+    closeButton.style.border = 'none'
+    closeButton.style.padding = '5px 10px'
+    closeButton.style.cursor = 'pointer'
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(debugPanel)
+    })
+    debugPanel.appendChild(closeButton)
+    document.body.appendChild(debugPanel)
+    for (let screenshot of screenshots) {
+        const img = document.createElement('img')
+        img.src = screenshot
+        img.style.height = '300px'
+        debugPanel.appendChild(img)
+    }
+    return debugPanel
+}
+
 async function takeViewportScreenshots() {
-    const interpolation = 0.80
+    const interpolation = 0.8
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
+    const screenshotsUrls = [] as string[]
     const fullHeight = Math.max(
         document.body.scrollHeight,
         document.documentElement.scrollHeight,
@@ -207,10 +246,12 @@ async function takeViewportScreenshots() {
     const numScreenshots = Math.ceil(
         fullHeight / (viewportHeight * interpolation),
     ) // 20% overlap
+    console.log('numScreenshots', numScreenshots)
     const originalScrollPosition = window.scrollY
 
     for (let i = 0; i < numScreenshots; i++) {
         window.scrollTo(0, i * viewportHeight * interpolation) // 20% overlap
+        await sleep(20)
         const visible = getAllVIsibleInputElements()
         if (!visible.length) {
             console.log(
@@ -224,10 +265,18 @@ async function takeViewportScreenshots() {
             action: 'captureVisibleTab',
             index: i,
         } satisfies ChromeMessageType)
+        if (message?.action === 'captureVisibleTab' && message.dataUrl) {
+            screenshotsUrls.push(message.dataUrl)
+        }
     }
 
+    // renderDebugPanel({ screenshots: screenshotsUrls })
+
     window.scrollTo(0, originalScrollPosition)
-    console.log('done screen shotting the page')
+    console.log(
+        'done screen shotting the page, screenshots',
+        screenshotsUrls.length,
+    )
 }
 
 function getAllVIsibleInputElements() {
@@ -237,11 +286,6 @@ function getAllVIsibleInputElements() {
 
     return elements.filter((el) => {
         const style = window.getComputedStyle(el)
-        return (
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            el.offsetWidth > 0 &&
-            el.offsetHeight > 0
-        )
+        return el.offsetWidth > 0 && el.offsetHeight > 0
     })
 }
