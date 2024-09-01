@@ -1,6 +1,7 @@
 import { Button } from '@/components/Button'
 import {
     ChromeMessageType,
+    DATA_LLM_ID_LENGTH,
     debounce,
     ExtensionStorage,
     generateRandomString,
@@ -36,11 +37,45 @@ function LoginComponent() {
         ) {
             return lastUsedPresetId
         }
-        return generateRandomString(10)
+        return generateRandomString(DATA_LLM_ID_LENGTH)
     })
+    console.log('presetId', presetId)
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     const [inputs, setInputs] = useState([] as string[])
+    const currentPreset = presets?.find((x) => x.id === presetId)
+
+    useEffect(() => {
+        if (!currentPreset) {
+            return
+        }
+        Promise.resolve().then(async () => {
+            const files = currentPreset.files.filter(Boolean)
+
+            const fileInput: HTMLInputElement =
+                formRef.current?.elements.namedItem(
+                    FormFields.filesInput,
+                ) as any
+            if (!fileInput) {
+                return
+            }
+            const dataTransfer = new DataTransfer()
+            for (const file of files) {
+                const response = await fetch(file.dataUrl)
+                if (!response.ok) {
+                    console.error(
+                        'cannot fetch file',
+                        file.dataUrl.slice(0, 100),
+                    )
+                    continue
+                }
+                const blob = await response.blob()
+
+                dataTransfer.items.add(new File([blob], file.name))
+            }
+            fileInput.files = dataTransfer.files
+        })
+    }, [currentPreset])
     useEffect(() => {
         const callback = (request: ChromeMessageType, sender, sendResponse) => {
             console.log('message', request)
@@ -88,7 +123,12 @@ function LoginComponent() {
     const revalidator = useRevalidator()
     const formRef = useRef<HTMLFormElement>(null)
 
-    async function updatePreset({ presetId }) {
+    async function updatePreset({ presetId, presets }) {
+        const shouldSave = presets?.find((x) => x.id === presetId)
+        if (!shouldSave) {
+            console.log('preset not found, not saving')
+            return
+        }
         const prompt = textareaRef.current?.value || 'Empty prompt'
         const filesInput: HTMLInputElement =
             formRef.current?.elements.namedItem(FormFields.filesInput) as any
@@ -96,7 +136,7 @@ function LoginComponent() {
         await chrome.storage.local.set({
             lastUsedPresetId: presetId,
             presets: [
-                ...(presets || []),
+                ...(presets.filter((x) => x.id !== presetId) || []),
                 {
                     prompt,
                     id: presetId,
@@ -115,6 +155,7 @@ function LoginComponent() {
             <Form
                 encType='multipart/form-data'
                 method='POST'
+                key={presetId}
                 ref={formRef}
                 className='flex flex-col justify-start gap-3'
             >
@@ -122,51 +163,43 @@ function LoginComponent() {
                     <div className='grow'></div>
                     <select
                         onChange={async (e) => {
-                            setPresetId(e.target.value)
-                            const preset = presets?.find(
-                                (x) => x.id === e.target.value,
-                            )
-                            if (!preset) {
-                                return
-                            }
-                            const promptInput: HTMLInputElement =
-                                formRef.current?.elements.namedItem(
-                                    FormFields.description,
-                                ) as any
-                            if (promptInput) {
-                                promptInput.value = preset.prompt
-                            }
-                            const files = preset.files.filter(Boolean)
-
-                            const fileInput: HTMLInputElement =
-                                formRef.current?.elements.namedItem(
-                                    FormFields.filesInput,
-                                ) as any
-                            if (!fileInput) {
-                                return
-                            }
-                            const dataTransfer = new DataTransfer()
-                            for (const file of files) {
-                                const response = await fetch(file.dataUrl)
-                                if (!response.ok) {
-                                    console.error(
-                                        'cannot fetch file',
-                                        file.dataUrl.slice(0, 100),
-                                    )
-                                    continue
-                                }
-                                const blob = await response.blob()
-
-                                dataTransfer.items.add(
-                                    new File([blob], file.name),
+                            if (e.target.value === 'deleteAll') {
+                                await chrome.storage.local.remove('presets')
+                                setPresetId(
+                                    generateRandomString(DATA_LLM_ID_LENGTH),
                                 )
+                                revalidator.revalidate()
+                                return
                             }
-                            fileInput.files = dataTransfer.files
+                            if (e.target.value === 'addNew') {
+                                const id =
+                                    generateRandomString(DATA_LLM_ID_LENGTH)
+                                await chrome.storage.local.set({
+                                    presets: [
+                                        ...(presets || []),
+                                        {
+                                            prompt: '',
+                                            id,
+                                            files: [],
+                                        },
+                                    ],
+                                    lastUsedPresetId: id,
+                                })
+                                setPresetId(id)
+                                revalidator.revalidate()
+                                return
+                            }
+                            if (!e.target.value) {
+                                return
+                            }
+                            setPresetId(e.target.value)
                         }}
                         value={presetId}
                         name='preset'
                     >
-                        <option value=''>Choose a preset</option>
+                        {(!presets || presets?.length === 0) && (
+                            <option value=''>Choose a preset</option>
+                        )}
                         {presets?.map((preset, index) => (
                             <option key={preset.id} value={preset.id}>
                                 {truncateString(preset.prompt)
@@ -174,6 +207,14 @@ function LoginComponent() {
                                     .replace(/\s+/g, ' ')}
                             </option>
                         ))}
+                        {presets?.length && presets?.length > 0 && (
+                            <>
+                                <option value='deleteAll'>
+                                    Delete All Presets
+                                </option>
+                            </>
+                        )}
+                        <option value='addNew'>Add New Preset</option>
                     </select>
                 </div>
                 <div className='flex flex-col gap-1'>
@@ -185,10 +226,11 @@ function LoginComponent() {
                         name={FormFields.description}
                         ref={textareaRef}
                         required
+                        defaultValue={currentPreset?.prompt || ''}
                         onChange={(e) => {
                             // setDescription(e.target.value)
                             adjustHeight(e.target)
-                            debouncedUpdatePreset.current({ presetId })
+                            debouncedUpdatePreset.current({ presetId, presets })
                             // updatePreset()
                         }}
                         onKeyDown={(e) => {
@@ -208,31 +250,19 @@ function LoginComponent() {
                         type='file'
                         className='max-w-max'
                         onChange={(e) => {
-                            debouncedUpdatePreset.current({ presetId })
+                            debouncedUpdatePreset.current({ presetId, presets })
                         }}
                         name={FormFields.filesInput}
                         multiple
                     />
                 </div>
-                <div className=''>
+                {/* <div className=''>
                     <div className='flex items-center'>
                         <input
-                            checked={!!presets?.find((x) => x.id === presetId)}
-                            onChange={async (e) => {
-                                if (!e.target.checked) {
-                                    await chrome.storage.local.set({
-                                        presets:
-                                            presets?.filter(
-                                                (x) => x.id !== presetId,
-                                            ) || [],
-                                    } satisfies ExtensionStorage)
-                                    revalidator.revalidate()
-                                } else {
-                                    await debouncedUpdatePreset.current({
-                                        presetId,
-                                    })
-                                }
-                            }}
+                            defaultChecked={
+                                !!presets?.find((x) => x.id === presetId)
+                            }
+                            key={presetId}
                             type='checkbox'
                             id={FormFields.saveAsPreset}
                             name={FormFields.saveAsPreset}
@@ -244,7 +274,7 @@ function LoginComponent() {
                             Save as preset
                         </label>
                     </div>
-                </div>
+                </div> */}
                 <Button
                     type='submit'
                     variant='primary'

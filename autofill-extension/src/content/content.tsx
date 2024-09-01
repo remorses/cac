@@ -89,7 +89,11 @@ chrome.runtime.onMessage.addListener(
                                 let prevBackground = el.style.backgroundColor
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
-                                el.value = data.value
+                                if (el.type === 'checkbox') {
+                                    el.checked = data.value === 'true'
+                                } else {
+                                    el.value = data.value
+                                }
                                 await sleep(100)
                                 el.style.backgroundColor = prevBackground
                                 return { status: 'completed' }

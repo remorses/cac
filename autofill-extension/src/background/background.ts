@@ -404,7 +404,7 @@ The image contains textual data that needs to be transcribed into the web form
 2. Vimium labels of the web form fields.
 
 ### Output:
-Return NDJSON objects with the following fields:
+Return JSON objects with the following fields:
 - label: The Vimium label of the web form field.
 - value: The value to fill in the web form based on the image content.
 - description: The description of the form input field found in the image.
@@ -422,7 +422,11 @@ you don't need to fill all the form values, just fill the ones relevant to the d
 
 Make use of commas for decimal values, if the contextual data contains commas in the numbers add them in the form input too,
 
-### Example NDJSON Output:
+Try to use the correct format for each input field even if the user gave non formatted data, for example if an input is of type url and the user only provided the domain name, add the https:// prefix to the value.
+
+If an input is of type checkbox, return value "true" or "false".
+
+### Example Output:
 
 {"label": "FN", "description": "Full Name", "value": "John Doe"}
 {"label": "AS", "description": "Street Address", "value": "123 Main St"}
@@ -434,7 +438,7 @@ Make use of commas for decimal values, if the contextual data contains commas in
 {"label": "VB", "description": "Email Address", "value": "john.doe@example.com"}
   `
 
-const promptExtract = ({ description, documentHtml }) => `
+const promptExtractFromScreenshots = ({ description, documentHtml }) => `
   Given a screenshot with Vimium labels for each form element, extract the form descriptions for each form input. Ensure the output follows the logical order of filling, top to bottom, with related values grouped together.
 
   ### Input:
