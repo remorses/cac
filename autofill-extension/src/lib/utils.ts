@@ -65,7 +65,7 @@ export type ChromeMessageType =
     | { action: 'setHintValue'; data: SetHintValueMessage }
     | { action: 'dehighlightAll' }
     | { action: 'formInputFound'; data: ExtractedFormInput }
-    | { action: 'start'; files: FileObject[] }
+    | { action: 'start'; files: FileObject[]; description: string }
     | { action: 'captureVisibleTab'; index: number }
     | { action: 'enrichedElement'; data: EnrichedElementPart }
     | { action: 'popupLoader'; data?: PopupLoaderData }
@@ -119,4 +119,27 @@ export type ExtensionStorage = {
 export type FileObject = {
     name: string
     dataUrl: string
+}
+
+export function truncateString(str: string, maxLength: number = 100) {
+    if (str.length <= maxLength) {
+        return str
+    }
+    return str.slice(0, maxLength) + '...'
+}
+
+export function debounce<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    delay: number,
+): T {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    return (async (...args) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId)
+        }
+        timeoutId = setTimeout(async () => {
+            await fn(...args)
+            timeoutId = null
+        }, delay)
+    }) as any
 }

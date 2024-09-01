@@ -115,6 +115,7 @@ chrome.runtime.onMessage.addListener(
                     }
                     case 'start': {
                         const files = request.files
+                        const description = request.description || ''
                         const tabs = await chrome.tabs.query({
                             active: true,
                             currentWindow: true,
@@ -157,7 +158,7 @@ chrome.runtime.onMessage.addListener(
                             },
                             {
                                 role: 'user',
-                                content: promptExtract,
+                                content: promptExtract({ description }),
                             },
                         ]
                         screenshots = []
@@ -226,10 +227,6 @@ chrome.runtime.onMessage.addListener(
                                     2,
                                 ),
                             },
-                            {
-                                role: 'user',
-                                content: fillValuePrompt,
-                            },
                         ]
                         if (files.length) {
                             messages.push({
@@ -240,6 +237,10 @@ chrome.runtime.onMessage.addListener(
                                 })),
                             })
                         }
+                        messages.push({
+                            role: 'user',
+                            content: fillValuePrompt({ description }),
+                        })
                         const stream2 = await streamObject({
                             model,
                             onFinish({ object, rawResponse }) {
@@ -310,8 +311,15 @@ chrome.runtime.onMessage.addListener(
     },
 )
 
-const fillValuePrompt = `
-Now that you extracted the possible form input elements and their vimium labels you will have to fill the inputs with the content from another image containing relevant data for the form.
+const fillValuePrompt = ({ description }) => `
+Now that you extracted the possible form input elements and their Vimium labels you will have to fill the inputs with the content from a description and another image containing relevant data for the form.
+
+
+Here is the description passed by the user:
+
+<description>
+${description}
+</description>
 
 The image contains textual data that needs to be transcribed into the web form
 
@@ -350,7 +358,7 @@ Make use of commas for decimal values, if the contextual data contains commas in
 {"label": "VB", "description": "Email Address", "value": "john.doe@example.com"}
   `
 
-const promptExtract = `
+const promptExtract = ({ description }) => `
   Given a screenshot with Vimium labels for each form element, extract the form descriptions for each form input. Ensure the output follows the logical order of filling, top to bottom, with related values grouped together.
 
   ### Input:

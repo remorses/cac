@@ -1,11 +1,13 @@
 import { Button } from '@/components/Button'
 import {
     ChromeMessageType,
+    debounce,
     ExtensionStorage,
     generateRandomString,
     LoaderReturnType,
     Paths,
     PopupLoaderData,
+    truncateString,
 } from '@/lib/utils'
 
 import { useEffect, useRef, useState } from 'react'
@@ -79,7 +81,7 @@ function LoginComponent() {
     const revalidator = useRevalidator()
     const formRef = useRef<HTMLFormElement>(null)
 
-    async function updatePreset() {
+    async function updatePreset({ presetId }) {
         const prompt = textareaRef.current?.value || 'Empty prompt'
         const filesInput: HTMLInputElement =
             formRef.current?.elements.namedItem(FormFields.filesInput) as any
@@ -97,7 +99,9 @@ function LoginComponent() {
                 },
             ],
         } satisfies ExtensionStorage)
+        revalidator.revalidate()
     }
+    const debouncedUpdatePreset = useRef(debounce(updatePreset, 300))
     return (
         <div className='flex flex-col '>
             <Form
@@ -157,8 +161,7 @@ function LoginComponent() {
                         <option value=''>Choose a preset</option>
                         {presets?.map((preset, index) => (
                             <option key={preset.id} value={preset.id}>
-                                {preset.prompt
-                                    .slice(0, 100)
+                                {truncateString(preset.prompt)
                                     .replace(/\n/g, ' ')
                                     .replace(/\s+/g, ' ')}
                             </option>
@@ -177,6 +180,7 @@ function LoginComponent() {
                         onChange={(e) => {
                             // setDescription(e.target.value)
                             adjustHeight(e.target)
+                            debouncedUpdatePreset.current({ presetId })
                             // updatePreset()
                         }}
                         onKeyDown={(e) => {
@@ -195,6 +199,9 @@ function LoginComponent() {
                     <input
                         type='file'
                         className='max-w-max'
+                        onChange={(e) => {
+                            debouncedUpdatePreset.current({ presetId })
+                        }}
                         name={FormFields.filesInput}
                         multiple
                     />
@@ -211,10 +218,12 @@ function LoginComponent() {
                                                 (x) => x.id !== presetId,
                                             ) || [],
                                     } satisfies ExtensionStorage)
+                                    revalidator.revalidate()
                                 } else {
-                                    await updatePreset()
+                                    await debouncedUpdatePreset.current({
+                                        presetId,
+                                    })
                                 }
-                                revalidator.revalidate()
                             }}
                             type='checkbox'
                             id={FormFields.saveAsPreset}
@@ -281,11 +290,14 @@ async function action({ request, context }: LoaderFunctionArgs) {
                 }
             }),
     )
+
     console.log('files', files)
+    const description = formData.get(FormFields.description)?.toString() || ''
 
     await chrome.runtime.sendMessage({
         action: 'start',
         files,
+        description,
     } satisfies ChromeMessageType)
     return {}
 }

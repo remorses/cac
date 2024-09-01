@@ -192,7 +192,7 @@ function findHint({ label }) {
     return { status: 'success', element: el }
 }
 async function takeViewportScreenshots() {
-    const interpolation = 0.86
+    const interpolation = 0.80
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
     const fullHeight = Math.max(
