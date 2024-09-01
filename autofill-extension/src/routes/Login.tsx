@@ -1,6 +1,8 @@
 import { Button } from '@/components/Button'
 import {
     ChromeMessageType,
+    ExtensionStorage,
+    generateRandomString,
     LoaderReturnType,
     Paths,
     PopupLoaderData,
@@ -17,8 +19,11 @@ import {
 import { Form } from 'react-router-dom'
 
 function LoginComponent() {
-    const { canUndo } = useLoaderData() as LoaderReturnType<typeof loader>
-
+    const { canUndo, presets } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
+    console.log('presets', presets)
+    let [presetId, setPresetId] = useState(() => generateRandomString(10))
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     const [inputs, setInputs] = useState([] as string[])
@@ -69,6 +74,25 @@ function LoginComponent() {
     const revalidator = useRevalidator()
     const formRef = useRef<HTMLFormElement>(null)
 
+    async function updatePreset() {
+        const prompt = textareaRef.current?.value || 'Empty prompt'
+        const filesInput: HTMLInputElement =
+            formRef.current?.elements.namedItem('fileInput') as any
+
+        await chrome.storage.local.set({
+            presets: [
+                ...(presets || []),
+                {
+                    prompt,
+                    id: presetId,
+                    files: [...(filesInput?.files || [])].map((file) => ({
+                        name: file.name,
+                        dataUrl: URL.createObjectURL(file),
+                    })),
+                },
+            ],
+        } satisfies ExtensionStorage)
+    }
     return (
         <div className='flex flex-col '>
             <Form
@@ -77,6 +101,26 @@ function LoginComponent() {
                 ref={formRef}
                 className='flex flex-col justify-start gap-3'
             >
+                <div className='flex items-center'>
+                    <div className='grow'></div>
+                    <select
+                        onChange={(e) => {
+                            setPresetId(e.target.value)
+                        }}
+                        value={presetId}
+                        name='preset'
+                    >
+                        <option value=''>Choose a preset</option>
+                        {presets?.map((preset, index) => (
+                            <option key={preset.id} value={preset.id}>
+                                {preset.prompt
+                                    .slice(0, 100)
+                                    .replace(/\n/g, ' ')
+                                    .replace(/\s+/g, ' ')}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className='flex flex-col gap-1'>
                     <div className=''>
                         Write here the content that should be submitted in the
@@ -89,6 +133,7 @@ function LoginComponent() {
                         onChange={(e) => {
                             // setDescription(e.target.value)
                             adjustHeight(e.target)
+                            // updatePreset()
                         }}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -103,7 +148,37 @@ function LoginComponent() {
                 </div>
                 <div className='flex flex-col gap-1'>
                     <div className=''>Add files for AI to use</div>
-                    <input type='file' name='fileInput' multiple />
+                    <input
+                        type='file'
+                        className='max-w-max'
+                        name='fileInput'
+                        multiple
+                    />
+                </div>
+                <div className=''>
+                    <div className='flex items-center'>
+                        <input
+                            onChange={async (e) => {
+                                if (!e.target.checked) {
+                                    await chrome.storage.local.set({
+                                        presets:
+                                            presets?.filter(
+                                                (x) => x.id !== presetId,
+                                            ) || [],
+                                    } satisfies ExtensionStorage)
+                                } else {
+                                    await updatePreset()
+                                }
+                                revalidator.revalidate()
+                            }}
+                            type='checkbox'
+                            id='saveAsPreset'
+                            name='saveAsPreset'
+                        />
+                        <label htmlFor='saveAsPreset' className='ml-2'>
+                            Save as preset
+                        </label>
+                    </div>
                 </div>
                 <Button
                     type='submit'
@@ -135,10 +210,11 @@ async function loader({}: LoaderFunctionArgs) {
     const res: ChromeMessageType = await chrome.runtime.sendMessage({
         action: 'popupLoader',
     } satisfies ChromeMessageType)
+    const data: ExtensionStorage = (await chrome.storage.local.get()) as any
     if (res.action === 'popupLoader' && res.data) {
-        return res.data!
+        return { ...data, ...res.data! }
     }
-    return { canUndo: false } satisfies PopupLoaderData
+    return { ...data, canUndo: false } satisfies PopupLoaderData
 }
 async function action({ request, context }: LoaderFunctionArgs) {
     const formData = await request.formData()
@@ -164,11 +240,6 @@ async function action({ request, context }: LoaderFunctionArgs) {
         files,
     } satisfies ChromeMessageType)
     return {}
-}
-
-export type ImageActionData = {
-    name: string
-    dataUrl: string
 }
 
 const getFileDataUrl = (file) => {

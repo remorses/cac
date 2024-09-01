@@ -3,7 +3,7 @@ import { env } from 'website/src/lib/env'
 import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
 import type { RouteType } from 'website/src/lib/elysia.server'
-import { ImageActionData } from '@/routes/Login'
+
 import { z } from 'zod'
 import {
     extractedFormInputSchema,
@@ -65,7 +65,7 @@ export type ChromeMessageType =
     | { action: 'setHintValue'; data: SetHintValueMessage }
     | { action: 'dehighlightAll' }
     | { action: 'formInputFound'; data: ExtractedFormInput }
-    | { action: 'start'; files: ImageActionData[] }
+    | { action: 'start'; files: FileObject[] }
     | { action: 'captureVisibleTab'; index: number }
     | { action: 'enrichedElement'; data: EnrichedElementPart }
     | { action: 'popupLoader'; data?: PopupLoaderData }
@@ -74,7 +74,7 @@ export type ChromeMessageType =
 
 export type PopupLoaderData = {
     canUndo: boolean
-}
+} & ExtensionStorage
 
 export type SetHintValueMessage = z.infer<typeof filledFormInputSchema>
 export type ExtractedFormInput = z.infer<typeof extractedFormInputSchema>
@@ -91,4 +91,32 @@ export function isFillableElement(el: any): el is HTMLInputElement {
     }
 
     return false
+}
+
+type Preset = {
+    prompt: string
+    id: string
+    files: FileObject[]
+}
+
+export function generateRandomString(length: number) {
+    let result = ''
+    const characters =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const charactersLength = characters.length
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+            Math.floor(Math.random() * charactersLength),
+        )
+    }
+    return result
+}
+
+export type ExtensionStorage = {
+    presets?: Preset[]
+}
+
+export type FileObject = {
+    name: string
+    dataUrl: string
 }

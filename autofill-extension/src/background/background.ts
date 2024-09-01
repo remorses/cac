@@ -2,12 +2,12 @@ import {
     ChromeMessageType,
     EnrichedElementPart,
     ExtractedFormInput,
+    FileObject,
     SetHintValueMessage,
 } from '@/lib/utils'
 import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 
-import { ImageActionData } from '@/routes/Login'
 import { CoreMessage, streamObject } from 'ai'
 import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 
@@ -43,7 +43,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 console.log('background starting')
 
-let screenshots = [] as ImageActionData[]
+let screenshots = [] as FileObject[]
 
 let filledFormInputs = [] as SetHintValueMessage[]
 
