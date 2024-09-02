@@ -25,6 +25,7 @@ export async function formatHtmlForPrompt(
     // remove all the attributes and tags that are not useful for an AI prompt, that don't show what the website is about, like style, link, script, meta, noscript, svg, head, and footer tags
 
     const tagsToRemove = [
+        'hint',
         'style',
         'link',
         'script',
@@ -44,12 +45,14 @@ export async function formatHtmlForPrompt(
         'href',
         'name',
         'value',
+        'checked',
         'placeholder',
         'type',
         'role',
-        // 'src', // Added
-        'target', // Added
+        // 'src',
+        'target',
         'data-llm-id',
+        'vimium-label',
     ]
 
     const res = rewriter

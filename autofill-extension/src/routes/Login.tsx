@@ -1,7 +1,7 @@
 import { Button } from '@/components/Button'
 import {
     ChromeMessageType,
-    DATA_LLM_ID_LENGTH,
+    PRESET_ID_LEN,
     debounce,
     ExtensionStorage,
     generateRandomString,
@@ -37,7 +37,7 @@ function LoginComponent() {
         ) {
             return lastUsedPresetId
         }
-        return generateRandomString(DATA_LLM_ID_LENGTH)
+        return generateRandomString(PRESET_ID_LEN)
     })
     console.log('presetId', presetId)
     const navigation = useNavigation()
@@ -120,6 +120,13 @@ function LoginComponent() {
         element.style.height = `${element.scrollHeight}px`
     }
 
+    useEffect(() => {
+        if (!textareaRef.current) {
+            return
+        }
+        adjustHeight(textareaRef.current)
+    }, [])
+
     const revalidator = useRevalidator()
     const formRef = useRef<HTMLFormElement>(null)
 
@@ -165,15 +172,12 @@ function LoginComponent() {
                         onChange={async (e) => {
                             if (e.target.value === 'deleteAll') {
                                 await chrome.storage.local.remove('presets')
-                                setPresetId(
-                                    generateRandomString(DATA_LLM_ID_LENGTH),
-                                )
+                                setPresetId(generateRandomString(PRESET_ID_LEN))
                                 revalidator.revalidate()
                                 return
                             }
                             if (e.target.value === 'addNew') {
-                                const id =
-                                    generateRandomString(DATA_LLM_ID_LENGTH)
+                                const id = generateRandomString(PRESET_ID_LEN)
                                 await chrome.storage.local.set({
                                     presets: [
                                         ...(presets || []),

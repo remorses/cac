@@ -120,7 +120,7 @@ const Hint = ({
     seen,
 }) =>
     h(
-        'div',
+        'hint',
         {
             className: 'saka-hint-body',
             style: {

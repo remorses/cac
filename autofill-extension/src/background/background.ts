@@ -1,7 +1,7 @@
 import {
     ChromeMessageType,
     DATA_LLM_ID,
-    DATA_LLM_ID_LENGTH,
+    PRESET_ID_LEN,
     EnrichedElementPart,
     ExtractedFormInput,
     FileObject,
@@ -23,8 +23,6 @@ import { HTMLRewriterWrapper } from 'htmlrewriter/dist/html_rewriter_wrapper.js'
 // @ts-ignore
 import wasm from 'htmlrewriter/dist/html_rewriter_bg.wasm'
 import { openai } from '@ai-sdk/openai'
-
-console.log('wasm', wasm)
 
 export const HTMLRewriter = HTMLRewriterWrapper(init(wasm))
 
@@ -247,7 +245,7 @@ chrome.runtime.onMessage.addListener(
                             if (chunk.fullItem === undefined) {
                                 continue
                             }
-                            console.log('chunk', chunk)
+                            console.log('chunk', chunk.fullItem)
 
                             const response: ChromeMessageType =
                                 await chrome.tabs.sendMessage(activeTab.id, {
@@ -323,16 +321,15 @@ chrome.runtime.onMessage.addListener(
                             stream: stream2.partialObjectStream,
                             arrayField: 'elements',
                         })) {
-                            if (chunk.fullItem !== undefined) {
-                                filledFormInputs.push(chunk.fullItem)
-                            }
-                            if (
-                                chunk.partialItem?.label?.length !==
-                                DATA_LLM_ID_LENGTH
-                            ) {
+                            if (chunk.fullItem === undefined) {
                                 continue
                             }
-                            console.log('chunk', chunk)
+                            console.log('chunk', chunk.fullItem)
+                            filledFormInputs.push(chunk.fullItem)
+                            // if (chunk.partialItem?.label?.length !== 2) {
+                            //     continue
+                            // }
+
                             const originalHint = foundHints.find(
                                 (x) => x.label === chunk.fullItem?.label,
                             )
@@ -352,16 +349,16 @@ chrome.runtime.onMessage.addListener(
                                         )
                                     })
                                 if (option) {
-                                    chunk.partialItem.value = option.value || ''
+                                    chunk.fullItem.value = option.value || ''
                                 }
                             }
                             await chrome.tabs.sendMessage(activeTab.id, {
                                 action: 'setHintValue',
                                 data: {
-                                    value: '',
-                                    description: '',
-                                    label: '',
-                                    ...chunk.partialItem,
+                                    // value: '',
+                                    // description: '',
+                                    // label: '',
+                                    ...chunk.fullItem,
                                 },
                             } satisfies ChromeMessageType)
                         }
@@ -426,6 +423,10 @@ Try to use the correct format for each input field even if the user gave non for
 
 If an input is of type checkbox, return value "true" or "false".
 
+If input is of type radio, return only the value of the selected radio button.
+
+Skip inputs that are already filled.
+
 ### Example Output:
 
 {"label": "FN", "description": "Full Name", "value": "John Doe"}
@@ -474,29 +475,31 @@ extract form inputs from top to bottom, always try to fill the firm form inputs 
 
 `
 const promptExtractFromHtml = ({ description, documentHtml }) => `
-Given an HTML document with form elements, extract the form descriptions for each form input. Some input elements will have a data-llm-id attribute. Ensure the output follows the logical order of filling, top to bottom, with related values grouped together.
+Given an HTML document with form elements, extract the form descriptions for each form input. Some input elements will have a ${DATA_LLM_ID} attribute. 
+Ensure the output follows the logical order of filling, top to bottom, the same order an user would fill the form.
 
 ### Input:
 1. HTML document with form elements.
 
 ### Output:
 Return a JSON object with the following fields:
-- label: The ${DATA_LLM_ID} attribute of the form field.
+- unique label: The ${DATA_LLM_ID} attribute of the form input.
 - description: The form input description, guessed from surrounding html tags and elements.
 
 ### Requirements:
 1. Extract and return labels and descriptions in the order a human would fill the form, top to bottom.
-2. Group related values together, ensuring items in a list or table rows are close to each other.
+2. Use the same order the user would use to fill the form, from top to bottom or in the case of a table row, from left to right.
 
 Skip fields that are already filled or unrelated to the data in the HTML document;
 
 use the ${DATA_LLM_ID} attribute for the labels;
 
-extract form inputs from top to bottom, always try to fill the main form inputs first and leave blank additional ones on the bottom.
-
 each input description should completely describe what should be filled in the input, include the type of input (text, number, email, etc.), and any other relevant information like pattern or placeholder.
 
-You should only extract inputs that are user input, the user is searching inputs that should be filled in the document. Ignore inputs like search bars and buttons, which are not data collection inputs.
+You should only extract inputs that are user input, the user is searching for inputs that should be filled in the document. 
+Ignore inputs like search bars and buttons, which are not data collection elements.
+
+Skip inputs that are already filled.
 
 Here is the HTML document:
 

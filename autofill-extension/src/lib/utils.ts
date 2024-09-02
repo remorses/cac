@@ -103,7 +103,6 @@ export type ExtensionStorage = {
     lastUsedPresetId?: string
 }
 
-
 export function generateRandomString(length: number) {
     let result = ''
     const characters =
@@ -116,7 +115,6 @@ export function generateRandomString(length: number) {
     }
     return result
 }
-
 
 export type FileObject = {
     name: string
@@ -146,6 +144,6 @@ export function debounce<T extends (...args: any[]) => Promise<any>>(
     }) as any
 }
 
-export const DATA_LLM_ID = 'data-llm-id'
+export const DATA_LLM_ID = 'vimium-label'
 
-export const DATA_LLM_ID_LENGTH = 9
+export const PRESET_ID_LEN = 9

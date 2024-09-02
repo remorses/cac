@@ -1,16 +1,20 @@
 import { findHints, Hint } from '@/content/findHints'
+import userEvent from '@testing-library/user-event'
+
 import { hideHints, showHints } from '@/content/HintRenderer'
 import {
     ChromeMessageType,
     DATA_LLM_ID,
-    DATA_LLM_ID_LENGTH,
+    PRESET_ID_LEN,
     generateRandomString,
     isFillableElement,
     sleep,
 } from '@/lib/utils'
 
 let hints = [] as Hint[]
-const visibleElementsMap = new Map<string, { element: HTMLElement }>()
+
+const user = userEvent.setup()
+
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
         Promise.resolve()
@@ -21,29 +25,6 @@ chrome.runtime.onMessage.addListener(
                             console.log('showHints')
                             hints = findHints()
 
-                            visibleElementsMap.clear()
-                            const formElements = document.querySelectorAll(
-                                'input, textarea, select',
-                            )
-
-                            formElements.forEach((el, index) => {
-                                const style = window.getComputedStyle(el)
-                                if (
-                                    style.display !== 'none' &&
-                                    style.visibility !== 'hidden'
-                                ) {
-                                    const id =
-                                        generateRandomString(DATA_LLM_ID_LENGTH)
-                                    el.setAttribute(DATA_LLM_ID, id)
-                                    console.log(
-                                        'found visible element, setting llm id',
-                                        el,
-                                    )
-                                    visibleElementsMap.set(id, {
-                                        element: el as HTMLElement,
-                                    })
-                                }
-                            })
                             let documentHtml =
                                 document.documentElement.outerHTML
                             let msg: ChromeMessageType = {
@@ -84,21 +65,38 @@ chrome.runtime.onMessage.addListener(
                             }
                             let el = findRes.element
                             if (isFillableElement(el)) {
-                                el.focus()
                                 // change the background color to indicate the element is focused
                                 let prevBackground = el.style.backgroundColor
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
                                 if (el.type === 'checkbox') {
-                                    el.checked = data.value === 'true'
+                                    let shouldToggle =
+                                        el.checked !== (data.value === 'true')
+                                    if (shouldToggle) {
+                                        await user.click(el)
+                                    }
+                                } else if (el.type === 'radio') {
+                                    let shouldToggle = el.value === data.value
+                                    if (shouldToggle) {
+                                        await user.click(el)
+                                    }
+                                } else if (el.tagName === 'SELECT') {
+                                    const x = await user.selectOptions(
+                                        el,
+                                        data.value,
+                                    )
+                                } else if (el.tagName === 'INPUT') {
+                                    const x = await user.type(
+                                        el,
+                                        data.value,
+                                        {},
+                                    )
                                 } else {
-                                    el.value = data.value
+                                    el.value = data.value || ''
                                 }
                                 await sleep(100)
                                 el.style.backgroundColor = prevBackground
                                 return { status: 'completed' }
-                            } else if (false) {
-                                //
                             } else {
                                 console.error('Unhandled element type', el)
                                 return {
@@ -208,9 +206,6 @@ chrome.runtime.onMessage.addListener(
     },
 )
 function findHint({ label }) {
-    if (visibleElementsMap.has(label)) {
-        return visibleElementsMap.get(label)
-    }
     if (!hints.length) {
         console.error('No hints found')
         return { status: 'error', error: 'No hints found' }
@@ -221,7 +216,7 @@ function findHint({ label }) {
     if (!foundHint) {
         console.error('Hint not found for', label)
         console.log(
-            `label ${label} not founf in ${JSON.stringify(hints.map((x) => x.label))}`,
+            `label ${label} not found in ${JSON.stringify(hints.map((x) => x.label))}`,
         )
         return { status: 'error', error: 'Hint not found' }
     }
@@ -233,8 +228,8 @@ function findHint({ label }) {
     return { status: 'success', element: el }
 }
 
-let debugId = 'autofill-debug-panel'
 function renderDebugPanel({ screenshots = [] as string[] }) {
+    let debugId = 'autofill-debug-panel'
     if (document.getElementById(debugId)) {
         console.log('Debug panel already exists')
         document.body.removeChild(document.getElementById(debugId)!)

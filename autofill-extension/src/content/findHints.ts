@@ -1,4 +1,9 @@
-import { isTruthy } from '@/lib/utils'
+import {
+    DATA_LLM_ID,
+    PRESET_ID_LEN,
+    generateRandomString,
+    isTruthy,
+} from '@/lib/utils'
 
 let detectByCursorStyle = false
 
@@ -58,7 +63,7 @@ const all2Permutations = permutations(hintChars, 2)
  * Finds hints
  * @param {string} hintType - the type of elements to find (currently unused)
  */
-export function findHints(hintType = '*') {
+export function findHints(hintType = 'input, textarea, select') {
     // on Firefox, getComputedStyle() may return null for conditions I don't fully understand
     // try-catch block prevents link hints generation from breaking.
     // https://bugzilla.mozilla.org/show_bug.cgi?id=548397
@@ -97,6 +102,11 @@ export function findHints(hintType = '*') {
                 return hint
             })
             .filter(isTruthy)
+        for (let hint of hints) {
+            const el = hint.element
+            el.setAttribute(DATA_LLM_ID, hint.label)
+            console.log('found visible element, setting llm id', el)
+        }
         computedStyles = undefined
         return hints
         // if (SAKA_DEBUG) console.log(hintableElements)
@@ -164,7 +174,6 @@ function isClickable(element: Element) {
 // based on https://github.com/guyht/vimari/blob/master/vimari.safariextension/linkHints.js
 function isVisible(element, clientRect) {
     return true
-    
 }
 
 /**
