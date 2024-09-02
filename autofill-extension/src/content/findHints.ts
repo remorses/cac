@@ -105,7 +105,6 @@ export function findHints(hintType = 'input, textarea, select') {
         for (let hint of hints) {
             const el = hint.element
             el.setAttribute(DATA_LLM_ID, hint.label)
-            console.log('found visible element, setting llm id', el)
         }
         computedStyles = undefined
         return hints

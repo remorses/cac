@@ -134,6 +134,7 @@ chrome.runtime.onMessage.addListener(
                         screenshots.push({
                             name: request.index.toString(),
                             dataUrl: dataUrl,
+                            type: 'image/png',
                         })
                         const msg: ChromeMessageType = {
                             action: 'captureVisibleTab',
@@ -167,6 +168,11 @@ chrome.runtime.onMessage.addListener(
                     }
                     case 'start': {
                         const files = request.files
+                        if (files.length) {
+                            console.log(
+                                `using ${files.length} files: ${files.map((x) => x.name + ' with url ' + x.dataUrl.slice(0, 30)).join(', ')}`,
+                            )
+                        }
                         const description = request.description || ''
                         const tabs = await chrome.tabs.query({
                             active: true,
@@ -195,7 +201,7 @@ chrome.runtime.onMessage.addListener(
                         if (!documentHtml) {
                             console.log('no documentHtml found')
                         }
-                        console.log('documentHtml', documentHtml)
+                        // console.log('documentHtml', documentHtml)
 
                         if (!screenshots.length) {
                             console.log(

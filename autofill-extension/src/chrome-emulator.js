@@ -3,6 +3,16 @@ if (
     !chrome?.runtime
 ) {
     window.chrome = {
+        storage: {
+            local: {
+                get() {
+                    return Promise.resolve({})
+                },
+                set() {
+                    return Promise.resolve()
+                },
+            },
+        },
         runtime: {
             connect() {},
             sendMessage() {

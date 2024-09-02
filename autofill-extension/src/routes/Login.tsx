@@ -60,7 +60,12 @@ function LoginComponent() {
                 return
             }
             const dataTransfer = new DataTransfer()
+
+            // TODO this returns the wrong data url, need to fix it
             for (const file of files) {
+                if (!file.type) {
+                    continue
+                }
                 const response = await fetch(file.dataUrl)
                 if (!response.ok) {
                     console.error(
@@ -71,7 +76,9 @@ function LoginComponent() {
                 }
                 const blob = await response.blob()
 
-                dataTransfer.items.add(new File([blob], file.name))
+                dataTransfer.items.add(
+                    new File([blob], file.name, { type: file.type }),
+                )
             }
             fileInput.files = dataTransfer.files
         })
@@ -147,10 +154,13 @@ function LoginComponent() {
                 {
                     prompt,
                     id: presetId,
-                    files: [...(filesInput?.files || [])].map((file) => ({
-                        name: file.name,
-                        dataUrl: URL.createObjectURL(file),
-                    })),
+                    files: await Promise.all(
+                        [...(filesInput?.files || [])].map(async (file) => ({
+                            name: file.name,
+                            type: file.type,
+                            dataUrl: await getFileDataUrl(file),
+                        })),
+                    ),
                 },
             ],
         } satisfies ExtensionStorage)
@@ -310,7 +320,7 @@ async function loader({}: LoaderFunctionArgs) {
         action: 'popupLoader',
     } satisfies ChromeMessageType)
     const data: ExtensionStorage = (await chrome.storage.local.get()) as any
-    if (res.action === 'popupLoader' && res.data) {
+    if (res?.action === 'popupLoader' && res.data) {
         return { ...data, ...res.data! }
     }
     return { ...data, canUndo: false } satisfies PopupLoaderData
@@ -325,9 +335,11 @@ async function action({ request, context }: LoaderFunctionArgs) {
                 return file.size > 0
             })
             .map(async (file) => {
+                console.log('file type', file.type)
                 const dataUrl = await getFileDataUrl(file)
                 return {
                     name: file.name,
+                    type: file.type,
                     dataUrl,
                 }
             }),
@@ -344,7 +356,7 @@ async function action({ request, context }: LoaderFunctionArgs) {
     return {}
 }
 
-const getFileDataUrl = (file) => {
+const getFileDataUrl = (file: File) => {
     return new Promise<string>((resolve, reject) => {
         const reader = new FileReader()
         reader.onload = (e: any) => resolve(e.target.result)

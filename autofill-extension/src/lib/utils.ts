@@ -118,6 +118,7 @@ export function generateRandomString(length: number) {
 
 export type FileObject = {
     name: string
+    type: string
     dataUrl: string
 }
 
