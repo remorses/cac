@@ -1,6 +1,7 @@
 import { ObjectStreamPart, StreamTextResult } from 'ai'
 import stripJsonComments from 'strip-json-comments'
 import { sleep } from './utils'
+import { RequiredDeep } from 'type-fest/source/required-deep'
 
 export function splitStringButKeepChar(str: string, char: string) {
     const result = [] as string[]
@@ -83,13 +84,9 @@ export async function* yieldObjectStream<T>({
 
 type UnwrapArray<T> = T extends Array<infer U> ? U : T
 
-type Required<T> = {
-    [K in keyof T]-?: T[K]
-}
-
 type ArrayItemYield<T> =
     | {
-          fullItem: Required<T>
+          fullItem: RequiredDeep<T>
           partialItem: undefined
       }
     | {

@@ -42,7 +42,7 @@ export type Hint = {
     computedStyle: CSSStyleDeclaration
 }
 
-let hintChars = 'adsfghjklzxcvbnm'
+let hintChars = 'ADSFGHJKLZXCVBNM'
 
 function permutations(chars: string, length: number) {
     if (length === 1) {

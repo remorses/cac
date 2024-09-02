@@ -12,7 +12,7 @@ import {
 import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 
-import { CoreMessage, streamObject } from 'ai'
+import { CoreMessage, streamObject, DeepPartial } from 'ai'
 import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 import { formatHtmlForPrompt } from 'website/src/lib/htmlrewrite.server'
 
@@ -63,15 +63,32 @@ let screenshots = [] as FileObject[]
 let filledFormInputs = [] as SetHintValueMessage[]
 
 export const extractedFormInputSchema = z.object({
-    label: z.string(),
-    description: z.string(),
+    label: z.string().describe('the Vimium label of the input'),
+    description: z
+        .string()
+        .describe(
+            'the description of the input, including if required, the input pattern if any, and any other relevant information extracted from surrounding attributes, labels and elements',
+        ),
+    options: z
+        .array(z.object({ title: z.string(), value: z.string() }))
+
+        .describe(
+            'possible options for the input, only add this field for <select> inputs',
+        )
+        .nullable(),
+    value: z
+        .string()
+        .describe(
+            'the value to fill in the input, based on user <description>, format the value according to the form requirements, change casing and punctuation if necessary.' +
+                `You can think of a new value for an input field if the user did not pass all the required information in the <description>, you can guess one based on the context.`,
+        ),
 })
 
-export const filledFormInputSchema = z.object({
-    label: z.string(),
-    description: z.string(),
-    value: z.string(),
-})
+// export const filledFormInputSchema = z.object({
+//     label: z.string(),
+//     description: z.string(),
+//     value: z.string(),
+// })
 
 let model = anthropic('claude-3-5-sonnet-20240620', {
     // cacheControl: true,
@@ -216,11 +233,26 @@ chrome.runtime.onMessage.addListener(
                                 // },
                             },
                         })
+                        if (files.length) {
+                            initialMessages.push({
+                                role: 'user',
+                                content: files.filter(Boolean).map((file) => ({
+                                    image: file.dataUrl,
+                                    type: 'image',
+                                })),
+                            })
+                        }
 
                         screenshots = []
 
                         console.log('starting llm extraction of the labels')
                         const schema = z.object({
+                            thinkStepByStep: z
+                                .string()
+                                .describe(
+                                    `Describe what this form is about, decide a plan to start filling the form with the user <description>`,
+                                )
+                                .nullable(),
                             elements: z.array(extractedFormInputSchema),
                         })
                         const res = await streamObject({
@@ -235,9 +267,7 @@ chrome.runtime.onMessage.addListener(
                             messages: [...initialMessages],
                         })
 
-                        const foundHints = [] as Array<
-                            ExtractedFormInput & EnrichedElementPart
-                        >
+                        const foundHints = [] as Array<ExtractedFormInput>
                         for await (let chunk of yieldNewArrayItems({
                             stream: res.partialObjectStream,
                             arrayField: 'elements',
@@ -245,124 +275,161 @@ chrome.runtime.onMessage.addListener(
                             if (chunk.fullItem === undefined) {
                                 continue
                             }
-                            console.log('chunk', chunk.fullItem)
+                            console.log(
+                                'chunk',
+                                JSON.stringify(chunk.fullItem, null, 2),
+                            )
+
+                            // const originalHint = foundHints.find(
+                            //     (x) => x.label === chunk.fullItem?.label,
+                            // )
+                            // const options = originalHint?.possibleOptions || []
+                            // if (
+                            //     originalHint &&
+                            //     options.length &&
+                            //     !options.find(
+                            //         (x) => x.value === chunk?.fullItem?.value,
+                            //     )
+                            // ) {
+                            //     const option =
+                            //         originalHint.possibleOptions?.find((x) => {
+                            //             return (
+                            //                 x.title.trim() ===
+                            //                 chunk?.fullItem?.value.trim()
+                            //             )
+                            //         })
+                            //     if (option) {
+                            //         chunk.fullItem.value = option.value || ''
+                            //     }
+                            // }
 
                             const response: ChromeMessageType =
                                 await chrome.tabs.sendMessage(activeTab.id, {
                                     action: 'highlightInputFound',
                                     data: chunk.fullItem,
                                 } satisfies ChromeMessageType)
-                            if (
-                                response.action === 'enrichedElement' &&
-                                response.data
-                            ) {
-                                console.log(
-                                    'enriching element',
-                                    chunk.fullItem?.description,
+                            // if (
+                            //     response.action === 'enrichedElement' &&
+                            //     response.data
+                            // ) {
+                            //     console.log(
+                            //         'enriching element',
+                            //         chunk.fullItem?.description,
 
-                                    JSON.stringify(response.data, null, 2),
-                                )
-                                Object.assign(chunk.fullItem, response.data)
-                            }
+                            //         JSON.stringify(response.data, null, 2),
+                            //     )
+                            //     Object.assign(chunk.fullItem, response.data)
+                            // }
                             foundHints.push(chunk.fullItem)
+                            chrome.runtime
+                                .sendMessage({
+                                    action: 'setHintValue',
+                                    data: chunk.fullItem,
+                                } satisfies ChromeMessageType)
+                                .catch((e) => null) // the popup can be closed
                             // don't await here, so popup can be closed
-                            chrome.runtime.sendMessage({
-                                action: 'formInputFound',
-                                data: chunk.fullItem,
-                            } satisfies ChromeMessageType)
+                            const res = await chrome.tabs.sendMessage(
+                                activeTab.id,
+                                {
+                                    action: 'setHintValue',
+                                    data: chunk.fullItem,
+                                } satisfies ChromeMessageType,
+                            )
+
+                            console.log('setHintValue response', res)
                         }
                         console.log(
                             'finished all the labels extracted from screenshot',
                         )
-                        console.log('asking for values to fill the inputs')
-                        // console.log('initialMessages', initialMessages)
-                        const messages: CoreMessage[] = [
-                            ...initialMessages,
-                            {
-                                role: 'assistant',
-                                content: JSON.stringify(
-                                    {
-                                        elements: foundHints,
-                                    } satisfies z.infer<typeof schema>,
-                                    null,
-                                    2,
-                                ),
-                            },
-                        ]
-                        if (files.length) {
-                            messages.push({
-                                role: 'user',
-                                content: files.filter(Boolean).map((file) => ({
-                                    image: file.dataUrl,
-                                    type: 'image',
-                                })),
-                            })
-                        }
-                        messages.push({
-                            role: 'user',
-                            content: fillValuePrompt({ description }),
-                        })
-                        const stream2 = await streamObject({
-                            model,
-                            onFinish({ object, rawResponse }) {
-                                console.log(
-                                    'fill value llm response',
-                                    JSON.stringify(object, null, 2),
-                                )
-                            },
-                            schema: z.object({
-                                elements: z.array(filledFormInputSchema),
-                            }),
-                            messages,
-                        })
-                        filledFormInputs = []
+                        // console.log('asking for values to fill the inputs')
+                        // // console.log('initialMessages', initialMessages)
+                        // const messages: CoreMessage[] = [
+                        //     ...initialMessages,
+                        //     {
+                        //         role: 'assistant',
+                        //         content: JSON.stringify(
+                        //             {
+                        //                 elements: foundHints,
+                        //             } satisfies z.infer<typeof schema>,
+                        //             null,
+                        //             2,
+                        //         ),
+                        //     },
+                        // ]
+                        // if (files.length) {
+                        //     messages.push({
+                        //         role: 'user',
+                        //         content: files.filter(Boolean).map((file) => ({
+                        //             image: file.dataUrl,
+                        //             type: 'image',
+                        //         })),
+                        //     })
+                        // }
+                        // messages.push({
+                        //     role: 'user',
+                        //     content: fillValuePrompt({ description }),
+                        // })
+                        // const stream2 = await streamObject({
+                        //     model,
+                        //     onFinish({ object, rawResponse }) {
+                        //         console.log(
+                        //             'fill value llm response',
+                        //             JSON.stringify(object, null, 2),
+                        //         )
+                        //     },
+                        //     schema: z.object({
+                        //         elements: z.array(filledFormInputSchema),
+                        //     }),
+                        //     messages,
+                        // })
+                        // filledFormInputs = []
 
-                        for await (let chunk of yieldNewArrayItems({
-                            stream: stream2.partialObjectStream,
-                            arrayField: 'elements',
-                        })) {
-                            if (chunk.fullItem === undefined) {
-                                continue
-                            }
-                            console.log('chunk', chunk.fullItem)
-                            filledFormInputs.push(chunk.fullItem)
-                            // if (chunk.partialItem?.label?.length !== 2) {
-                            //     continue
-                            // }
+                        // for await (let chunk of yieldNewArrayItems({
+                        //     stream: stream2.partialObjectStream,
+                        //     arrayField: 'elements',
+                        // })) {
+                        //     if (chunk.fullItem === undefined) {
+                        //         continue
+                        //     }
+                        //     console.log('chunk', chunk.fullItem)
+                        //     filledFormInputs.push(chunk.fullItem)
+                        //     // if (chunk.partialItem?.label?.length !== 2) {
+                        //     //     continue
+                        //     // }
 
-                            const originalHint = foundHints.find(
-                                (x) => x.label === chunk.fullItem?.label,
-                            )
-                            const options = originalHint?.possibleOptions || []
-                            if (
-                                originalHint &&
-                                options.length &&
-                                !options.find(
-                                    (x) => x.value === chunk?.fullItem?.value,
-                                )
-                            ) {
-                                const option =
-                                    originalHint.possibleOptions?.find((x) => {
-                                        return (
-                                            x.title.trim() ===
-                                            chunk?.fullItem?.value.trim()
-                                        )
-                                    })
-                                if (option) {
-                                    chunk.fullItem.value = option.value || ''
-                                }
-                            }
-                            await chrome.tabs.sendMessage(activeTab.id, {
-                                action: 'setHintValue',
-                                data: {
-                                    // value: '',
-                                    // description: '',
-                                    // label: '',
-                                    ...chunk.fullItem,
-                                },
-                            } satisfies ChromeMessageType)
-                        }
-                        console.log('completed the llm call to fill the inputs')
+                        //     const originalHint = foundHints.find(
+                        //         (x) => x.label === chunk.fullItem?.label,
+                        //     )
+                        //     const options = originalHint?.possibleOptions || []
+                        //     if (
+                        //         originalHint &&
+                        //         options.length &&
+                        //         !options.find(
+                        //             (x) => x.value === chunk?.fullItem?.value,
+                        //         )
+                        //     ) {
+                        //         const option =
+                        //             originalHint.possibleOptions?.find((x) => {
+                        //                 return (
+                        //                     x.title.trim() ===
+                        //                     chunk?.fullItem?.value.trim()
+                        //                 )
+                        //             })
+                        //         if (option) {
+                        //             chunk.fullItem.value = option.value || ''
+                        //         }
+                        //     }
+                        //     await chrome.tabs.sendMessage(activeTab.id, {
+                        //         action: 'setHintValue',
+                        //         data: {
+                        //             // value: '',
+                        //             // description: '',
+                        //             // label: '',
+                        //             ...chunk.fullItem,
+                        //         },
+                        //     } satisfies ChromeMessageType)
+                        // }
+                        // console.log('completed the llm call to fill the inputs')
                         await chrome.tabs.sendMessage(activeTab.id, {
                             action: 'dehighlightAll',
                         } satisfies ChromeMessageType)
@@ -483,14 +550,16 @@ Ensure the output follows the logical order of filling, top to bottom, the same 
 
 ### Output:
 Return a JSON object with the following fields:
-- unique label: The ${DATA_LLM_ID} attribute of the form input.
-- description: The form input description, guessed from surrounding html tags and elements.
+- unique label: The ${DATA_LLM_ID} attribute of the form input. this field should always come first.
+- description: The form input description, guessed from surrounding html tags and elements. This field should always come second.
+- options: possible options for the input, only add this field for <select> inputs
+- value: the value to fill in the input, based on user <description>, format the value according to the form requirements, change casing and punctuation if necessary. You can think of a new value for an input field if the user did not pass all the required information in the <description>, you can guess one based on the context.
 
 ### Requirements:
 1. Extract and return labels and descriptions in the order a human would fill the form, top to bottom.
 2. Use the same order the user would use to fill the form, from top to bottom or in the case of a table row, from left to right.
 
-Skip fields that are already filled or unrelated to the data in the HTML document;
+Skip fields that are already filled
 
 use the ${DATA_LLM_ID} attribute for the labels;
 
@@ -503,8 +572,14 @@ Skip inputs that are already filled.
 
 Here is the HTML document:
 
-
 ${documentHtml}
+
+Here is the user description of what should go inside the form inputs. You don't have to input this information as is, you can format it based on the form requirements, change casing and punctuation if necessary.
+
+<description>
+${description}
+</description>
+
 
 
 `

@@ -69,6 +69,12 @@ chrome.runtime.onMessage.addListener(
                                 let prevBackground = el.style.backgroundColor
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
+                                if (el.value) {
+                                    console.log(
+                                        `element already has value ${el.value}, ignoring`,
+                                    )
+                                    return
+                                }
                                 if (el.type === 'checkbox') {
                                     let shouldToggle =
                                         el.checked !== (data.value === 'true')
