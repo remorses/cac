@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.48",
-    "@ai-sdk/openai": "^0.0.54",
+    "@ai-sdk/openai": "^0.0.55",
     "@lemonsqueezy/lemonsqueezy.js": "^3.2.0",
     "@nextui-org/react": "2.4.2",
     "@nextui-org/theme": "^2.2.6",
@@ -36,7 +36,7 @@
     "@tailwindcss/typography": "^0.5.13",
     "@types/marked": "^6.0.0",
     "@xmorse/deployment-utils": "^0.2.7",
-    "ai": "^3.3.21",
+    "ai": "^3.3.26",
     "async-sema": "^3.1.1",
     "clsx": "^2.1.1",
     "concurrently": "^8.2.2",

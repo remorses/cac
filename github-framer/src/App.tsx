@@ -71,7 +71,7 @@ const router = createBrowserRouter(
                 useLayoutEffect(() => {
                     console.log('opening framer ui')
                     framer.showUI({
-                        title: (handle?.handle as any) || '',
+                        // title: (handle?.handle as any) || '',
                         position: 'top left',
                         width,
                         height: height || 100,
