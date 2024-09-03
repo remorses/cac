@@ -68,8 +68,6 @@ function SimplePromptComponent({}) {
         }
     }, [])
 
-    
-
     const revalidator = useRevalidator()
     const buyCreditsInstead = !credits.remaining
     const disabled = buyCreditsInstead ? false : isLoading || !description
@@ -385,33 +383,27 @@ function SimplePromptComponent({}) {
             abortController.abort()
             return
         }
-        await Promise.all(
-            oldNodes.map(async (node) => {
-                const { nodeId, content: oldContent } = node
-                if (!oldContent || !nodeId) {
-                    return
-                }
+        const promises = oldNodes.map((node) => {
+            const { nodeId, content: oldContent } = node
+            if (!oldContent || !nodeId) {
+                return Promise.resolve()
+            }
 
-                try {
-                    // TODO undo controls too
-                    const framerNode = await framer.getNode(nodeId)
-                    if (isTextNode(framerNode)) {
-                        await framerNode.setText(oldContent)
-                    }
-                    let instance = instanceNodes.get(nodeId)
-                    if (instance) {
-                        const { node, controlKey } = instance
-                        let controls = { ...node.controls }
-                        controls[controlKey] = oldContent
-                        await node.setAttributes({
-                            controls,
-                        })
-                    }
-                } catch (e) {
-                    console.log('error undoing text for ', oldContent, e)
-                }
-            }),
-        )
+            if (isTextNode(node)) {
+                return node.setText(oldContent)
+            }
+            let instance = instanceNodes.get(nodeId)
+            if (instance) {
+                const { node, controlKey } = instance
+                let controls = { ...node.controls }
+                controls[controlKey] = oldContent
+                return node.setAttributes({
+                    controls,
+                })
+            }
+        })
+
+        await Promise.all(promises)
         setOldNodes([])
     }
 
