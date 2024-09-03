@@ -68,6 +68,8 @@ function SimplePromptComponent({}) {
         }
     }, [])
 
+    
+
     const revalidator = useRevalidator()
     const buyCreditsInstead = !credits.remaining
     const disabled = buyCreditsInstead ? false : isLoading || !description
@@ -378,6 +380,41 @@ function SimplePromptComponent({}) {
     }
     useRefreshOnVisible({ enabled: !isLoading })
 
+    const discard = async () => {
+        if (isLoading) {
+            abortController.abort()
+            return
+        }
+        await Promise.all(
+            oldNodes.map(async (node) => {
+                const { nodeId, content: oldContent } = node
+                if (!oldContent || !nodeId) {
+                    return
+                }
+
+                try {
+                    // TODO undo controls too
+                    const framerNode = await framer.getNode(nodeId)
+                    if (isTextNode(framerNode)) {
+                        await framerNode.setText(oldContent)
+                    }
+                    let instance = instanceNodes.get(nodeId)
+                    if (instance) {
+                        const { node, controlKey } = instance
+                        let controls = { ...node.controls }
+                        controls[controlKey] = oldContent
+                        await node.setAttributes({
+                            controls,
+                        })
+                    }
+                } catch (e) {
+                    console.log('error undoing text for ', oldContent, e)
+                }
+            }),
+        )
+        setOldNodes([])
+    }
+
     const buttonText = (() => {
         if (!credits.remaining) {
             return 'Buy More Credits'
@@ -475,45 +512,7 @@ function SimplePromptComponent({}) {
             {oldNodes.length > 0 && (
                 <Button
                     // className='bg-transparent'
-                    onClick={async () => {
-                        if (isLoading) {
-                            abortController.abort()
-                            return
-                        }
-                        await Promise.all(
-                            oldNodes.map(async (node) => {
-                                const { nodeId, content: oldContent } = node
-                                if (!oldContent || !nodeId) {
-                                    return
-                                }
-
-                                try {
-                                    // TODO undo controls too
-                                    const framerNode =
-                                        await framer.getNode(nodeId)
-                                    if (isTextNode(framerNode)) {
-                                        await framerNode.setText(oldContent)
-                                    }
-                                    let instance = instanceNodes.get(nodeId)
-                                    if (instance) {
-                                        const { node, controlKey } = instance
-                                        let controls = { ...node.controls }
-                                        controls[controlKey] = oldContent
-                                        await node.setAttributes({
-                                            controls,
-                                        })
-                                    }
-                                } catch (e) {
-                                    console.log(
-                                        'error undoing text for ',
-                                        oldContent,
-                                        e,
-                                    )
-                                }
-                            }),
-                        )
-                        setOldNodes([])
-                    }}
+                    onClick={discard}
                     type='button'
                 >
                     {isLoading ? 'Cancel' : 'Undo Replacement'}
