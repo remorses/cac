@@ -263,6 +263,7 @@ function LoginComponent() {
                     <input
                         type='file'
                         className='max-w-max'
+                        accept='image/*'
                         onChange={(e) => {
                             debouncedUpdatePreset.current({ presetId, presets })
                         }}
