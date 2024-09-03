@@ -1,6 +1,9 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import {
+    useLatestFunction,
+    useRefreshOnVisible,
+} from 'template-rewrite-framer/src/lib/hooks'
 
 import {
     LoaderReturnType,
@@ -58,7 +61,9 @@ function SimplePromptComponent({}) {
         globalState.extractedDescription || '',
     )
     const [isLoading, setIsLoading] = useState(false)
-    const [oldNodes, setOldNodes] = useState<RewriteSchema['textToReplace']>([])
+    const [oldNodes, setOldNodes] = useState<
+        Array<RewriteSchema['textToReplace'][number] & { node: AnyNode }>
+    >([])
 
     useEffect(() => {
         // abort when leaving the page
@@ -140,14 +145,14 @@ function SimplePromptComponent({}) {
         let oldText = [] as RewriteSchema['textToReplace']
         let i = 0
 
-        function addText({ nodeId, text, name }) {
+        function addText({ node, nodeId, text, name }) {
             const textData: RewriteSchema['textToReplace'][number] = {
                 // index: i,
                 nodeId,
                 content: text,
                 name,
             }
-            setOldNodes((oldNodes) => [...oldNodes, textData])
+            setOldNodes((oldNodes) => [...oldNodes, { ...textData, node }])
             oldText.push(textData)
         }
 
@@ -170,6 +175,7 @@ function SimplePromptComponent({}) {
                         nodeId,
                         text,
                         name: await getNodePath(node),
+                        node,
                     })
                 }
             }
@@ -204,6 +210,7 @@ function SimplePromptComponent({}) {
                             nodeId,
                             text: value,
                             name,
+                            node,
                         })
                     }
                 }
@@ -378,18 +385,25 @@ function SimplePromptComponent({}) {
     }
     useRefreshOnVisible({ enabled: !isLoading })
 
-    const discard = async () => {
+    const discard = useLatestFunction(async () => {
         if (isLoading) {
+            console.log('aborting')
             abortController.abort()
             return
         }
-        const promises = oldNodes.map((node) => {
-            const { nodeId, content: oldContent } = node
+        if (!oldNodes.length) {
+            console.log('no old nodes to discard')
+            return
+        }
+        const promises = oldNodes.map((oldNodeObj) => {
+            const { nodeId, content: oldContent, node } = oldNodeObj
             if (!oldContent || !nodeId) {
+                console.log('no old content or node id found')
                 return Promise.resolve()
             }
 
             if (isTextNode(node)) {
+                // console.log('setting text', oldContent)
                 return node.setText(oldContent)
             }
             let instance = instanceNodes.get(nodeId)
@@ -405,7 +419,7 @@ function SimplePromptComponent({}) {
 
         await Promise.all(promises)
         setOldNodes([])
-    }
+    })
 
     const buttonText = (() => {
         if (!credits.remaining) {
@@ -507,7 +521,7 @@ function SimplePromptComponent({}) {
                     onClick={discard}
                     type='button'
                 >
-                    {isLoading ? 'Cancel' : 'Undo Replacement'}
+                    {isLoading ? 'Cancel' : 'Discard Replacement'}
                 </Button>
             )}
             {/* <div className='text-[11px] opacity-70'>

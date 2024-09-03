@@ -1,7 +1,6 @@
 // show toasts on success and failure and manages loading state
 
-
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRevalidator, useNavigation } from 'react-router'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 
@@ -103,4 +102,16 @@ export function useFocusOnMount() {
     return () => {
         window.removeEventListener('keydown', handleKeyDown)
     }
+}
+
+export function useLatestFunction(fn) {
+    const ref = useRef(fn)
+
+    useEffect(() => {
+        ref.current = fn
+    }, [fn])
+
+    return useCallback((...args) => {
+        return ref.current(...args)
+    }, [])
 }
