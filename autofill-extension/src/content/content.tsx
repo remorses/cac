@@ -15,6 +15,13 @@ let hints = [] as Hint[]
 
 const user = userEvent.setup()
 
+async function getPageHtml() {
+    // TODO unwrap web components, if a component is using ARIA and is openable, open it so the html contains all the options, for example open all the comboboxes and toggles to show the contents inside.
+    
+    let html = document.documentElement.outerHTML
+    return html
+}
+
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
         Promise.resolve()
@@ -25,8 +32,8 @@ chrome.runtime.onMessage.addListener(
                             console.log('showHints')
                             hints = findHints()
 
-                            let documentHtml =
-                                document.documentElement.outerHTML
+                            let documentHtml = await getPageHtml()
+
                             let msg: ChromeMessageType = {
                                 action: 'showHints',
                                 // hints,

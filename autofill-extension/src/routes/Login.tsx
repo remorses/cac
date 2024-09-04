@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button'
+import { renderPageAsImage } from 'unpdf'
 import {
     ChromeMessageType,
     PRESET_ID_LEN,
@@ -255,7 +256,7 @@ function LoginComponent() {
                     <input
                         type='file'
                         className='max-w-max'
-                        accept='image/*'
+                        accept='image/*, application/pdf, application/json, text/*'
                         onChange={(e) => {
                             debouncedUpdatePreset.current({ presetId, presets })
                         }}
@@ -329,6 +330,20 @@ async function action({ request, context }: LoaderFunctionArgs) {
             })
             .map(async (file) => {
                 console.log('file type', file.type)
+                if (file.type.startsWith('application/pdf')) {
+                    console.log('converting pdf to image')
+                    const arrayBuffer = await file.arrayBuffer()
+                    const res = await renderPageAsImage(arrayBuffer, 0)
+                    const type = 'image/png'
+                    const dataUrl = await getFileDataUrl(
+                        new File([res], file.name, { type }),
+                    )
+                    return {
+                        name: file.name,
+                        type,
+                        dataUrl,
+                    }
+                }
                 const dataUrl = await getFileDataUrl(file)
                 return {
                     name: file.name,

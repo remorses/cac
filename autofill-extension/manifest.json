@@ -16,6 +16,12 @@
     "content_security_policy": {
         "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
     },
+    "web_accessible_resources": [
+        {
+            "resources": ["node_modules/unpdf/dist/pdfjs.mjs"],
+            "matches": ["<all_urls>"]
+        }
+    ],
     "content_scripts": [
         {
             "js": ["src/content/content.tsx"],

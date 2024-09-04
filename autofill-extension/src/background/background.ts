@@ -225,6 +225,31 @@ chrome.runtime.onMessage.addListener(
                                 ],
                             })
                         }
+                        const images = files
+                            .filter((x) => x && x.type.startsWith('image/'))
+                            .map((file) => ({
+                                image: file.dataUrl,
+                                type: 'image' as const,
+                            }))
+                        if (images.length) {
+                            initialMessages.push({
+                                role: 'user',
+                                content: images,
+                            })
+                        }
+                        const textFiles = files.filter(
+                            (x) =>
+                                x.type.startsWith('text/') ||
+                                x.type.startsWith('application/json'),
+                        )
+                        if (textFiles.length) {
+                            initialMessages.push({
+                                role: 'user',
+                                content: generateTextFilesPrompt({
+                                    files: textFiles,
+                                }),
+                            })
+                        }
 
                         initialMessages.push({
                             role: 'user',
@@ -238,15 +263,8 @@ chrome.runtime.onMessage.addListener(
                                 // },
                             },
                         })
-                        if (files.length) {
-                            initialMessages.push({
-                                role: 'user',
-                                content: files.filter(Boolean).map((file) => ({
-                                    image: file.dataUrl,
-                                    type: 'image',
-                                })),
-                            })
-                        }
+
+                        // TODO turn text/* files to text, add them to the prompt. If a file is of type application/pdf, turn it into an image
 
                         screenshots = []
 
@@ -588,3 +606,34 @@ ${description}
 
 
 `
+
+function dataUrlToText(dataUrl: string): string {
+    const base64 = dataUrl.split(',')[1]
+    const binaryString = atob(base64)
+    const utf8Array = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+        utf8Array[i] = binaryString.charCodeAt(i)
+    }
+    const decoder = new TextDecoder('utf-8')
+    return decoder.decode(utf8Array)
+}
+
+function generateTextFilesPrompt({ files }: { files: FileObject[] }) {
+    return `
+The user attached the following files to add some more useful information to fill the form:
+
+<files>
+    ${files
+        .map(
+            (file) => `
+    <file>
+        <name>${file.name}</name>
+        <type>${file.type}</type>
+        <content>${dataUrlToText(file.dataUrl)}</content>
+    </file>
+    `,
+        )
+        .join('')}
+</files>
+    `
+}
