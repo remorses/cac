@@ -18,7 +18,7 @@ export function Button({
         <button
             type='button'
             className={classNames(
-                'relative',
+                'relative select-none',
                 variant === 'primary' && 'framer-button-primary',
                 className,
             )}
