@@ -462,7 +462,7 @@ function SimplePromptComponent({}) {
             }}
             className='flex grow flex-col items-start w-full justify-start gap-3'
         >
-            <div className='flex flex-col items-center w-full min-h-[80px] grow justify-center gap-3 text-center text-balance'>
+            <div className='flex flex-col items-center w-full py-[50px] shrink-0 justify-center grow gap-3 text-center text-balance'>
                 <div className='font-semibold'>Add a description</div>
                 <div className='opacity-70'>
                     The plugin will use this description to replace content on
