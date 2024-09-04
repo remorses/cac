@@ -2,7 +2,7 @@ import websiteConfig from 'website/tailwind.config'
 
 /** @type {import('tailwindcss').Config} */
 export default {
-    ...websiteConfig,
+    // ...websiteConfig,
     content: [
         './src/**/*.{js,ts,jsx,tsx}', //
         // '../website/src/**/*.{js,ts,jsx,tsx}', //
@@ -46,5 +46,5 @@ export default {
             },
         },
     },
-    plugins: [require('@tailwindcss/forms')],
+    // plugins: [require('@tailwindcss/forms')],
 }
