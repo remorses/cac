@@ -1,6 +1,6 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 // @ts-ignore
-import logo from 'template-rewrite-framer/public/gradient-icon.png'
+import logo from 'template-rewrite-framer/public/gradient-icon@2x.png'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import {
@@ -79,10 +79,12 @@ function LoginComponent() {
             style={containerStyle}
             className='flex flex-col justify-end grow gap-8'
         >
-            <img
-                src={logo}
-                className='mx-auto select-none shrink-0 -my-8 size-[230px]'
-            />
+            <div className='h-[180px] flex flex-col items-center justify-center'>
+                <img
+                    src={logo}
+                    className='mx-auto select-none shrink-0 size-[230px]'
+                />
+            </div>
             <div className='text-center  mx-auto items-center gap-2 flex flex-col max-w-xs'>
                 <div className='font-semibold'>Connect to Migrate</div>
                 <div className='opacity-70 text-balance'>
