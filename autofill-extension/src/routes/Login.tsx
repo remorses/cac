@@ -89,14 +89,6 @@ function LoginComponent() {
             Promise.resolve()
                 .then(async () => {
                     switch (request.action) {
-                        case 'formInputFound': {
-                            let text = request.data.description
-                            // if (request.data.value) {
-                            //     text = `filling ${text} with ${request.data.value}`
-                            // }
-                            setInputs((inputs) => [...inputs, text])
-                            return { ok: true }
-                        }
                         case 'setHintValue': {
                             let text = request.data.description
                             // if (request.data.value) {

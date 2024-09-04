@@ -5,7 +5,6 @@ import {
     EnrichedElementPart,
     ExtractedFormInput,
     FileObject,
-    SetHintValueMessage,
     sleep,
 } from '@/lib/utils'
 
@@ -60,7 +59,7 @@ console.log('background starting')
 
 let screenshots = [] as FileObject[]
 
-let filledFormInputs = [] as SetHintValueMessage[]
+let filledFormInputs = [] as ExtractedFormInput[]
 
 export const extractedFormInputSchema = z.object({
     label: z.string().describe('the Vimium label of the input'),

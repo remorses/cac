@@ -131,39 +131,6 @@ chrome.runtime.onMessage.addListener(
                                 }
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
-                                if (el instanceof HTMLSelectElement) {
-                                    const options = Array.from(el.options).map(
-                                        (option) => {
-                                            return {
-                                                title:
-                                                    option.textContent?.trim() ||
-                                                    '',
-                                                value: option.value || '',
-                                            }
-                                        },
-                                    )
-                                    console.log(
-                                        'found options for select',
-                                        options,
-                                    )
-                                    let res: ChromeMessageType = {
-                                        action: 'enrichedElement',
-                                        data: {
-                                            possibleOptions: options,
-                                            type: 'select',
-                                        },
-                                    }
-                                    return res
-                                }
-                                if (el instanceof HTMLInputElement) {
-                                    const regexPattern = el.pattern || undefined
-                                    const type = el.type || undefined
-                                    let res: ChromeMessageType = {
-                                        action: 'enrichedElement',
-                                        data: { regexPattern, type },
-                                    }
-                                    return res
-                                }
                             } else {
                                 console.log(
                                     'element is not an input element',

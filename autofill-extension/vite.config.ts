@@ -27,6 +27,7 @@ function logsPlugin(): Plugin {
                 clearScreen: false,
             }
         },
+
         configureServer(viteServer) {
             if (globalThis.server && globalThis.server.listening) {
                 console.log('server already configured')
@@ -95,6 +96,25 @@ export default defineConfig({
     //         return undefined
     //     },
     // },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        return 'vendor'
+                        // const chunks = id
+                        //     .toString()
+                        //     .split(/node_modules\//g)
+                        //     .pop()!
+                        //     .split('/')
+                        // const scope = chunks[0].startsWith('@') ? chunks[0] : ''
+                        // const name = scope ? chunks[1] : chunks[0]
+                        // return `${scope ? `${scope}_${name}` : name}`
+                    }
+                },
+            },
+        },
+    },
     plugins: [
         react(),
         wasmPlugin(),

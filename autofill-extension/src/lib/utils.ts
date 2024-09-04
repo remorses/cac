@@ -5,10 +5,7 @@ import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { z } from 'zod'
-import {
-    extractedFormInputSchema,
-    filledFormInputSchema,
-} from '@/background/background'
+import { extractedFormInputSchema } from '@/background/background'
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {
@@ -61,13 +58,13 @@ export type EnrichedElementPart = {
 export type ChromeMessageType =
     | { action: 'showHints'; documentHtml?: string }
     | { action: 'hideHints' }
+    | { action: 'setHintValue'; data: ExtractedFormInput }
     | { action: 'highlightInputFound'; data: ExtractedFormInput }
-    | { action: 'setHintValue'; data: SetHintValueMessage }
     | { action: 'dehighlightAll' }
-    | { action: 'formInputFound'; data: ExtractedFormInput }
+    // | { action: 'formInputFound'; data: ExtractedFormInput }
     | { action: 'start'; files: FileObject[]; description: string }
     | { action: 'captureVisibleTab'; index: number; dataUrl?: string }
-    | { action: 'enrichedElement'; data: EnrichedElementPart }
+    // | { action: 'enrichedElement'; data: EnrichedElementPart }
     | { action: 'popupLoader'; data?: PopupLoaderData }
     | { action: 'undoFilling' }
 // | { action: 'captureVisibleTabComplete'; data: ImageActionData }
@@ -76,7 +73,6 @@ export type PopupLoaderData = {
     canUndo: boolean
 } & ExtensionStorage
 
-export type SetHintValueMessage = z.infer<typeof filledFormInputSchema>
 export type ExtractedFormInput = z.infer<typeof extractedFormInputSchema>
 
 export function isFillableElement(el: any): el is HTMLInputElement {
