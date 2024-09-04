@@ -3,7 +3,7 @@
 'use client';
 import { className, css, fonts, } from './chunk-CNV3GALY.js';
 
-// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/jdcxn0gY8mwDj07tKgwK/jGfHTkNGC.js
+// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/QD72WBtPgO5tkINJs1DG/jGfHTkNGC.js
 import { jsx as _jsx, jsxs as _jsxs, } from 'react/jsx-runtime';
 import {
   addFonts,
@@ -39,9 +39,9 @@ var css2 = [
 ];
 var className2 = 'framer-KXnUO';
 
-// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/jdcxn0gY8mwDj07tKgwK/jGfHTkNGC.js
+// https :https://framerusercontent.com/modules/7wZWoOCa77PkUclivnMW/QD72WBtPgO5tkINJs1DG/jGfHTkNGC.js
 var cycleOrder = ['cIqlKiy6o', 'feyXzLrKB',];
-var serializationHash = 'framer-iPCmF';
+var serializationHash = 'framer-wg1bb';
 var variantClassNames = { cIqlKiy6o: 'framer-v-1wvkhzp', feyXzLrKB: 'framer-v-mvjmwc', };
 function addPropertyOverrides(overrides, ...variants) {
   const nextOverrides = {};
@@ -166,30 +166,18 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                     },),
                     /* @__PURE__ */ _jsx(RichText, {
                       __fromCanvasComponent: true,
-                      children: /* @__PURE__ */ _jsxs(React.Fragment, {
-                        children: [
-                          /* @__PURE__ */ _jsx(motion.p, {
-                            style: {
-                              '--font-selector': 'R0Y7U3BhY2UgR3JvdGVzay1yZWd1bGFy',
-                              '--framer-font-family': '"Space Grotesk", "Space Grotesk Placeholder", sans-serif',
-                              '--framer-letter-spacing': '0px',
-                              '--framer-line-height': '170%',
-                              '--framer-text-color': 'var(--extracted-r6o4lv, rgb(222, 228, 210))',
-                            },
-                            children:
-                              'In the Raycast extension you can manage all your websites conversations without clicking and switching the current active site like in the Crisp web app.',
-                          },),
-                          /* @__PURE__ */ _jsx(motion.p, {
-                            style: {
-                              '--font-selector': 'R0Y7U3BhY2UgR3JvdGVzay1yZWd1bGFy',
-                              '--framer-font-family': '"Space Grotesk", "Space Grotesk Placeholder", sans-serif',
-                              '--framer-letter-spacing': '0px',
-                              '--framer-line-height': '170%',
-                              '--framer-text-color': 'var(--extracted-2gxw0f, rgb(222, 228, 210))',
-                            },
-                            children: 'It\'s perfect if you have many sites connected to Crisp.',
-                          },),
-                        ],
+                      children: /* @__PURE__ */ _jsx(React.Fragment, {
+                        children: /* @__PURE__ */ _jsx(motion.p, {
+                          style: {
+                            '--font-selector': 'R0Y7U3BhY2UgR3JvdGVzay1yZWd1bGFy',
+                            '--framer-font-family': '"Space Grotesk", "Space Grotesk Placeholder", sans-serif',
+                            '--framer-letter-spacing': '0px',
+                            '--framer-line-height': '170%',
+                            '--framer-text-color': 'var(--extracted-r6o4lv, rgb(222, 228, 210))',
+                          },
+                          children:
+                            'This Framer plugin allows you to migrate templates to Framer quickly and efficiently, saving you the hassle of manual adjustments. Ideal for designers working with multiple projects.',
+                        },),
                       },),
                       className: 'framer-1a3bv6h',
                       'data-framer-name':
@@ -197,11 +185,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                       fonts: ['GF;Space Grotesk-regular',],
                       layoutDependency,
                       layoutId: 'n6aLLCBEI',
-                      style: {
-                        '--extracted-2gxw0f': 'rgb(222, 228, 210)',
-                        '--extracted-r6o4lv': 'rgb(222, 228, 210)',
-                        '--framer-paragraph-spacing': '0px',
-                      },
+                      style: { '--extracted-r6o4lv': 'rgb(222, 228, 210)', '--framer-paragraph-spacing': '0px', },
                       verticalAlignment: 'top',
                       withExternalLayout: true,
                     },),
@@ -290,7 +274,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                         '--framer-line-height': '170%',
                         '--framer-text-color': 'var(--extracted-r6o4lv, rgb(222, 228, 210))',
                       },
-                      children: 'No more clicking around and losing time. Control Crisp with just your keyboard.',
+                      children: 'Effortlessly migrate templates to Framer with our powerful plugin.',
                     },),
                   },),
                   className: 'framer-1s1373j',
@@ -418,7 +402,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                               'var(--extracted-r6o4lv, var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, rgb(224, 232, 210)))',
                           },
                           children:
-                            'The Raycast extension will load much faster thanks to a persistent cache on disk. You can quickly find the chat messages you need and quickly browse and search them.',
+                            'The Framer plugin will streamline your workflow by allowing rapid template migration. You can easily adapt designs and ensure consistency across projects.',
                         },),
                       },),
                       className: 'framer-1mvf3aw',
@@ -491,7 +475,7 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
                             '--framer-text-color':
                               'var(--extracted-r6o4lv, var(--token-c46c0c2d-e53e-42e7-8f54-be852f62337f, rgb(224, 232, 210)))',
                           },
-                          children: 'Quickly search your conversations and reply',
+                          children: 'Easily import and customize your templates',
                         },),
                       },),
                       className: 'framer-1rtjf36',
@@ -536,30 +520,30 @@ var Component = /* @__PURE__ */ React.forwardRef(function (props, ref,) {
 },);
 var css3 = [
   '@supports (aspect-ratio: 1) { body { --framer-aspect-ratio-supported: auto; } }',
-  '.framer-iPCmF.framer-1s2bef1, .framer-iPCmF .framer-1s2bef1 { display: block; }',
-  '.framer-iPCmF.framer-1wvkhzp { align-content: center; align-items: center; display: flex; flex-direction: row; flex-wrap: wrap; gap: 22px; height: min-content; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 1140px; }',
-  '.framer-iPCmF .framer-1y6vtzo { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 9px; height: auto; justify-content: center; overflow: hidden; padding: 124px 271px 48px 48px; position: relative; width: 66%; will-change: var(--framer-will-change-override, transform); z-index: 0; }',
-  '.framer-iPCmF .framer-1e6nlc1 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 24px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
-  '.framer-iPCmF .framer-1kc41ev, .framer-iPCmF .framer-1a3bv6h, .framer-iPCmF .framer-12ubw8n, .framer-iPCmF .framer-1s1373j, .framer-iPCmF .framer-1une4sw, .framer-iPCmF .framer-1mvf3aw, .framer-iPCmF .framer-112mwu5, .framer-iPCmF .framer-1rtjf36 { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
-  '.framer-iPCmF .framer-vc6p6 { bottom: -54px; flex: none; left: 246px; position: absolute; right: -10px; top: -54px; z-index: -1; }',
-  '.framer-iPCmF .framer-c1wiul { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 19px; height: min-content; justify-content: center; overflow: hidden; padding: 24px 15px 46px 15px; position: relative; width: 32%; will-change: var(--framer-will-change-override, transform); }',
-  '.framer-iPCmF .framer-dv3cbr { align-content: center; align-items: center; aspect-ratio: 0.5710059171597633 / 1; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: var(--framer-aspect-ratio-supported, 333px); justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 57%; }',
-  '.framer-iPCmF .framer-1m6hmr4 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: min-content; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
-  '.framer-iPCmF .framer-c0bec0, .framer-iPCmF .framer-pdfif9 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: 232px; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 325px; }',
-  '.framer-iPCmF .framer-dskjyd, .framer-iPCmF .framer-ego1bl { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 16px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
-  '.framer-iPCmF .framer-1m60r5d { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: auto; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
-  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-iPCmF.framer-1wvkhzp, .framer-iPCmF .framer-1y6vtzo, .framer-iPCmF .framer-1e6nlc1, .framer-iPCmF .framer-c1wiul, .framer-iPCmF .framer-dv3cbr, .framer-iPCmF .framer-1m6hmr4, .framer-iPCmF .framer-c0bec0, .framer-iPCmF .framer-dskjyd, .framer-iPCmF .framer-1m60r5d, .framer-iPCmF .framer-ego1bl, .framer-iPCmF .framer-pdfif9 { gap: 0px; } .framer-iPCmF.framer-1wvkhzp > * { margin: 0px; margin-left: calc(22px / 2); margin-right: calc(22px / 2); } .framer-iPCmF.framer-1wvkhzp > :first-child, .framer-iPCmF .framer-1y6vtzo > :first-child, .framer-iPCmF .framer-dv3cbr > :first-child, .framer-iPCmF .framer-c0bec0 > :first-child, .framer-iPCmF .framer-pdfif9 > :first-child { margin-left: 0px; } .framer-iPCmF.framer-1wvkhzp > :last-child, .framer-iPCmF .framer-1y6vtzo > :last-child, .framer-iPCmF .framer-dv3cbr > :last-child, .framer-iPCmF .framer-c0bec0 > :last-child, .framer-iPCmF .framer-pdfif9 > :last-child { margin-right: 0px; } .framer-iPCmF .framer-1y6vtzo > * { margin: 0px; margin-left: calc(9px / 2); margin-right: calc(9px / 2); } .framer-iPCmF .framer-1e6nlc1 > * { margin: 0px; margin-bottom: calc(24px / 2); margin-top: calc(24px / 2); } .framer-iPCmF .framer-1e6nlc1 > :first-child, .framer-iPCmF .framer-c1wiul > :first-child, .framer-iPCmF .framer-1m6hmr4 > :first-child, .framer-iPCmF .framer-dskjyd > :first-child, .framer-iPCmF .framer-1m60r5d > :first-child, .framer-iPCmF .framer-ego1bl > :first-child { margin-top: 0px; } .framer-iPCmF .framer-1e6nlc1 > :last-child, .framer-iPCmF .framer-c1wiul > :last-child, .framer-iPCmF .framer-1m6hmr4 > :last-child, .framer-iPCmF .framer-dskjyd > :last-child, .framer-iPCmF .framer-1m60r5d > :last-child, .framer-iPCmF .framer-ego1bl > :last-child { margin-bottom: 0px; } .framer-iPCmF .framer-c1wiul > * { margin: 0px; margin-bottom: calc(19px / 2); margin-top: calc(19px / 2); } .framer-iPCmF .framer-dv3cbr > *, .framer-iPCmF .framer-c0bec0 > *, .framer-iPCmF .framer-pdfif9 > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-iPCmF .framer-1m6hmr4 > *, .framer-iPCmF .framer-1m60r5d > * { margin: 0px; margin-bottom: calc(52px / 2); margin-top: calc(52px / 2); } .framer-iPCmF .framer-dskjyd > *, .framer-iPCmF .framer-ego1bl > * { margin: 0px; margin-bottom: calc(16px / 2); margin-top: calc(16px / 2); } }',
-  '.framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp { flex-direction: column; width: 471px; }',
-  '.framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo { align-self: unset; flex-direction: column; height: 400px; padding: 20px; width: 100%; }',
-  '.framer-iPCmF.framer-v-mvjmwc .framer-c1wiul { padding: 24px 15px 22px 15px; width: 100%; }',
-  '.framer-iPCmF.framer-v-mvjmwc .framer-dv3cbr { height: var(--framer-aspect-ratio-supported, 440px); }',
-  '.framer-iPCmF.framer-v-mvjmwc .framer-1m6hmr4 { width: 100%; }',
-  '.framer-iPCmF.framer-v-mvjmwc .framer-1m60r5d { align-self: unset; height: min-content; width: 100%; }',
-  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp, .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo { gap: 0px; } .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp > * { margin: 0px; margin-bottom: calc(22px / 2); margin-top: calc(22px / 2); } .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp > :first-child, .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo > :first-child { margin-top: 0px; } .framer-iPCmF.framer-v-mvjmwc.framer-1wvkhzp > :last-child, .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo > :last-child { margin-bottom: 0px; } .framer-iPCmF.framer-v-mvjmwc .framer-1y6vtzo > * { margin: 0px; margin-bottom: calc(9px / 2); margin-top: calc(9px / 2); } }',
+  '.framer-wg1bb.framer-1s2bef1, .framer-wg1bb .framer-1s2bef1 { display: block; }',
+  '.framer-wg1bb.framer-1wvkhzp { align-content: center; align-items: center; display: flex; flex-direction: row; flex-wrap: wrap; gap: 22px; height: min-content; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 1140px; }',
+  '.framer-wg1bb .framer-1y6vtzo { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 9px; height: auto; justify-content: center; overflow: hidden; padding: 124px 271px 48px 48px; position: relative; width: 66%; will-change: var(--framer-will-change-override, transform); z-index: 0; }',
+  '.framer-wg1bb .framer-1e6nlc1 { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 24px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
+  '.framer-wg1bb .framer-1kc41ev, .framer-wg1bb .framer-1a3bv6h, .framer-wg1bb .framer-12ubw8n, .framer-wg1bb .framer-1s1373j, .framer-wg1bb .framer-1une4sw, .framer-wg1bb .framer-1mvf3aw, .framer-wg1bb .framer-112mwu5, .framer-wg1bb .framer-1rtjf36 { flex: none; height: auto; position: relative; white-space: pre-wrap; width: 100%; word-break: break-word; word-wrap: break-word; }',
+  '.framer-wg1bb .framer-vc6p6 { bottom: -54px; flex: none; left: 246px; position: absolute; right: -10px; top: -54px; z-index: -1; }',
+  '.framer-wg1bb .framer-c1wiul { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 19px; height: min-content; justify-content: center; overflow: hidden; padding: 24px 15px 46px 15px; position: relative; width: 32%; will-change: var(--framer-will-change-override, transform); }',
+  '.framer-wg1bb .framer-dv3cbr { align-content: center; align-items: center; aspect-ratio: 0.5710059171597633 / 1; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: var(--framer-aspect-ratio-supported, 333px); justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 57%; }',
+  '.framer-wg1bb .framer-1m6hmr4 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: min-content; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
+  '.framer-wg1bb .framer-c0bec0, .framer-wg1bb .framer-pdfif9 { align-content: center; align-items: center; display: flex; flex: none; flex-direction: row; flex-wrap: nowrap; gap: 10px; height: 232px; justify-content: center; overflow: hidden; padding: 0px; position: relative; width: 325px; }',
+  '.framer-wg1bb .framer-dskjyd, .framer-wg1bb .framer-ego1bl { align-content: flex-start; align-items: flex-start; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 16px; height: min-content; justify-content: flex-start; overflow: visible; padding: 0px; position: relative; width: 100%; }',
+  '.framer-wg1bb .framer-1m60r5d { align-content: center; align-items: center; align-self: stretch; display: flex; flex: none; flex-direction: column; flex-wrap: nowrap; gap: 52px; height: auto; justify-content: center; overflow: hidden; padding: 48px; position: relative; width: 49%; will-change: var(--framer-will-change-override, transform); }',
+  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-wg1bb.framer-1wvkhzp, .framer-wg1bb .framer-1y6vtzo, .framer-wg1bb .framer-1e6nlc1, .framer-wg1bb .framer-c1wiul, .framer-wg1bb .framer-dv3cbr, .framer-wg1bb .framer-1m6hmr4, .framer-wg1bb .framer-c0bec0, .framer-wg1bb .framer-dskjyd, .framer-wg1bb .framer-1m60r5d, .framer-wg1bb .framer-ego1bl, .framer-wg1bb .framer-pdfif9 { gap: 0px; } .framer-wg1bb.framer-1wvkhzp > * { margin: 0px; margin-left: calc(22px / 2); margin-right: calc(22px / 2); } .framer-wg1bb.framer-1wvkhzp > :first-child, .framer-wg1bb .framer-1y6vtzo > :first-child, .framer-wg1bb .framer-dv3cbr > :first-child, .framer-wg1bb .framer-c0bec0 > :first-child, .framer-wg1bb .framer-pdfif9 > :first-child { margin-left: 0px; } .framer-wg1bb.framer-1wvkhzp > :last-child, .framer-wg1bb .framer-1y6vtzo > :last-child, .framer-wg1bb .framer-dv3cbr > :last-child, .framer-wg1bb .framer-c0bec0 > :last-child, .framer-wg1bb .framer-pdfif9 > :last-child { margin-right: 0px; } .framer-wg1bb .framer-1y6vtzo > * { margin: 0px; margin-left: calc(9px / 2); margin-right: calc(9px / 2); } .framer-wg1bb .framer-1e6nlc1 > * { margin: 0px; margin-bottom: calc(24px / 2); margin-top: calc(24px / 2); } .framer-wg1bb .framer-1e6nlc1 > :first-child, .framer-wg1bb .framer-c1wiul > :first-child, .framer-wg1bb .framer-1m6hmr4 > :first-child, .framer-wg1bb .framer-dskjyd > :first-child, .framer-wg1bb .framer-1m60r5d > :first-child, .framer-wg1bb .framer-ego1bl > :first-child { margin-top: 0px; } .framer-wg1bb .framer-1e6nlc1 > :last-child, .framer-wg1bb .framer-c1wiul > :last-child, .framer-wg1bb .framer-1m6hmr4 > :last-child, .framer-wg1bb .framer-dskjyd > :last-child, .framer-wg1bb .framer-1m60r5d > :last-child, .framer-wg1bb .framer-ego1bl > :last-child { margin-bottom: 0px; } .framer-wg1bb .framer-c1wiul > * { margin: 0px; margin-bottom: calc(19px / 2); margin-top: calc(19px / 2); } .framer-wg1bb .framer-dv3cbr > *, .framer-wg1bb .framer-c0bec0 > *, .framer-wg1bb .framer-pdfif9 > * { margin: 0px; margin-left: calc(10px / 2); margin-right: calc(10px / 2); } .framer-wg1bb .framer-1m6hmr4 > *, .framer-wg1bb .framer-1m60r5d > * { margin: 0px; margin-bottom: calc(52px / 2); margin-top: calc(52px / 2); } .framer-wg1bb .framer-dskjyd > *, .framer-wg1bb .framer-ego1bl > * { margin: 0px; margin-bottom: calc(16px / 2); margin-top: calc(16px / 2); } }',
+  '.framer-wg1bb.framer-v-mvjmwc.framer-1wvkhzp { flex-direction: column; width: 471px; }',
+  '.framer-wg1bb.framer-v-mvjmwc .framer-1y6vtzo { align-self: unset; flex-direction: column; height: 400px; padding: 20px; width: 100%; }',
+  '.framer-wg1bb.framer-v-mvjmwc .framer-c1wiul { padding: 24px 15px 22px 15px; width: 100%; }',
+  '.framer-wg1bb.framer-v-mvjmwc .framer-dv3cbr { height: var(--framer-aspect-ratio-supported, 440px); }',
+  '.framer-wg1bb.framer-v-mvjmwc .framer-1m6hmr4 { width: 100%; }',
+  '.framer-wg1bb.framer-v-mvjmwc .framer-1m60r5d { align-self: unset; height: min-content; width: 100%; }',
+  '@supports (background: -webkit-named-image(i)) and (not (font-palette:dark)) { .framer-wg1bb.framer-v-mvjmwc.framer-1wvkhzp, .framer-wg1bb.framer-v-mvjmwc .framer-1y6vtzo { gap: 0px; } .framer-wg1bb.framer-v-mvjmwc.framer-1wvkhzp > * { margin: 0px; margin-bottom: calc(22px / 2); margin-top: calc(22px / 2); } .framer-wg1bb.framer-v-mvjmwc.framer-1wvkhzp > :first-child, .framer-wg1bb.framer-v-mvjmwc .framer-1y6vtzo > :first-child { margin-top: 0px; } .framer-wg1bb.framer-v-mvjmwc.framer-1wvkhzp > :last-child, .framer-wg1bb.framer-v-mvjmwc .framer-1y6vtzo > :last-child { margin-bottom: 0px; } .framer-wg1bb.framer-v-mvjmwc .framer-1y6vtzo > * { margin: 0px; margin-bottom: calc(9px / 2); margin-top: calc(9px / 2); } }',
   ...css2,
   ...css,
 ];
-var FramerjGfHTkNGC = withCSS(Component, css3, 'framer-iPCmF',);
+var FramerjGfHTkNGC = withCSS(Component, css3, 'framer-wg1bb',);
 var stdin_default = FramerjGfHTkNGC;
 FramerjGfHTkNGC.displayName = 'FeatureList';
 FramerjGfHTkNGC.defaultProps = { height: 1247, width: 1140, };
@@ -586,35 +570,35 @@ addFonts(FramerjGfHTkNGC, [
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F',
-      url: 'https://app.framerstatic.com/Inter-Regular.cyrillic-ext-CFTLRB35.woff2',
+      url: 'https://framerusercontent.com/assets/5vvr9Vy74if2I6bQbJvbw7SY1pQ.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116',
-      url: 'https://app.framerstatic.com/Inter-Regular.cyrillic-KKLZBALH.woff2',
+      url: 'https://framerusercontent.com/assets/EOr0mi4hNtlgWNn9if640EZzXCo.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+1F00-1FFF',
-      url: 'https://app.framerstatic.com/Inter-Regular.greek-ext-ULEBLIFV.woff2',
+      url: 'https://framerusercontent.com/assets/Y9k9QrlZAqio88Klkmbd8VoMQc.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0370-03FF',
-      url: 'https://app.framerstatic.com/Inter-Regular.greek-IRHSNFQB.woff2',
+      url: 'https://framerusercontent.com/assets/OYrD2tBIBPvoJXiIHnLoOXnY9M.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF',
-      url: 'https://app.framerstatic.com/Inter-Regular.latin-ext-VZDUGU3Q.woff2',
+      url: 'https://framerusercontent.com/assets/JeYwfuaPfZHQhEG8U5gtPDZ7WQ.woff2',
       weight: '400',
     }, {
       family: 'Inter',
@@ -622,14 +606,14 @@ addFonts(FramerjGfHTkNGC, [
       style: 'normal',
       unicodeRange:
         'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD',
-      url: 'https://app.framerstatic.com/Inter-Regular.latin-JLQMKCHE.woff2',
+      url: 'https://framerusercontent.com/assets/vQyevYAyHtARFwPqUzQGpnDs.woff2',
       weight: '400',
     }, {
       family: 'Inter',
       source: 'framer',
       style: 'normal',
       unicodeRange: 'U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB',
-      url: 'https://app.framerstatic.com/Inter-Regular.vietnamese-QK7VSWXK.woff2',
+      url: 'https://framerusercontent.com/assets/b6Y37FthZeALduNqHicBT6FutY.woff2',
       weight: '400',
     },],
   },

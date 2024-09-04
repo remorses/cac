@@ -47,6 +47,7 @@
 }
 
 
+body { --framer-will-change-override: none; }
 [data-framer-component-type] { position: absolute; }
 [data-framer-component-type="Text"] { cursor: inherit; }
 [data-framer-component-text-autosized] * { white-space: pre; }
@@ -220,6 +221,7 @@
             -moz-font-feature-settings: var(--framer-font-open-type-features, initial);
             -webkit-font-feature-settings: var(--framer-font-open-type-features, initial);
             font-feature-settings: var(--framer-font-open-type-features, initial);
+            text-wrap: var(--framer-text-wrap-override, var(--framer-text-wrap));
         }
     
 
@@ -751,7 +753,7 @@ NavigationContainer
 [data-hide-scrollbars="true"]::-webkit-scrollbar { width: 0px; height: 0px; }
 [data-hide-scrollbars="true"]::-webkit-scrollbar-thumb { background: transparent; }
 
-/* used by feature-list.js, footer.js, hero.js, nav.js, pricing-banner.js */
+/* used by footer.js, hero.js, nav.js, pricing-banner.js */
 
 @font-face {
     font-family: 'Inter'; 
@@ -809,6 +811,8 @@ NavigationContainer
     unicodeRange: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
 }
 
+/* used by feature-list.js, footer.js, hero.js, nav.js, pricing-banner.js */
+
 @font-face {
     font-family: 'Space Grotesk'; 
     src: url(https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksmNsFjTDJK.woff2);
@@ -841,7 +845,7 @@ NavigationContainer
     font-weight: 700;
 }
 
-/* used by hero.js */
+/* used by feature-list.js, hero.js */
 
 @font-face {
     font-family: 'Inter'; 

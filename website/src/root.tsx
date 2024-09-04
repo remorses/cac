@@ -13,17 +13,20 @@ import { NextUIProvider } from '@nextui-org/react'
 import { PageContainer } from './components/Container'
 import { LoaderFunctionArgs } from '@remix-run/node'
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
+import { Suspense } from 'react'
 
 function Providers({ children }) {
     return (
-        <div className='h-full grow w-full items-center justify-start flex flex-col bg-[#080807] text-gray-100'>
-            <div className='flex w-full flex-col grow max-w-[1200px]'>
-                <Toaster />
-                <NextUIProvider className='grow w-full flex flex-col '>
-                    {children}
-                </NextUIProvider>
+        <Suspense>
+            <div className='h-full grow w-full items-center justify-start flex flex-col bg-[#080807] text-gray-100'>
+                <div className='flex w-full flex-col grow max-w-[1200px]'>
+                    <Toaster />
+                    <NextUIProvider className='grow w-full flex flex-col '>
+                        {children}
+                    </NextUIProvider>
+                </div>
             </div>
-        </div>
+        </Suspense>
     )
 }
 
