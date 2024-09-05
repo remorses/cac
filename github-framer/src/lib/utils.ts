@@ -7,7 +7,12 @@ import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
 
-export { withMode } from 'template-rewrite-framer/src/lib/utils'
+export {
+    withMode,
+    formatLargeNumber,
+    getDesktop,
+} from 'template-rewrite-framer/src/lib/utils'
+export type { LoaderReturnType } from 'template-rewrite-framer/src/lib/utils'
 
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
@@ -52,33 +57,7 @@ export enum RouteIds {
     root = 'root',
 }
 
-export type LoaderReturnType<T extends Function> = T extends (
-    ...args: any
-) => Promise<infer R>
-    ? R
-    : never
-
 export const globalState = {}
-
-export async function collectGenerator<T>(
-    gen: AsyncGenerator<T | null, void, unknown>,
-) {
-    const result = [] as T[]
-    for await (const item of gen) {
-        if (!item) {
-            continue
-        }
-        result.push(item)
-    }
-    return result
-}
-
-export function formatLargeNumber(x: number) {
-    if (x < 1000) {
-        return x.toFixed(0)
-    }
-    return (x / 1000).toFixed(0) + 'K'
-}
 
 // @ts-ignore
 export const basePath = import.meta.env.BASE_URL || '/'
@@ -89,16 +68,6 @@ export enum PluginDataKeys {
     mapFieldsConfig = 'mapFieldsConfig',
     githubAccountLogin = 'githubAccountLogin',
     basePath = 'basePath',
-}
-
-export function simpleHash(input: string) {
-    let hash = 0
-    for (let i = 0; i < input.length; i++) {
-        const char = input.charCodeAt(i)
-        hash = (hash << 5) - hash + char
-        hash = hash & hash // Convert to 32bit integer
-    }
-    return Math.abs(hash).toString(16).padStart(8, '0')
 }
 
 export async function getMarkdownPluginData() {
