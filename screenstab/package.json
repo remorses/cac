@@ -8,6 +8,7 @@
     "repository": "https://github.com/remorses/",
     "scripts": {
         "build": "tsc && tsc -m es6 --outDir esm",
+        "dev": "vite",
         "watch": "tsc -w"
     },
     "files": [
