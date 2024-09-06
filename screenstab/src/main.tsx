@@ -19,7 +19,7 @@ export const applyImageEffect = async (
 ): Promise<string> => {
     // Create scene, camera, and renderer
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+    
     const renderer = new THREE.WebGLRenderer({ antialias: true })
 
     // Load image texture
@@ -30,6 +30,10 @@ export const applyImageEffect = async (
     const aspectRatio = texture.image.width / texture.image.height
 
     renderer.setSize(texture.image.width, texture.image.height)
+    renderer.setViewport(0, 0, texture.image.width, texture.image.height)
+    // camera.aspect = aspectRatio
+    const camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000)
+    camera.updateProjectionMatrix()
 
     // Create a plane with the image texture
     const geometry = new THREE.PlaneGeometry(aspectRatio, 1)
@@ -40,7 +44,7 @@ export const applyImageEffect = async (
     plane.rotation.set(rotationX, rotationY, rotationZ)
 
     scene.add(plane)
-    camera.position.z = 1
+    camera.position.z = 0.6
 
     // Set up post-processing
     const composer = new EffectComposer(renderer)
@@ -48,11 +52,11 @@ export const applyImageEffect = async (
 
     // Add Bokeh (depth of field) effect
     const bokehPass = new BokehPass(scene, camera, {
-        focus: 1,
-        aperture: 0.025,
-        maxblur: 0.01,
+        focus: camera.position.z,
+        aperture: 0.16,
+        maxblur: 0.04,
     })
-    // composer.addPass(bokehPass)
+    composer.addPass(bokehPass)
 
     // Add vignette effect
     const vignetteShader = {
@@ -84,7 +88,7 @@ export const applyImageEffect = async (
     `,
     }
     const vignettePass = new ShaderPass(vignetteShader)
-    // composer.addPass(vignettePass)
+    composer.addPass(vignettePass)
 
     // Render the scene
     composer.render()
