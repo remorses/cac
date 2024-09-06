@@ -11,7 +11,7 @@ export function IsWebsitePublished() {
                 Click the publish button, this is required to get the current
                 website screenshot
             </div>
-            <Button type='submit' className='framer-button-primary'>
+            <Button type='submit' variant='primary'>
                 Ok, I clicked publish
             </Button>
         </Form>

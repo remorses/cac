@@ -420,6 +420,7 @@ input::file-selector-button:hover {
     animation-timing-function: linear;
 }
 
+
 @keyframes spin {
     0% {
         transform: translate(var(--spinner-translate), var(--spinner-translate)) rotate(0deg);

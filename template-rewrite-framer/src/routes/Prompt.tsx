@@ -510,7 +510,8 @@ function SimplePromptComponent({}) {
                     isLoading={isLoading}
                     // disabled={disabled}
                     type='submit'
-                    className='w-auto block grow framer-button-primary'
+                    variant='primary'
+                    className='w-auto block grow'
                 >
                     {buttonText}
                 </Button>

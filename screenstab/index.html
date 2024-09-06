@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GitHub Sync - Framer Plugin</title>
+        <meta
+            name="description"
+            content="Framer Plugin to sync your Framer content with your GitHub repo markdown files"
+        />
+        <meta
+            property="og:image"
+            content="https://unframer.co/github-plugin-assets/ogimage.jpeg"
+        />
+
+        <meta property="og:url" content="https://unframer.co" />
+        <meta property="og:type" content="website" />
+    </head>
+    <body>
+        <div id="root"></div>
+        <input type="file" id="imageInput" accept="image/*" />
+        <button id="processButton">Process Image</button>
+        <script type="module">
+            import { applyImageEffect } from './src/main.tsx'
+
+            document
+                .getElementById('processButton')
+                .addEventListener('click', async () => {
+                    const input = document.getElementById('imageInput')
+                    if (input.files && input.files[0]) {
+                        const file = input.files[0]
+                        const reader = new FileReader()
+                        reader.onload = async (e) => {
+                            const imageUrl = e.target.result
+                            const processedImageUrl =
+                                await applyImageEffect(imageUrl)
+                            const img = document.createElement('img')
+                            img.src = processedImageUrl
+                            document.body.appendChild(img)
+                        }
+                        reader.readAsDataURL(file)
+                    } else {
+                        alert('Please select an image file.')
+                    }
+                })
+        </script>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
+</html>
