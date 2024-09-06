@@ -17,7 +17,7 @@ export const applyImageEffect = async (
     imageUrl: string,
     rotationX: number = deg * 20,
     rotationY: number = deg * 0,
-    rotationZ: number = deg * 0,
+    rotationZ: number = deg * 10,
 ): Promise<string> => {
     // Create scene, camera, and renderer
     const scene = new THREE.Scene()
@@ -68,7 +68,7 @@ export const applyImageEffect = async (
     const absRotations = {
         x: Math.abs(rotationX),
         y: Math.abs(rotationY),
-        z: Math.abs(rotationZ),
+        // z: Math.abs(rotationZ),
     }
     const prominentAxis = maxKey(absRotations)
 
@@ -80,9 +80,6 @@ export const applyImageEffect = async (
             break
         case 'y':
             edge = rotationY > 0 ? 0 : 1 // Right if positive, left if negative
-            break
-        case 'z':
-            edge = rotationZ > 0 ? 3 : 2 // Bottom if positive, top if negative
             break
     }
 
