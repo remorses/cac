@@ -21,16 +21,18 @@ export const applyImageEffect = async (
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
-    renderer.setSize(1024, 1024)
 
     // Load image texture
     const loader = new THREE.TextureLoader()
     const texture = await new Promise<THREE.Texture>((resolve) => {
         loader.load(imageUrl, resolve)
     })
+    const aspectRatio = texture.image.width / texture.image.height
+
+    renderer.setSize(texture.image.width, texture.image.height)
 
     // Create a plane with the image texture
-    const geometry = new THREE.PlaneGeometry(1, 1)
+    const geometry = new THREE.PlaneGeometry(aspectRatio, 1)
     const material = new THREE.MeshBasicMaterial({ map: texture })
     const plane = new THREE.Mesh(geometry, material)
 
@@ -50,7 +52,7 @@ export const applyImageEffect = async (
         aperture: 0.025,
         maxblur: 0.01,
     })
-    composer.addPass(bokehPass)
+    // composer.addPass(bokehPass)
 
     // Add vignette effect
     const vignetteShader = {
@@ -74,7 +76,7 @@ export const applyImageEffect = async (
       void main() {
         vec4 texel = texture2D(tDiffuse, vUv);
         vec2 uv = (vUv - 0.5) * 2.0;
-        float vignetteAmount = 1.0 - dot(uv, uv);
+        float vignetteAmount = 1.0 - uv.x * uv.x; // Apply vignette effect only on the left edge
         vignetteAmount = smoothstep(0.0, offset, vignetteAmount);
         texel.rgb = mix(texel.rgb, texel.rgb * vignetteAmount, darkness);
         gl_FragColor = texel;
@@ -82,7 +84,7 @@ export const applyImageEffect = async (
     `,
     }
     const vignettePass = new ShaderPass(vignetteShader)
-    composer.addPass(vignettePass)
+    // composer.addPass(vignettePass)
 
     // Render the scene
     composer.render()
