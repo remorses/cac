@@ -6,7 +6,8 @@ import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
 
 const building = process.env.NODE_ENV === 'production'
-const basePath = '/framer-plugin/migrate'
+
+const basePath = '/framer-plugin/react-export'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -18,11 +19,8 @@ export default defineConfig({
         tsconfigPaths(),
     ],
     base: building ? basePath : undefined,
-
     build: {
         target: 'ES2020',
-        // 30kb in bytes
-        assetsInlineLimit: 30720,
         sourcemap: true,
         outDir: 'dist' + basePath,
     },

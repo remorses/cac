@@ -8,6 +8,7 @@ import { db } from 'db/kysely'
 import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 import { z } from 'zod'
 import { cors } from 'spiceflow/cors'
+import { reactPluginApp } from 'website/src/lib/elysia-react-plugin'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
@@ -16,6 +17,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
     .use(cors())
     .use(rewritePluginApp)
     .use(markdownPluginApp)
+    .use(reactPluginApp)
     // .use(
     //     cors({
     //         // credentials: true,

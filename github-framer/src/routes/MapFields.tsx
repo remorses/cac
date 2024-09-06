@@ -57,7 +57,7 @@ export function MapFieldsPage(): RouteObject {
         async action({ request }) {
             const fieldConfig: CollectionFieldConfig[] = await request.json()
             console.log('saving fieldConfig', fieldConfig)
-            const collection = await framer. getManagedCollection()
+            const collection = await framer.getManagedCollection()
             await collection.setPluginData(
                 PluginDataKeys.mapFieldsConfig,
                 JSON.stringify(fieldConfig.filter((x) => x?.type)),
@@ -260,21 +260,6 @@ export function MapFields({}: {}) {
         >
             <hr className='' />
             <div className='flex-1 flex flex-col gap-4'>
-                {/* <div className='flex flex-col gap-2 w-full'>
-                    <label htmlFor='collectionName'>Slug Field</label>
-                    <select
-                        className='w-full'
-                        value={slugFieldId ?? ''}
-                        onChange={(e) => setSlugFieldId(e.target.value)}
-                        required
-                    >
-                        {slugFields.map((field) => (
-                            <option key={field.id} value={field.id}>
-                                {field.name}
-                            </option>
-                        ))}
-                    </select>
-                </div> */}
                 <div className='grid grid-cols-[1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
                     <span className=' '>Front Matter Property</span>
                     <div className=''></div>

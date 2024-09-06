@@ -41,21 +41,30 @@ export function framerLoginUrl({
     url.searchParams.set('code', code)
     return url.toString()
 }
-
-export function generateSecurePassword() {
-    const length = 32 // Fixed length for high entropy
+export function generateSecurePassword(length = 32) {
     const charset =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-    return Array.from(crypto.getRandomValues(new Uint32Array(length)))
+    const randomValues = new Uint32Array(length)
+    for (let i = 0; i < length; i++) {
+        randomValues[i] = Math.floor(Math.random() * charset.length)
+    }
+
+    return Array.from(randomValues)
         .map((x) => charset[x % charset.length])
         .join('')
 }
+
 export function generateShortOtpCode() {
     const length = 6
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-    return Array.from(crypto.getRandomValues(new Uint32Array(length)))
+    const randomValues = new Uint32Array(length)
+    for (let i = 0; i < length; i++) {
+        randomValues[i] = Math.floor(Math.random() * charset.length)
+    }
+
+    return Array.from(randomValues)
         .map((x) => charset[x % charset.length])
         .join('')
 }
@@ -80,3 +89,17 @@ export function afterFramerLogin({ key, code }) {
 }
 
 export type Iterated<T> = T extends AsyncIterable<infer U> ? U : never
+
+export function sortByKey<T>(arr: T[], key: (x: T) => string) {
+    return arr.sort((a, b) => {
+        const aKey = key(a)
+        const bKey = key(b)
+        if (aKey < bKey) {
+            return -1
+        }
+        if (aKey > bKey) {
+            return 1
+        }
+        return 0
+    })
+}

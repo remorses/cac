@@ -1,12 +1,12 @@
-import { Spiceflow } from 'spiceflow'
 import matter from 'gray-matter'
+import { Spiceflow } from 'spiceflow'
 
 import { notifyError } from 'website/src/lib/errors'
 
-import { db } from 'db/kysely'
 import { prisma } from 'db/prisma'
 import { marked } from 'marked'
 import { Octokit } from 'octokit'
+import { env } from 'website/src/lib/env'
 import {
     checkGitHubIsInstalled,
     getGithubUserLogin,
@@ -15,7 +15,6 @@ import {
     isMarkdown,
 } from 'website/src/lib/github.server'
 import { isTruthy } from 'website/src/lib/utils'
-import { env } from 'website/src/lib/env'
 import { z } from 'zod'
 
 const unauthorizedResponse = new Response('Unauthorized', {

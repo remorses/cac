@@ -8,3 +8,4 @@ vite.config.ts.timestamp*
 public/framer-plugin
 public/plugins
 *.pem
+outputs

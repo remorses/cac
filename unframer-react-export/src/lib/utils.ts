@@ -11,7 +11,6 @@ export {
     withMode,
     formatLargeNumber,
     getDesktop,
-    simpleHash,
 } from 'template-rewrite-framer/src/lib/utils'
 export type { LoaderReturnType } from 'template-rewrite-framer/src/lib/utils'
 
@@ -19,13 +18,12 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
             if (response.status === 401) {
-                const collection = await framer.getManagedCollection()
                 console.log('clearing session because api returned 401')
-                await collection.setPluginData(PluginDataKeys.sessionKey, null)
+                await framer.setPluginData(PluginDataKeys.sessionKey, null)
             }
         },
         async onRequest() {
-            const { sessionKey } = await getMarkdownPluginData()
+            const { sessionKey } = await getReactPluginData()
             return {
                 headers: {
                     sessionKey,
@@ -48,9 +46,8 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
 
 export enum Paths {
     login = '/login',
-    chooseRepo = '/choose-repo',
-    mapFields = '/map-fields',
-    sync = '/sync',
+    components = '/components',
+
     settings = '/settings',
 }
 
@@ -66,33 +63,26 @@ export const basePath = import.meta.env.BASE_URL || '/'
 export enum PluginDataKeys {
     sessionKey = 'sessionKey',
     githubRepoSlug = 'repoSlug',
-    mapFieldsConfig = 'mapFieldsConfig',
     githubAccountLogin = 'githubAccountLogin',
+    // mapFieldsConfig = 'mapFieldsConfig',
     basePath = 'basePath',
 }
 
-export async function getMarkdownPluginData() {
-    const collection = await framer.getManagedCollection()
-    const [
-        repoSlug,
-        mapFieldsConfigJson,
-        basePath,
-        githubAccountLogin,
-        sessionKey,
-    ] = await Promise.all([
-        collection.getPluginData(PluginDataKeys.githubRepoSlug),
-        collection.getPluginData(PluginDataKeys.mapFieldsConfig),
-        collection.getPluginData(PluginDataKeys.basePath) || '',
-        collection.getPluginData(PluginDataKeys.githubAccountLogin) || '',
-        collection.getPluginData(PluginDataKeys.sessionKey) || '',
-    ])
+export async function getReactPluginData() {
+    const [repoSlug, basePath, githubAccountLogin, sessionKey] =
+        await Promise.all([
+            framer.getPluginData(PluginDataKeys.githubRepoSlug),
+
+            framer.getPluginData(PluginDataKeys.basePath) || '',
+            framer.getPluginData(PluginDataKeys.githubAccountLogin) || '',
+            framer.getPluginData(PluginDataKeys.sessionKey) || '',
+        ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
-    const mapFieldsConfig: CollectionField[] =
-        safeJsonParse(mapFieldsConfigJson || '[]') || []
+
     return {
         owner,
         repo,
-        mapFieldsConfig,
+
         basePath: basePath || '',
         githubAccountLogin: githubAccountLogin || '',
         sessionKey: sessionKey || '',
