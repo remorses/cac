@@ -13,11 +13,13 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@types/three": "^0.168.0",
         "comlink": "^4.4.1",
         "framer-plugin": "^0.3.3",
         "react": "^18",
         "react-dom": "^18",
         "roughjs": "^4.6.6",
+        "three": "^0.168.0",
         "vite-plugin-mkcert": "^1.17.5"
     },
     "devDependencies": {

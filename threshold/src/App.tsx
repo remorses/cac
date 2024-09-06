@@ -1,15 +1,20 @@
-import * as comlink from "comlink"
-import { ImageAsset, framer } from "framer-plugin"
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import "./App.css"
-import { Spinner } from "./Spinner"
-import { assert, bytesFromCanvas } from "./utils"
-import type { CanvasWorker } from "./worker/worker"
-import Worker from "./worker/worker?worker"
+import { ImageAsset, framer } from 'framer-plugin'
+import {
+    startTransition,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react'
+import './App.css'
 
-const WorkerBase = comlink.wrap<typeof CanvasWorker>(new Worker())
+import { assert, bytesFromCanvas } from './utils'
 
-void framer.showUI({ position: "top left", width: 280, height: 260 })
+import Worker from './worker/worker?worker'
+import { applyImageEffect } from './canvas'
+
+void framer.showUI({ position: 'top left', width: 480, height: 360 })
 
 function useSelectedImage() {
     const [image, setImage] = useState<ImageAsset | null>(null)
@@ -26,7 +31,7 @@ export function App() {
 
     if (!image) {
         return (
-            <div className="error-container">
+            <div className='error-container'>
                 <p>Select an Image</p>
             </div>
         )
@@ -43,13 +48,21 @@ const debounce = (fn: Function, ms = 300) => {
     }
 }
 
-function ThresholdImage({ image, maxWidth, maxHeight }: { image: ImageAsset; maxWidth: number; maxHeight: number }) {
+function ThresholdImage({
+    image,
+    maxWidth,
+    maxHeight,
+}: {
+    image: ImageAsset
+    maxWidth: number
+    maxHeight: number
+}) {
     const [threshold, setThreshold] = useState(127)
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [hasPainted, setHasPainted] = useState(false)
 
     const handleSaveImage = async () => {
-        const ctx = canvasRef.current?.getContext("2d")
+        const ctx = canvasRef.current?.getContext('2d')
         assert(ctx)
 
         const originalImage = await image.getData()
@@ -68,59 +81,40 @@ function ThresholdImage({ image, maxWidth, maxHeight }: { image: ImageAsset; max
             },
         })
 
-        void framer.closePlugin("Image saved...")
+        void framer.closePlugin('Image saved...')
 
-        console.log("total duration", performance.now() - start)
+        console.log('total duration', performance.now() - start)
     }
 
     const updateCanvas = useMemo(
         () =>
             debounce(async (nextThreshold: number) => {
-                const worker = await new WorkerBase()
-
                 const bitmap = await image.loadBitmap()
 
-                const canvas = canvasRef.current
-                assert(canvas)
-                const ctx = canvas.getContext("2d")
-                assert(ctx)
+                const canvasPreview = canvasRef.current
 
-                const result = await worker.draw(bitmap, nextThreshold)
-
-                assert(result)
-
-                let displayWidth: number, displayHeight: number
-
-                // Calculate the aspect ratios based on max dimensions
-                const widthRatio = maxWidth / bitmap.width
-                const heightRatio = maxHeight / bitmap.height
-
-                if (widthRatio < heightRatio) {
-                    // Width ratio is smaller, so we'll base dimensions on width to prevent going over maxWidth
-                    displayWidth = maxWidth
-                    displayHeight = bitmap.height * widthRatio
-                } else {
-                    // Base dimensions on height
-                    displayHeight = maxHeight
-                    displayWidth = bitmap.width * heightRatio
-                }
-
-                assert(ctx)
-
-                canvas.width = displayWidth
-                canvas.height = displayHeight
-
-                framer.showUI({
-                    position: "top left",
-                    width: 280,
-                    height: displayHeight + 95,
+                let imageBitmap = await applyImageEffect({
+                    // canvas: canvasPreview,
+                    imageBitmap: bitmap,
+                    rotationX: 0,
+                    rotationY: 0,
+                    rotationZ: 0,
                 })
+                if (canvasPreview) {
+                    canvasPreview.width = imageBitmap.width
+                    canvasPreview.height = imageBitmap.height
+                    const ctx = canvasPreview.getContext('2d')
 
-                ctx.drawImage(result, 0, 0, displayWidth, displayHeight)
+                    if (ctx) {
+                        ctx.drawImage(imageBitmap, 0, 0)
+                    } else {
+                        console.error('No context found')
+                    }
+                }
 
                 setHasPainted(true)
             }, 20),
-        [image]
+        [image],
     )
 
     const handleThresholdChange = useCallback(
@@ -130,7 +124,7 @@ function ThresholdImage({ image, maxWidth, maxHeight }: { image: ImageAsset; max
                 void updateCanvas(nextValue)
             })
         },
-        [updateCanvas]
+        [updateCanvas],
     )
 
     useEffect(() => {
@@ -139,18 +133,20 @@ function ThresholdImage({ image, maxWidth, maxHeight }: { image: ImageAsset; max
     }, [image])
 
     return (
-        <div className="container">
-            <div className="canvas-container">
+        <div className='container'>
+            <div className='canvas-container'>
                 <canvas ref={canvasRef} />
-                {!hasPainted && <Spinner size="medium" />}
+                {!hasPainted && <div className='framer-spinner' />}
             </div>
 
             <input
-                type="range"
-                min="0"
-                max="255"
+                type='range'
+                min='0'
+                max='255'
                 value={threshold}
-                onChange={event => handleThresholdChange(Number(event.target.value))}
+                onChange={(event) =>
+                    handleThresholdChange(Number(event.target.value))
+                }
             />
 
             <button onClick={handleSaveImage}>Save Image</button>
