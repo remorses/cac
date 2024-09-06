@@ -11,15 +11,17 @@ This function should apply a screenstab like effect to an image.
 - apply a realistic depth of field effect, where blur is more intense where the image is further away from the camera
 */
 
+const deg = Math.PI / 360
+
 export const applyImageEffect = async (
     imageUrl: string,
-    rotationX: number = Math.PI / 36,
-    rotationY: number = Math.PI / 36,
-    rotationZ: number = Math.PI / 36,
+    rotationX: number = deg * 20,
+    rotationY: number = deg * 0,
+    rotationZ: number = deg * 0,
 ): Promise<string> => {
     // Create scene, camera, and renderer
     const scene = new THREE.Scene()
-    
+
     const renderer = new THREE.WebGLRenderer({ antialias: true })
 
     // Load image texture
@@ -57,13 +59,39 @@ export const applyImageEffect = async (
         maxblur: 0.03,
     })
     composer.addPass(bokehPass)
-    // Add vignette effect
+    // Function to find the key of the maximum value in an object
+    const maxKey = (obj: { [key: string]: number }) => {
+        return Object.keys(obj).reduce((a, b) => (obj[a] > obj[b] ? a : b))
+    }
+
+    // Determine the most prominent rotation axis
+    const absRotations = {
+        x: Math.abs(rotationX),
+        y: Math.abs(rotationY),
+        z: Math.abs(rotationZ),
+    }
+    const prominentAxis = maxKey(absRotations)
+
+    let edge = 0 // Default to right edge
+
+    switch (prominentAxis) {
+        case 'x':
+            edge = rotationX > 0 ? 3 : 2 // Bottom if positive, top if negative
+            break
+        case 'y':
+            edge = rotationY > 0 ? 0 : 1 // Right if positive, left if negative
+            break
+        case 'z':
+            edge = rotationZ > 0 ? 3 : 2 // Bottom if positive, top if negative
+            break
+    }
+
     const vignetteShader = {
         uniforms: {
             tDiffuse: { value: null },
             offset: { value: 1 },
             darkness: { value: 1 },
-            edge: { value: 0 }, // Parametrize edge
+            edge: { value: edge }, // Parametrize edge
         },
         vertexShader: `
       varying vec2 vUv;
