@@ -1,8 +1,12 @@
 import { ImageAsset, framer } from 'framer-plugin'
+import { Button } from 'template-rewrite-framer/src/components/Button'
+import useMeasure from 'react-use-measure'
+
 import {
     startTransition,
     useCallback,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -11,10 +15,10 @@ import './App.css'
 
 import { assert, bytesFromCanvas } from './utils'
 
-import Worker from './worker/worker?worker'
 import { applyImageEffect } from './canvas'
 
-void framer.showUI({ position: 'top left', width: 480, height: 360 })
+const width = 680
+void framer.showUI({ position: 'top left', width, height: 360 })
 
 function useSelectedImage() {
     const [image, setImage] = useState<ImageAsset | null>(null)
@@ -31,13 +35,13 @@ export function App() {
 
     if (!image) {
         return (
-            <div className='error-container'>
-                <p>Select an Image</p>
+            <div className='flex flex-col gap-3 grow p-3 pt-0 items-center justify-center'>
+                <p>Select an Image First</p>
             </div>
         )
     }
 
-    return <ThresholdImage image={image} maxWidth={248} maxHeight={400} />
+    return <RotationsImage image={image} />
 }
 
 const debounce = (fn: Function, ms = 300) => {
@@ -48,16 +52,25 @@ const debounce = (fn: Function, ms = 300) => {
     }
 }
 
-function ThresholdImage({
-    image,
-    maxWidth,
-    maxHeight,
-}: {
-    image: ImageAsset
-    maxWidth: number
-    maxHeight: number
-}) {
-    const [threshold, setThreshold] = useState(127)
+function useAsyncEffect(effect: () => Promise<void>, deps: any[]) {
+    const isProcessing = useRef(false)
+
+    useEffect(() => {
+        if (!isProcessing.current) {
+            isProcessing.current = true
+            effect()
+                .catch((error) => {
+                    console.error('Error in useAsyncEffect:', error)
+                })
+                .finally(() => {
+                    isProcessing.current = false
+                })
+        }
+    }, deps)
+}
+
+function RotationsImage({ image }: { image: ImageAsset }) {
+    const [rotations, setRotations] = useState({ x: 0, y: 0, z: 0 })
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [hasPainted, setHasPainted] = useState(false)
 
@@ -85,71 +98,101 @@ function ThresholdImage({
 
         console.log('total duration', performance.now() - start)
     }
+    const [ref, { height }] = useMeasure()
 
-    const updateCanvas = useMemo(
-        () =>
-            debounce(async (nextThreshold: number) => {
-                const bitmap = await image.loadBitmap()
+    useLayoutEffect(() => {
+        console.log('opening framer ui')
+        framer.showUI({
+            // title: (handle?.handle as any) || '',
+            position: 'top left',
+            width,
+            height: height || 100,
+        })
+    }, [height])
 
-                const canvasPreview = canvasRef.current
+    const updateCanvas = async () => {
+        const bitmap = await image.loadBitmap()
 
-                let imageBitmap = await applyImageEffect({
-                    // canvas: canvasPreview,
-                    imageBitmap: bitmap,
-                    rotationX: 0,
-                    rotationY: 0,
-                    rotationZ: 0,
-                })
-                if (canvasPreview) {
-                    canvasPreview.width = imageBitmap.width
-                    canvasPreview.height = imageBitmap.height
-                    const ctx = canvasPreview.getContext('2d')
+        const canvasPreview = canvasRef.current
 
-                    if (ctx) {
-                        ctx.drawImage(imageBitmap, 0, 0)
-                    } else {
-                        console.error('No context found')
-                    }
-                }
+        const deg = Math.PI / 180
+        let imageBitmap = await applyImageEffect({
+            imageBitmap: bitmap,
+            rotationX: rotations.x * deg,
+            rotationY: rotations.y * deg,
+            rotationZ: rotations.z * deg,
+        })
+        if (canvasPreview) {
+            canvasPreview.width = imageBitmap.width
+            canvasPreview.height = imageBitmap.height
+            const ctx = canvasPreview.getContext('2d')
 
-                setHasPainted(true)
-            }, 20),
-        [image],
-    )
+            if (ctx) {
+                ctx.drawImage(imageBitmap, 0, 0)
+            } else {
+                console.error('No context found')
+            }
+        }
 
-    const handleThresholdChange = useCallback(
-        (nextValue: number) => {
+        setHasPainted(true)
+    }
+
+    const handleRotationChange = useCallback(
+        (axis: 'x' | 'y' | 'z', nextValue: number) => {
             startTransition(() => {
-                setThreshold(nextValue)
-                void updateCanvas(nextValue)
+                setRotations((prev) => ({ ...prev, [axis]: nextValue }))
             })
         },
-        [updateCanvas],
+        [updateCanvas, rotations],
     )
 
-    useEffect(() => {
+    useAsyncEffect(async () => {
         // Start in the middle between 0-255
-        void updateCanvas(127)
-    }, [image])
+        await sleep(20)
+        await updateCanvas()
+    }, [image, rotations])
 
     return (
-        <div className='container'>
+        <div
+            ref={ref}
+            className='shrink-0 w-full grow flex flex-col gap-3 pt-0 p-3'
+        >
             <div className='canvas-container'>
-                <canvas ref={canvasRef} />
+                <canvas className='w-full h-full rounded-md' ref={canvasRef} />
                 {!hasPainted && <div className='framer-spinner' />}
             </div>
 
-            <input
-                type='range'
-                min='0'
-                max='255'
-                value={threshold}
-                onChange={(event) =>
-                    handleThresholdChange(Number(event.target.value))
-                }
-            />
+            <div className='grow flex flex-row w-full gap-3'>
+                {(['x', 'y', 'z'] as const).map((axis) => (
+                    <label className='flex flex-col grow gap-2' key={axis}>
+                        {axis.toUpperCase()}:
+                        <input
+                            type='range'
+                            defaultValue={0}
+                            min='-20'
+                            max='20'
+                            className='w-full'
+                            value={rotations[axis]}
+                            onChange={(event) =>
+                                handleRotationChange(
+                                    axis,
+                                    Number(event.target.value),
+                                )
+                            }
+                        />
+                    </label>
+                ))}
+            </div>
 
-            <button onClick={handleSaveImage}>Save Image</button>
+            <Button variant='primary' onClick={handleSaveImage}>
+                Save Image
+            </Button>
         </div>
     )
+}
+
+function sleep(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
+    })
 }

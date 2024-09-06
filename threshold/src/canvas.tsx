@@ -32,7 +32,9 @@ export const applyImageEffect = async ({
     const texture = new THREE.Texture()
     texture.image = imageBitmap
     texture.needsUpdate = true
+
     const aspectRatio = texture.image.width / texture.image.height
+    console.log('texture size', texture.image.width, texture.image.height)
 
     renderer.setSize(texture.image.width, texture.image.height)
     renderer.setViewport(0, 0, texture.image.width, texture.image.height)
@@ -135,6 +137,8 @@ export const applyImageEffect = async ({
     composer.render()
 
     // Return the canvas as a bitmap
-    const bitmap = await createImageBitmap(renderer.domElement)
+    const bitmap = await createImageBitmap(renderer.domElement, {
+        imageOrientation: 'flipY',
+    })
     return bitmap
 }
