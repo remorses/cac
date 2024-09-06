@@ -15,9 +15,9 @@ const deg = Math.PI / 360
 
 export const applyImageEffect = async (
     imageUrl: string,
-    rotationX: number = deg * 20,
-    rotationY: number = deg * 0,
-    rotationZ: number = deg * 10,
+    rotationX: number = deg * 10,
+    rotationY: number = deg * 20,
+    rotationZ: number = deg * 0,
 ): Promise<string> => {
     // Create scene, camera, and renderer
     const scene = new THREE.Scene()
@@ -47,6 +47,9 @@ export const applyImageEffect = async (
 
     scene.add(plane)
     camera.position.z = 0.6
+    // Make the camera look at the plane
+
+    camera.lookAt(plane.position)
 
     // Set up post-processing
     const composer = new EffectComposer(renderer)
