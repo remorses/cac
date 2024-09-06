@@ -217,6 +217,8 @@ export const reactPluginApp = new Spiceflow({
             )
             const slugger = new GithubSlugger()
             const githubBranch = exists?.default_branch || 'main'
+            const repoUrl = `https://github.com/${owner}/${repo}`
+
             try {
                 const res = await bundle({
                     components: Object.fromEntries(
@@ -229,7 +231,77 @@ export const reactPluginApp = new Spiceflow({
                     signal: request.signal,
                 })
 
-                fs.writeFileSync(path.resolve(cwd, 'README.md'), '')
+                fs.writeFileSync(
+                    path.resolve(cwd, 'README.md'),
+                    dedent`
+                ## Install in a workspace
+
+                \`\`\`sh
+                git submodule add ${repoUrl}.git
+                \`\`\`
+
+            
+                Add the folder to your workspace packages in root \`package.json\`:
+
+                \`\`\`json
+                {
+                    "workspaces": [
+                        "packages/*",
+                        "${repo}"
+                    ]
+                }
+                \`\`\`
+
+                ## Update the submodule
+
+                To fetch the new components code you just update the submodule
+
+                \`\`\`sh
+                git submodule update --remote
+                \`\`\`
+
+                ## Install as an npm package
+
+                To install this repository as an npm package, follow these steps:
+
+                1. Install the package using npm:
+
+                \`\`\`sh
+                npm install ${repoUrl}
+                \`\`\`
+
+                ## Usage
+
+                To use the components in your project, follow these steps:
+
+                1. Import the \`styles.css\` file to include the necessary styles:
+
+                \`\`\`js
+                import '${repo}/components/styles.css';
+                \`\`\`
+
+                2. Import the component file as a default import:
+
+                \`\`\`js
+                import ComponentName from '${repo}/components/component-name';
+                \`\`\`
+
+                3. Render the component in your React application:
+
+                \`\`\`js
+                const App = () => {
+                    return (
+                        <div>
+                            <ComponentName />
+                        </div>
+                    );
+                };
+
+                export default App;
+                \`\`\`
+
+                `,
+                )
                 fs.mkdirSync(path.resolve(cwd, 'demo'))
                 fs.writeFileSync(
                     path.resolve(cwd, 'index.html'),
@@ -458,7 +530,7 @@ export const reactPluginApp = new Spiceflow({
                 // fs.rmdirSync(cwd, { recursive: true })
                 console.log('deleted', cwd)
             }
-            const repoUrl = `https://github.com/${owner}/${repo}`
+
             const stackblitzUrl = `https://stackblitz.com/github/${owner}/${repo}?file=`
             console.log('stackblitzUrl', stackblitzUrl)
             console.log('repoUrl', repoUrl)
