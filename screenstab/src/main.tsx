@@ -53,8 +53,8 @@ export const applyImageEffect = async (
     // Add Bokeh (depth of field) effect
     const bokehPass = new BokehPass(scene, camera, {
         focus: camera.position.z,
-        aperture: 0.16,
-        maxblur: 0.04,
+        aperture: 0.1,
+        maxblur: 0.03,
     })
     composer.addPass(bokehPass)
 
@@ -62,28 +62,28 @@ export const applyImageEffect = async (
     const vignetteShader = {
         uniforms: {
             tDiffuse: { value: null },
-            offset: { value: 0.95 },
-            darkness: { value: 1.6 },
+            offset: { value: 1 },
+            darkness: { value: 1 },
         },
         vertexShader: `
       varying vec2 vUv;
       void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vUv = uv; // Pass UV coordinates to the fragment shader
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); // Set the position of the vertex
       }
     `,
         fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float offset;
-      uniform float darkness;
-      varying vec2 vUv;
+      uniform sampler2D tDiffuse; // The texture to apply the vignette effect to
+      uniform float offset; // The offset value for the vignette effect
+      uniform float darkness; // The darkness value for the vignette effect
+      varying vec2 vUv; // The UV coordinates passed from the vertex shader
       void main() {
-        vec4 texel = texture2D(tDiffuse, vUv);
-        vec2 uv = (vUv - 0.5) * 2.0;
-        float vignetteAmount = 1.0 - uv.x * uv.x; // Apply vignette effect only on the left edge
-        vignetteAmount = smoothstep(0.0, offset, vignetteAmount);
-        texel.rgb = mix(texel.rgb, texel.rgb * vignetteAmount, darkness);
-        gl_FragColor = texel;
+        vec4 texel = texture2D(tDiffuse, vUv); // Get the color of the current pixel
+        vec2 uv = (vUv - 0.5) * 2.0; // Transform UV coordinates to range [-1, 1]
+        float vignetteAmount = 1.0 - uv.x; // Apply vignette effect only on the right edge
+        vignetteAmount = min(vignetteAmount, smoothstep(0.0, offset, vignetteAmount)); // Apply only if it darkens the image
+        texel.rgb = mix(texel.rgb, texel.rgb * vignetteAmount, darkness); // Mix the original color with the vignette effect
+        gl_FragColor = texel; // Set the final color of the pixel
       }
     `,
     }
