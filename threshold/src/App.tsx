@@ -1,19 +1,18 @@
 import { ImageAsset, framer } from 'framer-plugin'
-import { Button } from 'template-rewrite-framer/src/components/Button'
 import useMeasure from 'react-use-measure'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 
 import {
     startTransition,
     useCallback,
     useEffect,
     useLayoutEffect,
-    useMemo,
     useRef,
     useState,
 } from 'react'
 import './App.css'
 
-import { assert, bytesFromCanvas } from './utils'
+import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
 import { applyImageEffect } from './canvas'
 
@@ -42,31 +41,6 @@ export function App() {
     }
 
     return <RotationsImage image={image} />
-}
-
-const debounce = (fn: Function, ms = 300) => {
-    let timeoutId: ReturnType<typeof setTimeout>
-    return function (this: any, ...args: any[]) {
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(() => fn.apply(this, args), ms)
-    }
-}
-
-function useAsyncEffect(effect: () => Promise<void>, deps: any[]) {
-    const isProcessing = useRef(false)
-
-    useEffect(() => {
-        if (!isProcessing.current) {
-            isProcessing.current = true
-            effect()
-                .catch((error) => {
-                    console.error('Error in useAsyncEffect:', error)
-                })
-                .finally(() => {
-                    isProcessing.current = false
-                })
-        }
-    }, deps)
 }
 
 function RotationsImage({ image }: { image: ImageAsset }) {
@@ -147,7 +121,6 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     )
 
     useAsyncEffect(async () => {
-        // Start in the middle between 0-255
         await sleep(20)
         await updateCanvas()
     }, [image, rotations])
@@ -189,10 +162,4 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             </Button>
         </div>
     )
-}
-
-function sleep(ms: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms)
-    })
 }
