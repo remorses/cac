@@ -172,7 +172,13 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         plane.rotation.set(rotationX * deg, rotationY * deg, 0)
 
-        camera.lookAt(plane.position)
+        const yOffset = (angle: number) =>
+            -0.3 * (angle / (45 + Math.abs(angle)))
+        camera.lookAt(
+            plane.position.x + yOffset(rotationY),
+            plane.position.y,
+            plane.position.z,
+        )
         const composer = new EffectComposer(renderer)
         composer.addPass(new RenderPass(scene, camera))
         const bokehPass = new BokehPass(scene, camera, {
