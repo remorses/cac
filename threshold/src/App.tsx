@@ -21,11 +21,12 @@ import './App.css'
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
-const width = 380
+const width = 280
+const initialImage = await framer.getImage()
 void framer.showUI({ position: 'top left', width, height: 360 })
 
 function useSelectedImage() {
-    const [image, setImage] = useState<ImageAsset | null>(null)
+    const [image, setImage] = useState<ImageAsset | null>(initialImage)
 
     useEffect(() => {
         return framer.subscribeToImage(setImage)
@@ -99,6 +100,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     const [isLoading, setIsLoading] = useState(true)
     const handleSaveImage = async () => {
         setIsLoading(true)
+        await sleep(20)
         await updateCanvas({ isPreview: false })
 
         const originalImage = await image.getData()
@@ -233,85 +235,60 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                 <CanvasComponent className='flex flex-col rounded-md' />
             </div>
             <hr className='w-full border-t ' />
-            <div className=' flex flex-row w-full gap-3'>
+            <div className=' flex flex-col w-full gap-3'>
                 {(['x', 'y'] as const).map((axis) => (
-                    <label className='flex flex-col grow gap-0' key={axis}>
-                        <div>{axis}</div>
-                        <input
-                            type='range'
-                            defaultValue={0}
-                            ref={(el) => {
-                                setRangeProgress(el)
-                            }}
-                            min='-40'
-                            max='40'
-                            className='w-full '
-                            value={rotations[axis]}
-                            onChange={(event) => {
-                                setRangeProgress(event.target)
-                                handleRotationChange(
-                                    axis,
-                                    Number(event.target.value),
-                                )
-                            }}
-                        />
-                    </label>
+                    <SliderAndNumber
+                        key={axis}
+                        label={axis}
+                        value={rotations[axis]}
+                        onChange={(v) => {
+                            handleRotationChange(axis, Number(v))
+                        }}
+                        rangeProps={{
+                            defaultValue: 0,
+                            min: '-40',
+                            max: '40',
+                        }}
+                    />
                 ))}
             </div>
 
-            <div className='flex gap-6 items-start'>
-                <div className='flex flex-col h-full justify-between  grow gap-1'>
-                    <div className='flex'>
-                        <div className=''>Intensity</div>
-                    </div>
-                    <input
-                        type='range'
-                        defaultValue={0.5}
-                        min='0'
-                        max='2'
-                        step='0.01'
-                        className='w-full'
-                        ref={(el) => {
-                            setRangeProgress(el)
-                        }}
-                        value={intensity}
-                        onChange={(event) => {
-                            setRangeProgress(event.target)
-                            setIntensity(Number(event.target.value))
-                        }}
-                    />
-                </div>
-                <div className='flex flex-col h-full justify-between  grow gap-1'>
-                    <div className='flex'>
-                        <div className=''>Focus</div>
-                    </div>
-                    <input
-                        type='range'
-                        defaultValue={0.6}
-                        min='0.4'
-                        max='0.8'
-                        step='0.01'
-                        className='w-full'
-                        ref={(el) => {
-                            setRangeProgress(el)
-                        }}
-                        value={focus}
-                        onChange={(event) => {
-                            setRangeProgress(event.target)
-                            setFocus(Number(event.target.value))
-                        }}
-                    />
-                </div>
-                <div className='flex flex-col  gap-2'>
-                    Background
-                    <input
-                        type='color'
-                        className='w-full'
-                        value={color}
-                        onChange={(event) => setColor(event.target.value)}
-                    />
-                </div>
+            <SliderAndNumber
+                label='Intensity'
+                value={intensity}
+                onChange={(v) => {
+                    setIntensity(Number(v))
+                }}
+                rangeProps={{
+                    defaultValue: 0.5,
+                    min: '0',
+                    max: '2',
+                    step: '0.01',
+                }}
+            />
+            <SliderAndNumber
+                label='Focus'
+                value={focus}
+                onChange={(v) => {
+                    setFocus(Number(v))
+                }}
+                rangeProps={{
+                    defaultValue: 0.6,
+                    min: '0.4',
+                    max: '0.8',
+                    step: '0.01',
+                }}
+            />
+            <div className='flex items-center flex-row gap-2'>
+                <div>Background</div>
+                <input
+                    type='color'
+                    className=''
+                    value={color}
+                    onChange={(event) => setColor(event.target.value)}
+                />
             </div>
+
             <Button
                 isLoading={isLoading}
                 variant='primary'
@@ -319,6 +296,45 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             >
                 Save Image
             </Button>
+        </div>
+    )
+}
+const SliderAndNumber = ({
+    label,
+    value,
+    onChange,
+    rangeProps, // Added rangeProps
+}: {
+    label: string
+    value: number
+    onChange: (value: number) => void
+    rangeProps: React.InputHTMLAttributes<HTMLInputElement> // Added rangeProps type
+}) => {
+    return (
+        <div className='flex w-full flex-row grow gap-4 p-2 items-center'>
+            <div>{label}</div>
+            <input
+                type='number'
+                value={value}
+                onChange={(event) => {
+                    onChange(Number(event.target.value))
+                }}
+                className=''
+            />
+            <input
+                type='range'
+                defaultValue={0}
+                className='grow'
+                ref={(el) => {
+                    setRangeProgress(el)
+                }}
+                value={value}
+                onChange={(event) => {
+                    setRangeProgress(event.target)
+                    onChange(Number(event.target.value))
+                }}
+                {...rangeProps} // Spread rangeProps
+            />
         </div>
     )
 }
