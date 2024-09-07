@@ -6,7 +6,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
-const deg = Math.PI / 360
+const deg = Math.PI / 180
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 
@@ -59,8 +59,11 @@ const scene = new THREE.Scene()
 scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas })
+// renderer.outputColorSpace = THREE.SRGBColorSpace
 
 const texture = new THREE.Texture()
+// texture.colorSpace = THREE.LinearSRGBColorSpace
+
 texture.flipY = false
 
 const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
@@ -94,7 +97,7 @@ function CanvasComponent({ ...rest }) {
 }
 
 function RotationsImage({ image }: { image: ImageAsset }) {
-    const [rotations, setRotations] = useState({ x: 0, y: 0, z: 0 })
+    const [rotations, setRotations] = useState({ x: 0, y: 10, z: 0 })
     const [color, setColor] = useState('#000000')
     const [intensity, setIntensity] = useState(1)
     const [isLoading, setIsLoading] = useState(true)
@@ -148,41 +151,38 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     const updateCanvas = async ({ isPreview = false }) => {
         const { x: rotationX, y: rotationY, z: rotationZ } = rotations
         const threeColor = new THREE.Color(color)
-        const img = texture.image
-        const aspectRatio = img.width / img.height
+        const img: HTMLImageElement | null = texture.image
 
-        camera.aspect = aspectRatio
-        camera.updateProjectionMatrix()
-        plane.scale.set(aspectRatio, 1, 1)
-        scene.background = threeColor
-        console.log(
-            'texture size',
-            texture.image.width,
-            texture.image.height,
-            img.width,
-            img.height,
-        )
-        renderer.setSize(img?.width, img?.height)
+        let aspectRatio = 1
+        if (img) {
+            aspectRatio = img.width / img.height
+
+            camera.aspect = aspectRatio
+            camera.updateProjectionMatrix()
+            plane.scale.set(aspectRatio, 1, 1)
+            scene.background = threeColor
+
+            renderer.setSize(img?.width, img?.height)
+            renderer.setViewport(0, 0, img.width, img.height)
+        }
         if (isPreview) {
             renderer.setPixelRatio(1 / 4)
         } else {
             renderer.setPixelRatio(1)
         }
-        renderer.setViewport(0, 0, img.width, img.height)
+
         plane.rotation.set(rotationX * deg, rotationY * deg, rotationZ * deg)
 
         camera.lookAt(plane.position)
         const composer = new EffectComposer(renderer)
         composer.addPass(new RenderPass(scene, camera))
-
         const bokehPass = new BokehPass(scene, camera, {
             focus: camera.position.z,
             aspect: aspectRatio,
-            aperture: 0.12,
-            maxblur: 0.05,
+            aperture: 0.16,
+            maxblur: 0.09,
         })
         composer.addPass(bokehPass)
-
         const vignettePass = new ShaderPass(vignetteShader)
 
         let vignetteRotation = Math.atan2(-rotationX, rotationY)
