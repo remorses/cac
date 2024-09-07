@@ -15,12 +15,11 @@ import {
     useEffect,
     useLayoutEffect,
     useRef,
-    useState
+    useState,
 } from 'react'
 import './App.css'
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
-
 
 const width = 380
 void framer.showUI({ position: 'top left', width, height: 360 })
@@ -92,11 +91,11 @@ function CanvasComponent({ ...rest }) {
 
     return <div {...rest} ref={containerRef}></div>
 }
-
 function RotationsImage({ image }: { image: ImageAsset }) {
-    const [rotations, setRotations] = useState({ x: 0, y: 10, z: 0 })
+    const [rotations, setRotations] = useState({ x: 0, y: 10 })
     const [color, setColor] = useState('#000000')
     const [intensity, setIntensity] = useState(1)
+    const [focus, setFocus] = useState(0.6)
     const [isLoading, setIsLoading] = useState(true)
     const handleSaveImage = async () => {
         setIsLoading(true)
@@ -149,7 +148,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     }, [image])
 
     const updateCanvas = async ({ isPreview = false }) => {
-        const { x: rotationX, y: rotationY, z: rotationZ } = rotations
+        const { x: rotationX, y: rotationY } = rotations
         const threeColor = new THREE.Color(color)
         const img: HTMLImageElement | null = texture.image
 
@@ -171,16 +170,16 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             renderer.setPixelRatio(1)
         }
 
-        plane.rotation.set(rotationX * deg, rotationY * deg, rotationZ * deg)
+        plane.rotation.set(rotationX * deg, rotationY * deg, 0)
 
         camera.lookAt(plane.position)
         const composer = new EffectComposer(renderer)
         composer.addPass(new RenderPass(scene, camera))
         const bokehPass = new BokehPass(scene, camera, {
-            focus: camera.position.z,
+            focus: focus,
             aspect: aspectRatio,
             aperture: 0.16,
-            maxblur: 0.09,
+            maxblur: 0.2,
         })
         composer.addPass(bokehPass)
         const vignettePass = new ShaderPass(vignetteShader)
@@ -200,7 +199,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     }
 
     const handleRotationChange = useCallback(
-        (axis: 'x' | 'y' | 'z', nextValue: number) => {
+        (axis: 'x' | 'y', nextValue: number) => {
             startTransition(() => {
                 setRotations((prev) => ({ ...prev, [axis]: nextValue }))
             })
@@ -216,7 +215,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             }
             await updateCanvas({ isPreview: true })
         },
-        [rotations, color, intensity],
+        [rotations, color, intensity, focus],
     )
 
     return (
@@ -229,7 +228,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             </div>
             <hr className='w-full border-t ' />
             <div className=' flex flex-row w-full gap-3'>
-                {(['x', 'y', 'z'] as const).map((axis) => (
+                {(['x', 'y'] as const).map((axis) => (
                     <label className='flex flex-col grow gap-0' key={axis}>
                         <div>{axis}</div>
                         <input
@@ -257,7 +256,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             <div className='flex gap-6 items-start'>
                 <div className='flex flex-col h-full justify-between  grow gap-1'>
                     <div className='flex'>
-                        <div className=''>Intensity:</div>
+                        <div className=''>Intensity</div>
                     </div>
                     <input
                         type='range'
@@ -276,8 +275,29 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                         }}
                     />
                 </div>
+                <div className='flex flex-col h-full justify-between  grow gap-1'>
+                    <div className='flex'>
+                        <div className=''>Focus</div>
+                    </div>
+                    <input
+                        type='range'
+                        defaultValue={0.6}
+                        min='0.4'
+                        max='0.8'
+                        step='0.01'
+                        className='w-full'
+                        ref={(el) => {
+                            setRangeProgress(el)
+                        }}
+                        value={focus}
+                        onChange={(event) => {
+                            setRangeProgress(event.target)
+                            setFocus(Number(event.target.value))
+                        }}
+                    />
+                </div>
                 <div className='flex flex-col  gap-2'>
-                    Background Color:
+                    Background
                     <input
                         type='color'
                         className='w-full'
