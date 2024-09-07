@@ -1,31 +1,28 @@
 import { ImageAsset, framer } from 'framer-plugin'
-import { Endpoint, expose, transfer } from 'comlink'
+import useMeasure from 'react-use-measure'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 import * as THREE from 'three'
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 const deg = Math.PI / 180
-import useMeasure from 'react-use-measure'
-import { Button } from 'template-rewrite-framer/src/components/Button'
 
 import {
     startTransition,
     useCallback,
-    useDeferredValue,
     useEffect,
     useLayoutEffect,
     useRef,
-    useState,
+    useState
 } from 'react'
 import './App.css'
 
-import { assert, bytesFromCanvas, maxKey, sleep, useAsyncEffect } from './utils'
+import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
-import { applyImageEffect } from './canvas'
 
-const width = 680
+const width = 380
 void framer.showUI({ position: 'top left', width, height: 360 })
 
 function useSelectedImage() {
@@ -79,7 +76,7 @@ camera.position.z = 0.6
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         // Append the canvas to the container when the component mounts
         if (containerRef.current) {
             containerRef.current.appendChild(canvas)
@@ -143,6 +140,9 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         }
         console.log('loading image into canvas')
         const bitmap = await image.loadBitmap()
+        if (!bitmap) {
+            return
+        }
         texture.image = bitmap
         texture.needsUpdate = true
         await updateCanvas({ isPreview: true })
@@ -225,54 +225,67 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             className='shrink-0 w-full grow flex flex-col gap-3 pt-0 p-3'
         >
             <div className='flex flex-col items-center justify-center'>
-                <CanvasComponent className='flex grow flex-col rounded-md' />
+                <CanvasComponent className='flex flex-col rounded-md' />
             </div>
-
-            <div className='grow flex flex-row w-full gap-3'>
+            <hr className='w-full border-t ' />
+            <div className=' flex flex-row w-full gap-3'>
                 {(['x', 'y', 'z'] as const).map((axis) => (
-                    <label className='flex flex-col grow gap-2' key={axis}>
-                        {axis.toUpperCase()}:
+                    <label className='flex flex-col grow gap-0' key={axis}>
+                        <div>{axis}</div>
                         <input
                             type='range'
                             defaultValue={0}
+                            ref={(el) => {
+                                setRangeProgress(el)
+                            }}
                             min='-40'
                             max='40'
-                            className='w-full'
+                            className='w-full '
                             value={rotations[axis]}
-                            onChange={(event) =>
+                            onChange={(event) => {
+                                setRangeProgress(event.target)
                                 handleRotationChange(
                                     axis,
                                     Number(event.target.value),
                                 )
-                            }
+                            }}
                         />
                     </label>
                 ))}
             </div>
-            <label className='flex flex-col grow gap-2'>
-                Color:
-                <input
-                    type='color'
-                    className='w-full'
-                    value={color}
-                    onChange={(event) => setColor(event.target.value)}
-                />
-            </label>
-            <label className='flex flex-col grow gap-2'>
-                Intensity:
-                <input
-                    type='range'
-                    defaultValue={0.5}
-                    min='0'
-                    max='2'
-                    step='0.01'
-                    className='w-full'
-                    value={intensity}
-                    onChange={(event) =>
-                        setIntensity(Number(event.target.value))
-                    }
-                />
-            </label>
+
+            <div className='flex gap-6 items-start'>
+                <div className='flex flex-col h-full justify-between  grow gap-1'>
+                    <div className='flex'>
+                        <div className=''>Intensity:</div>
+                    </div>
+                    <input
+                        type='range'
+                        defaultValue={0.5}
+                        min='0'
+                        max='2'
+                        step='0.01'
+                        className='w-full'
+                        ref={(el) => {
+                            setRangeProgress(el)
+                        }}
+                        value={intensity}
+                        onChange={(event) => {
+                            setRangeProgress(event.target)
+                            setIntensity(Number(event.target.value))
+                        }}
+                    />
+                </div>
+                <div className='flex flex-col  gap-2'>
+                    Background Color:
+                    <input
+                        type='color'
+                        className='w-full'
+                        value={color}
+                        onChange={(event) => setColor(event.target.value)}
+                    />
+                </div>
+            </div>
             <Button
                 isLoading={isLoading}
                 variant='primary'
@@ -353,4 +366,17 @@ const filmGrainShader = {
         gl_FragColor = vec4(texel.rgb + grain, texel.a);
       }
     `,
+}
+
+function setRangeProgress(el?: HTMLInputElement | null) {
+    if (!el) {
+        return
+    }
+    const range = el
+    const min = range.min ? parseFloat(range.min) : 0
+    const max = range.max ? parseFloat(range.max) : 100
+    const value = parseFloat(range.value)
+
+    const progress = ((value - min) / (max - min)) * 100
+    range.style.setProperty('--progress', `${progress}%`)
 }
