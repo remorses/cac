@@ -21,7 +21,14 @@ import {
 } from 'react'
 import './App.css'
 
-import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
+import {
+    assert,
+    bytesFromCanvas,
+    maxKey,
+    sleep,
+    useAsyncEffect,
+    VignetteShader,
+} from './utils'
 
 import { applyImageEffect } from './canvas'
 
@@ -95,22 +102,19 @@ function CanvasComponent({ ...rest }) {
 
 function RotationsImage({ image }: { image: ImageAsset }) {
     const [rotations, setRotations] = useState({ x: 0, y: 0, z: 0 })
-    const canvasRef = useRef<HTMLCanvasElement>()
-    const [hasPainted, setHasPainted] = useState(false)
 
+    const [isLoading, setIsLoading] = useState(true)
     const handleSaveImage = async () => {
-        const ctx = canvasRef.current?.getContext('2d')
-        assert(ctx)
+        setIsLoading(true)
+        await updateCanvas({ isPreview: false })
 
         const originalImage = await image.getData()
 
-        assert(canvasRef.current)
-        const nextBytes = await bytesFromCanvas(canvasRef.current)
+        const nextBytes = await bytesFromCanvas(canvas)
         assert(nextBytes)
 
         const start = performance.now()
 
-        framer.hideUI()
         await framer.setImage({
             image: {
                 bytes: nextBytes,
@@ -120,6 +124,8 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         void framer.closePlugin('Image saved...')
 
+        setIsLoading(false)
+        framer.hideUI()
         console.log('total duration', performance.now() - start)
     }
     const [ref, { height }] = useMeasure()
@@ -134,12 +140,22 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         })
     }, [height])
 
-    const updateCanvas = async () => {
+    useAsyncEffect(async () => {
+        if (!image) {
+            return
+        }
+        console.log('loading image into canvas')
         const bitmap = await image.loadBitmap()
-        const { x: rotationX, y: rotationY, z: rotationZ } = rotations
         texture.image = bitmap
         texture.needsUpdate = true
-        const aspectRatio = bitmap.width / bitmap.height
+        await updateCanvas({ isPreview: true })
+    }, [image])
+
+    const updateCanvas = async ({ isPreview = false }) => {
+        const { x: rotationX, y: rotationY, z: rotationZ } = rotations
+
+        const img = texture.image
+        const aspectRatio = img.width / img.height
 
         camera.aspect = aspectRatio
         camera.updateProjectionMatrix()
@@ -149,11 +165,16 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             'texture size',
             texture.image.width,
             texture.image.height,
-            bitmap.width,
-            bitmap.height,
+            img.width,
+            img.height,
         )
-        renderer.setSize(bitmap?.width, bitmap?.height)
-        renderer.setViewport(0, 0, bitmap.width, bitmap.height)
+        renderer.setSize(img?.width, img?.height)
+        if (isPreview) {
+            renderer.setPixelRatio(1 / 4)
+        } else {
+            renderer.setPixelRatio(1)
+        }
+        renderer.setViewport(0, 0, img.width, img.height)
         plane.rotation.set(rotationX * deg, rotationY * deg, rotationZ * deg)
 
         camera.lookAt(plane.position)
@@ -162,8 +183,8 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         const bokehPass = new BokehPass(scene, camera, {
             focus: camera.position.z,
-            aperture: 0.1,
-            maxblur: 0.03,
+            aperture: 0.12,
+            maxblur: 0.05,
         })
         composer.addPass(bokehPass)
 
@@ -179,7 +200,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         switch (prominentAxis) {
             case 'x':
-                edge = rotationX > 0 ? 3 : 2 // Bottom if positive, top if negative
+                edge = rotationX > 0 ? 2 : 3 // Bottom if positive, top if negative
                 break
             case 'y':
                 edge = rotationY > 0 ? 0 : 1 // Right if positive, left if negative
@@ -190,8 +211,9 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         const vignettePass = new ShaderPass(vignetteShader)
         composer.addPass(vignettePass)
         composer.render()
-
-        setHasPainted(true)
+        if (isPreview) {
+            setIsLoading(false)
+        }
     }
 
     const handleRotationChange = useCallback(
@@ -209,7 +231,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             if (controller.signal.aborted) {
                 return
             }
-            await updateCanvas()
+            await updateCanvas({ isPreview: true })
         },
         [image, rotations],
     )
@@ -219,9 +241,8 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             ref={ref}
             className='shrink-0 w-full grow flex flex-col gap-3 pt-0 p-3'
         >
-            <div className='canvas-container'>
-                <CanvasComponent className='flex flex-col rounded-md' />
-                {!hasPainted && <div className='framer-spinner' />}
+            <div className='flex flex-col items-center justify-center'>
+                <CanvasComponent className='flex grow flex-col rounded-md' />
             </div>
 
             <div className='grow flex flex-row w-full gap-3'>
@@ -231,8 +252,8 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                         <input
                             type='range'
                             defaultValue={0}
-                            min='-20'
-                            max='20'
+                            min='-40'
+                            max='40'
                             className='w-full'
                             value={rotations[axis]}
                             onChange={(event) =>
@@ -246,63 +267,13 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                 ))}
             </div>
 
-            <Button variant='primary' onClick={handleSaveImage}>
+            <Button
+                isLoading={isLoading}
+                variant='primary'
+                onClick={handleSaveImage}
+            >
                 Save Image
             </Button>
         </div>
     )
-}
-
-class VignetteShader {
-    uniforms: {
-        tDiffuse: { value?: THREE.Texture | null }
-        offset: { value: number }
-        darkness: { value: number }
-        edge: { value: number }
-    }
-    vertexShader: string
-    fragmentShader: string
-    constructor(edge: number) {
-        this.uniforms = {
-            tDiffuse: { value: null },
-            offset: { value: 1 },
-            darkness: { value: 1 },
-            edge: { value: edge }, // Parametrize edge
-        }
-        this.vertexShader = `
-          varying vec2 vUv;
-          void main() {
-              vUv = uv; // Pass UV coordinates to the fragment shader
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); // Set the position of the vertex
-          }
-      `
-        this.fragmentShader = `
-          uniform sampler2D tDiffuse; // The texture to apply the vignette effect to
-          uniform float offset; // The offset value for the vignette effect
-          uniform float darkness; // The darkness value for the vignette effect
-          uniform int edge; // The edge to apply the vignette effect to
-          varying vec2 vUv; // The UV coordinates passed from the vertex shader
-          void main() {
-              vec4 texel = texture2D(tDiffuse, vUv); // Get the color of the current pixel
-              vec2 uv = (vUv - 0.5) * 2.0; // Transform UV coordinates to range [-1, 1]
-              float vignetteAmount;
-              if (edge == 0) { // Apply vignette effect on the right edge
-                  vignetteAmount = 1.0 - uv.x;
-              } else if (edge == 1) { // Apply vignette effect on the left edge
-                  vignetteAmount = 1.0 + uv.x;
-              } else if (edge == 2) { // Apply vignette effect on the top edge
-                  vignetteAmount = 1.0 - uv.y;
-              } else if (edge == 3) { // Apply vignette effect on the bottom edge
-                  vignetteAmount = 1.0 + uv.y;
-              }
-              vignetteAmount = min(vignetteAmount, smoothstep(0.0, offset, vignetteAmount)); // Apply only if it darkens the image
-              texel.rgb = mix(texel.rgb, texel.rgb * vignetteAmount, darkness); // Mix the original color with the vignette effect
-              gl_FragColor = texel; // Set the final color of the pixel
-          }
-      `
-    }
-}
-
-const maxKey = (obj: { [key: string]: number }) => {
-    return Object.keys(obj).reduce((a, b) => (obj[a] > obj[b] ? a : b))
 }
