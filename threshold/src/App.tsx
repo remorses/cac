@@ -172,11 +172,11 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         plane.rotation.set(rotationX * deg, rotationY * deg, 0)
 
-        const yOffset = (angle: number) =>
-            -0.3 * (angle / (45 + Math.abs(angle)))
+        const offset = (angle: number) =>
+            -0.2 * (angle / (45 + Math.abs(angle)))
         camera.lookAt(
-            plane.position.x + yOffset(rotationY),
-            plane.position.y,
+            plane.position.x + offset(rotationY),
+            plane.position.y + offset(rotationX),
             plane.position.z,
         )
         const composer = new EffectComposer(renderer)
@@ -355,7 +355,7 @@ const vignetteShader = {
         rotatedUv += 0.5;
         
         // Calculate vignette
-        float vignette = smoothstep(1.0, 0.4, rotatedUv.x);
+        float vignette = smoothstep(1.1, 0.4, rotatedUv.x);
         vignette = pow(vignette, intensity);
         gl_FragColor = vec4(mix(texel.rgb, color, 1.0 - vignette), texel.a);
         
