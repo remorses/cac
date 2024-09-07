@@ -254,7 +254,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                 {(['x', 'y'] as const).map((axis) => (
                     <SliderAndNumber
                         key={axis}
-                        label={axis}
+                        label={`Angle on ${axis}`}
                         value={rotations[axis]}
                         onChange={(v) => {
                             handleRotationChange(axis, Number(v))
