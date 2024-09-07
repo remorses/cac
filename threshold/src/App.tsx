@@ -191,6 +191,8 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         vignettePass.uniforms.color.value = threeColor
         vignettePass.uniforms.intensity.value = intensity
         composer.addPass(vignettePass)
+
+        composer.addPass(new ShaderPass(filmGrainShader))
         composer.render()
         if (isPreview) {
             setIsLoading(false)
@@ -318,6 +320,37 @@ const vignetteShader = {
         vignette = pow(vignette, intensity);
         
         gl_FragColor = vec4(texel.rgb * mix(texel.rgb, color, 1.0 - vignette), texel.a);
+      }
+    `,
+}
+
+const filmGrainShader = {
+    uniforms: {
+        tDiffuse: { value: null },
+        time: { value: 1.0 },
+        grainIntensity: { value: 0.06 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float time;
+      uniform float grainIntensity;
+      varying vec2 vUv;
+      
+      float random(vec2 co) {
+        return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      }
+      
+      void main() {
+        vec4 texel = texture2D(tDiffuse, vUv);
+        float grain = random(vUv + time) * grainIntensity;
+        gl_FragColor = vec4(texel.rgb + grain, texel.a);
       }
     `,
 }
