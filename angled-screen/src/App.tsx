@@ -339,7 +339,8 @@ const SliderAndNumber = ({
             <input
                 type='range'
                 defaultValue={0}
-                className='w-auto'
+                {...rangeProps} // Spread rangeProps
+                className='w-auto slider'
                 ref={(el) => {
                     setRangeProgress(el)
                 }}
@@ -348,7 +349,6 @@ const SliderAndNumber = ({
                     setRangeProgress(event.target)
                     onChange(Number(event.target.value))
                 }}
-                {...rangeProps} // Spread rangeProps
             />
         </div>
     )

@@ -27,6 +27,64 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3(@types/node@22.5.4)(terser@5.31.6)
 
+  angled-screen:
+    dependencies:
+      '@types/three':
+        specifier: ^0.168.0
+        version: 0.168.0
+      colord:
+        specifier: ^2.9.3
+        version: 2.9.3
+      framer-plugin:
+        specifier: ^0.3.3
+        version: 0.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      postcss:
+        specifier: 8.4.24
+        version: 8.4.24
+      react:
+        specifier: ^18
+        version: 18.3.1
+      react-dom:
+        specifier: ^18
+        version: 18.3.1(react@18.3.1)
+      react-use-measure:
+        specifier: ^2.1.1
+        version: 2.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tailwindcss:
+        specifier: ^3.4.10
+        version: 3.4.10
+      template-rewrite-framer:
+        specifier: workspace:^
+        version: link:../template-rewrite-framer
+      three:
+        specifier: ^0.168.0
+        version: 0.168.0
+      vite-plugin-environment:
+        specifier: ^1.1.3
+        version: 1.1.3(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+      vite-plugin-mkcert:
+        specifier: ^1.17.5
+        version: 1.17.6(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+      vite-tsconfig-paths:
+        specifier: ^4.3.2
+        version: 4.3.2(typescript@5.5.4)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+    devDependencies:
+      '@types/react':
+        specifier: ^18
+        version: 18.3.3
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.0
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.6.0
+        version: 3.7.0(@swc/helpers@0.5.13)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+      vite:
+        specifier: ^5.4.3
+        version: 5.4.3(@types/node@22.5.4)(terser@5.31.6)
+      vite-plugin-framer:
+        specifier: ^0.0.10
+        version: 0.0.10(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+
   autofill-extension:
     dependencies:
       '@ai-sdk/anthropic':
@@ -366,18 +424,6 @@ importers:
         specifier: ^1.45.2
         version: 1.45.2
 
-  screenstab:
-    dependencies:
-      '@types/three':
-        specifier: ^0.168.0
-        version: 0.168.0
-      three:
-        specifier: ^0.168.0
-        version: 0.168.0
-      vite:
-        specifier: ^5.4.3
-        version: 5.4.3(@types/node@22.5.4)(terser@5.31.6)
-
   spiceflow:
     dependencies:
       zod:
@@ -544,58 +590,6 @@ importers:
         version: 18.3.0
       '@vitejs/plugin-react-swc':
         specifier: ^3.7.0
-        version: 3.7.0(@swc/helpers@0.5.13)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
-      vite:
-        specifier: ^5.4.3
-        version: 5.4.3(@types/node@22.5.4)(terser@5.31.6)
-      vite-plugin-framer:
-        specifier: ^0.0.10
-        version: 0.0.10(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
-
-  threshold:
-    dependencies:
-      '@types/three':
-        specifier: ^0.168.0
-        version: 0.168.0
-      colord:
-        specifier: ^2.9.3
-        version: 2.9.3
-      framer-plugin:
-        specifier: ^0.3.3
-        version: 0.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      postcss:
-        specifier: 8.4.24
-        version: 8.4.24
-      react:
-        specifier: ^18
-        version: 18.3.1
-      react-dom:
-        specifier: ^18
-        version: 18.3.1(react@18.3.1)
-      react-use-measure:
-        specifier: ^2.1.1
-        version: 2.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwindcss:
-        specifier: ^3.4.10
-        version: 3.4.10
-      template-rewrite-framer:
-        specifier: workspace:^
-        version: link:../template-rewrite-framer
-      three:
-        specifier: ^0.168.0
-        version: 0.168.0
-      vite-plugin-mkcert:
-        specifier: ^1.17.5
-        version: 1.17.6(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
-    devDependencies:
-      '@types/react':
-        specifier: ^18
-        version: 18.3.5
-      '@types/react-dom':
-        specifier: ^18
-        version: 18.3.0
-      '@vitejs/plugin-react-swc':
-        specifier: ^3.6.0
         version: 3.7.0(@swc/helpers@0.5.13)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
       vite:
         specifier: ^5.4.3
@@ -4341,9 +4335,6 @@ packages:
 
   '@types/react@18.3.3':
     resolution: {integrity: sha512-hti/R0pS0q1/xx+TsI73XIqk26eBsISZ2R0wUijXIngRK9R/e7Xw/cXVxQK7R5JjW+SV4zGcn5hXjudkN/pLIw==}
-
-  '@types/react@18.3.5':
-    resolution: {integrity: sha512-WeqMfGJLGuLCqHGYRGHxnKrXcTitc6L/nBUWfWPcTarG3t9PsquqUMuVeXZeca+mglY4Vo5GZjCi0A3Or2lnxA==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -10300,7 +10291,7 @@ snapshots:
       '@babel/parser': 7.25.6
       '@babel/template': 7.25.0
       '@babel/types': 7.25.6
-      debug: 4.3.6
+      debug: 4.3.7
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -14115,6 +14106,7 @@ snapshots:
   '@types/node@20.16.5':
     dependencies:
       undici-types: 6.19.8
+    optional: true
 
   '@types/node@20.2.5': {}
 
@@ -14155,11 +14147,6 @@ snapshots:
       '@types/react': 18.3.3
 
   '@types/react@18.3.3':
-    dependencies:
-      '@types/prop-types': 15.7.12
-      csstype: 3.1.3
-
-  '@types/react@18.3.5':
     dependencies:
       '@types/prop-types': 15.7.12
       csstype: 3.1.3
@@ -14323,7 +14310,7 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.19
+      esbuild: 0.17.6
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -14350,7 +14337,7 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.19
+      esbuild: 0.17.6
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -14677,14 +14664,14 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
     optional: true
 
   agent-base@7.1.1:
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
 
@@ -15930,6 +15917,7 @@ snapshots:
       '@esbuild/win32-arm64': 0.17.19
       '@esbuild/win32-ia32': 0.17.19
       '@esbuild/win32-x64': 0.17.19
+    optional: true
 
   esbuild@0.17.6:
     optionalDependencies:
@@ -16827,7 +16815,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.6
+      debug: 4.3.7
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -17173,7 +17161,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.16.5
+      '@types/node': 22.5.4
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -20070,7 +20058,7 @@ snapshots:
   vite-node@1.6.0(@types/node@20.14.10)(terser@5.31.6):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.5
+      debug: 4.3.7
       pathe: 1.1.2
       picocolors: 1.1.0
       vite: 5.4.3(@types/node@20.14.10)(terser@5.31.6)
@@ -20172,7 +20160,7 @@ snapshots:
 
   vite-tsconfig-paths@4.3.2(typescript@5.5.4)(vite@5.4.3(@types/node@20.14.10)(terser@5.31.6)):
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.7
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.5.4)
     optionalDependencies:
@@ -20183,7 +20171,7 @@ snapshots:
 
   vite-tsconfig-paths@4.3.2(typescript@5.5.4)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6)):
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.7
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.5.4)
     optionalDependencies:

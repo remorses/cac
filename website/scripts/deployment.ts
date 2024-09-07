@@ -14,8 +14,10 @@ async function main() {
         shell(`pnpm --filter template-rewrite-framer build`, {
             env,
         }),
-
         shell(`pnpm --filter github-framer build`, {
+            env,
+        }),
+        shell(`pnpm --filter angled-screen build`, {
             env,
         }),
     ])
