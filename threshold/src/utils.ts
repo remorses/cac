@@ -53,13 +53,19 @@ export function assert(
     throw e
 }
 
-export function useAsyncEffect(effect: () => Promise<void>, deps: any[]) {
-    const isProcessing = useRef(false)
+export function useAsyncEffect(
+    effect: (abortController: AbortController) => Promise<void>,
+    deps: any[],
+) {
+    const isProcessing = useRef<boolean>(false)
 
+    const abortController = useRef<AbortController>()
     useEffect(() => {
         if (!isProcessing.current) {
+            abortController.current?.abort()
+            abortController.current = new AbortController()
             isProcessing.current = true
-            effect()
+            effect(abortController.current)
                 .catch((error) => {
                     console.error('Error in useAsyncEffect:', error)
                 })
@@ -67,6 +73,7 @@ export function useAsyncEffect(effect: () => Promise<void>, deps: any[]) {
                     isProcessing.current = false
                 })
         }
+        return () => {}
     }, deps)
 }
 
