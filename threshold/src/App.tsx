@@ -61,10 +61,10 @@ const renderer = new THREE.WebGLRenderer({
     preserveDrawingBuffer: true,
     alpha: true,
 })
-// renderer.outputColorSpace = THREE.SRGBColorSpace
+renderer.outputColorSpace = THREE.SRGBColorSpace
 
 const texture = new THREE.Texture()
-// texture.colorSpace = THREE.LinearSRGBColorSpace
+texture.colorSpace = THREE.LinearSRGBColorSpace
 
 texture.flipY = false
 
