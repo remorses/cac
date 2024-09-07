@@ -55,7 +55,12 @@ canvas.className = 'rounded-md !max-w-full !h-auto'
 const scene = new THREE.Scene()
 scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, canvas })
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    canvas,
+    preserveDrawingBuffer: true,
+    alpha: true,
+})
 // renderer.outputColorSpace = THREE.SRGBColorSpace
 
 const texture = new THREE.Texture()
@@ -102,12 +107,21 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         setIsLoading(true)
         await sleep(20)
         await updateCanvas({ isPreview: false })
-
+        await sleep(20)
         const originalImage = await image.getData()
 
         const nextBytes = await bytesFromCanvas(canvas)
+
+        // const img = document.createElement('img')
+        // img.src = URL.createObjectURL(new Blob([nextBytes!]))
+        // document.body.appendChild(img)
         assert(nextBytes)
 
+        console.log(
+            'saving image with type',
+            originalImage.mimeType,
+            nextBytes.length,
+        )
         const start = performance.now()
 
         await framer.setImage({
@@ -144,8 +158,16 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         if (!bitmap) {
             return
         }
+        texture.dispose()
         texture.image = bitmap
         texture.needsUpdate = true
+        const img = texture.image
+        const aspectRatio = img.width / img.height
+        camera.aspect = aspectRatio
+        camera.updateProjectionMatrix()
+        plane.scale.set(aspectRatio, 1, 1)
+        renderer.setSize(img?.width, img?.height)
+        renderer.setViewport(0, 0, img.width, img.height)
         await updateCanvas({ isPreview: true })
     }, [image])
 
@@ -153,18 +175,12 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         const { x: rotationX, y: rotationY } = rotations
         const threeColor = new THREE.Color(color)
         const img: HTMLImageElement | null = texture.image
-
+        scene.background = threeColor
         let aspectRatio = 1
         if (img) {
             aspectRatio = img.width / img.height
-
-            camera.aspect = aspectRatio
-            camera.updateProjectionMatrix()
-            plane.scale.set(aspectRatio, 1, 1)
-            scene.background = threeColor
-
-            renderer.setSize(img?.width, img?.height)
-            renderer.setViewport(0, 0, img.width, img.height)
+        } else {
+            console.log('no image found in texture!')
         }
         if (isPreview) {
             renderer.setPixelRatio(1 / 4)
@@ -201,6 +217,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         composer.addPass(new ShaderPass(filmGrainShader))
         composer.render()
+
         if (isPreview) {
             setIsLoading(false)
         }
@@ -221,16 +238,16 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             if (controller.signal.aborted) {
                 return
             }
+            if (!image) {
+                return
+            }
             await updateCanvas({ isPreview: true })
         },
         [rotations, color, intensity, focus],
     )
 
     return (
-        <div
-            ref={ref}
-            className='shrink-0 w-full grow flex flex-col gap-4 pt-0 p-4'
-        >
+        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-4'>
             <div className='flex flex-col items-center justify-center'>
                 <CanvasComponent className='flex flex-col rounded-md' />
             </div>
@@ -244,7 +261,6 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                             handleRotationChange(axis, Number(v))
                         }}
                         rangeProps={{
-                            defaultValue: 0,
                             min: '-40',
                             max: '40',
                         }}
@@ -259,7 +275,6 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                     setIntensity(Number(v))
                 }}
                 rangeProps={{
-                    defaultValue: 0.5,
                     min: '0',
                     max: '2',
                     step: '0.01',
@@ -272,13 +287,12 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                     setFocus(Number(v))
                 }}
                 rangeProps={{
-                    defaultValue: 0.6,
                     min: '0.4',
                     max: '0.8',
                     step: '0.01',
                 }}
             />
-            <div className='grid w-full grid-cols-[80px_80px_1fr] gap-4 items-center'>
+            <div className='grid w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
                 <div>Background</div>
 
                 <input
@@ -312,7 +326,7 @@ const SliderAndNumber = ({
     rangeProps: React.InputHTMLAttributes<HTMLInputElement> // Added rangeProps type
 }) => {
     return (
-        <div className='grid w-full grid-cols-[80px_80px_1fr] gap-4 items-center'>
+        <div className='grid w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
             <div>{label}</div>
             <input
                 type='number'
