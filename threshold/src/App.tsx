@@ -21,7 +21,7 @@ import './App.css'
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
-const width = 280
+const width = 300
 const initialImage = await framer.getImage()
 void framer.showUI({ position: 'top left', width, height: 360 })
 
@@ -229,12 +229,11 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     return (
         <div
             ref={ref}
-            className='shrink-0 w-full grow flex flex-col gap-3 pt-0 p-3'
+            className='shrink-0 w-full grow flex flex-col gap-4 pt-0 p-4'
         >
             <div className='flex flex-col items-center justify-center'>
                 <CanvasComponent className='flex flex-col rounded-md' />
             </div>
-            <hr className='w-full border-t ' />
             <div className=' flex flex-col w-full gap-3'>
                 {(['x', 'y'] as const).map((axis) => (
                     <SliderAndNumber
@@ -279,14 +278,16 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                     step: '0.01',
                 }}
             />
-            <div className='flex items-center flex-row gap-2'>
+            <div className='grid w-full grid-cols-[80px_80px_1fr] gap-4 items-center'>
                 <div>Background</div>
+
                 <input
                     type='color'
-                    className=''
+                    className='w-auto ml-0'
                     value={color}
                     onChange={(event) => setColor(event.target.value)}
                 />
+                <div className=''></div>
             </div>
 
             <Button
@@ -311,7 +312,7 @@ const SliderAndNumber = ({
     rangeProps: React.InputHTMLAttributes<HTMLInputElement> // Added rangeProps type
 }) => {
     return (
-        <div className='flex w-full flex-row grow gap-4 p-2 items-center'>
+        <div className='grid w-full grid-cols-[80px_80px_1fr] gap-4 items-center'>
             <div>{label}</div>
             <input
                 type='number'
@@ -319,12 +320,12 @@ const SliderAndNumber = ({
                 onChange={(event) => {
                     onChange(Number(event.target.value))
                 }}
-                className=''
+                className=' w-auto'
             />
             <input
                 type='range'
                 defaultValue={0}
-                className='grow'
+                className='w-auto'
                 ref={(el) => {
                     setRangeProgress(el)
                 }}
