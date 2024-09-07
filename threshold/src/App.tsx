@@ -259,7 +259,7 @@ const vignetteShader = {
     uniforms: {
         tDiffuse: { value: null },
         rotation: { value: 0 },
-        intensity: { value: 1.0 },
+        intensity: { value: 1 },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -285,7 +285,7 @@ const vignetteShader = {
         rotatedUv += 0.5;
         
         // Calculate vignette
-        float vignette = smoothstep(0.8, 0.1, rotatedUv.x);
+        float vignette = smoothstep(0.96, 0.0, rotatedUv.x);
         vignette = pow(vignette, intensity);
         
         gl_FragColor = vec4(texel.rgb * vignette, texel.a);
