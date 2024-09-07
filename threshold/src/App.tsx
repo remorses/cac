@@ -318,8 +318,8 @@ const vignetteShader = {
         // Calculate vignette
         float vignette = smoothstep(1.0, 0.4, rotatedUv.x);
         vignette = pow(vignette, intensity);
+        gl_FragColor = vec4(mix(texel.rgb, color, 1.0 - vignette), texel.a);
         
-        gl_FragColor = vec4(texel.rgb * mix(texel.rgb, color, 1.0 - vignette), texel.a);
       }
     `,
 }
