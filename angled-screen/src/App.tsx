@@ -17,7 +17,6 @@ import {
     useRef,
     useState,
 } from 'react'
-import './App.css'
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
@@ -247,7 +246,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
     )
 
     return (
-        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-4'>
+        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
             <div className='flex flex-col items-center justify-center'>
                 <CanvasComponent className='flex flex-col rounded-md' />
             </div>
@@ -269,18 +268,6 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             </div>
 
             <SliderAndNumber
-                label='Intensity'
-                value={intensity}
-                onChange={(v) => {
-                    setIntensity(Number(v))
-                }}
-                rangeProps={{
-                    min: '0',
-                    max: '2',
-                    step: '0.01',
-                }}
-            />
-            <SliderAndNumber
                 label='Focus'
                 value={focus}
                 onChange={(v) => {
@@ -289,6 +276,18 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                 rangeProps={{
                     min: '0.4',
                     max: '0.8',
+                    step: '0.01',
+                }}
+            />
+            <SliderAndNumber
+                label='Shadow'
+                value={intensity}
+                onChange={(v) => {
+                    setIntensity(Number(v))
+                }}
+                rangeProps={{
+                    min: '0',
+                    max: '2',
                     step: '0.01',
                 }}
             />
