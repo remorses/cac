@@ -95,7 +95,8 @@ function CanvasComponent({ ...rest }) {
 
 function RotationsImage({ image }: { image: ImageAsset }) {
     const [rotations, setRotations] = useState({ x: 0, y: 0, z: 0 })
-
+    const [color, setColor] = useState('#000000')
+    const [intensity, setIntensity] = useState(1)
     const [isLoading, setIsLoading] = useState(true)
     const handleSaveImage = async () => {
         setIsLoading(true)
@@ -146,14 +147,14 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
     const updateCanvas = async ({ isPreview = false }) => {
         const { x: rotationX, y: rotationY, z: rotationZ } = rotations
-
+        const threeColor = new THREE.Color(color)
         const img = texture.image
         const aspectRatio = img.width / img.height
 
         camera.aspect = aspectRatio
         camera.updateProjectionMatrix()
         plane.scale.set(aspectRatio, 1, 1)
-
+        scene.background = threeColor
         console.log(
             'texture size',
             texture.image.width,
@@ -176,6 +177,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
 
         const bokehPass = new BokehPass(scene, camera, {
             focus: camera.position.z,
+            aspect: aspectRatio,
             aperture: 0.12,
             maxblur: 0.05,
         })
@@ -186,7 +188,8 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         let vignetteRotation = Math.atan2(-rotationX, rotationY)
 
         vignettePass.uniforms.rotation.value = vignetteRotation
-        vignettePass.uniforms.color.value = new THREE.Color(color)
+        vignettePass.uniforms.color.value = threeColor
+        vignettePass.uniforms.intensity.value = intensity
         composer.addPass(vignettePass)
         composer.render()
         if (isPreview) {
@@ -202,7 +205,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         },
         [updateCanvas, rotations],
     )
-    const [color, setColor] = useState('#000000')
+
     useAsyncEffect(
         async (controller) => {
             await sleep(50)
@@ -211,7 +214,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             }
             await updateCanvas({ isPreview: true })
         },
-        [image, rotations, color],
+        [rotations, color, intensity],
     )
 
     return (
@@ -253,7 +256,21 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                     onChange={(event) => setColor(event.target.value)}
                 />
             </label>
-
+            <label className='flex flex-col grow gap-2'>
+                Intensity:
+                <input
+                    type='range'
+                    defaultValue={0.5}
+                    min='0'
+                    max='2'
+                    step='0.01'
+                    className='w-full'
+                    value={intensity}
+                    onChange={(event) =>
+                        setIntensity(Number(event.target.value))
+                    }
+                />
+            </label>
             <Button
                 isLoading={isLoading}
                 variant='primary'
@@ -269,7 +286,7 @@ const vignetteShader = {
     uniforms: {
         tDiffuse: { value: null },
         rotation: { value: 0 },
-        intensity: { value: 1 },
+        intensity: { value: 0.5 },
         color: { value: new THREE.Color(0x000000) }, // Added color parameter
     },
     vertexShader: `
@@ -297,7 +314,7 @@ const vignetteShader = {
         rotatedUv += 0.5;
         
         // Calculate vignette
-        float vignette = smoothstep(0.96, 0.0, rotatedUv.x);
+        float vignette = smoothstep(1.0, 0.4, rotatedUv.x);
         vignette = pow(vignette, intensity);
         
         gl_FragColor = vec4(texel.rgb * mix(texel.rgb, color, 1.0 - vignette), texel.a);
