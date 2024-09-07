@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 /**
  * Convenience method to load an image from a canvas.
  * As a transferable bytes array
