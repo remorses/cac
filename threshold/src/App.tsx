@@ -21,14 +21,7 @@ import {
 } from 'react'
 import './App.css'
 
-import {
-    assert,
-    bytesFromCanvas,
-    maxKey,
-    sleep,
-    useAsyncEffect,
-    VignetteShader,
-} from './utils'
+import { assert, bytesFromCanvas, maxKey, sleep, useAsyncEffect } from './utils'
 
 import { applyImageEffect } from './canvas'
 
@@ -188,27 +181,11 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         })
         composer.addPass(bokehPass)
 
-        // Determine the most prominent rotation axis
-        const absRotations = {
-            x: Math.abs(rotationX),
-            y: Math.abs(rotationY),
-            // z: Math.abs(rotationZ),
-        }
-        const prominentAxis = maxKey(absRotations)
-
-        let edge = 0 // Default to right edge
-
-        switch (prominentAxis) {
-            case 'x':
-                edge = rotationX > 0 ? 2 : 3 // Bottom if positive, top if negative
-                break
-            case 'y':
-                edge = rotationY > 0 ? 0 : 1 // Right if positive, left if negative
-                break
-        }
-
-        const vignetteShader = new VignetteShader(edge)
         const vignettePass = new ShaderPass(vignetteShader)
+
+        let vignetteRotation = Math.atan2(-rotationX, rotationY)
+
+        vignettePass.uniforms.rotation.value = vignetteRotation
         composer.addPass(vignettePass)
         composer.render()
         if (isPreview) {
@@ -276,4 +253,42 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             </Button>
         </div>
     )
+}
+
+const vignetteShader = {
+    uniforms: {
+        tDiffuse: { value: null },
+        rotation: { value: 0 },
+        intensity: { value: 1.0 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float rotation;
+      uniform float intensity;
+      varying vec2 vUv;
+      
+      void main() {
+        vec4 texel = texture2D(tDiffuse, vUv);
+        
+        // Rotate UV coordinates
+        vec2 rotatedUv = vUv - 0.5;
+        float s = sin(rotation);
+        float c = cos(rotation);
+        rotatedUv = vec2(rotatedUv.x * c - rotatedUv.y * s, rotatedUv.x * s + rotatedUv.y * c);
+        rotatedUv += 0.5;
+        
+        // Calculate vignette
+        float vignette = smoothstep(0.8, 0.1, rotatedUv.x);
+        vignette = pow(vignette, intensity);
+        
+        gl_FragColor = vec4(texel.rgb * vignette, texel.a);
+      }
+    `,
 }
