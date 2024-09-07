@@ -186,6 +186,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         let vignetteRotation = Math.atan2(-rotationX, rotationY)
 
         vignettePass.uniforms.rotation.value = vignetteRotation
+        vignettePass.uniforms.color.value = new THREE.Color(color)
         composer.addPass(vignettePass)
         composer.render()
         if (isPreview) {
@@ -201,7 +202,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         },
         [updateCanvas, rotations],
     )
-
+    const [color, setColor] = useState('#000000')
     useAsyncEffect(
         async (controller) => {
             await sleep(50)
@@ -210,7 +211,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
             }
             await updateCanvas({ isPreview: true })
         },
-        [image, rotations],
+        [image, rotations, color],
     )
 
     return (
@@ -243,6 +244,15 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                     </label>
                 ))}
             </div>
+            <label className='flex flex-col grow gap-2'>
+                Color:
+                <input
+                    type='color'
+                    className='w-full'
+                    value={color}
+                    onChange={(event) => setColor(event.target.value)}
+                />
+            </label>
 
             <Button
                 isLoading={isLoading}
@@ -260,6 +270,7 @@ const vignetteShader = {
         tDiffuse: { value: null },
         rotation: { value: 0 },
         intensity: { value: 1 },
+        color: { value: new THREE.Color(0x000000) }, // Added color parameter
     },
     vertexShader: `
       varying vec2 vUv;
@@ -272,6 +283,7 @@ const vignetteShader = {
       uniform sampler2D tDiffuse;
       uniform float rotation;
       uniform float intensity;
+      uniform vec3 color; // Added color uniform
       varying vec2 vUv;
       
       void main() {
@@ -288,7 +300,7 @@ const vignetteShader = {
         float vignette = smoothstep(0.96, 0.0, rotatedUv.x);
         vignette = pow(vignette, intensity);
         
-        gl_FragColor = vec4(texel.rgb * vignette, texel.a);
+        gl_FragColor = vec4(texel.rgb * mix(texel.rgb, color, 1.0 - vignette), texel.a);
       }
     `,
 }
