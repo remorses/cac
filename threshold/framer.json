@@ -1,6 +1,6 @@
 {
     "id": "793d3c",
-    "name": "Threshold",
+    "name": "Angled Screenshot",
     "modes": ["canvas", "editImage", "image"],
     "icon": "/Threshold.png"
 }
