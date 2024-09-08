@@ -5,7 +5,7 @@
     "type": "module",
     "main": "src/api/index.ts",
     "scripts": {
-        "dev": "vite",
+        "dev": "doppler run -- vite",
         "build": "vite build ",
         "format": "prettier . --write",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -13,6 +13,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@lemonsqueezy/lemonsqueezy.js": "^3.2.0",
         "@types/three": "^0.168.0",
         "colord": "^2.9.3",
         "framer-motion": "^11.5.4",
@@ -20,6 +21,8 @@
         "postcss": "8.4.24",
         "react": "^18",
         "react-dom": "^18",
+        "react-router": "^6.25.1",
+        "react-router-dom": "^6.25.1",
         "react-use-measure": "^2.1.1",
         "tailwindcss": "^3.4.10",
         "template-rewrite-framer": "workspace:^",

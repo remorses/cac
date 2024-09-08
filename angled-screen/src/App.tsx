@@ -1,13 +1,23 @@
+import { validateLicense } from '@lemonsqueezy/lemonsqueezy.js'
 import { ImageAsset, framer } from 'framer-plugin'
+import {
+    Form,
+    RouterProvider,
+    createBrowserRouter,
+    redirect,
+    useActionData,
+    useNavigate,
+    useNavigation,
+} from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
+import { basePath, withMode } from 'template-rewrite-framer/src/lib/utils'
 import * as THREE from 'three'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
-
-const deg = Math.PI / 180
 
 import {
     startTransition,
@@ -19,6 +29,23 @@ import {
 } from 'react'
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
+enum PluginDataKeys {
+    licenseKey = 'licenseKey',
+    imagesGenerated = 'imagesGenerated',
+}
+
+enum Paths {
+    root = '/',
+    license = '/license',
+}
+
+const freeImageGenerations = 1
+
+const lemonProductId = 348518
+
+const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
+
+const deg = Math.PI / 180
 
 const width = 300
 const initialImage = await framer.getImage()
@@ -36,12 +63,138 @@ function useSelectedImage() {
     return image
 }
 
+const router = createBrowserRouter(
+    [
+        {
+            path: '/',
+            element: <RotationsImage />,
+            loader: async () => {
+                const [license, imagesGenerated] = await Promise.all([
+                    framer.getPluginData(PluginDataKeys.licenseKey),
+                    framer
+                        .getPluginData(PluginDataKeys.imagesGenerated)
+                        .then((data) => Number(data) || 0),
+                ])
+                if (!license && imagesGenerated >= freeImageGenerations) {
+                    console.log('redirecting to license')
+                    return redirect(withMode(Paths.license))
+                }
+                console.log('not redirecting to license')
+                return {}
+            },
+        },
+        {
+            path: Paths.license,
+            element: <LicenseComponent />,
+            action: async ({ request }) => {
+                const formData = await request.formData()
+                const licenseKey = formData.get('licenseKey')?.toString()
+
+                if (!licenseKey) {
+                    return { error: 'License key is required' }
+                }
+
+                try {
+                    const { data, error } = await validateLicense(
+                        licenseKey || '',
+                    )
+                    if (error) {
+                        return { error: error.message || 'Invalid license key' }
+                    }
+                    if (data.valid) {
+                        if (data.meta?.product_id !== lemonProductId) {
+                            return {
+                                error: 'License is for another product, contact support at tommy@unframer.co',
+                            }
+                        }
+                        await framer.setPluginData(
+                            PluginDataKeys.licenseKey,
+                            licenseKey,
+                        )
+                        return redirect(withMode(Paths.root))
+                    }
+                    if (!data.valid) {
+                        return {
+                            error: data.error || 'License is invalid',
+                        }
+                    }
+                    return {
+                        error: 'Unknown error validating license',
+                    }
+                } catch (error) {
+                    notifyError(error, 'Error validating license')
+                    return { error: error.message }
+                }
+            },
+        },
+    ],
+    { basename: basePath },
+)
+
+function LicenseComponent() {
+    const actionData = useActionData() as any
+
+    const navigation = useNavigation()
+    const isLoading =
+        navigation.state !== 'idle' && Boolean(navigation.formData)
+    const navigate = useNavigate()
+    return (
+        <Container>
+            <Form
+                method='POST'
+                className='flex shrink-0 w-full items-start flex-col justify-between gap-4'
+            >
+                <div className='flex flex-col text-center justify-center py-[30px] items-center text-balance gap-2 grow'>
+                    <a href={buyUrl} target='_blank' className='font-semibold'>
+                        Get a License Key
+                    </a>
+                    <div className='opacity-60'>
+                        To create more than {freeImageGenerations} images, you
+                        need a license key.{' '}
+                        <a className='underline' href={buyUrl} target='_blank'>
+                            Buy one here
+                        </a>
+                        .
+                    </div>
+                </div>
+
+                <div className='flex shrink-0 items-stretch w-full flex-col gap-3'>
+                    <input
+                        required
+                        placeholder='License Key'
+                        type='text'
+                        name='licenseKey'
+                        className='rounded-md p-2 w-full bg-framer-tertiary'
+                    />
+                    {actionData?.error && (
+                        <div className='text-red-400'>{actionData.error}</div>
+                    )}
+                    {actionData?.message && (
+                        <div className=''>{actionData.message}</div>
+                    )}
+                    <div className='flex gap-3 w-full'>
+                        <Button
+                            variant='primary'
+                            type='submit'
+                            // disabled={isLoading}
+                            isLoading={isLoading}
+                            className='w-auto grow'
+                        >
+                            Activate Key
+                        </Button>
+                    </div>
+                </div>
+            </Form>
+        </Container>
+    )
+}
+
 export function App() {
-    return <RotationsImage />
+    return <RouterProvider router={router} />
 }
 
 let canvas: HTMLCanvasElement = document.createElement('canvas')
-canvas.className = 'rounded-md !max-w-full !w-full !max-h-[280px] !h-auto'
+canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
 const scene = new THREE.Scene()
 scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
@@ -143,17 +296,6 @@ function RotationsImage() {
         framer.hideUI()
         console.log('total duration', performance.now() - start)
     }
-    const [ref, { height }] = useMeasure()
-
-    useLayoutEffect(() => {
-        console.log('opening framer ui')
-        framer.showUI({
-            // title: (handle?.handle as any) || '',
-            position: 'top left',
-            width,
-            height: height || 100,
-        })
-    }, [height])
 
     useAsyncEffect(async () => {
         if (!image) {
@@ -190,7 +332,15 @@ function RotationsImage() {
             console.log('no image found in texture!')
         }
         if (isPreview) {
-            renderer.setPixelRatio(1 / 4)
+            if (img) {
+                const perfectPixels = 600 * 600
+                const imagePixels = img.width * img.height
+                const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
+                console.log('scale down factor', scaleDownFactor)
+                if (scaleDownFactor < 1) {
+                    renderer.setPixelRatio(scaleDownFactor)
+                }
+            }
         } else {
             renderer.setPixelRatio(1)
         }
@@ -255,22 +405,21 @@ function RotationsImage() {
 
     if (!image) {
         return (
-            <div
-                ref={ref}
-                className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'
-            >
-                <p>Select an Image First</p>
-            </div>
+            <Container>
+                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
+                    <p>Select an Image First</p>
+                </div>
+            </Container>
         )
     }
 
     return (
-        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
-            <div
-                style={{ aspectRatio: aspectRatio.toFixed(2) }}
-                className='flex shrink-0 flex-col overflow-hidden items-center !max-h-[280px] justify-center'
-            >
-                <CanvasComponent className='flex flex-col rounded-md' />
+        <Container>
+            <div className='flex shrink-0 flex-col max-h-[280px] overflow-hidden items-center justify-center'>
+                <CanvasComponent
+                    style={{ aspectRatio: aspectRatio.toFixed(2) }}
+                    className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
+                />
             </div>
             <div className='shrink-0 flex flex-col w-full gap-3'>
                 {(['x', 'y'] as const).map((axis) => (
@@ -332,9 +481,28 @@ function RotationsImage() {
             >
                 Save Image
             </Button>
+        </Container>
+    )
+}
+
+const Container = ({ children, ...rest }) => {
+    const [ref, { height }] = useMeasure()
+    useLayoutEffect(() => {
+        console.log('opening framer ui')
+        framer.showUI({
+            // title: (handle?.handle as any) || '',
+            position: 'top left',
+            width,
+            height: height || 100,
+        })
+    }, [height])
+    return (
+        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
+            {children}
         </div>
     )
 }
+
 const SliderAndNumber = ({
     label,
     value,
