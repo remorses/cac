@@ -112,21 +112,32 @@ function RotationsImage() {
             return
         }
         setIsLoading(true)
-
+        await threeCanvas.update({
+            rotations,
+            color,
+            intensity,
+            focus,
+            z,
+            isPreview: false,
+        })
         if (media.type.startsWith('video/')) {
+            let maxHeight = 1080
+            let maxWidth = 1920
             let width = video?.videoWidth || 1280
             let height = video?.videoHeight || 720
-            let fps = 30
-            const config = {
-                codec: 'avc1.42001f',
-                width,
-                height,
-                bitrate: 1_000_000, // 1 Mbps
-                framerate: fps,
+            if (height > maxHeight) {
+                width = Math.round((maxHeight / height) * width)
+                height = Math.round(maxHeight)
             }
+            if (width > maxWidth) {
+                height = Math.round((maxWidth / width) * height)
+                width = Math.round(maxWidth)
+            }
+            let fps = 30
+
             const muxer = new MP4Muxer({
                 target: new ArrayBufferTarget(),
-                fastStart: 'in-memory',
+                fastStart: false,
                 firstTimestampBehavior: 'offset',
                 video: {
                     codec: 'avc',
@@ -149,8 +160,13 @@ function RotationsImage() {
                     console.error(e)
                 },
             })
-
-            await videoEncoder.configure(config)
+            await videoEncoder.configure({
+                codec: 'avc1.4D0028', // Updated to a higher AVC level
+                width,
+                height,
+                bitrate: 5_000_000, // 5 Mbps for better quality
+                framerate: fps,
+            })
 
             // Stop recording and download video
             async function stopRecording() {
@@ -158,7 +174,6 @@ function RotationsImage() {
 
                 muxer.finalize()
                 videoEncoder.close()
-
 
                 const arrayBuffer = muxer.target.buffer
                 const blob = new Blob([arrayBuffer], { type: 'video/mp4' })
@@ -169,6 +184,7 @@ function RotationsImage() {
                 a.download = 'recorded-video.mp4'
                 a.click()
                 URL.revokeObjectURL(url)
+                setIsLoading(false)
             }
             if (!video) {
                 console.error('No video element found')
@@ -189,14 +205,15 @@ function RotationsImage() {
             function renderLoop(startTime = performance.now()) {
                 threeCanvas.render()
                 captureFrame()
+                console.log(`Rendered frame: ${performance.now() * 1000}`)
                 const elapsedTime = performance.now() - startTime
-                if (elapsedTime > 6000) {
-                    console.warn(
-                        'Rendering took more than 2 seconds, stopping.',
-                    )
-                    stopRecording()
-                    return
-                }
+                // if (elapsedTime > 6000) {
+                //     console.warn(
+                //         'Rendering took more than 2 seconds, stopping.',
+                //     )
+                //     stopRecording()
+                //     return
+                // }
                 if (!video!.paused && !video!.ended) {
                     requestAnimationFrame(() => renderLoop(startTime))
                 } else {
@@ -204,38 +221,15 @@ function RotationsImage() {
                 }
             }
 
-            video.addEventListener('play', () => {
+            video.addEventListener('play', function handlePlay() {
                 renderLoop()
+                video!.removeEventListener('play', handlePlay)
             })
             video.currentTime = 0
             video.play()
-            return
+        } else {
+            setIsLoading(false)
         }
-        await threeCanvas.update({
-            rotations,
-            color,
-            intensity,
-            focus,
-            z,
-            isPreview: false,
-        })
-        await sleep(20)
-
-        const nextBytes = await bytesFromCanvas(threeCanvas.canvas)
-
-        assert(nextBytes)
-
-        console.log('saving image with type', media.type, nextBytes.length)
-        const start = performance.now()
-        const imagesGenerated =
-            Number(localStorage.getItem(PluginDataKeys.imagesGenerated)) || 0
-        localStorage.setItem(
-            PluginDataKeys.imagesGenerated,
-            String(imagesGenerated + 1),
-        )
-
-        setIsLoading(false)
-        console.log('total duration', performance.now() - start)
     }
 
     useEffect(() => {

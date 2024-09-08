@@ -93,18 +93,19 @@ export class ThreeCanvas {
     update({ rotations, color, intensity, focus, z, isPreview = false }) {
         const { x: rotationX, y: rotationY } = rotations
         const threeColor = new THREE.Color(color)
-        const img: HTMLImageElement | null = this.texture.image
+        const img = this.texture.image
         this.camera.position.z = z || 0.6
 
         this.scene.background = threeColor
         let aspectRatio = 1
         if (img) {
-            aspectRatio = img.width / img.height
+            aspectRatio =
+                (img.videoWidth || img.width) / (img.videoHeight || img.height)
         } else {
             console.log('no image found in texture!')
         }
         if (isPreview) {
-            if (img) {
+            if (img?.width) {
                 const perfectPixels = 600 * 600
                 const imagePixels = img.width * img.height
                 const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
