@@ -39,7 +39,7 @@ enum Paths {
     license = '/license',
 }
 
-const freeImageGenerations = 1
+const freeImageGenerations = 10
 
 const lemonProductId = 348518
 
@@ -282,13 +282,21 @@ function RotationsImage() {
             nextBytes.length,
         )
         const start = performance.now()
-
-        await framer.setImage({
-            image: {
-                bytes: nextBytes,
-                mimeType: originalImage.mimeType,
-            },
-        })
+        const imagesGenerated = await framer
+            .getPluginData(PluginDataKeys.imagesGenerated)
+            .then((data) => Number(data) || 0)
+        await Promise.all([
+            framer.setImage({
+                image: {
+                    bytes: nextBytes,
+                    mimeType: originalImage.mimeType,
+                },
+            }),
+            framer.setPluginData(
+                PluginDataKeys.imagesGenerated,
+                String(imagesGenerated + 1),
+            ),
+        ])
 
         void framer.closePlugin('Image saved...')
 
