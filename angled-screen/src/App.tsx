@@ -13,11 +13,6 @@ import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import { basePath, withMode } from 'template-rewrite-framer/src/lib/utils'
-import * as THREE from 'three'
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 import {
     startTransition,
@@ -29,6 +24,7 @@ import {
 } from 'react'
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
+import { ThreeCanvas } from './canvas'
 enum PluginDataKeys {
     licenseKey = 'licenseKey',
     imagesGenerated = 'imagesGenerated',
@@ -44,8 +40,6 @@ const freeImageGenerations = 10
 const lemonProductId = 348518
 
 const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
-
-const deg = Math.PI / 180
 
 const width = 300
 const initialImage = await framer.getImage()
@@ -193,39 +187,7 @@ export function App() {
     return <RouterProvider router={router} />
 }
 
-let canvas: HTMLCanvasElement = document.createElement('canvas')
-canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
-
-const scene = new THREE.Scene()
-scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
-
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    canvas,
-    preserveDrawingBuffer: true,
-    alpha: true,
-})
-if (initialImageSize) {
-    renderer.setSize(initialImageSize.width, initialImageSize.height)
-    renderer.setViewport(0, 0, initialImageSize.width, initialImageSize.height)
-}
-
-renderer.outputColorSpace = THREE.SRGBColorSpace
-
-const texture = new THREE.Texture()
-texture.colorSpace = THREE.LinearSRGBColorSpace
-
-texture.flipY = false
-
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
-camera.updateProjectionMatrix()
-
-const geometry = new THREE.PlaneGeometry(1, 1)
-const material = new THREE.MeshBasicMaterial({ map: texture })
-const plane = new THREE.Mesh(geometry, material)
-
-scene.add(plane)
-camera.position.z = 0.6
+const threeCanvas = new ThreeCanvas(initialImageSize)
 
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -233,19 +195,20 @@ function CanvasComponent({ ...rest }) {
     useLayoutEffect(() => {
         // Append the canvas to the container when the component mounts
         if (containerRef.current) {
-            containerRef.current.appendChild(canvas)
+            containerRef.current.appendChild(threeCanvas.canvas)
         }
 
         // Clean up function to remove the canvas when the component unmounts
         return () => {
             if (containerRef.current) {
-                containerRef.current.removeChild(canvas)
+                containerRef.current.removeChild(threeCanvas.canvas)
             }
         }
     }, [])
 
     return <div {...rest} ref={containerRef}></div>
 }
+
 function RotationsImage() {
     const image = useSelectedImage()
     const [rotations, setRotations] = useState({ x: 0, y: 10 })
@@ -265,11 +228,17 @@ function RotationsImage() {
         }
         setIsLoading(true)
         await sleep(20)
-        await updateCanvas({ isPreview: false })
+        await threeCanvas.updateCanvas({
+            rotations,
+            color,
+            intensity,
+            focus,
+            isPreview: false,
+        })
         await sleep(20)
         const originalImage = await image.getData()
 
-        const nextBytes = await bytesFromCanvas(canvas)
+        const nextBytes = await bytesFromCanvas(threeCanvas.canvas)
 
         // const img = document.createElement('img')
         // img.src = URL.createObjectURL(new Blob([nextBytes!]))
@@ -314,79 +283,19 @@ function RotationsImage() {
         if (!bitmap) {
             return
         }
-        texture.dispose()
-        texture.image = bitmap
-        texture.needsUpdate = true
-        const img = texture.image
+        threeCanvas.changeImage(bitmap)
+        const img = threeCanvas.texture.image
         const aspectRatio = img.width / img.height
         setAspectRatio(aspectRatio)
-        camera.aspect = aspectRatio
-        camera.updateProjectionMatrix()
-        plane.scale.set(aspectRatio, 1, 1)
-        renderer.setSize(img?.width, img?.height)
-        renderer.setViewport(0, 0, img.width, img.height)
-        await updateCanvas({ isPreview: true })
-    }, [image])
-
-    const updateCanvas = async ({ isPreview = false }) => {
-        const { x: rotationX, y: rotationY } = rotations
-        const threeColor = new THREE.Color(color)
-        const img: HTMLImageElement | null = texture.image
-        scene.background = threeColor
-        let aspectRatio = 1
-        if (img) {
-            aspectRatio = img.width / img.height
-        } else {
-            console.log('no image found in texture!')
-        }
-        if (isPreview) {
-            if (img) {
-                const perfectPixels = 600 * 600
-                const imagePixels = img.width * img.height
-                const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
-                console.log('scale down factor', scaleDownFactor)
-                if (scaleDownFactor < 1) {
-                    renderer.setPixelRatio(scaleDownFactor)
-                }
-            }
-        } else {
-            renderer.setPixelRatio(1)
-        }
-
-        plane.rotation.set(rotationX * deg, rotationY * deg, 0)
-
-        const offset = (angle: number) =>
-            -0.2 * (angle / (45 + Math.abs(angle)))
-        camera.lookAt(
-            plane.position.x + offset(rotationY),
-            plane.position.y + offset(rotationX),
-            plane.position.z,
-        )
-        const composer = new EffectComposer(renderer)
-        composer.addPass(new RenderPass(scene, camera))
-        const bokehPass = new BokehPass(scene, camera, {
-            focus: focus,
-            aspect: aspectRatio,
-            aperture: 0.16,
-            maxblur: 0.2,
+        await threeCanvas.updateCanvas({
+            rotations,
+            color,
+            intensity,
+            focus,
+            isPreview: true,
         })
-        composer.addPass(bokehPass)
-        const vignettePass = new ShaderPass(vignetteShader)
-
-        let vignetteRotation = Math.atan2(-rotationX, rotationY)
-
-        vignettePass.uniforms.rotation.value = vignetteRotation
-        vignettePass.uniforms.color.value = threeColor
-        vignettePass.uniforms.intensity.value = intensity
-        composer.addPass(vignettePass)
-
-        composer.addPass(new ShaderPass(filmGrainShader))
-        composer.render()
-
-        if (isPreview) {
-            setIsLoading(false)
-        }
-    }
+        setIsLoading(false)
+    }, [image])
 
     const handleRotationChange = useCallback(
         (axis: 'x' | 'y', nextValue: number) => {
@@ -394,7 +303,7 @@ function RotationsImage() {
                 setRotations((prev) => ({ ...prev, [axis]: nextValue }))
             })
         },
-        [updateCanvas, rotations],
+        [rotations],
     )
 
     useAsyncEffect(
@@ -406,7 +315,14 @@ function RotationsImage() {
             if (!image) {
                 return
             }
-            await updateCanvas({ isPreview: true })
+            await threeCanvas.updateCanvas({
+                rotations,
+                color,
+                intensity,
+                focus,
+                isPreview: true,
+            })
+            setIsLoading(false)
         },
         [rotations, color, intensity, focus],
     )
@@ -549,77 +465,6 @@ const SliderAndNumber = ({
             />
         </div>
     )
-}
-
-const vignetteShader = {
-    uniforms: {
-        tDiffuse: { value: null },
-        rotation: { value: 0 },
-        intensity: { value: 0.5 },
-        color: { value: new THREE.Color(0x000000) }, // Added color parameter
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float rotation;
-      uniform float intensity;
-      uniform vec3 color; // Added color uniform
-      varying vec2 vUv;
-      
-      void main() {
-        vec4 texel = texture2D(tDiffuse, vUv);
-        
-        // Rotate UV coordinates
-        vec2 rotatedUv = vUv - 0.5;
-        float s = sin(rotation);
-        float c = cos(rotation);
-        rotatedUv = vec2(rotatedUv.x * c - rotatedUv.y * s, rotatedUv.x * s + rotatedUv.y * c);
-        rotatedUv += 0.5;
-        
-        // Calculate vignette
-        float vignette = smoothstep(1.1, 0.4, rotatedUv.x);
-        vignette = pow(vignette, intensity);
-        gl_FragColor = vec4(mix(texel.rgb, color, 1.0 - vignette), texel.a);
-        
-      }
-    `,
-}
-
-const filmGrainShader = {
-    uniforms: {
-        tDiffuse: { value: null },
-        time: { value: 1.0 },
-        grainIntensity: { value: 0.06 },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float time;
-      uniform float grainIntensity;
-      varying vec2 vUv;
-      
-      float random(vec2 co) {
-        return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
-      }
-      
-      void main() {
-        vec4 texel = texture2D(tDiffuse, vUv);
-        float grain = random(vUv + time) * grainIntensity;
-        gl_FragColor = vec4(texel.rgb + grain, texel.a);
-      }
-    `,
 }
 
 function setRangeProgress(el?: HTMLInputElement | null) {
