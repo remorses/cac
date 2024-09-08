@@ -246,6 +246,7 @@ function SimplePromptComponent({}) {
                     description,
                     textToReplace: oldText,
                     exampleTextToMigrate: globalState.exampleTextToMigrate,
+                    sourceHtml: globalState.sourceHtml,
                 },
                 {
                     fetch: {

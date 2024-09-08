@@ -69,6 +69,7 @@ export enum Paths {
     licenseKey = '/license-key',
     doYouAlreadyHaveAWebsite = '/do-you-already-have-a-website',
     getWebsiteInfo = '/get-website-info',
+    // deprecated
     scrapeWebsite = '/scrape-website',
     prompt = '/prompt',
 }
@@ -221,6 +222,7 @@ export function createBuyLink({ email, orgId }) {
 
 export const globalState = {
     exampleTextToMigrate: [] as RewriteSchema['exampleTextToMigrate'],
+    sourceHtml: '',
     extractedDescription: '',
 }
 

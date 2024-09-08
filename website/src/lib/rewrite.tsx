@@ -16,6 +16,7 @@ export const RewriteSchema = z.object({
             // index: z.number(),
         }),
     ),
+    sourceHtml: z.string().nullable(),
     exampleTextToMigrate: z.array(
         z.object({
             hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
@@ -32,39 +33,68 @@ const STEP_BY_STEP_REASONING = 'stepByStepReasoning'
 const CONVERTED_ITEMS = 'convertedItems'
 const framerIdLen = 9
 
+function renderHtmlSnippet(sourceHtml: string = ''): string {
+    if (!sourceHtml) {
+        return ''
+    }
+    return `
+Original HTML Content from existing website, you can use this as inspiration:
+\`\`\`html
+${sourceHtml}
+\`\`\`
+`
+}
+
+let schema = z.object({
+    [STEP_BY_STEP_REASONING]: z
+        .array(z.string())
+        .describe(
+            'Chain of thoughts, think step by step. This field should come first.',
+        ),
+    [CONVERTED_ITEMS]: z.array(
+        z.object({
+            nodeId: z
+                .string()
+                .describe(
+                    'The original node id, this field should come first.',
+                ),
+            previousContent: z
+                .string()
+                .describe(
+                    'The previous content of the node, from the template, this field should come second.',
+                ),
+            content: z
+                .string()
+                .describe(
+                    'The new content to apply to this node, based on user provided data and with similar length and phrasing as previous template node.',
+                ),
+            href: z.string().nullable().optional(),
+        }),
+    ),
+})
+
 function generateMigrationPrompt({
     description,
+    sourceHtml = '',
     exampleTextToMigrate,
 }): string {
     return `
-You are an AI assistant tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
+You are an expert copywriter tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
 
-Website Owner's Description and Instructions:
-\`\`\`
-${description || 'No specific instructions provided'}
-\`\`\`
-
-Content from Website Being Migrated:
 ${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
+${renderHtmlSnippet(sourceHtml)}
+
 Instructions:
-* Replace the content of each item in the template with text that aligns with the website owner's description and the migrated content.
+* Replace the content of each item in the template with text that aligns with the website owner's description and the migrated website.
 * Maintain similar content length and structure to the original template where appropriate.
 * Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
 * Update href values if present and relevant to the new content.
 * Use content from the website being migrated if it fits well within the template structure.
 * If the migrated content doesn't fit perfectly, create new content that matches the style and intent of the website being migrated.
 * remove anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should not be always replaced.
-
-Output: Provide a JSON object with two main fields:
-
-* "${STEP_BY_STEP_REASONING}": An array of strings explaining your thought process for converting the text, what the new website should look like, and why.
-
-* "${CONVERTED_ITEMS}": An array of objects, each representing a piece of content from the template that has been updated. Each object should include:
-  - "nodeId": The identifier from the original template item, this field should come first in the object
-  - "previousContent": The content from the template now being replaced, should be second field in the object
-  - "content": The new or migrated content, should have similar length to the template content
-  - "href": Updated link if applicable (optional)
+* never add asterisks * at the end of the text, these would be used to add a note at the bottom of the page, but you can't add notes.
+* if the text to replace contains new lines \\n or special characters you should mimic them too and try to keep the same structure
 
 Remember:
 * Aim for a similar text length to the original template items. If you can't find an example content from the examples rephrase it or invent a new one
@@ -74,9 +104,12 @@ Remember:
 
 Please provide a well-structured and valid JSON object as your response, adhering to the schema defined.
 
-Provide a new text replacement for all the current template text items.
+Provide a new text replacement for all the template text items.
 
-"${STEP_BY_STEP_REASONING}" should come before "${CONVERTED_ITEMS}" in the JSON object.
+Website Owner's Description and Instructions:
+<description>
+${description || 'No specific instructions provided'}
+</description>
 
 `
 }
@@ -85,7 +118,7 @@ export function convertExamplesToMarkdownList(
     examples: RewriteSchema['exampleTextToMigrate'],
 ) {
     if (!examples?.length) {
-        return 'No example content provided'
+        return ''
     }
     let markdown = ''
 
@@ -97,7 +130,8 @@ export function convertExamplesToMarkdownList(
         }
         markdown += '\n'
     }
-    return markdown
+
+    return 'Content from Website Being Migrated:\n' + markdown
 }
 
 const ITEMS_PER_ITERATION = 25
@@ -122,17 +156,6 @@ export async function* rewriteTemplateContent({
     signal: AbortSignal
     onToken?: (token: string) => void
 }) {
-    let schema = z.object({
-        [STEP_BY_STEP_REASONING]: z.array(z.string()),
-        [CONVERTED_ITEMS]: z.array(
-            z.object({
-                content: z.string(),
-                nodeId: z.string(),
-                href: z.string().nullable().optional(),
-            }),
-        ),
-    })
-
     let finalObject: z.infer<typeof schema> | undefined
     let missedItems: any[] = []
     let iterationsCount = 0
@@ -207,6 +230,7 @@ export async function* rewriteTemplateContent({
                 finalObject: undefined,
             }
             if (fullItem) {
+                // console.log('fullItem', fullItem)
                 yield {
                     object: fullItem,
                     finalObject: undefined,
@@ -215,6 +239,12 @@ export async function* rewriteTemplateContent({
         }
 
         const iterationObject = await stream1.object
+        if (iterationObject[STEP_BY_STEP_REASONING]) {
+            console.log(
+                'step by step reasoning',
+                iterationObject[STEP_BY_STEP_REASONING],
+            )
+        }
 
         if (iterationObject[CONVERTED_ITEMS].length !== currentChunk.length) {
             console.log(

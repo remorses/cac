@@ -1,22 +1,58 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import { Paths, withMode } from 'template-rewrite-framer/src/lib/utils'
+import {
+    globalState,
+    Paths,
+    pluginApiClient,
+    withMode,
+} from 'template-rewrite-framer/src/lib/utils'
 
-import { useLocation, useNavigate } from 'react-router'
+import { Form, redirect, useNavigate, useNavigation } from 'react-router-dom'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 
-export function GetWebsiteInfo() {
+export function WebsiteInfo() {
+    return {
+        path: Paths.getWebsiteInfo,
+        element: <GetWebsiteInfo />,
+        action,
+        handle: 'What is your website url?',
+    }
+}
+
+async function action({ request }) {
+    const formData = await request.formData()
+    const domain = formData.get('domain')?.toString()
+
+    if (!domain) {
+        return { error: 'Domain is required' }
+    }
+
+    try {
+        const { error, data } =
+            await pluginApiClient.api.plugins.rewritePlugin.getWebsiteHtml.post(
+                {
+                    domain,
+                },
+                { fetch: { signal: request.signal } },
+            )
+        if (error) {
+            throw error
+        }
+        globalState.sourceHtml = data.html
+        globalState.extractedDescription = data.extractedDescription || ''
+        return redirect(withMode(Paths.prompt))
+    } catch (error) {
+        notifyError(error, 'Error processing domain')
+        return { error: error.message }
+    }
+}
+
+function GetWebsiteInfo() {
     const navigate = useNavigate()
-    const location = useLocation()
+    const navigation = useNavigation()
+    const isLoading = navigation.state !== 'idle'
 
     return (
-        <form
-            onSubmit={(e) => {
-                e.preventDefault()
-                const data = new FormData(e.target as any)
-                const domain = data.get('domain')?.toString() || ''
-                navigate(withMode(Paths.scrapeWebsite, { domain }), {})
-            }}
-            className='flex flex-col grow justify-start gap-4'
-        >
+        <Form method='post' className='flex flex-col grow justify-start gap-4'>
             <div className='flex grow flex-col justify-start gap-3'>
                 <div className='grow flex justify-center flex-col text-balance text-center gap-2'>
                     <div className='font-semibold'>Add your website</div>
@@ -34,10 +70,14 @@ export function GetWebsiteInfo() {
                     name='domain'
                     className='rounded-md p-2 w-full bg-framer-tertiary'
                 />
-                <Button type='submit' className='framer-button-primary'>
+                <Button
+                    type='submit'
+                    className='framer-button-primary'
+                    isLoading={isLoading}
+                >
                     Get Content
                 </Button>
             </div>
-        </form>
+        </Form>
     )
 }

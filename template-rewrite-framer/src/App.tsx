@@ -17,7 +17,7 @@ import {
     withMode,
 } from 'template-rewrite-framer/src/lib/utils'
 import { AlreadyHaveWebsite } from 'template-rewrite-framer/src/routes/AlreadyHaveWebsite'
-import { GetWebsiteInfo } from 'template-rewrite-framer/src/routes/GetWebsiteInfo'
+import { WebsiteInfo } from 'template-rewrite-framer/src/routes/GetWebsiteInfo'
 import { LicenseKey } from 'template-rewrite-framer/src/routes/LicenseKey'
 import { LoginPage } from 'template-rewrite-framer/src/routes/Login'
 import { SimplePrompt } from 'template-rewrite-framer/src/routes/Prompt'
@@ -169,12 +169,8 @@ const router = createBrowserRouter(
                     element: <AlreadyHaveWebsite />,
                     handle: 'Do you already have an existing website?',
                 },
-                {
-                    path: Paths.getWebsiteInfo,
-                    element: <GetWebsiteInfo />,
-                    handle: 'What is your website url?',
-                },
-
+                
+                WebsiteInfo(),
                 SimplePrompt(),
                 LicenseKey(),
             ],

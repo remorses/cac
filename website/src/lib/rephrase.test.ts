@@ -97,6 +97,7 @@ test(
                 'A website to generate websites from Notion called Notaku',
             textToReplace,
             exampleTextToMigrate: exampleTextToMigrate as any,
+            sourceHtml: null,
             signal: new AbortController().signal,
             onToken(token) {
                 process.stdout.write(token)

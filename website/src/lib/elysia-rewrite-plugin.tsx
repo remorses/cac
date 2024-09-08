@@ -6,6 +6,7 @@ import { db } from 'db/kysely'
 import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
 import {
     fetchFormattedHtml,
+    getWebsiteDescription,
     getWebsiteInfo,
 } from 'website/src/lib/htmlrewrite.server'
 import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
@@ -36,13 +37,14 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const { description, exampleTextToMigrate, textToReplace } = body
+            const { description, sourceHtml, exampleTextToMigrate, textToReplace } = body
             let words = 0
             let chars = 0
             let objectStream = rewriteTemplateContent({
                 description,
                 exampleTextToMigrate,
                 textToReplace,
+                sourceHtml,
                 onToken(token) {
                     // process.stdout.write(token)
                 },
@@ -289,6 +291,49 @@ export const rewritePluginApp = new Spiceflow({
                 notifyError(e, 'error scraping website ' + domain)
                 throw e
             } finally {
+            }
+
+            // const res = await fetch(`https://${domain}`)
+        },
+        {
+            body: z.object({
+                domain: z.string(),
+            }),
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+
+    .post(
+        '/getWebsiteHtml',
+        async function scrape({ request, state: store }) {
+            let body = await request.json()
+            let { domain } = body
+
+            const userId = store.userId
+            if (!userId) {
+                throw unauthorizedResponse
+            }
+
+            let url = domain
+            // if there is no https:// or http:// prefix, add it
+            if (!url.startsWith('https://') && !url.startsWith('http://')) {
+                url = 'https://' + url
+            }
+            try {
+                new URL(url)
+            } catch (e) {
+                throw new Response('Invalid url', { status: 400 })
+            }
+            const html = await fetchFormattedHtml(url)
+            const { extractedDescription } = await getWebsiteDescription({
+                html,
+                signal: request.signal,
+            })
+            return {
+                html,
+                extractedDescription,
             }
 
             // const res = await fetch(`https://${domain}`)

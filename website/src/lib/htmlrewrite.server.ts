@@ -284,6 +284,9 @@ export async function getWebsiteDescription({ html, signal }) {
 
     let extractedDescription = result.text
     extractedDescription = removeMarkdownSnippets(extractedDescription)
+    if (!extractedDescription) {
+        console.log('no description found using LLM')
+    }
     console.timeEnd('getWebsiteDescription ' + html.length)
     return { extractedDescription }
 }
@@ -311,6 +314,11 @@ The HTML document is:
         '\n```' +
         `
 Generate the description now. Do not use terms like "The website is a " or "This document is about", don't add any introduction or conclusion.
+
+Be as short as possible, no more than 50 words, use simple sentences separated by commas or periods. Don't use : or ; or any other punctuation.
+
+
+An example output for Twitter is: Social network website and app  called Twitter to share short messages. Friendly tone. Stay connected with friends and world news.
 `
     )
 }
