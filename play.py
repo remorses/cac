@@ -12,7 +12,6 @@ class HeatTransferAnimation(Scene):
         fps = 30  # frames per second
         pause_time = 0.1  # pause duration when blocks align
         color_change_time = 0.5  # duration of color change animation
-        num_steps = 4  # number of steps, must be a multiple of 2
 
         # Create top and bottom rows
         top_row = VGroup(
@@ -47,16 +46,11 @@ class HeatTransferAnimation(Scene):
         self.add(top_row, bottom_row)
 
         # Animate the movement and heat transfer
-        subgroup_size = num_blocks // num_steps
-        for step in range(num_steps):
-            # Determine the subgroup to move
-            start_index = (step % 2) * subgroup_size
-            end_index = start_index + subgroup_size
-            subgroup = top_row[start_index:end_index]
-
-            # Move the subgroup
+        for offset in range(num_blocks * 2):
+            # Move rows
             self.play(
-                subgroup.animate.shift(RIGHT * (block_size + spacing) * (num_blocks / num_steps)),
+                top_row.animate.shift(RIGHT * (block_size + spacing) / 2),
+                bottom_row.animate.shift(LEFT * (block_size + spacing) / 2),
                 run_time=step_time,
                 rate_func=linear,
             )
@@ -94,4 +88,3 @@ class HeatTransferAnimation(Scene):
 
         # Final wait
         self.wait(1)
-
