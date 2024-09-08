@@ -12,7 +12,7 @@ export class ThreeCanvas {
     texture: THREE.Texture
     camera: THREE.PerspectiveCamera
     plane: THREE.Mesh
-
+    composer: EffectComposer
     constructor(
         initialImageSize?: { width: number; height: number } | undefined,
     ) {
@@ -20,7 +20,7 @@ export class ThreeCanvas {
         this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
         this.scene = new THREE.Scene()
-        this.scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
+        // this.scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
 
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
@@ -41,6 +41,7 @@ export class ThreeCanvas {
             )
         }
 
+        this.composer = new EffectComposer(this.renderer)
         this.renderer.outputColorSpace = THREE.SRGBColorSpace
 
         this.texture = new THREE.Texture()
@@ -58,6 +59,10 @@ export class ThreeCanvas {
         this.camera.position.z = 0.6
     }
 
+    render() {
+        this.composer.render()
+    }
+
     changeImage(bitmap: ImageBitmap) {
         this.texture.dispose()
         this.texture.image = bitmap
@@ -70,17 +75,27 @@ export class ThreeCanvas {
         this.renderer.setSize(img?.width, img?.height)
         this.renderer.setViewport(0, 0, img.width, img.height)
     }
+    changeVideo(video: HTMLVideoElement) {
+        this.texture.dispose()
+        this.texture = new THREE.VideoTexture(video)
+        this.texture.colorSpace = THREE.LinearSRGBColorSpace
+        this.texture.needsUpdate = true
+        const aspectRatio = video.videoWidth / video.videoHeight || 1
+        this.camera.aspect = aspectRatio
+        this.camera.updateProjectionMatrix()
+        const material = new THREE.MeshBasicMaterial({ map: this.texture })
+        this.plane.material = material
+        this.plane.scale.set(aspectRatio, 1, 1)
+        this.renderer.setSize(video.videoWidth, video.videoHeight)
+        this.renderer.setViewport(0, 0, video.videoWidth, video.videoHeight)
+    }
 
-    async updateCanvas({
-        rotations,
-        color,
-        intensity,
-        focus,
-        isPreview = false,
-    }) {
+    update({ rotations, color, intensity, focus, z, isPreview = false }) {
         const { x: rotationX, y: rotationY } = rotations
         const threeColor = new THREE.Color(color)
         const img: HTMLImageElement | null = this.texture.image
+        this.camera.position.z = z || 0.6
+
         this.scene.background = threeColor
         let aspectRatio = 1
         if (img) {
@@ -111,15 +126,17 @@ export class ThreeCanvas {
             this.plane.position.y + offset(rotationX),
             this.plane.position.z,
         )
-        const composer = new EffectComposer(this.renderer)
-        composer.addPass(new RenderPass(this.scene, this.camera))
+
+        this.composer = new EffectComposer(this.renderer)
+        this.composer.addPass(new RenderPass(this.scene, this.camera))
+
         const bokehPass = new BokehPass(this.scene, this.camera, {
-            focus: focus,
+            focus: z + focus,
             aspect: aspectRatio,
             aperture: 0.16,
             maxblur: 0.2,
         })
-        composer.addPass(bokehPass)
+        this.composer.addPass(bokehPass)
         const vignettePass = new ShaderPass(vignetteShader)
 
         let vignetteRotation = Math.atan2(-rotationX, rotationY)
@@ -127,10 +144,10 @@ export class ThreeCanvas {
         vignettePass.uniforms.rotation.value = vignetteRotation
         vignettePass.uniforms.color.value = threeColor
         vignettePass.uniforms.intensity.value = intensity
-        composer.addPass(vignettePass)
+        this.composer.addPass(vignettePass)
 
-        composer.addPass(new ShaderPass(filmGrainShader))
-        composer.render()
+        this.composer.addPass(new ShaderPass(filmGrainShader))
+        this.composer.render()
     }
 }
 

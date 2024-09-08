@@ -5,6 +5,7 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import {
     startTransition,
     useCallback,
+    useEffect,
     useLayoutEffect,
     useRef,
     useState,
@@ -23,17 +24,17 @@ enum Paths {
 
 const freeImageGenerations = 10
 
-const width = 300
+const width = 600
 
-function useSelectedImage() {
-    const [image, setImage] = useState<File | null>(null)
+function useSelectedMedia() {
+    const [media, setMedia] = useState<File | null>(null)
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] || null
-        setImage(file)
+        setMedia(file)
     }
 
-    return { image, handleFileChange }
+    return { media, handleFileChange }
 }
 
 const router = createBrowserRouter(
@@ -73,25 +74,27 @@ function CanvasComponent({ ...rest }) {
 }
 
 function RotationsImage() {
-    const { image, handleFileChange } = useSelectedImage()
+    const { media, handleFileChange } = useSelectedMedia()
     const [rotations, setRotations] = useState({ x: 0, y: 10 })
     const [color, setColor] = useState('#000000')
     const [intensity, setIntensity] = useState(1)
-    const [focus, setFocus] = useState(0.6)
+    const [focus, setFocus] = useState(0)
+    const [z, setZ] = useState(0.6)
     const [isLoading, setIsLoading] = useState(true)
     const [aspectRatio, setAspectRatio] = useState(1)
 
     const handleSaveImage = async () => {
-        if (!image) {
+        if (!media) {
             return
         }
         setIsLoading(true)
         await sleep(20)
-        await threeCanvas.updateCanvas({
+        await threeCanvas.update({
             rotations,
             color,
             intensity,
             focus,
+            z,
             isPreview: false,
         })
         await sleep(20)
@@ -100,7 +103,7 @@ function RotationsImage() {
 
         assert(nextBytes)
 
-        console.log('saving image with type', image.type, nextBytes.length)
+        console.log('saving image with type', media.type, nextBytes.length)
         const start = performance.now()
         const imagesGenerated =
             Number(localStorage.getItem(PluginDataKeys.imagesGenerated)) || 0
@@ -113,28 +116,70 @@ function RotationsImage() {
         console.log('total duration', performance.now() - start)
     }
 
-    useAsyncEffect(async () => {
-        if (!image) {
+    useEffect(() => {
+        if (!media) {
             return
         }
-        console.log('loading image into canvas')
-        const bitmap = await createImageBitmap(image)
-        if (!bitmap) {
-            return
+        console.log('loading media into canvas')
+        const loadMedia = async () => {
+            if (media.type.startsWith('video/')) {
+                const video = document.createElement('video')
+                video.src = URL.createObjectURL(media)
+                video.muted = true
+                video.loop = true
+                video.play()
+                await new Promise((resolve) => {
+                    video.addEventListener('playing', () => {
+                        resolve(null)
+                    })
+                })
+                if (!video.videoWidth) {
+                    video.width = 1280 // 16:9 aspect ratio
+                    video.height = 720
+                }
+                // document.body.appendChild(video)
+                threeCanvas.changeVideo(video)
+                const aspectRatio = video.videoWidth / video.videoHeight || 1
+                console.log('aspect ratio', aspectRatio)
+                setAspectRatio(aspectRatio)
+            } else {
+                const bitmap = await createImageBitmap(media)
+                if (!bitmap) {
+                    return
+                }
+                threeCanvas.changeImage(bitmap)
+                const img = threeCanvas.texture.image
+                const aspectRatio = img.width / img.height
+                setAspectRatio(aspectRatio)
+            }
+            threeCanvas.update({
+                rotations,
+                color,
+                intensity,
+                focus,
+                z,
+                isPreview: true,
+            })
+            setIsLoading(false)
         }
-        threeCanvas.changeImage(bitmap)
-        const img = threeCanvas.texture.image
-        const aspectRatio = img.width / img.height
-        setAspectRatio(aspectRatio)
-        await threeCanvas.updateCanvas({
-            rotations,
-            color,
-            intensity,
-            focus,
-            isPreview: true,
-        })
-        setIsLoading(false)
-    }, [image])
+
+        loadMedia()
+
+        if (media.type.startsWith('video/')) {
+            let isStopped = false
+            const render = () => {
+                if (isStopped) {
+                    return
+                }
+                threeCanvas.render()
+                requestAnimationFrame(render)
+            }
+            render()
+            return () => {
+                isStopped = true
+            }
+        }
+    }, [media])
 
     const handleRotationChange = useCallback(
         (axis: 'x' | 'y', nextValue: number) => {
@@ -151,29 +196,30 @@ function RotationsImage() {
             if (controller.signal.aborted) {
                 return
             }
-            if (!image) {
+            if (!media) {
                 return
             }
-            await threeCanvas.updateCanvas({
+            await threeCanvas.update({
                 rotations,
                 color,
                 intensity,
                 focus,
+                z,
                 isPreview: true,
             })
             setIsLoading(false)
         },
-        [rotations, color, intensity, focus],
+        [rotations, color, intensity, focus, z],
     )
 
-    if (!image) {
+    if (!media) {
         return (
             <Container>
                 <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
-                    <p>Select an Image First</p>
+                    <p>Select an Image or Video First</p>
                     <input
                         type='file'
-                        accept='image/*'
+                        // accept='image/*,video/*'
                         onChange={handleFileChange}
                     />
                 </div>
@@ -183,7 +229,7 @@ function RotationsImage() {
 
     return (
         <Container>
-            <div className='flex shrink-0 flex-col max-h-[280px] overflow-hidden items-center justify-center'>
+            <div className='flex shrink-0 flex-col overflow-hidden items-center justify-center'>
                 <CanvasComponent
                     style={{ aspectRatio: aspectRatio.toFixed(2) }}
                     className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
@@ -207,14 +253,26 @@ function RotationsImage() {
             </div>
 
             <SliderAndNumber
+                label='Zoom'
+                value={z}
+                onChange={(v) => {
+                    setZ(Number(v))
+                }}
+                rangeProps={{
+                    min: '0.5',
+                    max: '2',
+                    step: '0.01',
+                }}
+            />
+            <SliderAndNumber
                 label='Focus'
                 value={focus}
                 onChange={(v) => {
                     setFocus(Number(v))
                 }}
                 rangeProps={{
-                    min: '0.4',
-                    max: '0.8',
+                    min: '-0.3',
+                    max: '0.3',
                     step: '0.01',
                 }}
             />
