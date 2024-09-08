@@ -1,3 +1,4 @@
+media
 node_modules
 dist
 esm
@@ -6,3 +7,4 @@ esm
 .ultra.cache.json
 coverage
 *.env
+__pycache__
