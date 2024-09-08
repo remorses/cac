@@ -22,7 +22,9 @@ import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
 const width = 300
 const initialImage = await framer.getImage()
-void framer.showUI({ position: 'top left', width, height: 360 })
+
+await framer.showUI({ position: 'top left', width, height: 0 })
+const initialImageSize = await initialImage?.measure()
 
 function useSelectedImage() {
     const [image, setImage] = useState<ImageAsset | null>(initialImage)
@@ -35,21 +37,11 @@ function useSelectedImage() {
 }
 
 export function App() {
-    const image = useSelectedImage()
-
-    if (!image) {
-        return (
-            <div className='flex flex-col gap-3 grow p-3 pt-0 items-center justify-center'>
-                <p>Select an Image First</p>
-            </div>
-        )
-    }
-
-    return <RotationsImage image={image} />
+    return <RotationsImage />
 }
 
 let canvas: HTMLCanvasElement = document.createElement('canvas')
-canvas.className = 'rounded-md !max-w-full !h-auto'
+canvas.className = 'rounded-md !max-w-full !w-full !max-h-[280px] !h-auto'
 
 const scene = new THREE.Scene()
 scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
@@ -60,6 +52,11 @@ const renderer = new THREE.WebGLRenderer({
     preserveDrawingBuffer: true,
     alpha: true,
 })
+if (initialImageSize) {
+    renderer.setSize(initialImageSize.width, initialImageSize.height)
+    renderer.setViewport(0, 0, initialImageSize.width, initialImageSize.height)
+}
+
 renderer.outputColorSpace = THREE.SRGBColorSpace
 
 const texture = new THREE.Texture()
@@ -96,13 +93,23 @@ function CanvasComponent({ ...rest }) {
 
     return <div {...rest} ref={containerRef}></div>
 }
-function RotationsImage({ image }: { image: ImageAsset }) {
+function RotationsImage() {
+    const image = useSelectedImage()
     const [rotations, setRotations] = useState({ x: 0, y: 10 })
     const [color, setColor] = useState('#000000')
     const [intensity, setIntensity] = useState(1)
     const [focus, setFocus] = useState(0.6)
     const [isLoading, setIsLoading] = useState(true)
+    const [aspectRatio, setAspectRatio] = useState(() => {
+        if (!initialImageSize) {
+            return 1
+        }
+        return initialImageSize?.width / initialImageSize?.height
+    })
     const handleSaveImage = async () => {
+        if (!image) {
+            return
+        }
         setIsLoading(true)
         await sleep(20)
         await updateCanvas({ isPreview: false })
@@ -162,6 +169,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         texture.needsUpdate = true
         const img = texture.image
         const aspectRatio = img.width / img.height
+        setAspectRatio(aspectRatio)
         camera.aspect = aspectRatio
         camera.updateProjectionMatrix()
         plane.scale.set(aspectRatio, 1, 1)
@@ -245,12 +253,26 @@ function RotationsImage({ image }: { image: ImageAsset }) {
         [rotations, color, intensity, focus],
     )
 
+    if (!image) {
+        return (
+            <div
+                ref={ref}
+                className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'
+            >
+                <p>Select an Image First</p>
+            </div>
+        )
+    }
+
     return (
         <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
-            <div className='flex flex-col items-center justify-center'>
+            <div
+                style={{ aspectRatio: aspectRatio.toFixed(2) }}
+                className='flex shrink-0 flex-col overflow-hidden items-center !max-h-[280px] justify-center'
+            >
                 <CanvasComponent className='flex flex-col rounded-md' />
             </div>
-            <div className=' flex flex-col w-full gap-3'>
+            <div className='shrink-0 flex flex-col w-full gap-3'>
                 {(['x', 'y'] as const).map((axis) => (
                     <SliderAndNumber
                         key={axis}
@@ -291,7 +313,7 @@ function RotationsImage({ image }: { image: ImageAsset }) {
                     step: '0.01',
                 }}
             />
-            <div className='grid w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
+            <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
                 <div>Background</div>
 
                 <input
@@ -325,7 +347,7 @@ const SliderAndNumber = ({
     rangeProps: React.InputHTMLAttributes<HTMLInputElement> // Added rangeProps type
 }) => {
     return (
-        <div className='grid w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
+        <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
             <div>{label}</div>
             <input
                 type='number'
