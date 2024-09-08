@@ -1,27 +1,17 @@
-import {
-    Form,
-    RouterProvider,
-    createBrowserRouter,
-    redirect,
-    useActionData,
-    useNavigate,
-    useNavigation,
-} from 'react-router-dom'
+import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 
 import {
     startTransition,
     useCallback,
-    useEffect,
     useLayoutEffect,
     useRef,
     useState,
 } from 'react'
 
-import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 import { ThreeCanvas } from './canvas'
+import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 enum PluginDataKeys {
     licenseKey = 'licenseKey',
     imagesGenerated = 'imagesGenerated',
@@ -29,14 +19,9 @@ enum PluginDataKeys {
 
 enum Paths {
     root = '/',
-    license = '/license',
 }
 
 const freeImageGenerations = 10
-
-const lemonProductId = 348518
-
-const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
 
 const width = 300
 
@@ -56,18 +41,6 @@ const router = createBrowserRouter(
         {
             path: '/',
             element: <RotationsImage />,
-            loader: async () => {
-                const imagesGenerated =
-                    Number(
-                        localStorage.getItem(PluginDataKeys.imagesGenerated),
-                    ) || 0
-                if (imagesGenerated >= freeImageGenerations) {
-                    console.log('redirecting to license')
-                    return redirect(Paths.license)
-                }
-                console.log('not redirecting to license')
-                return {}
-            },
         },
     ],
     // { basename: basePath },
