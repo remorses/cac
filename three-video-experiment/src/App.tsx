@@ -1,5 +1,3 @@
-import { validateLicense } from '@lemonsqueezy/lemonsqueezy.js'
-import { ImageAsset, framer } from 'framer-plugin'
 import {
     Form,
     RouterProvider,
@@ -12,7 +10,6 @@ import {
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
-import { basePath, withMode } from 'template-rewrite-framer/src/lib/utils'
 
 import {
     startTransition,
@@ -42,19 +39,16 @@ const lemonProductId = 348518
 const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
 
 const width = 300
-const initialImage = await framer.getImage()
-
-await framer.showUI({ position: 'top left', width, height: 0 })
-const initialImageSize = await initialImage?.measure()
 
 function useSelectedImage() {
-    const [image, setImage] = useState<ImageAsset | null>(initialImage)
+    const [image, setImage] = useState<File | null>(null)
 
-    useEffect(() => {
-        return framer.subscribeToImage(setImage)
-    }, [])
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] || null
+        setImage(file)
+    }
 
-    return image
+    return { image, handleFileChange }
 }
 
 const router = createBrowserRouter(
@@ -63,131 +57,27 @@ const router = createBrowserRouter(
             path: '/',
             element: <RotationsImage />,
             loader: async () => {
-                const [license, imagesGenerated] = await Promise.all([
-                    framer.getPluginData(PluginDataKeys.licenseKey),
-                    framer
-                        .getPluginData(PluginDataKeys.imagesGenerated)
-                        .then((data) => Number(data) || 0),
-                ])
-                if (!license && imagesGenerated >= freeImageGenerations) {
+                const imagesGenerated =
+                    Number(
+                        localStorage.getItem(PluginDataKeys.imagesGenerated),
+                    ) || 0
+                if (imagesGenerated >= freeImageGenerations) {
                     console.log('redirecting to license')
-                    return redirect(withMode(Paths.license))
+                    return redirect(Paths.license)
                 }
                 console.log('not redirecting to license')
                 return {}
             },
         },
-        {
-            path: Paths.license,
-            element: <LicenseComponent />,
-            action: async ({ request }) => {
-                const formData = await request.formData()
-                const licenseKey = formData.get('licenseKey')?.toString()
-
-                if (!licenseKey) {
-                    return { error: 'License key is required' }
-                }
-
-                try {
-                    const { data, error } = await validateLicense(
-                        licenseKey || '',
-                    )
-                    if (error) {
-                        return { error: error.message || 'Invalid license key' }
-                    }
-                    if (data.valid) {
-                        if (data.meta?.product_id !== lemonProductId) {
-                            return {
-                                error: 'License is for another product, contact support at tommy@unframer.co',
-                            }
-                        }
-                        await framer.setPluginData(
-                            PluginDataKeys.licenseKey,
-                            licenseKey,
-                        )
-                        return redirect(withMode(Paths.root))
-                    }
-                    if (!data.valid) {
-                        return {
-                            error: data.error || 'License is invalid',
-                        }
-                    }
-                    return {
-                        error: 'Unknown error validating license',
-                    }
-                } catch (error) {
-                    notifyError(error, 'Error validating license')
-                    return { error: error.message }
-                }
-            },
-        },
     ],
-    { basename: basePath },
+    // { basename: basePath },
 )
-
-function LicenseComponent() {
-    const actionData = useActionData() as any
-
-    const navigation = useNavigation()
-    const isLoading =
-        navigation.state !== 'idle' && Boolean(navigation.formData)
-    const navigate = useNavigate()
-    return (
-        <Container>
-            <Form
-                method='POST'
-                className='flex shrink-0 w-full items-start flex-col justify-between gap-4'
-            >
-                <div className='flex flex-col text-center justify-center py-[30px] items-center text-balance gap-2 grow'>
-                    <a href={buyUrl} target='_blank' className='font-semibold'>
-                        Get a License Key
-                    </a>
-                    <div className='opacity-60'>
-                        To create more than {freeImageGenerations} images, you
-                        need a license key.{' '}
-                        <a className='underline' href={buyUrl} target='_blank'>
-                            Buy one here
-                        </a>
-                        .
-                    </div>
-                </div>
-
-                <div className='flex shrink-0 items-stretch w-full flex-col gap-3'>
-                    <input
-                        required
-                        placeholder='License Key'
-                        type='text'
-                        name='licenseKey'
-                        className='rounded-md p-2 w-full bg-framer-tertiary'
-                    />
-                    {actionData?.error && (
-                        <div className='text-red-400'>{actionData.error}</div>
-                    )}
-                    {actionData?.message && (
-                        <div className=''>{actionData.message}</div>
-                    )}
-                    <div className='flex gap-3 w-full'>
-                        <Button
-                            variant='primary'
-                            type='submit'
-                            // disabled={isLoading}
-                            isLoading={isLoading}
-                            className='w-auto grow'
-                        >
-                            Activate Key
-                        </Button>
-                    </div>
-                </div>
-            </Form>
-        </Container>
-    )
-}
 
 export function App() {
     return <RouterProvider router={router} />
 }
 
-const threeCanvas = new ThreeCanvas(initialImageSize)
+const threeCanvas = new ThreeCanvas()
 
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -210,18 +100,14 @@ function CanvasComponent({ ...rest }) {
 }
 
 function RotationsImage() {
-    const image = useSelectedImage()
+    const { image, handleFileChange } = useSelectedImage()
     const [rotations, setRotations] = useState({ x: 0, y: 10 })
     const [color, setColor] = useState('#000000')
     const [intensity, setIntensity] = useState(1)
     const [focus, setFocus] = useState(0.6)
     const [isLoading, setIsLoading] = useState(true)
-    const [aspectRatio, setAspectRatio] = useState(() => {
-        if (!initialImageSize) {
-            return 1
-        }
-        return initialImageSize?.width / initialImageSize?.height
-    })
+    const [aspectRatio, setAspectRatio] = useState(1)
+
     const handleSaveImage = async () => {
         if (!image) {
             return
@@ -236,41 +122,21 @@ function RotationsImage() {
             isPreview: false,
         })
         await sleep(20)
-        const originalImage = await image.getData()
 
         const nextBytes = await bytesFromCanvas(threeCanvas.canvas)
 
-        // const img = document.createElement('img')
-        // img.src = URL.createObjectURL(new Blob([nextBytes!]))
-        // document.body.appendChild(img)
         assert(nextBytes)
 
-        console.log(
-            'saving image with type',
-            originalImage.mimeType,
-            nextBytes.length,
-        )
+        console.log('saving image with type', image.type, nextBytes.length)
         const start = performance.now()
-        const imagesGenerated = await framer
-            .getPluginData(PluginDataKeys.imagesGenerated)
-            .then((data) => Number(data) || 0)
-        await Promise.all([
-            framer.setImage({
-                image: {
-                    bytes: nextBytes,
-                    mimeType: originalImage.mimeType,
-                },
-            }),
-            framer.setPluginData(
-                PluginDataKeys.imagesGenerated,
-                String(imagesGenerated + 1),
-            ),
-        ])
-
-        void framer.closePlugin('Image saved...')
+        const imagesGenerated =
+            Number(localStorage.getItem(PluginDataKeys.imagesGenerated)) || 0
+        localStorage.setItem(
+            PluginDataKeys.imagesGenerated,
+            String(imagesGenerated + 1),
+        )
 
         setIsLoading(false)
-        framer.hideUI()
         console.log('total duration', performance.now() - start)
     }
 
@@ -279,7 +145,7 @@ function RotationsImage() {
             return
         }
         console.log('loading image into canvas')
-        const bitmap = await image.loadBitmap()
+        const bitmap = await createImageBitmap(image)
         if (!bitmap) {
             return
         }
@@ -332,6 +198,11 @@ function RotationsImage() {
             <Container>
                 <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
                     <p>Select an Image First</p>
+                    <input
+                        type='file'
+                        accept='image/*'
+                        onChange={handleFileChange}
+                    />
                 </div>
             </Container>
         )
@@ -411,17 +282,12 @@ function RotationsImage() {
 
 const Container = ({ children, ...rest }) => {
     const [ref, { height }] = useMeasure()
-    useLayoutEffect(() => {
-        console.log('opening framer ui')
-        framer.showUI({
-            // title: (handle?.handle as any) || '',
-            position: 'top left',
-            width,
-            height: height || 100,
-        })
-    }, [height])
     return (
-        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
+        <div
+            ref={ref}
+            style={{ width, height }}
+            className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3 m-12'
+        >
             {children}
         </div>
     )

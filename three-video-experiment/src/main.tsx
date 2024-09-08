@@ -1,6 +1,7 @@
 import "./globals.css"
 import "./slider.css"
 import "./styles.css"
+import "./framer-env.css"
 import 'tailwindcss/tailwind.css'
 import React from "react"
 import ReactDOM from "react-dom/client"

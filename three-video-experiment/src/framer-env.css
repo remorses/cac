@@ -1,0 +1,29 @@
+body.dark {
+    --framer-color-tint: #0099ff;
+    --framer-color-tint-dimmed: rgba(0, 153, 255, 0.15);
+    --framer-color-tint-dark: #0088ff;
+    --framer-color-bg: #111111;
+    --framer-color-bg-secondary: #252525;
+    --framer-color-bg-tertiary: #2b2b2b;
+    --framer-color-divider: #252525;
+    --framer-color-text: #ffffff;
+    --framer-color-text-reversed: #ffffff;
+    --framer-color-text-secondary: #cccccc;
+    --framer-color-text-tertiary: #777777;
+    --framer-color-tint-extra-dark: #0077ff;
+}
+
+body {
+    --framer-color-tint: #0099ff;
+    --framer-color-tint-dimmed: rgba(0, 153, 255, 0.1);
+    --framer-color-tint-dark: #0088ff;
+    --framer-color-bg: #ffffff;
+    --framer-color-bg-secondary: #eeeeee;
+    --framer-color-bg-tertiary: #f3f3f3;
+    --framer-color-divider: #eeeeee;
+    --framer-color-text: #333333;
+    --framer-color-text-reversed: #ffffff;
+    --framer-color-text-secondary: #666666;
+    --framer-color-text-tertiary: #999999;
+    --framer-color-tint-extra-dark: #0077ff;
+}

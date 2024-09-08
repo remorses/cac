@@ -14,7 +14,7 @@ export class ThreeCanvas {
     plane: THREE.Mesh
 
     constructor(
-        initialImageSize: { width: number; height: number } | undefined,
+        initialImageSize?: { width: number; height: number } | undefined,
     ) {
         this.canvas = document.createElement('canvas')
         this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
