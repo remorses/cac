@@ -32,6 +32,7 @@ import {
 import { env } from 'website/src/lib/env'
 import { z } from 'zod'
 import dedent from 'dedent'
+import { ControlType } from 'unframer'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -374,9 +375,10 @@ export const reactPluginApp = new Spiceflow({
                     .flatMap((x) => {
                         const { componentName, name } = x
                         const variant = x.propertyControls?.variant
+
                         const variantsResponsive = (
-                            variant?.optionTitles ||
-                            variant?.options ||
+                            variant?.['optionTitles'] ||
+                            variant?.['options'] ||
                             []
                         ).filter((x) => {
                             return [
