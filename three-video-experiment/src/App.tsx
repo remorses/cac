@@ -1,4 +1,5 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
+import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 
@@ -73,6 +74,29 @@ function CanvasComponent({ ...rest }) {
     return <div {...rest} ref={containerRef}></div>
 }
 
+let isStopped = true
+const renderLoop = () => {
+    if (isStopped) {
+        return
+    }
+    threeCanvas.render()
+    requestAnimationFrame(renderLoop)
+}
+
+function startRenderLoop() {
+    if (!isStopped) {
+        return
+    }
+    isStopped = false
+    renderLoop()
+}
+
+function stopRenderLoop() {
+    isStopped = true
+}
+
+let video = null as HTMLVideoElement | null
+
 function RotationsImage() {
     const { media, handleFileChange } = useSelectedMedia()
     const [rotations, setRotations] = useState({ x: 0, y: 10 })
@@ -88,7 +112,105 @@ function RotationsImage() {
             return
         }
         setIsLoading(true)
-        await sleep(20)
+
+        if (media.type.startsWith('video/')) {
+            let width = video?.videoWidth || 1280
+            let height = video?.videoHeight || 720
+            let fps = 30
+            const config = {
+                codec: 'avc1.42001f',
+                width,
+                height,
+                bitrate: 1_000_000, // 1 Mbps
+                framerate: fps,
+            }
+            const muxer = new MP4Muxer({
+                target: new ArrayBufferTarget(),
+                fastStart: 'in-memory',
+                firstTimestampBehavior: 'offset',
+                video: {
+                    codec: 'avc',
+
+                    width: width,
+                    height: height,
+                    frameRate: fps,
+                },
+            })
+
+            let timestamp = 0
+            const frameDuration = 1000000 / fps // in microseconds
+
+            const videoEncoder = new VideoEncoder({
+                output: (chunk, meta) => {
+                    muxer.addVideoChunk(chunk, meta)
+                    timestamp += frameDuration
+                },
+                error: (e) => {
+                    console.error(e)
+                },
+            })
+
+            await videoEncoder.configure(config)
+
+            // Stop recording and download video
+            async function stopRecording() {
+                await videoEncoder.flush()
+
+                muxer.finalize()
+                videoEncoder.close()
+
+
+                const arrayBuffer = muxer.target.buffer
+                const blob = new Blob([arrayBuffer], { type: 'video/mp4' })
+
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'recorded-video.mp4'
+                a.click()
+                URL.revokeObjectURL(url)
+            }
+            if (!video) {
+                console.error('No video element found')
+                return
+            }
+            video.currentTime = 0
+            video.loop = false
+            video.pause()
+
+            // Capture a frame from the canvas
+            function captureFrame() {
+                const frame = new VideoFrame(threeCanvas.renderer.domElement, {
+                    timestamp: performance.now() * 1000,
+                })
+                videoEncoder.encode(frame)
+                frame.close()
+            }
+            function renderLoop(startTime = performance.now()) {
+                threeCanvas.render()
+                captureFrame()
+                const elapsedTime = performance.now() - startTime
+                if (elapsedTime > 6000) {
+                    console.warn(
+                        'Rendering took more than 2 seconds, stopping.',
+                    )
+                    stopRecording()
+                    return
+                }
+                if (!video!.paused && !video!.ended) {
+                    requestAnimationFrame(() => renderLoop(startTime))
+                } else {
+                    stopRecording()
+                }
+            }
+
+            video.addEventListener('play', () => {
+                renderLoop()
+            })
+            video.currentTime = 0
+            video.play()
+            return
+        }
         await threeCanvas.update({
             rotations,
             color,
@@ -123,13 +245,13 @@ function RotationsImage() {
         console.log('loading media into canvas')
         const loadMedia = async () => {
             if (media.type.startsWith('video/')) {
-                const video = document.createElement('video')
+                video = document.createElement('video')
                 video.src = URL.createObjectURL(media)
                 video.muted = true
                 video.loop = true
                 video.play()
                 await new Promise((resolve) => {
-                    video.addEventListener('playing', () => {
+                    video!.addEventListener('playing', () => {
                         resolve(null)
                     })
                 })
@@ -166,18 +288,7 @@ function RotationsImage() {
         loadMedia()
 
         if (media.type.startsWith('video/')) {
-            let isStopped = false
-            const render = () => {
-                if (isStopped) {
-                    return
-                }
-                threeCanvas.render()
-                requestAnimationFrame(render)
-            }
-            render()
-            return () => {
-                isStopped = true
-            }
+            startRenderLoop()
         }
     }, [media])
 

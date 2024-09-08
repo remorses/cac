@@ -610,6 +610,79 @@ importers:
         specifier: ^0.0.10
         version: 0.0.10(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
 
+  three-video-experiment:
+    dependencies:
+      '@lemonsqueezy/lemonsqueezy.js':
+        specifier: ^3.2.0
+        version: 3.2.0
+      '@types/three':
+        specifier: ^0.168.0
+        version: 0.168.0
+      colord:
+        specifier: ^2.9.3
+        version: 2.9.3
+      framer-motion:
+        specifier: ^11.5.4
+        version: 11.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      framer-plugin:
+        specifier: ^0.3.3
+        version: 0.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      mp4-muxer:
+        specifier: ^5.1.1
+        version: 5.1.1
+      postcss:
+        specifier: 8.4.24
+        version: 8.4.24
+      react:
+        specifier: ^18
+        version: 18.3.1
+      react-dom:
+        specifier: ^18
+        version: 18.3.1(react@18.3.1)
+      react-router:
+        specifier: ^6.25.1
+        version: 6.26.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^6.25.1
+        version: 6.26.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-use-measure:
+        specifier: ^2.1.1
+        version: 2.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tailwindcss:
+        specifier: ^3.4.10
+        version: 3.4.10
+      template-rewrite-framer:
+        specifier: workspace:^
+        version: link:../template-rewrite-framer
+      three:
+        specifier: ^0.168.0
+        version: 0.168.0
+      vite-plugin-environment:
+        specifier: ^1.1.3
+        version: 1.1.3(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+      vite-plugin-mkcert:
+        specifier: ^1.17.5
+        version: 1.17.6(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+      vite-tsconfig-paths:
+        specifier: ^4.3.2
+        version: 4.3.2(typescript@5.5.4)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+    devDependencies:
+      '@types/react':
+        specifier: ^18
+        version: 18.3.3
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.0
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.6.0
+        version: 3.7.0(@swc/helpers@0.5.13)(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+      vite:
+        specifier: ^5.4.3
+        version: 5.4.3(@types/node@22.5.4)(terser@5.31.6)
+      vite-plugin-framer:
+        specifier: ^0.0.10
+        version: 0.0.10(vite@5.4.3(@types/node@22.5.4)(terser@5.31.6))
+
   unframer:
     devDependencies:
       '@changesets/cli':
@@ -4209,6 +4282,9 @@ packages:
   '@types/diff-match-patch@1.0.36':
     resolution: {integrity: sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg==}
 
+  '@types/dom-webcodecs@0.1.11':
+    resolution: {integrity: sha512-yPEZ3z7EohrmOxbk/QTAa0yonMFkNkjnVXqbGb7D4rMr+F1dGQ8ZUFxXkyLLJuiICPejZ0AZE9Rrk9wUCczx4A==}
+
   '@types/estree-jsx@1.0.5':
     resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
 
@@ -4371,6 +4447,9 @@ packages:
 
   '@types/webxr@0.5.20':
     resolution: {integrity: sha512-JGpU6qiIJQKUuVSKx1GtQnHJGxRjtfGIhzO2ilq43VZZS//f1h1Sgexbdk+Lq+7569a6EYhOWrUpIruR/1Enmg==}
+
+  '@types/wicg-file-system-access@2020.9.8':
+    resolution: {integrity: sha512-ggMz8nOygG7d/stpH40WVaNvBwuyYLnrg5Mbyf6bmsj/8+gb6Ei4ZZ9/4PNpcPNTT8th9Q8sM8wYmWGjMWLX/A==}
 
   '@types/ws@6.0.4':
     resolution: {integrity: sha512-PpPrX7SZW9re6+Ha8ojZG4Se8AZXgf0GK6zmfqEuCsY49LFDNXO3SByp44X3dFEqtB73lkCDAdUazhAjVPiNwg==}
@@ -7408,6 +7487,9 @@ packages:
   morgan@1.10.0:
     resolution: {integrity: sha512-AbegBVI4sh6El+1gNwvD5YIck7nSA36weD7xvIxG4in80j/UoK8AEGaWnnz8v1GxonMCltmlNs5ZKbGvl9b1XQ==}
     engines: {node: '>= 0.8.0'}
+
+  mp4-muxer@5.1.1:
+    resolution: {integrity: sha512-6RfRE+TFfOK7+HyIr7j9v2LVNYgzDPdqNYLAaJifGWZmE072gvW+DjXxuxBhinSloI/rJq5AcPmUOGtCvBPw2Q==}
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -14008,6 +14090,8 @@ snapshots:
 
   '@types/diff-match-patch@1.0.36': {}
 
+  '@types/dom-webcodecs@0.1.11': {}
+
   '@types/estree-jsx@1.0.5':
     dependencies:
       '@types/estree': 1.0.5
@@ -14191,6 +14275,8 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/webxr@0.5.20': {}
+
+  '@types/wicg-file-system-access@2020.9.8': {}
 
   '@types/ws@6.0.4':
     dependencies:
@@ -17905,6 +17991,11 @@ snapshots:
       on-headers: 1.0.2
     transitivePeerDependencies:
       - supports-color
+
+  mp4-muxer@5.1.1:
+    dependencies:
+      '@types/dom-webcodecs': 0.1.11
+      '@types/wicg-file-system-access': 2020.9.8
 
   mri@1.2.0: {}
 
