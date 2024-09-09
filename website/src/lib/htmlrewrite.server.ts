@@ -86,6 +86,7 @@ export async function formatHtmlForPrompt(
 }
 
 export async function fetchFormattedHtml(url) {
+    console.time(`fetchFormattedHtml: ${url}`)
     const res = await fetch(url, {
         headers: {
             Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -100,11 +101,15 @@ export async function fetchFormattedHtml(url) {
         },
     })
     if (!res.ok) {
+        console.timeEnd(`fetchFormattedHtml: ${url}`)
         throw new Error(
-            `Could not fetch website html for ${url}, error ${res.status}`,
+            `Could not fetch html for ${url}, error ${res.status}`,
         )
     }
+    console.time(`formatHtmlForPrompt: ${url}`)
     const formattedHtml = await formatHtmlForPrompt(res)
+    console.timeEnd(`formatHtmlForPrompt: ${url}`)
+    console.timeEnd(`fetchFormattedHtml: ${url}`)
     return formattedHtml
 }
 
