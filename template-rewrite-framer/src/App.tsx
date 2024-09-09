@@ -114,7 +114,7 @@ const router = createBrowserRouter(
                                 className='overflow-hidden '
                             >
                                 <div className='px-4 w-full'>
-                                    <hr className='' />
+                                    <hr className='loading-bar relative' />
                                 </div>
 
                                 <div

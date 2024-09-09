@@ -7,7 +7,7 @@ export function NProgressComponent() {
 
     const revalidator = useRevalidator()
     useEffect(() => {
-        NProgress.configure({ showSpinner: false })
+        NProgress.configure({ showSpinner: false, parent: 'hr.loading-bar' })
 
         // if it's not idle then it's submitting a form and loading the next location loaders
         if (navigation.state !== 'idle' || revalidator.state !== 'idle') {
