@@ -20,7 +20,7 @@ export default defineConfig({
     ],
     base: building ? basePath : undefined,
     build: {
-        target: 'ES2020',
+        target: 'esnext',
         sourcemap: true,
         outDir: 'dist' + basePath,
     },
