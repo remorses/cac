@@ -6,7 +6,8 @@
     "main": "src/api/index.ts",
     "scripts": {
         "dev": "doppler run -- vite",
-        "build": "vite build ",
+        "copy-plugin": "export OUT=../website/public/ && mkdir -p $OUT && cp -r ./dist/ $OUT",
+        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build && pnpm copy-plugin",
         "format": "prettier . --write",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",

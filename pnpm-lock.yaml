@@ -1120,6 +1120,9 @@ importers:
       dedent:
         specifier: ^1.5.3
         version: 1.5.3
+      dprint-node:
+        specifier: ^1.0.8
+        version: 1.0.8
       event-iterator:
         specifier: ^2.0.0
         version: 2.0.0
@@ -18675,7 +18678,7 @@ snapshots:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.1.0
-      source-map-js: 1.2.0
+      source-map-js: 1.2.1
 
   postgres-array@2.0.0: {}
 
