@@ -1,11 +1,13 @@
 import './styles/globals.css'
 import { Toaster } from 'react-hot-toast'
 import {
+    isRouteErrorResponse,
     Links,
     Meta,
     Outlet,
     Scripts,
     ScrollRestoration,
+    useRouteError,
 } from '@remix-run/react'
 import './framer/styles.css'
 
@@ -53,6 +55,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Providers>{children}</Providers>
                 <ScrollRestoration />
                 <Scripts />
+            </body>
+        </html>
+    )
+}
+
+export function ErrorBoundary() {
+    const error = useRouteError()
+    return (
+        <html>
+            <head>
+                <title>Oops!</title>
+                <Meta />
+                <Links />
+            </head>
+            <body className='flex items-center justify-center min-h-[200px] '>
+                <div className='text-center'>
+                    <h1 className='text-2xl font-bold mb-4'>
+                        {isRouteErrorResponse(error)
+                            ? `${error.status} ${error.statusText}`
+                            : error instanceof Error
+                              ? error.message
+                              : 'Unknown Error'}
+                    </h1>
+                    <Scripts />
+                </div>
             </body>
         </html>
     )
