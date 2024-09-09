@@ -63,17 +63,18 @@ export class ThreeCanvas {
         this.composer.render()
     }
 
-    changeImage(bitmap: ImageBitmap) {
+    changeImage(bitmap: ImageBitmap | VideoFrame) {
         this.texture.dispose()
         this.texture.image = bitmap
         this.texture.needsUpdate = true
-        const img = this.texture.image
-        const aspectRatio = img.width / img.height
+
+        const size = getDimensions(bitmap)
+        const aspectRatio = size.width / size.height
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
         this.plane.scale.set(aspectRatio, 1, 1)
-        this.renderer.setSize(img?.width, img?.height)
-        this.renderer.setViewport(0, 0, img.width, img.height)
+        this.renderer.setSize(size?.width, size?.height)
+        this.renderer.setViewport(0, 0, size.width, size.height)
     }
     changeVideo(video: HTMLVideoElement) {
         this.texture.dispose()
@@ -149,6 +150,31 @@ export class ThreeCanvas {
 
         this.composer.addPass(new ShaderPass(filmGrainShader))
         this.composer.render()
+    }
+}
+
+function getDimensions(image) {
+    if (
+        typeof HTMLImageElement !== 'undefined' &&
+        image instanceof HTMLImageElement
+    ) {
+        return {
+            width: image.naturalWidth || image.width,
+            height: image.naturalHeight || image.height,
+        }
+    } else if (
+        typeof VideoFrame !== 'undefined' &&
+        image instanceof VideoFrame
+    ) {
+        return {
+            width: image.displayWidth,
+            height: image.displayHeight,
+        }
+    } else {
+        return {
+            width: image.width,
+            height: image.height,
+        }
     }
 }
 

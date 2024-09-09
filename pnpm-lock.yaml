@@ -615,6 +615,9 @@ importers:
       '@lemonsqueezy/lemonsqueezy.js':
         specifier: ^3.2.0
         version: 3.2.0
+      '@remotion/media-parser':
+        specifier: ^4.0.209
+        version: 4.0.209
       '@types/three':
         specifier: ^0.168.0
         version: 0.168.0
@@ -3922,6 +3925,9 @@ packages:
 
   '@remix-run/web-stream@1.1.0':
     resolution: {integrity: sha512-KRJtwrjRV5Bb+pM7zxcTJkhIqWWSy+MYsIxHK+0m5atcznsf15YwUBWHWulZerV2+vvHH1Lp1DD7pw6qKW8SgA==}
+
+  '@remotion/media-parser@4.0.209':
+    resolution: {integrity: sha512-RprZAQyFo1ZC6M/3wMX17RamjVRTFnQPZWibNivfVknslEoyDDPR7UqkhJoj66NfYBX/+pIVLcmHzP1Ds9G5AA==}
 
   '@rollup/pluginutils@4.2.1':
     resolution: {integrity: sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==}
@@ -13692,6 +13698,8 @@ snapshots:
   '@remix-run/web-stream@1.1.0':
     dependencies:
       web-streams-polyfill: 3.3.3
+
+  '@remotion/media-parser@4.0.209': {}
 
   '@rollup/pluginutils@4.2.1':
     dependencies:

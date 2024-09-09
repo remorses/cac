@@ -1,4 +1,6 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
+import { parseMedia } from '@remotion/media-parser'
+import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
@@ -119,13 +121,9 @@ const handleSaveImage = async ({ media }: { media: File | null }) => {
             },
         })
 
-        let timestamp = 0
-        const frameDuration = 1000000 / fps // in microseconds
-
         const videoEncoder = new VideoEncoder({
             output: (chunk, meta) => {
                 muxer.addVideoChunk(chunk, meta)
-                timestamp += frameDuration
             },
             error: (e) => {
                 console.error(e)
@@ -160,37 +158,67 @@ const handleSaveImage = async ({ media }: { media: File | null }) => {
             console.error('No video element found')
             return
         }
-        video.currentTime = 0
-        video.loop = false
-        video.pause()
+        let timestamp = 0
+        const frameDuration = 1000000 / fps // in microseconds
+        const videoDecoder = new VideoDecoder({
+            output: (frame) => {
+                threeCanvas.changeImage(frame)
+                threeCanvas.render()
+                // console.log('frame', frame.timestamp)
+                const outputFrame = new VideoFrame(
+                    threeCanvas.renderer.domElement,
+                    {
+                        timestamp,
+                    },
+                )
+                videoEncoder.encode(outputFrame)
+                outputFrame.close()
+                frame.close()
+                timestamp += frameDuration
+                console.log(`Rendered frame: ${performance.now() * 1000}`)
 
-        video.currentTime = 0
-        video.play()
-        await new Promise<void>((resolve) => {
-            video!.addEventListener('play', function handlePlay() {
-                video!.removeEventListener('play', handlePlay)
-                resolve()
-            })
+                // if (elapsedTime > 6000) {
+                //     console.warn(
+                //         'Rendering took more than 2 seconds, stopping.',
+                //     )
+                //     stopRecording()
+                //     return
+                // }
+            },
+            error: console.error,
         })
-        const startTime = performance.now()
-        while (!video!.paused && !video!.ended) {
-            threeCanvas.render()
-            const frame = new VideoFrame(threeCanvas.renderer.domElement, {
-                timestamp: performance.now() * 1000,
-            })
-            videoEncoder.encode(frame)
-            frame.close()
-            console.log(`Rendered frame: ${performance.now() * 1000}`)
-            const elapsedTime = performance.now() - startTime
-            // if (elapsedTime > 6000) {
-            //     console.warn(
-            //         'Rendering took more than 2 seconds, stopping.',
-            //     )
-            //     stopRecording()
-            //     return
-            // }
-            await new Promise(requestAnimationFrame)
-        }
+
+        const result = await parseMedia({
+            src: media,
+            reader: webFileReader,
+            onVideoTrack: async (track) => {
+                console.log('onVideoTrack', track)
+                await videoDecoder.configure(track)
+
+                return async (sample) => {
+                    if (videoDecoder.decodeQueueSize > 10) {
+                        let resolve = () => {}
+
+                        const cb = () => {
+                            resolve()
+                        }
+
+                        await new Promise<void>((r) => {
+                            resolve = r
+                            videoDecoder.addEventListener('dequeue', cb)
+                        })
+                        videoDecoder.removeEventListener('dequeue', cb)
+                    }
+
+                    videoDecoder.decode(new EncodedVideoChunk(sample))
+                }
+            },
+            // fields: {
+            //     durationInSeconds: true,
+            //     dimensions: true,
+            // },
+        })
+
         await stopRecording()
     } else {
     }
