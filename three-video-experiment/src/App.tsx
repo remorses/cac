@@ -85,7 +85,7 @@ function stopRenderLoop() {
     isStopped = true
 }
 
-let video = null as HTMLVideoElement | null
+let video = document.createElement('video')
 
 const handleSaveImage = async ({ media }: { media: File | null }) => {
     if (!media) {
@@ -241,7 +241,6 @@ function RotationsImage() {
         console.log('loading media into canvas')
         const loadMedia = async () => {
             if (media.type.startsWith('video/')) {
-                video = document.createElement('video')
                 video.src = URL.createObjectURL(media)
                 video.muted = true
                 video.loop = true
@@ -319,13 +318,16 @@ function RotationsImage() {
         [rotations, color, intensity, focus, z],
     )
 
+    const { controlsElement } = useVideoControls(video)
+
     if (!media) {
         return (
-            <Container>
+            <Container className='flex flex-col items-center justify-center'>
                 <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
                     <p>Select an Image or Video First</p>
                     <input
                         type='file'
+                        className='!bg-gray-50 !rounded-lg'
                         // accept='image/*,video/*'
                         onChange={handleFileChange}
                     />
@@ -336,11 +338,14 @@ function RotationsImage() {
 
     return (
         <Container className='flex !flex-row'>
-            <div className='flex shrink-0 flex-col overflow-hidden items-center justify-center'>
+            <div className='flex group relative shrink-0 flex-col overflow-hidden items-center justify-center'>
                 <CanvasComponent
                     style={{ aspectRatio: aspectRatio.toFixed(2) }}
                     className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
                 />
+                <div className='absolute bottom-0 left-0 right-0 m-auto'>
+                    {media?.type.startsWith('video/') && controlsElement}
+                </div>
             </div>
             <div className='flex flex-col gap-3'>
                 <div className='shrink-0 flex flex-col w-full gap-3'>
@@ -497,4 +502,90 @@ function setRangeProgress(el?: HTMLInputElement | null) {
 
     const progress = ((value - min) / (max - min)) * 100
     range.style.setProperty('--progress', `${progress}%`)
+}
+
+const useVideoControls = (videoElement: HTMLVideoElement | null) => {
+    const [, forceUpdate] = useState<{}>({})
+
+    useEffect(() => {
+        if (!videoElement) return
+
+        const events = ['play', 'pause', 'loadedmetadata']
+        const handleUpdate = () => forceUpdate({})
+
+        let timeUpdateTimer
+        const handleTimeUpdate = () => {
+            clearTimeout(timeUpdateTimer)
+            timeUpdateTimer = setTimeout(() => {
+                setRangeProgress(slider.current)
+                forceUpdate({})
+            }, 20) // Debounce time: 250ms
+        }
+
+        events.forEach((event) =>
+            videoElement.addEventListener(event, handleUpdate),
+        )
+        videoElement.addEventListener('timeupdate', handleTimeUpdate)
+
+        return () => {
+            events.forEach((event) =>
+                videoElement.removeEventListener(event, handleUpdate),
+            )
+            videoElement.removeEventListener('timeupdate', handleTimeUpdate)
+            clearTimeout(timeUpdateTimer)
+        }
+    }, [videoElement])
+
+    const togglePlay = () => {
+        if (!videoElement) return
+        if (videoElement.paused) {
+            videoElement.play()
+        } else {
+            videoElement.pause()
+        }
+    }
+
+    const handleSeek = (e) => {
+        // setRangeProgress(e.target)
+        if (!videoElement) return
+        const time = e.target.value
+        videoElement.currentTime = time
+    }
+
+    const formatTime = (time) => {
+        const minutes = Math.floor(time / 60)
+        const seconds = Math.floor(time % 60)
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+    }
+    const slider = useRef<HTMLInputElement>(null)
+
+    const controlsElement = (
+        <div className='px-4 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-30 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
+            <div className='flex  gap-1 shrink-0 items-center'>
+                <button className='w-auto' onClick={togglePlay}>
+                    {videoElement?.paused ? 'Play' : 'Pause'}
+                </button>
+            </div>
+            <input
+                type='range'
+                min='0'
+                step={0.001}
+                max={videoElement?.duration || 0}
+                ref={slider}
+                style={{
+                    // @ts-ignore
+                    '--progress': `${((videoElement?.currentTime || 0) / (videoElement?.duration || 1)) * 100}%`,
+                }}
+                value={videoElement?.currentTime}
+                onChange={handleSeek}
+                className='grow slider'
+            />
+            <div className='text-[11px] shrink-0 font-mono'>
+                {formatTime(videoElement?.currentTime || 0)} /{' '}
+                {formatTime(videoElement?.duration || 0)}
+            </div>
+        </div>
+    )
+
+    return { controlsElement, togglePlay, handleSeek }
 }
