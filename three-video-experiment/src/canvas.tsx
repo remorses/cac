@@ -3,6 +3,7 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 const deg = Math.PI / 180
 
 export class ThreeCanvas {
@@ -46,13 +47,16 @@ export class ThreeCanvas {
 
         this.texture = new THREE.Texture()
         this.texture.colorSpace = THREE.LinearSRGBColorSpace
-        this.texture.flipY = false
 
         this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
         this.camera.updateProjectionMatrix()
 
         const geometry = new THREE.PlaneGeometry(1, 1)
-        const material = new THREE.MeshBasicMaterial({ map: this.texture })
+        const material = new THREE.MeshBasicMaterial({
+            map: this.texture,
+            side: THREE.DoubleSide,
+        })
+
         this.plane = new THREE.Mesh(geometry, material)
 
         this.scene.add(this.plane)
@@ -66,6 +70,7 @@ export class ThreeCanvas {
     changeImage(bitmap: ImageBitmap | VideoFrame) {
         this.texture.dispose()
         this.texture.image = bitmap
+
         this.texture.needsUpdate = true
 
         const size = getDimensions(bitmap)
@@ -73,11 +78,13 @@ export class ThreeCanvas {
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
         this.plane.scale.set(aspectRatio, 1, 1)
+
         this.renderer.setSize(size?.width, size?.height)
         this.renderer.setViewport(0, 0, size.width, size.height)
     }
     changeVideo(video: HTMLVideoElement) {
         this.texture.dispose()
+        this.texture.flipY = false
         this.texture = new THREE.VideoTexture(video)
         this.texture.colorSpace = THREE.LinearSRGBColorSpace
         this.texture.needsUpdate = true
@@ -85,6 +92,7 @@ export class ThreeCanvas {
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
         const material = new THREE.MeshBasicMaterial({ map: this.texture })
+
         this.plane.material = material
         this.plane.scale.set(aspectRatio, 1, 1)
         this.renderer.setSize(video.videoWidth, video.videoHeight)
@@ -112,7 +120,7 @@ export class ThreeCanvas {
                 const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
                 console.log('scale down factor', scaleDownFactor)
                 if (scaleDownFactor < 1) {
-                    this.renderer.setPixelRatio(scaleDownFactor)
+                    // this.renderer.setPixelRatio(scaleDownFactor)
                 }
             }
         } else {
@@ -134,11 +142,23 @@ export class ThreeCanvas {
 
         const bokehPass = new BokehPass(this.scene, this.camera, {
             focus: z + focus,
-            aspect: aspectRatio,
-            aperture: 0.16,
-            maxblur: 0.2,
+            // aspect: aspectRatio,
+            aperture: 0.1,
+            maxblur: 0.5,
         })
         this.composer.addPass(bokehPass)
+        const smaaPass = new SMAAPass(
+            this.renderer.domElement.width * this.renderer.getPixelRatio(),
+            this.renderer.domElement.height * this.renderer.getPixelRatio(),
+        )
+        this.composer.addPass(smaaPass)
+
+        // this.composer.addPass(new BokehPass(this.scene, this.camera, {
+        //     focus: z + focus,
+        //     // aspect: aspectRatio,
+        //     // aperture: 0.16,
+        //     maxblur: 0.01,
+        // }))
         const vignettePass = new ShaderPass(vignetteShader)
 
         let vignetteRotation = Math.atan2(-rotationX, rotationY)

@@ -260,7 +260,9 @@ function RotationsImage() {
                 console.log('aspect ratio', aspectRatio)
                 setAspectRatio(aspectRatio)
             } else {
-                const bitmap = await createImageBitmap(media)
+                const bitmap = await createImageBitmap(media, {
+                    imageOrientation: 'flipY',
+                })
                 if (!bitmap) {
                     return
                 }
@@ -337,8 +339,8 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='flex !flex-row'>
-            <div className='flex group relative shrink-0 flex-col overflow-hidden items-center justify-center'>
+        <Container className='flex !flex-row max-w-full'>
+            <div className='flex group relative shrink-0 max-w-[1000px] flex-col overflow-hidden items-center justify-center'>
                 <CanvasComponent
                     style={{ aspectRatio: aspectRatio.toFixed(2) }}
                     className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
@@ -562,7 +564,10 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
     const controlsElement = (
         <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-10 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
             <div className='flex  gap-1 shrink-0 items-center'>
-                <button className='!bg-transparent w-[50px]' onClick={togglePlay}>
+                <button
+                    className='!bg-transparent w-[50px]'
+                    onClick={togglePlay}
+                >
                     {videoElement?.paused ? 'Play' : 'Pause'}
                 </button>
             </div>
