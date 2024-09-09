@@ -560,9 +560,9 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
     const slider = useRef<HTMLInputElement>(null)
 
     const controlsElement = (
-        <div className='px-4 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-30 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
+        <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-30 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
             <div className='flex  gap-1 shrink-0 items-center'>
-                <button className='w-auto' onClick={togglePlay}>
+                <button className='!bg-transparent w-[50px]' onClick={togglePlay}>
                     {videoElement?.paused ? 'Play' : 'Pause'}
                 </button>
             </div>
