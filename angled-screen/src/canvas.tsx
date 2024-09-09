@@ -122,7 +122,7 @@ export class ThreeCanvas {
         composer.addPass(bokehPass)
         const vignettePass = new ShaderPass(vignetteShader)
 
-        let vignetteRotation = Math.atan2(-rotationX, rotationY)
+        let vignetteRotation = Math.atan2(-rotationX*0.5, rotationY)
 
         vignettePass.uniforms.rotation.value = vignetteRotation
         vignettePass.uniforms.color.value = threeColor

@@ -46,7 +46,7 @@ export default defineConfig({
             },
         }),
         tsconfigPaths(),
-        viteExternalsPlugin(),
+        viteExternalsPlugin({ externals: ['dprint-node'] }),
         {
             apply(config, env) {
                 if (env.isSsrBuild) {

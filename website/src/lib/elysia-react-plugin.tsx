@@ -4,7 +4,7 @@ import fs from 'fs'
 import GithubSlugger from 'github-slugger'
 import path from 'path'
 import os from 'os'
-import { bundle } from 'unframer/dist/exporter'
+import { bundle } from 'unframer-workspace/dist/exporter'
 import matter from 'gray-matter'
 
 import { notifyError } from 'website/src/lib/errors'
