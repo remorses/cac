@@ -15,8 +15,6 @@ import {
 import { ThreeCanvas } from './canvas'
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
-const width = 600
-
 function useSelectedMedia() {
     const [media, setMedia] = useState<File | null>(null)
 
@@ -309,97 +307,99 @@ function RotationsImage() {
     }
 
     return (
-        <Container>
+        <Container className='flex !flex-row'>
             <div className='flex shrink-0 flex-col overflow-hidden items-center justify-center'>
                 <CanvasComponent
                     style={{ aspectRatio: aspectRatio.toFixed(2) }}
                     className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
                 />
             </div>
-            <div className='shrink-0 flex flex-col w-full gap-3'>
-                {(['x', 'y'] as const).map((axis) => (
-                    <SliderAndNumber
-                        key={axis}
-                        label={`Angle on ${axis}`}
-                        value={rotations[axis]}
-                        onChange={(v) => {
-                            handleRotationChange(axis, Number(v))
-                        }}
-                        rangeProps={{
-                            min: '-40',
-                            max: '40',
-                        }}
-                    />
-                ))}
-            </div>
+            <div className='flex flex-col gap-3'>
+                <div className='shrink-0 flex flex-col w-full gap-3'>
+                    {(['x', 'y'] as const).map((axis) => (
+                        <SliderAndNumber
+                            key={axis}
+                            label={`Angle on ${axis}`}
+                            value={rotations[axis]}
+                            onChange={(v) => {
+                                handleRotationChange(axis, Number(v))
+                            }}
+                            rangeProps={{
+                                min: '-40',
+                                max: '40',
+                            }}
+                        />
+                    ))}
+                </div>
 
-            <SliderAndNumber
-                label='Zoom'
-                value={z}
-                onChange={(v) => {
-                    setZ(Number(v))
-                }}
-                rangeProps={{
-                    min: '0.5',
-                    max: '2',
-                    step: '0.01',
-                }}
-            />
-            <SliderAndNumber
-                label='Focus'
-                value={focus}
-                onChange={(v) => {
-                    setFocus(Number(v))
-                }}
-                rangeProps={{
-                    min: '-0.3',
-                    max: '0.3',
-                    step: '0.01',
-                }}
-            />
-            <SliderAndNumber
-                label='Shadow'
-                value={intensity}
-                onChange={(v) => {
-                    setIntensity(Number(v))
-                }}
-                rangeProps={{
-                    min: '0',
-                    max: '2',
-                    step: '0.01',
-                }}
-            />
-            <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
-                <div>Background</div>
-
-                <input
-                    type='color'
-                    className='w-auto ml-0'
-                    value={color}
-                    onChange={(event) => setColor(event.target.value)}
+                <SliderAndNumber
+                    label='Zoom'
+                    value={z}
+                    onChange={(v) => {
+                        setZ(Number(v))
+                    }}
+                    rangeProps={{
+                        min: '0.5',
+                        max: '2',
+                        step: '0.01',
+                    }}
                 />
-                <div className=''></div>
-            </div>
+                <SliderAndNumber
+                    label='Focus'
+                    value={focus}
+                    onChange={(v) => {
+                        setFocus(Number(v))
+                    }}
+                    rangeProps={{
+                        min: '-0.3',
+                        max: '0.3',
+                        step: '0.01',
+                    }}
+                />
+                <SliderAndNumber
+                    label='Shadow'
+                    value={intensity}
+                    onChange={(v) => {
+                        setIntensity(Number(v))
+                    }}
+                    rangeProps={{
+                        min: '0',
+                        max: '2',
+                        step: '0.01',
+                    }}
+                />
+                <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
+                    <div>Background</div>
 
-            <Button
-                isLoading={isLoading}
-                variant='primary'
-                onClick={async () => {
-                    setIsLoading(true)
-                    await threeCanvas.update({
-                        rotations,
-                        color,
-                        intensity,
-                        focus,
-                        z,
-                        isPreview: false,
-                    })
-                    await handleSaveImage({ media })
-                    setIsLoading(false)
-                }}
-            >
-                Save Image
-            </Button>
+                    <input
+                        type='color'
+                        className='w-auto ml-0'
+                        value={color}
+                        onChange={(event) => setColor(event.target.value)}
+                    />
+                    <div className=''></div>
+                </div>
+
+                <Button
+                    isLoading={isLoading}
+                    variant='primary'
+                    onClick={async () => {
+                        setIsLoading(true)
+                        await threeCanvas.update({
+                            rotations,
+                            color,
+                            intensity,
+                            focus,
+                            z,
+                            isPreview: false,
+                        })
+                        await handleSaveImage({ media })
+                        setIsLoading(false)
+                    }}
+                >
+                    Save Image
+                </Button>
+            </div>
         </Container>
     )
 }
@@ -408,9 +408,10 @@ const Container = ({ children, ...rest }) => {
     const [ref, { height }] = useMeasure()
     return (
         <div
+            {...rest}
             ref={ref}
-            style={{ width, height }}
-            className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3 m-12'
+            style={{ ...rest.style }}
+            className={`shrink-0 w-full flex flex-col gap-4 pt-0 p-3 m-12 ${rest.className || ''}`}
         >
             {children}
         </div>

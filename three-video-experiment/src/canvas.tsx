@@ -196,7 +196,7 @@ const filmGrainShader = {
     uniforms: {
         tDiffuse: { value: null },
         time: { value: 1.0 },
-        grainIntensity: { value: 0.06 },
+        grainIntensity: { value: 0.03 },
     },
     vertexShader: `
       varying vec2 vUv;
