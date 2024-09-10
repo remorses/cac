@@ -25,13 +25,13 @@ function App() {
               valueName: "opacity",
               id: "header",
               keyframes: {
-                "0": {
-                  id: "0",
+                "a0": {
+                  id: "a0",
                   value: "0",
                   offset: 0,
                 },
-                "1": {
-                  id: "1",
+                "a1": {
+                  id: "a1",
                   value: "1",
                   offset: 1,
                 },
@@ -62,7 +62,8 @@ function App() {
                 },
               },
               options: {
-                duration: 2,
+                duration: 1,
+
                 easing: [0.25, 0.1, 0.25, 1],
               },
               source: "motion-one",

@@ -3,12 +3,7 @@ import styled from "styled-components"
 import { InspectIcon } from "../icons/InspectIcon"
 
 function inspect(motionId: string) {
-  chrome.devtools.inspectedWindow.eval(
-    `inspect($("[data-motion-id='${motionId}']"))`,
-    function (result) {
-      console.log(result)
-    }
-  )
+  
 }
 
 interface Props {
