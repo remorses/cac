@@ -1,11 +1,11 @@
 import * as React from "react"
-
+import { usePort } from "./state/use-port"
 import { Instructions } from "./Instructions"
 import { TabBar } from "./TabBar/index"
 import { Timeline } from "./Timeline/index"
 import { AnimatePresence } from "framer-motion"
 import { EditorAuth } from "../types"
-
+import { LoginDialog } from "./LoginDialog"
 import { useEditorState } from "./state/use-editor-state"
 import { EditorState } from "./state/types"
 import { KeyframeEditPanel } from "./KeyframeEditPanel"
@@ -13,26 +13,15 @@ import { KeyframeEditPanel } from "./KeyframeEditPanel"
 /**
  * TODO
  * - Fix port reconnection - 1
- * - Add Github authentication - 4
- * - Release 10.7 of Motion One
- * - Submit to Google - 1
  * =============================
- * - CSS animation names - 1
+ * - Add keyframes - 4
  * =============================
- * - Motion One label - 1
+ * - Move keyframes - 8
  * =============================
- * - Add unit tests - 8
- * - Add uuid to keyframes - 2
  * - Spring/glide support - 8
  * =============================
  * - Keyboard shortcuts
  *    - Space: Start/stop - 2
- * =============================
- * - Move keyframes - 8
- * =============================
- * - Delete keyframes - .5
- * =============================
- * - Add keyframes - 4
  * =============================
  * - Add keyframe at scrubber position - 2
  * =============================
@@ -56,14 +45,14 @@ interface Props {
 const getHasRecorded = (state: EditorState) => state.hasRecorded
 
 export function Editor({ user = { isPro: false } }: Props) {
+  usePort()
+
   const hasRecorded = useEditorState(getHasRecorded)
 
   return (
     <>
       <TabBar />
-      <AnimatePresence exitBeforeEnter>
-        <Timeline key="timeline" />
-      </AnimatePresence>
+      <Timeline key="timeline" />
       <KeyframeEditPanel />
     </>
   )

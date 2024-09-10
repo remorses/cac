@@ -52,16 +52,14 @@ function generateMarkers(totalWidth: number, scale: number) {
   const numVisibleSeconds = totalWidth / scale
   const numMarkers = Math.ceil(numVisibleSeconds / increment)
 
-  const markers = [] as any[]
+  const markers = []
 
   for (let i = 0; i < numMarkers; i++) {
     const time = increment * i
     markers.push(
       <Marker
         key={time}
-        // @ts-ignore
-        style={{ "--marker-width": increment * scale + "px" }}
-        //
+        style={{ "--marker-width": increment * scale + "px" } as any}
       >
         {time}
       </Marker>
@@ -137,7 +135,6 @@ export function TimeMarkers({
         }}
       >
         {markers}
-        
         <Scrubber
           scale={scale}
           currentTime={currentTime}

@@ -2,6 +2,15 @@ import * as React from "react"
 import styled from "styled-components"
 import { InspectIcon } from "../icons/InspectIcon"
 
+function inspect(motionId: string) {
+  chrome.devtools.inspectedWindow.eval(
+    `inspect($("[data-motion-id='${motionId}']"))`,
+    function (result) {
+      console.log(result)
+    }
+  )
+}
+
 interface Props {
   name: string
 }
@@ -25,7 +34,7 @@ export function ElementDetails({ name }: Props) {
       <h2>
         <code>{name}</code>
       </h2>
-      <button onClick={() => {}}>
+      <button onClick={() => inspect(name)}>
         <InspectIcon
           style={{ opacity: 0.5, width: 13, height: 13, fill: "var(--white)" }}
         />

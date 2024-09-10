@@ -23,7 +23,19 @@ function App() {
               elementId: "header",
               animationName: "fadeIn",
               valueName: "opacity",
-              keyframes: [0, 1],
+              id: "header",
+              keyframes: {
+                "0": {
+                  id: "0",
+                  value: "0",
+                  offset: 0,
+                },
+                "1": {
+                  id: "1",
+                  value: "1",
+                  offset: 1,
+                },
+              },
               options: {
                 duration: 1,
                 easing: "ease-in-out",
@@ -36,7 +48,19 @@ function App() {
               elementId: "content",
               animationName: "fadeIn",
               valueName: "transform",
-              keyframes: [20, 0],
+              id: "content",
+              keyframes: {
+                "0": {
+                  id: "0",
+                  value: "20",
+                  offset: 0,
+                },
+                "1": {
+                  id: "1",
+                  value: "0",
+                  offset: 1,
+                },
+              },
               options: {
                 duration: 2,
                 easing: [0.25, 0.1, 0.25, 1],

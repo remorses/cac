@@ -1,10 +1,38 @@
-import { EditorState } from "./types"
-import { isEasingList } from "@motionone/utils"
-import create from "zustand"
+import { EditorState, SelectedKeyframeMetadata } from "./types"
+import create, { GetState, SetState, StateCreator } from "zustand"
 import produce from "immer"
 import { getCurrentTime } from "./selectors"
+import { sortKeyframesByOffset } from "../../utils/sort-keyframes"
+import { defaults } from "@motionone/utils"
 
-export const useEditorState = create<EditorState>((set, get) => ({
+const makeKeyframeUpdater =
+  (get: GetState<EditorState>, set: SetState<EditorState>, key: string) =>
+  (keyframe: SelectedKeyframeMetadata, newValue: any) => {
+    const { animations, selectedAnimationName } = get()
+    const { elementName, valueId, id } = keyframe
+
+    if (!selectedAnimationName) return
+
+    set({
+      animations: produce(animations, (draft) => {
+        const elementValues = draft[selectedAnimationName].elements[elementName]
+
+        const valueIndex = elementValues.findIndex(
+          (value) => value.id === valueId
+        )
+
+        const keyframe = elementValues[valueIndex].keyframes[id]
+
+        elementValues[valueIndex].keyframes[id] = {
+          ...keyframe,
+          [key]: newValue,
+        }
+      }),
+      selectedKeyframes: [{ ...keyframe }],
+    })
+  }
+
+export const stateFactory: StateCreator<EditorState> = (set, get) => ({
   /**
    * State
    */
@@ -77,61 +105,55 @@ export const useEditorState = create<EditorState>((set, get) => ({
     }
   },
   stopPlaying: () => set({ playbackOrigin: undefined }),
-  /**
-   * TODO: DRY updateKeyframe/KeyframeEasing
-   */
-  updateKeyframe: (keyframe, newValue) => {
+  updateKeyframe: makeKeyframeUpdater(get, set, "value"),
+  updateKeyframeEasing: makeKeyframeUpdater(get, set, "easing"),
+  deleteKeyframe: ({ elementName, valueId, id }) => {
     const { animations, selectedAnimationName } = get()
-    const { elementName, valueName, index } = keyframe
-
-    if (!selectedAnimationName) {
-      console.log("no selected animation name")
-      return
-    }
-
-    set({
-      animations: produce(animations, (draft) => {
-        const valueIndex = draft[selectedAnimationName].elements[
-          elementName
-        ].findIndex((value) => value.valueName === valueName)
-        draft[selectedAnimationName].elements[elementName][
-          valueIndex
-        ].keyframes[index] = newValue
-      }),
-      selectedKeyframes: [{ ...keyframe }],
-    })
-  },
-  updateKeyframeEasing: (keyframe, newEasing) => {
-    const { animations, selectedAnimationName } = get()
-    const { elementName, valueName, index } = keyframe
-
     if (!selectedAnimationName) return
 
     set({
       animations: produce(animations, (draft) => {
-        const valueIndex = draft[selectedAnimationName].elements[
-          elementName
-        ].findIndex((value) => value.valueName === valueName)
+        const elementValues = draft[selectedAnimationName].elements[elementName]
+        const valueAnimation = elementValues.find(
+          (value) => value.id === valueId
+        )
 
-        if (
-          isEasingList(
-            draft[selectedAnimationName].elements[elementName][valueIndex]
-              .options.easing,
-          )
-        ) {
-          draft[selectedAnimationName].elements[elementName][
-            valueIndex
-          ].options.easing![index - 1] = newEasing
-        } else {
-          console.log("setting easing to ", newEasing)
-          draft[selectedAnimationName].elements[elementName][
-            valueIndex
-          ].options.easing = newEasing
+        if (!valueAnimation) return
+
+        const orderedKeyframes = sortKeyframesByOffset(valueAnimation.keyframes)
+        const { delay = 0, duration = defaults.duration } =
+          valueAnimation.options
+
+        const timestampedKeyframes = orderedKeyframes
+          .map((keyframe) => ({
+            ...keyframe,
+            time: delay + duration * keyframe.offset,
+          }))
+          .filter((keyframe) => keyframe.id !== id)
+
+        const firstKeyframeTime = timestampedKeyframes[0].time
+        const lastKeyframeTime =
+          timestampedKeyframes[timestampedKeyframes.length - 1].time
+
+        const newDelay = firstKeyframeTime
+        const newDuration = lastKeyframeTime - firstKeyframeTime
+        valueAnimation.options.delay = newDelay
+        valueAnimation.options.duration = newDuration
+
+        for (const { time, ...keyframe } of timestampedKeyframes) {
+          valueAnimation.keyframes[keyframe.id] = {
+            ...keyframe,
+            offset: (time - newDelay) / newDuration,
+          }
         }
+
+        delete valueAnimation.keyframes[id]
       }),
-      selectedKeyframes: [{ ...keyframe }],
+      selectedKeyframes: undefined,
     })
   },
   logout: () => set({ user: { isPro: false } }),
   login: (user) => set({ user }),
-}))
+})
+
+export const useEditorState = create<EditorState>(stateFactory)

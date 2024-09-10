@@ -1,6 +1,5 @@
 import { bezier } from "@leva-ui/plugin-bezier"
-import { BezierDefinition, Easing, EasingGenerator } from "@motionone/types"
-import { isEasingGenerator, isEasingList } from "@motionone/utils"
+import { BezierDefinition } from "@motionone/types"
 import { useControls } from "leva"
 import * as React from "react"
 import { ValueAnimationMetadata } from "../../types"
@@ -8,10 +7,13 @@ import {
   getSelectedAnimation,
   getUpdateKeyframe,
   getUpdateKeyframeEasing,
+  getDeleteKeyframe,
 } from "../state/selectors"
 import { SelectedKeyframeMetadata } from "../state/types"
 import { useEditorState } from "../state/use-editor-state"
 import { getControlDefinition } from "./definitions"
+import styled from "styled-components"
+import { TrashIcon } from "../icons/TrashIcon"
 
 interface Props {
   selectedKeyframes: SelectedKeyframeMetadata[]
@@ -22,52 +24,70 @@ interface ValueControlProps {
   keyframeMetadata: SelectedKeyframeMetadata
 }
 
+const ActionsContainer = styled.div`
+  padding: 20px 0px;
+  display: flex;
+  flex-direction: column;
+`
+
+const DeleteButton = styled.button`
+  color: var(--white);
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid var(--feint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
 function ValueControl({ keyframeMetadata, valueAnimation }: ValueControlProps) {
+  const controls = {}
   const updateKeyframe = useEditorState(getUpdateKeyframe)
   const updateKeyframeEasing = useEditorState(getUpdateKeyframeEasing)
-  const { elementName, valueName, index } = keyframeMetadata
-  const { keyframes, options } = valueAnimation
-  const { easing } = options
-  const keyframeEasing = getKeyframeEasing(easing, index)
+  const deleteKeyframe = useEditorState(getDeleteKeyframe)
+  const { valueName, id: keyframeId } = keyframeMetadata
+  const { value, easing } = valueAnimation.keyframes[keyframeId]
 
-  // TODO Replace with uuid
-  const keyframeKey = `${elementName} ${valueName} [${index}]`
-
-  const controls = {
-    [keyframeKey]: {
-      ...getControlDefinition(valueName, keyframes[index] as string),
-      onChange: (newValue: string) =>
-        updateKeyframe(keyframeMetadata, newValue),
-    },
+  controls[keyframeId] = {
+    ...getControlDefinition(valueName, value),
+    onChange: (newValue: string) => updateKeyframe(keyframeMetadata, newValue),
   }
 
-  console.log(keyframeEasing)
-  if (keyframeEasing) {
-    if (
-      typeof keyframeEasing === "string" &&
-      keyframeEasing.startsWith("steps")
-    ) {
-      controls[`${keyframeKey} easing freeform`] = {
-        value: keyframeEasing,
-        label: "Easing",
-        transient: true,
-        onChange: (value: BezierDefinition) =>
-          updateKeyframeEasing(keyframeMetadata, value),
-      }
-    } else {
-      controls[`${keyframeKey} easing`] = {
-        ...bezier(keyframeEasing as any),
-        label: "Easing",
-        transient: true,
-        onChange: ([...points]: BezierDefinition) =>
-          updateKeyframeEasing(keyframeMetadata, points),
-      }
+  if (typeof easing === "string" && easing.startsWith("steps")) {
+    controls[`${keyframeId} easing freeform`] = {
+      value: easing,
+      label: "Easing",
+      transient: true,
+      onChange: (value: BezierDefinition) =>
+        updateKeyframeEasing(keyframeMetadata, value),
+    }
+  } else {
+    controls[`${keyframeId} easing`] = {
+      ...bezier(Array.isArray(easing) ? [...easing] : (easing as any)),
+      label: "Easing",
+      transient: true,
+      onChange: ([...points]: BezierDefinition) =>
+        updateKeyframeEasing(keyframeMetadata, points),
     }
   }
 
   useControls(controls)
 
-  return null
+  return (
+    <ActionsContainer>
+      <DeleteButton onClick={() => deleteKeyframe(keyframeMetadata)}>
+        <TrashIcon
+          style={{
+            width: 16,
+            height: 16,
+            color: "var(--red)",
+            marginRight: 5,
+          }}
+        />
+        Delete keyframe
+      </DeleteButton>
+    </ActionsContainer>
+  )
 }
 
 export function KeyframeEditControls({ selectedKeyframes }: Props) {
@@ -76,7 +96,7 @@ export function KeyframeEditControls({ selectedKeyframes }: Props) {
   if (!selectedAnimation) return null
 
   const controls = selectedKeyframes.map((keyframeMetadata) => {
-    const { elementName, valueName, index } = keyframeMetadata
+    const { elementName, valueName, id } = keyframeMetadata
     const elementAnimation = selectedAnimation.elements[elementName]
 
     if (!elementAnimation) return null
@@ -87,7 +107,7 @@ export function KeyframeEditControls({ selectedKeyframes }: Props) {
 
     return valueAnimation ? (
       <ValueControl
-        key={elementName + valueName + index}
+        key={id}
         valueAnimation={valueAnimation}
         keyframeMetadata={keyframeMetadata}
       />
@@ -95,25 +115,4 @@ export function KeyframeEditControls({ selectedKeyframes }: Props) {
   })
 
   return <>{controls}</>
-}
-
-function getKeyframeEasing(
-  easing: EasingGenerator | Easing | Easing[] | undefined,
-  index: number
-) {
-  /**
-   * Don't display easing for first keyframe or accept easing generator
-   * TODO: Remove this check as to support easing generators we'll be receiving this as a
-   * serialised object of some kind.
-   */
-  if (!easing || !index || isEasingGenerator(easing)) return
-
-  const easingDefinition = isEasingList(easing) ? easing[index - 1] : easing
-
-  /**
-   * Leva is mutatative of the initial value, so if this is a bezier definition, copy.
-   */
-  return Array.isArray(easingDefinition)
-    ? [...easingDefinition]
-    : easingDefinition
 }
