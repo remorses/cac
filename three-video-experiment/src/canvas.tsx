@@ -4,7 +4,17 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
+import { getProject, types } from '@theatre/core'
+
 const deg = Math.PI / 180
+
+import studio from '@theatre/studio'
+
+studio.initialize()
+
+// Create a project for the animation
+const project = getProject('THREE.js x Theatre.js')
+const sheet = project.sheet('Animated scene')
 
 export class ThreeCanvas {
     canvas: HTMLCanvasElement
@@ -61,6 +71,22 @@ export class ThreeCanvas {
 
         this.scene.add(this.plane)
         this.camera.position.z = 0.6
+
+        const torusKnotObj = sheet.object('Torus Knot', {
+            // Note that the rotation is in radians
+            // (full rotation: 2 * Math.PI)
+            rotation: types.compound({
+                x: types.number(this.plane.rotation.x, { range: [-2, 2] }),
+                y: types.number(this.plane.rotation.y, { range: [-2, 2] }),
+                z: types.number(this.plane.rotation.z, { range: [-2, 2] }),
+            }),
+        })
+
+        torusKnotObj.onValuesChange((values) => {
+            const { x, y, z } = values.rotation
+
+            this.plane.rotation.set(x * Math.PI, y * Math.PI, z * Math.PI)
+        })
     }
 
     render() {
