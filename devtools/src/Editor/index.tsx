@@ -1,14 +1,14 @@
-import * as React from 'react'
+import * as React from "react"
 
-import { Instructions } from './Instructions'
-import { TabBar } from './TabBar/index'
-import { Timeline } from './Timeline/index'
-import { AnimatePresence } from 'framer-motion'
-import { EditorAuth } from '../types'
+import { Instructions } from "./Instructions"
+import { TabBar } from "./TabBar/index"
+import { Timeline } from "./Timeline/index"
+import { AnimatePresence } from "framer-motion"
+import { EditorAuth } from "../types"
 
-import { useEditorState } from './state/use-editor-state'
-import { EditorState } from './state/types'
-import { KeyframeEditPanel } from './KeyframeEditPanel'
+import { useEditorState } from "./state/use-editor-state"
+import { EditorState } from "./state/types"
+import { KeyframeEditPanel } from "./KeyframeEditPanel"
 
 /**
  * TODO
@@ -50,25 +50,21 @@ import { KeyframeEditPanel } from './KeyframeEditPanel'
  */
 
 interface Props {
-    user: EditorAuth
+  user: EditorAuth
 }
 
 const getHasRecorded = (state: EditorState) => state.hasRecorded
 
 export function Editor({ user = { isPro: false } }: Props) {
-    const hasRecorded = useEditorState(getHasRecorded)
+  const hasRecorded = useEditorState(getHasRecorded)
 
-    return (
-        <>
-            <TabBar />
-            <AnimatePresence exitBeforeEnter>
-                {hasRecorded ? (
-                    <Timeline key='timeline' />
-                ) : (
-                    <Instructions key='instructions' />
-                )}
-            </AnimatePresence>
-            <KeyframeEditPanel />
-        </>
-    )
+  return (
+    <>
+      <TabBar />
+      <AnimatePresence exitBeforeEnter>
+        <Timeline key="timeline" />
+      </AnimatePresence>
+      <KeyframeEditPanel />
+    </>
+  )
 }

@@ -10,9 +10,9 @@ export const useEditorState = create<EditorState>((set, get) => ({
    */
   animations: {},
   isRecording: false,
-  hasRecorded: false,
+  hasRecorded: true,
   user: {
-    isPro: false,
+    isPro: true,
   },
   scale: 320,
   playbackOrigin: undefined,
@@ -84,7 +84,10 @@ export const useEditorState = create<EditorState>((set, get) => ({
     const { animations, selectedAnimationName } = get()
     const { elementName, valueName, index } = keyframe
 
-    if (!selectedAnimationName) return
+    if (!selectedAnimationName) {
+      console.log("no selected animation name")
+      return
+    }
 
     set({
       animations: produce(animations, (draft) => {
@@ -113,7 +116,7 @@ export const useEditorState = create<EditorState>((set, get) => ({
         if (
           isEasingList(
             draft[selectedAnimationName].elements[elementName][valueIndex]
-              .options.easing
+              .options.easing,
           )
         ) {
           draft[selectedAnimationName].elements[elementName][

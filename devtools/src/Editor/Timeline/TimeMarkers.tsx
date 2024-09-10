@@ -137,6 +137,7 @@ export function TimeMarkers({
         }}
       >
         {markers}
+        
         <Scrubber
           scale={scale}
           currentTime={currentTime}
