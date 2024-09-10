@@ -24,7 +24,7 @@
         "db": "workspace:^",
         "eventsource-parser": "^1.1.2",
         "fkill": "^9.0.0",
-        "framer-motion": "^11.3.8",
+        "framer-motion": "^11.5.4",
         "htmlrewriter": "^0.0.12",
         "is-hotkey": "0.2.0",
         "isbot": "^4.4.0",
@@ -51,7 +51,7 @@
     },
     "devDependencies": {
         "@types/chrome": "^0.0.269",
-        "@types/react": "^18.3.3",
+        "@types/react": "^18.3.5",
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react": "^4.3.1",
         "@vitejs/plugin-react-swc": "^3.7.0",

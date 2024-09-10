@@ -52,7 +52,7 @@ function generateMarkers(totalWidth: number, scale: number) {
   const numVisibleSeconds = totalWidth / scale
   const numMarkers = Math.ceil(numVisibleSeconds / increment)
 
-  const markers = []
+  const markers = [] as any[]
 
   for (let i = 0; i < numMarkers; i++) {
     const time = increment * i
