@@ -611,30 +611,28 @@ function Clip({
 
     const isSelected = selectedEffectId === effect.id
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key === 'Delete' && isSelected) {
-                e.preventDefault()
-                const effects = useAppStore.getState().effects
-                const newEffects = filterEffectTree(
-                    effects,
-                    (ef) => ef.id !== effect.id,
-                )
-                useAppStore.setState({
-                    effects: newEffects,
-                    selectedEffectId: '',
-                })
-            }
-        },
-        [isSelected, effect.id],
-    )
+    const handleKeyDown = (e: KeyboardEvent) => {
+        console.log(e.key)
+        const { effects, selectedEffectId } = useAppStore.getState()
+        if (e.key === 'Backspace' && selectedEffectId === effect.id) {
+            e.preventDefault()
+            const newEffects = filterEffectTree(
+                effects,
+                (ef) => ef.id !== effect.id,
+            )
+            useAppStore.setState({
+                effects: newEffects,
+                selectedEffectId: '',
+            })
+        }
+    }
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown)
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [handleKeyDown])
+    }, [])
 
     return (
         <div
