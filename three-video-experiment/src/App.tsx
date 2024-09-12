@@ -710,7 +710,7 @@ function setRangeProgress(el?: HTMLInputElement | null) {
 }
 
 const useVideoControls = (videoElement: HTMLVideoElement | null) => {
-    const { isPlaying, currentTime, setIsPlaying, setCurrentTime } =
+    const { isPlaying, currentTime, setIsPlaying, duration, setCurrentTime } =
         useAppStore()
 
     const togglePlay = () => {
@@ -745,7 +745,7 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
                 type='range'
                 min='0'
                 step={0.001}
-                max={videoElement?.duration || 0}
+                max={duration || 0}
                 ref={slider}
                 style={{
                     // @ts-ignore
@@ -756,8 +756,7 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
                 className='grow slider'
             />
             <div className='text-[11px] shrink-0 font-mono'>
-                {formatTime(currentTime)} /{' '}
-                {formatTime(videoElement?.duration || 0)}
+                {formatTime(currentTime)} / {formatTime(duration || 0)}
             </div>
         </div>
     )

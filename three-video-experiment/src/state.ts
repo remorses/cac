@@ -52,7 +52,7 @@ const effects = [
 export const useAppStore = create<AppState>((set, get) => {
     return {
         currentTime: 0,
-        isLooping: false,
+        isLooping: true,
         isPlaying: false,
         effects,
         duration: 10,
@@ -69,7 +69,6 @@ export const useAppStore = create<AppState>((set, get) => {
                 // Otherwise, update the time normally
                 set({ currentTime: time })
             }
-            set({ currentTime: time })
         },
         setIsPlaying: (isPlaying) => {
             const { currentTime, duration } = get()
