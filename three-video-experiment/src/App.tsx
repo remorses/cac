@@ -1,4 +1,6 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
+import { useAppStore } from './state'
+import { VideoEffectApplier } from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -64,28 +66,58 @@ function CanvasComponent({ ...rest }) {
     return <div {...rest} ref={containerRef}></div>
 }
 
-let isStopped = true
-const renderLoop = () => {
-    if (isStopped) {
-        return
-    }
-    threeCanvas.render()
-    requestAnimationFrame(renderLoop)
-}
+const effectApplier = new VideoEffectApplier(threeCanvas.plane)
 
 function startRenderLoop() {
-    if (!isStopped) {
+    const { isPlaying, setIsPlaying } = useAppStore.getState()
+    if (isPlaying) {
         return
     }
-    isStopped = false
-    renderLoop()
+    setIsPlaying(true)
 }
 
 function stopRenderLoop() {
-    isStopped = true
+    const { setIsPlaying } = useAppStore.getState()
+    setIsPlaying(false)
 }
 
+let prevTime = 0
+function renderLoop() {
+    const state = useAppStore.getState()
+    const time = performance.now() / 1000
+    const deltaTime = time - prevTime
+    prevTime = time
+
+    if (state.isPlaying) {
+        effectApplier.update(deltaTime) // Convert deltaTime to seconds
+        threeCanvas.render()
+        state.setCurrentTime(state.currentTime + deltaTime)
+    }
+    requestAnimationFrame(renderLoop)
+}
+
+renderLoop()
+
 let video = document.createElement('video')
+const unsubscribeIsPlaying = useAppStore.subscribe((state, prevState) => {
+    const { isPlaying, currentTime } = state
+    if (isPlaying && video.paused) {
+        video.play().catch(console.error)
+        video.currentTime = currentTime
+    } else if (!isPlaying && !video.paused) {
+        video.pause()
+    }
+    if (
+        video &&
+        video.duration &&
+        currentTime >= 0 &&
+        currentTime <= video.duration &&
+        Math.abs(video.currentTime - currentTime) > 0.1
+    ) {
+        console.log('setting video current time', currentTime)
+        video.currentTime = currentTime
+    }
+})
 
 const handleSaveImage = async ({ media }: { media: File | null }) => {
     if (!media) {
@@ -507,51 +539,16 @@ function setRangeProgress(el?: HTMLInputElement | null) {
 }
 
 const useVideoControls = (videoElement: HTMLVideoElement | null) => {
-    const [, forceUpdate] = useState<{}>({})
-
-    useEffect(() => {
-        if (!videoElement) return
-
-        const events = ['play', 'pause', 'loadedmetadata']
-        const handleUpdate = () => forceUpdate({})
-
-        let timeUpdateTimer
-        const handleTimeUpdate = () => {
-            clearTimeout(timeUpdateTimer)
-            timeUpdateTimer = setTimeout(() => {
-                setRangeProgress(slider.current)
-                forceUpdate({})
-            }, 20) // Debounce time: 250ms
-        }
-
-        events.forEach((event) =>
-            videoElement.addEventListener(event, handleUpdate),
-        )
-        videoElement.addEventListener('timeupdate', handleTimeUpdate)
-
-        return () => {
-            events.forEach((event) =>
-                videoElement.removeEventListener(event, handleUpdate),
-            )
-            videoElement.removeEventListener('timeupdate', handleTimeUpdate)
-            clearTimeout(timeUpdateTimer)
-        }
-    }, [videoElement])
+    const { isPlaying, currentTime, setIsPlaying, setCurrentTime } =
+        useAppStore()
 
     const togglePlay = () => {
-        if (!videoElement) return
-        if (videoElement.paused) {
-            videoElement.play()
-        } else {
-            videoElement.pause()
-        }
+        setIsPlaying(!isPlaying)
     }
 
     const handleSeek = (e) => {
-        // setRangeProgress(e.target)
-        if (!videoElement) return
-        const time = e.target.value
-        videoElement.currentTime = time
+        const time = parseFloat(e.target.value)
+        setCurrentTime(time)
     }
 
     const formatTime = (time) => {
@@ -568,7 +565,7 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
                     className='!bg-transparent w-[50px]'
                     onClick={togglePlay}
                 >
-                    {videoElement?.paused ? 'Play' : 'Pause'}
+                    {isPlaying ? 'Pause' : 'Play'}
                 </button>
             </div>
             <input
@@ -579,14 +576,14 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
                 ref={slider}
                 style={{
                     // @ts-ignore
-                    '--progress': `${((videoElement?.currentTime || 0) / (videoElement?.duration || 1)) * 100}%`,
+                    '--progress': `${(currentTime / (videoElement?.duration || 1)) * 100}%`,
                 }}
-                value={videoElement?.currentTime}
+                value={currentTime}
                 onChange={handleSeek}
                 className='grow slider'
             />
             <div className='text-[11px] shrink-0 font-mono'>
-                {formatTime(videoElement?.currentTime || 0)} /{' '}
+                {formatTime(currentTime)} /{' '}
                 {formatTime(videoElement?.duration || 0)}
             </div>
         </div>
@@ -594,3 +591,92 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
 
     return { controlsElement, togglePlay, handleSeek }
 }
+
+// const useVideoControlsVideo = (videoElement: HTMLVideoElement | null) => {
+//     const [, forceUpdate] = useState<{}>({})
+
+//     useEffect(() => {
+//         if (!videoElement) return
+
+//         const events = ['play', 'pause', 'loadedmetadata']
+//         const handleUpdate = () => forceUpdate({})
+
+//         let timeUpdateTimer
+//         const handleTimeUpdate = () => {
+//             clearTimeout(timeUpdateTimer)
+//             timeUpdateTimer = setTimeout(() => {
+//                 setRangeProgress(slider.current)
+//                 forceUpdate({})
+//             }, 20) // Debounce time: 250ms
+//         }
+
+//         events.forEach((event) =>
+//             videoElement.addEventListener(event, handleUpdate),
+//         )
+//         videoElement.addEventListener('timeupdate', handleTimeUpdate)
+
+//         return () => {
+//             events.forEach((event) =>
+//                 videoElement.removeEventListener(event, handleUpdate),
+//             )
+//             videoElement.removeEventListener('timeupdate', handleTimeUpdate)
+//             clearTimeout(timeUpdateTimer)
+//         }
+//     }, [videoElement])
+
+//     const togglePlay = () => {
+//         if (!videoElement) return
+//         if (videoElement.paused) {
+//             videoElement.play()
+//         } else {
+//             videoElement.pause()
+//         }
+//     }
+
+//     const handleSeek = (e) => {
+//         // setRangeProgress(e.target)
+//         if (!videoElement) return
+//         const time = e.target.value
+//         videoElement.currentTime = time
+//     }
+
+//     const formatTime = (time) => {
+//         const minutes = Math.floor(time / 60)
+//         const seconds = Math.floor(time % 60)
+//         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+//     }
+//     const slider = useRef<HTMLInputElement>(null)
+
+//     const controlsElement = (
+//         <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-10 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
+//             <div className='flex  gap-1 shrink-0 items-center'>
+//                 <button
+//                     className='!bg-transparent w-[50px]'
+//                     onClick={togglePlay}
+//                 >
+//                     {videoElement?.paused ? 'Play' : 'Pause'}
+//                 </button>
+//             </div>
+//             <input
+//                 type='range'
+//                 min='0'
+//                 step={0.001}
+//                 max={videoElement?.duration || 0}
+//                 ref={slider}
+//                 style={{
+//                     // @ts-ignore
+//                     '--progress': `${((videoElement?.currentTime || 0) / (videoElement?.duration || 1)) * 100}%`,
+//                 }}
+//                 value={videoElement?.currentTime}
+//                 onChange={handleSeek}
+//                 className='grow slider'
+//             />
+//             <div className='text-[11px] shrink-0 font-mono'>
+//                 {formatTime(videoElement?.currentTime || 0)} /{' '}
+//                 {formatTime(videoElement?.duration || 0)}
+//             </div>
+//         </div>
+//     )
+
+//     return { controlsElement, togglePlay, handleSeek }
+// }

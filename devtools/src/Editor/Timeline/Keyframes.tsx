@@ -6,6 +6,7 @@ import { EditorState, SelectedKeyframeMetadata } from "../state/types"
 import { RepeatIcon } from "../icons/RepeatIcon"
 import { useEditorState } from "../state/use-editor-state"
 import { sortKeyframesByOffset } from "../../utils/sort-keyframes"
+import produce from "immer"
 
 interface KeyframesProps {
   animation: AnimationMetadata
@@ -127,7 +128,7 @@ function ValueKeyframes({ scale, animation }: ValueKeyframesProps) {
 
   const orderedKeyframes = sortKeyframesByOffset(keyframes)
 
-  for (const { offset, id: keyframeId } of orderedKeyframes) {
+  for (const { offset, id: keyframeId, animationName } of orderedKeyframes) {
     const time = delay + offset * duration
     const keyframeIsSelected = isKeyframeSelected(selectedKeyframes, keyframeId)
 
@@ -135,6 +136,7 @@ function ValueKeyframes({ scale, animation }: ValueKeyframesProps) {
       <>
         {prevTime !== undefined ? (
           <TransitionMarker
+            key={animationName + keyframeId + "marker"}
             initial={false}
             animate={{
               backgroundColor: keyframeIsSelected
@@ -148,7 +150,9 @@ function ValueKeyframes({ scale, animation }: ValueKeyframesProps) {
             }}
           />
         ) : null}
+
         <ValueMarker
+          key={animationName + keyframeId}
           onClick={(e) => {
             e.stopPropagation()
             selectKeyframe({
@@ -156,6 +160,42 @@ function ValueKeyframes({ scale, animation }: ValueKeyframesProps) {
               valueName,
               valueId: id,
               id: keyframeId,
+            })
+          }}
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData(
+              "text/plain",
+              JSON.stringify({ keyframeId, initialTime: time }),
+            )
+          }}
+          onDrag={(e) => {
+            // console.log("onDrag", e)
+            if (!e.screenX) {
+              // clientX can be undefined if the drag event is triggered outside the browser window
+              // or if the drag operation is canceled. We should handle this case gracefully.
+              e.preventDefault() // Prevent default behavior
+              console.log("no clientX")
+              return
+            }
+
+            const newTime =
+              (e.screenX - e.currentTarget.getBoundingClientRect().left) / scale
+            useEditorState.setState((state) => {
+              const updatedAnimations = produce(state.animations, (draft) => {
+                const animation = draft[id]?.elements[
+                  elementId
+                ].find((a) => a.id === id)
+                if (!animation) {
+                  console.log("no animation found for id", id)
+                  return
+                }
+                const keyframe = animation.keyframes[keyframeId]
+                if (keyframe) {
+                  keyframe.offset = (newTime - delay) / duration
+                }
+              })
+              return { animations: updatedAnimations }
             })
           }}
           initial={false}
@@ -169,9 +209,10 @@ function ValueKeyframes({ scale, animation }: ValueKeyframesProps) {
             transform: `translateY(-50%) translateX(${
               time * scale
             }px) rotate(45deg)`,
+            cursor: "move",
           }}
         />
-      </>
+      </>,
     )
 
     prevTime = time
@@ -206,14 +247,14 @@ export function Keyframes({ animation }: KeyframesProps) {
           key={valueAnimation.valueName}
           scale={scale}
           animation={valueAnimation}
-        />
+        />,
       )
     }
 
     elementAnimations.push(
       <ElementAnimationContainer key={elementName}>
         {valueAnimations}
-      </ElementAnimationContainer>
+      </ElementAnimationContainer>,
     )
   }
 
@@ -222,7 +263,7 @@ export function Keyframes({ animation }: KeyframesProps) {
 
 function isKeyframeSelected(
   selectedKeyframes: SelectedKeyframeMetadata[] | undefined,
-  keyframeId: string
+  keyframeId: string,
 ): boolean {
   if (!selectedKeyframes) return false
 
