@@ -12,6 +12,8 @@ interface AppState {
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
     setEffects: (effects: Effect<any>[]) => void
+    selectedEffectId: string
+    setSelectedEffectId: (id: string) => void
 }
 
 const effects = [
@@ -56,6 +58,10 @@ export const useAppStore = create<AppState>((set, get) => {
         isPlaying: false,
         effects,
         duration: 10,
+        selectedEffectId: '',
+        setSelectedEffectId: (id: string) => {
+            set({ selectedEffectId: id })
+        },
 
         setCurrentTime: (time) => {
             const { duration, isLooping } = get()
@@ -82,5 +88,28 @@ export const useAppStore = create<AppState>((set, get) => {
             set({ isPlaying })
         },
         setEffects: (effects) => set({ effects }),
+    }
+})
+
+// Subscribe to duration changes and scale effects accordingly
+useAppStore.subscribe((state, prevState) => {
+    if (state.duration !== prevState.duration) {
+        const scaleFactor = state.duration / prevState.duration
+
+        const scaleEffect = (effect: Effect) => {
+            effect.start *= scaleFactor
+            effect.end *= scaleFactor
+            if (effect.children) {
+                effect.children.forEach(scaleEffect)
+            }
+        }
+
+        const scaledEffects = state.effects.map((effect) => {
+            const newEffect = { ...effect }
+            scaleEffect(newEffect)
+            return newEffect
+        })
+
+        useAppStore.setState({ effects: scaledEffects })
     }
 })

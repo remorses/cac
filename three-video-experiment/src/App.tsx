@@ -1,6 +1,12 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import { useAppStore } from './state'
-import { bfs, Effect, updateEffectInTree, VideoEffectApplier } from './effects'
+import {
+    bfs,
+    Effect,
+    filterEffectTree,
+    updateEffectInTree,
+    VideoEffectApplier,
+} from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -485,15 +491,17 @@ function RotationsImage() {
     )
 }
 
+type EffectState = {
+    effect: Effect
+    parent?: Effect
+    type: 'start' | 'end' | 'both'
+    initialXOffset: number
+} | null
+
 function Timeline() {
     const effects = useAppStore((state) => state.effects)
     const duration = useAppStore((state) => state.duration)
-    const [draggingEffect, setDraggingEffect] = useState<{
-        effect: Effect
-        parent?: Effect
-        type: 'start' | 'end' | 'both'
-        initialXOffset: number
-    } | null>(null)
+    const [draggingEffect, setDraggingEffect] = useState<EffectState>(null)
     const timelineRef = useRef<HTMLDivElement | null>(null)
 
     const handleDrag = (e) => {
@@ -566,7 +574,7 @@ function Timeline() {
                         effect={effect}
                         index={index}
                         duration={duration}
-                        parent={parent}
+                        parent={parent || undefined}
                         setDraggingEffect={setDraggingEffect}
                     />
                 )
@@ -575,7 +583,19 @@ function Timeline() {
     )
 }
 
-function Clip({ effect, parent, index, duration, setDraggingEffect }) {
+function Clip({
+    effect,
+    parent,
+    index,
+    duration,
+    setDraggingEffect,
+}: {
+    effect: Effect<any>
+    parent?: Effect<any>
+    index: number
+    duration: number
+    setDraggingEffect: (effect: EffectState) => void
+}) {
     const startPercent = (effect.start / duration) * 100
     const widthPercent = ((effect.end - effect.start) / duration) * 100
 
@@ -584,9 +604,41 @@ function Clip({ effect, parent, index, duration, setDraggingEffect }) {
     let top = (height + spacing) * index
     const dragRef = useRef<HTMLDivElement>(null)
 
+    const selectedEffectId = useAppStore((state) => state.selectedEffectId)
+    const setSelectedEffectId = useAppStore(
+        (state) => state.setSelectedEffectId,
+    )
+
+    const isSelected = selectedEffectId === effect.id
+
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key === 'Delete' && isSelected) {
+                e.preventDefault()
+                const effects = useAppStore.getState().effects
+                const newEffects = filterEffectTree(
+                    effects,
+                    (ef) => ef.id !== effect.id,
+                )
+                useAppStore.setState({
+                    effects: newEffects,
+                    selectedEffectId: '',
+                })
+            }
+        },
+        [isSelected, effect.id],
+    )
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown)
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [handleKeyDown])
+
     return (
         <div
-            className='absolute rounded-md overflow-hidden  bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs'
+            className={`absolute rounded-md overflow-hidden bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
             style={{
                 left: `${startPercent}%`,
                 width: `${widthPercent}%`,
@@ -594,6 +646,7 @@ function Clip({ effect, parent, index, duration, setDraggingEffect }) {
                 top,
             }}
             ref={dragRef}
+            onClick={() => setSelectedEffectId(effect.id)}
             onMouseDown={(e) => {
                 const rect = dragRef.current!.getBoundingClientRect()
                 const initialXOffset = (e.clientX - rect.left) / rect.width

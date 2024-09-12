@@ -27,7 +27,7 @@ export interface Effect<T = any> {
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
 
-export function bfs(effects: Effect<any>[]) {
+export function bfs(effects: Effect<any>[], callback?: (node: WithParent) => boolean) {
     const queue: WithParent[] = effects.map((effect) => ({
         node: effect,
         parent: null,
@@ -38,6 +38,11 @@ export function bfs(effects: Effect<any>[]) {
         const current = queue.shift()
         if (current) {
             result.push(current)
+            
+            if (callback && callback(current)) {
+                break
+            }
+            
             if (current.node.children) {
                 queue.push(
                     ...current.node.children.map((child) => ({
@@ -50,6 +55,26 @@ export function bfs(effects: Effect<any>[]) {
     }
 
     return result
+}
+
+export function filterEffectTree(
+    effects: Effect<any>[],
+    filterCallback: (effect: Effect<any>) => boolean,
+): Effect<any>[] {
+    let res = effects.reduce((filteredEffects: Effect<any>[], effect) => {
+        if (filterCallback(effect)) {
+            const filteredEffect = effect
+            if (effect.children) {
+                filteredEffect.children = filterEffectTree(
+                    effect.children,
+                    filterCallback,
+                )
+            }
+            filteredEffects.push(filteredEffect)
+        }
+        return filteredEffects
+    }, [])
+    return [...res]
 }
 
 export function createEffect<T>({
