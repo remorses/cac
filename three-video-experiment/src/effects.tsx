@@ -27,7 +27,10 @@ export interface Effect<T = any> {
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
 
-export function bfs(effects: Effect<any>[], callback?: (node: WithParent) => boolean) {
+export function bfs(
+    effects: Effect<any>[],
+    callback?: (node: WithParent) => boolean,
+) {
     const queue: WithParent[] = effects.map((effect) => ({
         node: effect,
         parent: null,
@@ -38,11 +41,11 @@ export function bfs(effects: Effect<any>[], callback?: (node: WithParent) => boo
         const current = queue.shift()
         if (current) {
             result.push(current)
-            
+
             if (callback && callback(current)) {
                 break
             }
-            
+
             if (current.node.children) {
                 queue.push(
                     ...current.node.children.map((child) => ({
@@ -76,6 +79,8 @@ export function filterEffectTree(
     }, [])
     return [...res]
 }
+
+export type EffectType = 'rotation' | 'scale' | 'position'
 
 export function createEffect<T>({
     id,
@@ -119,6 +124,15 @@ export function createEffect<T>({
                 mesh.scale.z =
                     defaultMesh.scale.z +
                     (scale.z - defaultMesh.scale.z) * progress
+            }
+            break
+        case 'position':
+            apply = (mesh, progress, defaultMesh) => {
+                const position = (params as { position: THREE.Vector3 })
+                    .position
+                mesh.position.x = defaultMesh.position.x + position.x * progress
+                mesh.position.y = defaultMesh.position.y + position.y * progress
+                mesh.position.z = defaultMesh.position.z + position.z * progress
             }
             break
         default:

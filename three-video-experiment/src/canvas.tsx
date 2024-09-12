@@ -6,7 +6,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 
-const deg = Math.PI / 180
+export const deg = Math.PI / 180
 
 export class ThreeCanvas {
     canvas: HTMLCanvasElement
