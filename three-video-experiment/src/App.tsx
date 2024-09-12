@@ -1,6 +1,6 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import { useAppStore } from './state'
-import { Effect, VideoEffectApplier } from './effects'
+import { bfs, Effect, updateEffectInTree, VideoEffectApplier } from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -510,16 +510,16 @@ function Timeline() {
             )
         }
 
-        useAppStore.setState((state) => ({
-            effects: state.effects.map((e) =>
-                e.id === effect.id ? updatedEffect : e,
-            ),
-        }))
+        const effectsNew = updateEffectInTree(effects, updatedEffect)
+
+        useAppStore.setState({ effects: effectsNew })
     }
 
     const handleDragEnd = () => {
         setDraggingEffect(null)
     }
+
+    const allEffects = bfs(effects)
 
     return (
         <div
@@ -529,7 +529,7 @@ function Timeline() {
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
         >
-            {effects.map((effect, index) => {
+            {allEffects.map(({ node: effect, parent }, index) => {
                 const startPercent = (effect.start / 10) * 100
                 const widthPercent = ((effect.end - effect.start) / 10) * 100
 
@@ -545,7 +545,7 @@ function Timeline() {
                             left: `${startPercent}%`,
                             width: `${widthPercent}%`,
                             height,
-                            top: `${top}px`,
+                            top,
                         }}
                     >
                         <div className='ml-2'>{effect.id}</div>

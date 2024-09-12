@@ -14,7 +14,7 @@ function evaluateBezier(t: number, curve: BezierCurve): number {
     )
 }
 
-export interface Effect<T=any> {
+export interface Effect<T = any> {
     id: string
     type: string
     start: number
@@ -23,6 +23,33 @@ export interface Effect<T=any> {
     params: T
     children?: Effect<any>[]
     apply: (mesh: THREE.Mesh, progress: number, defaultMesh: THREE.Mesh) => void
+}
+
+type WithParent = { node: Effect<any>; parent: Effect<any> | null }
+
+export function bfs(effects: Effect<any>[]) {
+    const queue: WithParent[] = effects.map((effect) => ({
+        node: effect,
+        parent: null,
+    }))
+    const result: WithParent[] = []
+
+    while (queue.length > 0) {
+        const current = queue.shift()
+        if (current) {
+            result.push(current)
+            if (current.node.children) {
+                queue.push(
+                    ...current.node.children.map((child) => ({
+                        node: child,
+                        parent: current.node,
+                    })),
+                )
+            }
+        }
+    }
+
+    return result
 }
 
 export function createEffect<T>({
@@ -115,7 +142,7 @@ export class VideoEffectApplier {
     public update(deltaTime: number) {
         this.currentTime += deltaTime
         this.resetMesh()
-        this.applyEffects(useAppStore.getState().effects, 0)
+        this.applyEffects(useAppStore.getState().effects)
     }
 
     private resetMesh() {
@@ -124,10 +151,10 @@ export class VideoEffectApplier {
         this.mesh.scale.copy(this.defaultMesh.scale)
     }
 
-    private applyEffects(effects: Effect<any>[], parentOffset: number) {
+    private applyEffects(effects: Effect<any>[]) {
         for (const effect of effects) {
-            const absoluteStart = effect.start + parentOffset
-            const absoluteEnd = effect.end + parentOffset
+            const absoluteStart = effect.start
+            const absoluteEnd = effect.end
 
             if (
                 this.currentTime >= absoluteStart &&
@@ -142,7 +169,7 @@ export class VideoEffectApplier {
                 )
 
                 if (effect.children) {
-                    this.applyEffects(effect.children, absoluteStart)
+                    this.applyEffects(effect.children)
                 } else {
                     effect.apply(this.mesh, easedProgress, this.defaultMesh)
                 }
@@ -150,24 +177,33 @@ export class VideoEffectApplier {
         }
     }
 
-    public updateEffect<T>(
-        id: string,
-        newStart?: number,
-        newEnd?: number,
-        newParams?: Partial<T>,
-        newBezierCurve?: BezierCurve,
-    ): boolean {
-        const effect = this.findEffect(id, useAppStore.getState().effects)
-        if (!effect || effect.children) return false
-
-        if (newStart !== undefined) effect.start = newStart
-        if (newEnd !== undefined) effect.end = newEnd
-        if (newBezierCurve !== undefined) effect.bezierCurve = newBezierCurve
-        if (newParams !== undefined) {
-            Object.assign(effect.params, newParams)
+    public updateEffect<T>({
+        id,
+        newStart,
+        newEnd,
+        newParams,
+        newBezierCurve,
+    }: {
+        id: string
+        newStart?: number
+        newEnd?: number
+        newParams?: Partial<T>
+        newBezierCurve?: BezierCurve
+    }): boolean {
+        const effects = useAppStore.getState().effects
+        const updatedEffects = updateEffectInTree({
+            effects,
+            id,
+            newStart,
+            newEnd,
+            newParams,
+            newBezierCurve,
+        })
+        if (updatedEffects) {
+            useAppStore.setState({ effects: updatedEffects })
+            return true
         }
-
-        return true
+        return false
     }
 
     // public addEffect(
@@ -188,31 +224,63 @@ export class VideoEffectApplier {
     //     this.videoEditor.effects.push(effect)
     //     return true
     // }
+}
 
-    private findEffect(id: string, effects: Effect<any>[]): Effect<any> | null {
-        for (const effect of effects) {
-            if (effect.id === id) return effect
+export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
+    return effects.map((effect) => {
+        if (effect.id === node.id) {
+            const updatedEffect = {
+                ...effect,
+                ...node,
+            }
+
             if (effect.children) {
-                const found = this.findEffect(id, effect.children)
-                if (found) return found
+                updatedEffect.children = effect.children.map((child) => {
+                    const updatedChild = { ...child }
+                    if (node.start && child.start === effect.start) {
+                        updatedChild.start = node.start
+                    }
+                    if (node.end && child.end === effect.end) {
+                        updatedChild.end = node.end
+                    }
+                    return updatedChild
+                })
             }
-        }
-        return null
-    }
 
-    private removeEffectRecursive(id: string, effects: Effect<any>[]): boolean {
-        for (let i = 0; i < effects.length; i++) {
-            if (effects[i].id === id) {
-                effects.splice(i, 1)
-                return true
-            }
-            let eff = effects[i]
-            if (eff.children) {
-                if (this.removeEffectRecursive(id, eff.children || [])) {
-                    return true
-                }
+            return updatedEffect
+        }
+        if (effect.children) {
+            const updatedChildren = updateEffectInTree(effect.children, node)
+            if (updatedChildren) {
+                return { ...effect, children: updatedChildren }
             }
         }
-        return false
+        return effect
+    })
+}
+
+function findEffect(id: string, effects: Effect<any>[]): Effect<any> | null {
+    for (const effect of effects) {
+        if (effect.id === id) return effect
+        if (effect.children) {
+            const found = findEffect(id, effect.children)
+            if (found) return found
+        }
     }
+    return null
+}
+
+function removeEffectRecursive(
+    id: string,
+    effects: Effect<any>[],
+): Effect<any>[] {
+    return effects.filter((effect) => {
+        if (effect.id === id) {
+            return false
+        }
+        if (effect.children) {
+            effect.children = removeEffectRecursive(id, effect.children)
+        }
+        return true
+    })
 }

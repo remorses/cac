@@ -7,11 +7,12 @@ interface AppState {
     isPlaying: boolean
     duration: number
     media?: File | null
-    effects: (Effect<any> )[]
+    effects: Effect<any>[]
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
-    setEffects: (effects: (Effect<any> )[]) => void
+    setEffects: (effects: Effect<any>[]) => void
 }
+
 const effects = [
     createEffect({
         id: '1',
@@ -29,16 +30,16 @@ const effects = [
             createEffect({
                 id: '2',
                 type: 'scale',
-                start: 0,
-                end: 2,
+                start: 5,
+                end: 7,
                 params: { scale: new THREE.Vector3(2, 2, 2) },
                 bezierCurve: [0, 0, 1, 1],
             }),
             createEffect({
                 id: '3',
                 type: 'rotation',
-                start: 2,
-                end: 5,
+                start: 7,
+                end: 10,
                 params: { amount: new THREE.Vector3(0, Math.PI * 2, 0) },
                 bezierCurve: [0.25, 0.1, 0.25, 1],
             }),
