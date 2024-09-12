@@ -509,7 +509,7 @@ function RotationsImage() {
 }
 
 type EffectState = {
-    effect: Effect
+    effects: Effect[]
     parent?: Effect
     type: 'start' | 'end' | 'both'
     initialXOffset: number
@@ -524,50 +524,61 @@ function Timeline() {
     const handleDrag = (e) => {
         if (!draggingEffect || !timelineRef.current) return
 
-        const { effect, parent, type, initialXOffset } = draggingEffect
+        const {
+            effects: selectedEffects,
+            parent,
+            type,
+            initialXOffset,
+        } = draggingEffect
         const rect = timelineRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
         const newTime = (x / rect.width) * duration
 
-        const updatedEffect = { ...effect }
         const minDuration = 0.2
+        let effectsNew = effects as Effect[]
+        for (const effect of selectedEffects) {
+            const updatedEffect = { ...effect }
+            if (type === 'start') {
+                updatedEffect.start = Math.max(
+                    0,
+                    Math.min(newTime, effect.end - minDuration),
+                )
+            }
+            if (type === 'end') {
+                updatedEffect.end = Math.min(
+                    duration,
+                    Math.max(newTime, effect.start + minDuration),
+                )
+            }
+            if (type === 'both') {
+                // console.log('both', initialXOffset)
+                let clipDur = effect.end - effect.start
+                const newStart = newTime - clipDur * initialXOffset
+                updatedEffect.start = Math.max(
+                    0,
+                    Math.min(newStart, duration - (effect.end - effect.start)),
+                    parent?.start || 0,
+                )
+                updatedEffect.end = Math.min(
+                    duration,
+                    updatedEffect.start + (effect.end - effect.start),
+                    parent?.end || Infinity,
+                )
+            }
+            // Ensure the updated effect stays within its parent's bounds
+            if (parent) {
+                updatedEffect.start = Math.max(
+                    parent.start,
+                    updatedEffect.start,
+                )
+                updatedEffect.end = Math.min(parent.end, updatedEffect.end)
+            }
 
-        if (type === 'start') {
-            updatedEffect.start = Math.max(
-                0,
-                Math.min(newTime, effect.end - minDuration),
-            )
+            effectsNew = updateEffectInTree(effectsNew, updatedEffect)
         }
-        if (type === 'end') {
-            updatedEffect.end = Math.min(
-                duration,
-                Math.max(newTime, effect.start + minDuration),
-            )
+        if (effectsNew.length) {
+            useAppStore.setState({ effects: effectsNew })
         }
-        if (type === 'both') {
-            // console.log('both', initialXOffset)
-            let clipDur = effect.end - effect.start
-            const newStart = newTime - clipDur * initialXOffset
-            updatedEffect.start = Math.max(
-                0,
-                Math.min(newStart, duration - (effect.end - effect.start)),
-                parent?.start || 0,
-            )
-            updatedEffect.end = Math.min(
-                duration,
-                updatedEffect.start + (effect.end - effect.start),
-                parent?.end || Infinity,
-            )
-        }
-        // Ensure the updated effect stays within its parent's bounds
-        if (parent) {
-            updatedEffect.start = Math.max(parent.start, updatedEffect.start)
-            updatedEffect.end = Math.min(parent.end, updatedEffect.end)
-        }
-
-        const effectsNew = updateEffectInTree(effects, updatedEffect)
-
-        useAppStore.setState({ effects: effectsNew })
     }
 
     const handleDragEnd = () => {
@@ -655,6 +666,12 @@ function Clip({
         }
     }, [isSelected])
 
+    const effects = useAppStore((state) => state.effects)
+    const selectedEffects =
+        selectedEffectIds.length > 1
+            ? effects.filter((e) => selectedEffectIds.includes(e.id))
+            : [effect]
+
     return (
         <div
             className={`absolute rounded-md overflow-hidden bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
@@ -683,17 +700,9 @@ function Clip({
             onMouseDown={(e) => {
                 const rect = dragRef.current!.getBoundingClientRect()
                 const initialXOffset = (e.clientX - rect.left) / rect.width
-                console.log({
-                    effect,
-                    initialXOffset:
-                        ((e.clientX - rect.left) / rect.width) * duration,
-                    clientX: e.clientX,
-                    rectLeft: rect.left,
-                    rectWidth: rect.width,
-                    duration,
-                })
+
                 setDraggingEffect({
-                    effect,
+                    effects: selectedEffects,
                     type: 'both',
                     initialXOffset,
                     parent,
@@ -711,7 +720,7 @@ function Clip({
                             e.stopPropagation()
 
                             setDraggingEffect({
-                                effect,
+                                effects: selectedEffects,
                                 type: type as 'start' | 'end',
                                 initialXOffset: 0,
                                 parent,
