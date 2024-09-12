@@ -544,39 +544,52 @@ function Timeline() {
             onMouseLeave={handleDragEnd}
         >
             {allEffects.map(({ node: effect, parent }, index) => {
-                const startPercent = (effect.start / 10) * 100
-                const widthPercent = ((effect.end - effect.start) / 10) * 100
+                return (
+                    <Clip
+                        key={effect.id}
+                        effect={effect}
+                        index={index}
+                        duration={duration}
+                        setDraggingEffect={setDraggingEffect}
+                    />
+                )
+            })}
+        </div>
+    )
+}
 
-                const height = 34
-                const spacing = 10
-                let top = (height + spacing) * index
+function Clip({ effect, index, duration, setDraggingEffect }) {
+    const startPercent = (effect.start / duration) * 100
+    const widthPercent = ((effect.end - effect.start) / duration) * 100
 
+    const height = 34
+    const spacing = 10
+    let top = (height + spacing) * index
+
+    return (
+        <div
+            className='absolute rounded-md overflow-hidden  bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs'
+            style={{
+                left: `${startPercent}%`,
+                width: `${widthPercent}%`,
+                height,
+                top,
+            }}
+        >
+            <div className='ml-2'>{effect.id}</div>
+
+            {[false, true].map((isStart) => {
                 return (
                     <div
-                        key={effect.id}
-                        className='absolute rounded-md overflow-hidden  bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs'
-                        style={{
-                            left: `${startPercent}%`,
-                            width: `${widthPercent}%`,
-                            height,
-                            top,
+                        key={isStart ? 'left' : 'right'}
+                        className={`absolute flex flex-col py-1 ${isStart ? 'left-0' : 'right-0'} top-0 h-full`}
+                        onMouseDown={() => {
+                            setDraggingEffect({ effect, isStart })
                         }}
                     >
-                        <div className='ml-2'>{effect.id}</div>
-
-                        {[false, true].map((isStart) => (
-                            <div
-                                key={isStart ? 'left' : 'right'}
-                                className={`absolute flex flex-col py-1 ${isStart ? 'left-0' : 'right-0'} top-0 h-full`}
-                                onMouseDown={() => {
-                                    setDraggingEffect({ effect, isStart })
-                                }}
-                            >
-                                <div
-                                    className={`bg-blue-700 w-2 ${isStart ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
-                                />
-                            </div>
-                        ))}
+                        <div
+                            className={`bg-blue-700 w-2 ${isStart ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
+                        />
                     </div>
                 )
             })}
