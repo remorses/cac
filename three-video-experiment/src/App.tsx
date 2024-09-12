@@ -137,14 +137,13 @@ const unsubscribeIsPlaying = useAppStore.subscribe((state, prevState) => {
 })
 
 const cleanup = () => {
+    console.log('cleanup for vite hmr')
     unsubscribeIsPlaying()
-    
+
     if (renderLoopId !== undefined) {
         cancelAnimationFrame(renderLoopId)
     }
 }
-
-
 
 // Vite HMR cleanup
 if (import.meta.hot) {
@@ -576,6 +575,9 @@ function Timeline() {
     }
 
     const allEffects = bfs(effects)
+    const setSelectedEffectId = useAppStore(
+        (state) => state.setSelectedEffectId,
+    )
 
     return (
         <div
@@ -584,6 +586,7 @@ function Timeline() {
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
+            onClick={() => setSelectedEffectId('')}
         >
             {allEffects.map(({ node: effect, parent }, index) => {
                 return (
@@ -662,7 +665,10 @@ function Clip({
                 top,
             }}
             ref={dragRef}
-            onClick={() => setSelectedEffectId(effect.id)}
+            onClick={(e) => {
+                e.stopPropagation()
+                setSelectedEffectId(effect.id)
+            }}
             onMouseDown={(e) => {
                 const rect = dragRef.current!.getBoundingClientRect()
                 const initialXOffset = (e.clientX - rect.left) / rect.width
