@@ -486,6 +486,7 @@ function Timeline() {
     const duration = useAppStore((state) => state.duration)
     const [draggingEffect, setDraggingEffect] = useState<{
         effect: Effect
+        parent?: Effect
         type: 'start' | 'end' | 'both'
         initialXOffset: number
     } | null>(null)
@@ -494,7 +495,7 @@ function Timeline() {
     const handleDrag = (e) => {
         if (!draggingEffect || !timelineRef.current) return
 
-        const { effect, type, initialXOffset } = draggingEffect
+        const { effect, parent, type, initialXOffset } = draggingEffect
         const rect = timelineRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
         const newTime = (x / rect.width) * duration
@@ -521,11 +522,18 @@ function Timeline() {
             updatedEffect.start = Math.max(
                 0,
                 Math.min(newStart, duration - (effect.end - effect.start)),
+                parent?.start || 0,
             )
             updatedEffect.end = Math.min(
                 duration,
                 updatedEffect.start + (effect.end - effect.start),
+                parent?.end || Infinity,
             )
+        }
+        // Ensure the updated effect stays within its parent's bounds
+        if (parent) {
+            updatedEffect.start = Math.max(parent.start, updatedEffect.start)
+            updatedEffect.end = Math.min(parent.end, updatedEffect.end)
         }
 
         const effectsNew = updateEffectInTree(effects, updatedEffect)
@@ -554,6 +562,7 @@ function Timeline() {
                         effect={effect}
                         index={index}
                         duration={duration}
+                        parent={parent}
                         setDraggingEffect={setDraggingEffect}
                     />
                 )
@@ -562,7 +571,7 @@ function Timeline() {
     )
 }
 
-function Clip({ effect, index, duration, setDraggingEffect }) {
+function Clip({ effect, parent, index, duration, setDraggingEffect }) {
     const startPercent = (effect.start / duration) * 100
     const widthPercent = ((effect.end - effect.start) / duration) * 100
 
@@ -593,33 +602,34 @@ function Clip({ effect, index, duration, setDraggingEffect }) {
                     rectWidth: rect.width,
                     duration,
                 })
-                setDraggingEffect({ effect, type: 'both', initialXOffset })
+                setDraggingEffect({
+                    effect,
+                    type: 'both',
+                    initialXOffset,
+                    parent,
+                })
             }}
         >
-            <div className='ml-2'>{effect.id}</div>
+            <div className='ml-3'>{effect.id}</div>
 
             {['start', 'end'].map((type) => {
                 return (
                     <div
                         key={type}
-                        className={`absolute flex flex-col py-1 ${type === 'start' ? 'left-0' : 'right-0'} top-0 h-full`}
+                        className={`absolute flex flex-col py-1  ${type === 'start' ? 'left-0 pr-1' : 'right-0 pl-1'} cursor-ew-resize top-0 h-full`}
                         onMouseDown={(e) => {
                             e.stopPropagation()
-                            const rect =
-                                e.currentTarget.parentElement?.getBoundingClientRect()
-                            const initialXOffset = rect
-                                ? ((e.clientX - rect.left) / rect.width) *
-                                  duration
-                                : 0
+
                             setDraggingEffect({
                                 effect,
                                 type: type as 'start' | 'end',
                                 initialXOffset: 0,
+                                parent,
                             })
                         }}
                     >
                         <div
-                            className={`bg-blue-700 w-2 ${type === 'start' ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
+                            className={`bg-blue-700 w-2 ${type === 'start' ? 'ml-1' : 'mr-1'} rounded h-full `}
                         />
                     </div>
                 )
