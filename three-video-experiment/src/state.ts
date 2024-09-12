@@ -13,8 +13,8 @@ interface AppState {
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
     setEffects: (effects: Effect<any>[]) => void
-    selectedEffectId: string
-    setSelectedEffectId: (id: string) => void
+    selectedEffectIds: string[]
+    setSelectedEffectIds: (id: string[]) => void
 }
 
 const effects = [
@@ -67,9 +67,9 @@ export const useAppStore = create<AppState>((set, get) => {
         isPlaying: false,
         effects,
         duration: 10,
-        selectedEffectId: '',
-        setSelectedEffectId: (id: string) => {
-            set({ selectedEffectId: id })
+        selectedEffectIds: [],
+        setSelectedEffectIds: (id: string[]) => {
+            set({ selectedEffectIds: id })
         },
 
         setCurrentTime: (time) => {

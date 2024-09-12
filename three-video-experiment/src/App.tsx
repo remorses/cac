@@ -575,8 +575,8 @@ function Timeline() {
     }
 
     const allEffects = bfs(effects)
-    const setSelectedEffectId = useAppStore(
-        (state) => state.setSelectedEffectId,
+    const setSelectedEffectIds = useAppStore(
+        (state) => state.setSelectedEffectIds,
     )
 
     return (
@@ -586,7 +586,7 @@ function Timeline() {
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
-            onClick={() => setSelectedEffectId('')}
+            onClick={() => setSelectedEffectIds([])}
         >
             {allEffects.map(({ node: effect, parent }, index) => {
                 return (
@@ -625,17 +625,17 @@ function Clip({
     let top = (height + spacing) * index
     const dragRef = useRef<HTMLDivElement>(null)
 
-    const selectedEffectId = useAppStore((state) => state.selectedEffectId)
+    const selectedEffectIds = useAppStore((state) => state.selectedEffectIds)
     const setSelectedEffectId = useAppStore(
-        (state) => state.setSelectedEffectId,
+        (state) => state.setSelectedEffectIds,
     )
 
-    const isSelected = selectedEffectId === effect.id
+    const isSelected = selectedEffectIds.includes(effect.id)
 
     const handleKeyDown = (e: KeyboardEvent) => {
         console.log(e.key)
-        const { effects, selectedEffectId } = useAppStore.getState()
-        if (e.key === 'Backspace' && selectedEffectId === effect.id) {
+        const { effects, selectedEffectIds } = useAppStore.getState()
+        if (e.key === 'Backspace' && isSelected) {
             e.preventDefault()
             const newEffects = filterEffectTree(
                 effects,
@@ -643,7 +643,7 @@ function Clip({
             )
             useAppStore.setState({
                 effects: newEffects,
-                selectedEffectId: '',
+                selectedEffectIds: [],
             })
         }
     }
@@ -653,7 +653,7 @@ function Clip({
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [])
+    }, [isSelected])
 
     return (
         <div
@@ -667,7 +667,18 @@ function Clip({
             ref={dragRef}
             onClick={(e) => {
                 e.stopPropagation()
-                setSelectedEffectId(effect.id)
+                const prevSelected = useAppStore.getState().selectedEffectIds
+                if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                    // Add to selection if Ctrl/Cmd/Shift is pressed
+                    setSelectedEffectId(
+                        prevSelected.includes(effect.id)
+                            ? prevSelected.filter((id) => id !== effect.id) // Remove if already selected
+                            : [...prevSelected, effect.id], // Add if not selected
+                    )
+                } else {
+                    // Replace selection if no modifier key is pressed
+                    setSelectedEffectId([effect.id])
+                }
             }}
             onMouseDown={(e) => {
                 const rect = dragRef.current!.getBoundingClientRect()
