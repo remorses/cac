@@ -94,6 +94,7 @@ function render() {
 }
 
 let prevTime = 0
+let renderLoopId: number | undefined
 function renderLoop() {
     const state = useAppStore.getState()
     const time = performance.now() / 1000
@@ -104,7 +105,7 @@ function renderLoop() {
         render()
         state.setCurrentTime(state.currentTime + deltaTime)
     }
-    requestAnimationFrame(renderLoop)
+    renderLoopId = requestAnimationFrame(renderLoop)
 }
 
 renderLoop()
@@ -134,6 +135,23 @@ const unsubscribeIsPlaying = useAppStore.subscribe((state, prevState) => {
         video.currentTime = currentTime
     }
 })
+
+const cleanup = () => {
+    unsubscribeIsPlaying()
+    
+    if (renderLoopId !== undefined) {
+        cancelAnimationFrame(renderLoopId)
+    }
+}
+
+
+
+// Vite HMR cleanup
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        cleanup()
+    })
+}
 
 const handleSaveImage = async ({ media }: { media: File | null }) => {
     if (!media) {
