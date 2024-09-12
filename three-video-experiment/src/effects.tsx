@@ -226,7 +226,6 @@ export class VideoEffectApplier {
     // }
 }
 
-
 export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
     return effects.map((effect) => {
         if (effect.id === node.id) {
@@ -241,18 +240,32 @@ export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
             }
 
             if (effect.children) {
+                const oldDuration = effect.end - effect.start
+                const newDuration = updatedEffect.end - updatedEffect.start
+
                 updatedEffect.children = effect.children.map((child) => {
                     const updatedChild = { ...child }
 
-                    // Update child start time
-                    if (node.start !== undefined) {
-                        updatedChild.start = Math.max(node.start, child.start)
-                    }
+                    // Calculate relative position of child within parent
+                    const relativeStart =
+                        (child.start - effect.start) / oldDuration
+                    const relativeEnd = (child.end - effect.start) / oldDuration
 
-                    // Update child end time
-                    if (node.end !== undefined) {
-                        updatedChild.end = Math.min(node.end, child.end)
-                    }
+                    // Update child start and end times based on new parent duration
+                    updatedChild.start =
+                        updatedEffect.start + relativeStart * newDuration
+                    updatedChild.end =
+                        updatedEffect.start + relativeEnd * newDuration
+
+                    // Ensure child start and end are within parent bounds
+                    updatedChild.start = Math.max(
+                        updatedEffect.start,
+                        Math.min(updatedChild.start, updatedEffect.end),
+                    )
+                    updatedChild.end = Math.max(
+                        updatedEffect.start,
+                        Math.min(updatedChild.end, updatedEffect.end),
+                    )
 
                     // Ensure child start is not greater than child end
                     if (updatedChild.start > updatedChild.end) {
