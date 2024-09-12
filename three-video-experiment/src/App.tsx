@@ -533,16 +533,19 @@ function Timeline() {
             {effects.map((effect, index) => {
                 const startPercent = (effect.start / 10) * 100
                 const widthPercent = ((effect.end - effect.start) / 10) * 100
-                let top = effect.type === 'rotation' ? 0 : 32
-                top += 10 * index
+
+                const height = 34
+                const spacing = 10
+                let top = (height + spacing) * index
 
                 return (
                     <div
                         key={effect.id}
-                        className='absolute rounded-md overflow-hidden h-[32px] bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs'
+                        className='absolute rounded-md overflow-hidden  bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs'
                         style={{
                             left: `${startPercent}%`,
                             width: `${widthPercent}%`,
+                            height,
                             top: `${top}px`,
                         }}
                     >
