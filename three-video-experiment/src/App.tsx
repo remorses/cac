@@ -486,41 +486,45 @@ function Timeline() {
     const duration = useAppStore((state) => state.duration)
     const [draggingEffect, setDraggingEffect] = useState<{
         effect: Effect
-        isStart: boolean
+        type: 'start' | 'end' | 'both'
+        initialXOffset: number
     } | null>(null)
     const timelineRef = useRef<HTMLDivElement | null>(null)
 
     const handleDrag = (e) => {
         if (!draggingEffect || !timelineRef.current) return
 
-        const { effect, isStart } = draggingEffect
+        const { effect, type, initialXOffset } = draggingEffect
         const rect = timelineRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
-        const newTime = (x / rect.width) * duration // Assuming 10 seconds total duration
+        const newTime = (x / rect.width) * duration
 
         const updatedEffect = { ...effect }
-        if (isStart) {
+        const minDuration = 0.2
+
+        if (type === 'start') {
             updatedEffect.start = Math.max(
                 0,
-                Math.min(newTime, effect.end - 0.1),
-            )
-        } else {
-            updatedEffect.end = Math.min(
-                duration,
-                Math.max(newTime, effect.start + 0.1),
+                Math.min(newTime, effect.end - minDuration),
             )
         }
-        // Ensure the effect duration is at least 0.2 seconds
-        const minDuration = 0.2
-        if (isStart) {
-            updatedEffect.start = Math.min(
-                updatedEffect.start,
-                effect.end - minDuration,
+        if (type === 'end') {
+            updatedEffect.end = Math.min(
+                duration,
+                Math.max(newTime, effect.start + minDuration),
             )
-        } else {
-            updatedEffect.end = Math.max(
-                updatedEffect.end,
-                effect.start + minDuration,
+        }
+        if (type === 'both') {
+            // console.log('both', initialXOffset)
+            let clipDur = effect.end - effect.start
+            const newStart = newTime - clipDur * initialXOffset
+            updatedEffect.start = Math.max(
+                0,
+                Math.min(newStart, duration - (effect.end - effect.start)),
+            )
+            updatedEffect.end = Math.min(
+                duration,
+                updatedEffect.start + (effect.end - effect.start),
             )
         }
 
@@ -565,6 +569,7 @@ function Clip({ effect, index, duration, setDraggingEffect }) {
     const height = 34
     const spacing = 10
     let top = (height + spacing) * index
+    const dragRef = useRef<HTMLDivElement>(null)
 
     return (
         <div
@@ -575,20 +580,46 @@ function Clip({ effect, index, duration, setDraggingEffect }) {
                 height,
                 top,
             }}
+            ref={dragRef}
+            onMouseDown={(e) => {
+                const rect = dragRef.current!.getBoundingClientRect()
+                const initialXOffset = (e.clientX - rect.left) / rect.width
+                console.log({
+                    effect,
+                    initialXOffset:
+                        ((e.clientX - rect.left) / rect.width) * duration,
+                    clientX: e.clientX,
+                    rectLeft: rect.left,
+                    rectWidth: rect.width,
+                    duration,
+                })
+                setDraggingEffect({ effect, type: 'both', initialXOffset })
+            }}
         >
             <div className='ml-2'>{effect.id}</div>
 
-            {[false, true].map((isStart) => {
+            {['start', 'end'].map((type) => {
                 return (
                     <div
-                        key={isStart ? 'left' : 'right'}
-                        className={`absolute flex flex-col py-1 ${isStart ? 'left-0' : 'right-0'} top-0 h-full`}
-                        onMouseDown={() => {
-                            setDraggingEffect({ effect, isStart })
+                        key={type}
+                        className={`absolute flex flex-col py-1 ${type === 'start' ? 'left-0' : 'right-0'} top-0 h-full`}
+                        onMouseDown={(e) => {
+                            e.stopPropagation()
+                            const rect =
+                                e.currentTarget.parentElement?.getBoundingClientRect()
+                            const initialXOffset = rect
+                                ? ((e.clientX - rect.left) / rect.width) *
+                                  duration
+                                : 0
+                            setDraggingEffect({
+                                effect,
+                                type: type as 'start' | 'end',
+                                initialXOffset: 0,
+                            })
                         }}
                     >
                         <div
-                            className={`bg-blue-700 w-2 ${isStart ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
+                            className={`bg-blue-700 w-2 ${type === 'start' ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
                         />
                     </div>
                 )
