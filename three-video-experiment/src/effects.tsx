@@ -132,15 +132,12 @@ export class VideoEffectApplier {
     private mesh: THREE.Mesh
     private defaultMesh: THREE.Mesh
 
-    private currentTime: number = 0
-
     constructor(mesh: THREE.Mesh) {
         this.mesh = mesh
         this.defaultMesh = mesh.clone()
     }
 
-    public update(deltaTime: number) {
-        this.currentTime += deltaTime
+    public render() {
         this.resetMesh()
         this.applyEffects(useAppStore.getState().effects)
     }
@@ -156,12 +153,10 @@ export class VideoEffectApplier {
             const absoluteStart = effect.start
             const absoluteEnd = effect.end
 
-            if (
-                this.currentTime >= absoluteStart &&
-                this.currentTime <= absoluteEnd
-            ) {
+            const { currentTime } = useAppStore.getState()
+            if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
                 const rawProgress =
-                    (this.currentTime - absoluteStart) /
+                    (currentTime - absoluteStart) /
                     (absoluteEnd - absoluteStart)
                 const easedProgress = evaluateBezier(
                     rawProgress,
@@ -175,35 +170,6 @@ export class VideoEffectApplier {
                 }
             }
         }
-    }
-
-    public updateEffect<T>({
-        id,
-        newStart,
-        newEnd,
-        newParams,
-        newBezierCurve,
-    }: {
-        id: string
-        newStart?: number
-        newEnd?: number
-        newParams?: Partial<T>
-        newBezierCurve?: BezierCurve
-    }): boolean {
-        const effects = useAppStore.getState().effects
-        const updatedEffects = updateEffectInTree({
-            effects,
-            id,
-            newStart,
-            newEnd,
-            newParams,
-            newBezierCurve,
-        })
-        if (updatedEffects) {
-            useAppStore.setState({ effects: updatedEffects })
-            return true
-        }
-        return false
     }
 
     // public addEffect(

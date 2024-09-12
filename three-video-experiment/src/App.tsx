@@ -82,6 +82,11 @@ function stopRenderLoop() {
     setIsPlaying(false)
 }
 
+function render() {
+    effectApplier.render() // Convert deltaTime to seconds
+    threeCanvas.render()
+}
+
 let prevTime = 0
 function renderLoop() {
     const state = useAppStore.getState()
@@ -90,8 +95,7 @@ function renderLoop() {
     prevTime = time
 
     if (state.isPlaying) {
-        effectApplier.update(deltaTime) // Convert deltaTime to seconds
-        threeCanvas.render()
+        render()
         state.setCurrentTime(state.currentTime + deltaTime)
     }
     requestAnimationFrame(renderLoop)
@@ -360,21 +364,21 @@ function RotationsImage() {
 
     const { controlsElement } = useVideoControls(video)
 
-    // if (!media) {
-    //     return (
-    //         <Container className='flex flex-col items-center justify-center'>
-    //             <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
-    //                 <p>Select an Image or Video First</p>
-    //                 <input
-    //                     type='file'
-    //                     className='!bg-gray-50 !rounded-lg'
-    //                     // accept='image/*,video/*'
-    //                     onChange={handleFileChange}
-    //                 />
-    //             </div>
-    //         </Container>
-    //     )
-    // }
+    if (!media) {
+        return (
+            <Container className='flex flex-col items-center justify-center'>
+                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
+                    <p>Select an Image or Video First</p>
+                    <input
+                        type='file'
+                        className='!bg-gray-50 !rounded-lg'
+                        // accept='image/*,video/*'
+                        onChange={handleFileChange}
+                    />
+                </div>
+            </Container>
+        )
+    }
 
     return (
         <Container className='flex flex-col gap-6 w-full max-w-full'>
@@ -710,12 +714,14 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
         useAppStore()
 
     const togglePlay = () => {
+        render()
         setIsPlaying(!isPlaying)
     }
 
     const handleSeek = (e) => {
         const time = parseFloat(e.target.value)
         setCurrentTime(time)
+        render()
     }
 
     const formatTime = (time) => {
