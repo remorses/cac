@@ -226,6 +226,7 @@ export class VideoEffectApplier {
     // }
 }
 
+
 export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
     return effects.map((effect) => {
         if (effect.id === node.id) {
@@ -234,15 +235,30 @@ export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
                 ...node,
             }
 
+            // Ensure start is not greater than end
+            if (updatedEffect.start > updatedEffect.end) {
+                updatedEffect.start = updatedEffect.end
+            }
+
             if (effect.children) {
                 updatedEffect.children = effect.children.map((child) => {
                     const updatedChild = { ...child }
-                    if (node.start && child.start === effect.start) {
-                        updatedChild.start = node.start
+
+                    // Update child start time
+                    if (node.start !== undefined) {
+                        updatedChild.start = Math.max(node.start, child.start)
                     }
-                    if (node.end && child.end === effect.end) {
-                        updatedChild.end = node.end
+
+                    // Update child end time
+                    if (node.end !== undefined) {
+                        updatedChild.end = Math.min(node.end, child.end)
                     }
+
+                    // Ensure child start is not greater than child end
+                    if (updatedChild.start > updatedChild.end) {
+                        updatedChild.start = updatedChild.end
+                    }
+
                     return updatedChild
                 })
             }

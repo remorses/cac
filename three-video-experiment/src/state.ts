@@ -53,7 +53,7 @@ export const useAppStore = create<AppState>((set) => {
         currentTime: 0,
         isPlaying: false,
         effects,
-        duration: 0,
+        duration: 10,
 
         setCurrentTime: (time) => set({ currentTime: time }),
         setIsPlaying: (isPlaying) => set({ isPlaying }),

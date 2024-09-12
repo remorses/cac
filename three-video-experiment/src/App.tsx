@@ -483,6 +483,7 @@ function RotationsImage() {
 
 function Timeline() {
     const effects = useAppStore((state) => state.effects)
+    const duration = useAppStore((state) => state.duration)
     const [draggingEffect, setDraggingEffect] = useState<{
         effect: Effect
         isStart: boolean
@@ -495,7 +496,7 @@ function Timeline() {
         const { effect, isStart } = draggingEffect
         const rect = timelineRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
-        const newTime = (x / rect.width) * 10 // Assuming 10 seconds total duration
+        const newTime = (x / rect.width) * duration // Assuming 10 seconds total duration
 
         const updatedEffect = { ...effect }
         if (isStart) {
@@ -505,8 +506,21 @@ function Timeline() {
             )
         } else {
             updatedEffect.end = Math.min(
-                10,
+                duration,
                 Math.max(newTime, effect.start + 0.1),
+            )
+        }
+        // Ensure the effect duration is at least 0.2 seconds
+        const minDuration = 0.2
+        if (isStart) {
+            updatedEffect.start = Math.min(
+                updatedEffect.start,
+                effect.end - minDuration,
+            )
+        } else {
+            updatedEffect.end = Math.max(
+                updatedEffect.end,
+                effect.start + minDuration,
             )
         }
 
