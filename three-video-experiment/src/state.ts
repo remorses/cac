@@ -7,6 +7,7 @@ interface AppState {
     isPlaying: boolean
     duration: number
     media?: File | null
+    isLooping: boolean
     effects: Effect<any>[]
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
@@ -48,15 +49,39 @@ const effects = [
     }),
 ]
 
-export const useAppStore = create<AppState>((set) => {
+export const useAppStore = create<AppState>((set, get) => {
     return {
         currentTime: 0,
+        isLooping: false,
         isPlaying: false,
         effects,
         duration: 10,
 
-        setCurrentTime: (time) => set({ currentTime: time }),
-        setIsPlaying: (isPlaying) => set({ isPlaying }),
+        setCurrentTime: (time) => {
+            const { duration, isLooping } = get()
+            if (isLooping) {
+                // If looping, wrap the time around to the beginning
+                set({ currentTime: time % duration })
+            } else if (time >= duration) {
+                // If not looping and time exceeds duration, pause and set to end
+                set({ currentTime: duration, isPlaying: false })
+            } else {
+                // Otherwise, update the time normally
+                set({ currentTime: time })
+            }
+            set({ currentTime: time })
+        },
+        setIsPlaying: (isPlaying) => {
+            const { currentTime, duration } = get()
+            if (
+                isPlaying &&
+                (currentTime >= duration ||
+                    Math.abs(currentTime - duration) < 0.01)
+            ) {
+                set({ currentTime: 0 })
+            }
+            set({ isPlaying })
+        },
         setEffects: (effects) => set({ effects }),
     }
 })
