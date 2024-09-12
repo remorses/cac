@@ -1,49 +1,50 @@
 import { create } from 'zustand'
-import { Effect, EffectGroup } from './effects'
+import { Effect, createEffectGroup, createEffect } from './effects'
 import * as THREE from 'three'
-import { RotationEffect, ScaleEffect } from './effects'
 
 interface AppState {
     currentTime: number
     isPlaying: boolean
     duration: number
     media?: File | null
-    effects: (Effect<any> | EffectGroup)[]
+    effects: (Effect<any> )[]
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
-    setEffects: (effects: (Effect<any> | EffectGroup)[]) => void
+    setEffects: (effects: (Effect<any> )[]) => void
 }
-
 const effects = [
-    new RotationEffect(
-        '1',
-        0,
-        5,
-        new THREE.Vector3(Math.PI * 2, 0, 0),
-        [0.25, 0.1, 0.25, 1],
-    ),
-    new EffectGroup(
-        'group1',
-        5,
-        10,
-        [
-            new ScaleEffect(
-                '2',
-                0,
-                2,
-                new THREE.Vector3(2, 2, 2),
-                [0, 0, 1, 1],
-            ),
-            new RotationEffect(
-                '3',
-                2,
-                5,
-                new THREE.Vector3(0, Math.PI * 2, 0),
-                [0.25, 0.1, 0.25, 1],
-            ),
+    createEffect({
+        id: '1',
+        type: 'rotation',
+        start: 0,
+        end: 5,
+        params: { amount: new THREE.Vector3(Math.PI * 2, 0, 0) },
+        bezierCurve: [0.25, 0.1, 0.25, 1],
+    }),
+    createEffectGroup({
+        id: 'group1',
+        start: 5,
+        end: 10,
+        children: [
+            createEffect({
+                id: '2',
+                type: 'scale',
+                start: 0,
+                end: 2,
+                params: { scale: new THREE.Vector3(2, 2, 2) },
+                bezierCurve: [0, 0, 1, 1],
+            }),
+            createEffect({
+                id: '3',
+                type: 'rotation',
+                start: 2,
+                end: 5,
+                params: { amount: new THREE.Vector3(0, Math.PI * 2, 0) },
+                bezierCurve: [0.25, 0.1, 0.25, 1],
+            }),
         ],
-        [0.4, 0, 0.6, 1],
-    ),
+        bezierCurve: [0.4, 0, 0.6, 1],
+    }),
 ]
 
 export const useAppStore = create<AppState>((set) => {

@@ -14,101 +14,90 @@ function evaluateBezier(t: number, curve: BezierCurve): number {
     )
 }
 
-interface EffectItem<T> {
+export interface Effect<T=any> {
     id: string
     type: string
     start: number
     end: number
     bezierCurve: BezierCurve
     params: T
+    children?: Effect<any>[]
     apply: (mesh: THREE.Mesh, progress: number, defaultMesh: THREE.Mesh) => void
 }
 
-export class Effect<T> implements EffectItem<T> {
-    constructor(
-        public id: string,
-        public type: string,
-        public start: number,
-        public end: number,
-        public params: T,
-        public bezierCurve: BezierCurve = [0, 0, 1, 1],
-        public apply: (
-            mesh: THREE.Mesh,
-            progress: number,
-            defaultMesh: THREE.Mesh,
-        ) => void,
-    ) {}
-}
+export function createEffect<T>({
+    id,
+    type,
+    start,
+    end,
+    params,
+    bezierCurve = [0, 0, 1, 1],
+}: {
+    id: string
+    type: string
+    start: number
+    end: number
+    params: T
+    bezierCurve?: BezierCurve
+}): Effect<T> {
+    let apply: (
+        mesh: THREE.Mesh,
+        progress: number,
+        defaultMesh: THREE.Mesh,
+    ) => void
 
-export class EffectGroup implements EffectItem<{}> {
-    type = 'group'
-    params = {}
-    apply = () => {}
-
-    constructor(
-        public id: string,
-        public start: number,
-        public end: number,
-        public children: (Effect<any> | EffectGroup)[],
-        public bezierCurve: BezierCurve = [0, 0, 1, 1],
-    ) {}
-}
-
-// Custom effect classes
-export class RotationEffect extends Effect<{ amount: THREE.Vector3 }> {
-    constructor(
-        id: string,
-        start: number,
-        end: number,
-        amount: THREE.Vector3,
-        bezierCurve?: BezierCurve,
-    ) {
-        super(
-            id,
-            'rotation',
-            start,
-            end,
-            { amount },
-            bezierCurve,
-            (mesh, progress, defaultMesh) => {
-                mesh.rotation.x =
-                    defaultMesh.rotation.x + this.params.amount.x * progress
-                mesh.rotation.y =
-                    defaultMesh.rotation.y + this.params.amount.y * progress
-                mesh.rotation.z =
-                    defaultMesh.rotation.z + this.params.amount.z * progress
-            },
-        )
-    }
-}
-
-export class ScaleEffect extends Effect<{ scale: THREE.Vector3 }> {
-    constructor(
-        id: string,
-        start: number,
-        end: number,
-        scale: THREE.Vector3,
-        bezierCurve?: BezierCurve,
-    ) {
-        super(
-            id,
-            'scale',
-            start,
-            end,
-            { scale },
-            bezierCurve,
-            (mesh, progress, defaultMesh) => {
+    switch (type) {
+        case 'rotation':
+            apply = (mesh, progress, defaultMesh) => {
+                const amount = (params as { amount: THREE.Vector3 }).amount
+                mesh.rotation.x = defaultMesh.rotation.x + amount.x * progress
+                mesh.rotation.y = defaultMesh.rotation.y + amount.y * progress
+                mesh.rotation.z = defaultMesh.rotation.z + amount.z * progress
+            }
+            break
+        case 'scale':
+            apply = (mesh, progress, defaultMesh) => {
+                const scale = (params as { scale: THREE.Vector3 }).scale
                 mesh.scale.x =
                     defaultMesh.scale.x +
-                    (this.params.scale.x - defaultMesh.scale.x) * progress
+                    (scale.x - defaultMesh.scale.x) * progress
                 mesh.scale.y =
                     defaultMesh.scale.y +
-                    (this.params.scale.y - defaultMesh.scale.y) * progress
+                    (scale.y - defaultMesh.scale.y) * progress
                 mesh.scale.z =
                     defaultMesh.scale.z +
-                    (this.params.scale.z - defaultMesh.scale.z) * progress
-            },
-        )
+                    (scale.z - defaultMesh.scale.z) * progress
+            }
+            break
+        default:
+            apply = () => {}
+    }
+
+    return { id, type, start, end, params, bezierCurve, apply }
+}
+
+export function createEffectGroup({
+    id,
+    start,
+    end,
+    children,
+    bezierCurve = [0, 0, 1, 1],
+}: {
+    id: string
+    start: number
+    end: number
+    children: Effect<any>[]
+    bezierCurve?: BezierCurve
+}): Effect<{}> {
+    return {
+        id,
+        type: 'group',
+        start,
+        end,
+        params: {},
+        bezierCurve,
+        children,
+        apply: () => {},
     }
 }
 
@@ -135,10 +124,7 @@ export class VideoEffectApplier {
         this.mesh.scale.copy(this.defaultMesh.scale)
     }
 
-    private applyEffects(
-        effects: (Effect<any> | EffectGroup)[],
-        parentOffset: number,
-    ) {
+    private applyEffects(effects: Effect<any>[], parentOffset: number) {
         for (const effect of effects) {
             const absoluteStart = effect.start + parentOffset
             const absoluteEnd = effect.end + parentOffset
@@ -155,7 +141,7 @@ export class VideoEffectApplier {
                     effect.bezierCurve,
                 )
 
-                if (effect instanceof EffectGroup) {
+                if (effect.children) {
                     this.applyEffects(effect.children, absoluteStart)
                 } else {
                     effect.apply(this.mesh, easedProgress, this.defaultMesh)
@@ -172,7 +158,7 @@ export class VideoEffectApplier {
         newBezierCurve?: BezierCurve,
     ): boolean {
         const effect = this.findEffect(id, useAppStore.getState().effects)
-        if (!effect || effect instanceof EffectGroup) return false
+        if (!effect || effect.children) return false
 
         if (newStart !== undefined) effect.start = newStart
         if (newEnd !== undefined) effect.end = newEnd
@@ -203,13 +189,10 @@ export class VideoEffectApplier {
     //     return true
     // }
 
-    private findEffect(
-        id: string,
-        effects: (Effect<any> | EffectGroup)[],
-    ): Effect<any> | EffectGroup | null {
+    private findEffect(id: string, effects: Effect<any>[]): Effect<any> | null {
         for (const effect of effects) {
             if (effect.id === id) return effect
-            if (effect instanceof EffectGroup) {
+            if (effect.children) {
                 const found = this.findEffect(id, effect.children)
                 if (found) return found
             }
@@ -217,17 +200,14 @@ export class VideoEffectApplier {
         return null
     }
 
-    private removeEffectRecursive(
-        id: string,
-        effects: (Effect<any> | EffectGroup)[],
-    ): boolean {
+    private removeEffectRecursive(id: string, effects: Effect<any>[]): boolean {
         for (let i = 0; i < effects.length; i++) {
             if (effects[i].id === id) {
                 effects.splice(i, 1)
                 return true
             }
             let eff = effects[i]
-            if (eff instanceof EffectGroup) {
+            if (eff.children) {
                 if (this.removeEffectRecursive(id, eff.children || [])) {
                     return true
                 }

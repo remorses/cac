@@ -1,6 +1,6 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import { useAppStore } from './state'
-import { VideoEffectApplier } from './effects'
+import { Effect, VideoEffectApplier } from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -482,19 +482,18 @@ function RotationsImage() {
 }
 
 function Timeline() {
-    const { effects } = useAppStore((state) => ({ effects: state.effects }))
-    const [draggingEffect, setDraggingEffect] = useState(null)
-    const timelineRef = useRef(null)
-
-    const handleDragStart = (effect, isStart) => {
-        setDraggingEffect({ effect, isStart })
-    }
+    const effects = useAppStore((state) => state.effects)
+    const [draggingEffect, setDraggingEffect] = useState<{
+        effect: Effect
+        isStart: boolean
+    } | null>(null)
+    const timelineRef = useRef<HTMLDivElement | null>(null)
 
     const handleDrag = (e) => {
         if (!draggingEffect || !timelineRef.current) return
 
         const { effect, isStart } = draggingEffect
-        const rect = timelineRef.current.getBoundingClientRect()
+        const rect = timelineRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
         const newTime = (x / rect.width) * 10 // Assuming 10 seconds total duration
 
@@ -551,16 +550,16 @@ function Timeline() {
                     >
                         <div className='ml-2'>{effect.id}</div>
 
-                        {[false, true].map((isLeft) => (
+                        {[false, true].map((isStart) => (
                             <div
-                                key={isLeft ? 'left' : 'right'}
-                                className={`absolute flex flex-col py-1 ${isLeft ? 'left-0' : 'right-0'} top-0 h-full`}
-                                onMouseDown={() =>
-                                    handleDragStart(effect, isLeft)
-                                }
+                                key={isStart ? 'left' : 'right'}
+                                className={`absolute flex flex-col py-1 ${isStart ? 'left-0' : 'right-0'} top-0 h-full`}
+                                onMouseDown={() => {
+                                    setDraggingEffect({ effect, isStart })
+                                }}
                             >
                                 <div
-                                    className={`bg-blue-700 w-2 ${isLeft ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
+                                    className={`bg-blue-700 w-2 ${isStart ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
                                 />
                             </div>
                         ))}
