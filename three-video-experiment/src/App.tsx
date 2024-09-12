@@ -20,11 +20,12 @@ import { ThreeCanvas } from './canvas'
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 
 function useSelectedMedia() {
-    const [media, setMedia] = useState<File | null>(null)
+    const media = useAppStore((state) => state.media)
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] || null
-        setMedia(file)
+
+        useAppStore.setState({ media: file })
     }
 
     return { media, handleFileChange }
@@ -99,6 +100,11 @@ function renderLoop() {
 renderLoop()
 
 let video = document.createElement('video')
+video.onloadedmetadata = () => {
+    let duration = video.duration
+    useAppStore.setState({ duration })
+}
+
 const unsubscribeIsPlaying = useAppStore.subscribe((state, prevState) => {
     const { isPlaying, currentTime } = state
     if (isPlaying && video.paused) {
@@ -354,120 +360,211 @@ function RotationsImage() {
 
     const { controlsElement } = useVideoControls(video)
 
-    if (!media) {
-        return (
-            <Container className='flex flex-col items-center justify-center'>
-                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
-                    <p>Select an Image or Video First</p>
-                    <input
-                        type='file'
-                        className='!bg-gray-50 !rounded-lg'
-                        // accept='image/*,video/*'
-                        onChange={handleFileChange}
+    // if (!media) {
+    //     return (
+    //         <Container className='flex flex-col items-center justify-center'>
+    //             <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
+    //                 <p>Select an Image or Video First</p>
+    //                 <input
+    //                     type='file'
+    //                     className='!bg-gray-50 !rounded-lg'
+    //                     // accept='image/*,video/*'
+    //                     onChange={handleFileChange}
+    //                 />
+    //             </div>
+    //         </Container>
+    //     )
+    // }
+
+    return (
+        <Container className='flex flex-col gap-6 w-full max-w-full'>
+            <div className='flex-row flex max-w-full gap-4'>
+                <div className='flex group relative shrink-0 max-w-[1000px] flex-col overflow-hidden items-center justify-center'>
+                    <CanvasComponent
+                        style={{ aspectRatio: aspectRatio.toFixed(2) }}
+                        className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
                     />
+                    <div className='absolute bottom-0 left-0 right-0 m-auto'>
+                        {media?.type.startsWith('video/') && controlsElement}
+                    </div>
                 </div>
-            </Container>
-        )
+                <div className='flex flex-col gap-3'>
+                    <div className='shrink-0 flex flex-col w-full gap-3'>
+                        {(['x', 'y'] as const).map((axis) => (
+                            <SliderAndNumber
+                                key={axis}
+                                label={`Angle on ${axis}`}
+                                value={rotations[axis]}
+                                onChange={(v) => {
+                                    handleRotationChange(axis, Number(v))
+                                }}
+                                rangeProps={{
+                                    min: '-40',
+                                    max: '40',
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    <SliderAndNumber
+                        label='Zoom'
+                        value={z}
+                        onChange={(v) => {
+                            setZ(Number(v))
+                        }}
+                        rangeProps={{
+                            min: '0.5',
+                            max: '2',
+                            step: '0.01',
+                        }}
+                    />
+                    <SliderAndNumber
+                        label='Focus'
+                        value={focus}
+                        onChange={(v) => {
+                            setFocus(Number(v))
+                        }}
+                        rangeProps={{
+                            min: '-0.3',
+                            max: '0.3',
+                            step: '0.01',
+                        }}
+                    />
+                    <SliderAndNumber
+                        label='Shadow'
+                        value={intensity}
+                        onChange={(v) => {
+                            setIntensity(Number(v))
+                        }}
+                        rangeProps={{
+                            min: '0',
+                            max: '2',
+                            step: '0.01',
+                        }}
+                    />
+                    <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
+                        <div>Background</div>
+
+                        <input
+                            type='color'
+                            className='w-auto ml-0'
+                            value={color}
+                            onChange={(event) => setColor(event.target.value)}
+                        />
+                        <div className=''></div>
+                    </div>
+
+                    <Button
+                        isLoading={isLoading}
+                        variant='primary'
+                        onClick={async () => {
+                            if (!media) return
+                            setIsLoading(true)
+                            await threeCanvas.update({
+                                rotations,
+                                color,
+                                intensity,
+                                focus,
+                                z,
+                                isPreview: false,
+                            })
+                            await handleSaveImage({ media })
+                            setIsLoading(false)
+                        }}
+                    >
+                        Save Image
+                    </Button>
+                </div>
+            </div>
+            <Timeline />
+        </Container>
+    )
+}
+
+function Timeline() {
+    const { effects } = useAppStore((state) => ({ effects: state.effects }))
+    const [draggingEffect, setDraggingEffect] = useState(null)
+    const timelineRef = useRef(null)
+
+    const handleDragStart = (effect, isStart) => {
+        setDraggingEffect({ effect, isStart })
+    }
+
+    const handleDrag = (e) => {
+        if (!draggingEffect || !timelineRef.current) return
+
+        const { effect, isStart } = draggingEffect
+        const rect = timelineRef.current.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const newTime = (x / rect.width) * 10 // Assuming 10 seconds total duration
+
+        const updatedEffect = { ...effect }
+        if (isStart) {
+            updatedEffect.start = Math.max(
+                0,
+                Math.min(newTime, effect.end - 0.1),
+            )
+        } else {
+            updatedEffect.end = Math.min(
+                10,
+                Math.max(newTime, effect.start + 0.1),
+            )
+        }
+
+        useAppStore.setState((state) => ({
+            effects: state.effects.map((e) =>
+                e.id === effect.id ? updatedEffect : e,
+            ),
+        }))
+    }
+
+    const handleDragEnd = () => {
+        setDraggingEffect(null)
     }
 
     return (
-        <Container className='flex !flex-row max-w-full'>
-            <div className='flex group relative shrink-0 max-w-[1000px] flex-col overflow-hidden items-center justify-center'>
-                <CanvasComponent
-                    style={{ aspectRatio: aspectRatio.toFixed(2) }}
-                    className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
-                />
-                <div className='absolute bottom-0 left-0 right-0 m-auto'>
-                    {media?.type.startsWith('video/') && controlsElement}
-                </div>
-            </div>
-            <div className='flex flex-col gap-3'>
-                <div className='shrink-0 flex flex-col w-full gap-3'>
-                    {(['x', 'y'] as const).map((axis) => (
-                        <SliderAndNumber
-                            key={axis}
-                            label={`Angle on ${axis}`}
-                            value={rotations[axis]}
-                            onChange={(v) => {
-                                handleRotationChange(axis, Number(v))
-                            }}
-                            rangeProps={{
-                                min: '-40',
-                                max: '40',
-                            }}
-                        />
-                    ))}
-                </div>
+        <div
+            className='grow min-h-40 bg-gray-200 flex flex-col gap-3 relative '
+            ref={timelineRef}
+            onMouseMove={handleDrag}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+        >
+            {effects.map((effect, index) => {
+                const startPercent = (effect.start / 10) * 100
+                const widthPercent = ((effect.end - effect.start) / 10) * 100
+                let top = effect.type === 'rotation' ? 0 : 32
+                top += 10 * index
 
-                <SliderAndNumber
-                    label='Zoom'
-                    value={z}
-                    onChange={(v) => {
-                        setZ(Number(v))
-                    }}
-                    rangeProps={{
-                        min: '0.5',
-                        max: '2',
-                        step: '0.01',
-                    }}
-                />
-                <SliderAndNumber
-                    label='Focus'
-                    value={focus}
-                    onChange={(v) => {
-                        setFocus(Number(v))
-                    }}
-                    rangeProps={{
-                        min: '-0.3',
-                        max: '0.3',
-                        step: '0.01',
-                    }}
-                />
-                <SliderAndNumber
-                    label='Shadow'
-                    value={intensity}
-                    onChange={(v) => {
-                        setIntensity(Number(v))
-                    }}
-                    rangeProps={{
-                        min: '0',
-                        max: '2',
-                        step: '0.01',
-                    }}
-                />
-                <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
-                    <div>Background</div>
+                return (
+                    <div
+                        key={effect.id}
+                        className='absolute rounded-md overflow-hidden h-[32px] bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs'
+                        style={{
+                            left: `${startPercent}%`,
+                            width: `${widthPercent}%`,
+                            top: `${top}px`,
+                        }}
+                    >
+                        <div className='ml-2'>{effect.id}</div>
 
-                    <input
-                        type='color'
-                        className='w-auto ml-0'
-                        value={color}
-                        onChange={(event) => setColor(event.target.value)}
-                    />
-                    <div className=''></div>
-                </div>
-
-                <Button
-                    isLoading={isLoading}
-                    variant='primary'
-                    onClick={async () => {
-                        setIsLoading(true)
-                        await threeCanvas.update({
-                            rotations,
-                            color,
-                            intensity,
-                            focus,
-                            z,
-                            isPreview: false,
-                        })
-                        await handleSaveImage({ media })
-                        setIsLoading(false)
-                    }}
-                >
-                    Save Image
-                </Button>
-            </div>
-        </Container>
+                        {[false, true].map((isLeft) => (
+                            <div
+                                key={isLeft ? 'left' : 'right'}
+                                className={`absolute flex flex-col py-1 ${isLeft ? 'left-0' : 'right-0'} top-0 h-full`}
+                                onMouseDown={() =>
+                                    handleDragStart(effect, isLeft)
+                                }
+                            >
+                                <div
+                                    className={`bg-blue-700 w-2 ${isLeft ? 'ml-1' : 'mr-1'} rounded h-full cursor-ew-resize`}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )
+            })}
+        </div>
     )
 }
 
@@ -478,7 +575,7 @@ const Container = ({ children, ...rest }) => {
             {...rest}
             ref={ref}
             style={{ ...rest.style }}
-            className={`shrink-0 w-full flex flex-col gap-4 pt-0 p-3 m-12 ${rest.className || ''}`}
+            className={`shrink-0 w-full flex flex-col gap-4 pt-0 p-3 ${rest.className || ''}`}
         >
             {children}
         </div>
@@ -591,92 +688,3 @@ const useVideoControls = (videoElement: HTMLVideoElement | null) => {
 
     return { controlsElement, togglePlay, handleSeek }
 }
-
-// const useVideoControlsVideo = (videoElement: HTMLVideoElement | null) => {
-//     const [, forceUpdate] = useState<{}>({})
-
-//     useEffect(() => {
-//         if (!videoElement) return
-
-//         const events = ['play', 'pause', 'loadedmetadata']
-//         const handleUpdate = () => forceUpdate({})
-
-//         let timeUpdateTimer
-//         const handleTimeUpdate = () => {
-//             clearTimeout(timeUpdateTimer)
-//             timeUpdateTimer = setTimeout(() => {
-//                 setRangeProgress(slider.current)
-//                 forceUpdate({})
-//             }, 20) // Debounce time: 250ms
-//         }
-
-//         events.forEach((event) =>
-//             videoElement.addEventListener(event, handleUpdate),
-//         )
-//         videoElement.addEventListener('timeupdate', handleTimeUpdate)
-
-//         return () => {
-//             events.forEach((event) =>
-//                 videoElement.removeEventListener(event, handleUpdate),
-//             )
-//             videoElement.removeEventListener('timeupdate', handleTimeUpdate)
-//             clearTimeout(timeUpdateTimer)
-//         }
-//     }, [videoElement])
-
-//     const togglePlay = () => {
-//         if (!videoElement) return
-//         if (videoElement.paused) {
-//             videoElement.play()
-//         } else {
-//             videoElement.pause()
-//         }
-//     }
-
-//     const handleSeek = (e) => {
-//         // setRangeProgress(e.target)
-//         if (!videoElement) return
-//         const time = e.target.value
-//         videoElement.currentTime = time
-//     }
-
-//     const formatTime = (time) => {
-//         const minutes = Math.floor(time / 60)
-//         const seconds = Math.floor(time % 60)
-//         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-//     }
-//     const slider = useRef<HTMLInputElement>(null)
-
-//     const controlsElement = (
-//         <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-10 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
-//             <div className='flex  gap-1 shrink-0 items-center'>
-//                 <button
-//                     className='!bg-transparent w-[50px]'
-//                     onClick={togglePlay}
-//                 >
-//                     {videoElement?.paused ? 'Play' : 'Pause'}
-//                 </button>
-//             </div>
-//             <input
-//                 type='range'
-//                 min='0'
-//                 step={0.001}
-//                 max={videoElement?.duration || 0}
-//                 ref={slider}
-//                 style={{
-//                     // @ts-ignore
-//                     '--progress': `${((videoElement?.currentTime || 0) / (videoElement?.duration || 1)) * 100}%`,
-//                 }}
-//                 value={videoElement?.currentTime}
-//                 onChange={handleSeek}
-//                 className='grow slider'
-//             />
-//             <div className='text-[11px] shrink-0 font-mono'>
-//                 {formatTime(videoElement?.currentTime || 0)} /{' '}
-//                 {formatTime(videoElement?.duration || 0)}
-//             </div>
-//         </div>
-//     )
-
-//     return { controlsElement, togglePlay, handleSeek }
-// }

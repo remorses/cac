@@ -55,7 +55,7 @@ export class EffectGroup implements EffectItem<{}> {
 }
 
 // Custom effect classes
-class RotationEffect extends Effect<{ amount: THREE.Vector3 }> {
+export class RotationEffect extends Effect<{ amount: THREE.Vector3 }> {
     constructor(
         id: string,
         start: number,
@@ -82,7 +82,7 @@ class RotationEffect extends Effect<{ amount: THREE.Vector3 }> {
     }
 }
 
-class ScaleEffect extends Effect<{ scale: THREE.Vector3 }> {
+export class ScaleEffect extends Effect<{ scale: THREE.Vector3 }> {
     constructor(
         id: string,
         start: number,
@@ -109,15 +109,6 @@ class ScaleEffect extends Effect<{ scale: THREE.Vector3 }> {
                     (this.params.scale.z - defaultMesh.scale.z) * progress
             },
         )
-    }
-}
-
-type VideoEditor = {
-    effects: (Effect<any> | EffectGroup)[]
-    duration: number
-    resolution: {
-        width: number
-        height: number
     }
 }
 
@@ -244,40 +235,4 @@ export class VideoEffectApplier {
         }
         return false
     }
-}
-
-const videoEditor: VideoEditor = {
-    effects: [
-        new RotationEffect(
-            '1',
-            0,
-            5,
-            new THREE.Vector3(Math.PI * 2, 0, 0),
-            [0.25, 0.1, 0.25, 1],
-        ),
-        new EffectGroup(
-            'group1',
-            5,
-            10,
-            [
-                new ScaleEffect(
-                    '2',
-                    0,
-                    2,
-                    new THREE.Vector3(2, 2, 2),
-                    [0, 0, 1, 1],
-                ),
-                new RotationEffect(
-                    '3',
-                    2,
-                    5,
-                    new THREE.Vector3(0, Math.PI * 2, 0),
-                    [0.25, 0.1, 0.25, 1],
-                ),
-            ],
-            [0.4, 0, 0.6, 1],
-        ),
-    ],
-    duration: 10,
-    resolution: { width: 1920, height: 1080 },
 }
