@@ -106,14 +106,14 @@ export function createThreeCanvas({
 
         // Add event listeners for controls changes
         controls.addEventListener('change', () => {
-            pane.refresh()
+            const distance = camera.position.distanceTo(plane.position)
+            bokehPass.uniforms.focus.value = distance
             render()
         })
 
         transformControls.addEventListener('change', () => {
-            setTimeout(() => {
-                pane.refresh()
-            }, 1)
+            const distance = camera.position.distanceTo(plane.position)
+            bokehPass.uniforms.focus.value = distance
             render()
         })
     }
@@ -140,13 +140,53 @@ export function createThreeCanvas({
     })
 
     pane.addBinding({ value: 0 }, 'value', {
-        min: -0.5,
-        max: 0.5,
+        min: -1,
+        view: 'cameraring',
+        max: 1,
         step: 0.01,
         label: 'Focus Distance',
+        series: 2,
+        unit: {
+            pixels: 50,
+            ticks: 10,
+            value: 0.1,
+        },
     }).on('change', (value) => {
         const distance = camera.position.distanceTo(plane.position)
         bokehPass.uniforms.focus.value = distance + value.value
+    })
+
+    pane.addBinding({ value: 0.1 }, 'value', {
+        view: 'cameraring',
+        min: 0,
+
+        max: 1,
+        step: 0.01,
+        label: 'Aperture',
+        
+
+        unit: {
+            pixels: 50,
+            ticks: 40,
+            value: 0.03,
+        },
+    }).on('change', (value) => {
+        bokehPass.uniforms.aperture.value = value.value
+    })
+
+    pane.addBinding({ value: 0.1 }, 'value', {
+        view: 'cameraring',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        label: 'Max Blur',
+        unit: {
+            pixels: 50,
+            ticks: 20,
+            value: 0.03,
+        },
+    }).on('change', (value) => {
+        bokehPass.uniforms.maxblur.value = value.value
     })
 
     pane.controller.document
