@@ -572,17 +572,21 @@ function ScrubBar() {
     const wasPlaying = useRef(isPlaying)
 
     const handleMouseDown = () => {
+        // console.log('mouse down')
+        isDraggingRef.current = true
         wasPlaying.current = isPlaying
         setIsPlaying(false)
-        isDraggingRef.current = true
     }
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
         isDraggingRef.current = false
+        // console.log('mouse up')
         setIsPlaying(wasPlaying.current)
+        // handleGlobalMouseMove(e)
     }
     const handleGlobalMouseMove = (e: MouseEvent) => {
         if (isDraggingRef.current && containerRef.current) {
+            // console.log('mouse move')
             const rect = containerRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
             const newTime = (x / rect.width) * duration
@@ -615,6 +619,10 @@ function ScrubBar() {
             onMouseMove={(e) => {
                 e.stopPropagation()
                 handleGlobalMouseMove(e as any)
+            }}
+            onMouseUp={(e) => {
+                e.stopPropagation()
+                handleMouseUp(e as any)
             }}
             // onClick={(e) => {
             //     e.stopPropagation()

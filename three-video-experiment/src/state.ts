@@ -22,6 +22,7 @@ interface AppState {
 import { useEffect, useState, useRef } from 'react'
 
 export const useCurrentTime = () => {
+    // return useEditorState((state) => state.currentTime)
     const [currentTime, setCurrentTime] = useState(
         useEditorState.getState().currentTime,
     )
@@ -29,7 +30,13 @@ export const useCurrentTime = () => {
 
     useEffect(() => {
         const throttledUpdate = (state: AppState) => {
+            const { isPlaying } = state
+            if (!isPlaying) {
+                setCurrentTime(state.currentTime)
+                return
+            }
             const now = Date.now()
+
             if (now - lastUpdateTimeRef.current >= 30) {
                 setCurrentTime(state.currentTime)
                 lastUpdateTimeRef.current = now
@@ -56,7 +63,7 @@ const effects = [
         // bezierCurve: [0.25, 0.1, 0.25, 1],
     }),
     createEffect({
-        id: '2', 
+        id: '2',
         type: 'position',
         start: 0,
         end: 5,
