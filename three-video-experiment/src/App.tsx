@@ -4,27 +4,15 @@ import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import {
-    bfs,
-    Effect,
-    filterEffectTree,
-    updateEffectInTree
-} from './effects'
+import { bfs, Effect, filterEffectTree, updateEffectInTree } from './effects'
 import { useCurrentTime, useEditorState } from './state'
 
-import {
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState
-} from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { Pane } from 'tweakpane'
 import { createThreeCanvas, globalPaneContainer } from './canvas'
 import { Scrubber } from './scrubber'
-import {
-    preparePane
-} from './utils'
+import { preparePane } from './utils'
 
 function useSelectedMedia() {
     const media = useEditorState((state) => state.media)
@@ -102,10 +90,7 @@ function renderLoop() {
 renderLoop()
 
 let video = document.createElement('video')
-video.onloadedmetadata = () => {
-    let duration = video.duration
-    useEditorState.setState({ duration })
-}
+
 video.autoplay = false
 
 const unsubscribeIsPlaying = useEditorState.subscribe((state, prevState) => {
@@ -144,7 +129,7 @@ if (import.meta.hot) {
     })
 }
 
-const handleSaveImage = async () => {
+const exportVideo = async () => {
     const { media } = useEditorState.getState()
     if (!media) {
         return
@@ -164,8 +149,8 @@ const handleSaveImage = async () => {
             height = Math.round((maxWidth / width) * height)
             width = Math.round(maxWidth)
         }
-        let fps = 30
 
+        let outFps = 60
         const muxer = new MP4Muxer({
             target: new ArrayBufferTarget(),
             fastStart: false,
@@ -175,7 +160,7 @@ const handleSaveImage = async () => {
 
                 width: width,
                 height: height,
-                frameRate: fps,
+                frameRate: outFps,
             },
         })
 
@@ -192,7 +177,7 @@ const handleSaveImage = async () => {
             width,
             height,
             bitrate: 5_000_000, // 5 Mbps for better quality
-            framerate: fps,
+            framerate: outFps,
         })
 
         // Stop recording and download video
@@ -217,10 +202,13 @@ const handleSaveImage = async () => {
             return
         }
         let timestamp = 0
-        const frameDuration = 1000000 / fps // in microseconds
+
         const videoDecoder = new VideoDecoder({
             output: (frame) => {
                 threeCanvas.changeImage(frame)
+                useEditorState.setState({
+                    currentTime: timestamp / 1000 / 1000,
+                })
                 threeCanvas.render()
                 // console.log('frame', frame.timestamp)
                 const outputFrame = new VideoFrame(
@@ -232,8 +220,11 @@ const handleSaveImage = async () => {
                 videoEncoder.encode(outputFrame)
                 outputFrame.close()
                 frame.close()
+                const frameDuration = 1000_000 / fps
                 timestamp += frameDuration
-                console.log(`Rendered frame: ${performance.now() * 1000}`)
+                console.log(
+                    `Rendered frame: ${(timestamp / 1000 / 1000).toFixed(2)}`,
+                )
 
                 // if (elapsedTime > 6000) {
                 //     console.warn(
@@ -249,6 +240,7 @@ const handleSaveImage = async () => {
         const result = await parseMedia({
             src: media,
             reader: webFileReader,
+
             onVideoTrack: async (track) => {
                 console.log('onVideoTrack', track)
                 await videoDecoder.configure(track)
@@ -271,11 +263,16 @@ const handleSaveImage = async () => {
                     videoDecoder.decode(new EncodedVideoChunk(sample))
                 }
             },
-            // fields: {
-            //     durationInSeconds: true,
-            //     dimensions: true,
-            // },
+            fields: {
+                durationInSeconds: true,
+                dimensions: true,
+                fps: true,
+            },
         })
+        let fps = result.fps || 30
+        // if (result.durationInSeconds) {
+        //     useEditorState.setState({ duration: result.durationInSeconds })
+        // }
 
         await stopRecording()
     } else {
@@ -300,6 +297,9 @@ function RotationsImage() {
                 video.loop = false
                 video.addEventListener('loadedmetadata', () => {
                     video.play()
+                    let duration = video.duration
+                    console.log('duration', duration)
+                    useEditorState.setState({ duration })
                 })
 
                 // Remove the 'playing' event listener after it's triggered once
@@ -366,7 +366,7 @@ function RotationsImage() {
                 <Controls />
                 <div className='grow'></div>
                 <Button
-                    onClick={handleSaveImage}
+                    onClick={exportVideo}
                     isLoading={isLoading}
                     className='bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded'
                 >

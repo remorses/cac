@@ -132,6 +132,7 @@ fetch('/video.mov')
         return null
     })
 
+// TODO remove
 // Subscribe to duration changes and scale effects accordingly
 useEditorState.subscribe((state, prevState) => {
     if (state.duration !== prevState.duration) {
