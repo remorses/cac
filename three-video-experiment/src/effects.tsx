@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { useAppStore } from './state'
+import { useEditorState } from './state'
 
 type BezierCurve = [number, number, number, number]
 
@@ -178,7 +178,7 @@ export class VideoEffectApplier {
 
     public render() {
         this.resetMesh()
-        this.applyEffects(useAppStore.getState().effects)
+        this.applyEffects(useEditorState.getState().effects)
     }
 
     private resetMesh() {
@@ -192,7 +192,7 @@ export class VideoEffectApplier {
             const absoluteStart = effect.start
             const absoluteEnd = effect.end
 
-            const { currentTime } = useAppStore.getState()
+            const { currentTime } = useEditorState.getState()
             if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
                 const rawProgress =
                     (currentTime - absoluteStart) /

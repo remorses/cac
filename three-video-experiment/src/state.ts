@@ -15,6 +15,7 @@ interface AppState {
     setEffects: (effects: Effect<any>[]) => void
     selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
+    scale: number
 }
 
 const effects = [
@@ -60,13 +61,15 @@ const effects = [
     // }),
 ]
 
-export const useAppStore = create<AppState>((set, get) => {
+export const useEditorState = create<AppState>((set, get) => {
     return {
         currentTime: 0,
+        scale: 1,
         isLooping: true,
         isPlaying: false,
         effects,
         duration: 10,
+
         selectedEffectIds: [],
         setSelectedEffectIds: (id: string[]) => {
             set({ selectedEffectIds: id })
@@ -100,8 +103,21 @@ export const useAppStore = create<AppState>((set, get) => {
     }
 })
 
+fetch('/video.mov')
+    .then((response) => response.blob())
+    .then((blob) => new File([blob], 'video.mov', { type: 'video/quicktime' }))
+    .then((file) => {
+        if (file) {
+            useEditorState.setState({ media: file })
+        }
+    })
+    .catch((error) => {
+        console.error('Error fetching video file:', error)
+        return null
+    })
+
 // Subscribe to duration changes and scale effects accordingly
-useAppStore.subscribe((state, prevState) => {
+useEditorState.subscribe((state, prevState) => {
     if (state.duration !== prevState.duration) {
         const scaleFactor = state.duration / prevState.duration
 
@@ -119,6 +135,6 @@ useAppStore.subscribe((state, prevState) => {
             return newEffect
         })
 
-        useAppStore.setState({ effects: scaledEffects })
+        useEditorState.setState({ effects: scaledEffects })
     }
 })

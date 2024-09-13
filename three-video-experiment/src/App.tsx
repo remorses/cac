@@ -1,5 +1,5 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
-import { useAppStore } from './state'
+import { useEditorState } from './state'
 import {
     bfs,
     Effect,
@@ -24,14 +24,15 @@ import {
 
 import { ThreeCanvas } from './canvas'
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
+import { Scrubber } from './scrubber'
 
 function useSelectedMedia() {
-    const media = useAppStore((state) => state.media)
+    const media = useEditorState((state) => state.media)
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] || null
 
-        useAppStore.setState({ media: file })
+        useEditorState.setState({ media: file })
     }
 
     return { media, handleFileChange }
@@ -76,7 +77,7 @@ function CanvasComponent({ ...rest }) {
 const effectApplier = new VideoEffectApplier(threeCanvas.plane)
 
 function startRenderLoop() {
-    const { isPlaying, setIsPlaying } = useAppStore.getState()
+    const { isPlaying, setIsPlaying } = useEditorState.getState()
     if (isPlaying) {
         return
     }
@@ -84,7 +85,7 @@ function startRenderLoop() {
 }
 
 function stopRenderLoop() {
-    const { setIsPlaying } = useAppStore.getState()
+    const { setIsPlaying } = useEditorState.getState()
     setIsPlaying(false)
 }
 
@@ -96,7 +97,7 @@ function render() {
 let prevTime = 0
 let renderLoopId: number | undefined
 function renderLoop() {
-    const state = useAppStore.getState()
+    const state = useEditorState.getState()
     const time = performance.now() / 1000
     const deltaTime = time - prevTime
     prevTime = time
@@ -113,10 +114,10 @@ renderLoop()
 let video = document.createElement('video')
 video.onloadedmetadata = () => {
     let duration = video.duration
-    useAppStore.setState({ duration })
+    useEditorState.setState({ duration })
 }
 
-const unsubscribeIsPlaying = useAppStore.subscribe((state, prevState) => {
+const unsubscribeIsPlaying = useEditorState.subscribe((state, prevState) => {
     const { isPlaying, currentTime } = state
     if (isPlaying && video.paused) {
         video.play().catch(console.error)
@@ -515,14 +516,20 @@ type EffectState = {
     initialXOffset: number
 } | null
 
+interface DragOrigin {
+    pointerX: number
+    time: number
+}
+const scrubberHalfWidth = 16
 function Timeline() {
-    const effects = useAppStore((state) => state.effects)
-    const duration = useAppStore((state) => state.duration)
+    const effects = useEditorState((state) => state.effects)
+    const duration = useEditorState((state) => state.duration)
     const [draggingEffect, setDraggingEffect] = useState<EffectState>(null)
-    const timelineRef = useRef<HTMLDivElement | null>(null)
-
+    const containerRef = useRef<HTMLDivElement | null>(null)
+    const setIsPlaying = useEditorState((state) => state.setIsPlaying)
+    const isPlaying = useEditorState((state) => state.isPlaying)
     const handleDrag = (e) => {
-        if (!draggingEffect || !timelineRef.current) return
+        if (!draggingEffect || !containerRef.current) return
 
         const {
             effects: selectedEffects,
@@ -530,7 +537,7 @@ function Timeline() {
             type,
             initialXOffset,
         } = draggingEffect
-        const rect = timelineRef.current?.getBoundingClientRect()
+        const rect = containerRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
         const newTime = (x / rect.width) * duration
 
@@ -577,7 +584,7 @@ function Timeline() {
             effectsNew = updateEffectInTree(effectsNew, updatedEffect)
         }
         if (effectsNew.length) {
-            useAppStore.setState({ effects: effectsNew })
+            useEditorState.setState({ effects: effectsNew })
         }
     }
 
@@ -586,31 +593,70 @@ function Timeline() {
     }
 
     const allEffects = bfs(effects)
-    const setSelectedEffectIds = useAppStore(
+    const setSelectedEffectIds = useEditorState(
         (state) => state.setSelectedEffectIds,
     )
 
+    const scale = useEditorState((x) => x.scale)
+    const scrubTo = useEditorState((x) => x.setCurrentTime)
+
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (e.code === 'Space') {
+                e.preventDefault()
+                const { isPlaying } = useEditorState.getState()
+                setIsPlaying(!isPlaying)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyPress)
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress)
+        }
+    }, [])
+
     return (
         <div
-            className='grow min-h-40 bg-gray-200 flex flex-col gap-3 relative '
-            ref={timelineRef}
+            className='grow cursor-pointer relative min-h-40 bg-gray-200 flex flex-col gap-3  '
+            ref={containerRef}
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
-            onClick={() => setSelectedEffectIds([])}
+            onClick={(e) => {
+                const containerRect =
+                    containerRef.current?.getBoundingClientRect()
+                if (!containerRect) {
+                    return
+                }
+                const newTime =
+                    ((e.clientX - containerRect.left) / containerRect.width) *
+                    duration
+                useEditorState.setState({
+                    currentTime: Math.max(0, Math.min(newTime, duration)),
+                })
+                setSelectedEffectIds([])
+            }}
         >
-            {allEffects.map(({ node: effect, parent }, index) => {
-                return (
-                    <Clip
-                        key={effect.id}
-                        effect={effect}
-                        index={index}
-                        duration={duration}
-                        parent={parent || undefined}
-                        setDraggingEffect={setDraggingEffect}
-                    />
-                )
-            })}
+            <div className='w-full cursor-pointer isolate h-[16px] bg-gray-100'></div>
+            <div className='relative'>
+                {allEffects.map(({ node: effect, parent }, index) => {
+                    return (
+                        <Clip
+                            key={effect.id}
+                            effect={effect}
+                            index={index}
+                            duration={duration}
+                            parent={parent || undefined}
+                            setDraggingEffect={setDraggingEffect}
+                        />
+                    )
+                })}
+            </div>
+            <Scrubber
+                containerRef={containerRef}
+                timelineHeight={containerRef.current?.clientHeight || 200}
+            />
         </div>
     )
 }
@@ -636,8 +682,8 @@ function Clip({
     let top = (height + spacing) * index
     const dragRef = useRef<HTMLDivElement>(null)
 
-    const selectedEffectIds = useAppStore((state) => state.selectedEffectIds)
-    const setSelectedEffectId = useAppStore(
+    const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
+    const setSelectedEffectId = useEditorState(
         (state) => state.setSelectedEffectIds,
     )
 
@@ -645,14 +691,14 @@ function Clip({
 
     const handleKeyDown = (e: KeyboardEvent) => {
         console.log(e.key)
-        const { effects, selectedEffectIds } = useAppStore.getState()
+        const { effects, selectedEffectIds } = useEditorState.getState()
         if (e.key === 'Backspace' && isSelected) {
             e.preventDefault()
             const newEffects = filterEffectTree(
                 effects,
                 (ef) => ef.id !== effect.id,
             )
-            useAppStore.setState({
+            useEditorState.setState({
                 effects: newEffects,
                 selectedEffectIds: [],
             })
@@ -666,7 +712,7 @@ function Clip({
         }
     }, [isSelected])
 
-    const effects = useAppStore((state) => state.effects)
+    const effects = useEditorState((state) => state.effects)
     const selectedEffects =
         selectedEffectIds.length > 1
             ? effects.filter((e) => selectedEffectIds.includes(e.id))
@@ -684,7 +730,7 @@ function Clip({
             ref={dragRef}
             onClick={(e) => {
                 e.stopPropagation()
-                const prevSelected = useAppStore.getState().selectedEffectIds
+                const prevSelected = useEditorState.getState().selectedEffectIds
                 if (e.ctrlKey || e.metaKey || e.shiftKey) {
                     // Add to selection if Ctrl/Cmd/Shift is pressed
                     setSelectedEffectId(
@@ -806,7 +852,7 @@ function setRangeProgress(el?: HTMLInputElement | null) {
 
 const useVideoControls = (videoElement: HTMLVideoElement | null) => {
     const { isPlaying, currentTime, setIsPlaying, duration, setCurrentTime } =
-        useAppStore()
+        useEditorState()
 
     const togglePlay = () => {
         render()
