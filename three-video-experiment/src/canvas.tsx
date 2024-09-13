@@ -77,46 +77,44 @@ export function createThreeCanvas({
 
     scene.add(plane)
 
-    if (isPreview) {
-        scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
+    scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
 
-        camera.position.z = 0.6
+    camera.position.z = 0.6
 
-        // Add OrbitControls
-        const controls = new OrbitControls(camera, canvas)
-        controls.enableDamping = true
-        controls.dampingFactor = 0.25
+    // Add OrbitControls
+    const controls = new OrbitControls(camera, canvas)
+    controls.enableDamping = true
+    controls.dampingFactor = 0.25
 
-        // Add TransformControls
-        const transformControls = new TransformControls(camera, canvas)
-        // Set the mode to combined (rotation and position)
-        transformControls.setMode('translate')
+    // Add TransformControls
+    const transformControls = new TransformControls(camera, canvas)
+    // Set the mode to combined (rotation and position)
+    transformControls.setMode('translate')
 
-        // Show both rotation and position controls
-        transformControls.showX = true
-        transformControls.showY = true
-        transformControls.showZ = true
-        transformControls.attach(plane)
-        scene.add(transformControls)
+    // Show both rotation and position controls
+    transformControls.showX = true
+    transformControls.showY = true
+    transformControls.showZ = true
+    transformControls.attach(plane)
+    scene.add(transformControls)
 
-        // Disable orbit controls when using transform controls
-        transformControls.addEventListener('dragging-changed', (event) => {
-            controls.enabled = !event.value
-        })
+    // Disable orbit controls when using transform controls
+    transformControls.addEventListener('dragging-changed', (event) => {
+        controls.enabled = !event.value
+    })
 
-        // Add event listeners for controls changes
-        controls.addEventListener('change', () => {
-            const distance = camera.position.distanceTo(plane.position)
-            bokehPass.uniforms.focus.value = distance
-            render()
-        })
+    // Add event listeners for controls changes
+    controls.addEventListener('change', () => {
+        const distance = camera.position.distanceTo(plane.position)
+        bokehPass.uniforms.focus.value = distance
+        render()
+    })
 
-        transformControls.addEventListener('change', () => {
-            const distance = camera.position.distanceTo(plane.position)
-            bokehPass.uniforms.focus.value = distance
-            render()
-        })
-    }
+    transformControls.addEventListener('change', () => {
+        const distance = camera.position.distanceTo(plane.position)
+        bokehPass.uniforms.focus.value = distance
+        render()
+    })
 
     const img = texture.image
     camera.position.z = 0.6
@@ -163,7 +161,6 @@ export function createThreeCanvas({
         max: 1,
         step: 0.01,
         label: 'Aperture',
-        
 
         unit: {
             pixels: 50,
@@ -254,7 +251,14 @@ export function createThreeCanvas({
         }
     }
 
-    function render() {
+    function render({ isPreview = true } = {}) {
+        if (!isPreview) {
+            transformControls.enabled = false;
+            transformControls.visible = false;
+        } else {
+            transformControls.enabled = true;
+            transformControls.visible = true;
+        }
         const rotationX = camera.rotation.x / 3
         const rotationY = camera.rotation.y
         let vignetteRotation = Math.atan2(-rotationX, -rotationY)

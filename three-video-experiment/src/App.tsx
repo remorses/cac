@@ -203,13 +203,15 @@ const exportVideo = async () => {
         }
         let timestamp = 0
 
+        let fps = 30
+
         const videoDecoder = new VideoDecoder({
             output: (frame) => {
                 threeCanvas.changeImage(frame)
                 useEditorState.setState({
                     currentTime: timestamp / 1000 / 1000,
                 })
-                threeCanvas.render()
+                threeCanvas.render({ isPreview: false })
                 // console.log('frame', frame.timestamp)
                 const outputFrame = new VideoFrame(
                     threeCanvas.renderer.domElement,
@@ -269,7 +271,7 @@ const exportVideo = async () => {
                 fps: true,
             },
         })
-        let fps = result.fps || 30
+        fps = result.fps || 30
         // if (result.durationInSeconds) {
         //     useEditorState.setState({ duration: result.durationInSeconds })
         // }
