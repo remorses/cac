@@ -18,8 +18,8 @@ export class ThreeCanvas {
     camera: THREE.PerspectiveCamera
     plane: THREE.Mesh
     composer: EffectComposer
-    controls: OrbitControls
-    transformControls: TransformControls
+    controls?: OrbitControls
+    transformControls?: TransformControls
     constructor({
         initialImageSize,
         isPreview = true,
@@ -99,7 +99,7 @@ export class ThreeCanvas {
             this.transformControls.addEventListener(
                 'dragging-changed',
                 (event) => {
-                    this.controls.enabled = !event.value
+                    this.controls!.enabled = !event.value
                 },
             )
 
