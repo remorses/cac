@@ -102,8 +102,8 @@ function renderLoop() {
     const deltaTime = time - prevTime
     prevTime = time
 
+    render()
     if (state.isPlaying) {
-        render()
         state.setCurrentTime(state.currentTime + deltaTime)
     }
     renderLoopId = requestAnimationFrame(renderLoop)
