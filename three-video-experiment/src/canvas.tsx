@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { Pane } from 'tweakpane'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 
@@ -10,217 +11,258 @@ import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 
 export const deg = Math.PI / 180
-export class ThreeCanvas {
-    canvas: HTMLCanvasElement
-    scene: THREE.Scene
-    renderer: THREE.WebGLRenderer
-    texture: THREE.Texture
-    camera: THREE.PerspectiveCamera
-    plane: THREE.Mesh
-    composer: EffectComposer
-    controls?: OrbitControls
-    transformControls?: TransformControls
-    constructor({
-        initialImageSize,
-        isPreview = true,
-    }: {
-        initialImageSize?: { width: number; height: number } | undefined
-        isPreview?: boolean
-    }) {
-        this.canvas = document.createElement('canvas')
-        this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
-        this.scene = new THREE.Scene()
-        // this.scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
+export const paneContainer = document.createElement('div')
 
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            canvas: this.canvas,
-            preserveDrawingBuffer: true,
-            alpha: true,
-        })
-        if (initialImageSize) {
-            this.renderer.setSize(
-                initialImageSize.width,
-                initialImageSize.height,
-            )
-            this.renderer.setViewport(
-                0,
-                0,
-                initialImageSize.width,
-                initialImageSize.height,
-            )
-        }
+export const paneState = {
+    focus: 0,
+    intensity: 1,
+    // rotations: { x: 0, y: 0 },
+    backgroundColor: '#ff0000',
+}
 
-        this.composer = new EffectComposer(this.renderer)
-        this.renderer.outputColorSpace = THREE.SRGBColorSpace
+const pane = new Pane({
+    container: paneContainer,
+    title: 'Tweakpane',
+})
 
-        this.texture = new THREE.Texture()
-        this.texture.colorSpace = THREE.LinearSRGBColorSpace
+pane.addBinding(paneState, 'focus', {
+    min: -0.5,
+    max: 0.5,
+    step: 0.01,
+})
 
-        this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
-        this.camera.updateProjectionMatrix()
+pane.addBinding(paneState, 'intensity', {
+    min: 0,
+    max: 1,
+    step: 0.01,
+})
+pane.addBinding(paneState, 'backgroundColor', {
+    view: 'color',
+    label: 'Background Color',
+})
 
-        const geometry = new THREE.PlaneGeometry(1, 1)
-        const material = new THREE.MeshBasicMaterial({
-            map: this.texture,
-            side: THREE.DoubleSide,
-        })
+export function createThreeCanvas({
+    initialImageSize,
+    isPreview = true,
+}: {
+    initialImageSize?: { width: number; height: number } | undefined
+    isPreview?: boolean
+} = {}) {
+    const canvas = document.createElement('canvas')
+    canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
-        this.plane = new THREE.Mesh(geometry, material)
+    const scene = new THREE.Scene()
 
-        this.scene.add(this.plane)
-        if (isPreview) {
-            this.scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
-
-            this.camera.position.z = 0.6
-
-            // Add OrbitControls
-            this.controls = new OrbitControls(this.camera, this.canvas)
-            this.controls.enableDamping = true
-            this.controls.dampingFactor = 0.25
-
-            // Add TransformControls
-            this.transformControls = new TransformControls(
-                this.camera,
-                this.canvas,
-            )
-            // Set the mode to combined (rotation and position)
-            this.transformControls.setMode('translate')
-
-            // Show both rotation and position controls
-            this.transformControls.showX = true
-            this.transformControls.showY = true
-            this.transformControls.showZ = true
-            this.transformControls.attach(this.plane)
-            this.scene.add(this.transformControls)
-
-            // Disable orbit controls when using transform controls
-            this.transformControls.addEventListener(
-                'dragging-changed',
-                (event) => {
-                    this.controls!.enabled = !event.value
-                },
-            )
-
-            // Add event listeners for controls changes
-            this.controls.addEventListener('change', () => {
-                this.render()
-            })
-
-            this.transformControls.addEventListener('change', () => {
-                this.render()
-            })
-        }
+    const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        canvas: canvas,
+        preserveDrawingBuffer: true,
+        alpha: true,
+    })
+    if (initialImageSize) {
+        renderer.setSize(initialImageSize.width, initialImageSize.height)
+        renderer.setViewport(
+            0,
+            0,
+            initialImageSize.width,
+            initialImageSize.height,
+        )
     }
 
-    render() {
-        this.composer.render()
+    let composer = new EffectComposer(renderer)
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+
+    let texture = new THREE.Texture()
+    texture.colorSpace = THREE.LinearSRGBColorSpace
+
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+    camera.updateProjectionMatrix()
+
+    const geometry = new THREE.PlaneGeometry(1, 1)
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+    })
+
+    const plane = new THREE.Mesh(geometry, material)
+
+    scene.add(plane)
+    let controls, transformControls
+    if (isPreview) {
+        scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
+
+        camera.position.z = 0.6
+
+        // Add OrbitControls
+        controls = new OrbitControls(camera, canvas)
+        controls.enableDamping = true
+        controls.dampingFactor = 0.25
+
+        // Add TransformControls
+        transformControls = new TransformControls(camera, canvas)
+        // Set the mode to combined (rotation and position)
+        transformControls.setMode('translate')
+
+        // Show both rotation and position controls
+        transformControls.showX = true
+        transformControls.showY = true
+        transformControls.showZ = true
+        transformControls.attach(plane)
+        scene.add(transformControls)
+
+        // Disable orbit controls when using transform controls
+        transformControls.addEventListener('dragging-changed', (event) => {
+            controls.enabled = !event.value
+        })
+
+        // Add event listeners for controls changes
+        controls.addEventListener('change', () => {
+            render()
+        })
+
+        transformControls.addEventListener('change', () => {
+            render()
+        })
     }
 
-    changeImage(bitmap: ImageBitmap | VideoFrame) {
-        this.texture.dispose()
-        this.texture.image = bitmap
+    const threeColor = new THREE.Color(paneState.backgroundColor)
+    const img = texture.image
+    camera.position.z = 0.6
 
-        this.texture.needsUpdate = true
+    scene.background = threeColor
+    let aspectRatio = 1
+    if (img) {
+        aspectRatio =
+            (img.videoWidth || img.width) / (img.videoHeight || img.height)
+    } else {
+        console.log('no image found in texture!')
+    }
+    if (isPreview) {
+        if (img?.width) {
+            const perfectPixels = 600 * 600
+            const imagePixels = img.width * img.height
+            const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
+            console.log('scale down factor', scaleDownFactor)
+            if (scaleDownFactor < 1) {
+                // renderer.setPixelRatio(scaleDownFactor)
+            }
+        }
+    } else {
+        renderer.setPixelRatio(1)
+    }
+    renderer.setPixelRatio(2)
+
+    const offset = (angle: number) => {
+        return -0.2 * (angle / (45 + Math.abs(angle)))
+    }
+    camera.lookAt(plane.position.x, plane.position.y, plane.position.z)
+
+    composer = new EffectComposer(renderer)
+    composer.addPass(new RenderPass(scene, camera))
+
+    const distance = camera.position.distanceTo(plane.position)
+
+    const bokehPass = new BokehPass(scene, camera, {
+        focus: distance,
+        aperture: 0.1,
+        maxblur: 0.5,
+    })
+
+    composer.addPass(bokehPass)
+    const smaaPass = new SMAAPass(
+        renderer.domElement.width * renderer.getPixelRatio(),
+        renderer.domElement.height * renderer.getPixelRatio(),
+    )
+    composer.addPass(smaaPass)
+
+    const vignettePass = new ShaderPass(vignetteShader)
+
+    // Calculate rotationX and rotationY based on camera rotation compared to the plane
+    const cameraDirection = new THREE.Vector3()
+    camera.getWorldDirection(cameraDirection)
+
+    const planeNormal = new THREE.Vector3(0, 0, 1)
+    plane.getWorldDirection(planeNormal)
+
+    composer.addPass(vignettePass)
+
+    composer.addPass(new ShaderPass(filmGrainShader))
+
+    function render() {
+        if (paneState) {
+            const distance = camera.position.distanceTo(plane.position)
+
+            const rotationX = camera.rotation.x/3
+            const rotationY = camera.rotation.y
+            let vignetteRotation = Math.atan2(-rotationX, -rotationY)
+
+            vignettePass.uniforms.rotation.value = vignetteRotation
+            vignettePass.uniforms.color.value = threeColor
+            vignettePass.uniforms.intensity.value = paneState.intensity
+            bokehPass.uniforms.focus.value = paneState.focus + distance
+            vignettePass.uniforms.color.value = new THREE.Color(
+                paneState.backgroundColor,
+            )
+            scene.background = new THREE.Color(paneState.backgroundColor)
+        }
+        composer.render()
+    }
+
+    function changeImage(bitmap: ImageBitmap | VideoFrame) {
+        texture.dispose()
+        texture.image = bitmap
+
+        texture.needsUpdate = true
 
         const size = getDimensions(bitmap)
         const aspectRatio = size.width / size.height
-        this.camera.aspect = aspectRatio
-        this.camera.updateProjectionMatrix()
-        this.plane.scale.set(aspectRatio, 1, 1)
+        camera.aspect = aspectRatio
+        camera.updateProjectionMatrix()
+        plane.scale.set(aspectRatio, 1, 1)
 
-        this.renderer.setSize(size?.width, size?.height)
-        this.renderer.setViewport(0, 0, size.width, size.height)
+        renderer.setSize(size?.width, size?.height)
+        renderer.setViewport(0, 0, size.width, size.height)
     }
-    changeVideo(video: HTMLVideoElement) {
-        this.texture.dispose()
-        this.texture.flipY = false
-        this.texture = new THREE.VideoTexture(video)
-        this.texture.colorSpace = THREE.LinearSRGBColorSpace
-        this.texture.needsUpdate = true
+
+    function changeVideo(video: HTMLVideoElement) {
+        texture.dispose()
+        texture.flipY = false
+        texture = new THREE.VideoTexture(video)
+        texture.colorSpace = THREE.LinearSRGBColorSpace
+        texture.needsUpdate = true
         const aspectRatio = video.videoWidth / video.videoHeight || 1
-        this.camera.aspect = aspectRatio
-        this.camera.updateProjectionMatrix()
-        const material = new THREE.MeshBasicMaterial({ map: this.texture })
+        camera.aspect = aspectRatio
+        bokehPass.uniforms['aspect'].value = aspectRatio
+        camera.updateProjectionMatrix()
+        const newMaterial = new THREE.MeshBasicMaterial({ map: texture })
 
-        this.plane.material = material
-        this.plane.scale.set(aspectRatio, 1, 1)
-        this.renderer.setSize(video.videoWidth, video.videoHeight)
-        this.renderer.setViewport(0, 0, video.videoWidth, video.videoHeight)
+        plane.material = newMaterial
+        plane.scale.set(aspectRatio, 1, 1)
+        renderer.setSize(video.videoWidth, video.videoHeight)
+        renderer.setViewport(0, 0, video.videoWidth, video.videoHeight)
     }
 
-    update({ rotations, color, intensity, focus, z, isPreview = false }) {
-        const { x: rotationX, y: rotationY } = rotations
-        const threeColor = new THREE.Color(color)
-        const img = this.texture.image
-        this.camera.position.z = z || 0.6
+    function cleanup() {
+        // Dispose of Three.js objects
+        scene.remove(plane)
+        geometry.dispose()
+        material.dispose()
+        texture.dispose()
+        renderer.dispose()
+        if (controls) controls.dispose()
+        if (transformControls) transformControls.dispose()
+    }
 
-        this.scene.background = threeColor
-        let aspectRatio = 1
-        if (img) {
-            aspectRatio =
-                (img.videoWidth || img.width) / (img.videoHeight || img.height)
-        } else {
-            console.log('no image found in texture!')
-        }
-        if (isPreview) {
-            if (img?.width) {
-                const perfectPixels = 600 * 600
-                const imagePixels = img.width * img.height
-                const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
-                console.log('scale down factor', scaleDownFactor)
-                if (scaleDownFactor < 1) {
-                    // this.renderer.setPixelRatio(scaleDownFactor)
-                }
-            }
-        } else {
-            this.renderer.setPixelRatio(1)
-        }
-
-        this.plane.rotation.set(rotationX * deg, rotationY * deg, 0)
-
-        const offset = (angle: number) =>
-            -0.2 * (angle / (45 + Math.abs(angle)))
-        this.camera.lookAt(
-            this.plane.position.x + offset(rotationY),
-            this.plane.position.y + offset(rotationX),
-            this.plane.position.z,
-        )
-
-        this.composer = new EffectComposer(this.renderer)
-        this.composer.addPass(new RenderPass(this.scene, this.camera))
-
-        const bokehPass = new BokehPass(this.scene, this.camera, {
-            focus: z + focus,
-            // aspect: aspectRatio,
-            aperture: 0.1,
-            maxblur: 0.5,
-        })
-        this.composer.addPass(bokehPass)
-        const smaaPass = new SMAAPass(
-            this.renderer.domElement.width * this.renderer.getPixelRatio(),
-            this.renderer.domElement.height * this.renderer.getPixelRatio(),
-        )
-        this.composer.addPass(smaaPass)
-
-        // this.composer.addPass(new BokehPass(this.scene, this.camera, {
-        //     focus: z + focus,
-        //     // aspect: aspectRatio,
-        //     // aperture: 0.16,
-        //     maxblur: 0.01,
-        // }))
-        const vignettePass = new ShaderPass(vignetteShader)
-
-        let vignetteRotation = Math.atan2(-rotationX, rotationY)
-
-        vignettePass.uniforms.rotation.value = vignetteRotation
-        vignettePass.uniforms.color.value = threeColor
-        vignettePass.uniforms.intensity.value = intensity
-        this.composer.addPass(vignettePass)
-
-        this.composer.addPass(new ShaderPass(filmGrainShader))
-        this.composer.render()
+    return {
+        canvas,
+        render,
+        plane,
+        renderer,
+        texture,
+        changeImage,
+        changeVideo,
+        cleanup,
     }
 }
 

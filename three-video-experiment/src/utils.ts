@@ -95,3 +95,21 @@ export const debounce = (fn: Function, ms = 300) => {
 export const maxKey = (obj: { [key: string]: number }) => {
     return Object.keys(obj).reduce((a, b) => (obj[a] > obj[b] ? a : b))
 }
+
+export function vecProxy(vector) {
+    return new Proxy(vector, {
+        get(target, prop) {
+            return target[prop]
+        },
+        set(target, prop, value) {
+            if (prop === 'x' || prop === 'y' || prop === 'z' || prop === 'w') {
+                const newVec = { ...target }
+                newVec[prop] = value
+                target.set(newVec.x, newVec.y, newVec.z, newVec.w)
+                return true
+            }
+            target[prop] = value
+            return true
+        },
+    })
+}

@@ -23,7 +23,7 @@ import {
     useState,
 } from 'react'
 
-import { ThreeCanvas } from './canvas'
+import { paneContainer, createThreeCanvas } from './canvas'
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 import { Scrubber } from './scrubber'
 import { Pane } from 'tweakpane'
@@ -54,7 +54,7 @@ export function App() {
     return <RouterProvider router={router} />
 }
 
-const threeCanvas = new ThreeCanvas()
+const threeCanvas = createThreeCanvas()
 
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -339,14 +339,7 @@ function RotationsImage() {
                 const aspectRatio = img.width / img.height
                 setAspectRatio(aspectRatio)
             }
-            threeCanvas.update({
-                rotations,
-                color,
-                intensity,
-                focus,
-                z,
-                isPreview: true,
-            })
+            threeCanvas.render()
             setIsLoading(false)
         }
 
@@ -394,43 +387,20 @@ function RotationsImage() {
 function Controls() {
     const container = useRef<HTMLDivElement>(null)
     useEffect(() => {
-        const pane = new Pane({
-            container: container.current!,
-            title: 'Tweakpane',
-        })
-        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
-            // format: 'xyz',
-            picker: 'inline',
-            expanded: true,
-        })
-        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
-            // format: 'xyz',
-            picker: 'inline',
-            expanded: true,
-        })
-        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
-            // format: 'xyz',
-            picker: 'inline',
-            expanded: true,
-        })
-        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
-            // format: 'xyz',
-            picker: 'inline',
-            expanded: true,
-        })
-        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
-            // format: 'xyz',
-            picker: 'inline',
-            expanded: true,
-        })
+        if (container.current) {
+            container.current.appendChild(paneContainer)
+        }
+
         return () => {
-            pane.dispose()
+            if (container.current) {
+                container.current.removeChild(paneContainer)
+            }
         }
     }, [])
     return (
         <div
             ref={container}
-            className='hideScroll flex-shrink-0 grow  bg-[color:var(--tweakpane-bg)]  overflow-y-auto max-h-full w-full'
+            className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)]  overflow-y-auto max-h-full w-full'
         ></div>
     )
 }
