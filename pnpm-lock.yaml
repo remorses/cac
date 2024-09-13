@@ -700,6 +700,9 @@ importers:
 
   three-video-experiment:
     dependencies:
+      '@0b5vr/tweakpane-plugin-rotation':
+        specifier: ^0.2.0
+        version: 0.2.0(tweakpane@4.0.4)
       '@lemonsqueezy/lemonsqueezy.js':
         specifier: ^3.2.0
         version: 3.2.0
@@ -715,6 +718,12 @@ importers:
       '@tweakpane/core':
         specifier: ^2.0.4
         version: 2.0.4
+      '@tweakpane/plugin-camerakit':
+        specifier: ^0.3.0
+        version: 0.3.0(tweakpane@4.0.4)
+      '@tweakpane/plugin-essentials':
+        specifier: ^0.2.1
+        version: 0.2.1(tweakpane@4.0.4)
       '@types/three':
         specifier: ^0.168.0
         version: 0.168.0
@@ -760,6 +769,9 @@ importers:
       tweakpane:
         specifier: ^4.0.4
         version: 4.0.4
+      tweakpane-plugin-file-import:
+        specifier: ^0.2.1
+        version: 0.2.1(tweakpane@4.0.4)
       vite-plugin-environment:
         specifier: ^1.1.3
         version: 1.1.3(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
@@ -1361,6 +1373,11 @@ importers:
         version: 4.3.2(typescript@5.6.2)(vite@5.4.3(@types/node@20.14.10)(terser@5.32.0))
 
 packages:
+
+  '@0b5vr/tweakpane-plugin-rotation@0.2.0':
+    resolution: {integrity: sha512-LK+84kNTusEepVwiKH6ib/Pd+5RxI3UC4rHxn5c14GO58QS49Hh0ft3hFXt/NDzYEST17Q9qg96BcpclhCzYYQ==}
+    peerDependencies:
+      tweakpane: ^4.0.0
 
   '@actions/cache@3.2.4':
     resolution: {integrity: sha512-RuHnwfcDagtX+37s0ZWy7clbOfnZ7AlDJQ7k/9rzt2W4Gnwde3fa/qjSjVuz4vLcLIpc7fUob27CMrqiWZytYA==}
@@ -4667,6 +4684,16 @@ packages:
 
   '@tweakpane/core@2.0.4':
     resolution: {integrity: sha512-0P3xcmvjBr8AmqMOEDNYIbkiaPwvQPkj8VeJX+8ZYkpRgWWbNp1HLbld0MDI0WJHdom89osH3MmCDLnWEXKI2w==}
+
+  '@tweakpane/plugin-camerakit@0.3.0':
+    resolution: {integrity: sha512-6UwgwDKU+oaAgXJ2D/pOoIpEAZts0RyeLmVzBJGs+VVNqSfkiHzL0i5XD+XnmSL2PaLXBne0dlz0bYOrjmeELw==}
+    peerDependencies:
+      tweakpane: ^4.0.0-beta.2
+
+  '@tweakpane/plugin-essentials@0.2.1':
+    resolution: {integrity: sha512-VbFU1/uD+CJNFQdfLXUOLjeG5HyUZH97Ox9CxmyVetg1hqjVun3C83HAGFULyhKzl8tSgii8jr304r8QpdHwzQ==}
+    peerDependencies:
+      tweakpane: ^4.0.0
 
   '@tweenjs/tween.js@23.1.3':
     resolution: {integrity: sha512-vJmvvwFxYuGnF2axRtPYocag6Clbb5YS7kLL+SO/TeVFzHqDIWrNKYtcsPMibjDx9O+bu+psAy9NKfWklassUA==}
@@ -9733,6 +9760,11 @@ packages:
   turbo-stream@2.3.0:
     resolution: {integrity: sha512-PhEr9mdexoVv+rJkQ3c8TjrN3DUghX37GNJkSMksoPR4KrXIPnM2MnqRt07sViIqX9IdlhrgtTSyjoVOASq6cg==}
 
+  tweakpane-plugin-file-import@0.2.1:
+    resolution: {integrity: sha512-8v9EFMKkyVXf5pu5xMdR8TAEBZ4qizMyd+1NN5fbdPN51KD28PFhDCbZcIvlDPPz05Y75MVhv0nJ7Cbk4Cbb5Q==}
+    peerDependencies:
+      tweakpane: ^3.1.4
+
   tweakpane@4.0.4:
     resolution: {integrity: sha512-RkWD54zDlEbnN01wQPk0ANHGbdCvlJx/E8A1QxhTfCbX+ROWos1Ws2MnhOm39aUGMOh+36TjUwpDmLfmwTr1Fg==}
 
@@ -10462,6 +10494,10 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@0b5vr/tweakpane-plugin-rotation@0.2.0(tweakpane@4.0.4)':
+    dependencies:
+      tweakpane: 4.0.4
 
   '@actions/cache@3.2.4':
     dependencies:
@@ -14933,6 +14969,14 @@ snapshots:
       '@theatre/dataverse': 0.7.2
 
   '@tweakpane/core@2.0.4': {}
+
+  '@tweakpane/plugin-camerakit@0.3.0(tweakpane@4.0.4)':
+    dependencies:
+      tweakpane: 4.0.4
+
+  '@tweakpane/plugin-essentials@0.2.1(tweakpane@4.0.4)':
+    dependencies:
+      tweakpane: 4.0.4
 
   '@tweenjs/tween.js@23.1.3': {}
 
@@ -20954,6 +20998,10 @@ snapshots:
   tunnel@0.0.6: {}
 
   turbo-stream@2.3.0: {}
+
+  tweakpane-plugin-file-import@0.2.1(tweakpane@4.0.4):
+    dependencies:
+      tweakpane: 4.0.4
 
   tweakpane@4.0.4: {}
 

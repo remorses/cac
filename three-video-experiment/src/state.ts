@@ -6,7 +6,6 @@ import {
     createRotationEffect,
 } from './effects'
 import * as THREE from 'three'
-import { deg } from './canvas'
 
 interface AppState {
     currentTime: number
@@ -58,6 +57,7 @@ export const useCurrentTime = () => {
     return currentTime
 }
 
+const deg = Math.PI / 180
 const effects = [
     createRotationEffect({
         id: '1',

@@ -1,38 +1,30 @@
-import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
-import * as THREE from 'three'
-import { useCurrentTime, useEditorState } from './state'
-import {
-    bfs,
-    Effect,
-    effectsPaneContainer,
-    filterEffectTree,
-    updateEffectInTree,
-} from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
+import {
+    bfs,
+    Effect,
+    filterEffectTree,
+    updateEffectInTree
+} from './effects'
+import { useCurrentTime, useEditorState } from './state'
 
 import {
-    startTransition,
-    useCallback,
     useEffect,
     useLayoutEffect,
     useRef,
-    useState,
+    useState
 } from 'react'
 
-import { globalPaneContainer, createThreeCanvas } from './canvas'
-import {
-    assert,
-    bytesFromCanvas,
-    sleep,
-    useAsyncEffect,
-    usePrevious,
-} from './utils'
-import { Scrubber } from './scrubber'
 import { Pane } from 'tweakpane'
+import { createThreeCanvas, globalPaneContainer } from './canvas'
+import { Scrubber } from './scrubber'
+import {
+    preparePane
+} from './utils'
 
 function useSelectedMedia() {
     const media = useEditorState((state) => state.media)
@@ -80,14 +72,6 @@ function CanvasComponent({ ...rest }) {
     }, [])
 
     return <div {...rest} ref={containerRef}></div>
-}
-
-function startRenderLoop() {
-    const { isPlaying, setIsPlaying } = useEditorState.getState()
-    if (isPlaying) {
-        return
-    }
-    setIsPlaying(true)
 }
 
 function stopRenderLoop() {
@@ -300,13 +284,9 @@ const handleSaveImage = async () => {
 
 function RotationsImage() {
     const { media, handleFileChange } = useSelectedMedia()
-    const [rotations, setRotations] = useState({ x: 0, y: 10 })
-    const [color, setColor] = useState('#000000')
-    const [intensity, setIntensity] = useState(1)
-    const [focus, setFocus] = useState(0)
-    const [z, setZ] = useState(0.6)
+
     const [isLoading, setIsLoading] = useState(true)
-    const [aspectRatio, setAspectRatio] = useState(1)
+    const size = useEditorState((state) => state.outputSize)
 
     useEffect(() => {
         if (!media) {
@@ -318,7 +298,16 @@ function RotationsImage() {
                 video.src = URL.createObjectURL(media)
                 video.muted = true
                 video.loop = false
-                video.play()
+                video.addEventListener('loadedmetadata', () => {
+                    video.play()
+                })
+
+                // Remove the 'playing' event listener after it's triggered once
+                const playingHandler = () => {
+                    video.removeEventListener('playing', playingHandler)
+                    video.pause()
+                }
+                video.addEventListener('playing', playingHandler)
                 await new Promise((resolve) => {
                     video!.addEventListener('playing', () => {
                         resolve(null)
@@ -332,7 +321,6 @@ function RotationsImage() {
                 threeCanvas.changeVideo(video)
                 const aspectRatio = video.videoWidth / video.videoHeight || 1
                 console.log('aspect ratio', aspectRatio)
-                setAspectRatio(aspectRatio)
             } else {
                 const bitmap = await createImageBitmap(media, {
                     imageOrientation: 'flipY',
@@ -343,17 +331,11 @@ function RotationsImage() {
                 threeCanvas.changeImage(bitmap)
                 const img = threeCanvas.texture.image
                 const aspectRatio = img.width / img.height
-                setAspectRatio(aspectRatio)
             }
-            threeCanvas.render()
+            render()
             setIsLoading(false)
         }
-
         loadMedia()
-
-        if (media.type.startsWith('video/')) {
-            startRenderLoop()
-        }
     }, [media])
 
     if (!media) {
@@ -382,17 +364,20 @@ function RotationsImage() {
                     onChange={handleFileChange}
                 />
                 <Controls />
+                <div className='grow'></div>
                 <Button
                     onClick={handleSaveImage}
                     isLoading={isLoading}
-                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded'
                 >
-                    Export
+                    Export Video
                 </Button>
             </div>
             <div className='flex group relative overflow-hidden items-center justify-center row-span-1'>
                 <CanvasComponent
-                    style={{ aspectRatio: aspectRatio.toFixed(2) }}
+                    style={{
+                        aspectRatio: (size.width / size.height).toFixed(2),
+                    }}
                     className='max-w-full max-h-full rounded-md'
                 />
             </div>
@@ -920,22 +905,25 @@ function EffectsControls() {
     const [pane, setPane] = useState<Pane | null>(null)
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
     useEffect(() => {
-        const newPane = new Pane({
-            container: container.current || undefined,
-        })
+        const pane = preparePane(
+            new Pane({
+                title: 'Effects',
+                container: container.current || undefined,
+            }),
+        )
 
-        setPane(newPane)
+        setPane(pane)
         const allEffects = bfs(effects)
         allEffects
             .filter((x) => selectedEffectIds.includes(x.node.id))
             .forEach((effect) => {
                 if (effect.node.configure) {
-                    effect.node.configure(newPane)
+                    effect.node.configure(pane)
                 }
             })
 
         return () => {
-            newPane.dispose()
+            pane.dispose()
         }
     }, [selectedEffectIds])
 

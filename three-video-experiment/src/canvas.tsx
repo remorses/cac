@@ -12,7 +12,7 @@ import { getProject, types } from '@theatre/core'
 import { BokehPass } from './blur'
 import { useEditorState } from './state'
 import { Effect, evaluateBezier } from './effects'
-import { createProxy } from './utils'
+import { createProxy, preparePane } from './utils'
 
 export const deg = Math.PI / 180
 
@@ -28,10 +28,12 @@ export function createThreeCanvas({
     const canvas = document.createElement('canvas')
     canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
-    const pane = new Pane({
-        container: globalPaneContainer,
-        title: 'Tweakpane',
-    })
+    const pane = preparePane(
+        new Pane({
+            container: globalPaneContainer,
+            title: 'Tweakpane',
+        }),
+    )
 
     const scene = new THREE.Scene()
 

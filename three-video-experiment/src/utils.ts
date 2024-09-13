@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { Pane } from 'tweakpane'
 
 /**
  * Convenience method to load an image from a canvas.
@@ -151,13 +152,27 @@ export function vec3Proxy(vector: THREE.Vector3) {
     })
 }
 
-
 export function usePrevious<T>(value: T): T | undefined {
-    const ref = useRef<T>();
+    const ref = useRef<T>()
 
     useEffect(() => {
-        ref.current = value;
-    }, [value]);
+        ref.current = value
+    }, [value])
 
-    return ref.current;
+    return ref.current
+}
+
+import * as TweakpaneEssentialsPlugin from '@tweakpane/plugin-essentials'
+
+import * as TweakpaneFileImportPlugin from 'tweakpane-plugin-file-import'
+import * as CamerakitPlugin from '@tweakpane/plugin-camerakit'
+import * as TweakpaneRotationInputPlugin from '@0b5vr/tweakpane-plugin-rotation'
+
+export function preparePane(pane: Pane) {
+    pane.registerPlugin(TweakpaneEssentialsPlugin)
+    // pane.registerPlugin(TweakpaneFileImportPlugin)
+    pane.registerPlugin(CamerakitPlugin)
+    pane.registerPlugin(TweakpaneRotationInputPlugin)
+
+    return pane
 }

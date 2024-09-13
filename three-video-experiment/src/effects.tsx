@@ -16,13 +16,6 @@ export function evaluateBezier(t: number, curve: BezierCurve): number {
     )
 }
 
-export const effectsPaneContainer = document.createElement('div')
-
-const pane = new Pane({
-    container: effectsPaneContainer,
-    title: 'Effects',
-})
-
 export interface Effect<T = any> {
     id: string
     type: string
@@ -91,6 +84,7 @@ export function filterEffectTree(
 }
 
 export type EffectType = 'rotation' | 'scale' | 'position'
+
 export function createRotationEffect({
     id,
     start,
@@ -119,21 +113,28 @@ export function createRotationEffect({
         configure(pane) {
             const folder = pane.addFolder({
                 title: 'Rotation',
-            });
+            })
+            folder.addBlade({
+                view: 'cubicbezier',
+                value: bezierCurve,
+                expanded: true,
+                label: 'Animation',
+                picker: 'inline',
+            })
             folder.addBinding(params.amount, 'x', {
                 label: 'X Rotation',
                 picker: 'inline',
                 expanded: true,
                 min: -180 * deg,
                 max: 360 * deg,
-            });
+            })
             folder.addBinding(params.amount, 'y', {
                 label: 'Y Rotation',
                 picker: 'inline',
                 expanded: true,
                 min: -180 * deg,
                 max: 360 * deg,
-            });
+            })
         },
     }
 }
@@ -165,9 +166,29 @@ export function createScaleEffect({
             mesh.scale.z += (this.params.scale.z - 1) * progress
         },
         configure(pane) {
-            pane.addBinding(this.params, 'scale', {
-                expanded: true,
+            const folder = pane.addFolder({
+                title: 'Scale',
+            })
+            folder.addBinding(this.params.scale, 'x', {
+                label: 'X Scale',
                 picker: 'inline',
+                expanded: true,
+                min: 0,
+                max: 2,
+            })
+            folder.addBinding(this.params.scale, 'y', {
+                label: 'Y Scale',
+                picker: 'inline',
+                expanded: true,
+                min: 0,
+                max: 2,
+            })
+            folder.addBinding(this.params.scale, 'z', {
+                label: 'Z Scale',
+                picker: 'inline',
+                expanded: true,
+                min: 0,
+                max: 2,
             })
         },
     }
@@ -200,7 +221,24 @@ export function createPositionEffect({
             mesh.position.z += this.params.position.z * progress
         },
         configure(pane) {
-            pane.addBinding(this.params, 'position')
+            const folder = pane.addFolder({
+                title: 'Position',
+            })
+            folder.addBinding(this.params.position, 'x', {
+                label: 'X Position',
+                picker: 'inline',
+                expanded: true,
+            })
+            folder.addBinding(this.params.position, 'y', {
+                label: 'Y Position',
+                picker: 'inline',
+                expanded: true,
+            })
+            folder.addBinding(this.params.position, 'z', {
+                label: 'Z Position',
+                picker: 'inline',
+                expanded: true,
+            })
         },
     }
 }
