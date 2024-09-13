@@ -155,7 +155,8 @@ if (import.meta.hot) {
     })
 }
 
-const handleSaveImage = async ({ media }: { media: File | null }) => {
+const handleSaveImage = async () => {
+    const { media } = useEditorState.getState()
     if (!media) {
         return
     }
@@ -368,8 +369,21 @@ function RotationsImage() {
 
     return (
         <Container className='p-4 grid grid-cols-[300px_1fr] grid-rows-2 h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
-            <div className=' flex flex-col items-center justify-center'>
+            <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4'>
+                <input
+                    type='file'
+                    className='!bg-gray-50 !rounded-lg'
+                    // accept='image/*,video/*'
+                    onChange={handleFileChange}
+                />
                 <Controls />
+                <Button
+                    onClick={handleSaveImage}
+                    isLoading={isLoading}
+                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                >
+                    Export
+                </Button>
             </div>
             <div className='flex group relative overflow-hidden items-center justify-end'>
                 <CanvasComponent
@@ -397,12 +411,7 @@ function Controls() {
             }
         }
     }, [])
-    return (
-        <div
-            ref={container}
-            className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)]  overflow-y-auto max-h-full w-full'
-        ></div>
-    )
+    return <div ref={container}></div>
 }
 
 type EffectState = {

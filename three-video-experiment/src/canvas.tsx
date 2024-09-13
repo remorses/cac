@@ -10,6 +10,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from './blur'
+import { useEditorState } from './state'
 
 export const deg = Math.PI / 180
 
@@ -61,6 +62,10 @@ export function createThreeCanvas({
         preserveDrawingBuffer: true,
         alpha: true,
     })
+    const { outputSize } = useEditorState.getState()
+    const aspectRatio = outputSize.width / outputSize.height
+    renderer.setSize(outputSize.width, outputSize.height)
+    renderer.setViewport(0, 0, outputSize.width, outputSize.height)
     if (initialImageSize) {
         renderer.setSize(initialImageSize.width, initialImageSize.height)
         renderer.setViewport(
@@ -78,6 +83,7 @@ export function createThreeCanvas({
     texture.colorSpace = THREE.LinearSRGBColorSpace
 
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+    camera.aspect = aspectRatio
     camera.updateProjectionMatrix()
 
     const geometry = new THREE.PlaneGeometry(1, 1)
@@ -132,27 +138,9 @@ export function createThreeCanvas({
     camera.position.z = 0.6
 
     scene.background = threeColor
-    let aspectRatio = 1
-    if (img) {
-        aspectRatio =
-            (img.videoWidth || img.width) / (img.videoHeight || img.height)
-    } else {
-        console.log('no image found in texture!')
-    }
-    if (isPreview) {
-        if (img?.width) {
-            const perfectPixels = 600 * 600
-            const imagePixels = img.width * img.height
-            const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
-            console.log('scale down factor', scaleDownFactor)
-            if (scaleDownFactor < 1) {
-                // renderer.setPixelRatio(scaleDownFactor)
-            }
-        }
-    } else {
-        renderer.setPixelRatio(1)
-    }
-    renderer.setPixelRatio(2)
+
+    
+    renderer.setPixelRatio(1)
 
     const offset = (angle: number) => {
         return -0.2 * (angle / (45 + Math.abs(angle)))
@@ -166,8 +154,8 @@ export function createThreeCanvas({
 
     const bokehPass = new BokehPass(scene, camera, {
         focus: distance,
-        aperture: 0.01,
-        maxblur: 0.5,
+        aperture: 0.1,
+        maxblur: 0.1,
     })
 
     composer.addPass(bokehPass)
@@ -194,7 +182,7 @@ export function createThreeCanvas({
         if (paneState) {
             const distance = camera.position.distanceTo(plane.position)
 
-            const rotationX = camera.rotation.x/3
+            const rotationX = camera.rotation.x / 3
             const rotationY = camera.rotation.y
             let vignetteRotation = Math.atan2(-rotationX, -rotationY)
 
@@ -218,7 +206,6 @@ export function createThreeCanvas({
 
         const size = getDimensions(bitmap)
         const aspectRatio = size.width / size.height
-        camera.aspect = aspectRatio
         camera.updateProjectionMatrix()
         plane.scale.set(aspectRatio, 1, 1)
 
@@ -233,15 +220,12 @@ export function createThreeCanvas({
         texture.colorSpace = THREE.LinearSRGBColorSpace
         texture.needsUpdate = true
         const aspectRatio = video.videoWidth / video.videoHeight || 1
-        camera.aspect = aspectRatio
-        bokehPass.uniforms['aspect'].value = aspectRatio
+
         camera.updateProjectionMatrix()
         const newMaterial = new THREE.MeshBasicMaterial({ map: texture })
 
         plane.material = newMaterial
         plane.scale.set(aspectRatio, 1, 1)
-        renderer.setSize(video.videoWidth, video.videoHeight)
-        renderer.setViewport(0, 0, video.videoWidth, video.videoHeight)
     }
 
     function cleanup() {

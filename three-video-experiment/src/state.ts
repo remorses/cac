@@ -5,6 +5,7 @@ import { deg } from './canvas'
 
 interface AppState {
     currentTime: number
+    outputSize: { width: number; height: number }
     isPlaying: boolean
     duration: number
     media?: File | null
@@ -91,6 +92,7 @@ const effects = [
 export const useEditorState = create<AppState>((set, get) => {
     return {
         currentTime: 0,
+        outputSize: { width: 1920, height: 1080 },
         scale: 1,
         isLooping: true,
         isPlaying: false,
