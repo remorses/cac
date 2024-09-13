@@ -158,8 +158,8 @@ export function createThreeCanvas({
 
     const vignettePass = new ShaderPass(vignetteShader)
     pane.addBinding(vignettePass.uniforms.intensity, 'value', {
-        min: 0,
-        max: 1,
+        min: 1,
+        max: 10,
         step: 0.01,
         label: 'Vignette Intensity',
     })
@@ -171,6 +171,9 @@ export function createThreeCanvas({
                 target.value = new THREE.Color(value)
                 return true
             },
+            getter(target, prop) {
+                return target.value.getHex()
+            },
         }),
         'value',
         {
@@ -178,7 +181,7 @@ export function createThreeCanvas({
             view: 'color',
         },
     ).on('change', (value) => {
-        scene.background = value.value
+        scene.background = new THREE.Color(value.value)
     })
 
     composer.addPass(vignettePass)
