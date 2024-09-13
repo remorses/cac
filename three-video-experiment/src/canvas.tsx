@@ -3,12 +3,13 @@ import { Pane } from 'tweakpane'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
+// import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
+import { BokehPass } from './blur'
 
 export const deg = Math.PI / 180
 
@@ -165,7 +166,7 @@ export function createThreeCanvas({
 
     const bokehPass = new BokehPass(scene, camera, {
         focus: distance,
-        aperture: 0.1,
+        aperture: 0.01,
         maxblur: 0.5,
     })
 
