@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEditorState } from './state'
+import { useCurrentTime, useEditorState } from './state'
 
 export const scrubberHalfWidth = 16
 
@@ -25,7 +25,7 @@ export function ScrubberIcon() {
 }
 export function Scrubber({ timelineHeight, containerRef }: Props) {
     const scale = useEditorState((state) => state.scale)
-    const currentTime = useEditorState((state) => state.currentTime)
+    const currentTime = useCurrentTime()
     const duration = useEditorState((state) => state.duration)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const [dragging, setDragging] = React.useState(false)

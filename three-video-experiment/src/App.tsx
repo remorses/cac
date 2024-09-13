@@ -1,4 +1,5 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
+import * as THREE from 'three'
 import { useEditorState } from './state'
 import {
     bfs,
@@ -25,6 +26,7 @@ import {
 import { ThreeCanvas } from './canvas'
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 import { Scrubber } from './scrubber'
+import { Pane } from 'tweakpane'
 
 function useSelectedMedia() {
     const media = useEditorState((state) => state.media)
@@ -355,39 +357,6 @@ function RotationsImage() {
         }
     }, [media])
 
-    const handleRotationChange = useCallback(
-        (axis: 'x' | 'y', nextValue: number) => {
-            startTransition(() => {
-                setRotations((prev) => ({ ...prev, [axis]: nextValue }))
-            })
-        },
-        [rotations],
-    )
-
-    useAsyncEffect(
-        async (controller) => {
-            await sleep(50)
-            if (controller.signal.aborted) {
-                return
-            }
-            if (!media) {
-                return
-            }
-            await threeCanvas.update({
-                rotations,
-                color,
-                intensity,
-                focus,
-                z,
-                isPreview: true,
-            })
-            setIsLoading(false)
-        },
-        [rotations, color, intensity, focus, z],
-    )
-
-    const { controlsElement } = useVideoControls(video)
-
     if (!media) {
         return (
             <Container className='flex flex-col items-center justify-center'>
@@ -405,107 +374,64 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='flex flex-col gap-6 w-full max-w-full'>
-            <div className='flex-row flex max-w-full gap-4'>
-                <div className='flex group relative shrink-0 max-w-[1000px] flex-col overflow-hidden items-center justify-center'>
-                    <CanvasComponent
-                        style={{ aspectRatio: aspectRatio.toFixed(2) }}
-                        className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
-                    />
-                    <div className='absolute bottom-0 left-0 right-0 m-auto'>
-                        {media?.type.startsWith('video/') && controlsElement}
-                    </div>
-                </div>
-                <div className='flex flex-col gap-3'>
-                    <div className='shrink-0 flex flex-col w-full gap-3'>
-                        {(['x', 'y'] as const).map((axis) => (
-                            <SliderAndNumber
-                                key={axis}
-                                label={`Angle on ${axis}`}
-                                value={rotations[axis]}
-                                onChange={(v) => {
-                                    handleRotationChange(axis, Number(v))
-                                }}
-                                rangeProps={{
-                                    min: '-40',
-                                    max: '40',
-                                }}
-                            />
-                        ))}
-                    </div>
-
-                    <SliderAndNumber
-                        label='Zoom'
-                        value={z}
-                        onChange={(v) => {
-                            setZ(Number(v))
-                        }}
-                        rangeProps={{
-                            min: '0.5',
-                            max: '2',
-                            step: '0.01',
-                        }}
-                    />
-                    <SliderAndNumber
-                        label='Focus'
-                        value={focus}
-                        onChange={(v) => {
-                            setFocus(Number(v))
-                        }}
-                        rangeProps={{
-                            min: '-0.3',
-                            max: '0.3',
-                            step: '0.01',
-                        }}
-                    />
-                    <SliderAndNumber
-                        label='Shadow'
-                        value={intensity}
-                        onChange={(v) => {
-                            setIntensity(Number(v))
-                        }}
-                        rangeProps={{
-                            min: '0',
-                            max: '2',
-                            step: '0.01',
-                        }}
-                    />
-                    <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
-                        <div>Background</div>
-
-                        <input
-                            type='color'
-                            className='w-auto ml-0'
-                            value={color}
-                            onChange={(event) => setColor(event.target.value)}
-                        />
-                        <div className=''></div>
-                    </div>
-
-                    <Button
-                        isLoading={isLoading}
-                        variant='primary'
-                        onClick={async () => {
-                            if (!media) return
-                            setIsLoading(true)
-                            await threeCanvas.update({
-                                rotations,
-                                color,
-                                intensity,
-                                focus,
-                                z,
-                                isPreview: false,
-                            })
-                            await handleSaveImage({ media })
-                            setIsLoading(false)
-                        }}
-                    >
-                        Save Image
-                    </Button>
-                </div>
+        <Container className='p-4 grid grid-cols-[300px_1fr] grid-rows-2 h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
+            <div className=' flex flex-col items-center justify-center'>
+                <Controls />
             </div>
-            <Timeline />
+            <div className='flex group relative overflow-hidden items-center justify-end'>
+                <CanvasComponent
+                    style={{ aspectRatio: aspectRatio.toFixed(2) }}
+                    className='max-w-full max-h-full rounded-md'
+                />
+            </div>
+            <div className='col-span-2 grow'>
+                <Timeline />
+            </div>
         </Container>
+    )
+}
+
+function Controls() {
+    const container = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+        const pane = new Pane({
+            container: container.current!,
+            title: 'Tweakpane',
+        })
+        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
+            // format: 'xyz',
+            picker: 'inline',
+            expanded: true,
+        })
+        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
+            // format: 'xyz',
+            picker: 'inline',
+            expanded: true,
+        })
+        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
+            // format: 'xyz',
+            picker: 'inline',
+            expanded: true,
+        })
+        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
+            // format: 'xyz',
+            picker: 'inline',
+            expanded: true,
+        })
+        pane.addBinding({ position: { x: 1, y: 1 } }, 'position', {
+            // format: 'xyz',
+            picker: 'inline',
+            expanded: true,
+        })
+        return () => {
+            pane.dispose()
+        }
+    }, [])
+    return (
+        <div
+            ref={container}
+            className='hideScroll flex-shrink-0 grow  bg-[color:var(--tweakpane-bg)]  overflow-y-auto max-h-full w-full'
+        ></div>
     )
 }
 
@@ -516,11 +442,6 @@ type EffectState = {
     initialXOffset: number
 } | null
 
-interface DragOrigin {
-    pointerX: number
-    time: number
-}
-const scrubberHalfWidth = 16
 function Timeline() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
@@ -633,7 +554,7 @@ function Timeline() {
     }
     return (
         <div
-            className='grow cursor-pointer relative min-h-40 bg-gray-200 flex flex-col gap-3  '
+            className='h-full  cursor-pointer relative grow flex flex-col gap-3  '
             ref={containerRef}
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
@@ -643,8 +564,23 @@ function Timeline() {
                 setSelectedEffectIds([])
             }}
         >
-            <div className='w-full cursor-pointer isolate h-[16px] bg-gray-100'></div>
-            <div className='relative'>
+            <div className='w-full select-none cursor-pointer isolate h-[16px] bg-gray-100 relative'>
+                {Array.from({ length: Math.ceil(duration) + 1 }).map(
+                    (_, index) => (
+                        <div
+                            key={index}
+                            className='absolute top-0 bottom-0 flex flex-col items-center justify-between'
+                            style={{ left: `${(index / duration) * 100}%` }}
+                        >
+                            <div className='w-px h-full bg-gray-700'></div>
+                            <span className='text-xs text-gray-500'>
+                                {index}s
+                            </span>
+                        </div>
+                    ),
+                )}
+            </div>
+            <div className='relative mx-2'>
                 {allEffects.map(({ node: effect, parent }, index) => {
                     return (
                         <Clip
@@ -795,7 +731,7 @@ const Container = ({ children, ...rest }) => {
             {...rest}
             ref={ref}
             style={{ ...rest.style }}
-            className={`shrink-0 w-full flex flex-col gap-4 pt-0 p-3 ${rest.className || ''}`}
+            className={`shrink-0 w-full flex flex-col ${rest.className || ''}`}
         >
             {children}
         </div>
@@ -855,57 +791,57 @@ function setRangeProgress(el?: HTMLInputElement | null) {
     range.style.setProperty('--progress', `${progress}%`)
 }
 
-const useVideoControls = (videoElement: HTMLVideoElement | null) => {
-    const { isPlaying, currentTime, setIsPlaying, duration, setCurrentTime } =
-        useEditorState()
+// const useVideoControls = (videoElement: HTMLVideoElement | null) => {
+//     const { isPlaying, currentTime, setIsPlaying, duration, setCurrentTime } =
+//         useEditorState()
 
-    const togglePlay = () => {
-        render()
-        setIsPlaying(!isPlaying)
-    }
+//     const togglePlay = () => {
+//         render()
+//         setIsPlaying(!isPlaying)
+//     }
 
-    const handleSeek = (e) => {
-        const time = parseFloat(e.target.value)
-        setCurrentTime(time)
-        render()
-    }
+//     const handleSeek = (e) => {
+//         const time = parseFloat(e.target.value)
+//         setCurrentTime(time)
+//         render()
+//     }
 
-    const formatTime = (time) => {
-        const minutes = Math.floor(time / 60)
-        const seconds = Math.floor(time % 60)
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-    }
-    const slider = useRef<HTMLInputElement>(null)
+//     const formatTime = (time) => {
+//         const minutes = Math.floor(time / 60)
+//         const seconds = Math.floor(time % 60)
+//         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+//     }
+//     const slider = useRef<HTMLInputElement>(null)
 
-    const controlsElement = (
-        <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-10 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
-            <div className='flex  gap-1 shrink-0 items-center'>
-                <button
-                    className='!bg-transparent w-[50px]'
-                    onClick={togglePlay}
-                >
-                    {isPlaying ? 'Pause' : 'Play'}
-                </button>
-            </div>
-            <input
-                type='range'
-                min='0'
-                step={0.001}
-                max={duration || 0}
-                ref={slider}
-                style={{
-                    // @ts-ignore
-                    '--progress': `${(currentTime / (videoElement?.duration || 1)) * 100}%`,
-                }}
-                value={currentTime}
-                onChange={handleSeek}
-                className='grow slider'
-            />
-            <div className='text-[11px] shrink-0 font-mono'>
-                {formatTime(currentTime)} / {formatTime(duration || 0)}
-            </div>
-        </div>
-    )
+//     const controlsElement = (
+//         <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-10 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
+//             <div className='flex  gap-1 shrink-0 items-center'>
+//                 <button
+//                     className='!bg-transparent w-[50px]'
+//                     onClick={togglePlay}
+//                 >
+//                     {isPlaying ? 'Pause' : 'Play'}
+//                 </button>
+//             </div>
+//             <input
+//                 type='range'
+//                 min='0'
+//                 step={0.001}
+//                 max={duration || 0}
+//                 ref={slider}
+//                 style={{
+//                     // @ts-ignore
+//                     '--progress': `${(currentTime / (videoElement?.duration || 1)) * 100}%`,
+//                 }}
+//                 value={currentTime}
+//                 onChange={handleSeek}
+//                 className='grow slider'
+//             />
+//             <div className='text-[11px] shrink-0 font-mono'>
+//                 {formatTime(currentTime)} / {formatTime(duration || 0)}
+//             </div>
+//         </div>
+//     )
 
-    return { controlsElement, togglePlay, handleSeek }
-}
+//     return { controlsElement, togglePlay, handleSeek }
+// }

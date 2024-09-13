@@ -18,6 +18,33 @@ interface AppState {
     scale: number
 }
 
+import { useEffect, useState, useRef } from 'react'
+
+export const useCurrentTime = () => {
+    const [currentTime, setCurrentTime] = useState(
+        useEditorState.getState().currentTime,
+    )
+    const lastUpdateTimeRef = useRef(0)
+
+    useEffect(() => {
+        const throttledUpdate = (state: AppState) => {
+            const now = Date.now()
+            if (now - lastUpdateTimeRef.current >= 30) {
+                setCurrentTime(state.currentTime)
+                lastUpdateTimeRef.current = now
+            }
+        }
+
+        const unsubscribe = useEditorState.subscribe(throttledUpdate)
+
+        return () => {
+            unsubscribe()
+        }
+    }, [])
+
+    return currentTime
+}
+
 const effects = [
     createEffect({
         id: '1',

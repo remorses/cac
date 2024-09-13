@@ -712,6 +712,9 @@ importers:
       '@theatre/studio':
         specifier: ^0.7.2
         version: 0.7.2(@theatre/core@0.7.2)
+      '@tweakpane/core':
+        specifier: ^2.0.4
+        version: 2.0.4
       '@types/three':
         specifier: ^0.168.0
         version: 0.168.0
@@ -754,6 +757,9 @@ importers:
       three:
         specifier: ^0.168.0
         version: 0.168.0
+      tweakpane:
+        specifier: ^4.0.4
+        version: 4.0.4
       vite-plugin-environment:
         specifier: ^1.1.3
         version: 1.1.3(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
@@ -4658,6 +4664,9 @@ packages:
     resolution: {integrity: sha512-p6LTKzJWVlcHkpGzIlNHh9AkGbB3E+0q9Pjxv+OJoTDe1IK+CMKW695Wp+1//lB4vfC9qShe4z/p+Zaj1q8KtA==}
     peerDependencies:
       '@theatre/core': '*'
+
+  '@tweakpane/core@2.0.4':
+    resolution: {integrity: sha512-0P3xcmvjBr8AmqMOEDNYIbkiaPwvQPkj8VeJX+8ZYkpRgWWbNp1HLbld0MDI0WJHdom89osH3MmCDLnWEXKI2w==}
 
   '@tweenjs/tween.js@23.1.3':
     resolution: {integrity: sha512-vJmvvwFxYuGnF2axRtPYocag6Clbb5YS7kLL+SO/TeVFzHqDIWrNKYtcsPMibjDx9O+bu+psAy9NKfWklassUA==}
@@ -9723,6 +9732,9 @@ packages:
 
   turbo-stream@2.3.0:
     resolution: {integrity: sha512-PhEr9mdexoVv+rJkQ3c8TjrN3DUghX37GNJkSMksoPR4KrXIPnM2MnqRt07sViIqX9IdlhrgtTSyjoVOASq6cg==}
+
+  tweakpane@4.0.4:
+    resolution: {integrity: sha512-RkWD54zDlEbnN01wQPk0ANHGbdCvlJx/E8A1QxhTfCbX+ROWos1Ws2MnhOm39aUGMOh+36TjUwpDmLfmwTr1Fg==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -14919,6 +14931,8 @@ snapshots:
     dependencies:
       '@theatre/core': 0.7.2
       '@theatre/dataverse': 0.7.2
+
+  '@tweakpane/core@2.0.4': {}
 
   '@tweenjs/tween.js@23.1.3': {}
 
@@ -20940,6 +20954,8 @@ snapshots:
   tunnel@0.0.6: {}
 
   turbo-stream@2.3.0: {}
+
+  tweakpane@4.0.4: {}
 
   type-check@0.4.0:
     dependencies:
