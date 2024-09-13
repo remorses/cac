@@ -564,20 +564,36 @@ function Timeline() {
                 setSelectedEffectIds([])
             }}
         >
-            <div className='w-full select-none cursor-pointer isolate h-[16px] bg-gray-100 relative'>
-                {Array.from({ length: Math.ceil(duration) + 1 }).map(
-                    (_, index) => (
-                        <div
-                            key={index}
-                            className='absolute top-0 bottom-0 flex flex-col items-center justify-between'
-                            style={{ left: `${(index / duration) * 100}%` }}
-                        >
-                            <div className='w-px h-full bg-gray-700'></div>
-                            <span className='text-xs text-gray-500'>
-                                {index}s
-                            </span>
-                        </div>
-                    ),
+            <div className='w-full select-none cursor-pointer isolate h-[16px] bg-gray-800 relative'>
+                {Array.from({ length: Math.ceil(duration * 10) + 1 }).map(
+                    (_, index) => {
+                        const isSecond = index % 10 === 0
+                        return (
+                            <div
+                                key={index}
+                                className='absolute top-0 bottom-0 gap-1 flex flex-row'
+                                style={{
+                                    left: `${(index / (duration * 10)) * 100}%`,
+                                }}
+                            >
+                                <div
+                                    className={`w-[1px] h-full grow self-stretch ${
+                                        isSecond
+                                            ? 'bg-gray-700'
+                                            : 'bg-gray-400 opacity-50'
+                                    }`}
+                                    style={{
+                                        height: isSecond ? '100%' : '50%',
+                                    }}
+                                ></div>
+                                {isSecond && (
+                                    <span className='text-xs text-gray-500 font-mono'>
+                                        {index / 10}s
+                                    </span>
+                                )}
+                            </div>
+                        )
+                    },
                 )}
             </div>
             <div className='relative mx-2'>

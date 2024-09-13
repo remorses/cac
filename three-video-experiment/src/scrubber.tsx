@@ -15,10 +15,10 @@ export interface DragOrigin {
 
 export function ScrubberIcon() {
     return (
-        <svg xmlns='http://www.w3.org/2000/svg' width='12' height='20'>
+        <svg xmlns='http://www.w3.org/2000/svg' width='10' height='20'>
             <path
                 d='M 0 2.25 C 0 1.145 0.895 0.25 2 0.25 L 9 0.25 C 10.105 0.25 11 1.145 11 2.25 L 11 14.997 C 11 15.721 10.609 16.388 9.977 16.742 L 5.5 19.25 L 1.023 16.742 C 0.391 16.388 0 15.721 0 14.997 Z'
-                fill='var(--splash)'
+                fill='currentColor'
             ></path>
         </svg>
     )
@@ -71,7 +71,7 @@ export function Scrubber({ timelineHeight, containerRef }: Props) {
                     <ScrubberIcon />
                 </div>
                 <div
-                    className='w-[1px] bg-black absolute top-0 h-full left-0 pointer-events-none'
+                    className='w-[1px] bg-white absolute top-0 h-full left-0 pointer-events-none'
                     style={{
                         left: scrubberHalfWidth,
                     }}
