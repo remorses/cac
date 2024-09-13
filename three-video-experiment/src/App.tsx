@@ -529,6 +529,10 @@ function Timeline() {
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const isPlaying = useEditorState((state) => state.isPlaying)
     const handleDrag = (e) => {
+        // if (!draggingEffect) {
+        //     scrub(e)
+        //     return
+        // }
         if (!draggingEffect || !containerRef.current) return
 
         const {
@@ -616,6 +620,17 @@ function Timeline() {
         }
     }, [])
 
+    function scrub(e: { clientX: number }) {
+        const containerRect = containerRef.current?.getBoundingClientRect()
+        if (!containerRect) {
+            return
+        }
+        const newTime =
+            ((e.clientX - containerRect.left) / containerRect.width) * duration
+        useEditorState.setState({
+            currentTime: Math.max(0, Math.min(newTime, duration)),
+        })
+    }
     return (
         <div
             className='grow cursor-pointer relative min-h-40 bg-gray-200 flex flex-col gap-3  '
@@ -624,17 +639,7 @@ function Timeline() {
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
             onClick={(e) => {
-                const containerRect =
-                    containerRef.current?.getBoundingClientRect()
-                if (!containerRect) {
-                    return
-                }
-                const newTime =
-                    ((e.clientX - containerRect.left) / containerRect.width) *
-                    duration
-                useEditorState.setState({
-                    currentTime: Math.max(0, Math.min(newTime, duration)),
-                })
+                scrub(e)
                 setSelectedEffectIds([])
             }}
         >
