@@ -92,7 +92,7 @@ function stopRenderLoop() {
 }
 
 function render() {
-    effectApplier.render() // Convert deltaTime to seconds
+    // effectApplier.render() // Convert deltaTime to seconds
     threeCanvas.render()
 }
 

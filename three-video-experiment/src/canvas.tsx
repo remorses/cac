@@ -1,4 +1,7 @@
 import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { TransformControls } from 'three/addons/controls/TransformControls.js'
+
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
@@ -7,7 +10,6 @@ import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 
 export const deg = Math.PI / 180
-
 export class ThreeCanvas {
     canvas: HTMLCanvasElement
     scene: THREE.Scene
@@ -16,9 +18,15 @@ export class ThreeCanvas {
     camera: THREE.PerspectiveCamera
     plane: THREE.Mesh
     composer: EffectComposer
-    constructor(
-        initialImageSize?: { width: number; height: number } | undefined,
-    ) {
+    controls: OrbitControls
+    transformControls: TransformControls
+    constructor({
+        initialImageSize,
+        isPreview = true,
+    }: {
+        initialImageSize?: { width: number; height: number } | undefined
+        isPreview?: boolean
+    }) {
         this.canvas = document.createElement('canvas')
         this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
@@ -62,7 +70,48 @@ export class ThreeCanvas {
         this.plane = new THREE.Mesh(geometry, material)
 
         this.scene.add(this.plane)
-        this.camera.position.z = 0.6
+        if (isPreview) {
+            this.scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
+
+            this.camera.position.z = 0.6
+
+            // Add OrbitControls
+            this.controls = new OrbitControls(this.camera, this.canvas)
+            this.controls.enableDamping = true
+            this.controls.dampingFactor = 0.25
+
+            // Add TransformControls
+            this.transformControls = new TransformControls(
+                this.camera,
+                this.canvas,
+            )
+            // Set the mode to combined (rotation and position)
+            this.transformControls.setMode('translate')
+
+            // Show both rotation and position controls
+            this.transformControls.showX = true
+            this.transformControls.showY = true
+            this.transformControls.showZ = true
+            this.transformControls.attach(this.plane)
+            this.scene.add(this.transformControls)
+
+            // Disable orbit controls when using transform controls
+            this.transformControls.addEventListener(
+                'dragging-changed',
+                (event) => {
+                    this.controls.enabled = !event.value
+                },
+            )
+
+            // Add event listeners for controls changes
+            this.controls.addEventListener('change', () => {
+                this.render()
+            })
+
+            this.transformControls.addEventListener('change', () => {
+                this.render()
+            })
+        }
     }
 
     render() {
