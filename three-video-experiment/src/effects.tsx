@@ -90,7 +90,7 @@ export function createRotationEffect({
     start,
     end,
     amount,
-    bezierCurve = [0, 0, 1, 1],
+    bezierCurve = [0.5, 0, 0.5, 1],
 }: {
     id: string
     start: number

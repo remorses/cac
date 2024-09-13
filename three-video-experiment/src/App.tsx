@@ -499,9 +499,6 @@ function Timeline() {
         (state) => state.setSelectedEffectIds,
     )
 
-    const scale = useEditorState((x) => x.scale)
-    const scrubTo = useEditorState((x) => x.setCurrentTime)
-
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
             if (e.code === 'Space') {
