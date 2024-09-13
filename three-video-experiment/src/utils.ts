@@ -119,7 +119,7 @@ export function createProxy<T extends object>({
             }
             return target[prop as keyof T]
         },
-        
+
         set(target: T, prop: string | symbol, value: any): boolean {
             if (setter) {
                 const result = setter(target, prop, value)
@@ -149,4 +149,15 @@ export function vec3Proxy(vector: THREE.Vector3) {
             return true
         },
     })
+}
+
+
+export function usePrevious<T>(value: T): T | undefined {
+    const ref = useRef<T>();
+
+    useEffect(() => {
+        ref.current = value;
+    }, [value]);
+
+    return ref.current;
 }

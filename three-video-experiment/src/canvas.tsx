@@ -267,6 +267,7 @@ export function createThreeCanvas({
         material.dispose()
         texture.dispose()
         renderer.dispose()
+        pane.dispose()
         // if (controls) controls.dispose()
         // if (transformControls) transformControls.dispose()
     }

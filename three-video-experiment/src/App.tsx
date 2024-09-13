@@ -18,7 +18,13 @@ import {
 } from 'react'
 
 import { paneContainer, createThreeCanvas } from './canvas'
-import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
+import {
+    assert,
+    bytesFromCanvas,
+    sleep,
+    useAsyncEffect,
+    usePrevious,
+} from './utils'
 import { Scrubber } from './scrubber'
 import { Pane } from 'tweakpane'
 
@@ -134,7 +140,7 @@ const unsubscribeIsPlaying = useEditorState.subscribe((state, prevState) => {
 const cleanup = () => {
     console.log('cleanup for vite hmr')
     unsubscribeIsPlaying()
-
+    threeCanvas.cleanup()
     if (renderLoopId !== undefined) {
         cancelAnimationFrame(renderLoopId)
     }
@@ -535,38 +541,7 @@ function Timeline() {
                 setSelectedEffectIds([])
             }}
         >
-            <div className='w-full select-none cursor-pointer isolate h-[16px] bg-gray-800 relative'>
-                {Array.from({ length: Math.ceil(duration * 10) + 1 }).map(
-                    (_, index) => {
-                        const isSecond = index % 10 === 0
-                        return (
-                            <div
-                                key={index}
-                                className='absolute top-0 bottom-0 gap-1 flex flex-row'
-                                style={{
-                                    left: `${(index / (duration * 10)) * 100}%`,
-                                }}
-                            >
-                                <div
-                                    className={`w-[1px] h-full grow self-stretch ${
-                                        isSecond
-                                            ? 'bg-gray-700'
-                                            : 'bg-gray-400 opacity-50'
-                                    }`}
-                                    style={{
-                                        height: isSecond ? '100%' : '50%',
-                                    }}
-                                ></div>
-                                {isSecond && (
-                                    <span className='text-xs text-gray-500 font-mono'>
-                                        {index / 10}s
-                                    </span>
-                                )}
-                            </div>
-                        )
-                    },
-                )}
-            </div>
+            <ScrubBar />
             <div className='relative mx-2'>
                 {allEffects.map(({ node: effect, parent }, index) => {
                     return (
@@ -585,6 +560,97 @@ function Timeline() {
                 containerRef={containerRef}
                 timelineHeight={containerRef.current?.clientHeight || 200}
             />
+        </div>
+    )
+}
+function ScrubBar() {
+    const duration = useEditorState((state) => state.duration)
+    const isDraggingRef = useRef(false)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const setIsPlaying = useEditorState((state) => state.setIsPlaying)
+    const isPlaying = useEditorState((state) => state.isPlaying)
+    const wasPlaying = useRef(isPlaying)
+
+    const handleMouseDown = () => {
+        wasPlaying.current = isPlaying
+        setIsPlaying(false)
+        isDraggingRef.current = true
+    }
+
+    const handleMouseUp = () => {
+        isDraggingRef.current = false
+        setIsPlaying(wasPlaying.current)
+    }
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+        if (isDraggingRef.current && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const newTime = (x / rect.width) * duration
+            useEditorState.setState({
+                currentTime: Math.max(0, Math.min(newTime, duration)),
+            })
+        }
+    }
+
+    useEffect(() => {
+        window.addEventListener('mousemove', handleGlobalMouseMove)
+
+        return () => {
+            window.removeEventListener('mousemove', handleGlobalMouseMove)
+        }
+    }, [duration])
+
+    useEffect(() => {
+        document.addEventListener('mouseup', handleMouseUp)
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [])
+
+    return (
+        <div
+            ref={containerRef}
+            className='w-full select-none cursor-pointer isolate h-[16px] bg-gray-800 relative'
+            onMouseDown={handleMouseDown}
+            onMouseMove={(e) => {
+                e.stopPropagation()
+                handleGlobalMouseMove(e as any)
+            }}
+            // onClick={(e) => {
+            //     e.stopPropagation()
+            //     handleGlobalMouseMove(e as any)
+            // }}
+        >
+            {Array.from({ length: Math.ceil(duration * 10) + 1 }).map(
+                (_, index) => {
+                    const isSecond = index % 10 === 0
+                    return (
+                        <div
+                            key={index}
+                            className='absolute top-0 bottom-0 gap-1 flex flex-row'
+                            style={{
+                                left: `${(index / (duration * 10)) * 100}%`,
+                            }}
+                        >
+                            <div
+                                className={`w-[1px] h-full grow self-stretch ${
+                                    isSecond
+                                        ? 'bg-gray-700'
+                                        : 'bg-gray-400 opacity-50'
+                                }`}
+                                style={{
+                                    height: isSecond ? '100%' : '50%',
+                                }}
+                            ></div>
+                            {isSecond && (
+                                <span className='text-xs text-gray-500 font-mono'>
+                                    {index / 10}s
+                                </span>
+                            )}
+                        </div>
+                    )
+                },
+            )}
         </div>
     )
 }

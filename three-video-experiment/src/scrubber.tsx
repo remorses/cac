@@ -30,22 +30,6 @@ export function Scrubber({ timelineHeight, containerRef }: Props) {
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const [dragging, setDragging] = React.useState(false)
     const w = containerRef.current?.clientWidth || 0
-    const onMove = (e: React.PointerEvent | React.MouseEvent) => {
-        if (!dragging && e.type !== 'click') {
-            return
-        }
-        e.stopPropagation()
-        // setIsPlaying(false)
-        const containerRect = containerRef.current?.getBoundingClientRect()
-        if (!containerRect) {
-            return
-        }
-        const newTime =
-            ((e.clientX - containerRect.left) / containerRect.width) * duration
-        useEditorState.setState({
-            currentTime: Math.max(0, Math.min(newTime, duration)),
-        })
-    }
 
     return (
         <>
@@ -56,16 +40,6 @@ export function Scrubber({ timelineHeight, containerRef }: Props) {
                     cursor: dragging ? 'grabbing' : 'grab',
                     width: scrubberHalfWidth * 2,
                 }}
-                onPointerDown={(e) => {
-                    setDragging(true)
-                }}
-                onPointerUp={() => {
-                    setDragging(false)
-                }}
-                onPointerLeave={() => {
-                    setDragging(false)
-                }}
-                onPointerMove={onMove}
             >
                 <div className='relative w-full flex flex-col items-center top-0 '>
                     <ScrubberIcon />
