@@ -11,6 +11,7 @@ import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from './blur'
 import { useEditorState } from './state'
+import { Effect, evaluateBezier } from './effects'
 
 export const deg = Math.PI / 180
 
@@ -139,7 +140,6 @@ export function createThreeCanvas({
 
     scene.background = threeColor
 
-    
     renderer.setPixelRatio(1)
 
     const offset = (angle: number) => {
@@ -178,6 +178,30 @@ export function createThreeCanvas({
 
     composer.addPass(new ShaderPass(filmGrainShader))
 
+    function applyEffects(effects: Effect<any>[]) {
+        for (const effect of effects) {
+            const absoluteStart = effect.start
+            const absoluteEnd = effect.end
+
+            const { currentTime } = useEditorState.getState()
+            if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
+                const rawProgress =
+                    (currentTime - absoluteStart) /
+                    (absoluteEnd - absoluteStart)
+                const easedProgress = evaluateBezier(
+                    rawProgress,
+                    effect.bezierCurve,
+                )
+
+                if (effect.children) {
+                    applyEffects(effect.children)
+                } else {
+                    effect.apply(plane, easedProgress)
+                }
+            }
+        }
+    }
+
     function render() {
         if (paneState) {
             const distance = camera.position.distanceTo(plane.position)
@@ -195,7 +219,16 @@ export function createThreeCanvas({
             )
             scene.background = new THREE.Color(paneState.backgroundColor)
         }
+
+        const { effects } = useEditorState.getState()
+        let prevPost = plane.position.clone()
+        let prevRot = plane.rotation.clone()
+        let prevScale = plane.scale.clone()
+        applyEffects(effects)
         composer.render()
+        plane.position.copy(prevPost)
+        plane.rotation.copy(prevRot)
+        plane.scale.copy(prevScale)
     }
 
     function changeImage(bitmap: ImageBitmap | VideoFrame) {

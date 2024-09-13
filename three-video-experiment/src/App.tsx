@@ -1,13 +1,7 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import * as THREE from 'three'
 import { useEditorState } from './state'
-import {
-    bfs,
-    Effect,
-    filterEffectTree,
-    updateEffectInTree,
-    VideoEffectApplier,
-} from './effects'
+import { bfs, Effect, filterEffectTree, updateEffectInTree } from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -75,8 +69,6 @@ function CanvasComponent({ ...rest }) {
 
     return <div {...rest} ref={containerRef}></div>
 }
-
-const effectApplier = new VideoEffectApplier(threeCanvas.plane)
 
 function startRenderLoop() {
     const { isPlaying, setIsPlaying } = useEditorState.getState()

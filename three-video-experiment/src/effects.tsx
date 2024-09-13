@@ -3,7 +3,7 @@ import { useEditorState } from './state'
 
 type BezierCurve = [number, number, number, number]
 
-function evaluateBezier(t: number, curve: BezierCurve): number {
+export function evaluateBezier(t: number, curve: BezierCurve): number {
     const [p0, p1, p2, p3] = curve
     const u = 1 - t
     return (
@@ -22,7 +22,7 @@ export interface Effect<T = any> {
     bezierCurve: BezierCurve
     params: T
     children?: Effect<any>[]
-    apply: (mesh: THREE.Mesh, progress: number, defaultMesh: THREE.Mesh) => void
+    apply: (mesh: THREE.Mesh, progress: number) => void
 }
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
@@ -81,7 +81,6 @@ export function filterEffectTree(
 }
 
 export type EffectType = 'rotation' | 'scale' | 'position'
-
 export function createEffect<T>({
     id,
     type,
@@ -97,42 +96,32 @@ export function createEffect<T>({
     params: T
     bezierCurve?: BezierCurve
 }): Effect<T> {
-    let apply: (
-        mesh: THREE.Mesh,
-        progress: number,
-        defaultMesh: THREE.Mesh,
-    ) => void
+    let apply: (mesh: THREE.Mesh, progress: number) => void
 
     switch (type) {
         case 'rotation':
-            apply = (mesh, progress, defaultMesh) => {
+            apply = (mesh, progress) => {
                 const amount = (params as { amount: THREE.Vector3 }).amount
-                mesh.rotation.x = defaultMesh.rotation.x + amount.x * progress
-                mesh.rotation.y = defaultMesh.rotation.y + amount.y * progress
-                mesh.rotation.z = defaultMesh.rotation.z + amount.z * progress
+                mesh.rotation.x += amount.x * progress
+                mesh.rotation.y += amount.y * progress
+                mesh.rotation.z += amount.z * progress
             }
             break
         case 'scale':
-            apply = (mesh, progress, defaultMesh) => {
+            apply = (mesh, progress) => {
                 const scale = (params as { scale: THREE.Vector3 }).scale
-                mesh.scale.x =
-                    defaultMesh.scale.x +
-                    (scale.x - defaultMesh.scale.x) * progress
-                mesh.scale.y =
-                    defaultMesh.scale.y +
-                    (scale.y - defaultMesh.scale.y) * progress
-                mesh.scale.z =
-                    defaultMesh.scale.z +
-                    (scale.z - defaultMesh.scale.z) * progress
+                mesh.scale.x += (scale.x - 1) * progress
+                mesh.scale.y += (scale.y - 1) * progress
+                mesh.scale.z += (scale.z - 1) * progress
             }
             break
         case 'position':
-            apply = (mesh, progress, defaultMesh) => {
+            apply = (mesh, progress) => {
                 const position = (params as { position: THREE.Vector3 })
                     .position
-                mesh.position.x = defaultMesh.position.x + position.x * progress
-                mesh.position.y = defaultMesh.position.y + position.y * progress
-                mesh.position.z = defaultMesh.position.z + position.z * progress
+                mesh.position.x += position.x * progress
+                mesh.position.y += position.y * progress
+                mesh.position.z += position.z * progress
             }
             break
         default:
@@ -165,70 +154,6 @@ export function createEffectGroup({
         children,
         apply: () => {},
     }
-}
-
-export class VideoEffectApplier {
-    private mesh: THREE.Mesh
-    private defaultMesh: THREE.Mesh
-
-    constructor(mesh: THREE.Mesh) {
-        this.mesh = mesh
-        this.defaultMesh = mesh.clone()
-    }
-
-    public render() {
-        this.resetMesh()
-        this.applyEffects(useEditorState.getState().effects)
-    }
-
-    private resetMesh() {
-        this.mesh.position.copy(this.defaultMesh.position)
-        this.mesh.rotation.copy(this.defaultMesh.rotation)
-        this.mesh.scale.copy(this.defaultMesh.scale)
-    }
-
-    private applyEffects(effects: Effect<any>[]) {
-        for (const effect of effects) {
-            const absoluteStart = effect.start
-            const absoluteEnd = effect.end
-
-            const { currentTime } = useEditorState.getState()
-            if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
-                const rawProgress =
-                    (currentTime - absoluteStart) /
-                    (absoluteEnd - absoluteStart)
-                const easedProgress = evaluateBezier(
-                    rawProgress,
-                    effect.bezierCurve,
-                )
-
-                if (effect.children) {
-                    this.applyEffects(effect.children)
-                } else {
-                    effect.apply(this.mesh, easedProgress, this.defaultMesh)
-                }
-            }
-        }
-    }
-
-    // public addEffect(
-    //     effect: Effect<any> | EffectGroup,
-    //     parentId?: string,
-    // ): boolean {
-    //     if (parentId) {
-    //         const parent = this.findEffect(
-    //             parentId,
-    //             useAppStore.getState().effects,
-    //         )
-    //         if (parent instanceof EffectGroup) {
-    //             parent.children.push(effect)
-    //             return true
-    //         }
-    //         return false
-    //     }
-    //     this.videoEditor.effects.push(effect)
-    //     return true
-    // }
 }
 
 export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
