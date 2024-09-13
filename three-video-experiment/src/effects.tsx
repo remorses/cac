@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import { useEditorState } from './state'
+import { Pane } from 'tweakpane'
+import { deg } from './canvas'
 
 type BezierCurve = [number, number, number, number]
 
@@ -14,6 +16,13 @@ export function evaluateBezier(t: number, curve: BezierCurve): number {
     )
 }
 
+export const effectsPaneContainer = document.createElement('div')
+
+const pane = new Pane({
+    container: effectsPaneContainer,
+    title: 'Effects',
+})
+
 export interface Effect<T = any> {
     id: string
     type: string
@@ -23,6 +32,7 @@ export interface Effect<T = any> {
     params: T
     children?: Effect<any>[]
     apply: (mesh: THREE.Mesh, progress: number) => void
+    configure?: (pane: Pane) => void
 }
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
@@ -81,54 +91,118 @@ export function filterEffectTree(
 }
 
 export type EffectType = 'rotation' | 'scale' | 'position'
-export function createEffect<T>({
+export function createRotationEffect({
     id,
-    type,
     start,
     end,
-    params,
+    amount,
     bezierCurve = [0, 0, 1, 1],
 }: {
     id: string
-    type: string
     start: number
     end: number
-    params: T
+    amount: THREE.Vector2
     bezierCurve?: BezierCurve
-}): Effect<T> {
-    let apply: (mesh: THREE.Mesh, progress: number) => void
-
-    switch (type) {
-        case 'rotation':
-            apply = (mesh, progress) => {
-                const amount = (params as { amount: THREE.Vector3 }).amount
-                mesh.rotation.x += amount.x * progress
-                mesh.rotation.y += amount.y * progress
-                mesh.rotation.z += amount.z * progress
-            }
-            break
-        case 'scale':
-            apply = (mesh, progress) => {
-                const scale = (params as { scale: THREE.Vector3 }).scale
-                mesh.scale.x += (scale.x - 1) * progress
-                mesh.scale.y += (scale.y - 1) * progress
-                mesh.scale.z += (scale.z - 1) * progress
-            }
-            break
-        case 'position':
-            apply = (mesh, progress) => {
-                const position = (params as { position: THREE.Vector3 })
-                    .position
-                mesh.position.x += position.x * progress
-                mesh.position.y += position.y * progress
-                mesh.position.z += position.z * progress
-            }
-            break
-        default:
-            apply = () => {}
+}): Effect<{ amount: THREE.Vector2 }> {
+    const params = { amount }
+    return {
+        id,
+        type: 'rotation',
+        start,
+        end,
+        params,
+        bezierCurve,
+        apply(mesh: THREE.Mesh, progress: number) {
+            mesh.rotation.x += params.amount.x * progress
+            mesh.rotation.y += params.amount.y * progress
+        },
+        configure(pane) {
+            const folder = pane.addFolder({
+                title: 'Rotation',
+            });
+            folder.addBinding(params.amount, 'x', {
+                label: 'X Rotation',
+                picker: 'inline',
+                expanded: true,
+                min: -180 * deg,
+                max: 360 * deg,
+            });
+            folder.addBinding(params.amount, 'y', {
+                label: 'Y Rotation',
+                picker: 'inline',
+                expanded: true,
+                min: -180 * deg,
+                max: 360 * deg,
+            });
+        },
     }
+}
 
-    return { id, type, start, end, params, bezierCurve, apply }
+export function createScaleEffect({
+    id,
+    start,
+    end,
+    scale,
+    bezierCurve = [0, 0, 1, 1],
+}: {
+    id: string
+    start: number
+    end: number
+    scale: THREE.Vector3
+    bezierCurve?: BezierCurve
+}): Effect<{ scale: THREE.Vector3 }> {
+    const params = { scale }
+    return {
+        id,
+        type: 'scale',
+        start,
+        end,
+        params,
+        bezierCurve,
+        apply(mesh: THREE.Mesh, progress: number) {
+            mesh.scale.x += (this.params.scale.x - 1) * progress
+            mesh.scale.y += (this.params.scale.y - 1) * progress
+            mesh.scale.z += (this.params.scale.z - 1) * progress
+        },
+        configure(pane) {
+            pane.addBinding(this.params, 'scale', {
+                expanded: true,
+                picker: 'inline',
+            })
+        },
+    }
+}
+
+export function createPositionEffect({
+    id,
+    start,
+    end,
+    position,
+    bezierCurve = [0, 0, 1, 1],
+}: {
+    id: string
+    start: number
+    end: number
+    position: THREE.Vector3
+    bezierCurve?: BezierCurve
+}): Effect<{ position: THREE.Vector3 }> {
+    const params = { position }
+    return {
+        id,
+        type: 'position',
+        start,
+        end,
+        params,
+        bezierCurve,
+        apply(mesh: THREE.Mesh, progress: number) {
+            mesh.position.x += this.params.position.x * progress
+            mesh.position.y += this.params.position.y * progress
+            mesh.position.z += this.params.position.z * progress
+        },
+        configure(pane) {
+            pane.addBinding(this.params, 'position')
+        },
+    }
 }
 
 export function createEffectGroup({

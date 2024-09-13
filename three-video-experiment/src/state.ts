@@ -1,5 +1,10 @@
 import { create } from 'zustand'
-import { Effect, createEffectGroup, createEffect } from './effects'
+import {
+    Effect,
+    createEffectGroup,
+    createPositionEffect,
+    createRotationEffect,
+} from './effects'
 import * as THREE from 'three'
 import { deg } from './canvas'
 
@@ -54,46 +59,20 @@ export const useCurrentTime = () => {
 }
 
 const effects = [
-    createEffect({
+    createRotationEffect({
         id: '1',
-        type: 'rotation',
         start: 0,
         end: 5,
-        params: { amount: new THREE.Vector3(deg * 5, 0, 0) },
+        amount: new THREE.Vector2(deg * 5, 0),
         // bezierCurve: [0.25, 0.1, 0.25, 1],
     }),
-    createEffect({
+    createPositionEffect({
         id: '2',
-        type: 'position',
         start: 0,
         end: 5,
-        params: { position: new THREE.Vector3(0.01, 0, 0) },
+        position: new THREE.Vector3(0.01, 0, 0),
         // bezierCurve: [0.25, 0.1, 0.25, 1],
     }),
-    // createEffectGroup({
-    //     id: 'group1',
-    //     start: 5,
-    //     end: 10,
-    //     children: [
-    //         createEffect({
-    //             id: '2',
-    //             type: 'scale',
-    //             start: 5,
-    //             end: 7,
-    //             params: { scale: new THREE.Vector3(2, 2, 2) },
-    //             bezierCurve: [0, 0, 1, 1],
-    //         }),
-    //         createEffect({
-    //             id: '3',
-    //             type: 'rotation',
-    //             start: 7,
-    //             end: 10,
-    //             params: { amount: new THREE.Vector3(0, Math.PI * 2, 0) },
-    //             bezierCurve: [0.25, 0.1, 0.25, 1],
-    //         }),
-    //     ],
-    //     bezierCurve: [0.4, 0, 0.6, 1],
-    // }),
 ]
 
 export const useEditorState = create<AppState>((set, get) => {

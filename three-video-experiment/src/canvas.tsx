@@ -16,7 +16,7 @@ import { createProxy } from './utils'
 
 export const deg = Math.PI / 180
 
-export const paneContainer = document.createElement('div')
+export const globalPaneContainer = document.createElement('div')
 
 export function createThreeCanvas({
     initialImageSize,
@@ -29,7 +29,7 @@ export function createThreeCanvas({
     canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
     const pane = new Pane({
-        container: paneContainer,
+        container: globalPaneContainer,
         title: 'Tweakpane',
     })
 

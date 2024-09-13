@@ -1,7 +1,13 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import * as THREE from 'three'
 import { useCurrentTime, useEditorState } from './state'
-import { bfs, Effect, filterEffectTree, updateEffectInTree } from './effects'
+import {
+    bfs,
+    Effect,
+    effectsPaneContainer,
+    filterEffectTree,
+    updateEffectInTree,
+} from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -17,7 +23,7 @@ import {
     useState,
 } from 'react'
 
-import { paneContainer, createThreeCanvas } from './canvas'
+import { globalPaneContainer, createThreeCanvas } from './canvas'
 import {
     assert,
     bytesFromCanvas,
@@ -390,7 +396,9 @@ function RotationsImage() {
                     className='max-w-full max-h-full rounded-md'
                 />
             </div>
-            <div className=''>xxx</div>
+            <div className=''>
+                <EffectsControls />
+            </div>
             <div className='row-span-1 flex flex-col items-center justify-center col-span-3'>
                 <VideoControls />
             </div>
@@ -405,12 +413,12 @@ function Controls() {
     const container = useRef<HTMLDivElement>(null)
     useEffect(() => {
         if (container.current) {
-            container.current.appendChild(paneContainer)
+            container.current.appendChild(globalPaneContainer)
         }
 
         return () => {
             if (container.current) {
-                container.current.removeChild(paneContainer)
+                container.current.removeChild(globalPaneContainer)
             }
         }
     }, [])
@@ -900,4 +908,33 @@ function VideoControls() {
             </div>
         </div>
     )
+}
+
+function EffectsControls() {
+    const effects = useEditorState((state) => state.effects)
+    const setEffects = useEditorState((state) => state.setEffects)
+    const container = useRef<HTMLDivElement>(null)
+    const [pane, setPane] = useState<Pane | null>(null)
+    const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
+    useEffect(() => {
+        const newPane = new Pane({
+            container: container.current || undefined,
+        })
+
+        setPane(newPane)
+        const allEffects = bfs(effects)
+        allEffects
+            .filter((x) => selectedEffectIds.includes(x.node.id))
+            .forEach((effect) => {
+                if (effect.node.configure) {
+                    effect.node.configure(newPane)
+                }
+            })
+
+        return () => {
+            newPane.dispose()
+        }
+    }, [selectedEffectIds])
+
+    return <div ref={container} className='flex flex-col'></div>
 }
