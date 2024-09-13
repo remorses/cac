@@ -34,7 +34,7 @@ export function Scrubber({ timelineHeight, containerRef }: Props) {
     return (
         <>
             <div
-                className='absolute cursor-grabbing bottom-0 min-h-full top-0'
+                className='absolute pointer-events-none bottom-0 min-h-full top-0'
                 style={{
                     left: `${(currentTime / duration) * w - scrubberHalfWidth}px`,
                     cursor: dragging ? 'grabbing' : 'grab',
@@ -49,7 +49,7 @@ export function Scrubber({ timelineHeight, containerRef }: Props) {
                     style={{
                         left: scrubberHalfWidth,
                     }}
-                    onPointerDown={(e) => e.stopPropagation()}
+                    // onPointerDown={(e) => e.stopPropagation()}
                 />
             </div>
         </>

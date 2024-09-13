@@ -544,16 +544,19 @@ function Timeline() {
     }
     return (
         <div
-            className='h-full  cursor-pointer relative grow flex flex-col gap-3  '
+            className='h-full cursor-pointer relative grow flex flex-col gap-3  '
             ref={containerRef}
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
-            onClick={(e) => {
-                scrub(e)
-                setSelectedEffectIds([])
-            }}
         >
+            <div
+                onClick={(e) => {
+                    scrub(e)
+                    setSelectedEffectIds([])
+                }}
+                className='inset-0 absolute'
+            ></div>
             <ScrubBar />
             <div className='relative mx-2'>
                 {allEffects.map(({ node: effect, parent }, index) => {
@@ -593,10 +596,10 @@ function ScrubBar() {
 
     const handleMouseUp = (e: MouseEvent) => {
         if (!isDraggingRef.current) return
+        handleGlobalMouseMove(e)
         isDraggingRef.current = false
         console.log('mouse up')
         setIsPlaying(wasPlaying.current)
-        // handleGlobalMouseMove(e)
     }
     const handleGlobalMouseMove = (e: MouseEvent) => {
         if (isDraggingRef.current && containerRef.current) {
