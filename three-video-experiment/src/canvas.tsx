@@ -231,6 +231,10 @@ export function createThreeCanvas({
         plane.scale.copy(prevScale)
     }
 
+    pane.on('change', () => {
+        render()
+    })
+
     function changeImage(bitmap: ImageBitmap | VideoFrame) {
         texture.dispose()
         texture.image = bitmap
