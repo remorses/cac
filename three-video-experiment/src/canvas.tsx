@@ -12,38 +12,11 @@ import { getProject, types } from '@theatre/core'
 import { BokehPass } from './blur'
 import { useEditorState } from './state'
 import { Effect, evaluateBezier } from './effects'
+import { createProxy } from './utils'
 
 export const deg = Math.PI / 180
 
 export const paneContainer = document.createElement('div')
-
-export const paneState = {
-    focus: 0,
-    intensity: 1,
-    // rotations: { x: 0, y: 0 },
-    backgroundColor: '#ff0000',
-}
-
-const pane = new Pane({
-    container: paneContainer,
-    title: 'Tweakpane',
-})
-
-pane.addBinding(paneState, 'focus', {
-    min: -0.5,
-    max: 0.5,
-    step: 0.01,
-})
-
-pane.addBinding(paneState, 'intensity', {
-    min: 0,
-    max: 1,
-    step: 0.01,
-})
-pane.addBinding(paneState, 'backgroundColor', {
-    view: 'color',
-    label: 'Background Color',
-})
 
 export function createThreeCanvas({
     initialImageSize,
@@ -54,6 +27,11 @@ export function createThreeCanvas({
 } = {}) {
     const canvas = document.createElement('canvas')
     canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
+
+    const pane = new Pane({
+        container: paneContainer,
+        title: 'Tweakpane',
+    })
 
     const scene = new THREE.Scene()
 
@@ -96,19 +74,19 @@ export function createThreeCanvas({
     const plane = new THREE.Mesh(geometry, material)
 
     scene.add(plane)
-    let controls, transformControls
+
     if (isPreview) {
         scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
 
         camera.position.z = 0.6
 
         // Add OrbitControls
-        controls = new OrbitControls(camera, canvas)
+        const controls = new OrbitControls(camera, canvas)
         controls.enableDamping = true
         controls.dampingFactor = 0.25
 
         // Add TransformControls
-        transformControls = new TransformControls(camera, canvas)
+        const transformControls = new TransformControls(camera, canvas)
         // Set the mode to combined (rotation and position)
         transformControls.setMode('translate')
 
@@ -126,19 +104,20 @@ export function createThreeCanvas({
 
         // Add event listeners for controls changes
         controls.addEventListener('change', () => {
+            pane.refresh()
             render()
         })
 
         transformControls.addEventListener('change', () => {
+            setTimeout(() => {
+                pane.refresh()
+            }, 1)
             render()
         })
     }
 
-    const threeColor = new THREE.Color(paneState.backgroundColor)
     const img = texture.image
     camera.position.z = 0.6
-
-    scene.background = threeColor
 
     renderer.setPixelRatio(1)
 
@@ -158,6 +137,18 @@ export function createThreeCanvas({
         maxblur: 0.1,
     })
 
+    pane.addBinding({ value: 0 }, 'value', {
+        min: -0.5,
+        max: 0.5,
+        step: 0.01,
+        label: 'Focus Distance',
+    }).on('change', (value) => {
+        const distance = camera.position.distanceTo(plane.position)
+        bokehPass.uniforms.focus.value = distance + value.value
+    })
+
+    pane.controller.document
+
     composer.addPass(bokehPass)
     const smaaPass = new SMAAPass(
         renderer.domElement.width * renderer.getPixelRatio(),
@@ -166,13 +157,29 @@ export function createThreeCanvas({
     composer.addPass(smaaPass)
 
     const vignettePass = new ShaderPass(vignetteShader)
+    pane.addBinding(vignettePass.uniforms.intensity, 'value', {
+        min: 0,
+        max: 1,
+        step: 0.01,
+        label: 'Vignette Intensity',
+    })
 
-    // Calculate rotationX and rotationY based on camera rotation compared to the plane
-    const cameraDirection = new THREE.Vector3()
-    camera.getWorldDirection(cameraDirection)
-
-    const planeNormal = new THREE.Vector3(0, 0, 1)
-    plane.getWorldDirection(planeNormal)
+    pane.addBinding(
+        createProxy({
+            target: vignettePass.uniforms.color,
+            setter(target, prop, value) {
+                target.value = new THREE.Color(value)
+                return true
+            },
+        }),
+        'value',
+        {
+            label: 'Vignette Color',
+            view: 'color',
+        },
+    ).on('change', (value) => {
+        scene.background = value.value
+    })
 
     composer.addPass(vignettePass)
 
@@ -203,23 +210,11 @@ export function createThreeCanvas({
     }
 
     function render() {
-        if (paneState) {
-            const distance = camera.position.distanceTo(plane.position)
+        const rotationX = camera.rotation.x / 3
+        const rotationY = camera.rotation.y
+        let vignetteRotation = Math.atan2(-rotationX, -rotationY)
 
-            const rotationX = camera.rotation.x / 3
-            const rotationY = camera.rotation.y
-            let vignetteRotation = Math.atan2(-rotationX, -rotationY)
-
-            vignettePass.uniforms.rotation.value = vignetteRotation
-            vignettePass.uniforms.color.value = threeColor
-            vignettePass.uniforms.intensity.value = paneState.intensity
-            bokehPass.uniforms.focus.value = paneState.focus + distance
-            vignettePass.uniforms.color.value = new THREE.Color(
-                paneState.backgroundColor,
-            )
-            scene.background = new THREE.Color(paneState.backgroundColor)
-        }
-
+        vignettePass.uniforms.rotation.value = vignetteRotation
         const { effects } = useEditorState.getState()
         let prevPost = plane.position.clone()
         let prevRot = plane.rotation.clone()
@@ -272,8 +267,8 @@ export function createThreeCanvas({
         material.dispose()
         texture.dispose()
         renderer.dispose()
-        if (controls) controls.dispose()
-        if (transformControls) transformControls.dispose()
+        // if (controls) controls.dispose()
+        // if (transformControls) transformControls.dispose()
     }
 
     return {

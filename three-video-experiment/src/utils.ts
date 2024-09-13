@@ -96,19 +96,56 @@ export const maxKey = (obj: { [key: string]: number }) => {
     return Object.keys(obj).reduce((a, b) => (obj[a] > obj[b] ? a : b))
 }
 
-export function vecProxy(vector) {
-    return new Proxy(vector, {
-        get(target, prop) {
-            return target[prop]
-        },
-        set(target, prop, value) {
-            if (prop === 'x' || prop === 'y' || prop === 'z' || prop === 'w') {
-                const newVec = { ...target }
-                newVec[prop] = value
-                target.set(newVec.x, newVec.y, newVec.z, newVec.w)
-                return true
+export function createProxy<T extends object>({
+    target,
+    getter,
+    setter,
+}: {
+    target: T
+    getter?: (target: T, prop: string | symbol) => any
+    setter?: (
+        target: T,
+        prop: string | symbol,
+        value: any,
+    ) => boolean | undefined
+}): T {
+    return new Proxy(target, {
+        get(target: T, prop: string | symbol): any {
+            if (getter) {
+                const result = getter(target, prop)
+                if (result !== undefined) {
+                    return result
+                }
             }
-            target[prop] = value
+            return target[prop as keyof T]
+        },
+        
+        set(target: T, prop: string | symbol, value: any): boolean {
+            if (setter) {
+                const result = setter(target, prop, value)
+                if (result !== undefined) {
+                    return result
+                }
+            }
+            ;(target as any)[prop] = value
+            return true
+        },
+    })
+}
+
+export function vec3Proxy(vector: THREE.Vector3) {
+    return createProxy({
+        target: vector,
+        setter: (target, prop, value) => {
+            if (prop === 'x') {
+                target.setX(value)
+            } else if (prop === 'y') {
+                target.setY(value)
+            } else if (prop === 'z') {
+                target.setZ(value)
+            } else {
+                ;(target as any)[prop] = value
+            }
             return true
         },
     })
