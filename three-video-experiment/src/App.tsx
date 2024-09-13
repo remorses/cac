@@ -1,6 +1,6 @@
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import * as THREE from 'three'
-import { useEditorState } from './state'
+import { useCurrentTime, useEditorState } from './state'
 import { bfs, Effect, filterEffectTree, updateEffectInTree } from './effects'
 import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
@@ -116,6 +116,7 @@ video.onloadedmetadata = () => {
     let duration = video.duration
     useEditorState.setState({ duration })
 }
+video.autoplay = false
 
 const unsubscribeIsPlaying = useEditorState.subscribe((state, prevState) => {
     const { isPlaying, currentTime } = state
@@ -310,7 +311,7 @@ function RotationsImage() {
             if (media.type.startsWith('video/')) {
                 video.src = URL.createObjectURL(media)
                 video.muted = true
-                video.loop = true
+                video.loop = false
                 video.play()
                 await new Promise((resolve) => {
                     video!.addEventListener('playing', () => {
@@ -366,8 +367,8 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='p-4 grid grid-cols-[300px_1fr] grid-rows-2 h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
-            <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4'>
+        <Container className='p-4 grid grid-cols-[300px_1fr_300px] grid-rows-[1fr_1fr_40px_1fr] h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
+            <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4 row-span-2'>
                 <input
                     type='file'
                     className='!bg-gray-50 !rounded-lg'
@@ -383,13 +384,17 @@ function RotationsImage() {
                     Export
                 </Button>
             </div>
-            <div className='flex group relative overflow-hidden items-center justify-end'>
+            <div className='flex group relative overflow-hidden items-center justify-center row-span-2'>
                 <CanvasComponent
                     style={{ aspectRatio: aspectRatio.toFixed(2) }}
                     className='max-w-full max-h-full rounded-md'
                 />
             </div>
-            <div className='col-span-2 grow'>
+            <div className='row-span-2'>xxx</div>
+            <div className='row-span-1 flex flex-col items-center justify-center col-span-3'>
+                <VideoControls />
+            </div>
+            <div className='col-span-3 grow'>
                 <Timeline />
             </div>
         </Container>
@@ -572,15 +577,16 @@ function ScrubBar() {
     const wasPlaying = useRef(isPlaying)
 
     const handleMouseDown = () => {
-        // console.log('mouse down')
+        console.log('mouse down')
         isDraggingRef.current = true
         wasPlaying.current = isPlaying
         setIsPlaying(false)
     }
 
     const handleMouseUp = (e: MouseEvent) => {
+        if (!isDraggingRef.current) return
         isDraggingRef.current = false
-        // console.log('mouse up')
+        console.log('mouse up')
         setIsPlaying(wasPlaying.current)
         // handleGlobalMouseMove(e)
     }
@@ -852,57 +858,46 @@ function setRangeProgress(el?: HTMLInputElement | null) {
     range.style.setProperty('--progress', `${progress}%`)
 }
 
-// const useVideoControls = (videoElement: HTMLVideoElement | null) => {
-//     const { isPlaying, currentTime, setIsPlaying, duration, setCurrentTime } =
-//         useEditorState()
+function VideoControls() {
+    const isPlaying = useEditorState((state) => state.isPlaying)
+    const currentTime = useCurrentTime()
+    const setIsPlaying = useEditorState((state) => state.setIsPlaying)
+    const duration = useEditorState((state) => state.duration)
+    const setCurrentTime = useEditorState((state) => state.setCurrentTime)
 
-//     const togglePlay = () => {
-//         render()
-//         setIsPlaying(!isPlaying)
-//     }
+    const togglePlay = () => {
+        // if (renderLoopId) cancelAnimationFrame(renderLoopId)
+        const { isPlaying } = useEditorState.getState()
+        console.log('toggle play', isPlaying)
+        setIsPlaying(!isPlaying)
+    }
 
-//     const handleSeek = (e) => {
-//         const time = parseFloat(e.target.value)
-//         setCurrentTime(time)
-//         render()
-//     }
+    const handleSeek = (e) => {
+        const time = parseFloat(e.target.value)
+        setCurrentTime(time)
+        render()
+    }
 
-//     const formatTime = (time) => {
-//         const minutes = Math.floor(time / 60)
-//         const seconds = Math.floor(time % 60)
-//         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-//     }
-//     const slider = useRef<HTMLInputElement>(null)
+    const formatTime = (time) => {
+        const minutes = Math.floor(time / 60)
+        const seconds = Math.floor(time % 60)
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+    }
 
-//     const controlsElement = (
-//         <div className='px-2 py-1 group-hover:opacity-100 lg:opacity-0 transition-all text-white bg-gray-100 bg-opacity-10 rounded-lg m-3 flex gap-3 items-center backdrop-blur'>
-//             <div className='flex  gap-1 shrink-0 items-center'>
-//                 <button
-//                     className='!bg-transparent w-[50px]'
-//                     onClick={togglePlay}
-//                 >
-//                     {isPlaying ? 'Pause' : 'Play'}
-//                 </button>
-//             </div>
-//             <input
-//                 type='range'
-//                 min='0'
-//                 step={0.001}
-//                 max={duration || 0}
-//                 ref={slider}
-//                 style={{
-//                     // @ts-ignore
-//                     '--progress': `${(currentTime / (videoElement?.duration || 1)) * 100}%`,
-//                 }}
-//                 value={currentTime}
-//                 onChange={handleSeek}
-//                 className='grow slider'
-//             />
-//             <div className='text-[11px] shrink-0 font-mono'>
-//                 {formatTime(currentTime)} / {formatTime(duration || 0)}
-//             </div>
-//         </div>
-//     )
-
-//     return { controlsElement, togglePlay, handleSeek }
-// }
+    return (
+        <div className='px-2 py-1 text-white rounded-lg m-3 flex gap-3 items-center'>
+            <div className='flex gap-1 shrink-0 items-center'>
+                <button
+                    className='!bg-transparent w-[50px]'
+                    type='button'
+                    onClick={togglePlay}
+                >
+                    {isPlaying ? 'Pause' : 'Play'}
+                </button>
+            </div>
+            <div className='text-[11px] shrink-0 font-mono'>
+                {formatTime(currentTime)} / {formatTime(duration || 0)}
+            </div>
+        </div>
+    )
+}

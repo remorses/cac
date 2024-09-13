@@ -126,6 +126,8 @@ export const useEditorState = create<AppState>((set, get) => {
         },
         setIsPlaying: (isPlaying) => {
             const { currentTime, duration } = get()
+            set({ isPlaying })
+
             if (
                 isPlaying &&
                 (currentTime >= duration ||
@@ -133,7 +135,6 @@ export const useEditorState = create<AppState>((set, get) => {
             ) {
                 set({ currentTime: 0 })
             }
-            set({ isPlaying })
         },
         setEffects: (effects) => set({ effects }),
     }
