@@ -698,6 +698,16 @@ importers:
         specifier: ^0.0.10
         version: 0.0.10(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
 
+  three-soft-depth-of-field:
+    dependencies:
+      three:
+        specifier: ^0.168.0
+        version: 0.168.0
+    devDependencies:
+      '@types/three':
+        specifier: ^0.168.0
+        version: 0.168.0
+
   three-video-experiment:
     dependencies:
       '@0b5vr/tweakpane-plugin-rotation':
@@ -766,6 +776,9 @@ importers:
       three:
         specifier: ^0.168.0
         version: 0.168.0
+      three-soft-depth-of-field:
+        specifier: workspace:^
+        version: link:../three-soft-depth-of-field
       tweakpane:
         specifier: ^4.0.4
         version: 4.0.4
@@ -14405,7 +14418,7 @@ snapshots:
       lodash.debounce: 4.0.8
       minimatch: 9.0.5
       ora: 5.4.1
-      picocolors: 1.0.1
+      picocolors: 1.1.0
       picomatch: 2.3.1
       pidtree: 0.6.0
       postcss: 8.4.24
@@ -21301,9 +21314,9 @@ snapshots:
   vite-node@1.6.0(@types/node@20.14.10)(terser@5.32.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.7
+      debug: 4.3.5
       pathe: 1.1.2
-      picocolors: 1.0.1
+      picocolors: 1.1.0
       vite: 5.4.3(@types/node@20.14.10)(terser@5.32.0)
     transitivePeerDependencies:
       - '@types/node'
