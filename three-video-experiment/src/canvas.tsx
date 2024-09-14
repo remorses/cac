@@ -122,9 +122,6 @@ export function createThreeCanvas({
 
     renderer.setPixelRatio(1)
 
-    const offset = (angle: number) => {
-        return -0.2 * (angle / (45 + Math.abs(angle)))
-    }
     camera.lookAt(plane.position.x, plane.position.y, plane.position.z)
 
     composer = new EffectComposer(renderer)
@@ -136,8 +133,9 @@ export function createThreeCanvas({
     renderer.getSize(size)
     const bokehPass = new BokehPass(scene, camera, {
         focus: distance,
-        aperture: 10,
-        maxblur: 0.1,
+        focalLength: 50,
+        fStops: 3,
+        // sensorHeight: 25,
         size,
     })
 
@@ -157,37 +155,29 @@ export function createThreeCanvas({
         const distance = camera.position.distanceTo(plane.position)
         bokehPass.uniforms.focus.value = distance + value.value
     })
-
-    pane.addBinding({ value: 0.1 }, 'value', {
+    pane.addBinding(bokehPass.uniforms.uFocalLength, 'value', {
         view: 'cameraring',
-        min: 0,
-
-        max: 1,
-        step: 0.01,
-        label: 'Aperture',
-
-        unit: {
-            pixels: 50,
-            ticks: 40,
-            value: 0.03,
-        },
-    }).on('change', (value) => {
-        bokehPass.uniforms.aperture.value = value.value
+        min: 14,
+        max: 300,
+        step: 1,
+        label: 'Focal Length (mm)',
+        // unit: {
+        //     pixels: 50,
+        //     ticks: 40,
+        //     value: 10,
+        // },
     })
-
-    pane.addBinding({ value: 0.1 }, 'value', {
+    pane.addBinding(bokehPass.uniforms.uFStop, 'value', {
         view: 'cameraring',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        label: 'Max Blur',
+        min: 1,
+        max: 22,
+        step: 0.1,
+        label: 'Aperture (f-stops)',
         unit: {
             pixels: 50,
             ticks: 20,
-            value: 0.03,
+            value: 1,
         },
-    }).on('change', (value) => {
-        bokehPass.uniforms.maxblur.value = value.value
     })
 
     pane.controller.document
