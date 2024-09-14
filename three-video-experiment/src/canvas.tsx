@@ -157,7 +157,7 @@ export function createThreeCanvas({
     })
     pane.addBinding(bokehPass.uniforms.uFocalLength, 'value', {
         view: 'cameraring',
-        min: 14,
+        min: 1,
         max: 300,
         step: 1,
         label: 'Focal Length (mm)',
@@ -169,8 +169,8 @@ export function createThreeCanvas({
     })
     pane.addBinding(bokehPass.uniforms.uFStop, 'value', {
         view: 'cameraring',
-        min: 1,
-        max: 22,
+        min: 0.1,
+        max: 26,
         step: 0.1,
         label: 'Aperture (f-stops)',
         unit: {

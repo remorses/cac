@@ -94,24 +94,10 @@ const BokehShader = {
     const float RAD_SCALE = 1.0; // Smaller = nicer blur, larger = faster
     const float NUM_ITERATIONS = 50.0;
     
-    float unpackDepth (const in vec4 rgba_depth) {
-        const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);
-        float depth = dot(rgba_depth, bit_shift);
-        return depth;
-    }
 
     float getCoCSize(float depth, float focusDistance, float maxCoC) {
       float coc = clamp((1.0 - focusDistance / depth) * maxCoC, -1.0, 1.0); // (1 - mm/mm) * mm = mm
       return abs(coc) * MAX_BLUR_SIZE;
-    }
-
-
-    float getDepth( const in vec2 screenPosition ) {
-        #if DEPTH_PACKING == 1
-        return unpackRGBAToDepth( texture2D( tDepth, screenPosition ) );
-        #else
-        return texture2D( tDepth, screenPosition ).x;
-        #endif
     }
 
     float readDepth(const in sampler2D depthMap, const in vec2 coord, const in float near, const in float far) {

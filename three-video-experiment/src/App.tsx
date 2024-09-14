@@ -443,6 +443,7 @@ function Timeline() {
         const x = e.clientX - rect.left
         const newTime = (x / rect.width) * duration
 
+        
         const minDuration = 0.2
         let effectsNew = effects as Effect[]
         for (const effect of selectedEffects) {
@@ -452,6 +453,7 @@ function Timeline() {
                     0,
                     Math.min(newTime, effect.end - minDuration),
                 )
+                
             }
             if (type === 'end') {
                 updatedEffect.end = Math.min(
@@ -542,7 +544,7 @@ function Timeline() {
                 className='inset-0 absolute'
             ></div>
             <ScrubBar />
-            <div className='relative mx-2'>
+            <div className='relative '>
                 {allEffects.map(({ node: effect, parent }, index) => {
                     return (
                         <Clip
@@ -749,6 +751,7 @@ function Clip({
             onMouseDown={(e) => {
                 const rect = dragRef.current!.getBoundingClientRect()
                 const initialXOffset = (e.clientX - rect.left) / rect.width
+                
 
                 setDraggingEffect({
                     effects: selectedEffects,
