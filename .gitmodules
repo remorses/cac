@@ -4,3 +4,6 @@
 [submodule "spiceflow"]
 	path = spiceflow
 	url = https://github.com/remorses/spiceflow
+[submodule "three-soft-depth-of-field"]
+	path = three-soft-depth-of-field
+	url = https://github.com/remorses/three-soft-depth-of-field.git
