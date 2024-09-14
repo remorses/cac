@@ -1,4 +1,5 @@
-import { Effect } from './effects'
+import { createPositionEffect, createRotationEffect, Effect } from './effects'
+import * as THREE from 'three'
 import { useEditorState } from './state'
 
 // Disable in production or non-Vite environments
@@ -42,4 +43,23 @@ if (import.meta.env.DEV) {
             useEditorState.setState({ effects: scaledEffects })
         }
     })
+    const deg = Math.PI / 180
+    const effects = [
+        createRotationEffect({
+            id: '1',
+            start: 0,
+            end: 5,
+            bezierCurve: [0.25, 0.1, 0.25, 1],
+            amount: new THREE.Vector2(deg * 5, 0),
+            // bezierCurve: [0.25, 0.1, 0.25, 1],
+        }),
+        createPositionEffect({
+            id: '2',
+            start: 0,
+            end: 5,
+            position: new THREE.Vector3(0.01, 0, 0),
+            // bezierCurve: [0.25, 0.1, 0.25, 1],
+        }),
+    ]
+    useEditorState.setState({ effects })
 }

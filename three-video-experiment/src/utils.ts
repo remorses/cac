@@ -170,7 +170,7 @@ import * as TweakpaneRotationInputPlugin from '@0b5vr/tweakpane-plugin-rotation'
 
 export function preparePane(pane: Pane) {
     pane.registerPlugin(TweakpaneEssentialsPlugin)
-    // pane.registerPlugin(TweakpaneFileImportPlugin)
+    pane.registerPlugin(TweakpaneFileImportPlugin)
     pane.registerPlugin(CamerakitPlugin)
     pane.registerPlugin(TweakpaneRotationInputPlugin)
 

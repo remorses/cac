@@ -901,7 +901,6 @@ function EffectsControls() {
     const effects = useEditorState((state) => state.effects)
     const setEffects = useEditorState((state) => state.setEffects)
     const container = useRef<HTMLDivElement>(null)
-    const [pane, setPane] = useState<Pane | null>(null)
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
     useEffect(() => {
         const pane = preparePane(
@@ -911,7 +910,6 @@ function EffectsControls() {
             }),
         )
 
-        setPane(pane)
         const allEffects = bfs(effects)
         allEffects
             .filter((x) => selectedEffectIds.includes(x.node.id))

@@ -241,6 +241,7 @@ export function createThreeCanvas({
                     rawProgress,
                     effect.bezierCurve,
                 )
+                // console.log('progress', rawProgress, easedProgress)
 
                 if (effect.children) {
                     applyEffects(effect.children)
@@ -253,11 +254,11 @@ export function createThreeCanvas({
 
     function render({ isPreview = true } = {}) {
         if (!isPreview) {
-            transformControls.enabled = false;
-            transformControls.visible = false;
+            transformControls.enabled = false
+            transformControls.visible = false
         } else {
-            transformControls.enabled = true;
-            transformControls.visible = true;
+            transformControls.enabled = true
+            transformControls.visible = true
         }
         const rotationX = camera.rotation.x / 3
         const rotationY = camera.rotation.y

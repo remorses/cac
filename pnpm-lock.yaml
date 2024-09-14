@@ -770,8 +770,8 @@ importers:
         specifier: ^4.0.4
         version: 4.0.4
       tweakpane-plugin-file-import:
-        specifier: ^0.2.1
-        version: 0.2.1(tweakpane@4.0.4)
+        specifier: ^1.1.0
+        version: 1.1.0(tweakpane@4.0.4)
       vite-plugin-environment:
         specifier: ^1.1.3
         version: 1.1.3(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
@@ -9760,10 +9760,10 @@ packages:
   turbo-stream@2.3.0:
     resolution: {integrity: sha512-PhEr9mdexoVv+rJkQ3c8TjrN3DUghX37GNJkSMksoPR4KrXIPnM2MnqRt07sViIqX9IdlhrgtTSyjoVOASq6cg==}
 
-  tweakpane-plugin-file-import@0.2.1:
-    resolution: {integrity: sha512-8v9EFMKkyVXf5pu5xMdR8TAEBZ4qizMyd+1NN5fbdPN51KD28PFhDCbZcIvlDPPz05Y75MVhv0nJ7Cbk4Cbb5Q==}
+  tweakpane-plugin-file-import@1.1.0:
+    resolution: {integrity: sha512-Wf9r8w1IGmCtvnZv1NgCpXaq15luNqfz41ShaYZITz0RNfUmt2XiigJiH4WrXOoktkzFycsmOPJMVwFQe3YnuQ==}
     peerDependencies:
-      tweakpane: ^3.1.4
+      tweakpane: ^4.0.0
 
   tweakpane@4.0.4:
     resolution: {integrity: sha512-RkWD54zDlEbnN01wQPk0ANHGbdCvlJx/E8A1QxhTfCbX+ROWos1Ws2MnhOm39aUGMOh+36TjUwpDmLfmwTr1Fg==}
@@ -20999,7 +20999,7 @@ snapshots:
 
   turbo-stream@2.3.0: {}
 
-  tweakpane-plugin-file-import@0.2.1(tweakpane@4.0.4):
+  tweakpane-plugin-file-import@1.1.0(tweakpane@4.0.4):
     dependencies:
       tweakpane: 4.0.4
 

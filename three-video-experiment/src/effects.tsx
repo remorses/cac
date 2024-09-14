@@ -1,19 +1,36 @@
 import * as THREE from 'three'
 import { useEditorState } from './state'
-import { Pane } from 'tweakpane'
+import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'
+import { createProxy } from './utils'
 
 type BezierCurve = [number, number, number, number]
 
 export function evaluateBezier(t: number, curve: BezierCurve): number {
-    const [p0, p1, p2, p3] = curve
+    const [x1, y1, x2, y2] = curve
+
+    // These are the fixed start and end points in the CSS cubic bezier format
+    const P0 = { x: 0, y: 0 }
+    const P1 = { x: x1, y: y1 }
+    const P2 = { x: x2, y: y2 }
+    const P3 = { x: 1, y: 1 }
+
     const u = 1 - t
-    return (
-        u * u * u * p0 +
-        3 * u * u * t * p1 +
-        3 * u * t * t * p2 +
-        t * t * t * p3
-    )
+
+    // Bezier equation for x and y values
+    const x =
+        u * u * u * P0.x +
+        3 * u * u * t * P1.x +
+        3 * u * t * t * P2.x +
+        t * t * t * P3.x
+    const y =
+        u * u * u * P0.y +
+        3 * u * u * t * P1.y +
+        3 * u * t * t * P2.y +
+        t * t * t * P3.y
+
+    // Since you're trying to map t (from 0 to 1) based on x, solve for y
+    return y
 }
 
 export interface Effect<T = any> {
@@ -114,27 +131,50 @@ export function createRotationEffect({
             const folder = pane.addFolder({
                 title: 'Rotation',
             })
-            folder.addBlade({
-                view: 'cubicbezier',
-                value: bezierCurve,
-                expanded: true,
-                label: 'Animation',
-                picker: 'inline',
-            })
-            folder.addBinding(params.amount, 'x', {
-                label: 'X Rotation',
-                picker: 'inline',
-                expanded: true,
-                min: -180 * deg,
-                max: 360 * deg,
-            })
-            folder.addBinding(params.amount, 'y', {
-                label: 'Y Rotation',
-                picker: 'inline',
-                expanded: true,
-                min: -180 * deg,
-                max: 360 * deg,
-            })
+            const getRotation = (value: number) => (value * 180) / Math.PI
+            const setRotation = (value: number) => (value * Math.PI) / 180
+
+            folder.addBinding(
+                createProxy({
+                    target: params.amount,
+                    setter(target, prop, value) {
+                        target[prop] = setRotation(value)
+                        return true
+                    },
+                    getter(target, prop) {
+                        return getRotation(target[prop])
+                    },
+                }),
+                'x',
+                {
+                    label: 'X Rotation',
+                    picker: 'inline',
+                    expanded: true,
+                    min: -180,
+                    max: 180,
+                },
+            )
+            folder.addBinding(
+                createProxy({
+                    target: params.amount,
+                    setter(target, prop, value) {
+                        target[prop] = setRotation(value)
+                        return true
+                    },
+                    getter(target, prop) {
+                        return getRotation(target[prop])
+                    },
+                }),
+                'y',
+                {
+                    label: 'Y Rotation',
+                    picker: 'inline',
+                    expanded: true,
+                    min: -180,
+                    max: 180,
+                },
+            )
+            bezierControl({ folder, bezierCurve })
         },
     }
 }
@@ -161,35 +201,36 @@ export function createScaleEffect({
         params,
         bezierCurve,
         apply(mesh: THREE.Mesh, progress: number) {
-            mesh.scale.x += (this.params.scale.x - 1) * progress
-            mesh.scale.y += (this.params.scale.y - 1) * progress
-            mesh.scale.z += (this.params.scale.z - 1) * progress
+            mesh.scale.x += (params.scale.x - 1) * progress
+            mesh.scale.y += (params.scale.y - 1) * progress
+            mesh.scale.z += (params.scale.z - 1) * progress
         },
         configure(pane) {
             const folder = pane.addFolder({
                 title: 'Scale',
             })
-            folder.addBinding(this.params.scale, 'x', {
+            folder.addBinding(params.scale, 'x', {
                 label: 'X Scale',
                 picker: 'inline',
                 expanded: true,
                 min: 0,
                 max: 2,
             })
-            folder.addBinding(this.params.scale, 'y', {
+            folder.addBinding(params.scale, 'y', {
                 label: 'Y Scale',
                 picker: 'inline',
                 expanded: true,
                 min: 0,
                 max: 2,
             })
-            folder.addBinding(this.params.scale, 'z', {
+            folder.addBinding(params.scale, 'z', {
                 label: 'Z Scale',
                 picker: 'inline',
                 expanded: true,
                 min: 0,
                 max: 2,
             })
+            bezierControl({ folder, bezierCurve })
         },
     }
 }
@@ -216,31 +257,60 @@ export function createPositionEffect({
         params,
         bezierCurve,
         apply(mesh: THREE.Mesh, progress: number) {
-            mesh.position.x += this.params.position.x * progress
-            mesh.position.y += this.params.position.y * progress
-            mesh.position.z += this.params.position.z * progress
+            mesh.position.x += params.position.x * progress
+            mesh.position.y += params.position.y * progress
+            mesh.position.z += params.position.z * progress
         },
         configure(pane) {
             const folder = pane.addFolder({
                 title: 'Position',
             })
-            folder.addBinding(this.params.position, 'x', {
+            folder.addBinding(params.position, 'x', {
                 label: 'X Position',
                 picker: 'inline',
                 expanded: true,
             })
-            folder.addBinding(this.params.position, 'y', {
+            folder.addBinding(params.position, 'y', {
                 label: 'Y Position',
                 picker: 'inline',
                 expanded: true,
             })
-            folder.addBinding(this.params.position, 'z', {
+            folder.addBinding(params.position, 'z', {
                 label: 'Z Position',
                 picker: 'inline',
                 expanded: true,
             })
+            bezierControl({ folder, bezierCurve })
         },
     }
+}
+
+function bezierControl({
+    folder,
+    bezierCurve,
+}: {
+    folder: FolderApi
+    bezierCurve: BezierCurve
+}) {
+    return (
+        folder
+            .addBlade({
+                view: 'cubicbezier',
+                value: bezierCurve,
+                expanded: true,
+                label: 'Animation',
+                picker: 'inline',
+            })
+            // @ts-ignore wrong tweakpane type
+            .on('change', (value) => {
+                // The bezier curve evaluation in evaluateBezier() is correct.
+                // This assignment updates the bezierCurve array with new values.
+                bezierCurve[0] = value.value.x1
+                bezierCurve[1] = value.value.y1
+                bezierCurve[2] = value.value.x2
+                bezierCurve[3] = value.value.y2
+            })
+    )
 }
 
 export function createEffectGroup({
@@ -330,28 +400,28 @@ export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
     })
 }
 
-function findEffect(id: string, effects: Effect<any>[]): Effect<any> | null {
-    for (const effect of effects) {
-        if (effect.id === id) return effect
-        if (effect.children) {
-            const found = findEffect(id, effect.children)
-            if (found) return found
-        }
-    }
-    return null
-}
+// function findEffect(id: string, effects: Effect<any>[]): Effect<any> | null {
+//     for (const effect of effects) {
+//         if (effect.id === id) return effect
+//         if (effect.children) {
+//             const found = findEffect(id, effect.children)
+//             if (found) return found
+//         }
+//     }
+//     return null
+// }
 
-function removeEffectRecursive(
-    id: string,
-    effects: Effect<any>[],
-): Effect<any>[] {
-    return effects.filter((effect) => {
-        if (effect.id === id) {
-            return false
-        }
-        if (effect.children) {
-            effect.children = removeEffectRecursive(id, effect.children)
-        }
-        return true
-    })
-}
+// function removeEffectRecursive(
+//     id: string,
+//     effects: Effect<any>[],
+// ): Effect<any>[] {
+//     return effects.filter((effect) => {
+//         if (effect.id === id) {
+//             return false
+//         }
+//         if (effect.children) {
+//             effect.children = removeEffectRecursive(id, effect.children)
+//         }
+//         return true
+//     })
+// }

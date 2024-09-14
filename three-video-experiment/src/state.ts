@@ -57,24 +57,6 @@ export const useCurrentTime = () => {
     return currentTime
 }
 
-const deg = Math.PI / 180
-const effects = [
-    createRotationEffect({
-        id: '1',
-        start: 0,
-        end: 5,
-        amount: new THREE.Vector2(deg * 5, 0),
-        // bezierCurve: [0.25, 0.1, 0.25, 1],
-    }),
-    createPositionEffect({
-        id: '2',
-        start: 0,
-        end: 5,
-        position: new THREE.Vector3(0.01, 0, 0),
-        // bezierCurve: [0.25, 0.1, 0.25, 1],
-    }),
-]
-
 export const useEditorState = create<AppState>((set, get) => {
     return {
         currentTime: 0,
@@ -82,7 +64,7 @@ export const useEditorState = create<AppState>((set, get) => {
         scale: 1,
         isLooping: true,
         isPlaying: false,
-        effects,
+        effects: [],
         duration: 10,
 
         selectedEffectIds: [],
@@ -118,4 +100,3 @@ export const useEditorState = create<AppState>((set, get) => {
         setEffects: (effects) => set({ effects }),
     }
 })
-
