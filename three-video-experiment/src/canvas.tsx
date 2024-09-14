@@ -64,6 +64,7 @@ export function createThreeCanvas({
     texture.colorSpace = THREE.LinearSRGBColorSpace
 
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+
     camera.aspect = aspectRatio
     camera.updateProjectionMatrix()
 
@@ -131,10 +132,13 @@ export function createThreeCanvas({
 
     const distance = camera.position.distanceTo(plane.position)
 
+    const size = new THREE.Vector2(1920, 1080)
+    renderer.getSize(size)
     const bokehPass = new BokehPass(scene, camera, {
         focus: distance,
-        aperture: 0.1,
+        aperture: 10,
         maxblur: 0.1,
+        size,
     })
 
     pane.addBinding({ value: 0 }, 'value', {

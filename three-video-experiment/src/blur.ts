@@ -1,12 +1,22 @@
+import * as THREE from 'three'
 /**
  * Depth-of-field shader with bokeh
  * ported from GLSL shader by Martins Upitis
  * http://artmartinsh.blogspot.com/2010/02/glsl-lens-blur-filter-with-bokeh.html
  */
 
-import { WebGLRenderTarget, NearestFilter, HalfFloatType, MeshDepthMaterial, RGBADepthPacking, NoBlending, UniformsUtils, ShaderMaterial, Color, } from "three";
-import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
-
+import {
+    WebGLRenderTarget,
+    NearestFilter,
+    HalfFloatType,
+    MeshDepthMaterial,
+    RGBADepthPacking,
+    NoBlending,
+    UniformsUtils,
+    ShaderMaterial,
+    Color,
+} from 'three'
+import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js'
 
 const BokehShader = {
     name: 'BokehShader',
@@ -19,251 +29,281 @@ const BokehShader = {
     uniforms: {
         tColor: { value: null },
         tDepth: { value: null },
-        focus: { value: 1.0 },
-        aspect: { value: 1.0 },
-        aperture: { value: 0.025 },
-        maxblur: { value: 0.01 },
-        nearClip: { value: 1.0 },
-        farClip: { value: 1000.0 },
+        imageSize: { value: new THREE.Vector2(1920, 1080) },
+        uPixelSize: { value: new THREE.Vector2(1 / 1920, 1 / 1080) },
+        uFar: { value: 1000.0 },
+        uNear: { value: 0.1 },
+        focus: { value: 10.0 },
+        uFStop: { value: 5.6 },
+        uFocalLength: { value: 35.0 },
+        uDOFDebug: { value: true },
+
+        uSensorHeight: { value: 24.0 },
     },
 
     vertexShader: /* glsl */ `
+        varying vec2 vUv;
 
-		varying vec2 vUv;
-
-		void main() {
-
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-		}`,
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
 
     fragmentShader: /* glsl */ `
+        precision highp float;
 
-		#include <common>
+        varying vec2 vUv;
+        uniform sampler2D tColor;
+        uniform sampler2D tDepth;
+        uniform vec2 imageSize;
+        uniform vec2 uPixelSize;
+        uniform float uFar;
+        uniform float uNear;
+        uniform float focus;
+        // https://github.com/pex-gl/pex-renderer/blob/5eca8e77d98d996fb36c42d5a9e7da068819be68/README.md?plain=1#L320
+        uniform float uFStop;
+        // camera focal length in mm
+        uniform float uFocalLength;
+        uniform bool uDOFDebug;
+        // camera sensor height in mm
+        uniform float uSensorHeight;
 
-		varying vec2 vUv;
+        const float GOLDEN_ANGLE = 2.39996323;
+        const float MAX_BLUR_SIZE = 30.0;
+        const float RAD_SCALE = 1.0;
+        const float NUM_ITERATIONS = 50.0;
 
-		uniform sampler2D tColor;
-		uniform sampler2D tDepth;
+        float perspectiveDepthToViewZ(float invClipZ, float near, float far) {
+            return (near * far) / ((far - near) * invClipZ - far);
+        }
 
-		uniform float maxblur; // max blur amount
-		uniform float aperture; // aperture - bigger values for shallower depth of field
+        float viewZToOrthographicDepth(float viewZ, float near, float far) {
+            return (viewZ + near) / (near - far);
+        }
 
-		uniform float nearClip;
-		uniform float farClip;
+        float readDepth(sampler2D depthSampler, vec2 coord) {
+            float fragCoordZ = texture2D(depthSampler, coord).x;
+            float viewZ = perspectiveDepthToViewZ(fragCoordZ, uNear, uFar);
+            return viewZToOrthographicDepth(viewZ, uNear, uFar);
+        }
 
-		uniform float focus;
-		uniform float aspect;
+        float getBlurSize(float depth, float focusPoint, float maxCoC) {
+            float coc = clamp((1.0 / focusPoint - 1.0 / depth) * maxCoC, -1.0, 1.0);
+            return abs(coc) * MAX_BLUR_SIZE;
+        }
 
-		#include <packing>
+        vec3 depthOfField(vec2 texCoord, float focusPoint, float maxCoC) {
+            float resolutionScale = imageSize.y / 1080.0;
 
-		float getDepth( const in vec2 screenPosition ) {
-			#if DEPTH_PACKING == 1
-			return unpackRGBAToDepth( texture2D( tDepth, screenPosition ) );
-			#else
-			return texture2D( tDepth, screenPosition ).x;
-			#endif
-		}
+            float centerDepth = readDepth(tDepth, texCoord) * uFar;
+            float centerSize = getBlurSize(centerDepth, focusPoint, maxCoC);
 
-		float getViewZ( const in float depth ) {
-			#if PERSPECTIVE_CAMERA == 1
-			return perspectiveDepthToViewZ( depth, nearClip, farClip );
-			#else
-			return orthographicDepthToViewZ( depth, nearClip, farClip );
-			#endif
-		}
+            if (uDOFDebug && texCoord.x > 0.1) {
+                float focusDistance = focus;
+                float c = 0.03; // 0.03mm for 35mm format
+                float H = uFocalLength * uFocalLength / (uFStop * c); // mm
+                float Dn = H * focusDistance / (H + focusDistance);
+                float Df = H * focusDistance / (H - focusDistance);
 
+                float coc = (1.0 - focusDistance / centerDepth) * maxCoC;
+                if (texCoord.x > 0.90) {
+                    float depth = texCoord.y * 1000.0 * 100.0; // 100m
+                    if (texCoord.x <= 0.95) {
+                        float t = (texCoord.x - 0.9) * 20.0;
+                        float cocBar = abs((1.0 - focusDistance / depth) * maxCoC * 10.0);
+                        if (cocBar > t) return vec3(1.0);
+                        return vec3(0.0);
+                    }
+                    if (texCoord.x > 0.97) {
+                        if (depth > focusDistance - 250.0 && depth < focusDistance + 250.0) {
+                            return vec3(1.0, 1.0, 0.0);
+                        }
+                        return vec3(floor(texCoord.y * 10.0)) / 10.0;
+                    }
+                    if (depth > H - 250.0 && depth < H + 250.0) return vec3(1.0, 1.0, 0.0);
+                    if (depth < Dn) return vec3(1.0, 0.0, 0.0);
+                    if (depth > Df) return vec3(1.0, 0.0, 0.0);
+                    return vec3(0.0, 1.0, 0.0);
+                }
+                
+                float cocAbs = abs(coc);
+                cocAbs = cocAbs / (1.0 + cocAbs); // tonemapping to avoid burning the color
+                cocAbs = pow(cocAbs, 2.2); // gamma to linear
 
-		void main() {
+                if (coc > 0.0) return vec3(cocAbs, 0.0, 0.0);
+                else return vec3(0.0, 0.0, cocAbs);
+            }
 
-			vec2 aspectcorrect = vec2( 1.0, aspect );
+            vec3 color = texture2D(tColor, vUv).rgb;
+            float tot = 1.0;
+            float radius = RAD_SCALE;
 
-			float viewZ = getViewZ( getDepth( vUv ) );
+            for (float ang = 0.0; radius < MAX_BLUR_SIZE && ang < GOLDEN_ANGLE * NUM_ITERATIONS; ang += GOLDEN_ANGLE) {
+                vec2 tc = texCoord + vec2(cos(ang), sin(ang)) * uPixelSize * radius * resolutionScale;
+                vec3 sampleColor = texture2D(tColor, tc).rgb;
+                float sampleDepth = readDepth(tDepth, tc) * uFar;
+                float sampleSize = getBlurSize(sampleDepth, focusPoint, maxCoC);
+                
+                if (sampleDepth > centerDepth)
+                    sampleSize = clamp(sampleSize, 0.0, centerSize * 2.0);
+                
+                float m = smoothstep(radius - 0.5, radius + 0.5, sampleSize);
+                color += mix(color/tot, sampleColor, m);
+                tot += 1.0;
+                radius += RAD_SCALE / radius;
+            }
+            return color /= tot;
+        }
 
-			float factor = ( focus + viewZ ); // viewZ is <= 0, so this is a difference equation
+        void main() {
+            float F = uFocalLength; // Convert mm to meters
+            float A = F / uFStop;
+            float focusPoint = focus; // Use focus directly, assuming it's already in the correct unit (meters)
+            float maxCoC = A * F / (focusPoint - F);
 
-			vec2 dofblur = vec2 ( clamp( factor * aperture, -maxblur, maxblur ) );
-
-			vec2 dofblur9 = dofblur * 0.9;
-			vec2 dofblur7 = dofblur * 0.7;
-			vec2 dofblur4 = dofblur * 0.4;
-
-			vec4 col = vec4( 0.0 );
-
-			col += texture2D( tColor, vUv.xy );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.0,   0.4  ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.15,  0.37 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.29,  0.29 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.37,  0.15 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.40,  0.0  ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.37, -0.15 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.29, -0.29 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.15, -0.37 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.0,  -0.4  ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.15,  0.37 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.29,  0.29 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.37,  0.15 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.4,   0.0  ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.37, -0.15 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.29, -0.29 ) * aspectcorrect ) * dofblur );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.15, -0.37 ) * aspectcorrect ) * dofblur );
-
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.15,  0.37 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.37,  0.15 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.37, -0.15 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.15, -0.37 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.15,  0.37 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.37,  0.15 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.37, -0.15 ) * aspectcorrect ) * dofblur9 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.15, -0.37 ) * aspectcorrect ) * dofblur9 );
-
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.29,  0.29 ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.40,  0.0  ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.29, -0.29 ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.0,  -0.4  ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.29,  0.29 ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.4,   0.0  ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.29, -0.29 ) * aspectcorrect ) * dofblur7 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.0,   0.4  ) * aspectcorrect ) * dofblur7 );
-
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.29,  0.29 ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.4,   0.0  ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.29, -0.29 ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.0,  -0.4  ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.29,  0.29 ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.4,   0.0  ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2( -0.29, -0.29 ) * aspectcorrect ) * dofblur4 );
-			col += texture2D( tColor, vUv.xy + ( vec2(  0.0,   0.4  ) * aspectcorrect ) * dofblur4 );
-
-			gl_FragColor = col / 41.0;
-			gl_FragColor.a = 1.0;
-
-		}`,
+            vec3 color = depthOfField(vUv, focusPoint, maxCoC);
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `,
 }
 
 export { BokehShader }
 
-
-
 export class BokehPass extends Pass {
+    scene: THREE.Scene
+    camera: THREE.PerspectiveCamera
+    renderTargetDepth: THREE.WebGLRenderTarget
+    materialDepth: THREE.MeshDepthMaterial
+    materialBokeh: THREE.ShaderMaterial
+    _oldClearColor: THREE.Color
+    uniforms: any
+    fsQuad: FullScreenQuad
+    constructor(
+        scene: THREE.Scene,
+        camera: THREE.PerspectiveCamera,
+        params: any,
+    ) {
+        super()
 
-	constructor( scene, camera, params ) {
+        const size: THREE.Vector2 = params.size
+        this.scene = scene
 
-		super();
+        this.camera = camera
 
-		this.scene = scene;
-		this.camera = camera;
+        console.log(camera)
 
-		const focus = ( params.focus !== undefined ) ? params.focus : 1.0;
-		const aperture = ( params.aperture !== undefined ) ? params.aperture : 0.025;
-		const maxblur = ( params.maxblur !== undefined ) ? params.maxblur : 1.0;
+        let focus = params.focus !== undefined ? params.focus : 1.0
+        let aperture = params.aperture !== undefined ? params.aperture : 0.025
 
-		// render targets
+        aperture = 0.9
+        // focus = 1
+        const maxblur = params.maxblur !== undefined ? params.maxblur : 1.0
 
-		this.renderTargetDepth = new WebGLRenderTarget( 1, 1, { // will be resized later
-			minFilter: NearestFilter,
-			magFilter: NearestFilter,
-			type: HalfFloatType
-		} );
+        // render targets
 
-		this.renderTargetDepth.texture.name = 'BokehPass.depth';
+        this.renderTargetDepth = new WebGLRenderTarget(1, 1, {
+            // will be resized later
+            minFilter: NearestFilter,
+            magFilter: NearestFilter,
+            type: HalfFloatType,
+        })
 
-		// depth material
+        this.renderTargetDepth.texture.name = 'BokehPass.depth'
 
-		this.materialDepth = new MeshDepthMaterial();
-		this.materialDepth.depthPacking = RGBADepthPacking;
-		this.materialDepth.blending = NoBlending;
+        // depth material
 
-		// bokeh material
+        this.materialDepth = new MeshDepthMaterial()
+        this.materialDepth.depthPacking = RGBADepthPacking
+        this.materialDepth.blending = NoBlending
 
-		const bokehShader = BokehShader;
-		const bokehUniforms = UniformsUtils.clone( bokehShader.uniforms );
+        // bokeh material
 
-		bokehUniforms[ 'tDepth' ].value = this.renderTargetDepth.texture;
+        const bokehShader = BokehShader
+        const bokehUniforms = UniformsUtils.clone(bokehShader.uniforms)
+        // bokehUniforms['tColor'].value = null
+        bokehUniforms['tDepth'].value = this.renderTargetDepth.texture as any
+        bokehUniforms['imageSize'].value = new THREE.Vector2(
+            size.width,
+            size.height,
+        )
+        bokehUniforms['uPixelSize'].value = new THREE.Vector2(
+            1 / size.width,
+            1 / size.height,
+        )
+        bokehUniforms['uFar'].value = camera.far
+        bokehUniforms['uNear'].value = camera.near
+        bokehUniforms['focus'].value = focus
+        bokehUniforms['uFStop'].value = aperture
+        bokehUniforms['uFocalLength'].value = params.focalLength || 35.0
+        bokehUniforms['uDOFDebug'].value = params.dofDebug || false
+        bokehUniforms['uSensorHeight'].value = params.sensorHeight || 24.0
 
-		bokehUniforms[ 'focus' ].value = focus;
-		bokehUniforms[ 'aspect' ].value = camera.aspect;
-		bokehUniforms[ 'aperture' ].value = aperture;
-		bokehUniforms[ 'maxblur' ].value = maxblur;
-		bokehUniforms[ 'nearClip' ].value = camera.near;
-		bokehUniforms[ 'farClip' ].value = camera.far;
+        this.materialBokeh = new ShaderMaterial({
+            defines: Object.assign({}, bokehShader.defines),
+            uniforms: bokehUniforms,
+            vertexShader: bokehShader.vertexShader,
+            fragmentShader: bokehShader.fragmentShader,
+        })
 
-		this.materialBokeh = new ShaderMaterial( {
-			defines: Object.assign( {}, bokehShader.defines ),
-			uniforms: bokehUniforms,
-			vertexShader: bokehShader.vertexShader,
-			fragmentShader: bokehShader.fragmentShader
-		} );
+        this.uniforms = bokehUniforms
 
-		this.uniforms = bokehUniforms;
+        this.fsQuad = new FullScreenQuad(this.materialBokeh)
 
-		this.fsQuad = new FullScreenQuad( this.materialBokeh );
+        this._oldClearColor = new Color()
+    }
 
-		this._oldClearColor = new Color();
+    render(renderer, writeBuffer, readBuffer /*, deltaTime, maskActive*/) {
+        // Render depth into texture
 
-	}
+        this.scene.overrideMaterial = this.materialDepth
 
-	render( renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/ ) {
+        renderer.getClearColor(this._oldClearColor)
+        const oldClearAlpha = renderer.getClearAlpha()
+        const oldAutoClear = renderer.autoClear
+        renderer.autoClear = false
 
-		// Render depth into texture
+        renderer.setClearColor(0xffffff)
+        renderer.setClearAlpha(1.0)
+        renderer.setRenderTarget(this.renderTargetDepth)
+        renderer.clear()
+        renderer.render(this.scene, this.camera)
 
-		this.scene.overrideMaterial = this.materialDepth;
+        // Render bokeh composite
 
-		renderer.getClearColor( this._oldClearColor );
-		const oldClearAlpha = renderer.getClearAlpha();
-		const oldAutoClear = renderer.autoClear;
-		renderer.autoClear = false;
+        this.uniforms['tColor'].value = readBuffer.texture
+        this.uniforms['uNear'].value = this.camera.near
+        this.uniforms['uFar'].value = this.camera.far
 
-		renderer.setClearColor( 0xffffff );
-		renderer.setClearAlpha( 1.0 );
-		renderer.setRenderTarget( this.renderTargetDepth );
-		renderer.clear();
-		renderer.render( this.scene, this.camera );
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null)
+            this.fsQuad.render(renderer)
+        } else {
+            renderer.setRenderTarget(writeBuffer)
+            renderer.clear()
+            this.fsQuad.render(renderer)
+        }
 
-		// Render bokeh composite
+        this.scene.overrideMaterial = null
+        renderer.setClearColor(this._oldClearColor)
+        renderer.setClearAlpha(oldClearAlpha)
+        renderer.autoClear = oldAutoClear
+    }
 
-		this.uniforms[ 'tColor' ].value = readBuffer.texture;
-		this.uniforms[ 'nearClip' ].value = this.camera.near;
-		this.uniforms[ 'farClip' ].value = this.camera.far;
+    setSize(width, height) {
+        console.log('setsize', width, height)
+        this.uniforms['imageSize'].value.set(width, height)
+        this.uniforms['uPixelSize'].value.set(1 / width, 1 / height)
 
-		if ( this.renderToScreen ) {
+        this.renderTargetDepth.setSize(width, height)
+    }
 
-			renderer.setRenderTarget( null );
-			this.fsQuad.render( renderer );
+    dispose() {
+        this.renderTargetDepth.dispose()
 
-		} else {
+        this.materialDepth.dispose()
+        this.materialBokeh.dispose()
 
-			renderer.setRenderTarget( writeBuffer );
-			renderer.clear();
-			this.fsQuad.render( renderer );
-
-		}
-
-		this.scene.overrideMaterial = null;
-		renderer.setClearColor( this._oldClearColor );
-		renderer.setClearAlpha( oldClearAlpha );
-		renderer.autoClear = oldAutoClear;
-
-	}
-
-	setSize( width, height ) {
-
-		this.materialBokeh.uniforms[ 'aspect' ].value = width / height;
-
-		this.renderTargetDepth.setSize( width, height );
-
-	}
-
-	dispose() {
-
-		this.renderTargetDepth.dispose();
-
-		this.materialDepth.dispose();
-		this.materialBokeh.dispose();
-
-		this.fsQuad.dispose();
-
-	}
-
+        this.fsQuad.dispose()
+    }
 }
