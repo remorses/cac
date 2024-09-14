@@ -118,7 +118,6 @@ export function createThreeCanvas({
     })
 
     const img = texture.image
-    camera.position.z = 0.6
 
     renderer.setPixelRatio(1)
 
@@ -133,8 +132,9 @@ export function createThreeCanvas({
     renderer.getSize(size)
     const bokehPass = new BokehPass(scene, camera, {
         focus: distance,
-        focalLength: 50,
+        focalLength: 30,
         fStops: 3,
+
         // sensorHeight: 25,
         size,
     })
@@ -154,6 +154,10 @@ export function createThreeCanvas({
     }).on('change', (value) => {
         const distance = camera.position.distanceTo(plane.position)
         bokehPass.uniforms.focus.value = distance + value.value
+    })
+
+    pane.addBinding(bokehPass.uniforms.uDOFDebug, 'value', {
+        label: 'Debug Bokeh',
     })
     pane.addBinding(bokehPass.uniforms.uFocalLength, 'value', {
         view: 'cameraring',
