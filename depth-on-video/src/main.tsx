@@ -11,20 +11,26 @@ async function applyBokehEffect() {
     // Create renderer
 
     const renderer = new THREE.WebGLRenderer()
+
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
     // Fetch the image and create a texture
     const imageRes = await fetch('/image.png')
     const blob = await imageRes.blob()
-    const imageBitmap = await createImageBitmap(blob)
+    const imageBitmap = await createImageBitmap(blob, {
+        imageOrientation: 'flipY',
+    })
     const texture = new THREE.Texture(imageBitmap)
+
     texture.needsUpdate = true
 
     // Load the depth map
     const depthMapRes = await fetch('/depth.png')
     const depthBlob = await depthMapRes.blob()
-    const depthImageBitmap = await createImageBitmap(depthBlob)
+    const depthImageBitmap = await createImageBitmap(depthBlob, {
+        imageOrientation: 'flipY',
+    })
     const depthTexture = new THREE.Texture(depthImageBitmap)
     depthTexture.needsUpdate = true
 
@@ -38,10 +44,6 @@ async function applyBokehEffect() {
         0.1,
         1000,
     )
-    // camera.position.z = 5
-
-    // Create a scene (even though we're not using it for 3D objects, it's required for the RenderPass)
-    const scene = new THREE.Scene()
 
     const size = new THREE.Vector2(1920, 1080)
     renderer.getSize(size)
@@ -51,8 +53,14 @@ async function applyBokehEffect() {
         camera,
         size,
         focus: 1.0,
-        sensorHeight: 50,
-        dofDebug: false,
+        fStops: 10,
+        // sensorHeight: 50,
+        focalLength: 6,
+        dofDebug: true,
+    })
+
+    pane.addBinding(bokehPass, 'enabled', {
+        label: 'Enable Bokeh',
     })
 
     // Add Tweakpane controls for bokeh effect
@@ -78,9 +86,14 @@ async function applyBokehEffect() {
 
     pane.addBinding(bokehPass.uniforms.uFocalLength, 'value', {
         label: 'Focal Length',
-        min: 1,
-        max: 200,
+        min: 0,
+        max: 20,
         step: 1,
+    })
+
+    pane.addBinding(bokehPass.uniforms.uDOFDebug, 'value', {
+        label: 'Debug Mode',
+        type: 'boolean',
     })
 
     composer.addPass(texturePass)
