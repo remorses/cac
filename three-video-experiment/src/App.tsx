@@ -14,7 +14,14 @@ import {
 } from './effects'
 import { useCurrentTime, useEditorState } from './state'
 
-import { Ref, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+    cloneElement,
+    Ref,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react'
 
 import { Pane } from 'tweakpane'
 import { createThreeCanvas, globalPaneContainer } from './canvas'
@@ -1042,8 +1049,47 @@ function EffectsControls() {
             pane.dispose()
         }
     }, [selectedEffectIds, currentKeyframe])
+    const setSelectedKeyframeIds = useEditorState(
+        (state) => state.setSelectedKeyframeIds,
+    )
+    return (
+        <div className='flex flex-col'>
+            <div className='' ref={container}></div>
 
-    return <div ref={container} className='flex flex-col'></div>
+            {selectedEffects.length === 1 && (
+                <button
+                    className='flex items-center justify-center px-4 py-2 mt-4 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                    onClick={() => {
+                        const effect = selectedEffects[0].node
+                        const currentTime =
+                            useEditorState.getState().currentTime
+                        const newKeyframe = {
+                            id: generateId(),
+                            time: currentTime,
+                            params: structuredClone(effect.params),
+                        }
+                        const updatedEffect = {
+                            ...effect,
+                            keyframes: [...effect.keyframes, newKeyframe],
+                        }
+                        const updatedEffects = updateEffectInTree(
+                            effectsAll,
+                            updatedEffect,
+                        )
+                        setSelectedKeyframeIds([newKeyframe.id], [effect.id])
+                        setEffects(updatedEffects)
+                    }}
+                >
+                    <KeyframeAddIcon className='w-5 h-5 mr-2' />
+                    Add Keyframe
+                </button>
+            )}
+        </div>
+    )
+}
+
+function generateId() {
+    return Math.random().toString(36).substr(2, 9)
 }
 
 export function KeyframeAddIcon(props) {
