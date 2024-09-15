@@ -414,10 +414,10 @@ function RotationsImage() {
         </Container>
     )
 }
-
 function Entities() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
+    const setSelectedEffectIds = useEditorState((state) => state.setSelectedEffectIds)
 
     return (
         <div
@@ -432,9 +432,12 @@ function Entities() {
                 return (
                     <div
                         key={effect.id}
-                        className='border-y opacity-70  overflow-hidden flex items-center justify-between text-white text-xs'
+                        className='border-y opacity-70 overflow-hidden flex items-center justify-between text-white text-xs cursor-pointer'
                         style={{
                             height: `${clipHeight}px`,
+                        }}
+                        onClick={() => {
+                            setSelectedEffectIds([effect.id])
                         }}
                     >
                         <div className='ml-3'>{effect.id}</div>
