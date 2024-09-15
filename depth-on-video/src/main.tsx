@@ -113,6 +113,50 @@ async function applyBokehEffect() {
         renderer.setSize(window.innerWidth, window.innerHeight)
         composer.setSize(window.innerWidth, window.innerHeight)
     })
+
+    // Add click handler to set focus based on depth
+    renderer.domElement.addEventListener('click', (event) => {
+        const rect = renderer.domElement.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        const pixelX = Math.floor((x / rect.width) * depthTexture.image.width)
+        const pixelY = Math.floor(
+            (1 - y / rect.height) * depthTexture.image.height,
+        )
+
+        // Create a temporary canvas to read pixel data
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')!
+        canvas.width = depthTexture.image.width
+        canvas.height = depthTexture.image.height
+        ctx.drawImage(depthTexture.image, 0, 0)
+
+        const pixelData = ctx.getImageData(pixelX, pixelY, 1, 1).data
+
+        const v = readDepth(pixelData[0], camera.near, camera.far)
+
+        // Set the focus based on the depth value
+        bokehPass.uniforms.focus.value = v
+        pane.refresh()
+    })
+}
+
+function readDepth(pixel, near: number, far: number): number {
+    // 'near' and 'far' represent the near and far clipping planes of the camera
+    // They are used to convert the depth value from normalized device coordinates
+    // back to view space (eye space) coordinates
+
+    let z_b = pixel / 255
+
+    // Convert from [0,1] range to [-1,1] range
+    const z_n = 2.0 * z_b - 1.0
+
+    // Convert from normalized device coordinates to view space
+    // This formula reverses the perspective projection
+    const z_e = (2.0 * near * far) / (far + near - z_n * (far - near))
+
+    // Return the depth in view space units
+    return z_e
 }
 
 applyBokehEffect()
