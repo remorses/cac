@@ -376,12 +376,13 @@ export function createThreeCanvas({
     outerShape.lineTo(-1, -1)
 
     // Create a shape for the inner rectangle (hole)
+    const holeSize = 1.5 // Parametrized hole size (0 to 1)
     const holeShape = new THREE.Path()
-    holeShape.moveTo(-0.5, -0.5)
-    holeShape.lineTo(0.5, -0.5)
-    holeShape.lineTo(0.5, 0.5)
-    holeShape.lineTo(-0.5, 0.5)
-    holeShape.lineTo(-0.5, -0.5)
+    holeShape.moveTo(-holeSize / 2, -holeSize / 2)
+    holeShape.lineTo(holeSize / 2, -holeSize / 2)
+    holeShape.lineTo(holeSize / 2, holeSize / 2)
+    holeShape.lineTo(-holeSize / 2, holeSize / 2)
+    holeShape.lineTo(-holeSize / 2, -holeSize / 2)
 
     // Add the hole to the outer shape
     outerShape.holes.push(holeShape)
