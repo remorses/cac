@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Effect, bfs } from './effects'
+import { Effect, EffectInit, bfs, updateEffectInTree } from './effects'
 
 interface AppState {
     currentTime: number
@@ -105,16 +105,13 @@ export const useEditorState = create<AppState>((set, get) => {
         },
         selectedKeyframeIds: [],
 
-        updateEffect: (id: string, updatedEffect: Partial<Effect<any>>) => {
+        updateEffect: (id: string, updatedEffect: EffectInit<Effect<any>>) => {
             set((state) => {
-                const effectsTree = bfs(state.effects, (x) => x.node.id === id)
-                const updatedEffects = effectsTree.map(({ node }) => {
-                    if (node.id === id) {
-                        return { ...node, ...updatedEffect }
-                    }
-                    return node
-                })
-                return { effects: updatedEffects }
+                let newEffects = updateEffectInTree(
+                    state.effects,
+                    updatedEffect,
+                )
+                return { effects: newEffects }
             })
         },
         setCurrentTime: (time) => {

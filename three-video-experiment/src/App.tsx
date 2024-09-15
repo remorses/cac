@@ -28,6 +28,7 @@ import { createThreeCanvas, globalPaneContainer } from './canvas'
 import { Scrubber } from './scrubber'
 import { preparePane } from './utils'
 import { motion } from 'framer-motion'
+import classNames from 'classnames'
 
 function useSelectedMedia() {
     const media = useEditorState((state) => state.media)
@@ -404,10 +405,43 @@ function RotationsImage() {
             <div className='row-span-1 flex flex-col items-center justify-center col-span-3'>
                 <VideoControls />
             </div>
-            <div className='col-span-3 grow'>
+            <div className='col-span-1 h-full '>
+                <Entities />
+            </div>
+            <div className='col-span-2 h-full grow'>
                 <Timeline />
             </div>
         </Container>
+    )
+}
+
+function Entities() {
+    const effects = useEditorState((state) => state.effects)
+    const duration = useEditorState((state) => state.duration)
+
+    return (
+        <div
+            style={{ paddingTop: scrubBarHeight + clipSpacing }}
+            className='flex flex-col gap-2'
+        >
+            {effects.map((effect, index) => {
+                const startPercent = (effect.start / duration) * 100
+                const widthPercent =
+                    ((effect.end - effect.start) / duration) * 100
+
+                return (
+                    <div
+                        key={effect.id}
+                        className='border-y opacity-70  overflow-hidden flex items-center justify-between text-white text-xs'
+                        style={{
+                            height: `${clipHeight}px`,
+                        }}
+                    >
+                        <div className='ml-3'>{effect.id}</div>
+                    </div>
+                )
+            })}
+        </div>
     )
 }
 
@@ -582,6 +616,8 @@ function Timeline() {
         </div>
     )
 }
+
+const scrubBarHeight = 16
 function ScrubBar() {
     const duration = useEditorState((state) => state.duration)
     const isDraggingRef = useRef(false)
@@ -634,7 +670,10 @@ function ScrubBar() {
     return (
         <div
             ref={containerRef}
-            className='w-full select-none cursor-pointer isolate h-[16px] bg-gray-800 relative'
+            className='w-full select-none cursor-pointer isolate  bg-gray-800 relative'
+            style={{
+                height: `${scrubBarHeight}px`,
+            }}
             onMouseDown={handleMouseDown}
             onMouseMove={(e) => {
                 e.stopPropagation()
@@ -682,6 +721,8 @@ function ScrubBar() {
         </div>
     )
 }
+const clipHeight = 34
+const clipSpacing = 10
 
 function Clip({
     effect,
@@ -699,9 +740,7 @@ function Clip({
     const startPercent = (effect.start / duration) * 100
     const widthPercent = ((effect.end - effect.start) / duration) * 100
 
-    const height = 34
-    const spacing = 10
-    let top = (height + spacing) * index
+    let top = (clipHeight + clipSpacing) * index
     const containerRef = useRef<HTMLDivElement>(null)
 
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
@@ -750,11 +789,14 @@ function Clip({
 
     return (
         <div
-            className={`absolute  rounded-md overflow-hidden bg-blue-500 opacity-70 flex flex-row items-center justify-between text-white text-xs ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
+            className={classNames(
+                'absolute rounded-md overflow-hidden bg-blue-500 opacity-70 flex flex-row items-center justify-between text-white text-xs',
+                { 'ring-2 ring-yellow-400': isSelected },
+            )}
             style={{
                 left: `${startPercent}%`,
                 width: `${widthPercent}%`,
-                height,
+                height: clipHeight,
                 top,
             }}
             ref={containerRef}
@@ -879,6 +921,7 @@ function KeyframeComponent({
             kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
         )
         updateEffect(effect.id, {
+            ...effect,
             keyframes: updatedKeyframes,
         })
     }
@@ -894,6 +937,7 @@ function KeyframeComponent({
                     (kf) => kf.id !== keyframe.id,
                 )
                 updateEffect(effect.id, {
+                    ...effect,
                     keyframes: updatedKeyframes,
                 })
                 setSelectedKeyframeIds([], [])
@@ -1087,10 +1131,11 @@ function EffectsControls() {
                 </button>
             )}
             {selectedKeyframeIds.length > 0 && (
-                <div className="mt-4 p-2 bg-yellow-100 text-yellow-800 rounded-md">
-                    <span className="font-semibold">Keyframe Mode</span>
-                    <p className="text-xs text-current opacity-70 mt-1">
-                        You are currently editing keyframe properties. Any changes made will affect the selected keyframe(s).
+                <div className='mt-4 p-2 bg-yellow-100 text-yellow-800 rounded-md'>
+                    <span className='font-semibold'>Keyframe Mode</span>
+                    <p className='text-xs text-current opacity-70 mt-1'>
+                        You are currently editing keyframe properties. Any
+                        changes made will affect the selected keyframe(s).
                     </p>
                 </div>
             )}

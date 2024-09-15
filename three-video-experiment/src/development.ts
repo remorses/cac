@@ -1,4 +1,4 @@
-import { createPositionEffect, createRotationEffect, Effect } from './effects'
+import { createPositionEffect, Effect } from './effects'
 import * as THREE from 'three'
 import { useEditorState } from './state'
 
@@ -51,15 +51,47 @@ if (import.meta.env.DEV) {
             end: 3,
             params: { position: new THREE.Vector3(0.01, 0, 0) },
             keyframes: [
-                { id: '2-0', time: 0, params: { position: new THREE.Vector3(0, 0, 0) } },
+                {
+                    id: '2-0',
+                    time: 0,
+                    params: { position: new THREE.Vector3(0, 0, 0) },
+                },
                 {
                     id: '2-1',
                     time: 2.5,
                     params: { position: new THREE.Vector3(0.02, 0.01, 0) },
                 },
-                { id: '2-2', time: 3, params: { position: new THREE.Vector3(0.01, 0, 0) } },
+                {
+                    id: '2-2',
+                    time: 3,
+                    params: { position: new THREE.Vector3(0.01, 0, 0) },
+                },
             ],
             // bezierCurve: [0.25, 0.1, 0.25, 1],
+        }),
+
+        createPositionEffect({
+            id: '4',
+            start: 2,
+            end: 5,
+            params: { position: new THREE.Vector3(0, 0.01, 0) },
+            keyframes: [
+                {
+                    id: '4-0',
+                    time: 2,
+                    params: { position: new THREE.Vector3(0, 0, 0) },
+                },
+                {
+                    id: '4-1',
+                    time: 3.5,
+                    params: { position: new THREE.Vector3(0, 0.02, 0) },
+                },
+                {
+                    id: '4-2',
+                    time: 5,
+                    params: { position: new THREE.Vector3(0, 0.01, 0) },
+                },
+            ],
         }),
     ]
     useEditorState.setState({ effects })

@@ -52,10 +52,10 @@ export interface Effect<T = any> {
     configure?: (pane: Pane, params: T) => void
 }
 
-type EffectInit<E> =
+export type EffectInit<E> =
     E extends Effect<infer T>
         ? Partial<Omit<Effect<T>, 'params'>> &
-              Pick<Effect<T>, 'params' | 'id' | 'type' | 'start' | 'end'>
+              Pick<Effect<T>, 'params' | 'id' | 'start' | 'end'>
         : never
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
@@ -220,7 +220,10 @@ export function createEffectGroup({
     }
 }
 
-export function updateEffectInTree(effects: Effect<any>[], node: Effect<any>) {
+export function updateEffectInTree(
+    effects: Effect<any>[],
+    node: EffectInit<Effect<any>>,
+) {
     return effects.map((effect) => {
         if (effect.id === node.id) {
             const updatedEffect = {
