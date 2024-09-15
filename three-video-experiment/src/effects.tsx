@@ -48,7 +48,7 @@ export interface Effect<T = any> {
     params: T
     children?: Effect<any>[]
     keyframes: EditorKeyframe<T>[]
-    apply: (mesh: THREE.Mesh, progress: number) => void
+    apply: (mesh: THREE.Mesh) => void
     configure?: (pane: Pane) => void
 }
 
@@ -132,9 +132,9 @@ export function createPositionEffect({
         params,
         bezierCurve,
         apply(mesh: THREE.Mesh, progress: number) {
-            mesh.position.x += params.position.x * progress
-            mesh.position.y += params.position.y * progress
-            mesh.position.z += params.position.z * progress
+            mesh.position.x += params.position.x
+            mesh.position.y += params.position.y
+            mesh.position.z += params.position.z
         },
         configure(pane) {
             const folder = pane.addFolder({
