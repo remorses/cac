@@ -1,8 +1,5 @@
 import { create } from 'zustand'
-import {
-    Effect,
-    bfs
-} from './effects'
+import { Effect, bfs } from './effects'
 
 interface AppState {
     currentTime: number
@@ -19,11 +16,40 @@ interface AppState {
     selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
     selectedKeyframeIds: string[]
-    setSelectedKeyframeIds: (id: string[]) => void
+    setSelectedKeyframeIds: (id: string[], effectIds: string[]) => void
     scale: number
 }
 
 import { useEffect, useRef, useState } from 'react'
+function selectKeyframesOnCurrentTime(currentTime) {
+    const state = useEditorState.getState()
+    const allEffects = bfs(state.effects)
+    const allKeyframes = allEffects.flatMap((x) => {
+        return x.node.keyframes.map((kf) => ({ ...kf, effectId: x.node.id }))
+    })
+    const keyframeThreshold = 0.08 // TODO use fps to determine threshold
+    const selectedKeyframes = allKeyframes.filter(
+        (kf) => Math.abs(kf.time - currentTime) < keyframeThreshold,
+    )
+    const newSelectedKeyframeIds = selectedKeyframes.map((kf) => kf.id)
+    const newSelectedEffectIds = [
+        ...new Set(selectedKeyframes.map((kf) => kf.effectId)),
+    ]
+
+    // TODO optimize this
+    if (
+        JSON.stringify(newSelectedKeyframeIds) !==
+            JSON.stringify(state.selectedKeyframeIds) &&
+        (state.selectedEffectIds.length === 0 ||
+            // TODO maybe needs more work
+            state.setSelectedEffectIds?.[0] === newSelectedEffectIds[0])
+    ) {
+        state.setSelectedKeyframeIds(
+            newSelectedKeyframeIds,
+            newSelectedEffectIds,
+        )
+    }
+}
 
 export const useCurrentTime = () => {
     // return useEditorState((state) => state.currentTime)
@@ -33,16 +59,19 @@ export const useCurrentTime = () => {
     const lastUpdateTimeRef = useRef(0)
 
     useEffect(() => {
-        const throttledUpdate = (state: AppState) => {
+        const throttledUpdate = (state: AppState, prevState: AppState) => {
             const { isPlaying } = state
+            // if (prevState.currentTime - state.currentTime < 0.001) return
             if (!isPlaying) {
                 setCurrentTime(state.currentTime)
+                selectKeyframesOnCurrentTime(state.currentTime)
                 return
             }
             const now = Date.now()
 
             if (now - lastUpdateTimeRef.current >= 30) {
                 setCurrentTime(state.currentTime)
+                selectKeyframesOnCurrentTime(state.currentTime)
                 lastUpdateTimeRef.current = now
             }
         }
@@ -71,8 +100,8 @@ export const useEditorState = create<AppState>((set, get) => {
         setSelectedEffectIds: (id: string[]) => {
             set({ selectedEffectIds: id })
         },
-        setSelectedKeyframeIds: (ids: string[]) => {
-            set({ selectedKeyframeIds: ids })
+        setSelectedKeyframeIds: (ids: string[], effectIds: string[]) => {
+            set({ selectedKeyframeIds: ids, selectedEffectIds: effectIds })
         },
         selectedKeyframeIds: [],
 

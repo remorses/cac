@@ -534,6 +534,9 @@ function Timeline() {
             currentTime: Math.max(0, Math.min(newTime, duration)),
         })
     }
+    const setSelectedKeyframeIds = useEditorState(
+        (state) => state.setSelectedKeyframeIds,
+    )
     return (
         <div
             className='h-full cursor-pointer relative grow flex flex-col gap-3  '
@@ -546,6 +549,7 @@ function Timeline() {
                 onClick={(e) => {
                     scrub(e)
                     setSelectedEffectIds([])
+                    setSelectedKeyframeIds([], [])
                 }}
                 className='inset-0 absolute'
             ></div>
@@ -694,7 +698,7 @@ function Clip({
     const containerRef = useRef<HTMLDivElement>(null)
 
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
-    const setSelectedEffectId = useEditorState(
+    const setSelectedEffectIds = useEditorState(
         (state) => state.setSelectedEffectIds,
     )
 
@@ -728,6 +732,10 @@ function Clip({
             ? effects.filter((e) => selectedEffectIds.includes(e.id))
             : [effect]
 
+    const setSelectedKeyframeIds = useEditorState(
+        (state) => state.setSelectedKeyframeIds,
+    )
+
     return (
         <div
             className={`absolute  rounded-md overflow-hidden bg-blue-500 opacity-70 flex flex-row items-center justify-between text-white text-xs ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
@@ -741,16 +749,17 @@ function Clip({
             onClick={(e) => {
                 e.stopPropagation()
                 const prevSelected = useEditorState.getState().selectedEffectIds
+                setSelectedKeyframeIds([], [])
                 if (e.ctrlKey || e.metaKey || e.shiftKey) {
                     // Add to selection if Ctrl/Cmd/Shift is pressed
-                    setSelectedEffectId(
+                    setSelectedEffectIds(
                         prevSelected.includes(effect.id)
                             ? prevSelected.filter((id) => id !== effect.id) // Remove if already selected
                             : [...prevSelected, effect.id], // Add if not selected
                     )
                 } else {
                     // Replace selection if no modifier key is pressed
-                    setSelectedEffectId([effect.id])
+                    setSelectedEffectIds([effect.id])
                 }
             }}
             onMouseDown={(e) => {
@@ -824,7 +833,7 @@ function KeyframeComponent({
         e.stopPropagation()
         isDraggingRef.current = true
         handleMouseMove(e)
-        setSelectedKeyframeIds([keyframe.id])
+        setSelectedKeyframeIds([keyframe.id], [effect.id])
     }
     const setSelectedKeyframeIds = useEditorState(
         (state) => state.setSelectedKeyframeIds,
@@ -845,7 +854,7 @@ function KeyframeComponent({
         const containerRect = containerRef.current?.getBoundingClientRect()
         if (!containerRect) return
 
-        const newPosition = e.clientX - halfWidth - containerRect.left
+        const newPosition = e.clientX - containerRect.left
         const newRelativeTime =
             (newPosition / containerRect.width) * clipDuration
         const newAbsoluteTime = effect.start + newRelativeTime
@@ -874,7 +883,7 @@ function KeyframeComponent({
                 updateEffect(effect.id, {
                     keyframes: updatedKeyframes,
                 })
-                setSelectedKeyframeIds([])
+                setSelectedKeyframeIds([], [])
             }
         }
 
@@ -887,19 +896,26 @@ function KeyframeComponent({
         }
     }, [effect, keyframe, duration, updateEffect, setSelectedKeyframeIds])
     const isSelected = selectedKeyframeIds.includes(keyframe.id)
-
+    const setCurrentTime = useEditorState((state) => state.setCurrentTime)
+    const setSelectedEffectIds = useEditorState(
+        (state) => state.setSelectedEffectIds,
+    )
     return (
         <div
             className={classnames(
-                'absolute mx-1 shrink-0',
-                isSelected && 'text-blue-900',
+                'absolute shrink-0',
+                isSelected && 'text-yellow-200',
             )}
             style={{
-                left: `${positionPercentage * 100}%`,
+                left: `calc(${positionPercentage * 100}% - ${halfWidth}px)`,
             }}
             onClick={(e) => {
+                // selecting a keyframe MUST also select the effect
                 e.stopPropagation()
-                setSelectedKeyframeIds([keyframe.id])
+                const keyframeTime = keyframe.time
+
+                setCurrentTime(keyframeTime)
+                setSelectedKeyframeIds([keyframe.id], [effect.id])
             }}
             onMouseDown={handleMouseDown}
         >
@@ -970,10 +986,29 @@ function VideoControls() {
 }
 
 function EffectsControls() {
-    const effects = useEditorState((state) => state.effects)
+    const effectsAll = useEditorState((state) => state.effects)
     const setEffects = useEditorState((state) => state.setEffects)
     const container = useRef<HTMLDivElement>(null)
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
+
+    const selectedKeyframeIds = useEditorState(
+        (state) => state.selectedKeyframeIds,
+    )
+    const keyframeThreshold = 0.1 // Adjust this value as needed
+
+    const selectedEffects = bfs(effectsAll).filter((x) =>
+        selectedEffectIds.includes(x.node.id),
+    )
+
+    const currentKeyframe = (() => {
+        if (selectedEffects.length !== 1) return
+        const effect = selectedEffects[0]
+        const keyframes = effect.node.keyframes.filter((kf) =>
+            selectedKeyframeIds.includes(kf.id),
+        )
+        if (keyframes.length !== 1) return
+        return keyframes[0]
+    })()
     useEffect(() => {
         const pane = preparePane(
             new Pane({
@@ -981,20 +1016,19 @@ function EffectsControls() {
                 container: container.current || undefined,
             }),
         )
+        selectedEffects.forEach((effect) => {
+            let params = currentKeyframe?.params || effect.node.params
+            const currentTime = useEditorState.getState().currentTime
 
-        const allEffects = bfs(effects)
-        allEffects
-            .filter((x) => selectedEffectIds.includes(x.node.id))
-            .forEach((effect) => {
-                if (effect.node.configure) {
-                    effect.node.configure(pane)
-                }
-            })
+            if (effect.node.configure) {
+                effect.node.configure(pane, params)
+            }
+        })
 
         return () => {
             pane.dispose()
         }
-    }, [selectedEffectIds])
+    }, [selectedEffectIds, currentKeyframe])
 
     return <div ref={container} className='flex flex-col'></div>
 }

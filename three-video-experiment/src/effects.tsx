@@ -49,11 +49,14 @@ export interface Effect<T = any> {
     children?: Effect<any>[]
     keyframes: EditorKeyframe<T>[]
     apply: (mesh: THREE.Mesh) => void
-    configure?: (pane: Pane) => void
+    configure?: (pane: Pane, params: T) => void
 }
 
-type EffectInit<T> = Partial<Omit<Effect<T>, 'params'>> &
-    Pick<Effect<T>, 'params'>
+type EffectInit<E> =
+    E extends Effect<infer T>
+        ? Partial<Omit<Effect<T>, 'params'>> &
+              Pick<Effect<T>, 'params' | 'id' | 'type' | 'start' | 'end'>
+        : never
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
 
@@ -112,6 +115,10 @@ export function filterEffectTree(
 
 export type EffectType = 'rotation' | 'scale' | 'position'
 
+type PositionEffect = Effect<{
+    position: THREE.Vector3
+}>
+
 export function createPositionEffect({
     id,
     start,
@@ -119,11 +126,10 @@ export function createPositionEffect({
 
     bezierCurve = [0, 0, 1, 1],
     ...rest
-}: EffectInit<{
-    position: THREE.Vector3
-}>) {
+}: EffectInit<PositionEffect>): PositionEffect {
     const params = rest.params
     return {
+        keyframes: [],
         ...rest,
         id,
         type: 'position',
@@ -131,12 +137,12 @@ export function createPositionEffect({
         end,
         params,
         bezierCurve,
-        apply(mesh: THREE.Mesh, progress: number) {
+        apply(mesh: THREE.Mesh) {
             mesh.position.x += params.position.x
             mesh.position.y += params.position.y
             mesh.position.z += params.position.z
         },
-        configure(pane) {
+        configure(pane, params) {
             const folder = pane.addFolder({
                 title: 'Position',
             })
