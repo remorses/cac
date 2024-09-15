@@ -12,7 +12,7 @@ interface AppState {
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
     setEffects: (effects: Effect<any>[]) => void
-    updateEffect: (id: string, updatedEffect: Partial<Effect<any>>) => void
+    updateEffect: (id: string, updatedEffect: EffectInit<Effect<any>>) => void
     selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
     selectedKeyframeIds: string[]
@@ -21,19 +21,32 @@ interface AppState {
 }
 
 import { useEffect, useRef, useState } from 'react'
-function selectKeyframesOnCurrentTime(currentTime) {
+export function getAllCurrentKeyframes() {
     const state = useEditorState.getState()
     const allEffects = bfs(state.effects)
-    const allKeyframes = allEffects.flatMap((x) => {
-        return x.node.keyframes.map((kf) => ({ ...kf, effectId: x.node.id }))
-    })
     const keyframeThreshold = 0.08 // TODO use fps to determine threshold
-    const selectedKeyframes = allKeyframes.filter(
-        (kf) => Math.abs(kf.time - currentTime) < keyframeThreshold,
-    )
-    const newSelectedKeyframeIds = selectedKeyframes.map((kf) => kf.id)
+
+    return allEffects.flatMap((effect) => {
+        return effect.node.keyframes
+            .filter(
+                (kf) =>
+                    Math.abs(kf.time - state.currentTime) < keyframeThreshold,
+            )
+            .map((keyframe) => {
+                return {
+                    keyframe: keyframe,
+                    effect: effect.node,
+                }
+            })
+    })
+}
+
+function selectKeyframesOnCurrentTime(currentTime) {
+    const state = useEditorState.getState()
+    const selectedKeyframes = getAllCurrentKeyframes()
+    const newSelectedKeyframeIds = selectedKeyframes.map((kf) => kf.keyframe.id)
     const newSelectedEffectIds = [
-        ...new Set(selectedKeyframes.map((kf) => kf.effectId)),
+        ...new Set(selectedKeyframes.map((kf) => kf.effect.id)),
     ]
 
     // TODO optimize this
@@ -105,7 +118,7 @@ export const useEditorState = create<AppState>((set, get) => {
         },
         selectedKeyframeIds: [],
 
-        updateEffect: (id: string, updatedEffect: EffectInit<Effect<any>>) => {
+        updateEffect: (id: string, updatedEffect) => {
             set((state) => {
                 let newEffects = updateEffectInTree(
                     state.effects,

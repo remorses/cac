@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { threeCanvas } from './App'
 import { useEditorState } from './state'
 import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'
@@ -48,14 +49,14 @@ export interface Effect<T = any> {
     params: T
     children?: Effect<any>[]
     keyframes: EditorKeyframe<T>[]
-    apply: (mesh: THREE.Mesh) => void
+    apply: (any: any) => void
     configure?: (pane: Pane, params: T) => void
 }
 
 export type EffectInit<E> =
     E extends Effect<infer T>
         ? Partial<Omit<Effect<T>, 'params'>> &
-              Pick<Effect<T>, 'params' | 'id' | 'start' | 'end'>
+              Pick<Effect<T>, 'id' | 'start' | 'end'>
         : never
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
@@ -115,36 +116,44 @@ export function filterEffectTree(
 
 export type EffectType = 'rotation' | 'scale' | 'position'
 
-type PositionEffect = Effect<{
+export type MeshEffect = Effect<{
     position: THREE.Vector3
+    rotation: THREE.Euler
 }>
 
-export function createPositionEffect({
+export function createMeshEffect({
     id,
     start,
     end,
-
     bezierCurve = [0, 0, 1, 1],
     ...rest
-}: EffectInit<PositionEffect>): PositionEffect {
-    const params = rest.params
+}: EffectInit<MeshEffect>): MeshEffect {
+    const params = {
+        position: new THREE.Vector3(0, 0, 0),
+        rotation: new THREE.Euler(0, 0, 0),
+    }
+    params.position.copy(threeCanvas.plane.position)
+    params.rotation.copy(threeCanvas.plane.rotation)
     return {
         keyframes: [],
         ...rest,
         id,
-        type: 'position',
+        type: 'mesh',
         start,
         end,
         params,
         bezierCurve,
         apply(mesh: THREE.Mesh) {
-            mesh.position.x += params.position.x
-            mesh.position.y += params.position.y
-            mesh.position.z += params.position.z
+            mesh.position.x = params.position.x
+            mesh.position.y = params.position.y
+            mesh.position.z = params.position.z
+            mesh.rotation.x = params.rotation.x
+            mesh.rotation.y = params.rotation.y
+            mesh.rotation.z = params.rotation.z
         },
         configure(pane, params) {
             const folder = pane.addFolder({
-                title: 'Position',
+                title: 'Mesh Transform',
             })
             folder.addBinding(params.position, 'x', {
                 label: 'X Position',
@@ -161,9 +170,129 @@ export function createPositionEffect({
                 picker: 'inline',
                 expanded: true,
             })
+            folder.addBinding(params, 'rotation', {
+                label: 'Rotation',
+                picker: 'inline',
+                expanded: true,
+                view: 'rotation',
+                rotationMode: 'euler',
+                order: 'XYZ', // Extrinsic rotation order. optional, 'XYZ' by default
+                unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
+            })
+
             bezierControl({ folder, bezierCurve })
         },
     }
+}
+export type CameraEffect = Effect<{
+    position: THREE.Vector3
+    rotation: THREE.Euler
+    zoom: number
+}>
+
+export function createCameraEffect({
+    id,
+    start,
+    end,
+    bezierCurve = [0, 0, 1, 1],
+    ...rest
+}: EffectInit<CameraEffect>): CameraEffect {
+    const params = {
+        position: new THREE.Vector3(0, 0, 0),
+        rotation: new THREE.Euler(0, 0, 0),
+        zoom: 1,
+    }
+    params.position.copy(threeCanvas.camera.position)
+    params.rotation.copy(threeCanvas.camera.rotation)
+    params.zoom = threeCanvas.camera.zoom
+    return {
+        keyframes: [],
+        ...rest,
+        id,
+        type: 'camera',
+        start,
+        end,
+        params,
+        bezierCurve,
+        apply() {
+            const camera = threeCanvas.camera
+            camera.position.copy(params.position)
+            camera.rotation.copy(params.rotation)
+            camera.zoom = params.zoom
+            camera.updateProjectionMatrix()
+        },
+        configure(pane, params) {
+            const folder = pane.addFolder({
+                title: 'Camera Transform',
+            })
+            bezierControl({ folder, bezierCurve })
+
+            folder.addBinding(params.position, 'x', {
+                label: 'X Position',
+                picker: 'inline',
+                expanded: true,
+            })
+            folder.addBinding(params.position, 'y', {
+                label: 'Y Position',
+                picker: 'inline',
+                expanded: true,
+            })
+            folder.addBinding(params.position, 'z', {
+                label: 'Z Position',
+                picker: 'inline',
+                expanded: true,
+            })
+            folder.addBinding(params, 'rotation', {
+                label: 'Rotation',
+                picker: 'inline',
+                expanded: true,
+                view: 'rotation',
+                rotationMode: 'euler',
+                order: 'XYZ', // Extrinsic rotation order. optional, 'XYZ' by default
+                unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
+            })
+
+            folder.addBinding(params, 'zoom', {
+                label: 'Zoom',
+                min: 0.1,
+                max: 10,
+                step: 0.1,
+            })
+        },
+    }
+}
+
+function createEulerProxy(target: { rotation: THREE.Euler }) {
+    return createProxy({
+        target,
+        setter: (target, prop, value) => {
+            if (prop === 'x') {
+                target.rotation.set(
+                    value,
+                    target.rotation.y,
+                    target.rotation.z,
+                    target.rotation.order,
+                )
+            } else if (prop === 'y') {
+                target.rotation.set(
+                    target.rotation.x,
+                    value,
+                    target.rotation.z,
+                    target.rotation.order,
+                )
+            } else if (prop === 'z') {
+                target.rotation.set(
+                    target.rotation.x,
+                    target.rotation.y,
+                    value,
+                    target.rotation.order,
+                )
+            } else {
+                ;(target as any)[prop] = value
+            }
+            return true
+        },
+    })
 }
 
 function bezierControl({

@@ -10,8 +10,8 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from 'three-soft-depth-of-field/src'
-import { useEditorState } from './state'
-import { EditorKeyframe, Effect, evaluateBezier } from './effects'
+import { getAllCurrentKeyframes, useEditorState } from './state'
+import { EditorKeyframe, Effect, evaluateBezier, MeshEffect } from './effects'
 import { createProxy, preparePane } from './utils'
 
 export const deg = Math.PI / 180
@@ -97,22 +97,61 @@ export function createThreeCanvas({
     transformControls.attach(plane)
     scene.add(transformControls)
 
-    // Disable orbit controls when using transform controls
+    controls.addEventListener('change', (event) => {
+        const state = useEditorState.getState()
+
+        const effect = state.effects.find((x) => x.type === 'camera')
+
+        if (!effect) {
+            throw new Error('No camera effect found')
+        }
+        if (!state.selectedEffectIds.includes(effect.id)) {
+            state.setSelectedEffectIds([effect.id])
+        }
+        let { params } = effect
+        const keyframe = getAllCurrentKeyframes().find(
+            (x) => x.effect.id === effect.id,
+        )?.keyframe
+
+        if (keyframe) {
+            params = keyframe.params
+        }
+        params.position.copy(camera.position)
+        params.rotation.copy(camera.rotation)
+        params.zoom = camera.zoom
+    })
+
+    // Lock orbit controls when transform controls are being used
     transformControls.addEventListener('dragging-changed', (event) => {
         controls.enabled = !event.value
     })
 
-    // Add event listeners for controls changes
-    controls.addEventListener('change', () => {
-        const distance = camera.position.distanceTo(plane.position)
-        bokehPass.uniforms.focus.value = distance
-        render()
-    })
+    transformControls.addEventListener('objectChange', (event) => {
+        // console.log({ event })
+        const state = useEditorState.getState()
 
-    transformControls.addEventListener('change', () => {
-        const distance = camera.position.distanceTo(plane.position)
-        bokehPass.uniforms.focus.value = distance
-        render()
+        const selectedEffectIds = state.selectedEffectIds
+        const meshEffect: MeshEffect | undefined = state.effects.find(
+            (x) => x.type === 'mesh',
+        )
+
+        if (!meshEffect) {
+            throw new Error('No mesh effect found')
+        }
+        if (!selectedEffectIds.includes(meshEffect.id)) {
+            state.setSelectedEffectIds([meshEffect.id])
+        }
+
+        let { params } = meshEffect
+        const keyframe = getAllCurrentKeyframes().find(
+            (x) => x.effect.id === meshEffect.id,
+        )?.keyframe
+
+        if (keyframe) {
+            params = keyframe.params
+        }
+        params.position.copy(plane.position)
+        params.rotation.copy(plane.rotation)
     })
 
     const img = texture.image
@@ -183,8 +222,6 @@ export function createThreeCanvas({
         },
     })
 
-    pane.controller.document
-
     composer.addPass(bokehPass)
     const smaaPass = new SMAAPass(
         renderer.domElement.width * renderer.getPixelRatio(),
@@ -242,78 +279,54 @@ export function createThreeCanvas({
                 const mergeParamType = (start, end, progress) => {
                     if (typeof start === 'number' && typeof end === 'number') {
                         return start + (end - start) * progress
-                    } else if (
-                        start instanceof THREE.Vector3 &&
-                        end instanceof THREE.Vector3
-                    ) {
-                        return new THREE.Vector3().lerpVectors(
-                            start,
-                            end,
-                            progress,
-                        )
-                    } else if (
-                        start instanceof THREE.Euler &&
-                        end instanceof THREE.Euler
-                    ) {
+                    }
+                    if (start instanceof THREE.Vector3 && end instanceof THREE.Vector3) {
+                        return new THREE.Vector3().lerpVectors(start, end, progress)
+                    }
+                    if (start instanceof THREE.Euler && end instanceof THREE.Euler) {
                         return new THREE.Euler(
                             start.x + (end.x - start.x) * progress,
                             start.y + (end.y - start.y) * progress,
-                            start.z + (end.z - start.z) * progress,
+                            start.z + (end.z - start.z) * progress
                         )
-                    } else if (
-                        start instanceof THREE.Color &&
-                        end instanceof THREE.Color
-                    ) {
-                        return new THREE.Color().lerpColors(
-                            start,
-                            end,
-                            progress,
-                        )
-                    } else if (Array.isArray(start) && Array.isArray(end)) {
-                        return start.map((s, i) =>
-                            mergeParamType(s, end[i], progress),
-                        )
-                    } else if (
-                        typeof start === 'object' &&
-                        typeof end === 'object'
-                    ) {
+                    }
+                    if (start instanceof THREE.Color && end instanceof THREE.Color) {
+                        return new THREE.Color().lerpColors(start, end, progress)
+                    }
+                    if (Array.isArray(start) && Array.isArray(end)) {
+                        return start.map((s, i) => mergeParamType(s, end[i], progress))
+                    }
+                    if (typeof start === 'object' && typeof end === 'object') {
                         const result = {}
                         for (const key in start) {
                             if (key in end) {
-                                result[key] = mergeParamType(
-                                    start[key],
-                                    end[key],
-                                    progress,
-                                )
+                                result[key] = mergeParamType(start[key], end[key], progress)
                             } else {
                                 result[key] = start[key]
                             }
                         }
                         return result
                     }
-                    if (
-                        start instanceof THREE.Vector2 &&
-                        end instanceof THREE.Vector2
-                    ) {
-                        return new THREE.Vector2().lerpVectors(
-                            start,
-                            end,
-                            progress,
-                        )
+                    if (start instanceof THREE.Vector2 && end instanceof THREE.Vector2) {
+                        return new THREE.Vector2().lerpVectors(start, end, progress)
                     }
-                    return start // Default to returning start value if type is not handled
+                    return start
                 }
 
                 // Find the keyframes before and after the current time
                 const prevKeyframe: EditorKeyframe | null =
-                    effect.keyframes.reduce((prev, curr) => {
-                        if (Math.abs(curr.time - currentTime) < 0.0001) {
-                            return curr // Exact match, return this keyframe
-                        }
-                        return curr.time < currentTime && curr.time > prev?.time
-                            ? curr
-                            : prev
-                    })
+                    effect.keyframes.reduce(
+                        (prev, curr) => {
+                            if (Math.abs(curr.time - currentTime) < 0.0001) {
+                                return curr // Exact match, return this keyframe
+                            }
+                            return curr.time < currentTime &&
+                                curr.time > (prev?.time || 0)
+                                ? curr
+                                : prev
+                        },
+                        null as EditorKeyframe | null,
+                    )
                 const nextKeyframe =
                     effect.keyframes.find((kf) => kf.time > currentTime) ||
                     effect.keyframes[effect.keyframes.length - 1]
@@ -411,6 +424,7 @@ export function createThreeCanvas({
     overlayScene.add(rectangleLines) // Add this line to render the yellow outline
 
     function render({ isPreview = true } = {}) {
+        const state = useEditorState.getState()
         if (isExporting) {
             isPreview = false
         }
@@ -433,7 +447,9 @@ export function createThreeCanvas({
         let prevPost = plane.position.clone()
         let prevRot = plane.rotation.clone()
         let prevScale = plane.scale.clone()
-        applyEffects(effects)
+        if (state.isPlaying) {
+            applyEffects(effects)
+        }
         composer.render()
         plane.position.copy(prevPost)
         plane.rotation.copy(prevRot)
@@ -443,10 +459,6 @@ export function createThreeCanvas({
             renderer.render(overlayScene, overlayCamera)
         }
     }
-
-    pane.on('change', () => {
-        render()
-    })
 
     function changeImage(bitmap: ImageBitmap | VideoFrame) {
         texture.dispose()
@@ -490,6 +502,13 @@ export function createThreeCanvas({
         // if (transformControls) transformControls.dispose()
     }
 
+    function applyAllEffects() {
+        applyEffects(useEditorState.getState().effects)
+    }
+    pane.on('change', () => {
+        applyAllEffects()
+    })
+
     let isExporting = false
 
     function calculateScaleFactor(rectangleHeight) {
@@ -516,6 +535,7 @@ export function createThreeCanvas({
             scene.updateMatrixWorld()
         },
         canvas,
+        camera,
         render,
         plane,
         renderer,
@@ -523,6 +543,9 @@ export function createThreeCanvas({
         changeImage,
         changeVideo,
         cleanup,
+        controls,
+        transformControls,
+        applyAllEffects,
     }
 }
 

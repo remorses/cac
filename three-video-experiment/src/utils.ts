@@ -94,7 +94,9 @@ export const debounce = (fn: Function, ms = 300) => {
 }
 
 export const maxKey = (obj: { [key: string]: number }) => {
-    return Object.keys(obj).reduce((a, b) => (obj[a] > obj[b] ? a : b))
+    const keys = Object.keys(obj)
+    if (keys.length === 0) return ''
+    return keys.reduce((a, b) => (obj[a] > obj[b] ? a : b))
 }
 
 export function createProxy<T extends object>({

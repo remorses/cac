@@ -56,7 +56,7 @@ export function App() {
     return <RouterProvider router={router} />
 }
 
-const threeCanvas = createThreeCanvas()
+export const threeCanvas = createThreeCanvas()
 
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -973,8 +973,8 @@ function KeyframeComponent({
     return (
         <div
             className={classnames(
-                'absolute shrink-0',
-                isSelected && 'text-yellow-200',
+                'absolute text-gray-900 shrink-0',
+                isSelected && '!text-white',
             )}
             style={{
                 left: `calc(${positionPercentage * 100}% - ${halfWidth}px)`,
@@ -1064,21 +1064,19 @@ function EffectsControls() {
     const selectedKeyframeIds = useEditorState(
         (state) => state.selectedKeyframeIds,
     )
-    const keyframeThreshold = 0.1 // Adjust this value as needed
 
     const selectedEffects = bfs(effectsAll).filter((x) =>
         selectedEffectIds.includes(x.node.id),
     )
-
-    const currentKeyframe = (() => {
-        if (selectedEffects.length !== 1) return
+    function getCurrentKeyframe() {
+        if (selectedEffects.length !== 1) return null
         const effect = selectedEffects[0]
-        const keyframes = effect.node.keyframes.filter((kf) =>
+        const keyframe = effect.node.keyframes.find((kf) =>
             selectedKeyframeIds.includes(kf.id),
         )
-        if (keyframes.length !== 1) return
-        return keyframes[0]
-    })()
+        return keyframe || null
+    }
+    const currentKeyframe = getCurrentKeyframe()
     useEffect(() => {
         const pane = preparePane(
             new Pane({
@@ -1086,6 +1084,7 @@ function EffectsControls() {
                 container: container.current || undefined,
             }),
         )
+
         selectedEffects.forEach((effect) => {
             let params = currentKeyframe?.params || effect.node.params
             const currentTime = useEditorState.getState().currentTime
@@ -1095,8 +1094,23 @@ function EffectsControls() {
             }
         })
 
+        // Add event listener to threeCanvas.controls
+        const refreshPane = () => {
+            pane.refresh()
+        }
+        threeCanvas.controls.addEventListener('change', refreshPane)
+        threeCanvas.transformControls.addEventListener(
+            'objectChange',
+            refreshPane,
+        )
+
+        pane.on('change', () => {
+            threeCanvas.applyAllEffects()
+        })
+
         return () => {
             pane.dispose()
+            threeCanvas.controls.removeEventListener('change', refreshPane)
         }
     }, [selectedEffectIds, currentKeyframe])
     const setSelectedKeyframeIds = useEditorState(
