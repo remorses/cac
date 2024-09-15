@@ -897,7 +897,8 @@ function KeyframeComponent({
             style={{
                 left: `${positionPercentage * 100}%`,
             }}
-            onClick={() => {
+            onClick={(e) => {
+                e.stopPropagation()
                 setSelectedKeyframeIds([keyframe.id])
             }}
             onMouseDown={handleMouseDown}
