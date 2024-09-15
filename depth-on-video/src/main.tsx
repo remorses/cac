@@ -50,8 +50,14 @@ async function applyBokehEffect() {
     let depthTexture_ = new THREE.Texture(depthImageBitmap)
     depthTexture_.needsUpdate = true
 
-    const { composer: depthComposer, resultTexture: depthTexture } =
+    let { composer: depthComposer, resultTexture: depthTexture } =
         await applyPostProcessingEffect(depthTexture_, (composer) => {
+            
+            // Create and add the RedChannelPass
+            const redChannelPass = new RedChannelPass()
+            composer.addPass(redChannelPass)
+
+
             const maxFilterPass = new MaxFilterPass(size)
 
             // Add Tweakpane control for max filter radius
@@ -100,6 +106,7 @@ async function applyBokehEffect() {
             // Return the processed depth texture
         })
 
+    // depthTexture = depthTexture_
     // Create EffectComposer and passes
     const composer = new EffectComposer(renderer)
     const texturePass = new TexturePass(texture)
@@ -116,7 +123,7 @@ async function applyBokehEffect() {
         camera,
         size,
         // focus: 1.0,
-        focus: 0.1,
+        focus: 1,
         fStops: 10,
         // sensorHeight: 50,
         focalLength: 6,
@@ -317,6 +324,68 @@ class MinFilterPass extends Pass {
         }
 
         this.material = new THREE.ShaderMaterial(minFilterShader)
+        this.fsQuad = new FullScreenQuad(this.material)
+        this.renderToScreen = false
+    }
+
+    render(
+        renderer: THREE.WebGLRenderer,
+        writeBuffer: THREE.WebGLRenderTarget,
+        readBuffer: THREE.WebGLRenderTarget,
+    ) {
+        this.uniforms.tDiffuse.value = readBuffer.texture
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null)
+            this.fsQuad.render(renderer)
+        } else {
+            renderer.setRenderTarget(writeBuffer)
+            if (this.clear) renderer.clear()
+            this.fsQuad.render(renderer)
+        }
+    }
+
+    dispose() {
+        this.material.dispose()
+        this.fsQuad.dispose()
+    }
+}
+
+// Create a custom pass for keeping only the red channel
+class RedChannelPass extends Pass {
+    material: THREE.ShaderMaterial
+    fsQuad: FullScreenQuad
+    uniforms: {
+        tDiffuse: THREE.IUniform<THREE.Texture | null>
+    }
+
+    constructor() {
+        super()
+
+        this.uniforms = {
+            tDiffuse: { value: null },
+        }
+
+        const redChannelShader = {
+            uniforms: this.uniforms,
+            vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+            fragmentShader: `
+        uniform sampler2D tDiffuse;
+        varying vec2 vUv;
+
+        void main() {
+            vec4 texel = texture2D(tDiffuse, vUv);
+            gl_FragColor = vec4(texel.r, 0.0, 0.0, 1.0);
+        }
+    `,
+        }
+
+        this.material = new THREE.ShaderMaterial(redChannelShader)
         this.fsQuad = new FullScreenQuad(this.material)
         this.renderToScreen = false
     }
