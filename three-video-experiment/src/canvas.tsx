@@ -20,10 +20,8 @@ export const globalPaneContainer = document.createElement('div')
 
 export function createThreeCanvas({
     initialImageSize,
-    isPreview = true,
 }: {
     initialImageSize?: { width: number; height: number } | undefined
-    isPreview?: boolean
 } = {}) {
     const canvas = document.createElement('canvas')
     canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
@@ -365,7 +363,38 @@ export function createThreeCanvas({
         }
     }
 
+    // Create an overlay scene and camera for the rectangle
+    const overlayScene = new THREE.Scene()
+    const overlayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+
+    // Create a rectangle to show the original 75 FOV view
+    const originalFOV = 50
+
+    const tanFOV = Math.tan((originalFOV / 2) * (Math.PI / 180))
+    const rectangleHeight = 1
+    const rectangleWidth = rectangleHeight * aspectRatio
+
+    const rectangleGeometry = new THREE.PlaneGeometry(
+        rectangleWidth,
+        rectangleHeight,
+    )
+    const rectangleMaterial = new THREE.LineBasicMaterial({
+        color: 0xffff00,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.5,
+    })
+    const rectangle = new THREE.LineSegments(
+        new THREE.EdgesGeometry(rectangleGeometry),
+        rectangleMaterial,
+    )
+    overlayScene.add(rectangle)
+
     function render({ isPreview = true } = {}) {
+        renderer.autoClear = false
+        renderer.clear()
+
         if (!isPreview) {
             transformControls.enabled = false
             transformControls.visible = false
@@ -387,6 +416,11 @@ export function createThreeCanvas({
         plane.position.copy(prevPost)
         plane.rotation.copy(prevRot)
         plane.scale.copy(prevScale)
+        // Clear the depth buffer
+        renderer.clearDepth()
+
+        // Render the overlay scene
+        renderer.render(overlayScene, overlayCamera)
     }
 
     pane.on('change', () => {
