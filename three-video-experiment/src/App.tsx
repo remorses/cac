@@ -815,7 +815,8 @@ function KeyframeComponent({
     const halfWidth = 12
     const duration = useEditorState((state) => state.duration)
     const clipDuration = effect.end - effect.start
-    const positionPercentage = keyframe.time / duration
+    const relativeKeyframeTime = keyframe.time - effect.start
+    const positionPercentage = relativeKeyframeTime / clipDuration
     const updateEffect = useEditorState((state) => state.updateEffect)
     const isDraggingRef = useRef(false)
 
@@ -845,8 +846,13 @@ function KeyframeComponent({
         if (!containerRect) return
 
         const newPosition = e.clientX - halfWidth - containerRect.left
-        const newTime = (newPosition / containerRect.width) * duration
-        const clampedNewTime = Math.max(0, Math.min(newTime, effect.end))
+        const newRelativeTime =
+            (newPosition / containerRect.width) * clipDuration
+        const newAbsoluteTime = effect.start + newRelativeTime
+        const clampedNewTime = Math.max(
+            effect.start,
+            Math.min(newAbsoluteTime, effect.end),
+        )
 
         const updatedKeyframes = effect.keyframes.map((kf) =>
             kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
@@ -877,8 +883,9 @@ function KeyframeComponent({
         return () => {
             document.removeEventListener('mousemove', handleMouseMove)
             document.removeEventListener('mouseup', handleMouseUp)
+            document.removeEventListener('keydown', handleKeyDown)
         }
-    }, [effect, keyframe, duration, updateEffect])
+    }, [effect, keyframe, duration, updateEffect, setSelectedKeyframeIds])
     const isSelected = selectedKeyframeIds.includes(keyframe.id)
 
     return (
