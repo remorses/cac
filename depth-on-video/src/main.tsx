@@ -7,6 +7,9 @@ import { BokehPass } from 'three-soft-depth-of-field/src'
 import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js'
 
 import { Pane } from 'tweakpane'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js'
+import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js'
 
 async function applyBokehEffect() {
     const pane = new Pane({})
@@ -44,104 +47,65 @@ async function applyBokehEffect() {
     const depthImageBitmap = await createImageBitmap(depthBlob, {
         imageOrientation: 'flipY',
     })
-    let depthTexture = new THREE.Texture(depthImageBitmap)
-    depthTexture.needsUpdate = true
+    let depthTexture_ = new THREE.Texture(depthImageBitmap)
+    depthTexture_.needsUpdate = true
 
-    depthTexture = await applyPostProcessingEffect(depthTexture, (composer) => {
-        // Create a custom pass for max filter
-        class MaxFilterPass extends Pass {
-            material: THREE.ShaderMaterial
-            fsQuad: FullScreenQuad
+    const { composer: depthComposer, resultTexture: depthTexture } =
+        await applyPostProcessingEffect(depthTexture_, (composer) => {
+            const maxFilterPass = new MaxFilterPass(size)
 
-            constructor(size: THREE.Vector2) {
-                super()
+            // Add Tweakpane control for max filter radius
+            pane.addBinding(maxFilterPass.uniforms.radius, 'value', {
+                label: 'Max Filter Radius',
+                min: 0,
+                max: 10,
+                step: 1,
+            })
 
-                const maxFilterShader = {
-                    uniforms: {
-                        tDiffuse: { value: null },
-                        resolution: {
-                            value: new THREE.Vector2(size.x, size.y),
-                        },
-                        radius: { value: 1 },
-                    },
-                    vertexShader: `
-                    varying vec2 vUv;
-                    void main() {
-                        vUv = uv;
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                    fragmentShader: `
-                    uniform sampler2D tDiffuse;
-                    uniform vec2 resolution;
-                    uniform float radius;
-                    varying vec2 vUv;
+            // Add the max filter pass to the composer
+            composer.addPass(maxFilterPass)
 
-                    void main() {
-                        vec2 texelSize = 1.0 / resolution;
-                        float maxValue = 0.0;
+            // Create Horizontal and Vertical Blur Passes
+            const effectHBlur = new ShaderPass(HorizontalBlurShader)
+            const effectVBlur = new ShaderPass(VerticalBlurShader)
+            effectHBlur.uniforms['h'].value = 1 / (size.width / 2)
+            effectVBlur.uniforms['v'].value = 1 / (size.height / 2)
 
-                        for (float x = -radius; x <= radius; x++) {
-                            for (float y = -radius; y <= radius; y++) {
-                                vec2 offset = vec2(x, y) * texelSize;
-                                maxValue = max(maxValue, texture2D(tDiffuse, vUv + offset).r);
-                            }
-                        }
+            // Add the Blur Passes to the composer
+            composer.addPass(effectHBlur)
+            composer.addPass(effectVBlur)
 
-                        gl_FragColor = vec4(maxValue, maxValue, maxValue, 1.0);
-                    }
-                `,
-                }
+            // Add Tweakpane controls for Blur strength
+            pane.addBinding(effectHBlur.uniforms['h'], 'value', {
+                label: 'Horizontal Blur',
+                min: 0,
+                max: 0.01,
+                step: 0.0001,
+            })
+            pane.addBinding(effectVBlur.uniforms['v'], 'value', {
+                label: 'Vertical Blur',
+                min: 0,
+                max: 0.01,
+                step: 0.0001,
+            })
 
-                this.material = new THREE.ShaderMaterial(maxFilterShader)
-                this.fsQuad = new FullScreenQuad(this.material)
-                this.renderToScreen = false
-            }
+            // Add Tweakpane control for max filter radius
+            pane.addBinding(maxFilterPass.material.uniforms.radius, 'value', {
+                label: 'Max Filter Radius',
+                min: 0,
+                max: 10,
+                step: 1,
+            })
 
-            render(
-                renderer: THREE.WebGLRenderer,
-                writeBuffer: THREE.WebGLRenderTarget,
-                readBuffer: THREE.WebGLRenderTarget,
-            ) {
-                this.material.uniforms.tDiffuse.value = readBuffer.texture
-                if (this.renderToScreen) {
-                    renderer.setRenderTarget(null)
-                    this.fsQuad.render(renderer)
-                } else {
-                    renderer.setRenderTarget(writeBuffer)
-                    if (this.clear) renderer.clear()
-                    this.fsQuad.render(renderer)
-                }
-            }
-
-            dispose() {
-                this.material.dispose()
-                this.fsQuad.dispose()
-            }
-        }
-
-        const maxFilterPass = new MaxFilterPass(size)
-
-        // Add the max filter pass to the composer
-        composer.addPass(maxFilterPass)
-
-        // Add Tweakpane control for max filter radius
-        pane.addBinding(maxFilterPass.material.uniforms.radius, 'value', {
-            label: 'Max Filter Radius',
-            min: 0,
-            max: 10,
-            step: 1,
+            // Return the processed depth texture
         })
-
-        // Return the processed depth texture
-    })
 
     // Create EffectComposer and passes
     const composer = new EffectComposer(renderer)
-    const texturePass = new TexturePass(depthTexture)
+    const texturePass = new TexturePass(texture)
     // Create a camera
     const camera = new THREE.PerspectiveCamera(
-        75,
+        100,
         window.innerWidth / window.innerHeight,
         0.1,
         1000,
@@ -158,7 +122,7 @@ async function applyBokehEffect() {
         focalLength: 6,
         // dofDebug: true,
     })
-    bokehPass.enabled = false
+    // bokehPass.enabled = false
 
     pane.addBinding(bokehPass, 'enabled', {
         label: 'Enable Bokeh',
@@ -203,6 +167,9 @@ async function applyBokehEffect() {
     // Render function
     function animate() {
         requestAnimationFrame(animate)
+
+        depthComposer.render()
+        depthTexture.needsUpdate = true
         composer.render()
     }
 
@@ -263,31 +230,18 @@ async function applyPostProcessingEffect(
     // Call the effect callback to add custom effects
     effect(composer)
 
-    // Create a new WebGLRenderTarget to render the result
-    const renderTarget = new THREE.WebGLRenderTarget(
-        texture.image.width,
-        texture.image.height,
-    )
+    // // Create a new WebGLRenderTarget to render the result
+    // const renderTarget = new THREE.WebGLRenderTarget(
+    //     texture.image.width,
+    //     texture.image.height,
+    // )
 
     // Render the composition to the render target
     composer.render()
 
-    // Create a new texture from the render target
-    // Get the bitmap from the canvas domElement
-    const bitmap = await createImageBitmap(renderer.domElement!, {
-        imageOrientation: 'flipY',
-    })
-
-    // Create a new texture with the bitmap
-    const resultTexture = new THREE.Texture(bitmap)
+    let resultTexture = new THREE.Texture(renderer.domElement)
     resultTexture.needsUpdate = true
-
-    // Clean up
-    composer.dispose()
-    renderer.dispose()
-    renderTarget.dispose()
-
-    return resultTexture
+    return { composer, resultTexture }
 }
 
 function readDepth(pixel, near: number, far: number): number {
@@ -309,3 +263,161 @@ function readDepth(pixel, near: number, far: number): number {
 }
 
 applyBokehEffect()
+
+// Create a custom pass for min filter
+class MinFilterPass extends Pass {
+    material: THREE.ShaderMaterial
+    fsQuad: FullScreenQuad
+    uniforms: {
+        tDiffuse: THREE.IUniform<THREE.Texture | null>
+        resolution: THREE.IUniform<THREE.Vector2>
+        radius: THREE.IUniform<number>
+    }
+
+    constructor(size: THREE.Vector2) {
+        super()
+
+        this.uniforms = {
+            tDiffuse: { value: null },
+            resolution: {
+                value: new THREE.Vector2(size.x, size.y),
+            },
+            radius: { value: 6 },
+        }
+
+        const minFilterShader = {
+            uniforms: this.uniforms,
+            vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+            fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float radius;
+        varying vec2 vUv;
+
+        void main() {
+            vec2 texelSize = 1.0 / resolution;
+            float minValue = 1.0;
+
+            for (float x = -radius; x <= radius; x++) {
+                for (float y = -radius; y <= radius; y++) {
+                    vec2 offset = vec2(x, y) * texelSize;
+                    minValue = min(minValue, texture2D(tDiffuse, vUv + offset).r);
+                }
+            }
+
+            gl_FragColor = vec4(minValue, minValue, minValue, 1.0);
+        }
+    `,
+        }
+
+        this.material = new THREE.ShaderMaterial(minFilterShader)
+        this.fsQuad = new FullScreenQuad(this.material)
+        this.renderToScreen = false
+    }
+
+    render(
+        renderer: THREE.WebGLRenderer,
+        writeBuffer: THREE.WebGLRenderTarget,
+        readBuffer: THREE.WebGLRenderTarget,
+    ) {
+        this.uniforms.tDiffuse.value = readBuffer.texture
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null)
+            this.fsQuad.render(renderer)
+        } else {
+            renderer.setRenderTarget(writeBuffer)
+            if (this.clear) renderer.clear()
+            this.fsQuad.render(renderer)
+        }
+    }
+
+    dispose() {
+        this.material.dispose()
+        this.fsQuad.dispose()
+    }
+}
+
+// Create a custom pass for max filter
+class MaxFilterPass extends Pass {
+    material: THREE.ShaderMaterial
+    fsQuad: FullScreenQuad
+    uniforms: {
+        tDiffuse: THREE.IUniform<THREE.Texture | null>
+        resolution: THREE.IUniform<THREE.Vector2>
+        radius: THREE.IUniform<number>
+    }
+
+    constructor(size: THREE.Vector2) {
+        super()
+
+        this.uniforms = {
+            tDiffuse: { value: null },
+            resolution: {
+                value: new THREE.Vector2(size.x, size.y),
+            },
+            radius: { value: 3 },
+        }
+
+        const maxFilterShader = {
+            uniforms: this.uniforms,
+            vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+            fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float radius;
+        varying vec2 vUv;
+
+        void main() {
+            vec2 texelSize = 1.0 / resolution;
+            float maxValue = 0.0;
+
+            for (float x = -radius; x <= radius; x++) {
+                for (float y = -radius; y <= radius; y++) {
+                    vec2 offset = vec2(x, y) * texelSize;
+                    maxValue = max(maxValue, texture2D(tDiffuse, vUv + offset).r);
+                }
+            }
+
+            gl_FragColor = vec4(maxValue, maxValue, maxValue, 1.0);
+        }
+    `,
+        }
+
+        this.material = new THREE.ShaderMaterial(maxFilterShader)
+        this.fsQuad = new FullScreenQuad(this.material)
+        this.renderToScreen = false
+    }
+
+    render(
+        renderer: THREE.WebGLRenderer,
+        writeBuffer: THREE.WebGLRenderTarget,
+        readBuffer: THREE.WebGLRenderTarget,
+    ) {
+        this.uniforms.tDiffuse.value = readBuffer.texture
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null)
+            this.fsQuad.render(renderer)
+        } else {
+            renderer.setRenderTarget(writeBuffer)
+            if (this.clear) renderer.clear()
+            this.fsQuad.render(renderer)
+        }
+    }
+
+    dispose() {
+        this.material.dispose()
+        this.fsQuad.dispose()
+    }
+}
