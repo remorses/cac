@@ -150,6 +150,8 @@ export function createMeshEffect({
             mesh.rotation.x = params.rotation.x
             mesh.rotation.y = params.rotation.y
             mesh.rotation.z = params.rotation.z
+            mesh.updateMatrix()
+            mesh.updateMatrixWorld(true)
         },
         configure(pane, params) {
             const folder = pane.addFolder({
