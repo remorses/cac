@@ -367,29 +367,47 @@ export function createThreeCanvas({
     const overlayScene = new THREE.Scene()
     const overlayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
 
-    // Create a rectangle to show the original 75 FOV view
-    const originalFOV = 50
+    // Create a shape for the outer rectangle
+    const outerShape = new THREE.Shape()
+    outerShape.moveTo(-1, -1)
+    outerShape.lineTo(1, -1)
+    outerShape.lineTo(1, 1)
+    outerShape.lineTo(-1, 1)
+    outerShape.lineTo(-1, -1)
 
-    const tanFOV = Math.tan((originalFOV / 2) * (Math.PI / 180))
-    const rectangleHeight = 1
-    const rectangleWidth = rectangleHeight * aspectRatio
+    // Create a shape for the inner rectangle (hole)
+    const holeShape = new THREE.Path()
+    holeShape.moveTo(-0.5, -0.5)
+    holeShape.lineTo(0.5, -0.5)
+    holeShape.lineTo(0.5, 0.5)
+    holeShape.lineTo(-0.5, 0.5)
+    holeShape.lineTo(-0.5, -0.5)
 
-    const rectangleGeometry = new THREE.PlaneGeometry(
-        rectangleWidth,
-        rectangleHeight,
-    )
-    const rectangleMaterial = new THREE.LineBasicMaterial({
+    // Add the hole to the outer shape
+    outerShape.holes.push(holeShape)
+    let rectangleGeometry = new THREE.ShapeGeometry(outerShape)
+
+    let rectangleMaterial = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        opacity: 0.6,
+        transparent: true, // Add this line to enable transparency
+        side: THREE.DoubleSide,
+    })
+
+    let rectangleMaterialLine = new THREE.LineBasicMaterial({
         color: 0xffff00,
         depthTest: false,
         depthWrite: false,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.8,
     })
-    const rectangle = new THREE.LineSegments(
+    const rectangleLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(rectangleGeometry),
-        rectangleMaterial,
+        rectangleMaterialLine,
     )
+    const rectangle = new THREE.Mesh(rectangleGeometry, rectangleMaterial)
     overlayScene.add(rectangle)
+    overlayScene.add(rectangleLines) // Add this line to render the yellow outline
 
     function render({ isPreview = true } = {}) {
         renderer.autoClear = false
@@ -416,11 +434,10 @@ export function createThreeCanvas({
         plane.position.copy(prevPost)
         plane.rotation.copy(prevRot)
         plane.scale.copy(prevScale)
-        // Clear the depth buffer
-        renderer.clearDepth()
 
-        // Render the overlay scene
-        renderer.render(overlayScene, overlayCamera)
+        if (isPreview) {
+            renderer.render(overlayScene, overlayCamera)
+        }
     }
 
     pane.on('change', () => {
