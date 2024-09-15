@@ -705,8 +705,13 @@ function Clip({
     const isSelected = selectedEffectIds.includes(effect.id)
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        const { effects, selectedEffectIds } = useEditorState.getState()
-        if (e.key === 'Backspace' && isSelected) {
+        const { effects, selectedEffectIds, selectedKeyframeIds } =
+            useEditorState.getState()
+        if (
+            e.key === 'Backspace' &&
+            isSelected &&
+            !selectedKeyframeIds.length
+        ) {
             e.preventDefault()
             const newEffects = filterEffectTree(
                 effects,
@@ -870,6 +875,7 @@ function KeyframeComponent({
             keyframes: updatedKeyframes,
         })
     }
+    const isSelected = selectedKeyframeIds.includes(keyframe.id)
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove)
         document.addEventListener('mouseup', handleMouseUp)
@@ -894,8 +900,15 @@ function KeyframeComponent({
             document.removeEventListener('mouseup', handleMouseUp)
             document.removeEventListener('keydown', handleKeyDown)
         }
-    }, [effect, keyframe, duration, updateEffect, setSelectedKeyframeIds])
-    const isSelected = selectedKeyframeIds.includes(keyframe.id)
+    }, [
+        effect,
+        keyframe,
+        isSelected,
+        duration,
+        updateEffect,
+        setSelectedKeyframeIds,
+    ])
+
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const setSelectedEffectIds = useEditorState(
         (state) => state.setSelectedEffectIds,
