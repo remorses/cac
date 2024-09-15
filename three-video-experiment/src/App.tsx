@@ -812,6 +812,7 @@ function KeyframeComponent({
     effect: Effect<any>
     containerRef: React.RefObject<HTMLDivElement>
 }) {
+    const halfWidth = 12
     const duration = useEditorState((state) => state.duration)
     const clipDuration = effect.end - effect.start
     const positionPercentage = keyframe.time / duration
@@ -821,6 +822,8 @@ function KeyframeComponent({
     const handleMouseDown = (e: React.MouseEvent) => {
         e.stopPropagation()
         isDraggingRef.current = true
+        handleMouseMove(e)
+        setSelectedKeyframeIds([keyframe.id])
     }
     const setSelectedKeyframeIds = useEditorState(
         (state) => state.setSelectedKeyframeIds,
@@ -829,49 +832,47 @@ function KeyframeComponent({
         (state) => state.selectedKeyframeIds,
     )
 
-    const handleMouseUp = (e: React.MouseEvent) => {
+    const handleMouseUp = () => {
         if (!isDraggingRef.current) return
 
         isDraggingRef.current = false
-        const containerRect = containerRef.current?.getBoundingClientRect()
+    }
 
+    const handleMouseMove = (e: { clientX: number }) => {
+        if (!isDraggingRef.current) return
+
+        const containerRect = containerRef.current?.getBoundingClientRect()
         if (!containerRect) return
 
-        const newPosition = e.clientX - containerRect.left
+        const newPosition = e.clientX - halfWidth - containerRect.left
         const newTime = (newPosition / containerRect.width) * duration
-
-        // Ensure newTime is within bounds
         const clampedNewTime = Math.max(0, Math.min(newTime, effect.end))
+
         const updatedKeyframes = effect.keyframes.map((kf) =>
             kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
         )
         updateEffect(effect.id, {
             keyframes: updatedKeyframes,
         })
-        setSelectedKeyframeIds([keyframe.id])
     }
-
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isDraggingRef.current) return
-
-            const containerRect = containerRef.current?.getBoundingClientRect()
-            if (!containerRect) return
-
-            const newPosition = e.clientX - containerRect.left
-            const newTime = (newPosition / containerRect.width) * duration
-            const clampedNewTime = Math.max(0, Math.min(newTime, effect.end))
-
-            const updatedKeyframes = effect.keyframes.map((kf) =>
-                kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
-            )
-            updateEffect(effect.id, {
-                keyframes: updatedKeyframes,
-            })
-        }
-
         document.addEventListener('mousemove', handleMouseMove)
         document.addEventListener('mouseup', handleMouseUp)
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Backspace' && isSelected) {
+                e.preventDefault()
+                e.stopPropagation()
+                const updatedKeyframes = effect.keyframes.filter(
+                    (kf) => kf.id !== keyframe.id,
+                )
+                updateEffect(effect.id, {
+                    keyframes: updatedKeyframes,
+                })
+                setSelectedKeyframeIds([])
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyDown)
 
         return () => {
             document.removeEventListener('mousemove', handleMouseMove)
@@ -879,19 +880,22 @@ function KeyframeComponent({
         }
     }, [effect, keyframe, duration, updateEffect])
     const isSelected = selectedKeyframeIds.includes(keyframe.id)
+
     return (
         <div
             className={classnames(
                 'absolute mx-1',
-                isSelected && 'text-blue-500',
+                isSelected && 'text-blue-900',
             )}
             style={{
                 left: `${positionPercentage * 100}%`,
-                // height: '100%',
+            }}
+            onClick={() => {
+                setSelectedKeyframeIds([keyframe.id])
             }}
             onMouseDown={handleMouseDown}
         >
-            <KeyframeIcon className='w-4' />
+            <KeyframeIcon style={{ width: `${halfWidth * 2}px` }} />
         </div>
     )
 }
@@ -908,59 +912,6 @@ const Container = ({ children, ...rest }) => {
             {children}
         </div>
     )
-}
-
-const SliderAndNumber = ({
-    label,
-    value,
-    onChange,
-    rangeProps, // Added rangeProps
-}: {
-    label: string
-    value: number
-    onChange: (value: number) => void
-    rangeProps: React.InputHTMLAttributes<HTMLInputElement> // Added rangeProps type
-}) => {
-    return (
-        <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
-            <div>{label}</div>
-            <input
-                type='number'
-                value={value}
-                onChange={(event) => {
-                    onChange(Number(event.target.value))
-                }}
-                className=' w-auto'
-            />
-            <input
-                type='range'
-                defaultValue={0}
-                {...rangeProps} // Spread rangeProps
-                className='w-auto slider'
-                ref={(el) => {
-                    setRangeProgress(el)
-                }}
-                value={value}
-                onChange={(event) => {
-                    setRangeProgress(event.target)
-                    onChange(Number(event.target.value))
-                }}
-            />
-        </div>
-    )
-}
-
-function setRangeProgress(el?: HTMLInputElement | null) {
-    if (!el) {
-        return
-    }
-    const range = el
-    const min = range.min ? parseFloat(range.min) : 0
-    const max = range.max ? parseFloat(range.max) : 100
-    const value = parseFloat(range.value)
-
-    const progress = ((value - min) / (max - min)) * 100
-    range.style.setProperty('--progress', `${progress}%`)
 }
 
 function VideoControls() {
