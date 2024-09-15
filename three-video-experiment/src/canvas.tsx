@@ -130,11 +130,12 @@ export function createThreeCanvas({
 
     const size = new THREE.Vector2(1920, 1080)
     renderer.getSize(size)
-    const bokehPass = new BokehPass(scene, camera, {
+    const bokehPass = new BokehPass({
+        scene,
+        camera,
         focus: distance,
         focalLength: 30,
         fStops: 3,
-
         // sensorHeight: 25,
         size,
     })

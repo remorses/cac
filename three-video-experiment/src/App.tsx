@@ -7,7 +7,7 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import { bfs, Effect, filterEffectTree, updateEffectInTree } from './effects'
 import { useCurrentTime, useEditorState } from './state'
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Ref, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { Pane } from 'tweakpane'
 import { createThreeCanvas, globalPaneContainer } from './canvas'
@@ -422,7 +422,7 @@ type EffectState = {
 function Timeline() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
-    const [draggingEffect, setDraggingEffect] = useState<EffectState>(null)
+    const draggingEffect = useRef<EffectState>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const isPlaying = useEditorState((state) => state.isPlaying)
@@ -431,19 +431,18 @@ function Timeline() {
         //     scrub(e)
         //     return
         // }
-        if (!draggingEffect || !containerRef.current) return
+        if (!draggingEffect.current || !containerRef.current) return
 
         const {
             effects: selectedEffects,
             parent,
             type,
             initialXOffset,
-        } = draggingEffect
+        } = draggingEffect.current
         const rect = containerRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
         const newTime = (x / rect.width) * duration
 
-        
         const minDuration = 0.2
         let effectsNew = effects as Effect[]
         for (const effect of selectedEffects) {
@@ -453,7 +452,6 @@ function Timeline() {
                     0,
                     Math.min(newTime, effect.end - minDuration),
                 )
-                
             }
             if (type === 'end') {
                 updatedEffect.end = Math.min(
@@ -493,7 +491,7 @@ function Timeline() {
     }
 
     const handleDragEnd = () => {
-        setDraggingEffect(null)
+        draggingEffect.current = null
     }
 
     const allEffects = bfs(effects)
@@ -553,7 +551,7 @@ function Timeline() {
                             index={index}
                             duration={duration}
                             parent={parent || undefined}
-                            setDraggingEffect={setDraggingEffect}
+                            draggingEffect={draggingEffect}
                         />
                     )
                 })}
@@ -671,13 +669,13 @@ function Clip({
     parent,
     index,
     duration,
-    setDraggingEffect,
+    draggingEffect,
 }: {
     effect: Effect<any>
     parent?: Effect<any>
     index: number
     duration: number
-    setDraggingEffect: (effect: EffectState) => void
+    draggingEffect: { current?: EffectState }
 }) {
     const startPercent = (effect.start / duration) * 100
     const widthPercent = ((effect.end - effect.start) / duration) * 100
@@ -751,14 +749,13 @@ function Clip({
             onMouseDown={(e) => {
                 const rect = dragRef.current!.getBoundingClientRect()
                 const initialXOffset = (e.clientX - rect.left) / rect.width
-                
 
-                setDraggingEffect({
+                draggingEffect.current = {
                     effects: selectedEffects,
                     type: 'both',
                     initialXOffset,
                     parent,
-                })
+                }
             }}
         >
             <div className='ml-3'>{effect.id}</div>
@@ -771,12 +768,12 @@ function Clip({
                         onMouseDown={(e) => {
                             e.stopPropagation()
 
-                            setDraggingEffect({
+                            draggingEffect.current = {
                                 effects: selectedEffects,
                                 type: type as 'start' | 'end',
                                 initialXOffset: 0,
                                 parent,
-                            })
+                            }
                         }}
                     >
                         <div
