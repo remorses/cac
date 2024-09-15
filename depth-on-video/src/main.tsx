@@ -10,6 +10,7 @@ import { Pane } from 'tweakpane'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js'
 import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
 async function applyBokehEffect() {
     const pane = new Pane({})
@@ -21,7 +22,7 @@ async function applyBokehEffect() {
         precision: 'highp',
     })
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1
+    renderer.toneMappingExposure = 0.6
     renderer.outputColorSpace = THREE.SRGBColorSpace
 
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -52,11 +53,9 @@ async function applyBokehEffect() {
 
     let { composer: depthComposer, resultTexture: depthTexture } =
         await applyPostProcessingEffect(depthTexture_, (composer) => {
-            
             // Create and add the RedChannelPass
             const redChannelPass = new RedChannelPass()
             composer.addPass(redChannelPass)
-
 
             const maxFilterPass = new MaxFilterPass(size)
 
@@ -109,6 +108,7 @@ async function applyBokehEffect() {
     // depthTexture = depthTexture_
     // Create EffectComposer and passes
     const composer = new EffectComposer(renderer)
+    composer.writeBuffer.texture.colorSpace = THREE.LinearSRGBColorSpace
     const texturePass = new TexturePass(texture)
     // Create a camera
     const camera = new THREE.PerspectiveCamera(
@@ -170,6 +170,21 @@ async function applyBokehEffect() {
 
     composer.addPass(texturePass)
     composer.addPass(bokehPass)
+
+    // Create and add a Bloom pass
+    const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5,
+        0.4,
+        0.85,
+    )
+    bloomPass.threshold = 0.9
+    bloomPass.strength = 0.1
+    bloomPass.radius = 0.5
+
+    composer.addPass(bloomPass)
+
+    // composer.addPass(new HDROnlyPass())
 
     // Render function
     function animate() {
@@ -386,6 +401,80 @@ class RedChannelPass extends Pass {
         }
 
         this.material = new THREE.ShaderMaterial(redChannelShader)
+        this.fsQuad = new FullScreenQuad(this.material)
+        this.renderToScreen = false
+    }
+
+    render(
+        renderer: THREE.WebGLRenderer,
+        writeBuffer: THREE.WebGLRenderTarget,
+        readBuffer: THREE.WebGLRenderTarget,
+    ) {
+        this.uniforms.tDiffuse.value = readBuffer.texture
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null)
+            this.fsQuad.render(renderer)
+        } else {
+            renderer.setRenderTarget(writeBuffer)
+            if (this.clear) renderer.clear()
+            this.fsQuad.render(renderer)
+        }
+    }
+
+    dispose() {
+        this.material.dispose()
+        this.fsQuad.dispose()
+    }
+}
+
+// Create a custom pass for showing only HDR values (above 1.0)
+class HDROnlyPass extends Pass {
+    material: THREE.ShaderMaterial
+    fsQuad: FullScreenQuad
+    uniforms: {
+        tDiffuse: THREE.IUniform<THREE.Texture | null>
+    }
+
+    constructor() {
+        super()
+
+        this.uniforms = {
+            tDiffuse: { value: null },
+        }
+
+        const hdrOnlyShader = {
+            uniforms: this.uniforms,
+            vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+            fragmentShader: `
+            precision highp float;
+
+        uniform sampler2D tDiffuse;
+        varying vec2 vUv;
+
+        void main() {
+            vec4 texel = texture2D(tDiffuse , vUv);
+            texel = texel;
+            float luminance = dot(texel.rgb, vec3(0.2126, 0.7152, 0.0722));
+            if (vUv.x < 0.5) {
+                if (luminance > 1.0) {
+                    gl_FragColor = texel;
+                } else {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                }
+            } else {
+                gl_FragColor = texture2D(tDiffuse , vUv);
+            }
+        }
+    `,
+        }
+
+        this.material = new THREE.ShaderMaterial(hdrOnlyShader)
         this.fsQuad = new FullScreenQuad(this.material)
         this.renderToScreen = false
     }
