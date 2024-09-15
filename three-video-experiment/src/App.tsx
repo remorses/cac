@@ -884,7 +884,7 @@ function KeyframeComponent({
     return (
         <div
             className={classnames(
-                'absolute mx-1',
+                'absolute mx-1 shrink-0',
                 isSelected && 'text-blue-900',
             )}
             style={{
@@ -895,7 +895,10 @@ function KeyframeComponent({
             }}
             onMouseDown={handleMouseDown}
         >
-            <KeyframeIcon style={{ width: `${halfWidth * 2}px` }} />
+            <KeyframeIcon
+                className='shrink-0'
+                style={{ width: `${halfWidth * 2}px` }}
+            />
         </div>
     )
 }
