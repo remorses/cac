@@ -22,42 +22,43 @@ if (import.meta.env.DEV) {
         })
 
     // Subscribe to duration changes and scale effects accordingly
-    useEditorState.subscribe((state, prevState) => {
-        if (state.duration !== prevState.duration) {
-            const scaleFactor = state.duration / prevState.duration
+    // useEditorState.subscribe((state, prevState) => {
+    //     if (state.duration !== prevState.duration) {
+    //         const scaleFactor = state.duration / prevState.duration
 
-            const scaleEffect = (effect: Effect) => {
-                effect.start *= scaleFactor
-                effect.end *= scaleFactor
-                if (effect.children) {
-                    effect.children.forEach(scaleEffect)
-                }
-            }
+    //         const scaleEffect = (effect: Effect) => {
+    //             effect.start *= scaleFactor
+    //             effect.end *= scaleFactor
+    //             if (effect.children) {
+    //                 effect.children.forEach(scaleEffect)
+    //             }
+    //         }
 
-            const scaledEffects = state.effects.map((effect) => {
-                const newEffect = { ...effect }
-                scaleEffect(newEffect)
-                return newEffect
-            })
+    //         const scaledEffects = state.effects.map((effect) => {
+    //             const newEffect = { ...effect }
+    //             scaleEffect(newEffect)
+    //             return newEffect
+    //         })
 
-            useEditorState.setState({ effects: scaledEffects })
-        }
-    })
+    //         useEditorState.setState({ effects: scaledEffects })
+    //     }
+    // })
     const deg = Math.PI / 180
     const effects = [
-        createRotationEffect({
-            id: '1',
-            start: 0,
-            end: 5,
-            bezierCurve: [0.25, 0.1, 0.25, 1],
-            amount: new THREE.Vector2(deg * 5, 0),
-            // bezierCurve: [0.25, 0.1, 0.25, 1],
-        }),
         createPositionEffect({
             id: '2',
             start: 0,
-            end: 5,
-            position: new THREE.Vector3(0.01, 0, 0),
+            end: 3,
+            params: { position: new THREE.Vector3(0.01, 0, 0) },
+            keyframes: [
+                { id: '2-0', time: 0, params: { position: new THREE.Vector3(0, 0, 0) } },
+                {
+                    id: '2-1',
+                    time: 2.5,
+                    params: { position: new THREE.Vector3(0.02, 0.01, 0) },
+                },
+                { id: '2-2', time: 3, params: { position: new THREE.Vector3(0.01, 0, 0) } },
+            ],
             // bezierCurve: [0.25, 0.1, 0.25, 1],
         }),
     ]

@@ -1,11 +1,8 @@
 import { create } from 'zustand'
 import {
     Effect,
-    createEffectGroup,
-    createPositionEffect,
-    createRotationEffect,
+    bfs
 } from './effects'
-import * as THREE from 'three'
 
 interface AppState {
     currentTime: number
@@ -18,12 +15,15 @@ interface AppState {
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
     setEffects: (effects: Effect<any>[]) => void
+    updateEffect: (id: string, updatedEffect: Partial<Effect<any>>) => void
     selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
+    selectedKeyframeIds: string[]
+    setSelectedKeyframeIds: (id: string[]) => void
     scale: number
 }
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export const useCurrentTime = () => {
     // return useEditorState((state) => state.currentTime)
@@ -71,7 +71,23 @@ export const useEditorState = create<AppState>((set, get) => {
         setSelectedEffectIds: (id: string[]) => {
             set({ selectedEffectIds: id })
         },
+        setSelectedKeyframeIds: (ids: string[]) => {
+            set({ selectedKeyframeIds: ids })
+        },
+        selectedKeyframeIds: [],
 
+        updateEffect: (id: string, updatedEffect: Partial<Effect<any>>) => {
+            set((state) => {
+                const effectsTree = bfs(state.effects, (x) => x.node.id === id)
+                const updatedEffects = effectsTree.map(({ node }) => {
+                    if (node.id === id) {
+                        return { ...node, ...updatedEffect }
+                    }
+                    return node
+                })
+                return { effects: updatedEffects }
+            })
+        },
         setCurrentTime: (time) => {
             const { duration, isLooping } = get()
             if (isLooping) {

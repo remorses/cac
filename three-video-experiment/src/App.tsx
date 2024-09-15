@@ -1,10 +1,17 @@
 import { parseMedia } from '@remotion/media-parser'
+import classnames from 'classnames'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import { bfs, Effect, filterEffectTree, updateEffectInTree } from './effects'
+import {
+    bfs,
+    EditorKeyframe,
+    Effect,
+    filterEffectTree,
+    updateEffectInTree,
+} from './effects'
 import { useCurrentTime, useEditorState } from './state'
 
 import { Ref, useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -13,6 +20,7 @@ import { Pane } from 'tweakpane'
 import { createThreeCanvas, globalPaneContainer } from './canvas'
 import { Scrubber } from './scrubber'
 import { preparePane } from './utils'
+import { motion } from 'framer-motion'
 
 function useSelectedMedia() {
     const media = useEditorState((state) => state.media)
@@ -683,7 +691,7 @@ function Clip({
     const height = 34
     const spacing = 10
     let top = (height + spacing) * index
-    const dragRef = useRef<HTMLDivElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
     const setSelectedEffectId = useEditorState(
@@ -693,7 +701,6 @@ function Clip({
     const isSelected = selectedEffectIds.includes(effect.id)
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        console.log(e.key)
         const { effects, selectedEffectIds } = useEditorState.getState()
         if (e.key === 'Backspace' && isSelected) {
             e.preventDefault()
@@ -723,14 +730,14 @@ function Clip({
 
     return (
         <div
-            className={`absolute rounded-md overflow-hidden bg-blue-500 opacity-70 flex items-center justify-between px-2 text-white text-xs ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
+            className={`absolute  rounded-md overflow-hidden bg-blue-500 opacity-70 flex flex-row items-center justify-between text-white text-xs ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
             style={{
                 left: `${startPercent}%`,
                 width: `${widthPercent}%`,
                 height,
                 top,
             }}
-            ref={dragRef}
+            ref={containerRef}
             onClick={(e) => {
                 e.stopPropagation()
                 const prevSelected = useEditorState.getState().selectedEffectIds
@@ -747,7 +754,7 @@ function Clip({
                 }
             }}
             onMouseDown={(e) => {
-                const rect = dragRef.current!.getBoundingClientRect()
+                const rect = containerRef.current!.getBoundingClientRect()
                 const initialXOffset = (e.clientX - rect.left) / rect.width
 
                 draggingEffect.current = {
@@ -760,11 +767,21 @@ function Clip({
         >
             <div className='ml-3'>{effect.id}</div>
 
+            <div className='w-full absolute inset-0 flex items-center justify-start rounded-t-md left-0 overflow-x-auto'>
+                {effect.keyframes.map((keyframe, index) => (
+                    <KeyframeComponent
+                        containerRef={containerRef}
+                        effect={effect}
+                        key={keyframe.id}
+                        keyframe={keyframe}
+                    />
+                ))}
+            </div>
             {['start', 'end'].map((type) => {
                 return (
                     <div
                         key={type}
-                        className={`absolute flex flex-col py-1  ${type === 'start' ? 'left-0 pr-1' : 'right-0 pl-1'} cursor-ew-resize top-0 h-full`}
+                        className={`absolute flex flex-col py-1 ${type === 'start' ? 'left-0 pr-1' : 'right-0 pl-1'} cursor-ew-resize top-0 h-full`}
                         onMouseDown={(e) => {
                             e.stopPropagation()
 
@@ -777,11 +794,104 @@ function Clip({
                         }}
                     >
                         <div
-                            className={`bg-blue-700 w-2 ${type === 'start' ? 'ml-1' : 'mr-1'} rounded h-full `}
+                            className={`bg-blue-700 w-1 ${type === 'start' ? 'ml-1' : 'mr-1'} rounded h-full `}
                         />
                     </div>
                 )
             })}
+        </div>
+    )
+}
+
+function KeyframeComponent({
+    keyframe,
+    effect,
+    containerRef,
+}: {
+    keyframe: EditorKeyframe
+    effect: Effect<any>
+    containerRef: React.RefObject<HTMLDivElement>
+}) {
+    const duration = useEditorState((state) => state.duration)
+    const clipDuration = effect.end - effect.start
+    const positionPercentage = keyframe.time / duration
+    const updateEffect = useEditorState((state) => state.updateEffect)
+    const isDraggingRef = useRef(false)
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        isDraggingRef.current = true
+    }
+    const setSelectedKeyframeIds = useEditorState(
+        (state) => state.setSelectedKeyframeIds,
+    )
+    const selectedKeyframeIds = useEditorState(
+        (state) => state.selectedKeyframeIds,
+    )
+
+    const handleMouseUp = (e: React.MouseEvent) => {
+        if (!isDraggingRef.current) return
+
+        isDraggingRef.current = false
+        const containerRect = containerRef.current?.getBoundingClientRect()
+
+        if (!containerRect) return
+
+        const newPosition = e.clientX - containerRect.left
+        const newTime = (newPosition / containerRect.width) * duration
+
+        // Ensure newTime is within bounds
+        const clampedNewTime = Math.max(0, Math.min(newTime, effect.end))
+        const updatedKeyframes = effect.keyframes.map((kf) =>
+            kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
+        )
+        updateEffect(effect.id, {
+            keyframes: updatedKeyframes,
+        })
+        setSelectedKeyframeIds([keyframe.id])
+    }
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isDraggingRef.current) return
+
+            const containerRect = containerRef.current?.getBoundingClientRect()
+            if (!containerRect) return
+
+            const newPosition = e.clientX - containerRect.left
+            const newTime = (newPosition / containerRect.width) * duration
+            const clampedNewTime = Math.max(0, Math.min(newTime, effect.end))
+
+            const updatedKeyframes = effect.keyframes.map((kf) =>
+                kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
+            )
+            updateEffect(effect.id, {
+                keyframes: updatedKeyframes,
+            })
+        }
+
+        document.addEventListener('mousemove', handleMouseMove)
+        document.addEventListener('mouseup', handleMouseUp)
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove)
+            document.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [effect, keyframe, duration, updateEffect])
+    const isSelected = selectedKeyframeIds.includes(keyframe.id)
+    return (
+        <div
+            className={classnames(
+                'absolute mx-1',
+                isSelected && 'text-blue-500',
+            )}
+            style={{
+                left: `${positionPercentage * 100}%`,
+                // height: '100%',
+            }}
+            onMouseDown={handleMouseDown}
+        >
+            <KeyframeIcon className='w-4' />
         </div>
     )
 }
@@ -925,4 +1035,29 @@ function EffectsControls() {
     }, [selectedEffectIds])
 
     return <div ref={container} className='flex flex-col'></div>
+}
+
+export function KeyframeAddIcon(props) {
+    return (
+        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' {...props}>
+            <g fill='currentColor' strokeWidth='1.5'>
+                <path
+                    fillRule='evenodd'
+                    d='M19 1.25a.75.75 0 0 1 .75.75v2.25H22a.75.75 0 0 1 0 1.5h-2.25V8a.75.75 0 0 1-1.5 0V5.75H16a.75.75 0 0 1 0-1.5h2.25V2a.75.75 0 0 1 .75-.75'
+                    clipRule='evenodd'
+                ></path>
+                <path d='M7.945 5.184a2.75 2.75 0 0 1 4.11 0l5.325 5.99a2.75 2.75 0 0 1 0 3.653l-5.324 5.99a2.75 2.75 0 0 1-4.111 0l-5.324-5.99a2.75 2.75 0 0 1 0-3.654z'></path>
+            </g>
+        </svg>
+    )
+}
+export function KeyframeIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' {...props}>
+            <path
+                fill='currentColor'
+                d='M12 4a2.6 2.6 0 0 0-2 .957l-4.355 5.24a2.85 2.85 0 0 0-.007 3.598l4.368 5.256c.499.6 1.225.949 1.994.949a2.6 2.6 0 0 0 2-.957l4.355-5.24a2.85 2.85 0 0 0 .007-3.598l-4.368-5.256A2.6 2.6 0 0 0 12 4'
+            ></path>
+        </svg>
+    )
 }

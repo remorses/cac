@@ -33,6 +33,12 @@ export function evaluateBezier(t: number, curve: BezierCurve): number {
     return y
 }
 
+export type EditorKeyframe<Params = any> = {
+    time: number
+    id: string
+    params: Params
+}
+
 export interface Effect<T = any> {
     id: string
     type: string
@@ -41,9 +47,13 @@ export interface Effect<T = any> {
     bezierCurve: BezierCurve
     params: T
     children?: Effect<any>[]
+    keyframes: EditorKeyframe<T>[]
     apply: (mesh: THREE.Mesh, progress: number) => void
     configure?: (pane: Pane) => void
 }
+
+type EffectInit<T> = Partial<Omit<Effect<T>, 'params'>> &
+    Pick<Effect<T>, 'params'>
 
 type WithParent = { node: Effect<any>; parent: Effect<any> | null }
 
@@ -102,154 +112,19 @@ export function filterEffectTree(
 
 export type EffectType = 'rotation' | 'scale' | 'position'
 
-export function createRotationEffect({
-    id,
-    start,
-    end,
-    amount,
-    bezierCurve = [0.5, 0, 0.5, 1],
-}: {
-    id: string
-    start: number
-    end: number
-    amount: THREE.Vector2
-    bezierCurve?: BezierCurve
-}): Effect<{ amount: THREE.Vector2 }> {
-    const params = { amount }
-    return {
-        id,
-        type: 'rotation',
-        start,
-        end,
-        params,
-        bezierCurve,
-        apply(mesh: THREE.Mesh, progress: number) {
-            mesh.rotation.x += params.amount.x * progress
-            mesh.rotation.y += params.amount.y * progress
-        },
-        configure(pane) {
-            const folder = pane.addFolder({
-                title: 'Rotation',
-            })
-            const getRotation = (value: number) => (value * 180) / Math.PI
-            const setRotation = (value: number) => (value * Math.PI) / 180
-
-            folder.addBinding(
-                createProxy({
-                    target: params.amount,
-                    setter(target, prop, value) {
-                        target[prop] = setRotation(value)
-                        return true
-                    },
-                    getter(target, prop) {
-                        return getRotation(target[prop])
-                    },
-                }),
-                'x',
-                {
-                    label: 'X Rotation',
-                    picker: 'inline',
-                    expanded: true,
-                    min: -180,
-                    max: 180,
-                },
-            )
-            folder.addBinding(
-                createProxy({
-                    target: params.amount,
-                    setter(target, prop, value) {
-                        target[prop] = setRotation(value)
-                        return true
-                    },
-                    getter(target, prop) {
-                        return getRotation(target[prop])
-                    },
-                }),
-                'y',
-                {
-                    label: 'Y Rotation',
-                    picker: 'inline',
-                    expanded: true,
-                    min: -180,
-                    max: 180,
-                },
-            )
-            bezierControl({ folder, bezierCurve })
-        },
-    }
-}
-
-export function createScaleEffect({
-    id,
-    start,
-    end,
-    scale,
-    bezierCurve = [0, 0, 1, 1],
-}: {
-    id: string
-    start: number
-    end: number
-    scale: THREE.Vector3
-    bezierCurve?: BezierCurve
-}): Effect<{ scale: THREE.Vector3 }> {
-    const params = { scale }
-    return {
-        id,
-        type: 'scale',
-        start,
-        end,
-        params,
-        bezierCurve,
-        apply(mesh: THREE.Mesh, progress: number) {
-            mesh.scale.x += (params.scale.x - 1) * progress
-            mesh.scale.y += (params.scale.y - 1) * progress
-            mesh.scale.z += (params.scale.z - 1) * progress
-        },
-        configure(pane) {
-            const folder = pane.addFolder({
-                title: 'Scale',
-            })
-            folder.addBinding(params.scale, 'x', {
-                label: 'X Scale',
-                picker: 'inline',
-                expanded: true,
-                min: 0,
-                max: 2,
-            })
-            folder.addBinding(params.scale, 'y', {
-                label: 'Y Scale',
-                picker: 'inline',
-                expanded: true,
-                min: 0,
-                max: 2,
-            })
-            folder.addBinding(params.scale, 'z', {
-                label: 'Z Scale',
-                picker: 'inline',
-                expanded: true,
-                min: 0,
-                max: 2,
-            })
-            bezierControl({ folder, bezierCurve })
-        },
-    }
-}
-
 export function createPositionEffect({
     id,
     start,
     end,
-    position,
+
     bezierCurve = [0, 0, 1, 1],
-}: {
-    id: string
-    start: number
-    end: number
+    ...rest
+}: EffectInit<{
     position: THREE.Vector3
-    bezierCurve?: BezierCurve
-}): Effect<{ position: THREE.Vector3 }> {
-    const params = { position }
+}>) {
+    const params = rest.params
     return {
+        ...rest,
         id,
         type: 'position',
         start,
@@ -334,6 +209,7 @@ export function createEffectGroup({
         params: {},
         bezierCurve,
         children,
+        keyframes: [],
         apply: () => {},
     }
 }
