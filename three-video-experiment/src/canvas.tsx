@@ -11,7 +11,7 @@ import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from 'three-soft-depth-of-field/src'
 import { useEditorState } from './state'
-import { Effect, evaluateBezier } from './effects'
+import { EditorKeyframe, Effect, evaluateBezier } from './effects'
 import { createProxy, preparePane } from './utils'
 
 export const deg = Math.PI / 180
@@ -307,11 +307,15 @@ export function createThreeCanvas({
                 }
 
                 // Find the keyframes before and after the current time
-                const prevKeyframe = effect.keyframes.reduce((prev, curr) =>
-                    curr.time <= currentTime && curr.time > prev.time
-                        ? curr
-                        : prev,
-                )
+                const prevKeyframe: EditorKeyframe | null =
+                    effect.keyframes.reduce((prev, curr) => {
+                        if (Math.abs(curr.time - currentTime) < 0.0001) {
+                            return curr // Exact match, return this keyframe
+                        }
+                        return curr.time < currentTime && curr.time > prev?.time
+                            ? curr
+                            : prev
+                    })
                 const nextKeyframe =
                     effect.keyframes.find((kf) => kf.time > currentTime) ||
                     effect.keyframes[effect.keyframes.length - 1]
