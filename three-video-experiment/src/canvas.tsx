@@ -376,13 +376,13 @@ export function createThreeCanvas({
     outerShape.lineTo(-1, -1)
 
     // Create a shape for the inner rectangle (hole)
-    const holeSize = 1.5 // Parametrized hole size (0 to 1)
+    const holeSize = 0.8 // Parametrized hole size (0 to 1)
     const holeShape = new THREE.Path()
-    holeShape.moveTo(-holeSize / 2, -holeSize / 2)
-    holeShape.lineTo(holeSize / 2, -holeSize / 2)
-    holeShape.lineTo(holeSize / 2, holeSize / 2)
-    holeShape.lineTo(-holeSize / 2, holeSize / 2)
-    holeShape.lineTo(-holeSize / 2, -holeSize / 2)
+    holeShape.moveTo(-holeSize, -holeSize)
+    holeShape.lineTo(holeSize, -holeSize)
+    holeShape.lineTo(holeSize, holeSize)
+    holeShape.lineTo(-holeSize, holeSize)
+    holeShape.lineTo(-holeSize, -holeSize)
 
     // Add the hole to the outer shape
     outerShape.holes.push(holeShape)
@@ -411,6 +411,9 @@ export function createThreeCanvas({
     overlayScene.add(rectangleLines) // Add this line to render the yellow outline
 
     function render({ isPreview = true } = {}) {
+        if (isExporting) {
+            isPreview = false
+        }
         renderer.autoClear = false
         renderer.clear()
 
@@ -487,7 +490,31 @@ export function createThreeCanvas({
         // if (transformControls) transformControls.dispose()
     }
 
+    let isExporting = false
+
+    function calculateScaleFactor(rectangleHeight) {
+        // Convert FOV to radians
+        const fovRadians = camera.fov * (Math.PI / 180)
+
+        // Calculate the scale factor
+        const scaleFactor = 1 / (2 * Math.tan(fovRadians / 2) * rectangleHeight)
+
+        return scaleFactor
+    }
+
     return {
+        beforeExport() {
+            isExporting = true
+            const scaleMultiplier = 1 / calculateScaleFactor(holeSize)
+            scene.scale.set(scaleMultiplier, scaleMultiplier, scaleMultiplier)
+            scene.updateMatrixWorld()
+        },
+        afterExport() {
+            isExporting = false
+            const scaleMultiplier = calculateScaleFactor(holeSize)
+            scene.scale.set(scaleMultiplier, scaleMultiplier, scaleMultiplier)
+            scene.updateMatrixWorld()
+        },
         canvas,
         render,
         plane,

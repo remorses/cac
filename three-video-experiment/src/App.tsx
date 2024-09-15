@@ -198,6 +198,7 @@ const exportVideo = async () => {
 
         // Stop recording and download video
         async function stopRecording() {
+            threeCanvas.afterExport()
             await videoEncoder.flush()
 
             muxer.finalize()
@@ -254,7 +255,7 @@ const exportVideo = async () => {
             },
             error: console.error,
         })
-
+        threeCanvas.beforeExport()
         const result = await parseMedia({
             src: media,
             reader: webFileReader,
@@ -417,7 +418,9 @@ function RotationsImage() {
 function Entities() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
-    const setSelectedEffectIds = useEditorState((state) => state.setSelectedEffectIds)
+    const setSelectedEffectIds = useEditorState(
+        (state) => state.setSelectedEffectIds,
+    )
 
     return (
         <div
