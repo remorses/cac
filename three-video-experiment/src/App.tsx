@@ -1089,7 +1089,10 @@ function EffectsControls() {
     }, [selectedEffectIds, currentKeyframes])
 
     const showKeyframeMode = currentKeyframes.length > 0
-    const showKeyframeButton = currentKeyframes.length === 0
+    const selectedEffect = selectedEffects[0]?.node
+
+    const showKeyframeButton =
+        currentKeyframes.length === 0 && !!selectedEffects.length
     return (
         <div className='flex flex-col max-h-full overflow-y-auto'>
             <div className='' ref={container}></div>
@@ -1098,23 +1101,29 @@ function EffectsControls() {
                 <button
                     className='flex items-center justify-center px-4 py-2 mt-4 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
                     onClick={() => {
-                        const effect = selectedEffects[0].node
-                        const currentTime =
-                            useEditorState.getState().currentTime
+                        const currentTime = snapToTimeGrid(
+                            useEditorState.getState().currentTime,
+                        )
                         const newKeyframe = {
                             id: generateId(),
                             time: currentTime,
-                            params: effectsParamsClone(effect.params),
+                            params: effectsParamsClone(selectedEffect.params),
                         }
                         const updatedEffect = {
-                            ...effect,
-                            keyframes: [...effect.keyframes, newKeyframe],
+                            ...selectedEffect,
+                            keyframes: [
+                                ...selectedEffect.keyframes,
+                                newKeyframe,
+                            ],
                         }
                         const updatedEffects = updateEffectInTree(
                             effectsAll,
                             updatedEffect,
                         )
-                        setSelectedKeyframeIds([newKeyframe.id], [effect.id])
+                        setSelectedKeyframeIds(
+                            [newKeyframe.id],
+                            [selectedEffect.id],
+                        )
                         setEffects(updatedEffects)
                     }}
                 >
