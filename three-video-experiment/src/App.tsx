@@ -1054,6 +1054,7 @@ function EffectsControls() {
 
         pane.on('change', () => {
             threeCanvas.applyAllEffects()
+            threeCanvas.transformControls.updateMatrixWorld()
             threeCanvas.render()
         })
 
