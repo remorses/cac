@@ -741,6 +741,57 @@ function Clip({
     parent,
     index,
     duration,
+}: {
+    effect: Effect<any>
+    parent?: Effect<any>
+    index: number
+    duration: number
+}) {
+    const startPercent = (effect.start / duration) * 100
+    const widthPercent = ((effect.end - effect.start) / duration) * 100
+
+    let top = (clipHeight + clipSpacing) * index
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
+
+    const isSelected = selectedEffectIds.includes(effect.id)
+
+    const effects = useEditorState((state) => state.effects)
+
+    return (
+        <div
+            className={classNames(
+                'absolute rounded-md overflow-hidden  opacity-70 flex flex-row items-center justify-between text-white text-xs',
+            )}
+            style={{
+                left: `${startPercent}%`,
+                width: `${widthPercent}%`,
+                height: clipHeight,
+                top,
+            }}
+            ref={containerRef}
+        >
+            <div className='absolute inset-x-0 w-full top-1/2 h-[2px] bg-gray-200 '></div>
+            <div className='w-full absolute inset-0 flex items-center justify-start rounded-t-md left-0 overflow-x-auto'>
+                {effect.keyframes.map((keyframe, index) => (
+                    <KeyframeComponent
+                        containerRef={containerRef}
+                        effect={effect}
+                        key={keyframe.id}
+                        keyframe={keyframe}
+                    />
+                ))}
+            </div>
+        </div>
+    )
+}
+
+function DraggableClip({
+    effect,
+    parent,
+    index,
+    duration,
     draggingEffect,
 }: {
     effect: Effect<any>
@@ -979,8 +1030,8 @@ function KeyframeComponent({
     return (
         <div
             className={classNames(
-                'absolute text-gray-900 shrink-0',
-                isSelected && '!text-white',
+                'absolute shrink-0',
+                isSelected ? 'text-white ring-2 ring-yellow-200' : 'text-gray-200',
             )}
             style={{
                 left: `calc(${positionPercentage * 100}% - ${halfWidth}px)`,

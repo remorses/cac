@@ -47,11 +47,12 @@ if (import.meta.env.DEV) {
     const deg = Math.PI / 180
     const camTarget = threeCanvas.controls.target.clone()
     const camPosition = threeCanvas.controls.object.position.clone()
+    const duration = 100
     const effects = [
         createMeshEffect({
             id: 'mesh',
             start: 0,
-            end: 3,
+            end: duration,
 
             keyframes: [
                 {
@@ -78,7 +79,7 @@ if (import.meta.env.DEV) {
         createCameraEffect({
             id: 'camera',
             start: 0,
-            end: 3,
+            end: duration,
             keyframes: [
                 {
                     id: '0cam',
