@@ -640,6 +640,8 @@ function Timeline() {
 }
 
 const scrubBarHeight = 16
+
+
 function ScrubBar() {
     const duration = useEditorState((state) => state.duration)
     const isDraggingRef = useRef(false)
@@ -661,7 +663,6 @@ function ScrubBar() {
 
     const handleMouseUp = (e: MouseEvent) => {
         if (!isDraggingRef.current) return
-        // handleGlobalMouseMove(e)
         isDraggingRef.current = false
         console.log('mouse up')
         setIsPlaying(wasPlaying.current)
@@ -669,7 +670,6 @@ function ScrubBar() {
 
     const handleGlobalMouseMove = (e: MouseEvent) => {
         if (isDraggingRef.current && containerRef.current) {
-            // console.log('mouse move')
             const rect = containerRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
             const newTime = (x / rect.width) * visibleDuration
@@ -694,8 +694,17 @@ function ScrubBar() {
     const timeGridSize = useEditorState((state) => state.timeGridSize)
 
     const tickCount = Math.max(2, Math.floor(visibleDuration / timeGridSize))
-    const step =
-        Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
+    let step = Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
+
+    // Adjust step size if there's not enough space for text
+    const minSpaceBetweenTicks = 10 // Minimum pixels between ticks with text
+    if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth
+        const estimatedTickCount = containerWidth / minSpaceBetweenTicks
+        if (visibleDuration / step > estimatedTickCount) {
+            step = visibleDuration / estimatedTickCount
+        }
+    }
 
     return (
         <div
@@ -724,7 +733,7 @@ function ScrubBar() {
                 length: Math.ceil(visibleDuration / step) + 1,
             }).map((_, index) => {
                 const time = index * step
-                const isSecond = time % 1 < 0.001
+                const isSecond = time % 1 < 0.01
 
                 return (
                     <div
@@ -762,15 +771,15 @@ function Clip({
     effect,
     parent,
     index,
-    visibleDuration: duration,
+    visibleDuration,
 }: {
     effect: Effect<any>
     parent?: Effect<any>
     index: number
     visibleDuration: number
 }) {
-    const startPercent = (effect.start / duration) * 100
-    const widthPercent = ((effect.end - effect.start) / duration) * 100
+    const startPercent = (effect.start / visibleDuration) * 100
+    const widthPercent = ((effect.end - effect.start) / visibleDuration) * 100
 
     let top = (clipHeight + clipSpacing) * index
     const containerRef = useRef<HTMLDivElement>(null)
