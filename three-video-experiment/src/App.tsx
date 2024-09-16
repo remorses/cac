@@ -945,12 +945,12 @@ function KeyframeComponent({
     const positionPercentage = relativeKeyframeTime / clipDuration
     const updateEffect = useEditorState((state) => state.updateEffect)
     const isDraggingRef = useRef(false)
+    const dragStartPosRef = useRef({ x: 0, y: 0 })
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.stopPropagation()
         isDraggingRef.current = true
-        handleMouseMove(e)
-        // setSelectedKeyframeIds([keyframe.id], [effect.id])
+        dragStartPosRef.current = { x: e.clientX, y: e.clientY }
     }
     const setSelectedKeyframeIds = useEditorState(
         (state) => state.setSelectedKeyframeIds,
@@ -963,14 +963,17 @@ function KeyframeComponent({
     )
 
     const handleMouseUp = (e) => {
-        e.stopPropagation()
         if (!isDraggingRef.current) return
+        e.stopPropagation()
 
         isDraggingRef.current = false
     }
 
     const handleMouseMove = (e: { clientX: number }) => {
         if (!isDraggingRef.current) return
+        // Ignore if dragging distance is small
+        const dragDistance = Math.abs(e.clientX - dragStartPosRef.current.x)
+        if (dragDistance < 5) return // Adjust this threshold as needed
 
         const containerRect = containerRef.current?.getBoundingClientRect()
         if (!containerRect) return
@@ -984,6 +987,9 @@ function KeyframeComponent({
             Math.min(newAbsoluteTime, effect.end),
         )
 
+        if (!selectedKeyframeIds.includes(keyframe.id)) {
+            setSelectedKeyframeIds([keyframe.id], [effect.id])
+        }
         updateSelectedKeyframes({ time: clampedNewTime })
     }
     const isSelected = selectedKeyframeIds.includes(keyframe.id)
@@ -1037,6 +1043,18 @@ function KeyframeComponent({
                 left: `calc(${positionPercentage * 100}% - ${halfWidth}px)`,
             }}
             onClick={(e) => {
+                // Check if this is a drag event
+                const dragThreshold = 5
+
+                const dragDistance = distancePoint(
+                    { x: e.clientX, y: e.clientY },
+                    dragStartPosRef.current,
+                )
+                if (dragDistance > dragThreshold) {
+                    // This is a drag event, so we ignore it
+                    return
+                }
+
                 // selecting a keyframe MUST also select the effect
                 e.stopPropagation()
 
@@ -1262,4 +1280,8 @@ export function KeyframeIcon(props: React.SVGProps<SVGSVGElement>) {
             ></path>
         </svg>
     )
+}
+
+const distancePoint = (p1, p2) => {
+    return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
 }
