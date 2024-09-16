@@ -642,7 +642,7 @@ function ScrubBar() {
 
     const handleMouseUp = (e: MouseEvent) => {
         if (!isDraggingRef.current) return
-        handleGlobalMouseMove(e)
+        // handleGlobalMouseMove(e)
         isDraggingRef.current = false
         console.log('mouse up')
         setIsPlaying(wasPlaying.current)
@@ -684,6 +684,12 @@ function ScrubBar() {
             onMouseMove={(e) => {
                 e.stopPropagation()
                 handleGlobalMouseMove(e as any)
+            }}
+            onClick={(e) => {
+                const rect = containerRef.current!.getBoundingClientRect()
+                const x = e.clientX - rect.left
+                const newTime = (x / rect.width) * duration
+                setCurrentTime(Math.max(0, Math.min(newTime, duration)))
             }}
             onMouseUp={(e) => {
                 e.stopPropagation()
@@ -1106,6 +1112,7 @@ function EffectsControls() {
 
         pane.on('change', () => {
             threeCanvas.applyAllEffects()
+            threeCanvas.render()
         })
 
         return () => {

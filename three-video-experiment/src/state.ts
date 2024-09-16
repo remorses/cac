@@ -52,6 +52,7 @@ function selectKeyframesOnCurrentTime(currentTime) {
 
     // TODO optimize this
     if (
+        !state.isPlaying &&
         JSON.stringify(newSelectedKeyframeIds) !==
             JSON.stringify(state.selectedKeyframeIds) &&
         (state.selectedEffectIds.length === 0 ||

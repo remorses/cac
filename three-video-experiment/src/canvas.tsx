@@ -261,79 +261,6 @@ export function createThreeCanvas({
 
     composer.addPass(new ShaderPass(filmGrainShader))
 
-    function applyEffects(effects: Effect<any>[]) {
-        for (const effect of effects) {
-            const absoluteStart = effect.start
-            const absoluteEnd = effect.end
-
-            const { currentTime } = useEditorState.getState()
-            if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
-                const rawProgress =
-                    (currentTime - absoluteStart) /
-                    (absoluteEnd - absoluteStart)
-                const easedProgress = evaluateBezier(
-                    rawProgress,
-                    effect.bezierCurve,
-                )
-
-                function getPreviousKeyframe(time: number) {
-                    for (let i = effect.keyframes.length - 1; i >= 0; i--) {
-                        if (effect.keyframes[i].time <= time) {
-                            return effect.keyframes[i]
-                        }
-                    }
-                    return null
-                }
-                function getNextKeyframe(time: number) {
-                    for (let i = 0; i < effect.keyframes.length; i++) {
-                        if (effect.keyframes[i].time > time) {
-                            return effect.keyframes[i]
-                        }
-                    }
-                    return null
-                }
-                const prevKeyframe = getPreviousKeyframe(currentTime)
-                const nextKeyframe = getNextKeyframe(currentTime)
-
-                const params = effect.params
-                // console.log(currentTime, prevKeyframe, nextKeyframe)
-
-                // Handle different keyframe scenarios
-                if (prevKeyframe && nextKeyframe) {
-                    if (prevKeyframe === nextKeyframe) {
-                        // At the first or last keyframe
-                        Object.assign(params, prevKeyframe.params)
-                    } else {
-                        // Interpolate between keyframes
-                        const keyframeProgress =
-                            (currentTime - prevKeyframe.time) /
-                            (nextKeyframe.time - prevKeyframe.time)
-                        const interpolatedParams = {}
-
-                        // Interpolate each parameter using mergeParamType
-                        for (const key in prevKeyframe.params) {
-                            interpolatedParams[key] = mergeParamType(
-                                prevKeyframe.params[key],
-                                nextKeyframe.params[key],
-                                keyframeProgress,
-                            )
-                        }
-
-                        // Update the effect's params with the interpolated values
-                        Object.assign(params, interpolatedParams)
-                    }
-                }
-                // console.log('progress', rawProgress, easedProgress)
-
-                if (effect.children) {
-                    applyEffects(effect.children)
-                } else {
-                    effect.apply(params)
-                }
-            }
-        }
-    }
-
     // Create an overlay scene and camera for the rectangle
     const overlayScene = new THREE.Scene()
     const overlayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
@@ -454,9 +381,6 @@ export function createThreeCanvas({
         // if (transformControls) transformControls.dispose()
     }
 
-    function applyAllEffects() {
-        return applyEffects(useEditorState.getState().effects)
-    }
     pane.on('change', () => {
         applyAllEffects()
     })
@@ -633,4 +557,79 @@ const mergeParamType = (start, end, progress) => {
         return new THREE.Vector2().lerpVectors(start, end, progress)
     }
     return start
+}
+
+function _applyEffects(effects: Effect<any>[]) {
+    for (const effect of effects) {
+        const absoluteStart = effect.start
+        const absoluteEnd = effect.end
+
+        const { currentTime } = useEditorState.getState()
+        if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
+            const rawProgress =
+                (currentTime - absoluteStart) / (absoluteEnd - absoluteStart)
+            const easedProgress = evaluateBezier(
+                rawProgress,
+                effect.bezierCurve,
+            )
+
+            function getPreviousKeyframe(time: number) {
+                for (let i = effect.keyframes.length - 1; i >= 0; i--) {
+                    if (effect.keyframes[i].time <= time) {
+                        return effect.keyframes[i]
+                    }
+                }
+                return null
+            }
+            function getNextKeyframe(time: number) {
+                for (let i = 0; i < effect.keyframes.length; i++) {
+                    if (effect.keyframes[i].time > time) {
+                        return effect.keyframes[i]
+                    }
+                }
+                return null
+            }
+            const prevKeyframe = getPreviousKeyframe(currentTime)
+            const nextKeyframe = getNextKeyframe(currentTime)
+
+            const params = effect.params
+            // console.log(currentTime, prevKeyframe, nextKeyframe)
+
+            // Handle different keyframe scenarios
+            if (prevKeyframe && nextKeyframe) {
+                if (prevKeyframe === nextKeyframe) {
+                    // At the first or last keyframe
+                    Object.assign(params, prevKeyframe.params)
+                } else {
+                    // Interpolate between keyframes
+                    const keyframeProgress =
+                        (currentTime - prevKeyframe.time) /
+                        (nextKeyframe.time - prevKeyframe.time)
+                    const interpolatedParams = {}
+
+                    // Interpolate each parameter using mergeParamType
+                    for (const key in prevKeyframe.params) {
+                        interpolatedParams[key] = mergeParamType(
+                            prevKeyframe.params[key],
+                            nextKeyframe.params[key],
+                            keyframeProgress,
+                        )
+                    }
+
+                    // Update the effect's params with the interpolated values
+                    Object.assign(params, interpolatedParams)
+                }
+            }
+            // console.log('progress', rawProgress, easedProgress)
+
+            if (effect.children) {
+                _applyEffects(effect.children)
+            } else {
+                effect.apply(params)
+            }
+        }
+    }
+}
+function applyAllEffects() {
+    return _applyEffects(useEditorState.getState().effects)
 }
