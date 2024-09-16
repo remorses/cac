@@ -1,5 +1,11 @@
 import { create } from 'zustand'
-import { Effect, EffectInit, bfs, updateEffectInTree } from './effects'
+import {
+    EditorKeyframe,
+    Effect,
+    EffectInit,
+    bfs,
+    updateEffectInTree,
+} from './effects'
 
 interface AppState {
     currentTime: number
@@ -13,6 +19,7 @@ interface AppState {
     setIsPlaying: (isPlaying: boolean) => void
     setEffects: (effects: Effect<any>[]) => void
     updateEffect: (id: string, updatedEffect: EffectInit<Effect<any>>) => void
+    updateSelectedKeyframes: (keyframe: Partial<EditorKeyframe>) => void
     selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
     selectedKeyframeIds: string[]
@@ -42,7 +49,7 @@ export function getKeyframeOnCurrentTime() {
     })
 }
 
-function selectKeyframesOnCurrentTime(currentTime) {
+function selectKeyframesOnCurrentTime() {
     const state = useEditorState.getState()
     const selectedKeyframes = getKeyframeOnCurrentTime()
     const newSelectedKeyframeIds = selectedKeyframes.map((kf) => kf.keyframe.id)
@@ -53,6 +60,7 @@ function selectKeyframesOnCurrentTime(currentTime) {
     // TODO optimize this
     if (
         !state.isPlaying &&
+        newSelectedKeyframeIds.length > 0 &&
         JSON.stringify(newSelectedKeyframeIds) !==
             JSON.stringify(state.selectedKeyframeIds)
     ) {
@@ -76,14 +84,14 @@ export const useCurrentTime = () => {
             // if (prevState.currentTime - state.currentTime < 0.001) return
             if (!isPlaying) {
                 setCurrentTime(state.currentTime)
-                selectKeyframesOnCurrentTime(state.currentTime)
+
                 return
             }
             const now = Date.now()
 
             if (now - lastUpdateTimeRef.current >= 30) {
                 setCurrentTime(state.currentTime)
-                selectKeyframesOnCurrentTime(state.currentTime)
+
                 lastUpdateTimeRef.current = now
             }
         }
@@ -116,6 +124,24 @@ export const useEditorState = create<AppState>((set, get) => {
             set({ selectedKeyframeIds: ids, selectedEffectIds: effectIds })
         },
         selectedKeyframeIds: [],
+        updateSelectedKeyframes: (keyframe: Partial<EditorKeyframe>) => {
+            const { effects, selectedEffectIds, selectedKeyframeIds } = get()
+
+            const updatedEffects = effects.map((effect) => {
+                if (selectedEffectIds.includes(effect.id)) {
+                    const updatedKeyframes = effect.keyframes.map((kf) => {
+                        if (selectedKeyframeIds.includes(kf.id)) {
+                            return { ...kf, ...keyframe }
+                        }
+                        return kf
+                    })
+                    return { ...effect, keyframes: updatedKeyframes }
+                }
+                return effect
+            })
+
+            set({ effects: updatedEffects })
+        },
 
         updateEffect: (id: string, updatedEffect) => {
             set((state) => {
@@ -138,6 +164,7 @@ export const useEditorState = create<AppState>((set, get) => {
                 // Otherwise, update the time normally
                 set({ currentTime: time })
             }
+            selectKeyframesOnCurrentTime()
             threeCanvas.applyAllEffects()
         },
         setIsPlaying: (isPlaying) => {

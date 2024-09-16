@@ -178,3 +178,8 @@ export function preparePane(pane: Pane) {
 
     return pane
 }
+
+
+export function isTruthy<T>(val: T | undefined | null | false): val is T {
+    return Boolean(val)
+}

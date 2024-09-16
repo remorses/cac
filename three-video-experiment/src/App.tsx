@@ -26,7 +26,7 @@ import {
 import { Pane } from 'tweakpane'
 import { createThreeCanvas, globalPaneContainer } from './canvas'
 import { Scrubber } from './scrubber'
-import { preparePane } from './utils'
+import { isTruthy, preparePane } from './utils'
 import { motion } from 'framer-motion'
 import classNames from 'classnames'
 
@@ -610,7 +610,7 @@ function Timeline() {
                             index={index}
                             duration={duration}
                             parent={parent || undefined}
-                            draggingEffect={draggingEffect}
+                            // draggingEffect={draggingEffect}
                         />
                     )
                 })}
@@ -772,7 +772,7 @@ function Clip({
             }}
             ref={containerRef}
         >
-            <div className='absolute inset-x-0 w-full top-1/2 h-[2px] bg-gray-200 '></div>
+            <div className='absolute inset-x-0 w-full top-1/2 border-t-2 bg-gray-200 '></div>
             <div className='w-full absolute inset-0 flex items-center justify-start rounded-t-md left-0 overflow-x-auto'>
                 {effect.keyframes.map((keyframe, index) => (
                     <KeyframeComponent
@@ -950,16 +950,20 @@ function KeyframeComponent({
         e.stopPropagation()
         isDraggingRef.current = true
         handleMouseMove(e)
-        setSelectedKeyframeIds([keyframe.id], [effect.id])
+        // setSelectedKeyframeIds([keyframe.id], [effect.id])
     }
     const setSelectedKeyframeIds = useEditorState(
         (state) => state.setSelectedKeyframeIds,
+    )
+    const updateSelectedKeyframes = useEditorState(
+        (state) => state.updateSelectedKeyframes,
     )
     const selectedKeyframeIds = useEditorState(
         (state) => state.selectedKeyframeIds,
     )
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
+        e.stopPropagation()
         if (!isDraggingRef.current) return
 
         isDraggingRef.current = false
@@ -980,13 +984,7 @@ function KeyframeComponent({
             Math.min(newAbsoluteTime, effect.end),
         )
 
-        const updatedKeyframes = effect.keyframes.map((kf) =>
-            kf.id === keyframe.id ? { ...kf, time: clampedNewTime } : kf,
-        )
-        updateEffect(effect.id, {
-            ...effect,
-            keyframes: updatedKeyframes,
-        })
+        updateSelectedKeyframes({ time: clampedNewTime })
     }
     const isSelected = selectedKeyframeIds.includes(keyframe.id)
     useEffect(() => {
@@ -1031,7 +1029,9 @@ function KeyframeComponent({
         <div
             className={classNames(
                 'absolute shrink-0',
-                isSelected ? 'text-white ring-2 ring-yellow-200' : 'text-gray-200',
+                isSelected
+                    ? 'text-white ring-2 ring-yellow-200'
+                    : 'text-gray-200',
             )}
             style={{
                 left: `calc(${positionPercentage * 100}% - ${halfWidth}px)`,
@@ -1039,10 +1039,20 @@ function KeyframeComponent({
             onClick={(e) => {
                 // selecting a keyframe MUST also select the effect
                 e.stopPropagation()
-                const keyframeTime = keyframe.time
 
-                setCurrentTime(keyframeTime)
-                setSelectedKeyframeIds([keyframe.id], [effect.id])
+                // Check if Shift or Cmd (Meta) key is pressed
+                if (e.shiftKey || e.metaKey) {
+                    // Add to selection
+                    const { selectedKeyframeIds, selectedEffectIds } =
+                        useEditorState.getState()
+                    setSelectedKeyframeIds(
+                        [...new Set([...selectedKeyframeIds, keyframe.id])],
+                        [...new Set([...selectedEffectIds, effect.id])],
+                    )
+                } else {
+                    // Replace selection
+                    setSelectedKeyframeIds([keyframe.id], [effect.id])
+                }
             }}
             onMouseDown={handleMouseDown}
         >
