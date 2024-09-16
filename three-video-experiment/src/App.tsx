@@ -24,7 +24,11 @@ import {
 } from 'react'
 
 import { Pane } from 'tweakpane'
-import { createThreeCanvas, globalPaneContainer } from './canvas'
+import {
+    createThreeCanvas,
+    getParamsForEffect,
+    globalPaneContainer,
+} from './canvas'
 import { Scrubber } from './scrubber'
 import { isTruthy, preparePane } from './utils'
 import { motion } from 'framer-motion'
@@ -407,12 +411,9 @@ function RotationsImage() {
             <div className='row-span-1 flex flex-col items-center justify-center col-span-3'>
                 <VideoControls />
             </div>
-            <div className='col-span-1 h-full '>
-                <Entities />
-            </div>
-            <div className='col-span-2 h-full grow'>
-                <Timeline />
-            </div>
+            <Entities />
+
+            <Timeline />
         </Container>
     )
 }
@@ -587,7 +588,7 @@ function Timeline() {
     )
     return (
         <div
-            className='h-full cursor-pointer relative grow flex flex-col gap-3  '
+            className='col-span-2 relative grow cursor-pointer overflow-y-auto  shrink-0 flex flex-col gap-3  '
             ref={containerRef}
             onMouseMove={handleDrag}
             onMouseUp={handleDragEnd}
@@ -620,6 +621,7 @@ function Timeline() {
                 containerRef={containerRef}
                 timelineHeight={containerRef.current?.clientHeight || 200}
             />
+            <pre className='shrink-0'>{JSON.stringify(effects, null, 2)}</pre>
         </div>
     )
 }
@@ -678,7 +680,7 @@ function ScrubBar() {
     return (
         <div
             ref={containerRef}
-            className='w-full select-none cursor-pointer isolate  bg-gray-800 relative'
+            className='w-full select-none cursor-pointer isolate  bg-gray-800 relative shrink-0'
             style={{
                 height: `${scrubBarHeight}px`,
             }}
@@ -1036,13 +1038,9 @@ function EffectsControls() {
         )
 
         selectedEffects.forEach((effect) => {
-            let params =
-                currentKeyframes.find((kf) => kf.effect.id === effect.node.id)
-                    ?.keyframe?.params || effect.node.params
+            const params = getParamsForEffect(effect.node.type)
 
-            if (effect.node.configure) {
-                effect.node.configure(pane, params)
-            }
+            effect.node?.configure?.(pane, params)
         })
 
         // Add event listener to threeCanvas.controls
@@ -1060,7 +1058,7 @@ function EffectsControls() {
             if (state.isPlaying) {
                 return
             }
-            threeCanvas.applyAllEffects()
+            threeCanvas.applyAllEffects({ isUserChange: true })
             threeCanvas.render()
         })
 

@@ -10,7 +10,11 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from 'three-soft-depth-of-field/src'
-import { getKeyframeOnCurrentTime, useEditorState } from './state'
+import {
+    getKeyframeOnCurrentTime,
+    snapToTimeGrid,
+    useEditorState,
+} from './state'
 import {
     CameraEffect,
     EditorKeyframe,
@@ -103,31 +107,16 @@ export function createThreeCanvas({
     transformControls.attach(plane)
     scene.add(transformControls)
 
+    let ignoreUpdate = false
+
     controls.addEventListener('change', (event) => {
         const state = useEditorState.getState()
 
-        if (state.isPlaying) {
+        if (ignoreUpdate || state.isPlaying) {
             return
         }
 
-        const effect: CameraEffect | undefined = state.effects.find(
-            (x) => x.type === 'camera',
-        )
-
-        if (!effect) {
-            throw new Error('No camera effect found')
-        }
-        if (!state.selectedEffectIds.includes(effect.id)) {
-            state.setSelectedEffectIds([effect.id])
-        }
-        let { params } = effect
-        const keyframe = getKeyframeOnCurrentTime().find(
-            (x) => x.effect.id === effect.id,
-        )?.keyframe
-
-        if (keyframe) {
-            params = keyframe.params
-        }
+        const params = getParamsForEffect('camera')
         params.position.copy(controls.object.position)
         params.target.copy(controls.target)
         params.zoom = camera.zoom
@@ -141,30 +130,10 @@ export function createThreeCanvas({
     transformControls.addEventListener('objectChange', (event) => {
         // console.log({ event })
         const state = useEditorState.getState()
-        if (state.isPlaying) {
+        if (ignoreUpdate || state.isPlaying) {
             return
         }
-
-        const selectedEffectIds = state.selectedEffectIds
-        const meshEffect: MeshEffect | undefined = state.effects.find(
-            (x) => x.type === 'mesh',
-        )
-
-        if (!meshEffect) {
-            throw new Error('No mesh effect found')
-        }
-        if (!selectedEffectIds.includes(meshEffect.id)) {
-            state.setSelectedEffectIds([meshEffect.id])
-        }
-
-        let { params } = meshEffect
-        const keyframe = getKeyframeOnCurrentTime().find(
-            (x) => x.effect.id === meshEffect.id,
-        )?.keyframe
-
-        if (keyframe) {
-            params = keyframe.params
-        }
+        const params = getParamsForEffect('mesh')
         params.position.copy(plane.position)
         params.rotation.copy(plane.quaternion)
     })
@@ -323,6 +292,14 @@ export function createThreeCanvas({
     overlayScene.add(rectangle)
     overlayScene.add(rectangleLines) // Add this line to render the yellow outline
 
+    function applyAllEffects({ isUserChange }) {
+        let prevIgnoreUpdate = ignoreUpdate
+        ignoreUpdate = !isUserChange
+        let res = _applyEffects(useEditorState.getState().effects)
+        ignoreUpdate = prevIgnoreUpdate
+        return res
+    }
+
     function render({ isPreview = true } = {}) {
         const state = useEditorState.getState()
         if (isExporting) {
@@ -345,7 +322,7 @@ export function createThreeCanvas({
         vignettePass.uniforms.rotation.value = vignetteRotation
 
         if (state.isPlaying || isExporting) {
-            applyAllEffects()
+            applyAllEffects({ isUserChange: true })
         }
         composer.render()
 
@@ -397,7 +374,7 @@ export function createThreeCanvas({
     }
 
     pane.on('change', () => {
-        applyAllEffects()
+        applyAllEffects({ isUserChange: true })
     })
 
     let isExporting = false
@@ -463,6 +440,70 @@ function getDimensions(image) {
             height: image.height,
         }
     }
+}
+
+export function getParamsForEffect(type: string) {
+    const state = useEditorState.getState()
+
+    const thisEffect: MeshEffect | undefined = state.effects.find(
+        (x) => x.type === type,
+    )
+
+    if (!thisEffect) {
+        throw new Error('No mesh effect found')
+    }
+    const hasKeyframes = thisEffect.keyframes.length > 0
+    if (!hasKeyframes) {
+        return thisEffect.params
+    }
+    const keyframe = getKeyframeOnCurrentTime().find(
+        (x) => x.effect.id === thisEffect.id,
+    )?.keyframe
+
+    if (!keyframe) {
+        // Create a new keyframe at the current time
+        const currentTime = state.currentTime
+        const newKeyframe = {
+            id: crypto.randomUUID(),
+            time: snapToTimeGrid(currentTime),
+            params: structuredClone(thisEffect.params),
+        }
+
+        // Mutate the current effect by adding the new keyframe
+        thisEffect.keyframes.push(newKeyframe)
+
+        // Sort the keyframes by time
+        thisEffect.keyframes.sort((a, b) => a.time - b.time)
+
+        // Select the newly created keyframe
+        state.setSelectedKeyframeIds([newKeyframe.id], [thisEffect.id])
+        state.setEffects([...state.effects])
+
+        // Return the params of the new keyframe
+        return newKeyframe.params
+    }
+    return keyframe?.params || thisEffect.params
+}
+
+function serializeParams(params: any) {
+    return JSON.stringify(params, (key, value) => {
+        if (value instanceof THREE.Vector2) {
+            return { x: value.x, y: value.y }
+        }
+        if (value instanceof THREE.Vector3) {
+            return { x: value.x, y: value.y, z: value.z }
+        }
+        if (value instanceof THREE.Quaternion) {
+            return { x: value.x, y: value.y, z: value.z, w: value.w }
+        }
+        if (value instanceof THREE.Euler) {
+            return { x: value.x, y: value.y, z: value.z }
+        }
+        if (value instanceof THREE.Color) {
+            return { r: value.r, g: value.g, b: value.b }
+        }
+        return value
+    })
 }
 
 const vignetteShader = {
@@ -647,7 +688,4 @@ function _applyEffects(effects: Effect<any>[]) {
             }
         }
     }
-}
-function applyAllEffects() {
-    return _applyEffects(useEditorState.getState().effects)
 }

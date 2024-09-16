@@ -156,6 +156,7 @@ export const useEditorState = create<AppState>((set, get) => {
             })
         },
         setCurrentTime: (time) => {
+            // time = snapToTimeGrid(time)
             const { duration, isLooping, setIsPlaying } = get()
             if (isLooping) {
                 // If looping, wrap the time around to the beginning
@@ -169,7 +170,7 @@ export const useEditorState = create<AppState>((set, get) => {
                 set({ currentTime: time })
             }
             selectKeyframesOnCurrentTime()
-            threeCanvas.applyAllEffects()
+            threeCanvas.applyAllEffects({ isUserChange: false })
         },
         setIsPlaying: (isPlaying) => {
             const { currentTime, duration } = get()
