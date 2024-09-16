@@ -10,7 +10,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from 'three-soft-depth-of-field/src'
-import { getAllCurrentKeyframes, useEditorState } from './state'
+import { getKeyframeOnCurrentTime, useEditorState } from './state'
 import { EditorKeyframe, Effect, evaluateBezier, MeshEffect } from './effects'
 import { createProxy, preparePane } from './utils'
 
@@ -109,7 +109,7 @@ export function createThreeCanvas({
             state.setSelectedEffectIds([effect.id])
         }
         let { params } = effect
-        const keyframe = getAllCurrentKeyframes().find(
+        const keyframe = getKeyframeOnCurrentTime().find(
             (x) => x.effect.id === effect.id,
         )?.keyframe
 
@@ -143,7 +143,7 @@ export function createThreeCanvas({
         }
 
         let { params } = meshEffect
-        const keyframe = getAllCurrentKeyframes().find(
+        const keyframe = getKeyframeOnCurrentTime().find(
             (x) => x.effect.id === meshEffect.id,
         )?.keyframe
 

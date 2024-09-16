@@ -22,7 +22,7 @@ interface AppState {
 
 import { useEffect, useRef, useState } from 'react'
 import { threeCanvas } from './App'
-export function getAllCurrentKeyframes() {
+export function getKeyframeOnCurrentTime() {
     const state = useEditorState.getState()
     const allEffects = bfs(state.effects)
     const keyframeThreshold = 0.08 // TODO use fps to determine threshold
@@ -44,7 +44,7 @@ export function getAllCurrentKeyframes() {
 
 function selectKeyframesOnCurrentTime(currentTime) {
     const state = useEditorState.getState()
-    const selectedKeyframes = getAllCurrentKeyframes()
+    const selectedKeyframes = getKeyframeOnCurrentTime()
     const newSelectedKeyframeIds = selectedKeyframes.map((kf) => kf.keyframe.id)
     const newSelectedEffectIds = [
         ...new Set(selectedKeyframes.map((kf) => kf.effect.id)),
@@ -54,10 +54,7 @@ function selectKeyframesOnCurrentTime(currentTime) {
     if (
         !state.isPlaying &&
         JSON.stringify(newSelectedKeyframeIds) !==
-            JSON.stringify(state.selectedKeyframeIds) &&
-        (state.selectedEffectIds.length === 0 ||
-            // TODO maybe needs more work
-            state.setSelectedEffectIds?.[0] === newSelectedEffectIds[0])
+            JSON.stringify(state.selectedKeyframeIds)
     ) {
         state.setSelectedKeyframeIds(
             newSelectedKeyframeIds,

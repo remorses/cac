@@ -1077,19 +1077,17 @@ function EffectsControls() {
     const setSelectedKeyframeIds = useEditorState(
         (state) => state.setSelectedKeyframeIds,
     )
-    const onlySelectedEffect =
-        selectedEffects.length === 1 && selectedEffects[0]?.node
+    const selectedEffectsWithKeyframes = selectedEffects
+        .map((effect) => {
+            const keyframe = effect.node.keyframes.find((kf) =>
+                selectedKeyframeIds.includes(kf.id),
+            )
+            return { effect: effect.node, keyframe }
+        })
+        .filter((item) => item.keyframe !== undefined)
 
-    function getCurrentKeyframe() {
-        if (!onlySelectedEffect) return null
-        const keyframe = onlySelectedEffect.keyframes.find((kf) =>
-            selectedKeyframeIds.includes(kf.id),
-        )
-        if (!keyframe) return null
-        return keyframe
-    }
-    const currentKeyframe = getCurrentKeyframe()
-    const showKeyframeButton = onlySelectedEffect && !currentKeyframe
+    const currentKeyframes = selectedEffectsWithKeyframes
+
     useEffect(() => {
         const pane = preparePane(
             new Pane({
@@ -1099,8 +1097,9 @@ function EffectsControls() {
         )
 
         selectedEffects.forEach((effect) => {
-            let params = currentKeyframe?.params || effect.node.params
-            const currentTime = useEditorState.getState().currentTime
+            let params =
+                currentKeyframes.find((kf) => kf.effect.id === effect.node.id)
+                    ?.keyframe?.params || effect.node.params
 
             if (effect.node.configure) {
                 effect.node.configure(pane, params)
@@ -1126,10 +1125,10 @@ function EffectsControls() {
             pane.dispose()
             threeCanvas.controls.removeEventListener('change', refreshPane)
         }
-    }, [selectedEffectIds, currentKeyframe])
+    }, [selectedEffectIds, currentKeyframes])
 
-    const showKeyframeMode = onlySelectedEffect && currentKeyframe
-
+    const showKeyframeMode = currentKeyframes.length > 0
+    const showKeyframeButton = currentKeyframes.length === 0
     return (
         <div className='flex flex-col max-h-full overflow-y-auto'>
             <div className='' ref={container}></div>
