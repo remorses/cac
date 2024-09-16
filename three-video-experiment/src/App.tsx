@@ -97,6 +97,7 @@ function renderLoop() {
     prevTime = time
 
     render()
+
     if (state.isPlaying) {
         state.setCurrentTime(state.currentTime + deltaTime)
     }
@@ -1054,9 +1055,12 @@ function EffectsControls() {
             refreshPane,
         )
 
-        pane.on('change', () => {
+        pane.on('change', (e) => {
+            const state = useEditorState.getState()
+            if (state.isPlaying) {
+                return
+            }
             threeCanvas.applyAllEffects()
-            threeCanvas.transformControls.updateMatrixWorld()
             threeCanvas.render()
         })
 

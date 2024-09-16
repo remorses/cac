@@ -11,7 +11,13 @@ import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import { getProject, types } from '@theatre/core'
 import { BokehPass } from 'three-soft-depth-of-field/src'
 import { getKeyframeOnCurrentTime, useEditorState } from './state'
-import { EditorKeyframe, Effect, evaluateBezier, MeshEffect } from './effects'
+import {
+    CameraEffect,
+    EditorKeyframe,
+    Effect,
+    evaluateBezier,
+    MeshEffect,
+} from './effects'
 import { createProxy, preparePane } from './utils'
 
 export const deg = Math.PI / 180
@@ -100,7 +106,13 @@ export function createThreeCanvas({
     controls.addEventListener('change', (event) => {
         const state = useEditorState.getState()
 
-        const effect = state.effects.find((x) => x.type === 'camera')
+        if (state.isPlaying) {
+            return
+        }
+
+        const effect: CameraEffect | undefined = state.effects.find(
+            (x) => x.type === 'camera',
+        )
 
         if (!effect) {
             throw new Error('No camera effect found')
@@ -116,8 +128,8 @@ export function createThreeCanvas({
         if (keyframe) {
             params = keyframe.params
         }
-        params.position.copy(camera.position)
-        params.rotation.copy(camera.rotation)
+        params.position.copy(controls.object.position)
+        params.target.copy(controls.target)
         params.zoom = camera.zoom
     })
 
@@ -129,6 +141,9 @@ export function createThreeCanvas({
     transformControls.addEventListener('objectChange', (event) => {
         // console.log({ event })
         const state = useEditorState.getState()
+        if (state.isPlaying) {
+            return
+        }
 
         const selectedEffectIds = state.selectedEffectIds
         const meshEffect: MeshEffect | undefined = state.effects.find(

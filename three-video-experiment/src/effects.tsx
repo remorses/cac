@@ -149,6 +149,7 @@ export function createMeshEffect({
             mesh.quaternion.copy(params.rotation)
             mesh.updateMatrix()
             mesh.updateMatrixWorld(true)
+            threeCanvas.transformControls.updateMatrixWorld()
         },
         configure(pane, params) {
             const folder = pane.addFolder({
@@ -218,7 +219,8 @@ export function createCameraEffect({
             const { camera, controls } = threeCanvas
             controls.object.position.copy(params.position)
             controls.target.copy(params.target)
-            
+            controls.update()
+
             // controls.update()
         },
         configure(pane, params) {

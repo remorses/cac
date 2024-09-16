@@ -175,10 +175,34 @@ export function preparePane(pane: Pane) {
     pane.registerPlugin(TweakpaneFileImportPlugin)
     pane.registerPlugin(CamerakitPlugin)
     pane.registerPlugin(TweakpaneRotationInputPlugin)
+    let isRefreshing = false
+
+    // Override the refresh method to set the flag
+    const originalRefresh = pane.refresh.bind(pane)
+    pane.refresh = function () {
+        isRefreshing = true
+        originalRefresh()
+        isRefreshing = false
+    }
+
+    // Override the original 'on' method to prevent firing during refresh
+    const originalOn = pane.on.bind(pane)
+    // https://github.com/cocopon/tweakpane/issues/430
+    pane.on = function (eventName: string, callback: Function) {
+        if (eventName === 'change') {
+            const wrappedCallback = (...args: any[]) => {
+                if (!isRefreshing) {
+                    callback(...args)
+                }
+            }
+
+            return originalOn(eventName, wrappedCallback)
+        }
+        return originalOn(eventName as any, callback as any)
+    }
 
     return pane
 }
-
 
 export function isTruthy<T>(val: T | undefined | null | false): val is T {
     return Boolean(val)
