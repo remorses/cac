@@ -294,6 +294,9 @@ export function createThreeCanvas({
     overlayScene.add(rectangleLines) // Add this line to render the yellow outline
 
     function applyAllEffects({ isUserChange }) {
+        if (isUserChange) {
+            console.log('applying all effects because isUserChange')
+        }
         let prevIgnoreUpdate = ignoreUpdate
         ignoreUpdate = !isUserChange
         let res = _applyEffects(useEditorState.getState().effects)
@@ -323,7 +326,7 @@ export function createThreeCanvas({
         vignettePass.uniforms.rotation.value = vignetteRotation
 
         if (state.isPlaying || isExporting) {
-            applyAllEffects({ isUserChange: true })
+            applyAllEffects({ isUserChange: false })
         }
         composer.render()
 
@@ -464,6 +467,7 @@ export function getParamsForEffect(type: string) {
     if (!keyframe) {
         // Create a new keyframe at the current time
         const currentTime = state.currentTime
+        console.log('creating new keyframe at', currentTime)
         let params = effectsParamsClone(thisEffect.params)
 
         const newKeyframe = {

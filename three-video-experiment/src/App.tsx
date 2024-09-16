@@ -13,7 +13,12 @@ import {
     effectsParamsClone,
     updateEffectInTree,
 } from './effects'
-import { snapToTimeGrid, useCurrentTime, useEditorState } from './state'
+import {
+    getKeyframeOnCurrentTime,
+    snapToTimeGrid,
+    useCurrentTime,
+    useEditorState,
+} from './state'
 
 import {
     cloneElement,
@@ -1039,9 +1044,23 @@ function EffectsControls() {
         )
 
         selectedEffects.forEach((effect) => {
-            const params = getParamsForEffect(effect.node.type)
+            const params = (() => {
+                const hasKeyframes = effect.node.keyframes.length > 0
+                if (!hasKeyframes) {
+                    return effect.node.params
+                }
+                const keyframe = getKeyframeOnCurrentTime().find(
+                    (kf) => kf.effect.id === effect.node.id,
+                )
+                if (!keyframe) {
+                    return
+                }
+                return keyframe.keyframe.params
+            })()
 
-            effect.node?.configure?.(pane, params)
+            if (params) {
+                effect.node?.configure?.(pane, params)
+            }
         })
 
         // Add event listener to threeCanvas.controls
