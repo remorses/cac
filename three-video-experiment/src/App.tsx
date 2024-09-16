@@ -793,7 +793,112 @@ function Clip({
                         keyframe={keyframe}
                     />
                 ))}
+                <KeyframeAddButton
+                    effect={effect}
+                    containerRef={containerRef}
+                />
             </div>
+        </div>
+    )
+}
+
+function KeyframeAddButton({
+    containerRef,
+    effect,
+}: {
+    containerRef: React.RefObject<HTMLDivElement>
+    effect: Effect<any>
+}) {
+    const [isVisible, setIsVisible] = useState(false)
+    const [position, setPosition] = useState({ x: 0, y: 0 })
+    const buttonRef = useRef(null)
+
+    useEffect(() => {
+        const state = useEditorState.getState()
+        const container = containerRef.current
+        if (!container) return
+
+        const handleMouseEnter = () => {
+            setIsVisible(true)
+        }
+        const handleMouseLeave = () => setIsVisible(false)
+        const handleMouseMove = (e) => {
+            // Check if the current position is near an existing keyframe
+            const containerWidth = container.clientWidth
+            const rect = container.getBoundingClientRect()
+
+            const time = getTime({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+            })
+
+            const nearbyKeyframe = effect.keyframes.find((keyframe) => {
+                return Math.abs(keyframe.time - time) < 0.01
+            })
+
+            setIsVisible(!nearbyKeyframe)
+
+            setPosition({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+            })
+        }
+
+        container.addEventListener('mouseenter', handleMouseEnter)
+        container.addEventListener('mouseleave', handleMouseLeave)
+        container.addEventListener('mousemove', handleMouseMove)
+
+        return () => {
+            container.removeEventListener('mouseenter', handleMouseEnter)
+            container.removeEventListener('mouseleave', handleMouseLeave)
+            container.removeEventListener('mousemove', handleMouseMove)
+        }
+    }, [containerRef])
+
+    const halfWidth = 24
+
+    function getTime(position: { x: number; y: number }) {
+        const time =
+            effect.start +
+            (position.x / containerRef.current!.clientWidth) *
+                (effect.end - effect.start)
+        const snappedTime = snapToTimeGrid(time)
+        return snappedTime
+    }
+    const handleClick = () => {
+        const time = getTime(position)
+        const newKeyframe = {
+            id: crypto.randomUUID(),
+            time,
+            params: effectsParamsClone(effect.params),
+        }
+
+        const updatedEffect = {
+            ...effect,
+            keyframes: [...effect.keyframes, newKeyframe].sort(
+                (a, b) => a.time - b.time,
+            ),
+        }
+
+        const state = useEditorState.getState()
+        state.updateEffect(effect.id, updatedEffect)
+        state.setCurrentTime(time)
+        state.setSelectedKeyframeIds([newKeyframe.id], [effect.id])
+    }
+
+    if (!isVisible) return null
+
+    return (
+        <div
+            ref={buttonRef}
+            className='absolute z-10 cursor-pointer'
+            style={{
+                left: `${position.x}px`,
+                width: `${halfWidth}px`,
+            }}
+            onClick={handleClick}
+        >
+            <KeyframeAddIcon className='w-full text-blue-100 ' />
         </div>
     )
 }
