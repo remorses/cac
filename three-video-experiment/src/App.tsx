@@ -853,7 +853,7 @@ function KeyframeAddButton({
             container.removeEventListener('mouseleave', handleMouseLeave)
             container.removeEventListener('mousemove', handleMouseMove)
         }
-    }, [containerRef])
+    }, [containerRef, effect])
 
     const halfWidth = 24
 
