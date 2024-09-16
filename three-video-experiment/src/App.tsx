@@ -12,7 +12,7 @@ import {
     filterEffectTree,
     updateEffectInTree,
 } from './effects'
-import { useCurrentTime, useEditorState } from './state'
+import { snapToTimeGrid, useCurrentTime, useEditorState } from './state'
 
 import {
     cloneElement,
@@ -840,9 +840,12 @@ function KeyframeComponent({
         const newRelativeTime =
             (newPosition / containerRect.width) * clipDuration
         const newAbsoluteTime = effect.start + newRelativeTime
+
+        const snappedTime = snapToTimeGrid(newAbsoluteTime)
+
         const clampedNewTime = Math.max(
             effect.start,
-            Math.min(newAbsoluteTime, effect.end),
+            Math.min(snappedTime, effect.end),
         )
 
         if (!selectedKeyframeIds.includes(keyframe.id)) {

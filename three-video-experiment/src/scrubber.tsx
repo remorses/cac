@@ -30,12 +30,14 @@ export function Scrubber({ timelineHeight, containerRef }: Props) {
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const w = containerRef.current?.clientWidth || 0
 
+    const left = (currentTime / duration) * w - scrubberHalfWidth
+
     return (
         <>
             <div
                 className='absolute pointer-events-none bottom-0 min-h-full top-0'
                 style={{
-                    left: `${(currentTime / duration) * w - scrubberHalfWidth}px`,
+                    left: `${left}px`,
                     // cursor: dragging ? 'grabbing' : 'grab',
                     width: scrubberHalfWidth * 2,
                 }}

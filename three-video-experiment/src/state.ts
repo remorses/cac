@@ -9,6 +9,7 @@ import {
 
 interface AppState {
     currentTime: number
+    timeGridSize: number
     outputSize: { width: number; height: number }
     isPlaying: boolean
     duration: number
@@ -71,27 +72,29 @@ function selectKeyframesOnCurrentTime() {
     }
 }
 
+export function snapToTimeGrid(time: number) {
+    const timeGridSize = useEditorState.getState().timeGridSize
+    return Math.round(time / timeGridSize) * timeGridSize
+}
+
+
 export const useCurrentTime = () => {
-    // return useEditorState((state) => state.currentTime)
     const [currentTime, setCurrentTime] = useState(
-        useEditorState.getState().currentTime,
+        snapToTimeGrid(useEditorState.getState().currentTime)
     )
     const lastUpdateTimeRef = useRef(0)
 
     useEffect(() => {
         const throttledUpdate = (state: AppState, prevState: AppState) => {
             const { isPlaying } = state
-            // if (prevState.currentTime - state.currentTime < 0.001) return
             if (!isPlaying) {
-                setCurrentTime(state.currentTime)
-
+                setCurrentTime(snapToTimeGrid(state.currentTime))
                 return
             }
             const now = Date.now()
 
             if (now - lastUpdateTimeRef.current >= 30) {
-                setCurrentTime(state.currentTime)
-
+                setCurrentTime(snapToTimeGrid(state.currentTime))
                 lastUpdateTimeRef.current = now
             }
         }
@@ -109,6 +112,7 @@ export const useCurrentTime = () => {
 export const useEditorState = create<AppState>((set, get) => {
     return {
         currentTime: 0,
+        timeGridSize: (1 / 30) * 5,
         outputSize: { width: 1920, height: 1080 },
         scale: 1,
         isLooping: true,
