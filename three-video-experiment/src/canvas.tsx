@@ -294,6 +294,11 @@ export function createThreeCanvas({
             opacity: 0.8,
         }),
     )
+    const rectangleMaterial = new THREE.MeshBasicMaterial({
+        transparent: true,
+        color: 0x000000,
+        opacity: 0.7,
+    })
     const rectangle = new THREE.Mesh(rectangleGeometry, rectangleMaterial)
     overlayScene.add(rectangle)
     overlayScene.add(rectangleLines)

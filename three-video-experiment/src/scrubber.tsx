@@ -24,7 +24,7 @@ export function ScrubberIcon() {
     )
 }
 export function Scrubber({ timelineHeight, containerRef }: Props) {
-    const scale = useEditorState((state) => state.scale)
+    const scale = useEditorState((state) => state.timeScale)
     const currentTime = useCurrentTime()
     const duration = useEditorState((state) => state.duration)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)

@@ -385,7 +385,7 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
+        <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] gap-4 grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
             <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'

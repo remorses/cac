@@ -25,7 +25,7 @@ interface AppState {
     setSelectedEffectIds: (id: string[]) => void
     selectedKeyframeIds: string[]
     setSelectedKeyframeIds: (id: string[], effectIds: string[]) => void
-    scale: number
+    timeScale: number
 }
 
 import { useEffect, useRef, useState } from 'react'
@@ -113,7 +113,7 @@ export const useEditorState = create<AppState>((set, get) => {
         currentTime: 0,
         timeGridSize: (1 / 30) * 3,
         outputSize: { width: 1920, height: 1080 },
-        scale: 1,
+        timeScale: 1,
         isLooping: true,
         isPlaying: false,
         effects: [],
