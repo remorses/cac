@@ -58,10 +58,10 @@ function selectKeyframesOnCurrentTime() {
         ...new Set(selectedKeyframes.map((kf) => kf.effect.id)),
     ]
 
-    // TODO optimize this
+    // if you scrub to a time location while in pause, select any keyframes if none are selected
     if (
         !state.isPlaying &&
-        newSelectedKeyframeIds.length > 0 &&
+        // newSelectedKeyframeIds.length > 0 &&
         JSON.stringify(newSelectedKeyframeIds) !==
             JSON.stringify(state.selectedKeyframeIds)
     ) {
@@ -77,10 +77,9 @@ export function snapToTimeGrid(time: number) {
     return Math.round(time / timeGridSize) * timeGridSize
 }
 
-
 export const useCurrentTime = () => {
     const [currentTime, setCurrentTime] = useState(
-        snapToTimeGrid(useEditorState.getState().currentTime)
+        snapToTimeGrid(useEditorState.getState().currentTime),
     )
     const lastUpdateTimeRef = useRef(0)
 
@@ -157,13 +156,14 @@ export const useEditorState = create<AppState>((set, get) => {
             })
         },
         setCurrentTime: (time) => {
-            const { duration, isLooping } = get()
+            const { duration, isLooping, setIsPlaying } = get()
             if (isLooping) {
                 // If looping, wrap the time around to the beginning
                 set({ currentTime: time % duration })
             } else if (time >= duration) {
                 // If not looping and time exceeds duration, pause and set to end
-                set({ currentTime: duration, isPlaying: false })
+                set({ currentTime: duration })
+                setIsPlaying(false)
             } else {
                 // Otherwise, update the time normally
                 set({ currentTime: time })
@@ -181,6 +181,9 @@ export const useEditorState = create<AppState>((set, get) => {
                     Math.abs(currentTime - duration) < 0.01)
             ) {
                 set({ currentTime: 0 })
+            }
+            if (!isPlaying) {
+                selectKeyframesOnCurrentTime()
             }
         },
         setEffects: (effects) => set({ effects }),
