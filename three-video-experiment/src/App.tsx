@@ -1,5 +1,5 @@
 import { parseMedia } from '@remotion/media-parser'
-import classnames from 'classnames'
+
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -374,7 +374,7 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='p-4 grid grid-cols-[300px_1fr_300px] grid-rows-[auto_40px_1fr] h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
+        <Container className='p-4 grid grid-cols-[300px_1fr_300px] grid-rows-[50%_40px_1fr] h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
             <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'
@@ -630,6 +630,7 @@ function ScrubBar() {
     const containerRef = useRef<HTMLDivElement>(null)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const isPlaying = useEditorState((state) => state.isPlaying)
+    const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const wasPlaying = useRef(isPlaying)
 
     const handleMouseDown = () => {
@@ -646,15 +647,14 @@ function ScrubBar() {
         console.log('mouse up')
         setIsPlaying(wasPlaying.current)
     }
+
     const handleGlobalMouseMove = (e: MouseEvent) => {
         if (isDraggingRef.current && containerRef.current) {
             // console.log('mouse move')
             const rect = containerRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
             const newTime = (x / rect.width) * duration
-            useEditorState.setState({
-                currentTime: Math.max(0, Math.min(newTime, duration)),
-            })
+            setCurrentTime(Math.max(0, Math.min(newTime, duration)))
         }
     }
 
@@ -972,7 +972,7 @@ function KeyframeComponent({
     )
     return (
         <div
-            className={classnames(
+            className={classNames(
                 'absolute text-gray-900 shrink-0',
                 isSelected && '!text-white',
             )}

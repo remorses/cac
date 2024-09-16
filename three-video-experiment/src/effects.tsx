@@ -49,7 +49,7 @@ export interface Effect<T = any> {
     params: T
     children?: Effect<any>[]
     keyframes: EditorKeyframe<T>[]
-    apply: (any: any) => void
+    apply: (params: T) => void
     configure?: (pane: Pane, params: T) => void
 }
 
@@ -143,7 +143,8 @@ export function createMeshEffect({
         end,
         params,
         bezierCurve,
-        apply(mesh: THREE.Mesh) {
+        apply(params) {
+            const mesh = threeCanvas.plane
             mesh.position.x = params.position.x
             mesh.position.y = params.position.y
             mesh.position.z = params.position.z
@@ -216,7 +217,7 @@ export function createCameraEffect({
         end,
         params,
         bezierCurve,
-        apply() {
+        apply(params) {
             const camera = threeCanvas.camera
             camera.position.copy(params.position)
             camera.rotation.copy(params.rotation)

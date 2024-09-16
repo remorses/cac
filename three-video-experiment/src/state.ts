@@ -21,6 +21,7 @@ interface AppState {
 }
 
 import { useEffect, useRef, useState } from 'react'
+import { threeCanvas } from './App'
 export function getAllCurrentKeyframes() {
     const state = useEditorState.getState()
     const allEffects = bfs(state.effects)
@@ -139,6 +140,7 @@ export const useEditorState = create<AppState>((set, get) => {
                 // Otherwise, update the time normally
                 set({ currentTime: time })
             }
+            threeCanvas.applyAllEffects()
         },
         setIsPlaying: (isPlaying) => {
             const { currentTime, duration } = get()

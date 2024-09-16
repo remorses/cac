@@ -275,70 +275,34 @@ export function createThreeCanvas({
                     rawProgress,
                     effect.bezierCurve,
                 )
-                // Function to merge different parameter types
-                const mergeParamType = (start, end, progress) => {
-                    if (typeof start === 'number' && typeof end === 'number') {
-                        return start + (end - start) * progress
-                    }
-                    if (start instanceof THREE.Vector3 && end instanceof THREE.Vector3) {
-                        return new THREE.Vector3().lerpVectors(start, end, progress)
-                    }
-                    if (start instanceof THREE.Euler && end instanceof THREE.Euler) {
-                        return new THREE.Euler(
-                            start.x + (end.x - start.x) * progress,
-                            start.y + (end.y - start.y) * progress,
-                            start.z + (end.z - start.z) * progress
-                        )
-                    }
-                    if (start instanceof THREE.Color && end instanceof THREE.Color) {
-                        return new THREE.Color().lerpColors(start, end, progress)
-                    }
-                    if (Array.isArray(start) && Array.isArray(end)) {
-                        return start.map((s, i) => mergeParamType(s, end[i], progress))
-                    }
-                    if (typeof start === 'object' && typeof end === 'object') {
-                        const result = {}
-                        for (const key in start) {
-                            if (key in end) {
-                                result[key] = mergeParamType(start[key], end[key], progress)
-                            } else {
-                                result[key] = start[key]
-                            }
-                        }
-                        return result
-                    }
-                    if (start instanceof THREE.Vector2 && end instanceof THREE.Vector2) {
-                        return new THREE.Vector2().lerpVectors(start, end, progress)
-                    }
-                    return start
-                }
 
-                // Find the keyframes before and after the current time
-                const prevKeyframe: EditorKeyframe | null =
-                    effect.keyframes.reduce(
-                        (prev, curr) => {
-                            if (Math.abs(curr.time - currentTime) < 0.0001) {
-                                return curr // Exact match, return this keyframe
-                            }
-                            return curr.time < currentTime &&
-                                curr.time > (prev?.time || 0)
-                                ? curr
-                                : prev
-                        },
-                        null as EditorKeyframe | null,
-                    )
-                const nextKeyframe =
-                    effect.keyframes.find((kf) => kf.time > currentTime) ||
-                    effect.keyframes[effect.keyframes.length - 1]
+                function getPreviousKeyframe(time: number) {
+                    for (let i = effect.keyframes.length - 1; i >= 0; i--) {
+                        if (effect.keyframes[i].time <= time) {
+                            return effect.keyframes[i]
+                        }
+                    }
+                    return null
+                }
+                function getNextKeyframe(time: number) {
+                    for (let i = 0; i < effect.keyframes.length; i++) {
+                        if (effect.keyframes[i].time > time) {
+                            return effect.keyframes[i]
+                        }
+                    }
+                    return null
+                }
+                const prevKeyframe = getPreviousKeyframe(currentTime)
+                const nextKeyframe = getNextKeyframe(currentTime)
+
+                const params = effect.params
+                // console.log(currentTime, prevKeyframe, nextKeyframe)
 
                 // Handle different keyframe scenarios
-                if (effect.keyframes.length === 1) {
-                    // Only one keyframe, use its values
-                    Object.assign(effect.params, effect.keyframes[0].params)
-                } else if (prevKeyframe && nextKeyframe) {
+                if (prevKeyframe && nextKeyframe) {
                     if (prevKeyframe === nextKeyframe) {
                         // At the first or last keyframe
-                        Object.assign(effect.params, prevKeyframe.params)
+                        Object.assign(params, prevKeyframe.params)
                     } else {
                         // Interpolate between keyframes
                         const keyframeProgress =
@@ -356,21 +320,15 @@ export function createThreeCanvas({
                         }
 
                         // Update the effect's params with the interpolated values
-                        Object.assign(effect.params, interpolatedParams)
+                        Object.assign(params, interpolatedParams)
                     }
-                } else if (prevKeyframe) {
-                    // After the last keyframe, use last keyframe's values
-                    Object.assign(effect.params, prevKeyframe.params)
-                } else if (nextKeyframe) {
-                    // Before the first keyframe, use first keyframe's values
-                    Object.assign(effect.params, nextKeyframe.params)
                 }
                 // console.log('progress', rawProgress, easedProgress)
 
                 if (effect.children) {
                     applyEffects(effect.children)
                 } else {
-                    effect.apply(plane)
+                    effect.apply(params)
                 }
             }
         }
@@ -443,17 +401,11 @@ export function createThreeCanvas({
         let vignetteRotation = Math.atan2(-rotationX, -rotationY)
 
         vignettePass.uniforms.rotation.value = vignetteRotation
-        const { effects } = useEditorState.getState()
-        let prevPost = plane.position.clone()
-        let prevRot = plane.rotation.clone()
-        let prevScale = plane.scale.clone()
-        if (state.isPlaying) {
-            applyEffects(effects)
+
+        if (state.isPlaying || isExporting) {
+            applyAllEffects()
         }
         composer.render()
-        plane.position.copy(prevPost)
-        plane.rotation.copy(prevRot)
-        plane.scale.copy(prevScale)
 
         if (isPreview) {
             renderer.render(overlayScene, overlayCamera)
@@ -503,7 +455,7 @@ export function createThreeCanvas({
     }
 
     function applyAllEffects() {
-        applyEffects(useEditorState.getState().effects)
+        return applyEffects(useEditorState.getState().effects)
     }
     pane.on('change', () => {
         applyAllEffects()
@@ -643,4 +595,42 @@ const filmGrainShader = {
         gl_FragColor = vec4(texel.rgb + grain, texel.a);
       }
     `,
+}
+
+// Function to merge different parameter types
+const mergeParamType = (start, end, progress) => {
+    if (typeof start === 'number' && typeof end === 'number') {
+        return start + (end - start) * progress
+    }
+    if (start instanceof THREE.Vector3 && end instanceof THREE.Vector3) {
+        return new THREE.Vector3().lerpVectors(start, end, progress)
+    }
+    if (start instanceof THREE.Euler && end instanceof THREE.Euler) {
+        return new THREE.Euler(
+            start.x + (end.x - start.x) * progress,
+            start.y + (end.y - start.y) * progress,
+            start.z + (end.z - start.z) * progress,
+        )
+    }
+    if (start instanceof THREE.Color && end instanceof THREE.Color) {
+        return new THREE.Color().lerpColors(start, end, progress)
+    }
+    if (Array.isArray(start) && Array.isArray(end)) {
+        return start.map((s, i) => mergeParamType(s, end[i], progress))
+    }
+    if (typeof start === 'object' && typeof end === 'object') {
+        const result = {}
+        for (const key in start) {
+            if (key in end) {
+                result[key] = mergeParamType(start[key], end[key], progress)
+            } else {
+                result[key] = start[key]
+            }
+        }
+        return result
+    }
+    if (start instanceof THREE.Vector2 && end instanceof THREE.Vector2) {
+        return new THREE.Vector2().lerpVectors(start, end, progress)
+    }
+    return start
 }

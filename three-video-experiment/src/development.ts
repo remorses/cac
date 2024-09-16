@@ -50,6 +50,25 @@ if (import.meta.env.DEV) {
             start: 0,
             end: 3,
 
+            keyframes: [
+                {
+                    id: '0',
+                    time: 0,
+                    params: {
+                        position: new THREE.Vector3(0, 0, 0),
+                        rotation: new THREE.Euler(0, 0, 0),
+                    },
+                },
+                {
+                    id: '1',
+                    time: 2,
+                    params: {
+                        position: new THREE.Vector3(0, 0.6, 0),
+                        rotation: new THREE.Euler(0, 0, 0),
+                    },
+                },
+            ],
+
             // bezierCurve: [0.25, 0.1, 0.25, 1],
         }),
         createCameraEffect({
