@@ -10,6 +10,7 @@ import {
     EditorKeyframe,
     Effect,
     filterEffectTree,
+    effectsParamsClone,
     updateEffectInTree,
 } from './effects'
 import { snapToTimeGrid, useCurrentTime, useEditorState } from './state'
@@ -129,7 +130,7 @@ const unsubscribeIsPlaying = useEditorState.subscribe((state, prevState) => {
         currentTime <= video.duration &&
         Math.abs(video.currentTime - currentTime) > 0.1
     ) {
-        console.log('setting video current time', currentTime)
+        // console.log('setting video current time', currentTime)
         video.currentTime = currentTime
     }
 })
@@ -1084,7 +1085,7 @@ function EffectsControls() {
                         const newKeyframe = {
                             id: generateId(),
                             time: currentTime,
-                            params: structuredClone(effect.params),
+                            params: effectsParamsClone(effect.params),
                         }
                         const updatedEffect = {
                             ...effect,

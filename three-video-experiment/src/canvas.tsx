@@ -21,6 +21,7 @@ import {
     Effect,
     evaluateBezier,
     MeshEffect,
+    effectsParamsClone,
 } from './effects'
 import { createProxy, preparePane } from './utils'
 
@@ -463,10 +464,12 @@ export function getParamsForEffect(type: string) {
     if (!keyframe) {
         // Create a new keyframe at the current time
         const currentTime = state.currentTime
+        let params = effectsParamsClone(thisEffect.params)
+
         const newKeyframe = {
             id: crypto.randomUUID(),
             time: snapToTimeGrid(currentTime),
-            params: structuredClone(thisEffect.params),
+            params,
         }
 
         // Mutate the current effect by adding the new keyframe
@@ -482,7 +485,9 @@ export function getParamsForEffect(type: string) {
         // Return the params of the new keyframe
         return newKeyframe.params
     }
-    return keyframe?.params || thisEffect.params
+    const params = keyframe?.params || thisEffect.params
+
+    return params
 }
 
 function serializeParams(params: any) {

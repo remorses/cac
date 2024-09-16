@@ -297,6 +297,48 @@ function bezierControl({
     )
 }
 
+export function effectsParamsClone(params: any) {
+    // Deep clone function to handle objects, Three.js vectors, Euler, etc.
+    function deepClone(obj) {
+        if (obj === null || typeof obj !== 'object') {
+            return obj
+        }
+
+        // Handle Three.js specific objects
+        if (obj instanceof THREE.Vector2) {
+            return new THREE.Vector2().copy(obj)
+        }
+        if (obj instanceof THREE.Vector3) {
+            return new THREE.Vector3().copy(obj)
+        }
+        if (obj instanceof THREE.Euler) {
+            return new THREE.Euler().copy(obj)
+        }
+        if (obj instanceof THREE.Quaternion) {
+            return new THREE.Quaternion().copy(obj)
+        }
+        if (obj instanceof THREE.Color) {
+            return new THREE.Color().copy(obj)
+        }
+
+        // Handle arrays
+        if (Array.isArray(obj)) {
+            return obj.map((item) => deepClone(item))
+        }
+
+        // Handle plain objects
+        const clonedObj = {}
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                clonedObj[key] = deepClone(obj[key])
+            }
+        }
+        return clonedObj
+    }
+
+    return deepClone(params)
+}
+
 export function createEffectGroup({
     id,
     start,
