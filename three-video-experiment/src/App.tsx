@@ -648,6 +648,9 @@ function ScrubBar() {
     const isPlaying = useEditorState((state) => state.isPlaying)
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const wasPlaying = useRef(isPlaying)
+    const timelineScale = useEditorState((state) => state.timelineScale)
+
+    const visibleDuration = duration / timelineScale
 
     const handleMouseDown = () => {
         console.log('mouse down')
@@ -680,7 +683,7 @@ function ScrubBar() {
         return () => {
             window.removeEventListener('mousemove', handleGlobalMouseMove)
         }
-    }, [duration])
+    }, [visibleDuration])
 
     useEffect(() => {
         document.addEventListener('mouseup', handleMouseUp)
@@ -689,9 +692,7 @@ function ScrubBar() {
         }
     }, [])
     const timeGridSize = useEditorState((state) => state.timeGridSize)
-    const timelineScale = useEditorState((state) => state.timelineScale)
 
-    const visibleDuration = duration / timelineScale
     const tickCount = Math.max(2, Math.floor(visibleDuration / timeGridSize))
     const step =
         Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
