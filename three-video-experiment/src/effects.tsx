@@ -5,9 +5,12 @@ import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'
 import { createProxy } from './utils'
 
-type BezierCurve = [number, number, number, number]
+export type BezierCurve = [number, number, number, number]
 
-export function evaluateBezier(t: number, curve: BezierCurve): number {
+export function evaluateBezier(t: number, curve?: BezierCurve): number {
+    if (!curve) {
+        return t
+    }
     const [x1, y1, x2, y2] = curve
 
     // These are the fixed start and end points in the CSS cubic bezier format
@@ -33,10 +36,42 @@ export function evaluateBezier(t: number, curve: BezierCurve): number {
     // Since you're trying to map t (from 0 to 1) based on x, solve for y
     return y
 }
+export function evaluate2Beziers(
+    t: number,
+    prevKeyframeTime: number,
+    nextKeyframeTime: number,
+    prevCurve?: BezierCurve,
+    nextCurve?: BezierCurve,
+): number {
+    if (!prevCurve && !nextCurve) {
+        return t
+    }
+
+    // Normalize t to be between 0 and 1 relative to the keyframe interval
+    const normalizedT = Math.max(0, Math.min(1, 
+        (t - prevKeyframeTime) / (nextKeyframeTime - prevKeyframeTime)
+    ))
+
+    // Evaluate both curves
+    const prevValue = prevCurve
+        ? evaluateBezier(normalizedT, prevCurve)
+        : normalizedT
+    const nextValue = nextCurve
+        ? evaluateBezier(normalizedT, nextCurve)
+        : normalizedT
+
+    // Clamp the values to prevent explosion
+    const clampedPrevValue = Math.max(0, Math.min(1, prevValue))
+    const clampedNextValue = Math.max(0, Math.min(1, nextValue))
+
+    // Interpolate between the two clamped values
+    return clampedPrevValue * (1 - normalizedT) + clampedNextValue * normalizedT
+}
 
 export type EditorKeyframe<Params = any> = {
     time: number
     id: string
+    bezierCurve: BezierCurve
     params: Params
 }
 
@@ -45,12 +80,12 @@ export interface Effect<T = any> {
     type: string
     start: number
     end: number
-    bezierCurve: BezierCurve
+
     params: T
     children?: Effect<any>[]
     keyframes: EditorKeyframe<T>[]
     apply: (params: T) => void
-    configure?: (pane: Pane, params: T) => void
+    configure?: (pane: Pane, params: T) => FolderApi
 }
 
 export type EffectInit<E> =
@@ -125,7 +160,6 @@ export function createMeshEffect({
     id,
     start,
     end,
-    bezierCurve = [0, 0, 1, 1],
     ...rest
 }: EffectInit<MeshEffect>): MeshEffect {
     const params = {
@@ -142,7 +176,6 @@ export function createMeshEffect({
         start,
         end,
         params,
-        bezierCurve,
         apply(params) {
             const mesh = threeCanvas.plane
             mesh.position.copy(params.position)
@@ -179,8 +212,7 @@ export function createMeshEffect({
 
                 unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
             })
-
-            bezierControl({ folder, bezierCurve })
+            return folder
         },
     }
 }
@@ -195,7 +227,6 @@ export function createCameraEffect({
     id,
     start,
     end,
-    bezierCurve = [0, 0, 1, 1],
     ...rest
 }: EffectInit<CameraEffect>): CameraEffect {
     const params = {
@@ -214,7 +245,6 @@ export function createCameraEffect({
         start,
         end,
         params,
-        bezierCurve,
         apply(params) {
             const { camera, controls } = threeCanvas
             controls.object.position.copy(params.position)
@@ -227,7 +257,6 @@ export function createCameraEffect({
             const folder = pane.addFolder({
                 title: 'Camera Transform',
             })
-            bezierControl({ folder, bezierCurve })
 
             folder.addBinding(params.position, 'x', {
                 label: 'Camera X Position',
@@ -265,11 +294,12 @@ export function createCameraEffect({
                 max: 10,
                 step: 0.1,
             })
+            return folder
         },
     }
 }
 
-function bezierControl({
+export function bezierControlBinding({
     folder,
     bezierCurve,
 }: {
@@ -358,10 +388,10 @@ export function createEffectGroup({
         start,
         end,
         params: {},
-        bezierCurve,
         children,
         keyframes: [],
         apply: () => {},
+        // configure: () => {},
     }
 }
 

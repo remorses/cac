@@ -1,7 +1,11 @@
-import { createMeshEffect, createCameraEffect } from './effects'
+import { createMeshEffect, createCameraEffect, BezierCurve } from './effects'
 import * as THREE from 'three'
 import { useEditorState } from './state'
 import { threeCanvas } from './App'
+
+function linearBezierCurve(): BezierCurve {
+    return [0, 0, 1, 1]
+}
 
 // Disable in production or non-Vite environments
 if (import.meta.env.DEV) {
@@ -62,6 +66,7 @@ if (import.meta.env.DEV) {
                         position: new THREE.Vector3(0, 0, 0),
                         rotation: new THREE.Quaternion(0, 0, 0),
                     },
+                    bezierCurve: [0.8, 0, 0.2, 1], // Significant ease-in-out curve
                 },
                 {
                     id: '1',
@@ -70,10 +75,9 @@ if (import.meta.env.DEV) {
                         position: new THREE.Vector3(0, 0.6, 0),
                         rotation: new THREE.Quaternion(0, 0, 0),
                     },
+                    bezierCurve: [0.1, 0.9, 0.9, 0.1], // Significant bounce-like curve
                 },
             ],
-
-            // bezierCurve: [0.25, 0.1, 0.25, 1],
         }),
 
         createCameraEffect({
@@ -89,6 +93,7 @@ if (import.meta.env.DEV) {
                         target: camTarget,
                         zoom: 1,
                     },
+                    bezierCurve: [0.6, -0.28, 0.735, 0.045], // Significant elastic-like curve
                 },
                 {
                     id: '1cam',
@@ -98,10 +103,20 @@ if (import.meta.env.DEV) {
                         zoom: 1,
                         target: camTarget,
                     },
+                    bezierCurve: [0.68, -0.55, 0.265, 1.55], // Significant overshoot curve
+                },
+
+                {
+                    id: '1cam2',
+                    time: 2.2,
+                    params: {
+                        position: new THREE.Vector3(0, -0.3, 1),
+                        zoom: 1,
+                        target: camTarget,
+                    },
+                    bezierCurve: [0.68, -0.55, 0.265, 1.55], // Significant overshoot curve
                 },
             ],
-
-            // bezierCurve: [0.25, 0.1, 0.25, 1],
         }),
     ]
     useEditorState.setState({ effects })

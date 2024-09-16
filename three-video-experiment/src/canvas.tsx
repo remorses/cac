@@ -22,6 +22,7 @@ import {
     evaluateBezier,
     MeshEffect,
     effectsParamsClone,
+    evaluate2Beziers,
 } from './effects'
 import { createProxy, preparePane } from './utils'
 
@@ -482,9 +483,10 @@ export function getParamsForEffect(type: string) {
         console.log('creating new keyframe at', currentTime)
         let params = effectsParamsClone(thisEffect.params)
 
-        const newKeyframe = {
+        const newKeyframe: EditorKeyframe = {
             id: crypto.randomUUID(),
             time: snapToTimeGrid(currentTime),
+            bezierCurve: [0, 0, 1, 1],
             params,
         }
 
@@ -647,13 +649,6 @@ function _applyEffects(effects: Effect<any>[]) {
 
         const { currentTime } = useEditorState.getState()
         if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
-            const rawProgress =
-                (currentTime - absoluteStart) / (absoluteEnd - absoluteStart)
-            const easedProgress = evaluateBezier(
-                rawProgress,
-                effect.bezierCurve,
-            )
-
             function getPreviousKeyframe(time: number) {
                 for (let i = effect.keyframes.length - 1; i >= 0; i--) {
                     if (effect.keyframes[i].time <= time) {
@@ -671,7 +666,7 @@ function _applyEffects(effects: Effect<any>[]) {
                 return null
             }
             const prevKeyframe = getPreviousKeyframe(currentTime)
-            const nextKeyframe = getNextKeyframe(currentTime)
+            let nextKeyframe = getNextKeyframe(currentTime)
 
             const params = effect.params
             // console.log(currentTime, prevKeyframe, nextKeyframe)
@@ -683,9 +678,23 @@ function _applyEffects(effects: Effect<any>[]) {
                     Object.assign(params, prevKeyframe.params)
                 } else {
                     // Interpolate between keyframes
-                    const keyframeProgress =
-                        (currentTime - prevKeyframe.time) /
-                        (nextKeyframe.time - prevKeyframe.time)
+                    // const keyframeProgress =
+                    //     (currentTime - prevKeyframe.time) /
+                    //     (nextKeyframe.time - prevKeyframe.time)
+
+                    // const easedProgress = evaluateBezier(
+                    //     keyframeProgress,
+                    //     prevKeyframe.bezierCurve,
+                    // )
+
+                    const easedProgress = evaluate2Beziers(
+                        currentTime,
+                        prevKeyframe.time,
+                        nextKeyframe.time,
+                        prevKeyframe.bezierCurve,
+                        nextKeyframe.bezierCurve,
+                    )
+
                     const interpolatedParams = {}
 
                     // Interpolate each parameter using mergeParamType
@@ -693,7 +702,7 @@ function _applyEffects(effects: Effect<any>[]) {
                         interpolatedParams[key] = mergeParamType(
                             prevKeyframe.params[key],
                             nextKeyframe.params[key],
-                            keyframeProgress,
+                            easedProgress,
                         )
                     }
 

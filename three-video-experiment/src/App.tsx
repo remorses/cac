@@ -12,6 +12,7 @@ import {
     filterEffectTree,
     effectsParamsClone,
     updateEffectInTree,
+    bezierControlBinding,
 } from './effects'
 import {
     getKeyframeOnCurrentTime,
@@ -883,9 +884,10 @@ function KeyframeAddButton({
     }
     const handleClick = () => {
         const time = getTime(position)
-        const newKeyframe = {
+        const newKeyframe: EditorKeyframe = {
             id: crypto.randomUUID(),
             time,
+            bezierCurve: [0, 0, 1, 1],
             params: effectsParamsClone(effect.params),
         }
 
@@ -1165,22 +1167,31 @@ function EffectsControls() {
         )
 
         selectedEffects.forEach((effect) => {
+            const keyframe = getKeyframeOnCurrentTime().find(
+                (kf) => kf.effect.id === effect.node.id,
+            )?.keyframe
             const params = (() => {
                 const hasKeyframes = effect.node.keyframes.length > 0
                 if (!hasKeyframes) {
                     return effect.node.params
                 }
-                const keyframe = getKeyframeOnCurrentTime().find(
-                    (kf) => kf.effect.id === effect.node.id,
-                )
+
                 if (!keyframe) {
                     return
                 }
-                return keyframe.keyframe.params
+                return keyframe.params
             })()
+            if (!params) {
+                return
+            }
 
-            if (params) {
-                effect.node?.configure?.(pane, params)
+            const folder = effect.node?.configure?.(pane, params)
+
+            if (keyframe && folder) {
+                bezierControlBinding({
+                    folder,
+                    bezierCurve: keyframe?.bezierCurve,
+                })
             }
         })
 
@@ -1225,9 +1236,10 @@ function EffectsControls() {
                         const currentTime = snapToTimeGrid(
                             useEditorState.getState().currentTime,
                         )
-                        const newKeyframe = {
+                        const newKeyframe: EditorKeyframe = {
                             id: generateId(),
                             time: currentTime,
+                            bezierCurve: [0, 0, 1, 1],
                             params: effectsParamsClone(selectedEffect.params),
                         }
                         const updatedEffect = {
