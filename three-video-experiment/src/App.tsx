@@ -673,6 +673,7 @@ function ScrubBar() {
         }
     }, [])
 
+    const timeGridSize = useEditorState((state) => state.timeGridSize)
     return (
         <div
             ref={containerRef}
@@ -700,15 +701,16 @@ function ScrubBar() {
             //     handleGlobalMouseMove(e as any)
             // }}
         >
-            {Array.from({ length: Math.ceil(duration * 10) + 1 }).map(
+            {Array.from({ length: Math.ceil(duration / timeGridSize) + 1 }).map(
                 (_, index) => {
-                    const isSecond = index % 10 === 0
+                    const time = index * timeGridSize
+                    const isSecond = time % 1 < 0.001 // Check if it's close to a whole second
                     return (
                         <div
                             key={index}
                             className='absolute top-0 bottom-0 gap-1 flex flex-row'
                             style={{
-                                left: `${(index / (duration * 10)) * 100}%`,
+                                left: `${(time / duration) * 100}%`,
                             }}
                         >
                             <div
@@ -723,7 +725,7 @@ function ScrubBar() {
                             ></div>
                             {isSecond && (
                                 <span className='text-xs text-gray-500 font-mono'>
-                                    {index / 10}s
+                                    {time.toFixed(1)}s
                                 </span>
                             )}
                         </div>

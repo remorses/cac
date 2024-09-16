@@ -111,7 +111,7 @@ export const useCurrentTime = () => {
 export const useEditorState = create<AppState>((set, get) => {
     return {
         currentTime: 0,
-        timeGridSize: (1 / 30) * 5,
+        timeGridSize: (1 / 30) * 3,
         outputSize: { width: 1920, height: 1080 },
         scale: 1,
         isLooping: true,
