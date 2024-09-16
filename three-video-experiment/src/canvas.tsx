@@ -89,7 +89,9 @@ export function createThreeCanvas({
 
     scene.add(plane)
 
-    scene.add(new THREE.GridHelper(5, 10, 0x888888, 0x444444))
+    const gridHelper = new THREE.GridHelper(5, 10, 0x888888, 0x444444)
+
+    scene.add(gridHelper)
 
     camera.position.z = 0.6
 
@@ -272,36 +274,6 @@ export function createThreeCanvas({
     // Add the hole to the outer shape
     outerShape.holes.push(holeShape)
     let rectangleGeometry = new THREE.ShapeGeometry(outerShape)
-    let rectangleMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            color: { value: new THREE.Color(0x000000) },
-            vignetteStrength: { value: 13 },
-        },
-        vertexShader: `
-            varying vec2 vUv;
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-        `,
-        fragmentShader: `
-            uniform vec3 color;
-            uniform float vignetteStrength;
-            varying vec2 vUv;
-            void main() {
-                vec2 uv = vUv; // Transform UV to [-1, 1] range
-                float dist = max(abs(uv.x), abs(uv.y)); // Use max for rectangular shape
-                float percentage = 1.0;
-                dist = dist * percentage;
-                float vignette = smoothstep(0.0, 1.0, dist);
-                float opacity = pow(vignette, vignetteStrength);
-                
-                gl_FragColor = vec4(color, opacity);
-            }
-        `,
-        transparent: true,
-        side: THREE.DoubleSide,
-    });
 
     const rectangleLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(
@@ -348,9 +320,11 @@ export function createThreeCanvas({
         if (!isPreview) {
             transformControls.enabled = false
             transformControls.visible = false
+            gridHelper.visible = false
         } else {
             transformControls.enabled = true
             transformControls.visible = true
+            gridHelper.visible = true
         }
         const rotationX = camera.rotation.x / 3
         const rotationY = camera.rotation.y
@@ -732,3 +706,41 @@ function _applyEffects(effects: Effect<any>[]) {
         }
     }
 }
+
+let rectangleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        color: { value: new THREE.Color(0x000000) },
+        vignetteStrength: { value: 6 },
+        squircleN: { value: 100 }, // Controls the squircle shape
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform vec3 color;
+        uniform float vignetteStrength;
+        uniform float squircleN;
+        varying vec2 vUv;
+
+        float squircle(vec2 uv, float n) {
+            uv = abs(uv);
+            float r = pow(pow(uv.x, n) + pow(uv.y, n), 1.0 / n);
+            return r;
+        }
+
+        void main() {
+            vec2 uv = vUv; // Transform UV to [-1, 1] range
+            float dist = squircle(uv, squircleN);
+            float vignette = smoothstep(0.0, 1.0, dist);
+            float opacity = pow(vignette, vignetteStrength);
+            
+            gl_FragColor = vec4(color, opacity);
+        }
+    `,
+    transparent: true,
+    side: THREE.DoubleSide,
+})
