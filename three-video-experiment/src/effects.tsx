@@ -183,9 +183,10 @@ export function createMeshEffect({
         },
     }
 }
+
 export type CameraEffect = Effect<{
     position: THREE.Vector3
-    rotation: THREE.Quaternion
+    target: THREE.Vector3
     zoom: number
 }>
 
@@ -198,11 +199,11 @@ export function createCameraEffect({
 }: EffectInit<CameraEffect>): CameraEffect {
     const params = {
         position: new THREE.Vector3(0, 0, 0),
-        rotation: new THREE.Quaternion(0, 0, 0),
+        target: new THREE.Vector3(0, 0, 0),
         zoom: 1,
     }
-    params.position.copy(threeCanvas.camera.position)
-    params.rotation.copy(threeCanvas.camera.quaternion)
+    params.position.copy(threeCanvas.controls.object.position)
+    params.target.copy(threeCanvas.controls.target)
     params.zoom = threeCanvas.camera.zoom
     return {
         keyframes: [],
@@ -215,11 +216,10 @@ export function createCameraEffect({
         bezierCurve,
         apply(params) {
             const { camera, controls } = threeCanvas
-            camera.quaternion.copy(params.rotation)
-            camera.position.copy(params.position)
-            camera.zoom = params.zoom
-            camera.updateProjectionMatrix()
-            camera.updateMatrixWorld()
+            controls.object.position.copy(params.position)
+            controls.target.copy(params.target)
+            
+            // controls.update()
         },
         configure(pane, params) {
             const folder = pane.addFolder({
@@ -228,30 +228,35 @@ export function createCameraEffect({
             bezierControl({ folder, bezierCurve })
 
             folder.addBinding(params.position, 'x', {
-                label: 'X Position',
+                label: 'Camera X Position',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.position, 'y', {
-                label: 'Y Position',
+                label: 'Camera Y Position',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.position, 'z', {
-                label: 'Z Position',
+                label: 'Camera Z Position',
                 picker: 'inline',
                 expanded: true,
             })
-            folder.addBinding(params, 'rotation', {
-                label: 'Rotation',
+            folder.addBinding(params.target, 'x', {
+                label: 'Target X Position',
                 picker: 'inline',
                 expanded: true,
-                view: 'rotation',
-                rotationMode: 'quaternion',
-                order: 'XYZ', // Extrinsic rotation order. optional, 'XYZ' by default
-                unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
             })
-
+            folder.addBinding(params.target, 'y', {
+                label: 'Target Y Position',
+                picker: 'inline',
+                expanded: true,
+            })
+            folder.addBinding(params.target, 'z', {
+                label: 'Target Z Position',
+                picker: 'inline',
+                expanded: true,
+            })
             folder.addBinding(params, 'zoom', {
                 label: 'Zoom',
                 min: 0.1,

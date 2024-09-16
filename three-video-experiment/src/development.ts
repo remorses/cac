@@ -45,7 +45,8 @@ if (import.meta.env.DEV) {
     //     }
     // })
     const deg = Math.PI / 180
-    const camRotation = threeCanvas.camera.quaternion.clone()
+    const camTarget = threeCanvas.controls.target.clone()
+    const camPosition = threeCanvas.controls.object.position.clone()
     const effects = [
         createMeshEffect({
             id: 'mesh',
@@ -83,8 +84,8 @@ if (import.meta.env.DEV) {
                     id: '0cam',
                     time: 0,
                     params: {
-                        position: new THREE.Vector3(0, -0.3, 1),
-                        rotation: camRotation,
+                        position: camPosition,
+                        target: camTarget,
                         zoom: 1,
                     },
                 },
@@ -94,7 +95,7 @@ if (import.meta.env.DEV) {
                     params: {
                         position: new THREE.Vector3(0, -0.3, 1),
                         zoom: 1,
-                        rotation: camRotation,
+                        target: camTarget,
                     },
                 },
             ],
