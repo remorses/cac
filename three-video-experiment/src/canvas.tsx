@@ -52,7 +52,7 @@ export function createThreeCanvas({
         preserveDrawingBuffer: true,
         alpha: true,
     })
-    renderer.setClearColor(0x000000, 1);
+    renderer.setClearColor(0x000000, 1)
 
     const { outputSize } = useEditorState.getState()
     const aspectRatio = outputSize.width / outputSize.height
@@ -244,7 +244,7 @@ export function createThreeCanvas({
         scene.background = new THREE.Color(value.value)
     })
 
-    composer.addPass(vignettePass)
+    // composer.addPass(vignettePass)
 
     composer.addPass(new ShaderPass(filmGrainShader))
 
@@ -272,21 +272,37 @@ export function createThreeCanvas({
     // Add the hole to the outer shape
     outerShape.holes.push(holeShape)
     let rectangleGeometry = new THREE.ShapeGeometry(outerShape)
-
-    let rectangleMaterial = new THREE.MeshBasicMaterial({
-        color: 0x000000,
-        opacity: 0.6,
-        transparent: true, // Add this line to enable transparency
-        side: THREE.DoubleSide,
-    })
-
-    let rectangleMaterialLine = new THREE.LineBasicMaterial({
-        color: 0xffff00,
-        depthTest: false,
-        depthWrite: false,
+    let rectangleMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            color: { value: new THREE.Color(0x000000) },
+            vignetteStrength: { value: 13 },
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 color;
+            uniform float vignetteStrength;
+            varying vec2 vUv;
+            void main() {
+                vec2 uv = vUv; // Transform UV to [-1, 1] range
+                float dist = max(abs(uv.x), abs(uv.y)); // Use max for rectangular shape
+                float percentage = 1.0;
+                dist = dist * percentage;
+                float vignette = smoothstep(0.0, 1.0, dist);
+                float opacity = pow(vignette, vignetteStrength);
+                
+                gl_FragColor = vec4(color, opacity);
+            }
+        `,
         transparent: true,
-        opacity: 0.8,
-    })
+        side: THREE.DoubleSide,
+    });
+
     const rectangleLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(
             new THREE.ShapeGeometry(
@@ -298,7 +314,13 @@ export function createThreeCanvas({
                     .lineTo(-holeSize, -holeSize),
             ),
         ),
-        rectangleMaterialLine,
+        new THREE.LineBasicMaterial({
+            color: 0xffff00,
+            depthTest: false,
+            depthWrite: false,
+            transparent: true,
+            opacity: 0.8,
+        }),
     )
     const rectangle = new THREE.Mesh(rectangleGeometry, rectangleMaterial)
     overlayScene.add(rectangle)

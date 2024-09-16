@@ -385,7 +385,7 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] grid-rows-[50%_40px_1fr] h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
+        <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
             <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'
@@ -403,7 +403,7 @@ function RotationsImage() {
                     Export Video
                 </Button>
             </div>
-            <div className='flex group relative overflow-hidden items-center justify-center row-span-1'>
+            <div className='flex group relative overflow-hidden items-start justify-center row-span-1'>
                 <CanvasComponent
                     style={{
                         aspectRatio: (size.width / size.height).toFixed(2),
