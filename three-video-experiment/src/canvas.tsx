@@ -35,7 +35,7 @@ export function createThreeCanvas({
     initialImageSize?: { width: number; height: number } | undefined
 } = {}) {
     const canvas = document.createElement('canvas')
-    canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
+    canvas.className = 'bg-black border-0 !max-w-full !max-h-full !h-auto'
 
     const pane = preparePane(
         new Pane({
@@ -52,6 +52,8 @@ export function createThreeCanvas({
         preserveDrawingBuffer: true,
         alpha: true,
     })
+    renderer.setClearColor(0x000000, 1);
+
     const { outputSize } = useEditorState.getState()
     const aspectRatio = outputSize.width / outputSize.height
     renderer.setSize(outputSize.width, outputSize.height)
@@ -286,12 +288,21 @@ export function createThreeCanvas({
         opacity: 0.8,
     })
     const rectangleLines = new THREE.LineSegments(
-        new THREE.EdgesGeometry(rectangleGeometry),
+        new THREE.EdgesGeometry(
+            new THREE.ShapeGeometry(
+                new THREE.Shape()
+                    .moveTo(-holeSize, -holeSize)
+                    .lineTo(holeSize, -holeSize)
+                    .lineTo(holeSize, holeSize)
+                    .lineTo(-holeSize, holeSize)
+                    .lineTo(-holeSize, -holeSize),
+            ),
+        ),
         rectangleMaterialLine,
     )
     const rectangle = new THREE.Mesh(rectangleGeometry, rectangleMaterial)
     overlayScene.add(rectangle)
-    overlayScene.add(rectangleLines) // Add this line to render the yellow outline
+    overlayScene.add(rectangleLines)
 
     function applyAllEffects({ isUserChange }) {
         if (isUserChange) {
@@ -559,7 +570,7 @@ const filmGrainShader = {
     uniforms: {
         tDiffuse: { value: null },
         time: { value: 1.0 },
-        grainIntensity: { value: 0.03 },
+        grainIntensity: { value: 0.05 },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -580,8 +591,9 @@ const filmGrainShader = {
       
       void main() {
         vec4 texel = texture2D(tDiffuse, vUv);
-        float grain = random(vUv + time) * grainIntensity;
-        gl_FragColor = vec4(texel.rgb + grain, texel.a);
+        float grain = (random(vUv + time) - 0.5) * grainIntensity;
+        // add the grain with a multiply blending mode, so black remains black
+        gl_FragColor = vec4(texel.rgb + texel.rgb * grain, texel.a);
       }
     `,
 }

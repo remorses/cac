@@ -385,7 +385,7 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='p-4 grid grid-cols-[300px_1fr_300px] grid-rows-[50%_40px_1fr] h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
+        <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] grid-rows-[50%_40px_1fr] h-full pt-4 gap-4 max-h-screen w-full max-w-full'>
             <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'
@@ -408,7 +408,7 @@ function RotationsImage() {
                     style={{
                         aspectRatio: (size.width / size.height).toFixed(2),
                     }}
-                    className='max-w-full max-h-full rounded-md'
+                    className='max-w-full max-h-full '
                 />
             </div>
             <div className=''>
