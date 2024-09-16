@@ -3,11 +3,6 @@ import { useCurrentTime, useEditorState } from './state'
 
 export const scrubberHalfWidth = 16
 
-interface Props {
-    timelineHeight: number
-    containerRef: React.RefObject<HTMLElement>
-}
-
 export interface DragOrigin {
     pointerX: number
     time: number
@@ -23,14 +18,14 @@ export function ScrubberIcon() {
         </svg>
     )
 }
-export function Scrubber({ timelineHeight, containerRef }: Props) {
-    const scale = useEditorState((state) => state.timeScale)
+export function Scrubber({ containerRef }) {
     const currentTime = useCurrentTime()
-    const duration = useEditorState((state) => state.duration)
-    const setIsPlaying = useEditorState((state) => state.setIsPlaying)
+    const visibleDuration = useEditorState(
+        (state) => state.duration / state.timelineScale,
+    )
     const w = containerRef.current?.clientWidth || 0
 
-    const left = (currentTime / duration) * w - scrubberHalfWidth
+    const left = (currentTime / visibleDuration) * w - scrubberHalfWidth
 
     return (
         <>

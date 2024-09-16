@@ -386,7 +386,7 @@ function RotationsImage() {
 
     return (
         <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] gap-4 grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
-            <div className='hideScroll flex-shrink-0 grow bg-[color:var(--tweakpane-bg)] overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
+            <div className='hideScroll flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'
                     className='!bg-gray-50 !rounded-lg'
@@ -485,15 +485,15 @@ type EffectState = {
 function Timeline() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
+    const timelineScale = useEditorState((state) => state.timelineScale)
     const draggingEffect = useRef<EffectState>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const isPlaying = useEditorState((state) => state.isPlaying)
+
+    const visibleDuration = duration / timelineScale
+
     const handleDrag = (e) => {
-        // if (!draggingEffect) {
-        //     scrub(e)
-        //     return
-        // }
         if (!draggingEffect.current || !containerRef.current) return
 
         const {
@@ -504,7 +504,7 @@ function Timeline() {
         } = draggingEffect.current
         const rect = containerRef.current?.getBoundingClientRect()
         const x = e.clientX - rect.left
-        const newTime = (x / rect.width) * duration
+        const newTime = (x / rect.width) * visibleDuration
 
         const minDuration = 0.2
         let effectsNew = effects as Effect[]
@@ -523,7 +523,6 @@ function Timeline() {
                 )
             }
             if (type === 'both') {
-                // console.log('both', initialXOffset)
                 let clipDur = effect.end - effect.start
                 const newStart = newTime - clipDur * initialXOffset
                 updatedEffect.start = Math.max(
@@ -537,7 +536,6 @@ function Timeline() {
                     parent?.end || Infinity,
                 )
             }
-            // Ensure the updated effect stays within its parent's bounds
             if (parent) {
                 updatedEffect.start = Math.max(
                     parent.start,
@@ -571,10 +569,22 @@ function Timeline() {
             }
         }
 
+        const handleScroll = (e: WheelEvent) => {
+            if (e.metaKey) {
+                e.preventDefault()
+                const delta = e.deltaY > 0 ? 0.9 : 1.1
+                useEditorState.setState((state) => {
+                    return { timelineScale: state.timelineScale * delta }
+                })
+            }
+        }
+
         window.addEventListener('keydown', handleKeyPress)
+        window.addEventListener('wheel', handleScroll, { passive: false })
 
         return () => {
             window.removeEventListener('keydown', handleKeyPress)
+            window.removeEventListener('wheel', handleScroll)
         }
     }, [])
 
@@ -584,7 +594,8 @@ function Timeline() {
             return
         }
         const newTime =
-            ((e.clientX - containerRect.left) / containerRect.width) * duration
+            ((e.clientX - containerRect.left) / containerRect.width) *
+            visibleDuration
         useEditorState.setState({
             currentTime: Math.max(0, Math.min(newTime, duration)),
         })
@@ -616,17 +627,13 @@ function Timeline() {
                             key={effect.id}
                             effect={effect}
                             index={index}
-                            duration={duration}
+                            visibleDuration={visibleDuration}
                             parent={parent || undefined}
-                            // draggingEffect={draggingEffect}
                         />
                     )
                 })}
             </div>
-            <Scrubber
-                containerRef={containerRef}
-                timelineHeight={containerRef.current?.clientHeight || 200}
-            />
+            <Scrubber containerRef={containerRef} />
             <pre className='shrink-0'>{JSON.stringify(effects, null, 2)}</pre>
         </div>
     )
@@ -662,7 +669,7 @@ function ScrubBar() {
             // console.log('mouse move')
             const rect = containerRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
-            const newTime = (x / rect.width) * duration
+            const newTime = (x / rect.width) * visibleDuration
             setCurrentTime(Math.max(0, Math.min(newTime, duration)))
         }
     }
@@ -681,12 +688,18 @@ function ScrubBar() {
             document.removeEventListener('mouseup', handleMouseUp)
         }
     }, [])
-
     const timeGridSize = useEditorState((state) => state.timeGridSize)
+    const timelineScale = useEditorState((state) => state.timelineScale)
+
+    const visibleDuration = duration / timelineScale
+    const tickCount = Math.max(2, Math.floor(visibleDuration / timeGridSize))
+    const step =
+        Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
+
     return (
         <div
             ref={containerRef}
-            className='w-full select-none cursor-pointer isolate  bg-gray-800 relative shrink-0'
+            className='w-full select-none cursor-pointer isolate bg-gray-800 relative shrink-0 overflow-hidden'
             style={{
                 height: `${scrubBarHeight}px`,
             }}
@@ -698,49 +711,46 @@ function ScrubBar() {
             onClick={(e) => {
                 const rect = containerRef.current!.getBoundingClientRect()
                 const x = e.clientX - rect.left
-                const newTime = (x / rect.width) * duration
+                const newTime = (x / rect.width) * visibleDuration
                 setCurrentTime(Math.max(0, Math.min(newTime, duration)))
             }}
             onMouseUp={(e) => {
                 e.stopPropagation()
                 handleMouseUp(e as any)
             }}
-            // onClick={(e) => {
-            //     e.stopPropagation()
-            //     handleGlobalMouseMove(e as any)
-            // }}
         >
-            {Array.from({ length: Math.ceil(duration / timeGridSize) + 1 }).map(
-                (_, index) => {
-                    const time = index * timeGridSize
-                    const isSecond = time % 1 < 0.001 // Check if it's close to a whole second
-                    return (
+            {Array.from({
+                length: Math.ceil(visibleDuration / step) + 1,
+            }).map((_, index) => {
+                const time = index * step
+                const isSecond = time % 1 < 0.001
+
+                return (
+                    <div
+                        key={index}
+                        className='absolute top-0 bottom-0 gap-1 flex flex-row'
+                        style={{
+                            left: `${(time / visibleDuration) * 100}%`,
+                        }}
+                    >
                         <div
-                            key={index}
-                            className='absolute top-0 bottom-0 gap-1 flex flex-row'
+                            className={`w-[1px] h-full grow self-stretch ${
+                                isSecond
+                                    ? 'bg-gray-700'
+                                    : 'bg-gray-400 opacity-50'
+                            }`}
                             style={{
-                                left: `${(time / duration) * 100}%`,
+                                height: isSecond ? '100%' : '50%',
                             }}
-                        >
-                            <div
-                                className={`w-[1px] h-full grow self-stretch ${
-                                    isSecond
-                                        ? 'bg-gray-700'
-                                        : 'bg-gray-400 opacity-50'
-                                }`}
-                                style={{
-                                    height: isSecond ? '100%' : '50%',
-                                }}
-                            ></div>
-                            {isSecond && (
-                                <span className='text-xs text-gray-500 font-mono'>
-                                    {time.toFixed(1)}s
-                                </span>
-                            )}
-                        </div>
-                    )
-                },
-            )}
+                        ></div>
+                        {isSecond && (
+                            <span className='text-xs text-gray-500 font-mono'>
+                                {time.toFixed(1)}s
+                            </span>
+                        )}
+                    </div>
+                )
+            })}
         </div>
     )
 }
@@ -751,12 +761,12 @@ function Clip({
     effect,
     parent,
     index,
-    duration,
+    visibleDuration: duration,
 }: {
     effect: Effect<any>
     parent?: Effect<any>
     index: number
-    duration: number
+    visibleDuration: number
 }) {
     const startPercent = (effect.start / duration) * 100
     const widthPercent = ((effect.end - effect.start) / duration) * 100
@@ -765,10 +775,6 @@ function Clip({
     const containerRef = useRef<HTMLDivElement>(null)
 
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
-
-    const isSelected = selectedEffectIds.includes(effect.id)
-
-    const effects = useEditorState((state) => state.effects)
 
     return (
         <div
