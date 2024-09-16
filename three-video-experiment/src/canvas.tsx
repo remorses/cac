@@ -151,7 +151,7 @@ export function createThreeCanvas({
             params = keyframe.params
         }
         params.position.copy(plane.position)
-        params.rotation.copy(plane.rotation)
+        params.rotation.copy(plane.quaternion)
     })
 
     const img = texture.image
@@ -529,12 +529,15 @@ const mergeParamType = (start, end, progress) => {
     if (start instanceof THREE.Vector3 && end instanceof THREE.Vector3) {
         return new THREE.Vector3().lerpVectors(start, end, progress)
     }
-    if (start instanceof THREE.Euler && end instanceof THREE.Euler) {
-        return new THREE.Euler(
+    if (start instanceof THREE.Quaternion && end instanceof THREE.Quaternion) {
+        return new THREE.Quaternion(
             start.x + (end.x - start.x) * progress,
             start.y + (end.y - start.y) * progress,
             start.z + (end.z - start.z) * progress,
         )
+    }
+    if (start instanceof THREE.Quaternion && end instanceof THREE.Quaternion) {
+        return new THREE.Quaternion().slerpQuaternions(start, end, progress)
     }
     if (start instanceof THREE.Color && end instanceof THREE.Color) {
         return new THREE.Color().lerpColors(start, end, progress)

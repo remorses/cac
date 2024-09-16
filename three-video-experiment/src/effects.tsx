@@ -118,7 +118,7 @@ export type EffectType = 'rotation' | 'scale' | 'position'
 
 export type MeshEffect = Effect<{
     position: THREE.Vector3
-    rotation: THREE.Euler
+    rotation: THREE.Quaternion
 }>
 
 export function createMeshEffect({
@@ -130,10 +130,10 @@ export function createMeshEffect({
 }: EffectInit<MeshEffect>): MeshEffect {
     const params = {
         position: new THREE.Vector3(0, 0, 0),
-        rotation: new THREE.Euler(0, 0, 0),
+        rotation: new THREE.Quaternion(0, 0, 0),
     }
     params.position.copy(threeCanvas.plane.position)
-    params.rotation.copy(threeCanvas.plane.rotation)
+    params.rotation.copy(threeCanvas.plane.quaternion)
     return {
         keyframes: [],
         ...rest,
@@ -146,7 +146,7 @@ export function createMeshEffect({
         apply(params) {
             const mesh = threeCanvas.plane
             mesh.position.copy(params.position)
-            mesh.rotation.copy(params.rotation)
+            mesh.quaternion.copy(params.rotation)
             mesh.updateMatrix()
             mesh.updateMatrixWorld(true)
         },
@@ -174,8 +174,8 @@ export function createMeshEffect({
                 picker: 'inline',
                 expanded: true,
                 view: 'rotation',
-                rotationMode: 'euler',
-                order: 'XYZ', // Extrinsic rotation order. optional, 'XYZ' by default
+                rotationMode: 'quaternion',
+
                 unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
             })
 
@@ -185,7 +185,7 @@ export function createMeshEffect({
 }
 export type CameraEffect = Effect<{
     position: THREE.Vector3
-    rotation: THREE.Euler
+    rotation: THREE.Quaternion
     zoom: number
 }>
 
@@ -198,11 +198,11 @@ export function createCameraEffect({
 }: EffectInit<CameraEffect>): CameraEffect {
     const params = {
         position: new THREE.Vector3(0, 0, 0),
-        rotation: new THREE.Euler(0, 0, 0),
+        rotation: new THREE.Quaternion(0, 0, 0),
         zoom: 1,
     }
     params.position.copy(threeCanvas.camera.position)
-    params.rotation.copy(threeCanvas.camera.rotation)
+    params.rotation.copy(threeCanvas.camera.quaternion)
     params.zoom = threeCanvas.camera.zoom
     return {
         keyframes: [],
@@ -214,13 +214,13 @@ export function createCameraEffect({
         params,
         bezierCurve,
         apply(params) {
-            const camera = threeCanvas.camera
-            camera.rotation.copy(params.rotation)
+            const { camera, controls } = threeCanvas
+            camera.quaternion.copy(params.rotation)
             camera.position.copy(params.position)
             camera.zoom = params.zoom
             camera.updateProjectionMatrix()
-             
-        }, 
+            camera.updateMatrixWorld()
+        },
         configure(pane, params) {
             const folder = pane.addFolder({
                 title: 'Camera Transform',
@@ -247,7 +247,7 @@ export function createCameraEffect({
                 picker: 'inline',
                 expanded: true,
                 view: 'rotation',
-                rotationMode: 'euler',
+                rotationMode: 'quaternion',
                 order: 'XYZ', // Extrinsic rotation order. optional, 'XYZ' by default
                 unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
             })
@@ -260,39 +260,6 @@ export function createCameraEffect({
             })
         },
     }
-}
-
-function createEulerProxy(target: { rotation: THREE.Euler }) {
-    return createProxy({
-        target,
-        setter: (target, prop, value) => {
-            if (prop === 'x') {
-                target.rotation.set(
-                    value,
-                    target.rotation.y,
-                    target.rotation.z,
-                    target.rotation.order,
-                )
-            } else if (prop === 'y') {
-                target.rotation.set(
-                    target.rotation.x,
-                    value,
-                    target.rotation.z,
-                    target.rotation.order,
-                )
-            } else if (prop === 'z') {
-                target.rotation.set(
-                    target.rotation.x,
-                    target.rotation.y,
-                    value,
-                    target.rotation.order,
-                )
-            } else {
-                ;(target as any)[prop] = value
-            }
-            return true
-        },
-    })
 }
 
 function bezierControl({
