@@ -1,6 +1,7 @@
 import { createMeshEffect, createCameraEffect } from './effects'
 import * as THREE from 'three'
 import { useEditorState } from './state'
+import { threeCanvas } from './App'
 
 // Disable in production or non-Vite environments
 if (import.meta.env.DEV) {
@@ -44,6 +45,7 @@ if (import.meta.env.DEV) {
     //     }
     // })
     const deg = Math.PI / 180
+    const camRotation = threeCanvas.camera.rotation.clone()
     const effects = [
         createMeshEffect({
             id: 'mesh',
@@ -71,10 +73,31 @@ if (import.meta.env.DEV) {
 
             // bezierCurve: [0.25, 0.1, 0.25, 1],
         }),
+
         createCameraEffect({
             id: 'camera',
             start: 0,
             end: 3,
+            keyframes: [
+                // {
+                //     id: '0cam',
+                //     time: 0,
+                //     params: {
+                //         position: new THREE.Vector3(0, -0.3, 0),
+                //         rotation: camRotation,
+                //         zoom: 1,
+                //     },
+                // },
+                // {
+                //     id: '1cam',
+                //     time: 2,
+                //     params: {
+                //         position: new THREE.Vector3(0, -0.6, 0),
+                //         zoom: 1,
+                //         rotation: camRotation,
+                //     },
+                // },
+            ],
 
             // bezierCurve: [0.25, 0.1, 0.25, 1],
         }),

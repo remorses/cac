@@ -145,12 +145,8 @@ export function createMeshEffect({
         bezierCurve,
         apply(params) {
             const mesh = threeCanvas.plane
-            mesh.position.x = params.position.x
-            mesh.position.y = params.position.y
-            mesh.position.z = params.position.z
-            mesh.rotation.x = params.rotation.x
-            mesh.rotation.y = params.rotation.y
-            mesh.rotation.z = params.rotation.z
+            mesh.position.copy(params.position)
+            mesh.rotation.copy(params.rotation)
             mesh.updateMatrix()
             mesh.updateMatrixWorld(true)
         },
@@ -219,11 +215,12 @@ export function createCameraEffect({
         bezierCurve,
         apply(params) {
             const camera = threeCanvas.camera
-            camera.position.copy(params.position)
             camera.rotation.copy(params.rotation)
+            camera.position.copy(params.position)
             camera.zoom = params.zoom
             camera.updateProjectionMatrix()
-        },
+             
+        }, 
         configure(pane, params) {
             const folder = pane.addFolder({
                 title: 'Camera Transform',

@@ -1074,15 +1074,22 @@ function EffectsControls() {
     const selectedEffects = bfs(effectsAll).filter((x) =>
         selectedEffectIds.includes(x.node.id),
     )
+    const setSelectedKeyframeIds = useEditorState(
+        (state) => state.setSelectedKeyframeIds,
+    )
+    const onlySelectedEffect =
+        selectedEffects.length === 1 && selectedEffects[0]?.node
+
     function getCurrentKeyframe() {
-        if (selectedEffects.length !== 1) return null
-        const effect = selectedEffects[0]
-        const keyframe = effect.node.keyframes.find((kf) =>
+        if (!onlySelectedEffect) return null
+        const keyframe = onlySelectedEffect.keyframes.find((kf) =>
             selectedKeyframeIds.includes(kf.id),
         )
-        return keyframe || null
+        if (!keyframe) return null
+        return keyframe
     }
     const currentKeyframe = getCurrentKeyframe()
+    const showKeyframeButton = onlySelectedEffect && !currentKeyframe
     useEffect(() => {
         const pane = preparePane(
             new Pane({
@@ -1120,13 +1127,11 @@ function EffectsControls() {
             threeCanvas.controls.removeEventListener('change', refreshPane)
         }
     }, [selectedEffectIds, currentKeyframe])
-    const setSelectedKeyframeIds = useEditorState(
-        (state) => state.setSelectedKeyframeIds,
-    )
-    const showKeyframeButton =
-        selectedEffects.length === 1 && !selectedKeyframeIds.length
+
+    const showKeyframeMode = onlySelectedEffect && currentKeyframe
+
     return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col max-h-full overflow-y-auto'>
             <div className='' ref={container}></div>
 
             {showKeyframeButton && (
@@ -1157,7 +1162,7 @@ function EffectsControls() {
                     Add Keyframe
                 </button>
             )}
-            {selectedKeyframeIds.length > 0 && (
+            {showKeyframeMode && (
                 <div className='mt-4 p-2 bg-yellow-100 text-yellow-800 rounded-md'>
                     <span className='font-semibold'>Keyframe Mode</span>
                     <p className='text-xs text-current opacity-70 mt-1'>
