@@ -641,7 +641,6 @@ function Timeline() {
 
 const scrubBarHeight = 16
 
-
 function ScrubBar() {
     const duration = useEditorState((state) => state.duration)
     const isDraggingRef = useRef(false)
@@ -694,7 +693,8 @@ function ScrubBar() {
     const timeGridSize = useEditorState((state) => state.timeGridSize)
 
     const tickCount = Math.max(2, Math.floor(visibleDuration / timeGridSize))
-    let step = Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
+    let step =
+        Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
 
     // Adjust step size if there's not enough space for text
     const minSpaceBetweenTicks = 10 // Minimum pixels between ticks with text
@@ -1065,7 +1065,7 @@ function KeyframeComponent({
         >
             <KeyframeIcon
                 className='shrink-0'
-                style={{ width: `${halfWidth * 2}px` }}
+                style={{ minWidth: `${halfWidth * 2}px` }}
             />
         </div>
     )
