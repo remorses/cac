@@ -266,32 +266,32 @@ export function createCameraEffect({
             })
 
             folder.addBinding(params.position, 'x', {
-                label: 'Camera X Position',
+                label: 'Camera X',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.position, 'y', {
-                label: 'Camera Y Position',
+                label: 'Camera Y',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.position, 'z', {
-                label: 'Camera Z Position',
+                label: 'Camera Z',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.target, 'x', {
-                label: 'Target X Position',
+                label: 'Target X',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.target, 'y', {
-                label: 'Target Y Position',
+                label: 'Target Y',
                 picker: 'inline',
                 expanded: true,
             })
             folder.addBinding(params.target, 'z', {
-                label: 'Target Z Position',
+                label: 'Target Z',
                 picker: 'inline',
                 expanded: true,
             })
