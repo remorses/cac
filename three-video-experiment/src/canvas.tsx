@@ -36,7 +36,7 @@ export function createThreeCanvas({
     initialImageSize?: { width: number; height: number } | undefined
 } = {}) {
     const canvas = document.createElement('canvas')
-    canvas.className = 'bg-black border-0 !max-w-full !max-h-full !h-auto'
+    canvas.className = 'bg-black border-0  !max-w-full !max-h-full !h-auto'
 
     const pane = preparePane(
         new Pane({

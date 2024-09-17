@@ -387,8 +387,23 @@ function RotationsImage() {
     }
 
     return (
-        <Container className=' bg-black grid grid-cols-[300px_1fr_300px] gap-x-4 grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
-            <div className='hideScroll flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
+        <Container
+            style={{
+                '--padding': '16px',
+            }}
+            className=' bg-black grid grid-cols-[300px_1fr_300px] gap-x-4 grid-rows-[40px_50%_50px_1fr] h-full pt-4 max-h-screen w-full max-w-full'
+        >
+            <div className='flex px-[--padding] flex-row col-span-3 gap-4 '>
+                <div className='grow'></div>
+                <Button
+                    onClick={exportVideo}
+                    isLoading={isLoading}
+                    className='bg-blue-500 w-auto hover:bg-blue-700 text-white font-bold px-4 rounded'
+                >
+                    Export Video
+                </Button>
+            </div>
+            <div className='pl-[--padding] pb-[--padding] flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'
                     className='!bg-gray-50 !rounded-lg'
@@ -397,23 +412,16 @@ function RotationsImage() {
                 />
                 <Controls />
                 <div className='grow'></div>
-                <Button
-                    onClick={exportVideo}
-                    isLoading={isLoading}
-                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded'
-                >
-                    Export Video
-                </Button>
             </div>
             <div className='flex group relative overflow-hidden items-start justify-center row-span-1'>
                 <CanvasComponent
                     style={{
                         aspectRatio: (size.width / size.height).toFixed(2),
                     }}
-                    className='max-w-full max-h-full '
+                    className='max-w-full max-h-full rounded-md overflow-hidden'
                 />
             </div>
-            <div className=''>
+            <div className='pr-[--padding] pb-[--padding]'>
                 <EffectsControls />
             </div>
             <div className='row-span-1 bg-gray-900 flex flex-col items-center justify-center col-span-3'>
@@ -1238,6 +1246,11 @@ function EffectsControls() {
             threeCanvas.applyAllEffects({ isUserChange: true })
             threeCanvas.render()
         })
+
+        if (!pane.children.length) {
+            pane.dispose()
+            return
+        }
 
         return () => {
             pane.dispose()
