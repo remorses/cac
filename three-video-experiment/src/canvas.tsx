@@ -463,7 +463,7 @@ export function getParamsForEffect(type: string) {
 
     const thisEffect: MeshEffect | undefined = state.effects.find(
         (x) => x.type === type,
-    )
+    ) as any
 
     if (!thisEffect) {
         throw new Error('No mesh effect found')
