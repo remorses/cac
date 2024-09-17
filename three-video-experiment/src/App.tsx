@@ -608,7 +608,7 @@ function Timeline() {
         <div className='col-span-3 gap-4 overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
             <Entities />
             <div
-                className='grow relative h-full overflow-x-visible flex flex-col gap-3'
+                className='grow bg-gray-950 relative h-full overflow-x-visible flex flex-col gap-3'
                 ref={containerRef}
                 style={{
                     paddingTop: scrubBarHeight + clipSpacing,
@@ -643,6 +643,13 @@ function Timeline() {
                 </pre>
                 <ScrubBar parentRef={containerRef} />
                 <Scrubber containerRef={containerRef} />
+                <div
+                    className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black '
+                    style={{
+                        left: `${(duration / visibleDuration) * 100}%`,
+                        pointerEvents: 'none',
+                    }}
+                />
             </div>
         </div>
     )
