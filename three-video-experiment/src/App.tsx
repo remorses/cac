@@ -604,7 +604,7 @@ function Timeline() {
         (state) => state.setSelectedKeyframeIds,
     )
     return (
-        <div className='col-span-3  overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
+        <div className='col-span-3 gap-4 overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
             <Entities />
             <div
                 className='grow relative h-full overflow-x-visible flex flex-col gap-3'
@@ -648,6 +648,7 @@ function Timeline() {
 }
 
 const scrubBarHeight = 30
+
 function ScrubBar({
     parentRef,
 }: {
@@ -706,52 +707,69 @@ function ScrubBar({
 
     return (
         <div
-            className='fixed select-none cursor-pointer isolate bg-gray-800'
             style={{
-                left: `${left}px`,
-                top: `${top}px`,
-                width: `${w}px`,
-                height: `${scrubBarHeight}px`,
+                top: top,
+                left: 0,
+                height: scrubBarHeight,
             }}
-            onMouseDown={handleMouseDown}
-            onClick={(e) => {
-                const x = e.clientX - left
-                const newTime = (x / w) * visibleDuration
-                setCurrentTime(Math.max(0, Math.min(newTime, duration)))
-            }}
+            className='fixed flex flex-col justify-center w-full h-full bg-gray-800'
         >
-            {Array.from({
-                length: Math.ceil(visibleDuration / step) + 1,
-            }).map((_, index) => {
-                const time = index * step
-                const isSecond = time % 1 < 0.01
+            <div
+                style={{
+                    width: `calc(100% - ${w}px)`,
+                }}
+                className='flex flex-col items-end px-3 pr-6'
+            >
+                {/* <VideoControls /> */}
+            </div>
 
-                return (
-                    <div
-                        key={index}
-                        className='absolute top-0 bottom-0 gap-1 flex flex-row'
-                        style={{
-                            left: `${(time / visibleDuration) * 100}%`,
-                        }}
-                    >
-                        {!isSecond && (
-                            <div
-                                className={`grow border-r-2 self-center ${
-                                    isSecond ? 'opacity-70' : 'opacity-20'
-                                }`}
-                                style={{
-                                    height: isSecond ? '100%' : '30%',
-                                }}
-                            ></div>
-                        )}
-                        {isSecond && (
-                            <span className='text-xs h-full content-center text-gray-500 font-mono -translate-x-1/2'>
-                                {time.toFixed(1)}s
-                            </span>
-                        )}
-                    </div>
-                )
-            })}
+            <div
+                className='absolute h-full select-none cursor-pointer isolate'
+                style={{
+                    left: `${left}px`,
+                    top: 0,
+                    width: `${w}px`,
+                }}
+                onMouseDown={handleMouseDown}
+                onClick={(e) => {
+                    const x = e.clientX - left
+                    const newTime = (x / w) * visibleDuration
+                    setCurrentTime(Math.max(0, Math.min(newTime, duration)))
+                }}
+            >
+                {Array.from({
+                    length: Math.ceil(visibleDuration / step) + 1,
+                }).map((_, index) => {
+                    const time = index * step
+                    const isSecond = time % 1 < 0.01
+
+                    return (
+                        <div
+                            key={index}
+                            className='absolute top-0 bottom-0 gap-1 flex flex-row'
+                            style={{
+                                left: `${(time / visibleDuration) * 100}%`,
+                            }}
+                        >
+                            {!isSecond && (
+                                <div
+                                    className={`grow border-r-2 self-center ${
+                                        isSecond ? 'opacity-70' : 'opacity-20'
+                                    }`}
+                                    style={{
+                                        height: isSecond ? '100%' : '30%',
+                                    }}
+                                ></div>
+                            )}
+                            {isSecond && (
+                                <span className='text-xs h-full content-center text-gray-500 font-mono -translate-x-1/2'>
+                                    {time.toFixed(1)}s
+                                </span>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
         </div>
     )
 }
