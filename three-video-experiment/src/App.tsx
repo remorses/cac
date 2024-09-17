@@ -609,6 +609,9 @@ function Timeline() {
             <div
                 className='grow relative h-full overflow-x-visible flex flex-col gap-3'
                 ref={containerRef}
+                style={{
+                    paddingTop: scrubBarHeight + clipSpacing,
+                }}
                 onMouseMove={handleDrag}
                 onMouseUp={handleDragEnd}
                 onMouseLeave={handleDragEnd}
@@ -621,7 +624,6 @@ function Timeline() {
                     }}
                     className='inset-0 absolute'
                 ></div>
-                <ScrubBar />
                 <div className='relative overflow-x-visible '>
                     {allEffects.map(({ node: effect, parent }, index) => {
                         return (
@@ -635,46 +637,48 @@ function Timeline() {
                         )
                     })}
                 </div>
-                <Scrubber containerRef={containerRef} />
                 <pre className='shrink-0'>
                     {JSON.stringify(effects, null, 2)}
                 </pre>
+                <ScrubBar parentRef={containerRef} />
+                <Scrubber containerRef={containerRef} />
             </div>
         </div>
     )
 }
 
 const scrubBarHeight = 30
-
-function ScrubBar() {
+function ScrubBar({
+    parentRef,
+}: {
+    parentRef: React.RefObject<HTMLDivElement>
+}) {
     const duration = useEditorState((state) => state.duration)
     const isDraggingRef = useRef(false)
-    const containerRef = useRef<HTMLDivElement>(null)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const isPlaying = useEditorState((state) => state.isPlaying)
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const wasPlaying = useRef(isPlaying)
     const timelineScale = useEditorState((state) => state.timelineScale)
+    const timeGridSize = useEditorState((state) => state.timeGridSize)
 
     const visibleDuration = duration / timelineScale
 
     const handleMouseDown = () => {
-        console.log('mouse down')
         isDraggingRef.current = true
         wasPlaying.current = isPlaying
         setIsPlaying(false)
     }
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
         if (!isDraggingRef.current) return
         isDraggingRef.current = false
-        console.log('mouse up')
         setIsPlaying(wasPlaying.current)
     }
 
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-        if (isDraggingRef.current && containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect()
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (isDraggingRef.current && parentRef.current) {
+            const rect = parentRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
             const newTime = (x / rect.width) * visibleDuration
             setCurrentTime(Math.max(0, Math.min(newTime, duration)))
@@ -682,56 +686,38 @@ function ScrubBar() {
     }
 
     useEffect(() => {
-        window.addEventListener('mousemove', handleGlobalMouseMove)
-
-        return () => {
-            window.removeEventListener('mousemove', handleGlobalMouseMove)
-        }
-    }, [visibleDuration])
-
-    useEffect(() => {
         document.addEventListener('mouseup', handleMouseUp)
+        document.addEventListener('mousemove', handleMouseMove as any)
         return () => {
             document.removeEventListener('mouseup', handleMouseUp)
+            document.removeEventListener('mousemove', handleMouseMove as any)
         }
-    }, [])
-    const timeGridSize = useEditorState((state) => state.timeGridSize)
+    }, [visibleDuration])
 
     const tickCount = Math.max(2, Math.floor(visibleDuration / timeGridSize))
     let step =
         Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
 
-    // Adjust step size if there's not enough space for text
-    const minSpaceBetweenTicks = 10 // Minimum pixels between ticks with text
-    if (containerRef.current) {
-        const containerWidth = containerRef.current.clientWidth
-        const estimatedTickCount = containerWidth / minSpaceBetweenTicks
-        if (visibleDuration / step > estimatedTickCount) {
-            step = visibleDuration / estimatedTickCount
-        }
-    }
+    const containerRect = parentRef.current?.getBoundingClientRect()
+    const w = containerRect?.width || 0
+    const h = containerRect?.height || 0
+    const left = containerRect?.left || 0
+    const top = containerRect?.top || 0
 
     return (
         <div
-            ref={containerRef}
-            className='w-full select-none cursor-pointer isolate bg-gray-800 relative shrink-0 overflow-hidden'
+            className='fixed select-none cursor-pointer isolate bg-gray-800'
             style={{
+                left: `${left}px`,
+                top: `${top}px`,
+                width: `${w}px`,
                 height: `${scrubBarHeight}px`,
             }}
             onMouseDown={handleMouseDown}
-            onMouseMove={(e) => {
-                e.stopPropagation()
-                handleGlobalMouseMove(e as any)
-            }}
             onClick={(e) => {
-                const rect = containerRef.current!.getBoundingClientRect()
-                const x = e.clientX - rect.left
-                const newTime = (x / rect.width) * visibleDuration
+                const x = e.clientX - left
+                const newTime = (x / w) * visibleDuration
                 setCurrentTime(Math.max(0, Math.min(newTime, duration)))
-            }}
-            onMouseUp={(e) => {
-                e.stopPropagation()
-                handleMouseUp(e as any)
             }}
         >
             {Array.from({
@@ -750,8 +736,8 @@ function ScrubBar() {
                     >
                         {!isSecond && (
                             <div
-                                className={` grow border-r-2 self-center ${
-                                    isSecond ? 'opacity-70 ' : ' opacity-20 '
+                                className={`grow border-r-2 self-center ${
+                                    isSecond ? 'opacity-70' : 'opacity-20'
                                 }`}
                                 style={{
                                     height: isSecond ? '100%' : '30%',
@@ -769,7 +755,6 @@ function ScrubBar() {
         </div>
     )
 }
-
 
 const clipHeight = 34
 const clipSpacing = 10
@@ -1069,9 +1054,7 @@ function KeyframeComponent({
             <KeyframeIcon
                 className={classNames(
                     'shrink-0 ',
-                    isSelected
-                        ? 'text-yellow-200 scale-125'
-                        : 'text-gray-300',
+                    isSelected ? 'text-yellow-200 scale-125' : 'text-gray-300',
                 )}
                 style={{ minWidth: `${halfWidth * 2}px` }}
             />
