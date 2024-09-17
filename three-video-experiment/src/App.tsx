@@ -418,7 +418,6 @@ function RotationsImage() {
             <div className='row-span-1 flex flex-col items-center justify-center col-span-3'>
                 <VideoControls />
             </div>
-            <Entities />
 
             <Timeline />
         </Container>
@@ -434,7 +433,7 @@ function Entities() {
     return (
         <div
             style={{ paddingTop: scrubBarHeight + clipSpacing }}
-            className='flex flex-col gap-2'
+            className='flex flex-col min-w-[120px] px-3 gap-2'
         >
             {effects.map((effect, index) => {
                 const startPercent = (effect.start / duration) * 100
@@ -444,7 +443,7 @@ function Entities() {
                 return (
                     <div
                         key={effect.id}
-                        className=' opacity-70 overflow-hidden flex items-center justify-end text-white text-xs cursor-pointer'
+                        className=' opacity-70 overflow-hidden flex items-center justify-end text-xs cursor-pointer'
                         style={{
                             height: `${clipHeight}px`,
                         }}
@@ -605,37 +604,42 @@ function Timeline() {
         (state) => state.setSelectedKeyframeIds,
     )
     return (
-        <div
-            className='col-span-2 relative grow cursor-pointer overflow-y-auto  shrink-0 flex flex-col gap-3  '
-            ref={containerRef}
-            onMouseMove={handleDrag}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
-        >
+        <div className='col-span-3 relative grow cursor-pointer shrink-0 flex flex-row'>
+            <Entities />
             <div
-                onClick={(e) => {
-                    scrub(e)
-                    setSelectedEffectIds([])
-                    setSelectedKeyframeIds([], [])
-                }}
-                className='inset-0 absolute'
-            ></div>
-            <ScrubBar />
-            <div className='relative '>
-                {allEffects.map(({ node: effect, parent }, index) => {
-                    return (
-                        <Clip
-                            key={effect.id}
-                            effect={effect}
-                            index={index}
-                            visibleDuration={visibleDuration}
-                            parent={parent || undefined}
-                        />
-                    )
-                })}
+                className='grow relative overflow-y-auto flex flex-col gap-3'
+                ref={containerRef}
+                onMouseMove={handleDrag}
+                onMouseUp={handleDragEnd}
+                onMouseLeave={handleDragEnd}
+            >
+                <div
+                    onClick={(e) => {
+                        scrub(e)
+                        setSelectedEffectIds([])
+                        setSelectedKeyframeIds([], [])
+                    }}
+                    className='inset-0 absolute'
+                ></div>
+                <ScrubBar />
+                <div className='relative'>
+                    {allEffects.map(({ node: effect, parent }, index) => {
+                        return (
+                            <Clip
+                                key={effect.id}
+                                effect={effect}
+                                index={index}
+                                visibleDuration={visibleDuration}
+                                parent={parent || undefined}
+                            />
+                        )
+                    })}
+                </div>
+                <Scrubber containerRef={containerRef} />
+                <pre className='shrink-0'>
+                    {JSON.stringify(effects, null, 2)}
+                </pre>
             </div>
-            <Scrubber containerRef={containerRef} />
-            <pre className='shrink-0'>{JSON.stringify(effects, null, 2)}</pre>
         </div>
     )
 }
