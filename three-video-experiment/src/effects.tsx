@@ -82,7 +82,7 @@ export type EditorKeyframe<Params = any> = {
 export interface Effect<T = any> {
     id: string
     name: string
-    type: string
+    type: EffectType
     start: number
     end: number
 
@@ -154,7 +154,7 @@ export function filterEffectTree(
     return [...res]
 }
 
-export type EffectType = 'rotation' | 'scale' | 'position'
+export type EffectType = 'mesh' | 'camera' | 'group'
 
 export type MeshEffect = Effect<{
     position: THREE.Vector3

@@ -646,9 +646,9 @@ function Timeline() {
                         )
                     })}
                 </div>
-                <pre className='shrink-0'>
+                {/* <pre className='shrink-0'>
                     {JSON.stringify(effects, null, 2)}
-                </pre>
+                </pre> */}
                 <ScrubBar parentRef={containerRef} />
                 <Scrubber containerRef={containerRef} />
                 <div
