@@ -145,8 +145,6 @@ export function createThreeCanvas({
 
     const img = texture.image
 
-    renderer.setPixelRatio(1)
-
     camera.lookAt(plane.position.x, plane.position.y, plane.position.z)
 
     composer = new EffectComposer(renderer)
@@ -212,11 +210,6 @@ export function createThreeCanvas({
     })
 
     composer.addPass(bokehPass)
-    const smaaPass = new SMAAPass(
-        renderer.domElement.width * renderer.getPixelRatio(),
-        renderer.domElement.height * renderer.getPixelRatio(),
-    )
-    composer.addPass(smaaPass)
 
     const vignettePass = new ShaderPass(vignetteShader)
     pane.addBinding(vignettePass.uniforms.intensity, 'value', {
@@ -249,6 +242,12 @@ export function createThreeCanvas({
     // composer.addPass(vignettePass)
 
     composer.addPass(new ShaderPass(filmGrainShader))
+
+    const smaaPass = new SMAAPass(
+        renderer.domElement.width * renderer.getPixelRatio(),
+        renderer.domElement.height * renderer.getPixelRatio(),
+    )
+    composer.addPass(smaaPass)
 
     // Create an overlay scene and camera for the rectangle
     const overlayScene = new THREE.Scene()
@@ -323,10 +322,12 @@ export function createThreeCanvas({
         renderer.clear()
 
         if (!isPreview) {
+            renderer.setPixelRatio(2)
             transformControls.enabled = false
             transformControls.visible = false
             gridHelper.visible = false
         } else {
+            renderer.setPixelRatio(1)
             transformControls.enabled = true
             transformControls.visible = true
             gridHelper.visible = true

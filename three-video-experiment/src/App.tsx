@@ -167,12 +167,13 @@ const exportVideo = async () => {
         return
     }
 
+    const state = useEditorState.getState()
     if (media.type.startsWith('video/')) {
         stopRenderLoop()
         let maxHeight = 1080
         let maxWidth = 1920
-        let width = video?.videoWidth || 1280
-        let height = video?.videoHeight || 720
+        let width = state.outputSize.width || 1280
+        let height = state.outputSize.height || 720
         if (height > maxHeight) {
             width = Math.round((maxHeight / height) * width)
             height = Math.round(maxHeight)
@@ -236,48 +237,53 @@ const exportVideo = async () => {
         }
         let timestamp = 0
 
-        let fps = 30
-
-        const videoDecoder = new VideoDecoder({
-            output: (frame) => {
-                threeCanvas.changeImage(frame)
-                useEditorState.setState({
-                    currentTime: timestamp / 1000 / 1000,
-                })
-                threeCanvas.render({ isPreview: false })
-                // console.log('frame', frame.timestamp)
-                const outputFrame = new VideoFrame(
-                    threeCanvas.renderer.domElement,
-                    {
-                        timestamp,
-                    },
-                )
-                videoEncoder.encode(outputFrame)
-                outputFrame.close()
-                frame.close()
-                const frameDuration = 1000_000 / fps
-                timestamp += frameDuration
-                console.log(
-                    `Rendered frame: ${(timestamp / 1000 / 1000).toFixed(2)}`,
-                )
-
-                // if (elapsedTime > 6000) {
-                //     console.warn(
-                //         'Rendering took more than 2 seconds, stopping.',
-                //     )
-                //     stopRecording()
-                //     return
-                // }
-            },
-            error: console.error,
-        })
         threeCanvas.beforeExport()
+        let fps: number | null = null
         const result = await parseMedia({
             src: media,
             reader: webFileReader,
-
+            onFps(_fps) {
+                fps = _fps
+            },
             onVideoTrack: async (track) => {
                 console.log('onVideoTrack', track)
+
+                const videoDecoder = new VideoDecoder({
+                    output: (frame) => {
+                        threeCanvas.changeImage(frame)
+                        useEditorState.setState({
+                            currentTime: timestamp / 1000 / 1000,
+                        })
+                        threeCanvas.render({ isPreview: false })
+                        // console.log('frame', frame.timestamp)
+                        const outputFrame = new VideoFrame(
+                            threeCanvas.renderer.domElement,
+                            {
+                                timestamp,
+                            },
+                        )
+                        videoEncoder.encode(outputFrame)
+                        outputFrame.close()
+                        frame.close()
+                        if (!fps) {
+                            console.warn('no fps found')
+                        }
+                        const frameDuration = 1000_000 / (fps || 60)
+                        timestamp += frameDuration
+                        // console.log(
+                        //     `Rendered frame: ${(timestamp / 1000 / 1000).toFixed(2)}`,
+                        // )
+
+                        // if (elapsedTime > 6000) {
+                        //     console.warn(
+                        //         'Rendering took more than 2 seconds, stopping.',
+                        //     )
+                        //     stopRecording()
+                        //     return
+                        // }
+                    },
+                    error: console.error,
+                })
                 await videoDecoder.configure(track)
 
                 return async (sample) => {
@@ -298,13 +304,16 @@ const exportVideo = async () => {
                     videoDecoder.decode(new EncodedVideoChunk(sample))
                 }
             },
+
             fields: {
                 durationInSeconds: true,
                 dimensions: true,
                 fps: true,
             },
         })
-        fps = result.fps || 30
+        if (!result.fps) {
+            console.warn('no fps in input video found')
+        }
         // if (result.durationInSeconds) {
         //     useEditorState.setState({ duration: result.durationInSeconds })
         // }
