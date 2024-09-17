@@ -475,10 +475,6 @@ function Entities() {
             className='flex bg-gray-900 flex-col min-w-[120px] pr-6 gap-2'
         >
             {effects.map((effect, index) => {
-                const startPercent = (effect.start / duration) * 100
-                const widthPercent =
-                    ((effect.end - effect.start) / duration) * 100
-
                 return (
                     <div
                         key={effect.id}
@@ -531,68 +527,6 @@ function Timeline() {
     const isPlaying = useEditorState((state) => state.isPlaying)
 
     const visibleDuration = duration / timelineScale
-
-    const handleDrag = (e) => {
-        if (!draggingEffect.current || !containerRef.current) return
-
-        const {
-            effects: selectedEffects,
-            parent,
-            type,
-            initialXOffset,
-        } = draggingEffect.current
-        const rect = containerRef.current?.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const newTime = (x / rect.width) * visibleDuration
-
-        const minDuration = 0.2
-        let effectsNew = effects as Effect[]
-        for (const effect of selectedEffects) {
-            const updatedEffect = { ...effect }
-            if (type === 'start') {
-                updatedEffect.start = Math.max(
-                    0,
-                    Math.min(newTime, effect.end - minDuration),
-                )
-            }
-            if (type === 'end') {
-                updatedEffect.end = Math.min(
-                    duration,
-                    Math.max(newTime, effect.start + minDuration),
-                )
-            }
-            if (type === 'both') {
-                let clipDur = effect.end - effect.start
-                const newStart = newTime - clipDur * initialXOffset
-                updatedEffect.start = Math.max(
-                    0,
-                    Math.min(newStart, duration - (effect.end - effect.start)),
-                    parent?.start || 0,
-                )
-                updatedEffect.end = Math.min(
-                    duration,
-                    updatedEffect.start + (effect.end - effect.start),
-                    parent?.end || Infinity,
-                )
-            }
-            if (parent) {
-                updatedEffect.start = Math.max(
-                    parent.start,
-                    updatedEffect.start,
-                )
-                updatedEffect.end = Math.min(parent.end, updatedEffect.end)
-            }
-
-            effectsNew = updateEffectInTree(effectsNew, updatedEffect)
-        }
-        if (effectsNew.length) {
-            useEditorState.setState({ effects: effectsNew })
-        }
-    }
-
-    const handleDragEnd = () => {
-        draggingEffect.current = null
-    }
 
     const allEffects = bfs(effects)
     const setSelectedEffectIds = useEditorState(
@@ -651,9 +585,6 @@ function Timeline() {
                 style={{
                     paddingTop: scrubBarHeight + clipSpacing,
                 }}
-                onMouseMove={handleDrag}
-                onMouseUp={handleDragEnd}
-                onMouseLeave={handleDragEnd}
             >
                 <div
                     onClick={(e) => {
@@ -838,13 +769,16 @@ function Clip({
     index,
     visibleDuration,
 }: {
-    effect: Effect<any>
-    parent?: Effect<any>
+    effect: Effect
+    parent?: Effect
     index: number
     visibleDuration: number
 }) {
-    const startPercent = (effect.start / visibleDuration) * 100
-    const widthPercent = ((effect.end - effect.start) / visibleDuration) * 100
+    let start = 0
+    const duration = useEditorState((state) => state.duration)
+    let end = duration
+    const startPercent = (start / visibleDuration) * 100
+    const widthPercent = ((end - start) / visibleDuration) * 100
 
     let top = (clipHeight + clipSpacing) * index
     const containerRef = useRef<HTMLDivElement>(null)
@@ -895,11 +829,14 @@ function KeyframeAddButton({
     effect,
 }: {
     containerRef: React.RefObject<HTMLDivElement>
-    effect: Effect<any>
+    effect: Effect
 }) {
     const [isVisible, setIsVisible] = useState(false)
     const [position, setPosition] = useState({ x: 0, y: 0 })
     const buttonRef = useRef(null)
+    let start = 0
+    const duration = useEditorState((state) => state.duration)
+    let end = duration
 
     useEffect(() => {
         const state = useEditorState.getState()
@@ -941,15 +878,14 @@ function KeyframeAddButton({
             container.removeEventListener('mouseleave', handleMouseLeave)
             container.removeEventListener('mousemove', handleMouseMove)
         }
-    }, [containerRef, effect])
+    }, [containerRef, effect, start, end])
 
     const halfWidth = 24
 
     function getTime(position: { x: number; y: number }) {
         const time =
-            effect.start +
-            (position.x / containerRef.current!.clientWidth) *
-                (effect.end - effect.start)
+            start +
+            (position.x / containerRef.current!.clientWidth) * (end - start)
         const snappedTime = snapToTimeGrid(time)
         return snappedTime
     }
@@ -998,13 +934,15 @@ function KeyframeComponent({
     containerRef,
 }: {
     keyframe: EditorKeyframe
-    effect: Effect<any>
+    effect: Effect
     containerRef: React.RefObject<HTMLDivElement>
 }) {
     const halfWidth = 12
     const duration = useEditorState((state) => state.duration)
-    const clipDuration = effect.end - effect.start
-    const relativeKeyframeTime = keyframe.time - effect.start
+    let start = 0
+    let end = duration
+    const clipDuration = end - start
+    const relativeKeyframeTime = keyframe.time - start
     const positionPercentage = relativeKeyframeTime / clipDuration
     const updateEffect = useEditorState((state) => state.updateEffect)
     const isDraggingRef = useRef(false)
@@ -1044,14 +982,11 @@ function KeyframeComponent({
         const newPosition = e.clientX - containerRect.left
         const newRelativeTime =
             (newPosition / containerRect.width) * clipDuration
-        const newAbsoluteTime = effect.start + newRelativeTime
+        const newAbsoluteTime = start + newRelativeTime
 
         const snappedTime = snapToTimeGrid(newAbsoluteTime)
 
-        const clampedNewTime = Math.max(
-            effect.start,
-            Math.min(snappedTime, effect.end),
-        )
+        const clampedNewTime = Math.max(start, Math.min(snappedTime, end))
 
         if (!selectedKeyframeIds.includes(keyframe.id)) {
             setSelectedKeyframeIds([keyframe.id], [effect.id])
@@ -1258,7 +1193,7 @@ function EffectsControls() {
                 return
             }
 
-            const folder = configureEffect?.(effect, pane, params)
+            const folder = configureEffect?.(effect.node, pane, params)
 
             if (keyframe && folder) {
                 bezierControlBinding({

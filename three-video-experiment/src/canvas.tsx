@@ -11,6 +11,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import {
+    applyEffect,
     EditorKeyframe,
     Effect,
     effectsParamsClone,
@@ -636,10 +637,10 @@ const mergeParamType = (start, end, progress) => {
     return start
 }
 
-function _applyEffects(effects: Effect<any>[]) {
+function _applyEffects(effects: Effect[]) {
     for (const effect of effects) {
-        const absoluteStart = effect.start
-        const absoluteEnd = effect.end
+        const absoluteStart = 0
+        const absoluteEnd = Infinity
 
         const { currentTime } = useEditorState.getState()
         if (currentTime >= absoluteStart && currentTime <= absoluteEnd) {
@@ -709,7 +710,7 @@ function _applyEffects(effects: Effect<any>[]) {
             if (effect.children) {
                 _applyEffects(effect.children)
             } else {
-                effect.apply(params)
+                applyEffect(effect, params)
             }
         }
     }

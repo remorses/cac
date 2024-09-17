@@ -83,8 +83,8 @@ export interface EffectBase {
     id: string
     name: string
 
-    start: number
-    end: number
+    // start: number
+    // end: number
 
     children?: Effect[]
     keyframes: EditorKeyframe[]
@@ -102,11 +102,16 @@ export type CameraEffect = EffectBase & {
     type: 'camera'
     params: {
         position: THREE.Vector3
-        target: THREE.Quaternion
+        target: THREE.Vector3
     }
 }
 
-export type Effect = MeshEffect | CameraEffect
+export type GroupEffect = EffectBase & {
+    type: 'group'
+    params: {}
+}
+
+export type Effect = MeshEffect | CameraEffect | GroupEffect
 
 type WithParent = { node: Effect; parent: Effect | null }
 
@@ -144,10 +149,10 @@ export function bfs(
 }
 
 export function filterEffectTree(
-    effects: Effect<any>[],
-    filterCallback: (effect: Effect<any>) => boolean,
-): Effect<any>[] {
-    let res = effects.reduce((filteredEffects: Effect<any>[], effect) => {
+    effects: Effect[],
+    filterCallback: (effect: Effect) => boolean,
+): Effect[] {
+    let res = effects.reduce((filteredEffects: Effect[], effect) => {
         if (filterCallback(effect)) {
             const filteredEffect = effect
             if (effect.children) {
@@ -165,33 +170,8 @@ export function filterEffectTree(
 
 export type EffectType = 'mesh' | 'camera' | 'group'
 
-export function createMeshEffect({
-    id,
-    start,
-    end,
-    ...rest
-}: EffectInit<MeshEffect>): MeshEffect {
-    const params = {
-        position: new THREE.Vector3(0, 0, 0),
-        rotation: new THREE.Quaternion(0, 0, 0),
-    }
-    params.position.copy(threeCanvas.plane.position)
-    params.rotation.copy(threeCanvas.plane.quaternion)
-    return {
-        name: 'Mesh',
-        keyframes: [],
-        ...rest,
-        id,
-        type: 'mesh',
-        start,
-        end,
-        params,
-    }
-}
-
-export function applyEffect(effect: Effect) {
+export function applyEffect(effect: Effect, params) {
     if (effect.type === 'mesh') {
-        const params = effect.params
         const mesh = threeCanvas.plane
         mesh.position.copy(params.position)
         mesh.quaternion.copy(params.rotation)
@@ -202,7 +182,6 @@ export function applyEffect(effect: Effect) {
         return
     }
     if (effect.type === 'camera') {
-        const params = effect.params
         const { camera, controls } = threeCanvas
         controls.object.position.copy(params.position)
         controls.target.copy(params.target)
@@ -210,8 +189,8 @@ export function applyEffect(effect: Effect) {
     }
 }
 
-export function configureEffect<U, T>(
-    effect: Effect<U, T>,
+export function configureEffect(
+    effect: Effect,
     pane: Pane,
     params: Effect['params'],
 ) {
@@ -282,38 +261,47 @@ export function configureEffect<U, T>(
             picker: 'inline',
             expanded: true,
         })
-        folder.addBinding(params, 'zoom', {
-            label: 'Zoom',
-            min: 0.1,
-            max: 10,
-            step: 0.1,
-        })
+
         return folder
     }
 }
 
+export function createMeshEffect({
+    keyframes = [] as EditorKeyframe[],
+}): MeshEffect {
+    const params = {
+        position: new THREE.Vector3(0, 0, 0),
+        rotation: new THREE.Quaternion(0, 0, 0),
+    }
+    params.position.copy(threeCanvas.plane.position)
+    params.rotation.copy(threeCanvas.plane.quaternion)
+    return {
+        id: 'mesh',
+        name: 'Mesh',
+        keyframes,
+
+        type: 'mesh',
+
+        params,
+    }
+}
+
 export function createCameraEffect({
-    id,
-    start,
-    end,
-    ...rest
-}: EffectInit<CameraEffect>): CameraEffect {
+    keyframes = [] as EditorKeyframe[],
+}): CameraEffect {
     const params = {
         position: new THREE.Vector3(0, 0, 0),
         target: new THREE.Vector3(0, 0, 0),
-        zoom: 1,
     }
     params.position.copy(threeCanvas.controls.object.position)
     params.target.copy(threeCanvas.controls.target)
-    params.zoom = threeCanvas.camera.zoom
+    // params.zoom = threeCanvas.camera.zoom
     return {
         name: 'Camera',
-        keyframes: [],
-        ...rest,
-        id,
+        keyframes: keyframes,
+        id: 'camera',
         type: 'camera',
-        start,
-        end,
+
         params,
     }
 }
@@ -395,87 +383,61 @@ export function effectsParamsClone(params: any) {
     return deepClone(params)
 }
 
-export function createEffectGroup({
-    id,
-    start,
-    end,
-    children,
-    bezierCurve = [0, 0, 1, 1],
-}: {
-    id: string
-    start: number
-    end: number
-    children: Effect<any>[]
-    bezierCurve?: BezierCurve
-}): Effect<'group', {}> {
-    return {
-        name: 'Group',
-        id,
-        type: 'group',
-        start,
-        end,
-        params: {},
-        children,
-        keyframes: [],
-        // configure: () => {},
-    }
-}
-
-export function updateEffectInTree(
-    effects: Effect<any>[],
-    node: EffectInit<Effect<any>>,
-) {
+export function updateEffectInTree(effects: Effect[], node: Partial<Effect>) {
     return effects.map((effect) => {
         if (effect.id === node.id) {
-            const updatedEffect = {
-                ...effect,
-                ...node,
-            }
-
-            // Ensure start is not greater than end
-            if (updatedEffect.start > updatedEffect.end) {
-                updatedEffect.start = updatedEffect.end
-            }
-
-            if (effect.children) {
-                const oldDuration = effect.end - effect.start
-                const newDuration = updatedEffect.end - updatedEffect.start
-
-                updatedEffect.children = effect.children.map((child) => {
-                    const updatedChild = { ...child }
-
-                    // Calculate relative position of child within parent
-                    const relativeStart =
-                        (child.start - effect.start) / oldDuration
-                    const relativeEnd = (child.end - effect.start) / oldDuration
-
-                    // Update child start and end times based on new parent duration
-                    updatedChild.start =
-                        updatedEffect.start + relativeStart * newDuration
-                    updatedChild.end =
-                        updatedEffect.start + relativeEnd * newDuration
-
-                    // Ensure child start and end are within parent bounds
-                    updatedChild.start = Math.max(
-                        updatedEffect.start,
-                        Math.min(updatedChild.start, updatedEffect.end),
-                    )
-                    updatedChild.end = Math.max(
-                        updatedEffect.start,
-                        Math.min(updatedChild.end, updatedEffect.end),
-                    )
-
-                    // Ensure child start is not greater than child end
-                    if (updatedChild.start > updatedChild.end) {
-                        updatedChild.start = updatedChild.end
-                    }
-
-                    return updatedChild
-                })
-            }
-
-            return updatedEffect
+            return { ...effect, ...node }
         }
+        // if (effect.id === node.id) {
+        //     const updatedEffect = {
+        //         ...effect,
+        //         ...node,
+        //     }
+
+        //     // Ensure start is not greater than end
+        //     if (updatedEffect.start > updatedEffect.end) {
+        //         updatedEffect.start = updatedEffect.end
+        //     }
+
+        //     if (effect.children) {
+        //         const oldDuration = effect.end - effect.start
+        //         const newDuration = updatedEffect.end - updatedEffect.start
+
+        //         updatedEffect.children = effect.children.map((child) => {
+        //             const updatedChild = { ...child }
+
+        //             // Calculate relative position of child within parent
+        //             const relativeStart =
+        //                 (child.start - effect.start) / oldDuration
+        //             const relativeEnd = (child.end - effect.start) / oldDuration
+
+        //             // Update child start and end times based on new parent duration
+        //             updatedChild.start =
+        //                 updatedEffect.start + relativeStart * newDuration
+        //             updatedChild.end =
+        //                 updatedEffect.start + relativeEnd * newDuration
+
+        //             // Ensure child start and end are within parent bounds
+        //             updatedChild.start = Math.max(
+        //                 updatedEffect.start,
+        //                 Math.min(updatedChild.start, updatedEffect.end),
+        //             )
+        //             updatedChild.end = Math.max(
+        //                 updatedEffect.start,
+        //                 Math.min(updatedChild.end, updatedEffect.end),
+        //             )
+
+        //             // Ensure child start is not greater than child end
+        //             if (updatedChild.start > updatedChild.end) {
+        //                 updatedChild.start = updatedChild.end
+        //             }
+
+        //             return updatedChild
+        //         })
+        //     }
+
+        //     return updatedEffect
+        // }
         if (effect.children) {
             const updatedChildren = updateEffectInTree(effect.children, node)
             if (updatedChildren) {
@@ -486,7 +448,7 @@ export function updateEffectInTree(
     })
 }
 
-// function findEffect(id: string, effects: Effect<any>[]): Effect<any> | null {
+// function findEffect(id: string, effects: Effect[]): Effect | null {
 //     for (const effect of effects) {
 //         if (effect.id === id) return effect
 //         if (effect.children) {
@@ -499,8 +461,8 @@ export function updateEffectInTree(
 
 // function removeEffectRecursive(
 //     id: string,
-//     effects: Effect<any>[],
-// ): Effect<any>[] {
+//     effects: Effect[],
+// ): Effect[] {
 //     return effects.filter((effect) => {
 //         if (effect.id === id) {
 //             return false

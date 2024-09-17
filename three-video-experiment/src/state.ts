@@ -1,13 +1,7 @@
 import { createPatch, diffChars, diffLines } from 'diff'
 import { create } from 'zustand'
 
-import {
-    bfs,
-    EditorKeyframe,
-    Effect,
-    EffectInit,
-    updateEffectInTree,
-} from './effects'
+import { bfs, EditorKeyframe, Effect, updateEffectInTree } from './effects'
 
 interface AppState {
     undo: () => void
@@ -23,11 +17,11 @@ interface AppState {
     mediaHandleId?: string
     setMediaHandleId: (mediaHandleId: string) => void
     isLooping: boolean
-    effects: Effect<any>[]
+    effects: Effect[]
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
-    setEffects: (effects: Effect<any>[]) => void
-    updateEffect: (id: string, updatedEffect: EffectInit<Effect<any>>) => void
+    setEffects: (effects: Effect[]) => void
+    updateEffect: (id: string, updatedEffect: Partial<Effect>) => void
     updateSelectedKeyframes: (keyframe: Partial<EditorKeyframe>) => void
     selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
@@ -118,7 +112,7 @@ export const useThrottledCurrentTime = () => {
 
     return currentTime
 }
-export const useEditorState = create<AppState>()((_set, get, store) => {
+export const useEditorState = create<AppState>()((setWithoutUndo, get, store) => {
     const {
         setWithUndo: set,
         canRedo,
@@ -223,14 +217,14 @@ export const useEditorState = create<AppState>()((_set, get, store) => {
             const { duration, isLooping, setIsPlaying } = get()
             if (isLooping) {
                 // If looping, wrap the time around to the beginning
-                set({ currentTime: time % duration })
+                setWithoutUndo({ currentTime: time % duration })
             } else if (time >= duration) {
                 // If not looping and time exceeds duration, pause and set to end
-                set({ currentTime: duration })
+                setWithoutUndo({ currentTime: duration })
                 setIsPlaying(false)
             } else {
                 // Otherwise, update the time normally
-                set({ currentTime: time })
+                setWithoutUndo({ currentTime: time })
             }
             selectKeyframesOnCurrentTime()
             threeCanvas.applyAllEffects({ isUserChange: false })
@@ -244,7 +238,7 @@ export const useEditorState = create<AppState>()((_set, get, store) => {
                 (currentTime >= duration ||
                     Math.abs(currentTime - duration) < 0.01)
             ) {
-                set({ currentTime: 0 })
+                setWithoutUndo({ currentTime: 0 })
             }
             if (!isPlaying) {
                 selectKeyframesOnCurrentTime()

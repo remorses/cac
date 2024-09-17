@@ -60,10 +60,6 @@ if (import.meta.env.DEV) {
     const duration = 3
     const effects = [
         createMeshEffect({
-            id: 'mesh',
-            start: 0,
-            end: duration,
-
             keyframes: [
                 {
                     id: '0',
@@ -87,9 +83,6 @@ if (import.meta.env.DEV) {
         }),
 
         createCameraEffect({
-            id: 'camera',
-            start: 0,
-            end: duration,
             keyframes: [
                 {
                     id: '0cam',
