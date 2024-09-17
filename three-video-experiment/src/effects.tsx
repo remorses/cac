@@ -79,30 +79,39 @@ export type EditorKeyframe<Params = any> = {
     params: Params
 }
 
-export interface Effect<T = any> {
+export interface EffectBase {
     id: string
     name: string
-    type: EffectType
+
     start: number
     end: number
 
-    params: T
-    children?: Effect<any>[]
-    keyframes: EditorKeyframe<T>[]
-    apply: (params: T) => void
-    configure?: (pane: Pane, params: T) => FolderApi
+    children?: Effect[]
+    keyframes: EditorKeyframe[]
 }
 
-export type EffectInit<E> =
-    E extends Effect<infer T>
-        ? Partial<Omit<Effect<T>, 'params'>> &
-              Pick<Effect<T>, 'id' | 'start' | 'end'>
-        : never
+export type MeshEffect = EffectBase & {
+    type: 'mesh'
+    params: {
+        position: THREE.Vector3
+        rotation: THREE.Quaternion
+    }
+}
 
-type WithParent = { node: Effect<any>; parent: Effect<any> | null }
+export type CameraEffect = EffectBase & {
+    type: 'camera'
+    params: {
+        position: THREE.Vector3
+        target: THREE.Quaternion
+    }
+}
+
+export type Effect = MeshEffect | CameraEffect
+
+type WithParent = { node: Effect; parent: Effect | null }
 
 export function bfs(
-    effects: Effect<any>[],
+    effects: Effect[],
     callback?: (node: WithParent) => boolean,
 ) {
     const queue: WithParent[] = effects.map((effect) => ({
@@ -156,11 +165,6 @@ export function filterEffectTree(
 
 export type EffectType = 'mesh' | 'camera' | 'group'
 
-export type MeshEffect = Effect<{
-    position: THREE.Vector3
-    rotation: THREE.Quaternion
-}>
-
 export function createMeshEffect({
     id,
     start,
@@ -182,52 +186,111 @@ export function createMeshEffect({
         start,
         end,
         params,
-        apply(params) {
-            const mesh = threeCanvas.plane
-            mesh.position.copy(params.position)
-            mesh.quaternion.copy(params.rotation)
-            mesh.updateMatrix()
-            mesh.updateMatrixWorld(true)
-            threeCanvas.transformControls.updateMatrixWorld()
-        },
-        configure(pane, params) {
-            const folder = pane.addFolder({
-                title: 'Mesh Transform',
-            })
-            folder.addBinding(params.position, 'x', {
-                label: 'X Position',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.position, 'y', {
-                label: 'Y Position',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.position, 'z', {
-                label: 'Z Position',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params, 'rotation', {
-                label: 'Rotation',
-                picker: 'inline',
-                expanded: true,
-                view: 'rotation',
-                rotationMode: 'quaternion',
-
-                unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
-            })
-            return folder
-        },
     }
 }
 
-export type CameraEffect = Effect<{
-    position: THREE.Vector3
-    target: THREE.Vector3
-    zoom: number
-}>
+export function applyEffect(effect: Effect) {
+    if (effect.type === 'mesh') {
+        const params = effect.params
+        const mesh = threeCanvas.plane
+        mesh.position.copy(params.position)
+        mesh.quaternion.copy(params.rotation)
+        mesh.updateMatrix()
+        mesh.updateMatrixWorld(true)
+        threeCanvas.transformControls.updateMatrixWorld()
+
+        return
+    }
+    if (effect.type === 'camera') {
+        const params = effect.params
+        const { camera, controls } = threeCanvas
+        controls.object.position.copy(params.position)
+        controls.target.copy(params.target)
+        controls.update()
+    }
+}
+
+export function configureEffect<U, T>(
+    effect: Effect<U, T>,
+    pane: Pane,
+    params: Effect['params'],
+) {
+    if (effect.type === 'mesh') {
+        const params = effect.params
+        const folder = pane.addFolder({
+            title: 'Mesh Transform',
+        })
+        folder.addBinding(params.position, 'x', {
+            label: 'X Position',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'y', {
+            label: 'Y Position',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'z', {
+            label: 'Z Position',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params, 'rotation', {
+            label: 'Rotation',
+            picker: 'inline',
+            expanded: true,
+            view: 'rotation',
+            rotationMode: 'quaternion',
+
+            unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
+        })
+        return folder
+    }
+    if (effect.type === 'camera') {
+        const params = effect.params
+        const folder = pane.addFolder({
+            title: 'Camera Transform',
+        })
+
+        folder.addBinding(params.position, 'x', {
+            label: 'Camera X',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'y', {
+            label: 'Camera Y',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'z', {
+            label: 'Camera Z',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.target, 'x', {
+            label: 'Target X',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.target, 'y', {
+            label: 'Target Y',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.target, 'z', {
+            label: 'Target Z',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params, 'zoom', {
+            label: 'Zoom',
+            min: 0.1,
+            max: 10,
+            step: 0.1,
+        })
+        return folder
+    }
+}
 
 export function createCameraEffect({
     id,
@@ -252,57 +315,6 @@ export function createCameraEffect({
         start,
         end,
         params,
-        apply(params) {
-            const { camera, controls } = threeCanvas
-            controls.object.position.copy(params.position)
-            controls.target.copy(params.target)
-            controls.update()
-
-            // controls.update()
-        },
-        configure(pane, params) {
-            const folder = pane.addFolder({
-                title: 'Camera Transform',
-            })
-
-            folder.addBinding(params.position, 'x', {
-                label: 'Camera X',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.position, 'y', {
-                label: 'Camera Y',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.position, 'z', {
-                label: 'Camera Z',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.target, 'x', {
-                label: 'Target X',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.target, 'y', {
-                label: 'Target Y',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params.target, 'z', {
-                label: 'Target Z',
-                picker: 'inline',
-                expanded: true,
-            })
-            folder.addBinding(params, 'zoom', {
-                label: 'Zoom',
-                min: 0.1,
-                max: 10,
-                step: 0.1,
-            })
-            return folder
-        },
     }
 }
 
@@ -362,7 +374,7 @@ export function effectsParamsClone(params: any) {
         }
         // Handle Date objects
         if (obj instanceof Date) {
-            return new Date(obj.getTime());
+            return new Date(obj.getTime())
         }
 
         // Handle arrays
@@ -395,7 +407,7 @@ export function createEffectGroup({
     end: number
     children: Effect<any>[]
     bezierCurve?: BezierCurve
-}): Effect<{}> {
+}): Effect<'group', {}> {
     return {
         name: 'Group',
         id,
@@ -405,7 +417,6 @@ export function createEffectGroup({
         params: {},
         children,
         keyframes: [],
-        apply: () => {},
         // configure: () => {},
     }
 }

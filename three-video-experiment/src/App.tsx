@@ -14,6 +14,7 @@ import {
     effectsParamsClone,
     updateEffectInTree,
     bezierControlBinding,
+    configureEffect,
 } from './effects'
 import {
     getKeyframeOnCurrentTime,
@@ -1257,7 +1258,7 @@ function EffectsControls() {
                 return
             }
 
-            const folder = effect.node?.configure?.(pane, params)
+            const folder = configureEffect?.(effect, pane, params)
 
             if (keyframe && folder) {
                 bezierControlBinding({
