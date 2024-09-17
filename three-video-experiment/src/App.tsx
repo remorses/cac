@@ -40,6 +40,7 @@ import { Scrubber } from './scrubber'
 import { isTruthy, preparePane } from './utils'
 import { motion } from 'framer-motion'
 import classNames from 'classnames'
+import { PauseIcon, PlayIcon } from './icons'
 
 function useSelectedMedia() {
     const media = useEditorState((state) => state.media)
@@ -1124,11 +1125,15 @@ function VideoControls() {
         <div className='px-2 py-1 text-white rounded-lg m-3 flex gap-3 items-center'>
             <div className='flex gap-1 shrink-0 items-center'>
                 <button
-                    className='!bg-transparent w-[50px]'
+                    className='!bg-transparent w-[20px]'
                     type='button'
                     onClick={togglePlay}
                 >
-                    {isPlaying ? 'Pause' : 'Play'}
+                    {isPlaying ? (
+                        <PauseIcon className='w-full' />
+                    ) : (
+                        <PlayIcon className='w-full' />
+                    )}
                 </button>
             </div>
             <div className='text-[11px] shrink-0 font-mono'>
