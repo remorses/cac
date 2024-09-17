@@ -840,6 +840,9 @@ importers:
       '@tweakpane/plugin-essentials':
         specifier: ^0.2.1
         version: 0.2.1(tweakpane@4.0.4)
+      '@types/diff':
+        specifier: ^5.2.2
+        version: 5.2.2
       '@types/three':
         specifier: ^0.168.0
         version: 0.168.0
@@ -849,6 +852,9 @@ importers:
       colord:
         specifier: ^2.9.3
         version: 2.9.3
+      diff:
+        specifier: ^7.0.0
+        version: 7.0.0
       framer-motion:
         specifier: ^11.5.4
         version: 11.5.4(@emotion/is-prop-valid@1.3.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -876,6 +882,9 @@ importers:
       react-use-measure:
         specifier: ^2.1.1
         version: 2.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      superjson:
+        specifier: ^2.2.1
+        version: 2.2.1
       tailwindcss:
         specifier: ^3.4.10
         version: 3.4.10
@@ -903,6 +912,9 @@ importers:
       vite-tsconfig-paths:
         specifier: ^4.3.2
         version: 4.3.2(typescript@5.6.2)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
+      zundo:
+        specifier: ^2.1.0
+        version: 2.1.0(zustand@4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1))
       zustand:
         specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1)
@@ -1093,7 +1105,7 @@ importers:
     dependencies:
       '@builder.io/react-hydration-overlay':
         specifier: ^0.1.0
-        version: 0.1.0(@spotlightjs/spotlight@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.94.0(esbuild@0.17.6))
+        version: 0.1.0(@spotlightjs/spotlight@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.94.0)
       '@remix-run/node':
         specifier: ^2.11.2
         version: 2.11.2(typescript@5.6.2)
@@ -4814,6 +4826,9 @@ packages:
   '@types/diff-match-patch@1.0.36':
     resolution: {integrity: sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg==}
 
+  '@types/diff@5.2.2':
+    resolution: {integrity: sha512-qVqLpd49rmJA2nZzLVsmfS/aiiBpfVE95dHhPVwG0NmSBAt+riPxnj53wq2oBq5m4Q2RF1IWFEUpnZTgrQZfEQ==}
+
   '@types/dom-webcodecs@0.1.11':
     resolution: {integrity: sha512-yPEZ3z7EohrmOxbk/QTAa0yonMFkNkjnVXqbGb7D4rMr+F1dGQ8ZUFxXkyLLJuiICPejZ0AZE9Rrk9wUCczx4A==}
 
@@ -5886,6 +5901,10 @@ packages:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
 
+  copy-anything@3.0.5:
+    resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
+    engines: {node: '>=12.13'}
+
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
@@ -6132,6 +6151,10 @@ packages:
 
   diff@5.2.0:
     resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
+    engines: {node: '>=0.3.1'}
+
+  diff@7.0.0:
+    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -7342,6 +7365,10 @@ packages:
   is-weakset@2.0.3:
     resolution: {integrity: sha512-LvIm3/KWzS9oRFHugab7d+M/GcBXuXX5xZkzPmN+NxihdQlZUQ4dWuSV1xR/sq6upL1TJEDrfBgRepHFdBtSNQ==}
     engines: {node: '>= 0.4'}
+
+  is-what@4.1.16:
+    resolution: {integrity: sha512-ZhMwEosbFJkA0YhFnNDgTM4ZxDRsS6HqTo7qsZM08fehyRYIYa0yHu5R6mgo1n/8MgaPBXiPimPD77baVFYg+A==}
+    engines: {node: '>=12.13'}
 
   is-windows@1.0.2:
     resolution: {integrity: sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA==}
@@ -9476,6 +9503,10 @@ packages:
     resolution: {integrity: sha512-WZzIx3rC1CvbMDloLsVw0lkZVKJWbrkJ0k1ghKFmcnPrW1+jWbgTkTEWVtD9lMdmI4jZEz40+naBxl1dCUhXXw==}
     engines: {node: '>=14.16'}
 
+  superjson@2.2.1:
+    resolution: {integrity: sha512-8iGv75BYOa0xRJHK5vRLEjE2H/i4lulTjzpUXic3Eg8akftYjkmQDa8JARQ42rlczXyFR3IeRoeFCc7RxHsYZA==}
+    engines: {node: '>=16'}
+
   supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
     engines: {node: '>=4'}
@@ -10409,6 +10440,11 @@ packages:
   zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
+  zundo@2.1.0:
+    resolution: {integrity: sha512-IMhYXDZWbyGu/p3rQb1d3orhCfAyi9hGkx6N579ZtO7mWrzvBdNyGEcxciv1jtIYPKBqLSAgzKqjLguau09f9g==}
+    peerDependencies:
+      zustand: ^4.3.0
+
   zustand@3.7.2:
     resolution: {integrity: sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==}
     engines: {node: '>=12.7.0'}
@@ -10900,14 +10936,14 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@builder.io/react-hydration-overlay@0.1.0(@spotlightjs/spotlight@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.94.0(esbuild@0.17.6))':
+  '@builder.io/react-hydration-overlay@0.1.0(@spotlightjs/spotlight@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(webpack@5.94.0)':
     dependencies:
       '@spotlightjs/spotlight': 2.4.0
       beautify: 0.0.8
       react: 18.3.1
       react-diff-viewer: 3.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-dom: 18.3.1(react@18.3.1)
-      webpack: 5.94.0(esbuild@0.17.6)
+      webpack: 5.94.0
     transitivePeerDependencies:
       - supports-color
 
@@ -14901,6 +14937,8 @@ snapshots:
 
   '@types/diff-match-patch@1.0.36': {}
 
+  '@types/diff@5.2.2': {}
+
   '@types/dom-webcodecs@0.1.11': {}
 
   '@types/estree-jsx@1.0.5':
@@ -16302,6 +16340,10 @@ snapshots:
 
   cookie@0.6.0: {}
 
+  copy-anything@3.0.5:
+    dependencies:
+      is-what: 4.1.16
+
   core-util-is@1.0.3: {}
 
   cosmiconfig@6.0.0:
@@ -16526,6 +16568,8 @@ snapshots:
   diff@4.0.2: {}
 
   diff@5.2.0: {}
+
+  diff@7.0.0: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -17988,6 +18032,8 @@ snapshots:
     dependencies:
       call-bind: 1.0.7
       get-intrinsic: 1.2.4
+
+  is-what@4.1.16: {}
 
   is-windows@1.0.2: {}
 
@@ -20420,6 +20466,10 @@ snapshots:
       function-timeout: 0.1.1
       time-span: 5.1.0
 
+  superjson@2.2.1:
+    dependencies:
+      copy-anything: 3.0.5
+
   supports-color@5.5.0:
     dependencies:
       has-flag: 3.0.0
@@ -20575,16 +20625,14 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  terser-webpack-plugin@5.3.10(esbuild@0.17.6)(webpack@5.94.0(esbuild@0.17.6)):
+  terser-webpack-plugin@5.3.10(webpack@5.94.0):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.2
       terser: 5.32.0
-      webpack: 5.94.0(esbuild@0.17.6)
-    optionalDependencies:
-      esbuild: 0.17.6
+      webpack: 5.94.0
 
   terser@5.32.0:
     dependencies:
@@ -21244,7 +21292,7 @@ snapshots:
 
   webpack-sources@3.2.3: {}
 
-  webpack@5.94.0(esbuild@0.17.6):
+  webpack@5.94.0:
     dependencies:
       '@types/estree': 1.0.5
       '@webassemblyjs/ast': 1.12.1
@@ -21266,7 +21314,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.10(esbuild@0.17.6)(webpack@5.94.0(esbuild@0.17.6))
+      terser-webpack-plugin: 5.3.10(webpack@5.94.0)
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
@@ -21526,6 +21574,10 @@ snapshots:
       zod: 3.23.8
 
   zod@3.23.8: {}
+
+  zundo@2.1.0(zustand@4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1)):
+    dependencies:
+      zustand: 4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1)
 
   zustand@3.7.2(react@18.3.1):
     optionalDependencies:

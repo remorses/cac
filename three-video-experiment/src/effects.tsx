@@ -348,6 +348,9 @@ export function effectsParamsClone(params: any) {
         if (obj instanceof THREE.Vector3) {
             return new THREE.Vector3().copy(obj)
         }
+        if (obj instanceof THREE.Vector4) {
+            return new THREE.Vector4().copy(obj)
+        }
         if (obj instanceof THREE.Euler) {
             return new THREE.Euler().copy(obj)
         }
@@ -356,6 +359,10 @@ export function effectsParamsClone(params: any) {
         }
         if (obj instanceof THREE.Color) {
             return new THREE.Color().copy(obj)
+        }
+        // Handle Date objects
+        if (obj instanceof Date) {
+            return new Date(obj.getTime());
         }
 
         // Handle arrays

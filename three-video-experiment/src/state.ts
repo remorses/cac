@@ -1,13 +1,20 @@
+import { createPatch } from 'diff'
 import { create } from 'zustand'
+
 import {
+    bfs,
     EditorKeyframe,
     Effect,
     EffectInit,
-    bfs,
-    updateEffectInTree,
+    updateEffectInTree
 } from './effects'
 
 interface AppState {
+    undo: () => void
+    redo: () => void
+    canUndo: () => boolean
+    canRedo: () => boolean
+    internalUpdate(): void
     currentTime: number
     timeGridSize: number
     outputSize: { width: number; height: number }
@@ -30,6 +37,8 @@ interface AppState {
 
 import { useEffect, useRef, useState } from 'react'
 import { threeCanvas } from './App'
+import { deserializeParams, serializeParams } from './canvas'
+import { undoRedo } from './undoredo'
 export function getKeyframeOnCurrentTime() {
     const state = useEditorState.getState()
     const allEffects = bfs(state.effects)
@@ -107,9 +116,52 @@ export const useCurrentTime = () => {
 
     return currentTime
 }
+export const useEditorState = create<AppState>()((_set, get, store) => {
+    const {
+        setWithUndo: set,
+        canRedo,
+        canUndo,
+        redo,
+        undo,
+    } = undoRedo({
+        store,
+        debounce: 500,
+        onStateChange(state, prevState) {
+            if (import.meta.env.DEV) {
+                const prevSerialized = serializeParams(prevState)
+                const currentSerialized = serializeParams(state)
+                // const diffed = diffLines(prevSerialized, currentSerialized)
+                const patch = createPatch(
+                    '',
+                    prevSerialized,
+                    currentSerialized,
+                    '',
+                    '',
+                )
 
-export const useEditorState = create<AppState>((set, get) => {
+                console.log('state changed:', patch)
+            }
+        },
+        mapState(state, prevState) {
+            const prevSerialized = serializeParams(prevState)
+            const currentSerialized = serializeParams(state)
+            if (prevSerialized === currentSerialized) {
+                console.log('no change, ignoring state update')
+                return null
+            }
+            // console.log(currentSerialized)
+            return deserializeParams(currentSerialized)
+        },
+    })
+
     return {
+        canRedo,
+        canUndo,
+        redo,
+        undo,
+        internalUpdate() {
+            set({ currentTime: get().currentTime })
+        },
         currentTime: 0,
         timeGridSize: (1 / 30) * 3,
         outputSize: { width: 1920, height: 1080 },
@@ -124,7 +176,10 @@ export const useEditorState = create<AppState>((set, get) => {
             set({ selectedEffectIds: id })
         },
         setSelectedKeyframeIds: (ids: string[], effectIds: string[]) => {
-            set({ selectedKeyframeIds: ids, selectedEffectIds: effectIds })
+            set({
+                selectedKeyframeIds: ids,
+                selectedEffectIds: effectIds,
+            })
         },
         selectedKeyframeIds: [],
         updateSelectedKeyframes: (keyframe: Partial<EditorKeyframe>) => {
@@ -190,3 +245,27 @@ export const useEditorState = create<AppState>((set, get) => {
         setEffects: (effects) => set({ effects }),
     }
 })
+
+export const useUndoRedo = () => {
+    useEffect(() => {
+        const state = useEditorState.getState()
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.metaKey || event.ctrlKey) {
+                if (event.key === 'z') {
+                    event.preventDefault()
+                    if (event.shiftKey) {
+                        state.redo()
+                    } else {
+                        state.undo()
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [])
+}

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import superjson from 'superjson'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { Pane } from 'tweakpane'
@@ -14,7 +15,7 @@ import {
     Effect,
     effectsParamsClone,
     evaluate2Beziers,
-    MeshEffect
+    MeshEffect,
 } from './effects'
 import {
     getKeyframeOnCurrentTime,
@@ -505,25 +506,21 @@ export function getParamsForEffect(type: string) {
     return params
 }
 
-function serializeParams(params: any) {
-    return JSON.stringify(params, (key, value) => {
-        if (value instanceof THREE.Vector2) {
-            return { x: value.x, y: value.y }
-        }
-        if (value instanceof THREE.Vector3) {
-            return { x: value.x, y: value.y, z: value.z }
-        }
-        if (value instanceof THREE.Quaternion) {
-            return { x: value.x, y: value.y, z: value.z, w: value.w }
-        }
-        if (value instanceof THREE.Euler) {
-            return { x: value.x, y: value.y, z: value.z }
-        }
-        if (value instanceof THREE.Color) {
-            return { r: value.r, g: value.g, b: value.b }
-        }
-        return value
-    })
+superjson.registerClass(THREE.Vector2, 'Vector2')
+superjson.registerClass(THREE.Vector3, 'Vector3')
+superjson.registerClass(THREE.Quaternion, 'Quaternion')
+superjson.registerClass(THREE.Euler, 'Euler')
+superjson.registerClass(THREE.Color, 'Color')
+
+export function serializeParams(params: any) {
+    let res = superjson.serialize(params)
+    return JSON.stringify(res, null, 2)
+}
+
+export function deserializeParams(params: any) {
+    const res = superjson.parse(params)
+    
+    return res
 }
 
 const vignetteShader = {

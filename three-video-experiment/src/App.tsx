@@ -19,6 +19,7 @@ import {
     snapToTimeGrid,
     useCurrentTime,
     useEditorState,
+    useUndoRedo,
 } from './state'
 
 import {
@@ -65,6 +66,7 @@ const router = createBrowserRouter(
 )
 
 export function App() {
+    useUndoRedo()
     return <RouterProvider router={router} />
 }
 
@@ -831,11 +833,12 @@ function Clip({
             }}
             ref={containerRef}
         >
-            <div 
+            <div
                 className={classNames(
                     'absolute inset-x-0 w-full top-1/2 border-t-2',
-                    selectedEffectIds.includes(effect.id) && 'border-yellow-200',
-                    !selectedEffectIds.includes(effect.id) && 'border-gray-300'
+                    selectedEffectIds.includes(effect.id) &&
+                        'border-yellow-200',
+                    !selectedEffectIds.includes(effect.id) && 'border-gray-300',
                 )}
             ></div>
             <div className='w-full absolute inset-0 flex items-center justify-start rounded-t-md left-0 overflow-x-visible'>
@@ -1249,6 +1252,7 @@ function EffectsControls() {
             if (state.isPlaying) {
                 return
             }
+            state.internalUpdate()
             threeCanvas.applyAllEffects({ isUserChange: true })
             threeCanvas.render()
         })
