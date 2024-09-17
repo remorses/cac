@@ -1,4 +1,4 @@
-import { createPatch } from 'diff'
+import { createPatch, diffChars, diffLines } from 'diff'
 import { create } from 'zustand'
 
 import {
@@ -87,7 +87,7 @@ export function snapToTimeGrid(time: number) {
     return Math.round(time / timeGridSize) * timeGridSize
 }
 
-export const useCurrentTime = () => {
+export const useThrottledCurrentTime = () => {
     const [currentTime, setCurrentTime] = useState(
         snapToTimeGrid(useEditorState.getState().currentTime),
     )
@@ -100,6 +100,7 @@ export const useCurrentTime = () => {
                 setCurrentTime(snapToTimeGrid(state.currentTime))
                 return
             }
+            setCurrentTime(snapToTimeGrid(state.currentTime))
             const now = Date.now()
 
             if (now - lastUpdateTimeRef.current >= 30) {
@@ -126,10 +127,11 @@ export const useEditorState = create<AppState>()((_set, get, store) => {
         undo,
     } = undoRedo({
         store,
-        debounce: 500,
+        debounce: 200,
         onStateChange(state, prevState) {
             if (import.meta.env.DEV) {
                 const prevSerialized = serializeParams(prevState)
+
                 const currentSerialized = serializeParams(state)
                 // const diffed = diffLines(prevSerialized, currentSerialized)
                 const patch = createPatch(
@@ -139,6 +141,8 @@ export const useEditorState = create<AppState>()((_set, get, store) => {
                     '',
                     '',
                 )
+
+                // const linesDiff = diffChars(prevSerialized, currentSerialized)
 
                 console.log('state changed:', patch)
             }

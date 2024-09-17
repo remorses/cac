@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useCurrentTime, useEditorState } from './state'
+import { useThrottledCurrentTime, useEditorState } from './state'
 
 export const scrubberHalfWidth = 16
 
@@ -19,7 +19,7 @@ export function ScrubberIcon() {
     )
 }
 export function Scrubber({ containerRef }) {
-    const currentTime = useCurrentTime()
+    const currentTime = useThrottledCurrentTime()
     const visibleDuration = useEditorState(
         (state) => state.duration / state.timelineScale,
     )

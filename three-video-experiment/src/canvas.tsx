@@ -514,12 +514,12 @@ superjson.registerClass(THREE.Color, 'Color')
 
 export function serializeParams(params: any) {
     let res = superjson.serialize(params)
-    return JSON.stringify(res, null, 2)
+    return JSON.stringify(res, null, 2).trim()
 }
 
 export function deserializeParams(params: any) {
     const res = superjson.parse(params)
-    
+
     return res
 }
 

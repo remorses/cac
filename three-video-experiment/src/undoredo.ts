@@ -63,12 +63,12 @@ export function undoRedo<T>({
 
     let debounceTimeout: number | null = null
 
-    store.setState = (...args) => {
+    const setWithUndo: StoreApi<T>['setState'] = (...args) => {
         if (debounceTimeout) {
             clearTimeout(debounceTimeout)
         }
         let state = store.getState()
-
+        userSet(...args)
         debounceTimeout = setTimeout(() => {
             if (!state) {
                 return
@@ -85,13 +85,12 @@ export function undoRedo<T>({
 
             debounceTimeout = null
         }, debounceMs)
-        userSet(...args)
     }
     return {
         undo: () => undoRedoState.undo(),
         redo: () => undoRedoState.redo(),
         canUndo: () => undoRedoState.pastStates.length > 0,
         canRedo: () => undoRedoState.futureStates.length > 0,
-        setWithUndo: store.setState as StoreApi<T>['setState'],
+        setWithUndo,
     }
 }

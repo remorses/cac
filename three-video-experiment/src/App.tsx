@@ -18,7 +18,7 @@ import {
 import {
     getKeyframeOnCurrentTime,
     snapToTimeGrid,
-    useCurrentTime,
+    useThrottledCurrentTime,
     useEditorState,
     useUndoRedo,
 } from './state'
@@ -352,7 +352,7 @@ function EditorLayout() {
                         video.play()
                         let duration = video.duration
                         console.log('duration', duration)
-                        const timelineScale = Math.max(1, duration / 7);
+                        const timelineScale = Math.max(1, duration / 7)
                         useEditorState.setState({ duration, timelineScale })
                     })
                 } catch (error) {
@@ -740,7 +740,10 @@ function ScrubBar({
         }
     }, [visibleDuration])
 
-    const tickCount = Math.min(50, Math.max(2, Math.floor(visibleDuration / timeGridSize)))
+    const tickCount = Math.min(
+        50,
+        Math.max(2, Math.floor(visibleDuration / timeGridSize)),
+    )
     let step =
         Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
 
@@ -1154,7 +1157,7 @@ const Container = ({ children, ...rest }) => {
 
 function PlayControls() {
     const isPlaying = useEditorState((state) => state.isPlaying)
-    const currentTime = useCurrentTime()
+    const currentTime = useThrottledCurrentTime()
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const duration = useEditorState((state) => state.duration)
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
@@ -1279,7 +1282,7 @@ function EffectsControls() {
             if (state.isPlaying) {
                 return
             }
-            state.internalUpdate()
+
             threeCanvas.applyAllEffects({ isUserChange: true })
             threeCanvas.render()
         })
