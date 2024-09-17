@@ -1,4 +1,5 @@
 import { parseMedia } from '@remotion/media-parser'
+import mime from 'mime'
 
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
@@ -42,24 +43,13 @@ import { isTruthy, preparePane } from './utils'
 import { motion } from 'framer-motion'
 import classNames from 'classnames'
 import { PauseIcon, PlayIcon } from './icons'
-
-function useSelectedMedia() {
-    const media = useEditorState((state) => state.media)
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0] || null
-
-        useEditorState.setState({ media: file })
-    }
-
-    return { media, handleFileChange }
-}
+import * as indexDb from 'idb-keyval'
 
 const router = createBrowserRouter(
     [
         {
             path: '/',
-            element: <RotationsImage />,
+            element: <EditorLayout />,
         },
     ],
     // { basename: basePath },
@@ -161,8 +151,18 @@ if (import.meta.hot) {
 }
 
 const exportVideo = async () => {
-    const { media } = useEditorState.getState()
+    const { mediaHandleId } = useEditorState.getState()
+    if (!mediaHandleId) {
+        return
+    }
+    const mediaHandle = await getHandleForMediaId(mediaHandleId)
+    if (!mediaHandle) {
+        console.error('No media handle found')
+        return
+    }
+    const media = await getFileForMediaHandle(mediaHandle)
     if (!media) {
+        console.error('Failed to get file for media handle')
         return
     }
 
@@ -313,28 +313,52 @@ const exportVideo = async () => {
     }
 }
 
-function RotationsImage() {
-    const { media, handleFileChange } = useSelectedMedia()
+function EditorLayout() {
+    const mediaHandleId = useEditorState((state) => state.mediaHandleId)
 
     const [isLoading, setIsLoading] = useState(true)
     const size = useEditorState((state) => state.outputSize)
 
     useEffect(() => {
-        if (!media) {
+        if (!mediaHandleId) {
             return
         }
         console.log('loading media into canvas')
         const loadMedia = async () => {
-            if (media.type.startsWith('video/')) {
-                video.src = URL.createObjectURL(media)
-                video.muted = true
-                video.loop = false
-                video.addEventListener('loadedmetadata', () => {
-                    video.play()
-                    let duration = video.duration
-                    console.log('duration', duration)
-                    useEditorState.setState({ duration })
+            const state = useEditorState.getState()
+            const mediaHandle = await getHandleForMediaId(mediaHandleId)
+            if (!mediaHandle) {
+                state.setMediaHandleId('')
+                return
+            }
+            const media = await getFileForMediaHandle(mediaHandle)
+
+            if (!media.type.startsWith('video/')) {
+                const bitmap = await createImageBitmap(media, {
+                    imageOrientation: 'flipY',
                 })
+                if (!bitmap) {
+                    return
+                }
+                threeCanvas.changeImage(bitmap)
+                const img = threeCanvas.texture.image
+                const aspectRatio = img.width / img.height
+            } else {
+                try {
+                    video.src = URL.createObjectURL(media)
+                    video.muted = true
+                    video.loop = false
+                    video.addEventListener('loadedmetadata', () => {
+                        video.play()
+                        let duration = video.duration
+                        console.log('duration', duration)
+                        const timelineScale = Math.max(1, duration / 7);
+                        useEditorState.setState({ duration, timelineScale })
+                    })
+                } catch (error) {
+                    console.error('Error loading media:', error)
+                    throw error
+                }
 
                 // Remove the 'playing' event listener after it's triggered once
                 const playingHandler = () => {
@@ -355,34 +379,43 @@ function RotationsImage() {
                 threeCanvas.changeVideo(video)
                 const aspectRatio = video.videoWidth / video.videoHeight || 1
                 console.log('aspect ratio', aspectRatio)
-            } else {
-                const bitmap = await createImageBitmap(media, {
-                    imageOrientation: 'flipY',
-                })
-                if (!bitmap) {
-                    return
-                }
-                threeCanvas.changeImage(bitmap)
-                const img = threeCanvas.texture.image
-                const aspectRatio = img.width / img.height
             }
             render()
             setIsLoading(false)
         }
         loadMedia()
-    }, [media])
+    }, [mediaHandleId])
 
-    if (!media) {
+    if (!mediaHandleId) {
         return (
             <Container className='flex flex-col items-center justify-center'>
                 <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
                     <p>Select an Image or Video First</p>
-                    <input
+                    {/* <input
                         type='file'
                         className='!bg-gray-50 !rounded-lg'
                         // accept='image/*,video/*'
                         onChange={handleFileChange}
-                    />
+                    /> */}
+                    <Button
+                        onClick={async () => {
+                            const state = useEditorState.getState()
+                            const mediaHandle = await pickMediaHandle()
+                            if (!mediaHandle) {
+                                console.log(`could not get media handle`)
+                                useEditorState.setState({
+                                    mediaHandleId: undefined,
+                                })
+                                return
+                            }
+                            useEditorState.setState({
+                                mediaHandleId:
+                                    await getMediaHandleId(mediaHandle),
+                            })
+                        }}
+                    >
+                        Open File
+                    </Button>
                 </div>
             </Container>
         )
@@ -406,12 +439,6 @@ function RotationsImage() {
                 </Button>
             </div>
             <div className='pl-[--padding] pb-[--padding] flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
-                <input
-                    type='file'
-                    className='!bg-gray-50 !rounded-lg'
-                    // accept='image/*,video/*'
-                    onChange={handleFileChange}
-                />
                 <Controls />
                 <div className='grow'></div>
             </div>
@@ -713,7 +740,7 @@ function ScrubBar({
         }
     }, [visibleDuration])
 
-    const tickCount = Math.max(2, Math.floor(visibleDuration / timeGridSize))
+    const tickCount = Math.min(50, Math.max(2, Math.floor(visibleDuration / timeGridSize)))
     let step =
         Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
 
@@ -1356,4 +1383,77 @@ export function KeyframeIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const distancePoint = (p1, p2) => {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
+}
+
+async function requestPersistentAccess(fileHandle: FileSystemFileHandle) {
+    if ((await fileHandle.queryPermission({ mode: 'read' })) !== 'granted') {
+        if (
+            (await fileHandle.requestPermission({ mode: 'read' })) !== 'granted'
+        ) {
+            console.log('Permission not granted')
+            return false
+        }
+    }
+    return true
+}
+
+async function getFileForMediaHandle(mediaHandle: FileSystemFileHandle) {
+    const extension = mediaHandle.name.split('.').pop()?.toLowerCase()
+    let type = mime.getType(extension || '') || 'application/octet-stream'
+    const file = await mediaHandle.getFile()
+    if (!file) {
+        throw new Error('No file found')
+    }
+    if (!file.type) {
+        const media = new File([file], mediaHandle.name, {
+            type,
+        })
+        return media
+    }
+    return file
+}
+
+async function getMediaHandleId(mediaHandle: FileSystemFileHandle) {
+    // Generate a consistent ID for the media handle based on its name
+    const fileObject = await mediaHandle.getFile()
+    let fileSize = fileObject.size
+    const tempName = mediaHandle.name.replace(/\s+/g, '-')
+    return `media-${fileSize}-${tempName}`
+}
+
+async function pickMediaHandle() {
+    try {
+        const [mediaHandle] = await window.showOpenFilePicker({
+            types: [
+                {
+                    description: 'Videos',
+                    accept: {
+                        'video/*': ['.mp4', '.webm', '.ogg', '.mov'],
+                        'image/*': ['.png', '.gif', '.jpeg', '.jpg'],
+                    },
+                },
+            ],
+            // startIn: 'videos',
+        })
+        let id = await getMediaHandleId(mediaHandle)
+        console.log('loaded media with id', id)
+
+        await indexDb.set(id, mediaHandle)
+        return mediaHandle
+    } catch (error) {
+        console.error('Error selecting file:', error)
+        throw error
+    }
+}
+
+async function getHandleForMediaId(mediaHandleId?: string) {
+    if (mediaHandleId) {
+        const mediaHandle: FileSystemFileHandle = (await indexDb.get(
+            mediaHandleId,
+        )) as any
+        if (mediaHandle) {
+            await requestPersistentAccess(mediaHandle)
+            return mediaHandle
+        }
+    }
 }

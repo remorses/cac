@@ -6,7 +6,7 @@ import {
     EditorKeyframe,
     Effect,
     EffectInit,
-    updateEffectInTree
+    updateEffectInTree,
 } from './effects'
 
 interface AppState {
@@ -20,7 +20,8 @@ interface AppState {
     outputSize: { width: number; height: number }
     isPlaying: boolean
     duration: number
-    media?: File | null
+    mediaHandleId?: string
+    setMediaHandleId: (mediaHandleId: string) => void
     isLooping: boolean
     effects: Effect<any>[]
     setCurrentTime: (time: number) => void
@@ -161,6 +162,9 @@ export const useEditorState = create<AppState>()((_set, get, store) => {
         undo,
         internalUpdate() {
             set({ currentTime: get().currentTime })
+        },
+        setMediaHandleId(id) {
+            set({ mediaHandleId: id })
         },
         currentTime: 0,
         timeGridSize: (1 / 30) * 3,

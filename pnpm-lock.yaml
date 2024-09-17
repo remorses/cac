@@ -846,6 +846,9 @@ importers:
       '@types/three':
         specifier: ^0.168.0
         version: 0.168.0
+      '@types/wicg-file-system-access':
+        specifier: ^2023.10.5
+        version: 2023.10.5
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
@@ -861,6 +864,12 @@ importers:
       framer-plugin:
         specifier: ^0.3.3
         version: 0.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      idb-keyval:
+        specifier: ^6.2.1
+        version: 6.2.1
+      mime:
+        specifier: ^4.0.4
+        version: 4.0.4
       mp4-muxer:
         specifier: ^5.1.1
         version: 5.1.1
@@ -912,9 +921,6 @@ importers:
       vite-tsconfig-paths:
         specifier: ^4.3.2
         version: 4.3.2(typescript@5.6.2)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
-      zundo:
-        specifier: ^2.1.0
-        version: 2.1.0(zustand@4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1))
       zustand:
         specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1)
@@ -4995,6 +5001,9 @@ packages:
   '@types/wicg-file-system-access@2020.9.8':
     resolution: {integrity: sha512-ggMz8nOygG7d/stpH40WVaNvBwuyYLnrg5Mbyf6bmsj/8+gb6Ei4ZZ9/4PNpcPNTT8th9Q8sM8wYmWGjMWLX/A==}
 
+  '@types/wicg-file-system-access@2023.10.5':
+    resolution: {integrity: sha512-e9kZO9kCdLqT2h9Tw38oGv9UNzBBWaR1MzuAavxPcsV/7FJ3tWbU6RI3uB+yKIDPGLkGVbplS52ub0AcRLvrhA==}
+
   '@types/ws@6.0.4':
     resolution: {integrity: sha512-PpPrX7SZW9re6+Ha8ojZG4Se8AZXgf0GK6zmfqEuCsY49LFDNXO3SByp44X3dFEqtB73lkCDAdUazhAjVPiNwg==}
 
@@ -7056,6 +7065,9 @@ packages:
     peerDependencies:
       postcss: ^8.1.0
 
+  idb-keyval@6.2.1:
+    resolution: {integrity: sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==}
+
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -7938,6 +7950,11 @@ packages:
   mime@3.0.0:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
     engines: {node: '>=10.0.0'}
+    hasBin: true
+
+  mime@4.0.4:
+    resolution: {integrity: sha512-v8yqInVjhXyqP6+Kw4fV3ZzeMRqEW6FotRsKXjRS5VMTNIuXsdRoAvklpoRgSqXm6o9VNH4/C0mgedko9DdLsQ==}
+    engines: {node: '>=16'}
     hasBin: true
 
   mimic-fn@2.1.0:
@@ -10439,11 +10456,6 @@ packages:
 
   zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
-
-  zundo@2.1.0:
-    resolution: {integrity: sha512-IMhYXDZWbyGu/p3rQb1d3orhCfAyi9hGkx6N579ZtO7mWrzvBdNyGEcxciv1jtIYPKBqLSAgzKqjLguau09f9g==}
-    peerDependencies:
-      zustand: ^4.3.0
 
   zustand@3.7.2:
     resolution: {integrity: sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==}
@@ -15125,6 +15137,8 @@ snapshots:
 
   '@types/wicg-file-system-access@2020.9.8': {}
 
+  '@types/wicg-file-system-access@2023.10.5': {}
+
   '@types/ws@6.0.4':
     dependencies:
       '@types/node': 20.16.5
@@ -17770,6 +17784,8 @@ snapshots:
     dependencies:
       postcss: 8.4.24
 
+  idb-keyval@6.2.1: {}
+
   ieee754@1.2.1: {}
 
   ignore@5.3.1: {}
@@ -18757,6 +18773,8 @@ snapshots:
 
   mime@3.0.0:
     optional: true
+
+  mime@4.0.4: {}
 
   mimic-fn@2.1.0: {}
 
@@ -21574,10 +21592,6 @@ snapshots:
       zod: 3.23.8
 
   zod@3.23.8: {}
-
-  zundo@2.1.0(zustand@4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1)):
-    dependencies:
-      zustand: 4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@18.3.1)
 
   zustand@3.7.2(react@18.3.1):
     optionalDependencies:

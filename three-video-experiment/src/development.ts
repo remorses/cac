@@ -10,21 +10,27 @@ function linearBezierCurve(): BezierCurve {
 // Disable in production or non-Vite environments
 if (import.meta.env.DEV) {
     // Development-only code
-    fetch('/video.mov')
-        .then((response) => response.blob())
-        .then(
-            (blob) =>
-                new File([blob], 'video.mov', { type: 'video/quicktime' }),
-        )
-        .then((file) => {
-            if (file) {
-                useEditorState.setState({ media: file })
-            }
-        })
-        .catch((error) => {
-            console.error('Error fetching video file:', error)
-            return null
-        })
+    function fetchVideo() {
+        fetch('/video.mov')
+            .then((response) => response.blob())
+            .then(
+                (blob) =>
+                    new File([blob], 'video.mov', { type: 'video/quicktime' }),
+            )
+            .then((file) => {
+                if (file) {
+                    // useEditorState.setState({ mediaHandleId: file })
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching video file:', error)
+                return null
+            })
+    }
+    useEditorState.setState({
+        mediaHandleId:
+            'media-4001858-Screen-Recording-2024-09-09-at-16.56.13.mov',
+    })
 
     // Subscribe to duration changes and scale effects accordingly
     // useEditorState.subscribe((state, prevState) => {
