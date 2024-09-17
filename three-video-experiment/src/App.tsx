@@ -443,7 +443,7 @@ function Entities() {
                 return (
                     <div
                         key={effect.id}
-                        className=' opacity-70 overflow-hidden flex items-center justify-end text-xs cursor-pointer'
+                        className='overflow-hidden flex items-center justify-end text-xs cursor-pointer'
                         style={{
                             height: `${clipHeight}px`,
                         }}
@@ -604,10 +604,10 @@ function Timeline() {
         (state) => state.setSelectedKeyframeIds,
     )
     return (
-        <div className='col-span-3 relative grow cursor-pointer shrink-0 flex flex-row'>
+        <div className='col-span-3  overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
             <Entities />
             <div
-                className='grow relative overflow-y-auto flex flex-col gap-3'
+                className='grow relative h-full overflow-x-visible flex flex-col gap-3'
                 ref={containerRef}
                 onMouseMove={handleDrag}
                 onMouseUp={handleDragEnd}
@@ -622,7 +622,7 @@ function Timeline() {
                     className='inset-0 absolute'
                 ></div>
                 <ScrubBar />
-                <div className='relative'>
+                <div className='relative overflow-x-visible '>
                     {allEffects.map(({ node: effect, parent }, index) => {
                         return (
                             <Clip
@@ -644,7 +644,7 @@ function Timeline() {
     )
 }
 
-const scrubBarHeight = 16
+const scrubBarHeight = 30
 
 function ScrubBar() {
     const duration = useEditorState((state) => state.duration)
@@ -748,18 +748,18 @@ function ScrubBar() {
                             left: `${(time / visibleDuration) * 100}%`,
                         }}
                     >
-                        <div
-                            className={`w-[1px] h-full grow self-stretch ${
-                                isSecond
-                                    ? 'bg-gray-700'
-                                    : 'bg-gray-400 opacity-50'
-                            }`}
-                            style={{
-                                height: isSecond ? '100%' : '50%',
-                            }}
-                        ></div>
+                        {!isSecond && (
+                            <div
+                                className={` grow border-r-2 self-center ${
+                                    isSecond ? 'opacity-70 ' : ' opacity-20 '
+                                }`}
+                                style={{
+                                    height: isSecond ? '100%' : '30%',
+                                }}
+                            ></div>
+                        )}
                         {isSecond && (
-                            <span className='text-xs text-gray-500 font-mono'>
+                            <span className='text-xs h-full content-center text-gray-500 font-mono -translate-x-1/2'>
                                 {time.toFixed(1)}s
                             </span>
                         )}
@@ -769,6 +769,8 @@ function ScrubBar() {
         </div>
     )
 }
+
+
 const clipHeight = 34
 const clipSpacing = 10
 
@@ -794,7 +796,7 @@ function Clip({
     return (
         <div
             className={classNames(
-                'absolute rounded-md   opacity-70 flex flex-row items-center justify-between text-white text-xs',
+                'absolute rounded-md overflow-x-visible flex flex-row items-center justify-between text-white text-xs',
             )}
             style={{
                 left: `${startPercent}%`,
@@ -920,7 +922,7 @@ function KeyframeAddButton({
             }}
             onClick={handleClick}
         >
-            <KeyframeAddIcon className='w-full text-blue-100 ' />
+            <KeyframeAddIcon className='w-full ' />
         </div>
     )
 }
@@ -1028,12 +1030,7 @@ function KeyframeComponent({
 
     return (
         <div
-            className={classNames(
-                'absolute shrink-0',
-                isSelected
-                    ? 'text-white ring-2 ring-yellow-200'
-                    : 'text-gray-200',
-            )}
+            className={classNames('absolute shrink-0')}
             style={{
                 left: `calc(${positionPercentage * 100}% - ${halfWidth}px)`,
             }}
@@ -1070,7 +1067,12 @@ function KeyframeComponent({
             onMouseDown={handleMouseDown}
         >
             <KeyframeIcon
-                className='shrink-0'
+                className={classNames(
+                    'shrink-0 ',
+                    isSelected
+                        ? 'text-yellow-200 scale-125'
+                        : 'text-gray-300',
+                )}
                 style={{ minWidth: `${halfWidth * 2}px` }}
             />
         </div>

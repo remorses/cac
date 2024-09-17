@@ -23,21 +23,25 @@ export function Scrubber({ containerRef }) {
     const visibleDuration = useEditorState(
         (state) => state.duration / state.timelineScale,
     )
-    const w = containerRef.current?.clientWidth || 0
+    const containerRect = containerRef.current?.getBoundingClientRect()
+    const w = containerRect?.width || 0
+    const h = containerRect?.height || 0
 
-    const left = (currentTime / visibleDuration) * w - scrubberHalfWidth
+    const left = ((currentTime / visibleDuration) * w) + (containerRect?.left || 0) - scrubberHalfWidth
+    const top = containerRect?.top || 0
 
     return (
         <>
             <div
-                className='absolute pointer-events-none bottom-0 min-h-full top-0'
+                className='fixed pointer-events-none'
                 style={{
                     left: `${left}px`,
-                    // cursor: dragging ? 'grabbing' : 'grab',
+                    top: `${top}px`,
+                    height: `${h}px`,
                     width: scrubberHalfWidth * 2,
                 }}
             >
-                <div className='relative w-full flex flex-col items-center top-0 '>
+                <div className='relative w-full flex flex-col items-center'>
                     <ScrubberIcon />
                 </div>
                 <div
@@ -45,7 +49,6 @@ export function Scrubber({ containerRef }) {
                     style={{
                         left: scrubberHalfWidth,
                     }}
-                    // onPointerDown={(e) => e.stopPropagation()}
                 />
             </div>
         </>
