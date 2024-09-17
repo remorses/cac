@@ -387,7 +387,7 @@ function RotationsImage() {
     }
 
     return (
-        <Container className='p-4 bg-black grid grid-cols-[300px_1fr_300px] gap-4 grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
+        <Container className=' bg-black grid grid-cols-[300px_1fr_300px] gap-x-4 grid-rows-[50%_40px_1fr] h-full pt-4 max-h-screen w-full max-w-full'>
             <div className='hideScroll flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <input
                     type='file'
@@ -416,8 +416,8 @@ function RotationsImage() {
             <div className=''>
                 <EffectsControls />
             </div>
-            <div className='row-span-1 flex flex-col items-center justify-center col-span-3'>
-                <VideoControls />
+            <div className='row-span-1 bg-gray-900 flex flex-col items-center justify-center col-span-3'>
+                <PlayControls />
             </div>
 
             <Timeline />
@@ -434,7 +434,7 @@ function Entities() {
     return (
         <div
             style={{ paddingTop: scrubBarHeight + clipSpacing }}
-            className='flex flex-col min-w-[120px] px-3 gap-2'
+            className='flex bg-gray-900 flex-col min-w-[120px] pr-6 gap-2'
         >
             {effects.map((effect, index) => {
                 const startPercent = (effect.start / duration) * 100
@@ -605,10 +605,10 @@ function Timeline() {
         (state) => state.setSelectedKeyframeIds,
     )
     return (
-        <div className='col-span-3 gap-4 overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
+        <div className='col-span-3 overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
             <Entities />
             <div
-                className='grow bg-gray-950 relative h-full overflow-x-visible flex flex-col gap-3'
+                className='grow bg-gray-900 relative h-full overflow-x-visible flex flex-col gap-3'
                 ref={containerRef}
                 style={{
                     paddingTop: scrubBarHeight + clipSpacing,
@@ -720,7 +720,7 @@ function ScrubBar({
                 left: 0,
                 height: scrubBarHeight,
             }}
-            className='fixed flex flex-col justify-center w-full h-full bg-gray-800'
+            className='fixed flex flex-col justify-center w-full h-full bg-gray-900'
         >
             <div
                 style={{
@@ -732,7 +732,7 @@ function ScrubBar({
             </div>
 
             <div
-                className='absolute h-full select-none cursor-pointer isolate'
+                className='absolute bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
                 style={{
                     left: `${left}px`,
                     top: 0,
@@ -770,9 +770,15 @@ function ScrubBar({
                                 ></div>
                             )}
                             {isSecond && (
-                                <span className='text-xs h-full content-center text-gray-500 font-mono -translate-x-1/2'>
+                                <div
+                                    className={classNames(
+                                        'text-xs h-full content-center text-gray-500 font-mono',
+                                        index !== 0 && '-translate-x-1/2',
+                                        index == 0 && 'pl-1',
+                                    )}
+                                >
                                     {time.toFixed(1)}s
-                                </span>
+                                </div>
                             )}
                         </div>
                     )
@@ -1102,7 +1108,7 @@ const Container = ({ children, ...rest }) => {
     )
 }
 
-function VideoControls() {
+function PlayControls() {
     const isPlaying = useEditorState((state) => state.isPlaying)
     const currentTime = useCurrentTime()
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
@@ -1129,7 +1135,7 @@ function VideoControls() {
     }
 
     return (
-        <div className='px-2 py-1 text-white rounded-lg m-3 flex gap-3 items-center'>
+        <div className='px-2 py-1  text-white rounded-lg m-3 flex gap-3 items-center'>
             <div className='flex gap-1 shrink-0 items-center'>
                 <button
                     className='!bg-transparent w-[20px]'
