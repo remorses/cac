@@ -444,7 +444,7 @@ function Entities() {
                 return (
                     <div
                         key={effect.id}
-                        className='border-y opacity-70 overflow-hidden flex items-center justify-between text-white text-xs cursor-pointer'
+                        className=' opacity-70 overflow-hidden flex items-center justify-end text-white text-xs cursor-pointer'
                         style={{
                             height: `${clipHeight}px`,
                         }}
@@ -452,7 +452,7 @@ function Entities() {
                             setSelectedEffectIds([effect.id])
                         }}
                     >
-                        <div className='ml-3'>{effect.id}</div>
+                        <div className='ml-3'>{effect.name}</div>
                     </div>
                 )
             })}
@@ -1161,7 +1161,7 @@ function EffectsControls() {
     useEffect(() => {
         const pane = preparePane(
             new Pane({
-                title: 'Effects',
+                title: '',
                 container: container.current || undefined,
             }),
         )

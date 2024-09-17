@@ -48,9 +48,13 @@ export function evaluate2Beziers(
     }
 
     // Normalize t to be between 0 and 1 relative to the keyframe interval
-    const normalizedT = Math.max(0, Math.min(1, 
-        (t - prevKeyframeTime) / (nextKeyframeTime - prevKeyframeTime)
-    ))
+    const normalizedT = Math.max(
+        0,
+        Math.min(
+            1,
+            (t - prevKeyframeTime) / (nextKeyframeTime - prevKeyframeTime),
+        ),
+    )
 
     // Evaluate both curves
     const prevValue = prevCurve
@@ -77,6 +81,7 @@ export type EditorKeyframe<Params = any> = {
 
 export interface Effect<T = any> {
     id: string
+    name: string
     type: string
     start: number
     end: number
@@ -169,6 +174,7 @@ export function createMeshEffect({
     params.position.copy(threeCanvas.plane.position)
     params.rotation.copy(threeCanvas.plane.quaternion)
     return {
+        name: 'Mesh',
         keyframes: [],
         ...rest,
         id,
@@ -238,6 +244,7 @@ export function createCameraEffect({
     params.target.copy(threeCanvas.controls.target)
     params.zoom = threeCanvas.camera.zoom
     return {
+        name: 'Camera',
         keyframes: [],
         ...rest,
         id,
@@ -383,6 +390,7 @@ export function createEffectGroup({
     bezierCurve?: BezierCurve
 }): Effect<{}> {
     return {
+        name: 'Group',
         id,
         type: 'group',
         start,
