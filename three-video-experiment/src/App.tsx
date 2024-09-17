@@ -439,6 +439,25 @@ function EditorLayout() {
             className=' bg-black grid grid-cols-[300px_1fr_300px] gap-x-4 grid-rows-[40px_50%_50px_1fr] h-full pt-4 max-h-screen w-full max-w-full'
         >
             <div className='flex px-[--padding] flex-row col-span-3 gap-4 '>
+                <Button
+                    className='w-auto px-4 bg-gray-800'
+                    onClick={async () => {
+                        const state = useEditorState.getState()
+                        const mediaHandle = await pickMediaHandle()
+                        if (!mediaHandle) {
+                            console.log(`could not get media handle`)
+                            useEditorState.setState({
+                                mediaHandleId: undefined,
+                            })
+                            return
+                        }
+                        useEditorState.setState({
+                            mediaHandleId: await getMediaHandleId(mediaHandle),
+                        })
+                    }}
+                >
+                    Open File
+                </Button>
                 <div className='grow'></div>
                 <Button
                     onClick={exportVideo}
