@@ -831,7 +831,13 @@ function Clip({
             }}
             ref={containerRef}
         >
-            <div className='absolute inset-x-0 w-full top-1/2 border-t-2 bg-gray-200 '></div>
+            <div 
+                className={classNames(
+                    'absolute inset-x-0 w-full top-1/2 border-t-2',
+                    selectedEffectIds.includes(effect.id) && 'border-yellow-200',
+                    !selectedEffectIds.includes(effect.id) && 'border-gray-300'
+                )}
+            ></div>
             <div className='w-full absolute inset-0 flex items-center justify-start rounded-t-md left-0 overflow-x-visible'>
                 {effect.keyframes.map((keyframe, index) => (
                     <KeyframeComponent

@@ -1,29 +1,26 @@
 import * as THREE from 'three'
-import { Pane } from 'tweakpane'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { Pane } from 'tweakpane'
 
 // import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
+import { BokehPass } from 'three-soft-depth-of-field/src'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
-import { getProject, types } from '@theatre/core'
-import { BokehPass } from 'three-soft-depth-of-field/src'
+import {
+    EditorKeyframe,
+    Effect,
+    effectsParamsClone,
+    evaluate2Beziers,
+    MeshEffect
+} from './effects'
 import {
     getKeyframeOnCurrentTime,
     snapToTimeGrid,
     useEditorState,
 } from './state'
-import {
-    CameraEffect,
-    EditorKeyframe,
-    Effect,
-    evaluateBezier,
-    MeshEffect,
-    effectsParamsClone,
-    evaluate2Beziers,
-} from './effects'
 import { createProxy, preparePane } from './utils'
 
 export const deg = Math.PI / 180
