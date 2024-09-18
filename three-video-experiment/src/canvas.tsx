@@ -669,43 +669,42 @@ function _applyEffects(effects: Effect[]) {
 
             // Handle different keyframe scenarios
             if (prevKeyframe && nextKeyframe) {
-                if (prevKeyframe === nextKeyframe) {
-                    // At the first or last keyframe
-                    Object.assign(params, prevKeyframe.params)
-                } else {
-                    // Interpolate between keyframes
-                    // const keyframeProgress =
-                    //     (currentTime - prevKeyframe.time) /
-                    //     (nextKeyframe.time - prevKeyframe.time)
+                // Interpolate between keyframes
+                // const keyframeProgress =
+                //     (currentTime - prevKeyframe.time) /
+                //     (nextKeyframe.time - prevKeyframe.time)
 
-                    // const easedProgress = evaluateBezier(
-                    //     keyframeProgress,
-                    //     prevKeyframe.bezierCurve,
-                    // )
+                // const easedProgress = evaluateBezier(
+                //     keyframeProgress,
+                //     prevKeyframe.bezierCurve,
+                // )
 
-                    const easedProgress = evaluate2Beziers(
-                        currentTime,
-                        prevKeyframe.time,
-                        nextKeyframe.time,
-                        prevKeyframe.bezierCurve,
-                        nextKeyframe.bezierCurve,
+                const easedProgress = evaluate2Beziers(
+                    currentTime,
+                    prevKeyframe.time,
+                    nextKeyframe.time,
+                    prevKeyframe.bezierCurve,
+                    nextKeyframe.bezierCurve,
+                )
+
+                const interpolatedParams = {}
+
+                // Interpolate each parameter using mergeParamType
+                for (const key in prevKeyframe.params) {
+                    interpolatedParams[key] = mergeParamType(
+                        prevKeyframe.params[key],
+                        nextKeyframe.params[key],
+                        easedProgress,
                     )
-
-                    const interpolatedParams = {}
-
-                    // Interpolate each parameter using mergeParamType
-                    for (const key in prevKeyframe.params) {
-                        interpolatedParams[key] = mergeParamType(
-                            prevKeyframe.params[key],
-                            nextKeyframe.params[key],
-                            easedProgress,
-                        )
-                    }
-
-                    // Update the effect's params with the interpolated values
-                    Object.assign(params, interpolatedParams)
                 }
+
+                // Update the effect's params with the interpolated values
+                Object.assign(params, interpolatedParams)
+            } else if (prevKeyframe) {
+                // Handle the last keyframe
+                Object.assign(params, prevKeyframe.params)
             }
+
             // console.log('progress', rawProgress, easedProgress)
 
             if (effect.children) {
