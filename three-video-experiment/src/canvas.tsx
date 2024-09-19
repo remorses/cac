@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { LensDistortionShader } from 'three-soft-depth-of-field/src/aberration'
 import superjson from 'superjson'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
@@ -24,6 +25,7 @@ import {
     useEditorState,
 } from './state'
 import { createProxy, preparePane } from './utils'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
 export const deg = Math.PI / 180
 
@@ -45,6 +47,7 @@ export function createThreeCanvas({
     )
 
     const scene = new THREE.Scene()
+    // scene.fog = new THREE.Fog(0x000000, 1, 2)
 
     const renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -52,7 +55,38 @@ export function createThreeCanvas({
         preserveDrawingBuffer: true,
         alpha: true,
     })
-    renderer.setClearColor(0x000000, 1)
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.0
+    // renderer.setClearColor(0x000000, 1)
+
+    // Load HDR environment map
+    const pmremGenerator = new THREE.PMREMGenerator(renderer)
+    new THREE.TextureLoader().load(
+        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/2294472375_24a3b8ef46_o.jpg',
+        function (texture) {
+            texture.mapping = THREE.EquirectangularReflectionMapping
+            // scene.environment = texture
+            scene.background = texture // Optional: set as background as well
+            const envMap = pmremGenerator.fromEquirectangular(texture).texture
+
+            // Update all materials in the scene to use the environment map
+            scene.traverse((object) => {
+                if (
+                    object instanceof THREE.Mesh &&
+                    object.material instanceof THREE.MeshStandardMaterial
+                ) {
+                    object.material.envMap = envMap
+                    object.material.needsUpdate = true
+                }
+            })
+
+            pmremGenerator.dispose()
+        },
+        () => {},
+        (e) => {
+            console.error(e)
+        },
+    )
 
     const { outputSize } = useEditorState.getState()
     const aspectRatio = outputSize.width / outputSize.height
@@ -74,7 +108,7 @@ export function createThreeCanvas({
     let texture = new THREE.Texture()
     texture.colorSpace = THREE.LinearSRGBColorSpace
 
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000)
 
     camera.aspect = aspectRatio
     camera.updateProjectionMatrix()
@@ -84,14 +118,12 @@ export function createThreeCanvas({
         map: texture,
         side: THREE.DoubleSide,
     })
-
-    const plane = new THREE.Mesh(geometry, material)
-
-    scene.add(plane)
-
     const gridHelper = new THREE.GridHelper(5, 10, 0x888888, 0x444444)
 
     scene.add(gridHelper)
+    const plane = new THREE.Mesh(geometry, material)
+
+    scene.add(plane)
 
     camera.position.z = 0.6
 
@@ -208,36 +240,19 @@ export function createThreeCanvas({
             value: 1,
         },
     })
+    // const bloomPass = new UnrealBloomPass(
+    //     new THREE.Vector2(window.innerWidth, window.innerHeight),
+    //     1.5,
+    //     0.4,
+    //     0.85,
+    // )
+    // bloomPass.threshold = 0.99
+    // bloomPass.strength = 0.2
+    // bloomPass.radius = 0.5
+
+    // composer.addPass(bloomPass)
 
     composer.addPass(bokehPass)
-
-    const vignettePass = new ShaderPass(vignetteShader)
-    pane.addBinding(vignettePass.uniforms.intensity, 'value', {
-        min: 1,
-        max: 10,
-        step: 0.01,
-        label: 'Vignette Intensity',
-    })
-
-    pane.addBinding(
-        createProxy({
-            target: vignettePass.uniforms.color,
-            setter(target, prop, value) {
-                target.value = new THREE.Color(value)
-                return true
-            },
-            getter(target, prop) {
-                return target.value.getHex()
-            },
-        }),
-        'value',
-        {
-            label: 'Vignette Color',
-            view: 'color',
-        },
-    ).on('change', (value) => {
-        scene.background = new THREE.Color(value.value)
-    })
 
     // composer.addPass(vignettePass)
 
@@ -324,6 +339,7 @@ export function createThreeCanvas({
         if (!isPreview) {
             renderer.setPixelRatio(2)
             transformControls.enabled = false
+
             transformControls.visible = false
             gridHelper.visible = false
         } else {
@@ -332,18 +348,21 @@ export function createThreeCanvas({
             transformControls.visible = true
             gridHelper.visible = true
         }
-        const rotationX = camera.rotation.x / 3
-        const rotationY = camera.rotation.y
-        let vignetteRotation = Math.atan2(-rotationX, -rotationY)
-
-        vignettePass.uniforms.rotation.value = vignetteRotation
 
         if (state.isPlaying || isExporting) {
             applyAllEffects({ isUserChange: false })
         }
+        transformControls.visible = false
+        gridHelper.visible = false
         composer.render()
 
         if (isPreview) {
+            transformControls.visible = true
+
+            // renderer.clearDepth()
+            gridHelper.visible = true
+            renderer.render(gridHelper, camera)
+            renderer.render(transformControls, camera)
             renderer.render(overlayScene, overlayCamera)
         }
     }
@@ -392,6 +411,7 @@ export function createThreeCanvas({
 
     pane.on('change', () => {
         applyAllEffects({ isUserChange: true })
+        render()
     })
 
     let isExporting = false
