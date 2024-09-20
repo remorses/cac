@@ -629,7 +629,6 @@ function Timeline() {
                                 key={effect.id}
                                 effect={effect}
                                 index={index}
-                                visibleDuration={visibleDuration}
                                 parent={parent || undefined}
                             />
                         )
@@ -645,7 +644,6 @@ function Timeline() {
         </div>
     )
 }
-
 function DurationScrubber({
     containerRef,
 }: {
@@ -654,14 +652,51 @@ function DurationScrubber({
     const duration = useEditorState((state) => state.duration)
     const timelineScale = useEditorState((state) => state.timelineScale)
     const visibleDuration = duration / timelineScale
+    const setDuration = (duration) => {
+        useEditorState.setState({ duration })
+    }
+
+    const [isDragging, setIsDragging] = useState(false)
+    const [tempDuration, setTempDuration] = useState(duration)
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragging(true)
+    }
+
+    const handleMouseUp = () => {
+        setIsDragging(false)
+        setDuration(tempDuration)
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (isDragging && containerRef.current) {
+            const visibleDuration = useEditorState.getState().duration / timelineScale
+            const rect = containerRef.current.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const newDuration = (x / rect.width) * visibleDuration
+            setTempDuration(Math.max(0, newDuration))
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mouseup', handleMouseUp)
+        document.addEventListener('mousemove', handleMouseMove as any)
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp)
+            document.removeEventListener('mousemove', handleMouseMove as any)
+        }
+    }, [isDragging, visibleDuration])
 
     return (
         <div
-            className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black '
+            className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black cursor-ew-resize'
             style={{
-                left: `${(duration / visibleDuration) * 100}%`,
-                pointerEvents: 'none',
+                left: `${(tempDuration / visibleDuration) * 100}%`,
+                // width: '10px',
             }}
+            onMouseDown={handleMouseDown}
         />
     )
 }
@@ -809,18 +844,18 @@ function Clip({
     effect,
     parent,
     index,
-    visibleDuration,
 }: {
     effect: Effect
     parent?: Effect
     index: number
-    visibleDuration: number
 }) {
     let start = 0
     const duration = useEditorState((state) => state.duration)
+    const timelineScale = useEditorState((state) => state.timelineScale)
     let end = duration
+    const visibleDuration = duration / timelineScale
     const startPercent = (start / visibleDuration) * 100
-    const widthPercent = ((end - start) / visibleDuration) * 100
+    const widthPercent = Math.max(0, ((end - start) / visibleDuration) * 100)
 
     let top = (clipHeight + clipSpacing) * index
     const containerRef = useRef<HTMLDivElement>(null)
@@ -981,6 +1016,7 @@ function KeyframeComponent({
 }) {
     const halfWidth = 12
     const duration = useEditorState((state) => state.duration)
+    const timelineScale = useEditorState((state) => state.timelineScale)
     let start = 0
     let end = duration
     const clipDuration = end - start
