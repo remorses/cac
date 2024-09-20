@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { LumaSplatsThree } from '@lumaai/luma-web'
+
 import { LensDistortionShader } from 'three-soft-depth-of-field/src/aberration'
 import superjson from 'superjson'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
@@ -123,6 +125,10 @@ export function createThreeCanvas({
     scene.add(gridHelper)
     const plane = new THREE.Mesh(geometry, material)
 
+    let splat = new LumaSplatsThree({
+        source: 'https://lumalabs.ai/capture/678C8A94-7F1E-4F38-BA9A-53011AA42539',
+    })
+    scene.add(splat)
     scene.add(plane)
 
     camera.position.z = 0.6

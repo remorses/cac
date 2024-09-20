@@ -85,7 +85,10 @@ export function sleep(ms: number) {
     })
 }
 
-export const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
+export const debounce = <T extends (...args: any[]) => any>(
+    fn: T,
+    ms = 300,
+) => {
     let timeoutId: ReturnType<typeof setTimeout>
     return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
         clearTimeout(timeoutId)
@@ -190,13 +193,17 @@ export function preparePane(pane: Pane) {
     // https://github.com/cocopon/tweakpane/issues/430
     pane.on = function (eventName: string, callback: Function) {
         if (eventName === 'change') {
-            const wrappedCallback = (...args: any[]) => {
-                if (!isRefreshing) {
-                    callback(...args)
-                }
+            let debounceTimer: ReturnType<typeof setTimeout>
+            const debouncedCallback = (...args: any[]) => {
+                clearTimeout(debounceTimer)
+                debounceTimer = setTimeout(() => {
+                    if (!isRefreshing) {
+                        callback(...args)
+                    }
+                }, 100) // 100ms debounce delay
             }
 
-            return originalOn(eventName, wrappedCallback)
+            return originalOn(eventName, debouncedCallback)
         }
         return originalOn(eventName as any, callback as any)
     }
