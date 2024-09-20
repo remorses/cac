@@ -15,6 +15,7 @@
     "dependencies": {
         "@0b5vr/tweakpane-plugin-rotation": "^0.2.0",
         "@lemonsqueezy/lemonsqueezy.js": "^3.2.0",
+        "@lumaai/luma-web": "^0.2.2",
         "@remotion/media-parser": "^4.0.212",
         "@theatre/core": "^0.7.2",
         "@theatre/studio": "^0.7.2",
