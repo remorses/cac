@@ -638,8 +638,8 @@ function Timeline() {
                     {JSON.stringify(effects, null, 2)}
                 </pre> */}
                 <ScrubBar parentRef={containerRef} />
-                <Scrubber containerRef={containerRef} />
                 <DurationScrubber containerRef={containerRef} />
+                <Scrubber containerRef={containerRef} />
             </div>
         </div>
     )
@@ -650,31 +650,47 @@ function DurationScrubber({
     containerRef: React.RefObject<HTMLDivElement>
 }) {
     const duration = useEditorState((state) => state.duration)
+    const start = useEditorState((state) => state.start)
     const timelineScale = useEditorState((state) => state.timelineScale)
     const visibleDuration = duration / timelineScale
 
-    const [isDragging, setIsDragging] = useState(false)
+    const [isDragging, setIsDragging] = useState<{
+        dragging: boolean
+        isStart: boolean
+    }>({ dragging: false, isStart: false })
     const [tempDuration, setTempDuration] = useState(duration)
+    const [tempStart, setTempStart] = useState(start)
     const lastTempDuration = useLatestValue(duration)
+    const lastTempStart = useLatestValue(start)
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: React.MouseEvent, isStart: boolean) => {
         e.preventDefault()
         e.stopPropagation()
-        setIsDragging(true)
+        setIsDragging({ dragging: true, isStart })
     }
 
     const handleMouseUp = () => {
-        setIsDragging(false)
-        useEditorState.setState({ duration: lastTempDuration.current })
+        setIsDragging({ dragging: false, isStart: false })
+        useEditorState.setState({
+            duration: lastTempDuration.current,
+            start: lastTempStart.current,
+        })
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDragging && containerRef.current) {
-            // const visibleDuration = useEditorState.getState().duration / timelineScale
+        if (isDragging.dragging && containerRef.current) {
             const rect = containerRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
-            const newDuration = (x / rect.width) * visibleDuration
-            setTempDuration(Math.max(0, newDuration))
+            const newTime = (x / rect.width) * visibleDuration
+            if (isDragging.isStart) {
+                setTempStart(
+                    snapToTimeGrid(
+                        Math.max(0, Math.min(newTime, tempDuration)),
+                    ),
+                )
+            } else {
+                setTempDuration(snapToTimeGrid(Math.max(tempStart, newTime)))
+            }
         }
     }
 
@@ -688,14 +704,28 @@ function DurationScrubber({
     }, [isDragging, visibleDuration])
 
     return (
-        <div
-            className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black cursor-ew-resize'
-            style={{
-                left: `${(tempDuration / visibleDuration) * 100}%`,
-                // width: '10px',
-            }}
-            onMouseDown={handleMouseDown}
-        />
+        <>
+            <div
+                className='absolute top-0 pointer-events-none bottom-0 left-0 bg-black bg-opacity-30'
+                style={{
+                    width: `${(tempStart / visibleDuration) * 100}%`,
+                }}
+            />
+            <div
+                className='absolute w-1 top-0 bottom-0 left-0 bg-opacity-30  cursor-ew-resize'
+                style={{
+                    left: `${(tempStart / visibleDuration) * 100}%`,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, true)}
+            />
+            <div
+                className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black cursor-ew-resize'
+                style={{
+                    left: `${(tempDuration / visibleDuration) * 100}%`,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, false)}
+            />
+        </>
     )
 }
 

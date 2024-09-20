@@ -14,6 +14,7 @@ interface AppState {
     outputSize: { width: number; height: number }
     isPlaying: boolean
     duration: number
+    start: number
     mediaHandleId?: string
     setMediaHandleId: (mediaHandleId: string) => void
     isLooping: boolean
