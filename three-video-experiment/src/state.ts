@@ -112,7 +112,11 @@ export const useThrottledCurrentTime = () => {
 
     return currentTime
 }
-export const useEditorState = create<AppState>()((setWithoutUndo, get, store) => {
+export const useEditorState = create<AppState>()((
+    setWithoutUndo,
+    get,
+    store,
+) => {
     const {
         setWithUndo: set,
         canRedo,
@@ -172,6 +176,7 @@ export const useEditorState = create<AppState>()((setWithoutUndo, get, store) =>
         isPlaying: false,
         effects: [],
         duration: 10,
+        start: 0,
 
         selectedEffectIds: [],
         setSelectedEffectIds: (id: string[]) => {

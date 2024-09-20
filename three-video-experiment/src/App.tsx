@@ -640,15 +640,29 @@ function Timeline() {
                 </pre> */}
                 <ScrubBar parentRef={containerRef} />
                 <Scrubber containerRef={containerRef} />
-                <div
-                    className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black '
-                    style={{
-                        left: `${(duration / visibleDuration) * 100}%`,
-                        pointerEvents: 'none',
-                    }}
-                />
+                <DurationScrubber containerRef={containerRef} />
             </div>
         </div>
+    )
+}
+
+function DurationScrubber({
+    containerRef,
+}: {
+    containerRef: React.RefObject<HTMLDivElement>
+}) {
+    const duration = useEditorState((state) => state.duration)
+    const timelineScale = useEditorState((state) => state.timelineScale)
+    const visibleDuration = duration / timelineScale
+
+    return (
+        <div
+            className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black '
+            style={{
+                left: `${(duration / visibleDuration) * 100}%`,
+                pointerEvents: 'none',
+            }}
+        />
     )
 }
 
