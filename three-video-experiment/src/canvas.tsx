@@ -8,7 +8,7 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { Pane } from 'tweakpane'
 
 // import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
-import { BokehPass } from 'three-soft-depth-of-field/src'
+import { BokehPass, InverseTonemapPass } from 'three-soft-depth-of-field/src'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
@@ -137,9 +137,13 @@ export function createThreeCanvas({
     const controls = new OrbitControls(camera, canvas)
     controls.enableDamping = true
     controls.dampingFactor = 0.25
+    // controls.minTargetRadius = -1000
+    // controls.minDistance = -1000
+    // controls.minZoom = -1000
 
     // Add TransformControls
     const transformControls = new TransformControls(camera, canvas)
+
     // Set the mode to combined (rotation and position)
     transformControls.setMode('translate')
 
@@ -156,6 +160,7 @@ export function createThreeCanvas({
         const state = useEditorState.getState()
 
         if (ignoreUpdate || state.isPlaying) {
+            console.log('ignoring orbit update to params')
             return
         }
 
@@ -168,6 +173,7 @@ export function createThreeCanvas({
     // Lock orbit controls when transform controls are being used
     transformControls.addEventListener('dragging-changed', (event) => {
         controls.enabled = !event.value
+        controls.update()
     })
 
     transformControls.addEventListener('objectChange', (event) => {
@@ -181,8 +187,6 @@ export function createThreeCanvas({
         params.rotation.copy(plane.quaternion)
     })
 
-    const img = texture.image
-
     camera.lookAt(plane.position.x, plane.position.y, plane.position.z)
 
     composer = new EffectComposer(renderer)
@@ -192,6 +196,13 @@ export function createThreeCanvas({
 
     const size = new THREE.Vector2(1920, 1080)
     renderer.getSize(size)
+
+    const inverseTonemapPass = new InverseTonemapPass({ intensity: 0.7 })
+    pane.addBinding(inverseTonemapPass, 'enabled', {
+        label: 'Enable Inverse Tonemap',
+    })
+    composer.addPass(inverseTonemapPass)
+
     const bokehPass = new BokehPass({
         scene,
         camera,
@@ -201,6 +212,7 @@ export function createThreeCanvas({
         // sensorHeight: 25,
         size,
     })
+    composer.addPass(bokehPass)
 
     pane.addBinding({ value: 0 }, 'value', {
         min: -1,
@@ -218,6 +230,41 @@ export function createThreeCanvas({
         const distance = camera.position.distanceTo(plane.position)
         bokehPass.uniforms.focus.value = distance + value.value
     })
+
+    pane.addBinding(bokehPass, 'enabled', {
+        label: 'Enable Bokeh',
+    })
+
+    pane.addBinding(transformControls, 'mode', {
+        label: 'Transform Mode',
+        options: {
+            translate: 'translate',
+            rotate: 'rotate',
+            scale: 'scale',
+        },
+    })
+    const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.shiftKey) {
+            if (transformControls.mode === 'translate') {
+                transformControls.setTranslationSnap(1)
+            } else if (transformControls.mode === 'rotate') {
+                transformControls.setRotationSnap(THREE.MathUtils.degToRad(15))
+            } else if (transformControls.mode === 'scale') {
+                transformControls.setScaleSnap(0.25)
+            }
+        }
+    }
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+        if (!event.shiftKey) {
+            transformControls.setTranslationSnap(null)
+            transformControls.setRotationSnap(null)
+            transformControls.setScaleSnap(null)
+        }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
 
     pane.addBinding(bokehPass.uniforms.uDOFDebug, 'value', {
         label: 'Debug Bokeh',
@@ -257,8 +304,6 @@ export function createThreeCanvas({
     // bloomPass.radius = 0.5
 
     // composer.addPass(bloomPass)
-
-    composer.addPass(bokehPass)
 
     // composer.addPass(vignettePass)
 
@@ -411,6 +456,8 @@ export function createThreeCanvas({
         texture.dispose()
         renderer.dispose()
         pane.dispose()
+        window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keyup', handleKeyUp)
         // if (controls) controls.dispose()
         // if (transformControls) transformControls.dispose()
     }

@@ -195,12 +195,13 @@ export function preparePane(pane: Pane) {
         if (eventName === 'change') {
             let debounceTimer: ReturnType<typeof setTimeout>
             const debouncedCallback = (...args: any[]) => {
+                if (isRefreshing) {
+                    return
+                }
                 clearTimeout(debounceTimer)
                 debounceTimer = setTimeout(() => {
-                    if (!isRefreshing) {
-                        callback(...args)
-                    }
-                }, 100) // 100ms debounce delay
+                    callback(...args)
+                }, 1) // 100ms debounce delay
             }
 
             return originalOn(eventName, debouncedCallback)

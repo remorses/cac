@@ -65,7 +65,7 @@ if (import.meta.env.DEV) {
                     id: '0',
                     time: 0,
                     params: {
-                        position: new THREE.Vector3(0, 0, 0),
+                        position: camTarget,
                         rotation: new THREE.Quaternion(0, 0, 0),
                     },
                     bezierCurve: [0.8, 0, 0.2, 1], // Significant ease-in-out curve

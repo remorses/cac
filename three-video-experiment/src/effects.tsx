@@ -195,7 +195,7 @@ export function configureEffect(
     params: Effect['params'],
 ) {
     if (effect.type === 'mesh') {
-        const params = effect.params
+        
         const folder = pane.addFolder({
             title: 'Mesh Transform',
         })
@@ -226,7 +226,7 @@ export function configureEffect(
         return folder
     }
     if (effect.type === 'camera') {
-        const params = effect.params
+        
         const folder = pane.addFolder({
             title: 'Camera Transform',
         })
