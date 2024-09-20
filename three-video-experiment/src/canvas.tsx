@@ -198,7 +198,7 @@ export function createThreeCanvas({
 
     pane.addBinding({ value: 0 }, 'value', {
         min: -1,
-        view: 'cameraring',
+        // view: 'cameraring',
         max: 1,
         step: 0.01,
         label: 'Focus Distance',
@@ -217,7 +217,7 @@ export function createThreeCanvas({
         label: 'Debug Bokeh',
     })
     pane.addBinding(bokehPass.uniforms.uFocalLength, 'value', {
-        view: 'cameraring',
+        // view: 'cameraring',
         min: 1,
         max: 300,
         step: 1,
@@ -229,7 +229,7 @@ export function createThreeCanvas({
         // },
     })
     pane.addBinding(bokehPass.uniforms.uFStop, 'value', {
-        view: 'cameraring',
+        // view: 'cameraring',
         min: 0.1,
         max: 26,
         step: 0.1,
