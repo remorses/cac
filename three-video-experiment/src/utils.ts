@@ -215,3 +215,11 @@ export function preparePane(pane: Pane) {
 export function isTruthy<T>(val: T | undefined | null | false): val is T {
     return Boolean(val)
 }
+
+export function useLatestValue<T>(value: T) {
+    const ref = useRef<T>(value)
+    useEffect(() => {
+        ref.current = value
+    })
+    return ref
+}

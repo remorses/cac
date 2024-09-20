@@ -40,7 +40,7 @@ import {
     globalPaneContainer,
 } from './canvas'
 import { Scrubber } from './scrubber'
-import { isTruthy, preparePane } from './utils'
+import { isTruthy, preparePane, useLatestValue } from './utils'
 import { motion } from 'framer-motion'
 import classNames from 'classnames'
 import { PauseIcon, PlayIcon } from './icons'
@@ -652,12 +652,10 @@ function DurationScrubber({
     const duration = useEditorState((state) => state.duration)
     const timelineScale = useEditorState((state) => state.timelineScale)
     const visibleDuration = duration / timelineScale
-    const setDuration = (duration) => {
-        useEditorState.setState({ duration })
-    }
 
     const [isDragging, setIsDragging] = useState(false)
     const [tempDuration, setTempDuration] = useState(duration)
+    const lastTempDuration = useLatestValue(duration)
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.preventDefault()
@@ -667,12 +665,12 @@ function DurationScrubber({
 
     const handleMouseUp = () => {
         setIsDragging(false)
-        setDuration(tempDuration)
+        useEditorState.setState({ duration: lastTempDuration.current })
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (isDragging && containerRef.current) {
-            const visibleDuration = useEditorState.getState().duration / timelineScale
+            // const visibleDuration = useEditorState.getState().duration / timelineScale
             const rect = containerRef.current.getBoundingClientRect()
             const x = e.clientX - rect.left
             const newDuration = (x / rect.width) * visibleDuration
