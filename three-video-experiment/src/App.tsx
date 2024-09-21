@@ -333,8 +333,8 @@ function DurationScrubber({
     }>({ dragging: false, isStart: false })
     const [tempDuration, setTempDuration] = useState(duration)
     const [tempStart, setTempStart] = useState(start)
-    const lastTempDuration = useLatestValue(duration)
-    const lastTempStart = useLatestValue(start)
+    const lastTempDuration = useLatestValue(tempDuration)
+    const lastTempStart = useLatestValue(tempStart)
 
     const handleMouseDown = (e: React.MouseEvent, isStart: boolean) => {
         e.preventDefault()
