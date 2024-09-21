@@ -104,37 +104,31 @@ export const exportVideo = async () => {
 
                 const videoDecoder = new VideoDecoder({
                     output: (frame) => {
-                        threeCanvas.changeImage(frame)
+                        const currentTime = timestamp / 1000 / 1000
                         useEditorState.setState({
-                            currentTime: timestamp / 1000 / 1000,
+                            currentTime,
                         })
-                        threeCanvas.render({ isPreview: false })
-                        // console.log('frame', frame.timestamp)
-                        const outputFrame = new VideoFrame(
-                            threeCanvas.renderer.domElement,
-                            {
-                                timestamp,
-                            },
-                        )
-                        videoEncoder.encode(outputFrame)
-                        outputFrame.close()
-                        frame.close()
+                        const shouldRender =
+                            currentTime >= state.start &&
+                            currentTime <= state.duration
+                        if (shouldRender) {
+                            threeCanvas.changeImage(frame)
+                            threeCanvas.render({ isPreview: false })
+                            const outputFrame = new VideoFrame(
+                                threeCanvas.renderer.domElement,
+                                {
+                                    timestamp,
+                                },
+                            )
+                            videoEncoder.encode(outputFrame)
+                            outputFrame.close()
+                            frame.close()
+                        }
                         if (!fps) {
                             console.warn('no fps found')
                         }
                         const frameDuration = 1000_000 / (fps || 60)
                         timestamp += frameDuration
-                        // console.log(
-                        //     `Rendered frame: ${(timestamp / 1000 / 1000).toFixed(2)}`,
-                        // )
-
-                        // if (elapsedTime > 6000) {
-                        //     console.warn(
-                        //         'Rendering took more than 2 seconds, stopping.',
-                        //     )
-                        //     stopRecording()
-                        //     return
-                        // }
                     },
                     error: console.error,
                 })

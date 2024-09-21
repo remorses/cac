@@ -66,7 +66,7 @@ function CanvasComponent({ ...rest }) {
 function EditorLayout() {
     const mediaHandleId = useEditorState((state) => state.mediaHandleId)
 
-    const [isLoading, setIsLoading] = useState(true)
+    const isExporting = useEditorState((state) => state.isExporting)
     const size = useEditorState((state) => state.outputSize)
 
     if (!mediaHandleId) {
@@ -134,7 +134,7 @@ function EditorLayout() {
                 <div className='grow'></div>
                 <Button
                     onClick={exportVideo}
-                    isLoading={isLoading}
+                    isLoading={isExporting}
                     className='bg-blue-500 w-auto hover:bg-blue-700 text-white font-bold px-4 rounded'
                 >
                     Export Video

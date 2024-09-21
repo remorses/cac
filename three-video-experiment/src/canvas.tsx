@@ -126,10 +126,10 @@ export function createThreeCanvas({
     scene.add(gridHelper)
     const plane = new THREE.Mesh(geometry, material)
 
-    let splat = new LumaSplatsThree({
-        source: 'https://lumalabs.ai/capture/678C8A94-7F1E-4F38-BA9A-53011AA42539',
-    })
-    scene.add(splat)
+    // let splat = new LumaSplatsThree({
+    //     source: 'https://lumalabs.ai/capture/678C8A94-7F1E-4F38-BA9A-53011AA42539',
+    // })
+    // scene.add(splat)
     scene.add(plane)
 
     camera.position.z = 0.6
@@ -164,6 +164,8 @@ export function createThreeCanvas({
             console.log('ignoring orbit update to params')
             return
         }
+        const planeDistance = camera.position.distanceTo(plane.position)
+        bokehPass.uniforms.focus.value = planeDistance
 
         const params = getParamsForEffect('camera')
         params.position.copy(controls.object.position)
@@ -208,7 +210,7 @@ export function createThreeCanvas({
         scene,
         camera,
         focus: distance,
-        focalLength: 30,
+        focalLength: 27,
         fStops: 3,
         // sensorHeight: 25,
         size,
@@ -429,9 +431,6 @@ export function createThreeCanvas({
         const aspectRatio = size.width / size.height
         camera.updateProjectionMatrix()
         plane.scale.set(aspectRatio, 1, 1)
-
-        renderer.setSize(size?.width, size?.height)
-        renderer.setViewport(0, 0, size.width, size.height)
     }
 
     function changeVideo(video: HTMLVideoElement) {
@@ -529,7 +528,6 @@ export function createThreeCanvas({
                     }
                     changeImage(bitmap)
                     const img = texture.image
-                    const aspectRatio = img.width / img.height
                 } else {
                     try {
                         video.src = URL.createObjectURL(media)
@@ -538,8 +536,12 @@ export function createThreeCanvas({
                         video.addEventListener('loadedmetadata', () => {
                             video.play()
                             let duration = video.duration
-                            console.log('duration', duration)
-                            const timelineScale = Math.max(1, duration / 7)
+
+                            const secondsInTimeline = 7
+                            const timelineScale = Math.max(
+                                1,
+                                duration / secondsInTimeline,
+                            )
                             useEditorState.setState({ duration, timelineScale })
                         })
                     } catch (error) {
