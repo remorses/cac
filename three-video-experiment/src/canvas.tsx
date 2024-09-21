@@ -508,6 +508,69 @@ export function createThreeCanvas({
         },
     )
 
+    const unsubscribeMediaId = useEditorState.subscribe(
+        async (state, prevState) => {
+            if (state.mediaHandleId !== prevState.mediaHandleId) {
+                const mediaHandle = await getHandleForMediaId(
+                    state.mediaHandleId,
+                )
+                if (!mediaHandle) {
+                    state.setMediaHandleId('')
+                    return
+                }
+                const media = await getFileForMediaHandle(mediaHandle)
+
+                if (!media.type.startsWith('video/')) {
+                    const bitmap = await createImageBitmap(media, {
+                        imageOrientation: 'flipY',
+                    })
+                    if (!bitmap) {
+                        return
+                    }
+                    changeImage(bitmap)
+                    const img = texture.image
+                    const aspectRatio = img.width / img.height
+                } else {
+                    try {
+                        video.src = URL.createObjectURL(media)
+                        video.muted = true
+                        video.loop = false
+                        video.addEventListener('loadedmetadata', () => {
+                            video.play()
+                            let duration = video.duration
+                            console.log('duration', duration)
+                            const timelineScale = Math.max(1, duration / 7)
+                            useEditorState.setState({ duration, timelineScale })
+                        })
+                    } catch (error) {
+                        console.error('Error loading media:', error)
+                        throw error
+                    }
+
+                    // Remove the 'playing' event listener after it's triggered once
+                    const playingHandler = () => {
+                        video.removeEventListener('playing', playingHandler)
+                        video.pause()
+                    }
+                    video.addEventListener('playing', playingHandler)
+                    await new Promise((resolve) => {
+                        video.addEventListener('playing', () => {
+                            resolve(null)
+                        })
+                    })
+                    if (!video.videoWidth) {
+                        video.width = 1280 // 16:9 aspect ratio
+                        video.height = 720
+                    }
+                    changeVideo(video)
+                    const aspectRatio =
+                        video.videoWidth / video.videoHeight || 1
+                    console.log('aspect ratio', aspectRatio)
+                }
+            }
+        },
+    )
+
     function cleanup() {
         // Dispose of Three.js objects
         scene.remove(plane)
@@ -519,7 +582,7 @@ export function createThreeCanvas({
         window.removeEventListener('keydown', handleKeyDown)
         window.removeEventListener('keyup', handleKeyUp)
         unsubscribeIsPlaying()
-
+        unsubscribeMediaId()
         if (renderLoopId !== undefined) {
             cancelAnimationFrame(renderLoopId)
         }
@@ -527,66 +590,7 @@ export function createThreeCanvas({
         // if (transformControls) transformControls.dispose()
     }
 
-    const loadMedia = async () => {
-        const state = useEditorState.getState()
-        const mediaHandle = await getHandleForMediaId(state.mediaHandleId)
-        if (!mediaHandle) {
-            state.setMediaHandleId('')
-            return
-        }
-        const media = await getFileForMediaHandle(mediaHandle)
-
-        if (!media.type.startsWith('video/')) {
-            const bitmap = await createImageBitmap(media, {
-                imageOrientation: 'flipY',
-            })
-            if (!bitmap) {
-                return
-            }
-            changeImage(bitmap)
-            const img = texture.image
-            const aspectRatio = img.width / img.height
-        } else {
-            try {
-                video.src = URL.createObjectURL(media)
-                video.muted = true
-                video.loop = false
-                video.addEventListener('loadedmetadata', () => {
-                    video.play()
-                    let duration = video.duration
-                    console.log('duration', duration)
-                    const timelineScale = Math.max(1, duration / 7)
-                    useEditorState.setState({ duration, timelineScale })
-                })
-            } catch (error) {
-                console.error('Error loading media:', error)
-                throw error
-            }
-
-            // Remove the 'playing' event listener after it's triggered once
-            const playingHandler = () => {
-                video.removeEventListener('playing', playingHandler)
-                video.pause()
-            }
-            video.addEventListener('playing', playingHandler)
-            await new Promise((resolve) => {
-                video!.addEventListener('playing', () => {
-                    resolve(null)
-                })
-            })
-            if (!video.videoWidth) {
-                video.width = 1280 // 16:9 aspect ratio
-                video.height = 720
-            }
-            // document.body.appendChild(video)
-            changeVideo(video)
-            const aspectRatio = video.videoWidth / video.videoHeight || 1
-            console.log('aspect ratio', aspectRatio)
-        }
-    }
-
     return {
-        loadMedia,
         beforeExport() {
             useEditorState.setState({ isExporting: true })
             const scaleMultiplier = 1 / calculateScaleFactor(holeSize)

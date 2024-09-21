@@ -1,56 +1,32 @@
-import { parseMedia } from '@remotion/media-parser'
-
-import { webFileReader } from '@remotion/media-parser/web-file'
-import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import useMeasure from 'react-use-measure'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import {
+    bezierControlBinding,
     bfs,
+    configureEffect,
     EditorKeyframe,
     Effect,
-    filterEffectTree,
     effectsParamsClone,
     updateEffectInTree,
-    bezierControlBinding,
-    configureEffect,
 } from './effects'
 import {
     getKeyframeOnCurrentTime,
     snapToTimeGrid,
-    useThrottledCurrentTime,
     useEditorState,
+    useThrottledCurrentTime,
     useUndoRedo,
 } from './state'
 
-import {
-    cloneElement,
-    Ref,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { Pane } from 'tweakpane'
-import {
-    createThreeCanvas,
-    getParamsForEffect,
-    globalPaneContainer,
-    threeCanvas,
-} from './canvas'
-import { Scrubber } from './scrubber'
-import { isTruthy, preparePane, useLatestValue } from './utils'
-import { motion } from 'framer-motion'
 import classNames from 'classnames'
-import { PauseIcon, PlayIcon } from './icons'
+import { Pane } from 'tweakpane'
+import { globalPaneContainer, threeCanvas } from './canvas'
 import { exportVideo } from './export'
-import {
-    getHandleForMediaId,
-    getFileForMediaHandle,
-    pickMediaHandle,
-    getMediaHandleId,
-} from './files'
+import { getMediaHandleId, pickMediaHandle } from './files'
+import { PauseIcon, PlayIcon } from './icons'
+import { Scrubber } from './scrubber'
+import { preparePane, useLatestValue } from './utils'
 
 const router = createBrowserRouter(
     [
@@ -92,18 +68,6 @@ function EditorLayout() {
 
     const [isLoading, setIsLoading] = useState(true)
     const size = useEditorState((state) => state.outputSize)
-
-    useEffect(() => {
-        if (!mediaHandleId) {
-            return
-        }
-        console.log('loading media into canvas')
-
-        setIsLoading(true)
-        threeCanvas.loadMedia().finally(() => {
-            setIsLoading(false)
-        })
-    }, [mediaHandleId])
 
     if (!mediaHandleId) {
         return (
@@ -452,7 +416,7 @@ function ScrubBar({
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const wasPlaying = useRef(isPlaying)
     const timelineScale = useEditorState((state) => state.timelineScale)
-    const timeGridSize = useEditorState((state) => state.timeGridSize)
+    const timeGridSize = useEditorState((state) => state.timeGridTick)
 
     const visibleDuration = duration / timelineScale
 

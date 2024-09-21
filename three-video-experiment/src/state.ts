@@ -4,32 +4,32 @@ import { create } from 'zustand'
 import { bfs, EditorKeyframe, Effect, updateEffectInTree } from './effects'
 
 interface AppState {
-    undo: () => void
-    redo: () => void
-    canUndo: () => boolean
     isExporting: boolean
-    canRedo: () => boolean
-    internalUpdate(): void
     currentTime: number
-    timeGridSize: number
+    timeGridTick: number
     outputSize: { width: number; height: number }
     isPlaying: boolean
     duration: number
     start: number
     mediaHandleId?: string
-    setMediaHandleId: (mediaHandleId: string) => void
     isLooping: boolean
     effects: Effect[]
+    selectedEffectIds: string[]
+    selectedKeyframeIds: string[]
+    timelineScale: number
+    setMediaHandleId: (mediaHandleId: string) => void
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
     setEffects: (effects: Effect[]) => void
     updateEffect: (id: string, updatedEffect: Partial<Effect>) => void
     updateSelectedKeyframes: (keyframe: Partial<EditorKeyframe>) => void
-    selectedEffectIds: string[]
     setSelectedEffectIds: (id: string[]) => void
-    selectedKeyframeIds: string[]
     setSelectedKeyframeIds: (id: string[], effectIds: string[]) => void
-    timelineScale: number
+    undo: () => void
+    redo: () => void
+    canUndo: () => boolean
+    canRedo: () => boolean
+    internalUpdate(): void
 }
 
 import { useEffect, useRef, useState } from 'react'
@@ -79,7 +79,7 @@ function selectKeyframesOnCurrentTime() {
 }
 
 export function snapToTimeGrid(time: number) {
-    const timeGridSize = useEditorState.getState().timeGridSize
+    const timeGridSize = useEditorState.getState().timeGridTick
     return Math.round(time / timeGridSize) * timeGridSize
 }
 
@@ -172,7 +172,7 @@ export const useEditorState = create<AppState>()((
             set({ mediaHandleId: id })
         },
         currentTime: 0,
-        timeGridSize: (1 / 30) * 3,
+        timeGridTick: (1 / 30) * 3,
         outputSize: { width: 1920, height: 1080 },
         timelineScale: 1,
         isLooping: true,
