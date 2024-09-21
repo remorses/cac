@@ -4,7 +4,7 @@ import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { useEditorState } from './state'
 
-import { threeCanvas } from './App'
+import { threeCanvas } from './canvas'
 import { getHandleForMediaId, getFileForMediaHandle } from './files'
 
 export const exportVideo = async () => {

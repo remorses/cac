@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { threeCanvas } from './App'
+import { threeCanvas } from './canvas'
 import { useEditorState } from './state'
 import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'

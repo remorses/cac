@@ -33,7 +33,7 @@ interface AppState {
 }
 
 import { useEffect, useRef, useState } from 'react'
-import { threeCanvas } from './App'
+import { threeCanvas } from './canvas'
 import { deserializeParams, serializeParams } from './canvas'
 import { undoRedo } from './undoredo'
 export function getKeyframeOnCurrentTime() {

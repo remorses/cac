@@ -28,6 +28,7 @@ import {
 } from './state'
 import { createProxy, preparePane } from './utils'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { getHandleForMediaId, getFileForMediaHandle } from './files'
 
 export const deg = Math.PI / 180
 
@@ -448,20 +449,6 @@ export function createThreeCanvas({
         plane.scale.set(aspectRatio, 1, 1)
     }
 
-    function cleanup() {
-        // Dispose of Three.js objects
-        scene.remove(plane)
-        geometry.dispose()
-        material.dispose()
-        texture.dispose()
-        renderer.dispose()
-        pane.dispose()
-        window.removeEventListener('keydown', handleKeyDown)
-        window.removeEventListener('keyup', handleKeyUp)
-        // if (controls) controls.dispose()
-        // if (transformControls) transformControls.dispose()
-    }
-
     pane.on('change', () => {
         applyAllEffects({ isUserChange: true })
         render()
@@ -477,7 +464,129 @@ export function createThreeCanvas({
         return scaleFactor
     }
 
+    let prevTime = 0
+    let renderLoopId: number | undefined
+    function renderLoop() {
+        const state = useEditorState.getState()
+        const time = performance.now() / 1000
+        const deltaTime = time - prevTime
+        prevTime = time
+
+        render()
+
+        if (state.isPlaying) {
+            state.setCurrentTime(state.currentTime + deltaTime)
+        }
+        renderLoopId = requestAnimationFrame(renderLoop)
+    }
+
+    renderLoop()
+
+    let video = document.createElement('video')
+
+    video.autoplay = false
+
+    const unsubscribeIsPlaying = useEditorState.subscribe(
+        (state, prevState) => {
+            const { isPlaying, currentTime } = state
+            if (isPlaying && video.paused) {
+                video.play().catch(console.error)
+                video.currentTime = currentTime
+            } else if (!isPlaying && !video.paused) {
+                video.pause()
+            }
+            if (
+                video &&
+                video.duration &&
+                currentTime >= 0 &&
+                currentTime <= video.duration &&
+                Math.abs(video.currentTime - currentTime) > 0.1
+            ) {
+                // console.log('setting video current time', currentTime)
+                video.currentTime = currentTime
+            }
+        },
+    )
+
+    function cleanup() {
+        // Dispose of Three.js objects
+        scene.remove(plane)
+        geometry.dispose()
+        material.dispose()
+        texture.dispose()
+        renderer.dispose()
+        pane.dispose()
+        window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keyup', handleKeyUp)
+        unsubscribeIsPlaying()
+
+        if (renderLoopId !== undefined) {
+            cancelAnimationFrame(renderLoopId)
+        }
+        // if (controls) controls.dispose()
+        // if (transformControls) transformControls.dispose()
+    }
+
+    const loadMedia = async () => {
+        const state = useEditorState.getState()
+        const mediaHandle = await getHandleForMediaId(state.mediaHandleId)
+        if (!mediaHandle) {
+            state.setMediaHandleId('')
+            return
+        }
+        const media = await getFileForMediaHandle(mediaHandle)
+
+        if (!media.type.startsWith('video/')) {
+            const bitmap = await createImageBitmap(media, {
+                imageOrientation: 'flipY',
+            })
+            if (!bitmap) {
+                return
+            }
+            changeImage(bitmap)
+            const img = texture.image
+            const aspectRatio = img.width / img.height
+        } else {
+            try {
+                video.src = URL.createObjectURL(media)
+                video.muted = true
+                video.loop = false
+                video.addEventListener('loadedmetadata', () => {
+                    video.play()
+                    let duration = video.duration
+                    console.log('duration', duration)
+                    const timelineScale = Math.max(1, duration / 7)
+                    useEditorState.setState({ duration, timelineScale })
+                })
+            } catch (error) {
+                console.error('Error loading media:', error)
+                throw error
+            }
+
+            // Remove the 'playing' event listener after it's triggered once
+            const playingHandler = () => {
+                video.removeEventListener('playing', playingHandler)
+                video.pause()
+            }
+            video.addEventListener('playing', playingHandler)
+            await new Promise((resolve) => {
+                video!.addEventListener('playing', () => {
+                    resolve(null)
+                })
+            })
+            if (!video.videoWidth) {
+                video.width = 1280 // 16:9 aspect ratio
+                video.height = 720
+            }
+            // document.body.appendChild(video)
+            changeVideo(video)
+            const aspectRatio = video.videoWidth / video.videoHeight || 1
+            console.log('aspect ratio', aspectRatio)
+        }
+    }
+
     return {
+        loadMedia,
         beforeExport() {
             useEditorState.setState({ isExporting: true })
             const scaleMultiplier = 1 / calculateScaleFactor(holeSize)
@@ -824,3 +933,12 @@ let rectangleMaterial = new THREE.ShaderMaterial({
     transparent: true,
     side: THREE.DoubleSide,
 })
+
+export const threeCanvas = createThreeCanvas()
+
+// Vite HMR cleanup
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        threeCanvas.cleanup()
+    })
+}

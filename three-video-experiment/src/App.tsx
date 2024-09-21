@@ -1,6 +1,5 @@
 import { parseMedia } from '@remotion/media-parser'
 
-
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -38,6 +37,7 @@ import {
     createThreeCanvas,
     getParamsForEffect,
     globalPaneContainer,
+    threeCanvas,
 } from './canvas'
 import { Scrubber } from './scrubber'
 import { isTruthy, preparePane, useLatestValue } from './utils'
@@ -45,7 +45,12 @@ import { motion } from 'framer-motion'
 import classNames from 'classnames'
 import { PauseIcon, PlayIcon } from './icons'
 import { exportVideo } from './export'
-import { getHandleForMediaId, getFileForMediaHandle, pickMediaHandle, getMediaHandleId } from './files'
+import {
+    getHandleForMediaId,
+    getFileForMediaHandle,
+    pickMediaHandle,
+    getMediaHandleId,
+} from './files'
 
 const router = createBrowserRouter(
     [
@@ -61,8 +66,6 @@ export function App() {
     useUndoRedo()
     return <RouterProvider router={router} />
 }
-
-export const threeCanvas = createThreeCanvas()
 
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -84,71 +87,6 @@ function CanvasComponent({ ...rest }) {
     return <div {...rest} ref={containerRef}></div>
 }
 
-
-
-function render() {
-    // effectApplier.render() // Convert deltaTime to seconds
-    threeCanvas.render()
-}
-
-let prevTime = 0
-let renderLoopId: number | undefined
-function renderLoop() {
-    const state = useEditorState.getState()
-    const time = performance.now() / 1000
-    const deltaTime = time - prevTime
-    prevTime = time
-
-    render()
-
-    if (state.isPlaying) {
-        state.setCurrentTime(state.currentTime + deltaTime)
-    }
-    renderLoopId = requestAnimationFrame(renderLoop)
-}
-
-renderLoop()
-
-let video = document.createElement('video')
-
-video.autoplay = false
-
-const unsubscribeIsPlaying = useEditorState.subscribe((state, prevState) => {
-    const { isPlaying, currentTime } = state
-    if (isPlaying && video.paused) {
-        video.play().catch(console.error)
-        video.currentTime = currentTime
-    } else if (!isPlaying && !video.paused) {
-        video.pause()
-    }
-    if (
-        video &&
-        video.duration &&
-        currentTime >= 0 &&
-        currentTime <= video.duration &&
-        Math.abs(video.currentTime - currentTime) > 0.1
-    ) {
-        // console.log('setting video current time', currentTime)
-        video.currentTime = currentTime
-    }
-})
-
-const cleanup = () => {
-    console.log('cleanup for vite hmr')
-    unsubscribeIsPlaying()
-    threeCanvas.cleanup()
-    if (renderLoopId !== undefined) {
-        cancelAnimationFrame(renderLoopId)
-    }
-}
-
-// Vite HMR cleanup
-if (import.meta.hot) {
-    import.meta.hot.dispose(() => {
-        cleanup()
-    })
-}
-
 function EditorLayout() {
     const mediaHandleId = useEditorState((state) => state.mediaHandleId)
 
@@ -160,66 +98,11 @@ function EditorLayout() {
             return
         }
         console.log('loading media into canvas')
-        const loadMedia = async () => {
-            const state = useEditorState.getState()
-            const mediaHandle = await getHandleForMediaId(mediaHandleId)
-            if (!mediaHandle) {
-                state.setMediaHandleId('')
-                return
-            }
-            const media = await getFileForMediaHandle(mediaHandle)
 
-            if (!media.type.startsWith('video/')) {
-                const bitmap = await createImageBitmap(media, {
-                    imageOrientation: 'flipY',
-                })
-                if (!bitmap) {
-                    return
-                }
-                threeCanvas.changeImage(bitmap)
-                const img = threeCanvas.texture.image
-                const aspectRatio = img.width / img.height
-            } else {
-                try {
-                    video.src = URL.createObjectURL(media)
-                    video.muted = true
-                    video.loop = false
-                    video.addEventListener('loadedmetadata', () => {
-                        video.play()
-                        let duration = video.duration
-                        console.log('duration', duration)
-                        const timelineScale = Math.max(1, duration / 7)
-                        useEditorState.setState({ duration, timelineScale })
-                    })
-                } catch (error) {
-                    console.error('Error loading media:', error)
-                    throw error
-                }
-
-                // Remove the 'playing' event listener after it's triggered once
-                const playingHandler = () => {
-                    video.removeEventListener('playing', playingHandler)
-                    video.pause()
-                }
-                video.addEventListener('playing', playingHandler)
-                await new Promise((resolve) => {
-                    video!.addEventListener('playing', () => {
-                        resolve(null)
-                    })
-                })
-                if (!video.videoWidth) {
-                    video.width = 1280 // 16:9 aspect ratio
-                    video.height = 720
-                }
-                // document.body.appendChild(video)
-                threeCanvas.changeVideo(video)
-                const aspectRatio = video.videoWidth / video.videoHeight || 1
-                console.log('aspect ratio', aspectRatio)
-            }
-            render()
+        setIsLoading(true)
+        threeCanvas.loadMedia().finally(() => {
             setIsLoading(false)
-        }
-        loadMedia()
+        })
     }, [mediaHandleId])
 
     if (!mediaHandleId) {
@@ -1010,11 +893,9 @@ function KeyframeComponent({
 }
 
 const Container = ({ children, ...rest }) => {
-    const [ref, { height }] = useMeasure()
     return (
         <div
             {...rest}
-            ref={ref}
             style={{ ...rest.style }}
             className={`shrink-0 w-full flex flex-col ${rest.className || ''}`}
         >
@@ -1035,12 +916,6 @@ function PlayControls() {
         const { isPlaying } = useEditorState.getState()
         console.log('toggle play', isPlaying)
         setIsPlaying(!isPlaying)
-    }
-
-    const handleSeek = (e) => {
-        const time = parseFloat(e.target.value)
-        setCurrentTime(time)
-        render()
     }
 
     const formatTime = (time) => {

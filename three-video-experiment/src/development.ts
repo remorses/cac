@@ -1,7 +1,7 @@
 import { createMeshEffect, createCameraEffect, BezierCurve } from './effects'
 import * as THREE from 'three'
 import { useEditorState } from './state'
-import { threeCanvas } from './App'
+import { threeCanvas } from './canvas'
 
 function linearBezierCurve(): BezierCurve {
     return [0, 0, 1, 1]
