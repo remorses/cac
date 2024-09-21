@@ -7,6 +7,7 @@ interface AppState {
     undo: () => void
     redo: () => void
     canUndo: () => boolean
+    isExporting: boolean
     canRedo: () => boolean
     internalUpdate(): void
     currentTime: number
@@ -163,6 +164,7 @@ export const useEditorState = create<AppState>()((
         canUndo,
         redo,
         undo,
+        isExporting: false,
         internalUpdate() {
             set({ currentTime: get().currentTime })
         },

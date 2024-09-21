@@ -381,7 +381,7 @@ export function createThreeCanvas({
 
     function render({ isPreview = true } = {}) {
         const state = useEditorState.getState()
-        if (isExporting) {
+        if (state.isExporting) {
             isPreview = false
         }
         renderer.autoClear = false
@@ -400,7 +400,7 @@ export function createThreeCanvas({
             gridHelper.visible = true
         }
 
-        if (state.isPlaying || isExporting) {
+        if (state.isPlaying || state.isExporting) {
             applyAllEffects({ isUserChange: false })
         }
         transformControls.visible = false
@@ -467,8 +467,6 @@ export function createThreeCanvas({
         render()
     })
 
-    let isExporting = false
-
     function calculateScaleFactor(rectangleHeight) {
         // Convert FOV to radians
         const fovRadians = camera.fov * (Math.PI / 180)
@@ -481,13 +479,13 @@ export function createThreeCanvas({
 
     return {
         beforeExport() {
-            isExporting = true
+            useEditorState.setState({ isExporting: true })
             const scaleMultiplier = 1 / calculateScaleFactor(holeSize)
             scene.scale.set(scaleMultiplier, scaleMultiplier, scaleMultiplier)
             scene.updateMatrixWorld()
         },
         afterExport() {
-            isExporting = false
+            useEditorState.setState({ isExporting: false })
             const scaleMultiplier = calculateScaleFactor(holeSize)
             scene.scale.set(scaleMultiplier, scaleMultiplier, scaleMultiplier)
             scene.updateMatrixWorld()

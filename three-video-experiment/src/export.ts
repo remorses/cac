@@ -3,7 +3,7 @@ import { parseMedia } from '@remotion/media-parser'
 import { webFileReader } from '@remotion/media-parser/web-file'
 import { ArrayBufferTarget, Muxer as MP4Muxer } from 'mp4-muxer'
 import { useEditorState } from './state'
-import { video } from 'framer-motion/client'
+
 import { threeCanvas } from './App'
 import { getHandleForMediaId, getFileForMediaHandle } from './files'
 
@@ -88,10 +88,7 @@ export const exportVideo = async () => {
             a.click()
             URL.revokeObjectURL(url)
         }
-        if (!video) {
-            console.error('No video element found')
-            return
-        }
+
         let timestamp = 0
 
         threeCanvas.beforeExport()
