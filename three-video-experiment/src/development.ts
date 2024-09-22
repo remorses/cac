@@ -1,11 +1,7 @@
-import { createMeshEffect, createCameraEffect, BezierCurve } from './effects'
+import { BezierCurve, effectControllers } from './effects'
 import * as THREE from 'three'
 import { useEditorState } from './state'
 import { threeCanvas } from './canvas'
-
-function linearBezierCurve(): BezierCurve {
-    return [0, 0, 1, 1]
-}
 
 // Disable in production or non-Vite environments
 if (import.meta.env.DEV) {
@@ -59,7 +55,7 @@ if (import.meta.env.DEV) {
     const camPosition = threeCanvas.controls.object.position.clone()
     const duration = 3
     const effects = [
-        createMeshEffect({
+        effectControllers.mesh.create({
             keyframes: [
                 {
                     id: '0',
@@ -82,7 +78,7 @@ if (import.meta.env.DEV) {
             ],
         }),
 
-        createCameraEffect({
+        effectControllers.camera.create({
             keyframes: [
                 {
                     id: '0cam',
@@ -90,7 +86,6 @@ if (import.meta.env.DEV) {
                     params: {
                         position: camPosition,
                         target: camTarget,
-                        
                     },
                     bezierCurve: [0.6, -0.28, 0.735, 0.045], // Significant elastic-like curve
                 },
@@ -99,7 +94,7 @@ if (import.meta.env.DEV) {
                     time: 2,
                     params: {
                         position: new THREE.Vector3(0, -0.3, 1),
-                        
+
                         target: camTarget,
                     },
                     bezierCurve: [0.68, -0.55, 0.265, 1.55], // Significant overshoot curve
@@ -110,7 +105,7 @@ if (import.meta.env.DEV) {
                     time: 2.2,
                     params: {
                         position: new THREE.Vector3(0, -0.3, 1),
-                        
+
                         target: camTarget,
                     },
                     bezierCurve: [0.68, -0.55, 0.265, 1.55], // Significant overshoot curve

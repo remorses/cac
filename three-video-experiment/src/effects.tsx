@@ -1,9 +1,7 @@
 import * as THREE from 'three'
+import { FolderApi, Pane } from 'tweakpane'
 import { threeCanvas } from './canvas'
-import { useEditorState } from './state'
-import { Pane, FolderApi } from 'tweakpane'
-import { deg } from './canvas'
-import { assertNever, createProxy } from './utils'
+import { assertNever } from './utils'
 
 export type EditorKeyframe<Params = any> = {
     time: number
@@ -23,6 +21,16 @@ export interface GenericEffect<Type extends string, Params> {
 
 type Prettify<T> = { [K in keyof T]: T[K] }
 
+export type GroupEffect = GenericEffect<'group', {}>
+
+export type Effect = MeshEffect | CameraEffect | GroupEffect
+
+interface EffectController<T extends Effect> {
+    create(options: { keyframes?: T['keyframes'] }): T
+    apply(effect: T, params: T['params']): void
+    configure(effect: T, pane: Pane, params: T['params']): FolderApi | undefined
+}
+
 export type MeshEffect = Prettify<
     GenericEffect<
         'mesh',
@@ -33,49 +41,31 @@ export type MeshEffect = Prettify<
     >
 >
 
-export type CameraEffect = GenericEffect<
-    'camera',
-    {
-        position: THREE.Vector3
-        target: THREE.Vector3
-    }
->
-
-export type GroupEffect = GenericEffect<'group', {}>
-
-export type Effect = MeshEffect | CameraEffect | GroupEffect
-
-export function applyEffect(effect: Effect, _params: Effect['params']) {
-    if (effect.type === 'mesh') {
-        const params = _params as typeof effect.params
+const meshEffectController: EffectController<MeshEffect> = {
+    create({ keyframes = [] }) {
+        const params = {
+            position: new THREE.Vector3(0, 0, 0),
+            rotation: new THREE.Quaternion(0, 0, 0),
+        }
+        params.position.copy(threeCanvas.plane.position)
+        params.rotation.copy(threeCanvas.plane.quaternion)
+        return {
+            id: 'mesh',
+            name: 'Mesh',
+            keyframes,
+            type: 'mesh',
+            params,
+        }
+    },
+    apply(effect, params) {
         const mesh = threeCanvas.plane
         mesh.position.copy(params.position)
         mesh.quaternion.copy(params.rotation)
         mesh.updateMatrix()
         mesh.updateMatrixWorld(true)
         threeCanvas.transformControls.updateMatrixWorld()
-
-        return
-    } else if (effect.type === 'camera') {
-        const params = _params as typeof effect.params
-        const { camera, controls } = threeCanvas
-        controls.object.position.copy(params.position)
-        controls.target.copy(params.target)
-        controls.update()
-    } else if (effect.type === 'group') {
-        // Handle group effect
-    } else {
-        assertNever(effect)
-    }
-}
-
-export function configureEffect(
-    effect: Effect,
-    pane: Pane,
-    _params: Effect['params'],
-) {
-    if (effect.type === 'mesh') {
-        const params = _params as typeof effect.params
+    },
+    configure(effect, pane, params) {
         const folder = pane.addFolder({
             title: 'Mesh Transform',
         })
@@ -100,16 +90,46 @@ export function configureEffect(
             expanded: true,
             view: 'rotation',
             rotationMode: 'quaternion',
-
-            unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
+            unit: 'turn',
         })
         return folder
-    } else if (effect.type === 'camera') {
-        let params = _params as typeof effect.params
+    },
+}
+
+export type CameraEffect = GenericEffect<
+    'camera',
+    {
+        position: THREE.Vector3
+        target: THREE.Vector3
+    }
+>
+
+const cameraEffectController: EffectController<CameraEffect> = {
+    create({ keyframes = [] }) {
+        const params = {
+            position: new THREE.Vector3(0, 0, 0),
+            target: new THREE.Vector3(0, 0, 0),
+        }
+        params.position.copy(threeCanvas.controls.object.position)
+        params.target.copy(threeCanvas.controls.target)
+        return {
+            name: 'Camera',
+            keyframes: keyframes,
+            id: 'camera',
+            type: 'camera',
+            params,
+        }
+    },
+    apply(effect, params) {
+        const { controls } = threeCanvas
+        controls.object.position.copy(params.position)
+        controls.target.copy(params.target)
+        controls.update()
+    },
+    configure(effect, pane, params) {
         const folder = pane.addFolder({
             title: 'Camera Transform',
         })
-
         folder.addBinding(params.position, 'x', {
             label: 'Camera X',
             picker: 'inline',
@@ -140,51 +160,56 @@ export function configureEffect(
             picker: 'inline',
             expanded: true,
         })
-
         return folder
-    } else if (effect.type === 'group') {
+    },
+}
+
+const groupEffectController: EffectController<GroupEffect> = {
+    create({ keyframes = [] }) {
+        return {
+            id: 'group',
+            name: 'Group',
+            keyframes,
+            type: 'group',
+            params: {},
+        }
+    },
+    apply(effect, params) {
+        // Handle group effect
+    },
+    configure(effect, pane, params) {
+        // Configure group effect
+        return undefined
+    },
+}
+export const effectControllers: Record<
+    Effect['type'],
+    EffectController<Effect>
+> = {
+    mesh: meshEffectController,
+    camera: cameraEffectController,
+    group: groupEffectController,
+}
+
+export function applyEffect(effect: Effect, params: Effect['params']) {
+    const controller = effectControllers[effect.type]
+    if (controller) {
+        controller.apply(effect, params as any)
     } else {
-        assertNever(effect)
+        console.warn('No controller found for effect type', effect.type)
     }
 }
 
-export function createMeshEffect({
-    keyframes = [] as MeshEffect['keyframes'],
-}): MeshEffect {
-    const params = {
-        position: new THREE.Vector3(0, 0, 0),
-        rotation: new THREE.Quaternion(0, 0, 0),
-    }
-    params.position.copy(threeCanvas.plane.position)
-    params.rotation.copy(threeCanvas.plane.quaternion)
-    return {
-        id: 'mesh',
-        name: 'Mesh',
-        keyframes,
-
-        type: 'mesh',
-
-        params,
-    }
-}
-
-export function createCameraEffect({
-    keyframes = [] as CameraEffect['keyframes'],
-}): CameraEffect {
-    const params = {
-        position: new THREE.Vector3(0, 0, 0),
-        target: new THREE.Vector3(0, 0, 0),
-    }
-    params.position.copy(threeCanvas.controls.object.position)
-    params.target.copy(threeCanvas.controls.target)
-    // params.zoom = threeCanvas.camera.zoom
-    return {
-        name: 'Camera',
-        keyframes: keyframes,
-        id: 'camera',
-        type: 'camera',
-
-        params,
+export function configureEffect(
+    effect: Effect,
+    pane: Pane,
+    params: Effect['params'],
+) {
+    const controller = effectControllers[effect.type]
+    if (controller) {
+        return controller.configure(effect, pane, params as any)
+    } else {
+        console.warn('No controller found for effect type', effect.type)
     }
 }
 
