@@ -174,11 +174,15 @@ function Entities() {
     return (
         <div
             style={{
-                paddingTop: scrubBarHeight + clipSpacing,
                 gap: clipSpacing,
             }}
-            className='flex bg-gray-900 flex-col min-w-[120px] pr-6'
+            className='flex bg-gray-950 flex-col min-w-[120px] pr-6'
         >
+            <div
+                style={{
+                    height: scrubBarHeight,
+                }}
+            ></div>
             {effects.map((effect, index) => {
                 const isSelected = selectedEffectIds.includes(effect.id)
                 return (
@@ -287,6 +291,7 @@ function Timeline() {
                     }}
                     className='inset-0 absolute'
                 ></div>
+                <DurationScrubber containerRef={containerRef} />
                 <div className='relative overflow-x-visible '>
                     {allEffects.map(({ node: effect, parent }, index) => {
                         return (
@@ -303,7 +308,7 @@ function Timeline() {
                     {JSON.stringify(effects, null, 2)}
                 </pre> */}
                 <ScrubBar parentRef={containerRef} />
-                <DurationScrubber containerRef={containerRef} />
+
                 <Scrubber containerRef={containerRef} />
             </div>
         </div>
@@ -368,25 +373,29 @@ function DurationScrubber({
         }
     }, [isDragging, visibleDuration])
 
+    const top = scrubBarHeight
     return (
         <>
             <div
-                className='absolute top-0 pointer-events-none bottom-0 left-0 bg-black bg-opacity-30'
+                className='absolute top-0 pointer-events-none bottom-0 left-0 bg-gray-950'
                 style={{
                     width: `${(tempStart / visibleDuration) * 100}%`,
+                    top,
                 }}
             />
             <div
-                className='absolute w-1 top-0 bottom-0 left-0 bg-opacity-30  cursor-ew-resize'
+                className='absolute w-1 top-0 bottom-0 left-0 bg-opacity-30 border-l border-gray-800 cursor-ew-resize'
                 style={{
                     left: `${(tempStart / visibleDuration) * 100}%`,
+                    top,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, true)}
             />
             <div
-                className='absolute top-0 bottom-0 right-0 bg-opacity-30 border-l border-gray-800 bg-black cursor-ew-resize'
+                className='absolute top-0 bottom-0 right-0  border-l border-gray-800 bg-gray-950 cursor-ew-resize'
                 style={{
                     left: `${(tempDuration / visibleDuration) * 100}%`,
+                    top,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, false)}
             />
@@ -462,16 +471,14 @@ function ScrubBar({
                 left: 0,
                 height: scrubBarHeight,
             }}
-            className='fixed flex flex-col justify-center w-full h-full bg-gray-900'
+            className='fixed flex flex-col justify-center w-full h-full bg-gray-800'
         >
             <div
                 style={{
                     width: `calc(100% - ${w}px)`,
                 }}
-                className='flex flex-col items-end px-3 pr-6'
-            >
-                {/* <VideoControls /> */}
-            </div>
+                className='flex flex-col  items-end px-3 pr-6'
+            ></div>
 
             <div
                 className='absolute bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
