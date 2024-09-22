@@ -92,7 +92,10 @@ function DropArea() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={pickMedia}
+            onClick={async () => {
+                await pickMedia()
+                navigate('/app')
+            }}
         >
             <div
                 className={classNames(
