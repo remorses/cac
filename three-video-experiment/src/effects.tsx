@@ -143,35 +143,32 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
                 threeCanvas.renderer,
             )
             try {
-                const texture = await new Promise<THREE.Texture>(
-                    (resolve, reject) => {
-                        new THREE.TextureLoader().load(
-                            params.hdrUrl,
-                            resolve,
-                            undefined,
-                            reject,
-                        )
-                    },
-                )
+                const texture = await new Promise<THREE.Texture>((resolve, reject) => {
+                    new THREE.TextureLoader().load(
+                        params.hdrUrl,
+                        resolve,
+                        undefined,
+                        reject
+                    );
+                });
 
-                texture.mapping = THREE.EquirectangularReflectionMapping
-                threeCanvas.scene.background = texture
-                const envMap =
-                    pmremGenerator.fromEquirectangular(texture).texture
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                threeCanvas.scene.background = texture;
+                const envMap = pmremGenerator.fromEquirectangular(texture).texture;
 
                 threeCanvas.scene.traverse((object) => {
                     if (
                         object instanceof THREE.Mesh &&
                         object.material instanceof THREE.MeshStandardMaterial
                     ) {
-                        object.material.envMap = envMap
-                        object.material.needsUpdate = true
+                        object.material.envMap = envMap;
+                        object.material.needsUpdate = true;
                     }
-                })
+                });
 
-                pmremGenerator.dispose()
+                pmremGenerator.dispose();
             } catch (e) {
-                console.error(e)
+                console.error(e);
             }
             return
         }

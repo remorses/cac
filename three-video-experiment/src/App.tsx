@@ -152,7 +152,7 @@ function EditorLayout() {
                     className='max-w-full max-h-full rounded-md overflow-hidden'
                 />
             </div>
-            <div className='max-w-[400px] pb-[--padding]'>
+            <div className='w-[400px] flex flex-col pb-[--padding]'>
                 <EffectsControls />
             </div>
             <div className='row-span-1 bg-gray-900 flex flex-col items-center justify-center col-span-3'>
@@ -1019,8 +1019,8 @@ function EffectsControls() {
     const showKeyframeButton =
         currentKeyframes.length === 0 && !!selectedEffects.length
     return (
-        <div className='flex flex-col max-h-full overflow-y-auto'>
-            <div className='' ref={container}></div>
+        <div className='flex w-full flex-col max-h-full overflow-y-auto'>
+            <div className='w-full' ref={container}></div>
 
             {showKeyframeButton && (
                 <button
