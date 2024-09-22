@@ -14,9 +14,9 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js'
 import {
-    applyEffect,
     EditorKeyframe,
     Effect,
+    effectControllers,
     effectsParamsClone,
     evaluate2Beziers,
     MeshEffect,
@@ -798,7 +798,15 @@ function _applyEffects(effects: Effect[]) {
             if (effect.children) {
                 _applyEffects(effect.children)
             } else {
-                applyEffect(effect, params)
+                const controller = effectControllers[effect.type]
+                if (controller) {
+                    return controller.apply(effect, params)
+                } else {
+                    console.warn(
+                        'No controller found for effect type',
+                        effect.type,
+                    )
+                }
             }
         }
     }

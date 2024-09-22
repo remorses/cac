@@ -3,9 +3,9 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import {
     bezierControlBinding,
     bfs,
-    configureEffect,
     EditorKeyframe,
     Effect,
+    effectControllers,
     effectsParamsClone,
     updateEffectInTree,
 } from './effects'
@@ -26,7 +26,7 @@ import { exportVideo } from './export'
 import { getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
 import { Scrubber } from './scrubber'
-import { preparePane, useLatestValue } from './utils'
+import { preparePane, useForceRender, useLatestValue } from './utils'
 
 const router = createBrowserRouter(
     [
@@ -173,8 +173,11 @@ function Entities() {
 
     return (
         <div
-            style={{ paddingTop: scrubBarHeight + clipSpacing }}
-            className='flex bg-gray-900 flex-col min-w-[120px] pr-6 gap-2'
+            style={{
+                paddingTop: scrubBarHeight + clipSpacing,
+                gap: clipSpacing,
+            }}
+            className='flex bg-gray-900 flex-col min-w-[120px] pr-6'
         >
             {effects.map((effect, index) => {
                 const isSelected = selectedEffectIds.includes(effect.id)
@@ -199,7 +202,6 @@ function Entities() {
         </div>
     )
 }
-
 
 type EffectState = {
     effects: Effect[]
@@ -926,6 +928,8 @@ function EffectsControls() {
 
     const currentKeyframes = selectedEffectsWithKeyframes
 
+    const { count, forceRender } = useForceRender()
+
     useEffect(() => {
         const pane = preparePane(
             new Pane({
@@ -934,34 +938,49 @@ function EffectsControls() {
             }),
         )
 
-        selectedEffects.forEach((effect) => {
-            const keyframe = getKeyframeOnCurrentTime().find(
-                (kf) => kf.effect.id === effect.node.id,
-            )?.keyframe
-            const params = (() => {
-                const hasKeyframes = effect.node.keyframes.length > 0
-                if (!hasKeyframes) {
-                    return effect.node.params
-                }
+        selectedEffects
+            .map((x) => x.node)
+            .forEach((effect) => {
+                const keyframe = getKeyframeOnCurrentTime().find(
+                    (kf) => kf.effect.id === effect.id,
+                )?.keyframe
+                const params = (() => {
+                    const hasKeyframes = effect.keyframes.length > 0
+                    if (!hasKeyframes) {
+                        return effect.params
+                    }
 
-                if (!keyframe) {
+                    if (!keyframe) {
+                        return
+                    }
+                    return keyframe.params
+                })()
+                if (!params) {
                     return
                 }
-                return keyframe.params
-            })()
-            if (!params) {
-                return
-            }
 
-            const folder = configureEffect?.(effect.node, pane, params)
-
-            if (keyframe && folder) {
-                bezierControlBinding({
-                    folder,
-                    bezierCurve: keyframe?.bezierCurve,
+                const controller = effectControllers[effect.type]
+                if (!controller) {
+                    console.warn(
+                        'No controller found for effect type',
+                        effect.type,
+                    )
+                    return
+                }
+                const folder = controller.configure({
+                    effect,
+                    pane,
+                    params: params,
+                    forceRender,
                 })
-            }
-        })
+
+                if (keyframe && folder) {
+                    bezierControlBinding({
+                        folder,
+                        bezierCurve: keyframe?.bezierCurve,
+                    })
+                }
+            })
 
         // Add event listener to threeCanvas.controls
         const refreshPane = () => {
@@ -992,7 +1011,7 @@ function EffectsControls() {
             pane.dispose()
             threeCanvas.controls.removeEventListener('change', refreshPane)
         }
-    }, [selectedEffectIds, currentKeyframes])
+    }, [selectedEffectIds, currentKeyframes, count])
 
     const showKeyframeMode = currentKeyframes.length > 0
     const selectedEffect = selectedEffects[0]?.node

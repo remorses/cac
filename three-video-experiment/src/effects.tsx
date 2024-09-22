@@ -33,7 +33,12 @@ export type GroupEffect = GenericEffect<'group', {}>
 interface EffectController<T extends Effect> {
     create(options: { keyframes?: T['keyframes'] }): T
     apply(effect: T, params: T['params']): void
-    configure(effect: T, pane: Pane, params: T['params']): FolderApi | undefined
+    configure(options: {
+        effect: T
+        pane: Pane
+        params: T['params']
+        forceRender: () => void
+    }): FolderApi | undefined
 }
 
 export type MeshEffect = Prettify<
@@ -70,7 +75,7 @@ const meshEffectController: EffectController<MeshEffect> = {
         mesh.updateMatrixWorld(true)
         threeCanvas.transformControls.updateMatrixWorld()
     },
-    configure(effect, pane, params) {
+    configure({ effect, pane, params }) {
         const folder = pane.addFolder({
             title: 'Mesh Transform',
         })
@@ -97,7 +102,7 @@ export type BackgroundEffect = Prettify<
         'background',
         {
             enabled: boolean
-            type: 'color' | 'image' | 'hdr'
+            type: 'color' | 'hdr'
             color: string
             imageUrl: string
             hdrUrl: string
@@ -130,21 +135,6 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
 
         if (params.type === 'color') {
             threeCanvas.scene.background = new THREE.Color(params.color)
-            return
-        }
-
-        if (params.type === 'image') {
-            new THREE.TextureLoader().load(
-                params.imageUrl,
-                function (texture) {
-                    texture.mapping = THREE.EquirectangularReflectionMapping
-                    threeCanvas.scene.background = texture
-                },
-                undefined,
-                (e) => {
-                    console.error(e)
-                },
-            )
             return
         }
 
@@ -181,40 +171,36 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
             return
         }
     },
-    configure(effect, pane, params) {
+    configure({ effect, pane, params, forceRender }) {
         const folder = pane.addFolder({
             title: 'Background',
         })
         folder.addBinding(params, 'enabled', {
             label: 'Enable',
         })
-        folder.addBinding(params, 'type', {
-            label: 'Type',
-            options: {
-                Color: 'color',
-                HDR: 'hdr',
-            },
-        })
+        folder
+            .addBinding(params, 'type', {
+                label: 'Type',
+                options: {
+                    Color: 'color',
+                    HDR: 'hdr',
+                },
+            })
+            .on('change', () => {
+                forceRender()
+            })
 
         if (params.type === 'color') {
-            folder
-                .addBinding(params, 'color', {
-                    label: 'Color',
-                    view: 'color',
-                })
-                .on('change', () => {
-                    this.apply(effect, params)
-                })
+            folder.addBinding(params, 'color', {
+                label: 'Color',
+                view: 'color',
+            })
         }
 
         if (params.type === 'hdr') {
-            folder
-                .addBinding(params, 'hdrUrl', {
-                    label: 'HDR URL',
-                })
-                .on('change', () => {
-                    this.apply(effect, params)
-                })
+            folder.addBinding(params, 'hdrUrl', {
+                label: 'HDR URL',
+            })
         }
 
         return folder
@@ -262,7 +248,7 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
             bokehPass.uniforms.uFStop.value = params.fStops
         }
     },
-    configure(effect, pane, params) {
+    configure({ effect, pane, params }) {
         const folder = pane.addFolder({
             title: 'Depth of Field',
         })
@@ -327,7 +313,7 @@ const cameraEffectController: EffectController<CameraEffect> = {
         controls.target.copy(params.target)
         controls.update()
     },
-    configure(effect, pane, params) {
+    configure({ effect, pane, params }) {
         const folder = pane.addFolder({
             title: 'Camera Transform',
         })
@@ -358,7 +344,7 @@ const groupEffectController: EffectController<GroupEffect> = {
     apply(effect, params) {
         // Handle group effect
     },
-    configure(effect, pane, params) {
+    configure({ effect, pane, params }) {
         // Configure group effect
         return undefined
     },
@@ -372,28 +358,6 @@ export const effectControllers: Record<
     group: groupEffectController,
     depthOfField: depthOfFieldEffectController,
     background: backgroundEffectController,
-}
-
-export function applyEffect(effect: Effect, params: Effect['params']) {
-    const controller = effectControllers[effect.type]
-    if (controller) {
-        controller.apply(effect, params as any)
-    } else {
-        console.warn('No controller found for effect type', effect.type)
-    }
-}
-
-export function configureEffect(
-    effect: Effect,
-    pane: Pane,
-    params: Effect['params'],
-) {
-    const controller = effectControllers[effect.type]
-    if (controller) {
-        return controller.configure(effect, pane, params as any)
-    } else {
-        console.warn('No controller found for effect type', effect.type)
-    }
 }
 
 export type BezierCurve = [number, number, number, number]

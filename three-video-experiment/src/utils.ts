@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Pane } from 'tweakpane'
 
@@ -226,4 +226,14 @@ export function useLatestValue<T>(value: T) {
 
 export function assertNever(x: never): never {
     throw new Error(`Unexpected object: ${x}`)
+}
+
+export function useForceRender() {
+    const [count, setCount] = useState(0)
+    return {
+        count,
+        forceRender: () => {
+            setCount((prevCount) => prevCount + 1)
+        },
+    }
 }
