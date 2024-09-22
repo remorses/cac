@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import {
+    createBrowserRouter,
+    RouterProvider,
+    useNavigate,
+} from 'react-router-dom'
 import * as indexDb from 'idb-keyval'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import {
@@ -30,10 +34,91 @@ import { Scrubber } from './scrubber'
 import { preparePane, useForceRender, useLatestValue } from './utils'
 import useMeasure, { RectReadOnly } from 'react-use-measure'
 
+function DropArea() {
+    const [isDragging, setIsDragging] = useState(false)
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        setIsDragging(true)
+    }
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        setIsDragging(false)
+    }
+
+    const navigate = useNavigate()
+
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        setIsDragging(false)
+
+        if (!e.dataTransfer.items) {
+            return
+        }
+
+        const fileHandles = await Promise.all(
+            Array.from(e.dataTransfer.items).map((item) => {
+                if (item.kind === 'file') {
+                    return item.getAsFileSystemHandle()
+                }
+                return null
+            }),
+        )
+
+        const validFileHandles = fileHandles.filter(
+            (handle): handle is FileSystemFileHandle =>
+                handle !== null && handle.kind === 'file',
+        )
+
+        if (!validFileHandles.length) {
+            console.log('No Dropped files')
+
+            return
+        }
+        const [mediaHandle] = validFileHandles
+        const mediaHandleId = await getMediaHandleId(mediaHandle)
+        await indexDb.set(mediaHandleId, mediaHandle)
+
+        useEditorState.setState({
+            mediaHandleId,
+        })
+        navigate('/app')
+    }
+
+    return (
+        <div
+            className='flex h-full flex-col items-center justify-center'
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            <div
+                className={classNames(
+                    'border-2 border-dashed border-gray-500 rounded-lg p-12 max-w-[600px] w-full h-[400px] flex items-center justify-center',
+                    isDragging && 'border-blue-500 bg-blue-50',
+                    !isDragging && 'border-gray-400',
+                )}
+            >
+                <p className='text-xl '>
+                    {isDragging
+                        ? 'Drop files here'
+                        : 'Drag and drop files here'}
+                </p>
+            </div>
+        </div>
+    )
+}
+
 const router = createBrowserRouter(
     [
         {
             path: '/',
+
+            element: <DropArea />,
+        },
+        {
+            path: '/app',
             loader: async () => {
                 const state = await indexDb.get('editorState')
                 if (state) {
