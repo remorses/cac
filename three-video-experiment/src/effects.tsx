@@ -1,8 +1,6 @@
 import * as THREE from 'three'
 import { FolderApi, Pane } from 'tweakpane'
 import { threeCanvas } from './canvas'
-import { assertNever, colorProxy } from './utils'
-import { InverseTonemapPass } from 'three-soft-depth-of-field/src'
 
 export type Effect =
     | MeshEffect

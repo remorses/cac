@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import * as indexDb from 'idb-keyval'
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import {
     bezierControlBinding,
@@ -21,7 +22,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import classNames from 'classnames'
 import { Pane } from 'tweakpane'
-import { threeCanvas } from './canvas'
+import { deserializeParams, threeCanvas } from './canvas'
 import { exportVideo } from './export'
 import { getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
@@ -33,6 +34,14 @@ const router = createBrowserRouter(
     [
         {
             path: '/',
+            loader: async () => {
+                const state = await indexDb.get('editorState')
+                if (state) {
+                    console.log('loading editor state from db', state)
+                    useEditorState.setState(deserializeParams(state) as any)
+                }
+                return {}
+            },
             element: <EditorLayout />,
         },
     ],

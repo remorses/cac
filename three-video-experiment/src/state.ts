@@ -1,5 +1,6 @@
 import { createPatch, diffChars, diffLines } from 'diff'
 import { create } from 'zustand'
+import * as indexDb from 'idb-keyval'
 
 import { bfs, EditorKeyframe, Effect, updateEffectInTree } from './effects'
 
@@ -36,6 +37,7 @@ import { useEffect, useRef, useState } from 'react'
 import { threeCanvas } from './canvas'
 import { deserializeParams, serializeParams } from './canvas'
 import { undoRedo } from './undoredo'
+import { debounce } from './utils'
 export function getKeyframeOnCurrentTime() {
     const state = useEditorState.getState()
     const allEffects = bfs(state.effects)
@@ -158,6 +160,14 @@ export const useEditorState = create<AppState>()((
             return deserializeParams(currentSerialized)
         },
     })
+
+    store.subscribe(
+        debounce(async (state) => {
+            const temp = serializeParams(state)
+            console.log('saving editor state to db', temp)
+            await indexDb.set('editorState', temp)
+        }, 100),
+    )
 
     return {
         canRedo,
