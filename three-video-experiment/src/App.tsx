@@ -27,6 +27,7 @@ import { getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
 import { Scrubber } from './scrubber'
 import { preparePane, useForceRender, useLatestValue } from './utils'
+import useMeasure, { RectReadOnly } from 'react-use-measure'
 
 const router = createBrowserRouter(
     [
@@ -230,6 +231,8 @@ function Timeline() {
         (state) => state.setSelectedEffectIds,
     )
 
+    const [parentRef, containerRect] = useMeasure()
+
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
             if (e.code === 'Space') {
@@ -278,7 +281,10 @@ function Timeline() {
             <Entities />
             <div
                 className='grow bg-gray-900 relative h-full overflow-x-visible flex flex-col gap-3'
-                ref={containerRef}
+                ref={(elem) => {
+                    parentRef(elem)
+                    containerRef.current = elem
+                }}
                 style={{
                     paddingTop: scrubBarHeight + clipSpacing,
                 }}
@@ -307,7 +313,7 @@ function Timeline() {
                 {/* <pre className='shrink-0'>
                     {JSON.stringify(effects, null, 2)}
                 </pre> */}
-                <ScrubBar parentRef={containerRef} />
+                <ScrubBar containerRect={containerRect} />
 
                 <Scrubber containerRef={containerRef} />
             </div>
@@ -405,11 +411,7 @@ function DurationScrubber({
 
 const scrubBarHeight = 30
 
-function ScrubBar({
-    parentRef,
-}: {
-    parentRef: React.RefObject<HTMLDivElement>
-}) {
+function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
     const duration = useEditorState((state) => state.duration)
     const isDraggingRef = useRef(false)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
@@ -434,10 +436,9 @@ function ScrubBar({
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDraggingRef.current && parentRef.current) {
-            const rect = parentRef.current.getBoundingClientRect()
-            const x = e.clientX - rect.left
-            const newTime = (x / rect.width) * visibleDuration
+        if (isDraggingRef.current && containerRect) {
+            const x = e.clientX - containerRect.left
+            const newTime = (x / containerRect.width) * visibleDuration
             setCurrentTime(Math.max(0, Math.min(newTime, duration)))
         }
     }
@@ -458,9 +459,8 @@ function ScrubBar({
     let step =
         Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
 
-    const containerRect = parentRef.current?.getBoundingClientRect()
+    // const containerRect = parentRef.current?.getBoundingClientRect()
     const w = containerRect?.width || 0
-    const h = containerRect?.height || 0
     const left = containerRect?.left || 0
     const top = containerRect?.top || 0
 
