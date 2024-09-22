@@ -243,14 +243,6 @@ function Timeline() {
     const [parentRef, containerRect] = useMeasure()
 
     useEffect(() => {
-        const handleKeyPress = (e: KeyboardEvent) => {
-            if (e.code === 'Space') {
-                e.preventDefault()
-                const { isPlaying } = useEditorState.getState()
-                setIsPlaying(!isPlaying)
-            }
-        }
-
         const handleScroll = (e: WheelEvent) => {
             if (e.metaKey) {
                 e.preventDefault()
@@ -261,11 +253,45 @@ function Timeline() {
             }
         }
 
-        window.addEventListener('keydown', handleKeyPress)
         window.addEventListener('wheel', handleScroll, { passive: false })
+        const handleDeleteKeyframes = (e: KeyboardEvent) => {
+            if (e.code === 'Space') {
+                e.preventDefault()
+                const { isPlaying } = useEditorState.getState()
+                setIsPlaying(!isPlaying)
+            }
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                e.preventDefault()
+                const { selectedKeyframeIds, selectedEffectIds, effects } =
+                    useEditorState.getState()
+                if (selectedKeyframeIds.length === 0) {
+                    return
+                }
+
+                const updatedEffects = effects.map((effect) => {
+                    if (selectedEffectIds.includes(effect.id)) {
+                        return {
+                            ...effect,
+                            keyframes: effect.keyframes.filter(
+                                (kf) => !selectedKeyframeIds.includes(kf.id),
+                            ) as EditorKeyframe[],
+                        }
+                    }
+                    return effect
+                })
+
+                useEditorState.setState({
+                    effects: updatedEffects,
+                    selectedKeyframeIds: [],
+                    selectedEffectIds: [],
+                })
+            }
+        }
+
+        window.addEventListener('keydown', handleDeleteKeyframes)
 
         return () => {
-            window.removeEventListener('keydown', handleKeyPress)
+            window.removeEventListener('keydown', handleDeleteKeyframes)
             window.removeEventListener('wheel', handleScroll)
         }
     }, [])
@@ -784,26 +810,10 @@ function KeyframeComponent({
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove)
         document.addEventListener('mouseup', handleMouseUp)
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Backspace' && isSelected) {
-                e.preventDefault()
-                e.stopPropagation()
-                const updatedKeyframes: EditorKeyframe[] =
-                    effect.keyframes.filter((kf) => kf.id !== keyframe.id)
-                updateEffect(effect.id, {
-                    ...effect,
-                    keyframes: updatedKeyframes,
-                })
-                setSelectedKeyframeIds([], [])
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
 
         return () => {
             document.removeEventListener('mousemove', handleMouseMove)
             document.removeEventListener('mouseup', handleMouseUp)
-            document.removeEventListener('keydown', handleKeyDown)
         }
     }, [
         effect,
