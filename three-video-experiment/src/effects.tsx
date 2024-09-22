@@ -69,21 +69,12 @@ const meshEffectController: EffectController<MeshEffect> = {
         const folder = pane.addFolder({
             title: 'Mesh Transform',
         })
-        folder.addBinding(params.position, 'x', {
-            label: 'X Position',
+        folder.addBinding(params, 'position', {
+            label: 'Position',
             picker: 'inline',
             expanded: true,
         })
-        folder.addBinding(params.position, 'y', {
-            label: 'Y Position',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.position, 'z', {
-            label: 'Z Position',
-            picker: 'inline',
-            expanded: true,
-        })
+
         folder.addBinding(params, 'rotation', {
             label: 'Rotation',
             picker: 'inline',
@@ -130,33 +121,13 @@ const cameraEffectController: EffectController<CameraEffect> = {
         const folder = pane.addFolder({
             title: 'Camera Transform',
         })
-        folder.addBinding(params.position, 'x', {
-            label: 'Camera X',
+        folder.addBinding(params, 'position', {
+            label: 'Camera Position',
             picker: 'inline',
             expanded: true,
         })
-        folder.addBinding(params.position, 'y', {
-            label: 'Camera Y',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.position, 'z', {
-            label: 'Camera Z',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.target, 'x', {
-            label: 'Target X',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.target, 'y', {
-            label: 'Target Y',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.target, 'z', {
-            label: 'Target Z',
+        folder.addBinding(params, 'target', {
+            label: 'Target Position',
             picker: 'inline',
             expanded: true,
         })
