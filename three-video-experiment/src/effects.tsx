@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { FolderApi, Pane } from 'tweakpane'
 import { threeCanvas } from './canvas'
-import { assertNever } from './utils'
+import { assertNever, colorProxy } from './utils'
+import { InverseTonemapPass } from 'three-soft-depth-of-field/src'
 
 export type Effect =
     | MeshEffect
@@ -9,6 +10,7 @@ export type Effect =
     | GroupEffect
     | DepthOfFieldEffect
     | BackgroundEffect
+    | ColorAdjustEffect
 
 export type EditorKeyframe<Params = any> = {
     time: number
@@ -39,8 +41,8 @@ interface EffectController<T extends Effect> {
         params: T['params']
         forceRender: () => void
     }): FolderApi | undefined
+    [key: string]: any
 }
-
 export type MeshEffect = Prettify<
     GenericEffect<
         'mesh',
@@ -97,13 +99,58 @@ const meshEffectController: EffectController<MeshEffect> = {
     },
 }
 
+export type ColorAdjustEffect = Prettify<
+    GenericEffect<
+        'colorAdjust',
+        {
+            inverseToneMappingIntensity: number
+        }
+    >
+>
+
+const colorAdjustEffectController: EffectController<ColorAdjustEffect> = {
+    // pass: new InverseTonemapPass({ intensity: 0.7 }),
+    create({ keyframes = [] }) {
+        const params = {
+            inverseToneMappingIntensity: 1,
+        }
+        return {
+            id: 'colorAdjust',
+            name: 'Color Adjust',
+            keyframes,
+            type: 'colorAdjust',
+            params,
+        }
+    },
+    apply(effect, params) {
+        // Apply color adjust effect logic here
+        // This might involve updating a shader or post-processing effect
+    },
+    configure({ effect, pane, params }) {
+        const folder = pane.addFolder({
+            title: 'Color Adjust',
+        })
+        folder.addBinding(params, 'inverseToneMappingIntensity', {
+            label: 'Inverse Tone Mapping',
+            min: 0,
+            max: 2,
+            step: 0.01,
+        })
+        return folder
+    },
+}
+
 export type BackgroundEffect = Prettify<
     GenericEffect<
         'background',
         {
             enabled: boolean
             type: 'color' | 'hdr'
-            color: string
+            color: {
+                r: number
+                g: number
+                b: number
+            }
 
             hdrUrl: string
         }
@@ -140,7 +187,11 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
         const params = {
             enabled: true,
             type: 'color' as const,
-            color: '#000000',
+            color: {
+                r: 0,
+                g: 0,
+                b: 0,
+            },
 
             hdrUrl: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/2294472375_24a3b8ef46_o.jpg',
         }
@@ -159,7 +210,12 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
         }
 
         if (params.type === 'color') {
-            threeCanvas.scene.background = new THREE.Color(params.color)
+            threeCanvas.scene.background = new THREE.Color(
+                params.color.r / 255,
+                params.color.g / 255,
+                params.color.b / 255,
+            )
+            // threeCanvas.renderer.setClearColor(params.color, 1)
             return
         }
 
@@ -365,6 +421,7 @@ export const effectControllers: Record<
     group: groupEffectController,
     depthOfField: depthOfFieldEffectController,
     background: backgroundEffectController,
+    colorAdjust: colorAdjustEffectController,
 }
 
 export type BezierCurve = [number, number, number, number]

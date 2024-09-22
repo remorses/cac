@@ -156,6 +156,34 @@ export function vec3Proxy(vector: THREE.Vector3) {
         },
     })
 }
+// export function colorProxy(color: THREE.Color) {
+//     return createProxy({
+//         target: color,
+//         getter: (target, prop) => {
+//             if (prop === 'r' || prop === 'g' || prop === 'b') {
+//                 return target[prop]
+//             }
+//             return undefined
+//         },
+//         setter: (target, prop, value) => {
+//             console.log('setting color', prop, value)
+//             if (prop === 'r') {
+//                 target.setRGB(value, target.g, target.b)
+//                 return true
+//             }
+//             if (prop === 'g') {
+//                 target.setRGB(target.r, value, target.b)
+//                 return true
+//             }
+//             if (prop === 'b') {
+//                 target.setRGB(target.r, target.g, value)
+//                 return true
+//             }
+//             ;(target as any)[prop] = value
+//             return true
+//         },
+//     })
+// }
 
 export function usePrevious<T>(value: T): T | undefined {
     const ref = useRef<T>()
