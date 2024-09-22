@@ -53,35 +53,6 @@ export function createThreeCanvas({
     renderer.toneMappingExposure = 1.0
     // renderer.setClearColor(0x000000, 1)
 
-    // Load HDR environment map
-    const pmremGenerator = new THREE.PMREMGenerator(renderer)
-    new THREE.TextureLoader().load(
-        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/2294472375_24a3b8ef46_o.jpg',
-        function (texture) {
-            texture.mapping = THREE.EquirectangularReflectionMapping
-            // scene.environment = texture
-            scene.background = texture // Optional: set as background as well
-            const envMap = pmremGenerator.fromEquirectangular(texture).texture
-
-            // Update all materials in the scene to use the environment map
-            scene.traverse((object) => {
-                if (
-                    object instanceof THREE.Mesh &&
-                    object.material instanceof THREE.MeshStandardMaterial
-                ) {
-                    object.material.envMap = envMap
-                    object.material.needsUpdate = true
-                }
-            })
-
-            pmremGenerator.dispose()
-        },
-        () => {},
-        (e) => {
-            console.error(e)
-        },
-    )
-
     const { outputSize } = useEditorState.getState()
     const aspectRatio = outputSize.width / outputSize.height
     renderer.setSize(outputSize.width, outputSize.height)
@@ -522,6 +493,7 @@ export function createThreeCanvas({
 
     return {
         bokehPass,
+        scene,
         inverseTonemapPass,
         beforeExport() {
             useEditorState.setState({ isExporting: true })

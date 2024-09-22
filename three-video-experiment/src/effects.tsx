@@ -3,6 +3,13 @@ import { FolderApi, Pane } from 'tweakpane'
 import { threeCanvas } from './canvas'
 import { assertNever } from './utils'
 
+export type Effect =
+    | MeshEffect
+    | CameraEffect
+    | GroupEffect
+    | DepthOfFieldEffect
+    | BackgroundEffect
+
 export type EditorKeyframe<Params = any> = {
     time: number
     id: string
@@ -22,12 +29,6 @@ export interface GenericEffect<Type extends string, Params> {
 type Prettify<T> = { [K in keyof T]: T[K] }
 
 export type GroupEffect = GenericEffect<'group', {}>
-
-export type Effect =
-    | MeshEffect
-    | CameraEffect
-    | GroupEffect
-    | DepthOfFieldEffect
 
 interface EffectController<T extends Effect> {
     create(options: { keyframes?: T['keyframes'] }): T
@@ -90,6 +91,136 @@ const meshEffectController: EffectController<MeshEffect> = {
         return folder
     },
 }
+
+export type BackgroundEffect = Prettify<
+    GenericEffect<
+        'background',
+        {
+            enabled: boolean
+            type: 'color' | 'image' | 'hdr'
+            color: string
+            imageUrl: string
+            hdrUrl: string
+        }
+    >
+>
+
+const backgroundEffectController: EffectController<BackgroundEffect> = {
+    create({ keyframes = [] }) {
+        const params = {
+            enabled: true,
+            type: 'color' as const,
+            color: '#000000',
+            imageUrl: '',
+            hdrUrl: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/2294472375_24a3b8ef46_o.jpg',
+        }
+        return {
+            id: 'background',
+            name: 'Background',
+            keyframes,
+            type: 'background',
+            params,
+        }
+    },
+    apply(effect, params) {
+        if (!params.enabled) {
+            threeCanvas.scene.background = null
+            return
+        }
+
+        if (params.type === 'color') {
+            threeCanvas.scene.background = new THREE.Color(params.color)
+            return
+        }
+
+        if (params.type === 'image') {
+            new THREE.TextureLoader().load(
+                params.imageUrl,
+                function (texture) {
+                    texture.mapping = THREE.EquirectangularReflectionMapping
+                    threeCanvas.scene.background = texture
+                },
+                undefined,
+                (e) => {
+                    console.error(e)
+                },
+            )
+            return
+        }
+
+        if (params.type === 'hdr') {
+            const pmremGenerator = new THREE.PMREMGenerator(
+                threeCanvas.renderer,
+            )
+            new THREE.TextureLoader().load(
+                params.hdrUrl,
+                function (texture) {
+                    texture.mapping = THREE.EquirectangularReflectionMapping
+                    threeCanvas.scene.background = texture
+                    const envMap =
+                        pmremGenerator.fromEquirectangular(texture).texture
+
+                    threeCanvas.scene.traverse((object) => {
+                        if (
+                            object instanceof THREE.Mesh &&
+                            object.material instanceof
+                                THREE.MeshStandardMaterial
+                        ) {
+                            object.material.envMap = envMap
+                            object.material.needsUpdate = true
+                        }
+                    })
+
+                    pmremGenerator.dispose()
+                },
+                undefined,
+                (e) => {
+                    console.error(e)
+                },
+            )
+            return
+        }
+    },
+    configure(effect, pane, params) {
+        const folder = pane.addFolder({
+            title: 'Background',
+        })
+        folder.addBinding(params, 'enabled', {
+            label: 'Enable',
+        })
+        folder.addBinding(params, 'type', {
+            label: 'Type',
+            options: {
+                Color: 'color',
+                HDR: 'hdr',
+            },
+        })
+
+        if (params.type === 'color') {
+            folder
+                .addBinding(params, 'color', {
+                    label: 'Color',
+                    view: 'color',
+                })
+                .on('change', () => {
+                    this.apply(effect, params)
+                })
+        }
+
+        if (params.type === 'hdr') {
+            folder
+                .addBinding(params, 'hdrUrl', {
+                    label: 'HDR URL',
+                })
+                .on('change', () => {
+                    this.apply(effect, params)
+                })
+        }
+
+        return folder
+    },
+}
+
 export type DepthOfFieldEffect = Prettify<
     GenericEffect<
         'depthOfField',
@@ -240,6 +371,7 @@ export const effectControllers: Record<
     camera: cameraEffectController,
     group: groupEffectController,
     depthOfField: depthOfFieldEffectController,
+    background: backgroundEffectController,
 }
 
 export function applyEffect(effect: Effect, params: Effect['params']) {
