@@ -5,49 +5,49 @@ import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'
 import { assertNever, createProxy } from './utils'
 
-export type EditorKeyframe<Params = any> = {
+export type EditorKeyframe<Params> = {
     time: number
     id: string
     bezierCurve: BezierCurve
     params: Params
 }
 
-export interface EffectBase {
+export interface GenericEffect<Type extends string, Params> {
     id: string
     name: string
-
-    // start: number
-    // end: number
-
+    type: Type
+    params: Params
     children?: Effect[]
-    keyframes: EditorKeyframe[]
+    keyframes: EditorKeyframe<Params>[]
 }
 
-export type MeshEffect = EffectBase & {
-    type: 'mesh'
-    params: {
-        position: THREE.Vector3
-        rotation: THREE.Quaternion
-    }
-}
+type Prettify<T> = { [K in keyof T]: T[K] }
 
-export type CameraEffect = EffectBase & {
-    type: 'camera'
-    params: {
+export type MeshEffect = Prettify<
+    GenericEffect<
+        'mesh',
+        {
+            position: THREE.Vector3
+            rotation: THREE.Quaternion
+        }
+    >
+>
+
+export type CameraEffect = GenericEffect<
+    'camera',
+    {
         position: THREE.Vector3
         target: THREE.Vector3
     }
-}
+>
 
-export type GroupEffect = EffectBase & {
-    type: 'group'
-    params: {}
-}
+export type GroupEffect = GenericEffect<'group', {}>
 
 export type Effect = MeshEffect | CameraEffect | GroupEffect
 
-export function applyEffect(effect: Effect, params) {
+export function applyEffect(effect: Effect, _params: Effect['params']) {
     if (effect.type === 'mesh') {
+        const params = _params as typeof effect.params
         const mesh = threeCanvas.plane
         mesh.position.copy(params.position)
         mesh.quaternion.copy(params.rotation)
@@ -57,6 +57,7 @@ export function applyEffect(effect: Effect, params) {
 
         return
     } else if (effect.type === 'camera') {
+        const params = _params as typeof effect.params
         const { camera, controls } = threeCanvas
         controls.object.position.copy(params.position)
         controls.target.copy(params.target)
@@ -74,7 +75,7 @@ export function configureEffect(
     _params: Effect['params'],
 ) {
     if (effect.type === 'mesh') {
-        let params = _params as MeshEffect['params']
+        const params = _params as typeof effect.params
         const folder = pane.addFolder({
             title: 'Mesh Transform',
         })
@@ -104,7 +105,7 @@ export function configureEffect(
         })
         return folder
     } else if (effect.type === 'camera') {
-        let params = _params as CameraEffect['params']
+        let params = _params as typeof effect.params
         const folder = pane.addFolder({
             title: 'Camera Transform',
         })
@@ -148,7 +149,7 @@ export function configureEffect(
 }
 
 export function createMeshEffect({
-    keyframes = [] as EditorKeyframe[],
+    keyframes = [] as MeshEffect['keyframes'],
 }): MeshEffect {
     const params = {
         position: new THREE.Vector3(0, 0, 0),
@@ -168,7 +169,7 @@ export function createMeshEffect({
 }
 
 export function createCameraEffect({
-    keyframes = [] as EditorKeyframe[],
+    keyframes = [] as CameraEffect['keyframes'],
 }): CameraEffect {
     const params = {
         position: new THREE.Vector3(0, 0, 0),
