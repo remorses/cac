@@ -5,7 +5,7 @@ import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'
 import { assertNever, createProxy } from './utils'
 
-export type EditorKeyframe<Params> = {
+export type EditorKeyframe<Params = any> = {
     time: number
     id: string
     bezierCurve: BezierCurve

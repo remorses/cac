@@ -780,9 +780,8 @@ function KeyframeComponent({
             if (e.key === 'Backspace' && isSelected) {
                 e.preventDefault()
                 e.stopPropagation()
-                const updatedKeyframes = effect.keyframes.filter(
-                    (kf) => kf.id !== keyframe.id,
-                )
+                const updatedKeyframes: EditorKeyframe[] =
+                    effect.keyframes.filter((kf) => kf.id !== keyframe.id)
                 updateEffect(effect.id, {
                     ...effect,
                     keyframes: updatedKeyframes,

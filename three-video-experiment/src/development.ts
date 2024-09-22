@@ -90,7 +90,7 @@ if (import.meta.env.DEV) {
                     params: {
                         position: camPosition,
                         target: camTarget,
-                        zoom: 1,
+                        
                     },
                     bezierCurve: [0.6, -0.28, 0.735, 0.045], // Significant elastic-like curve
                 },
@@ -99,7 +99,7 @@ if (import.meta.env.DEV) {
                     time: 2,
                     params: {
                         position: new THREE.Vector3(0, -0.3, 1),
-                        zoom: 1,
+                        
                         target: camTarget,
                     },
                     bezierCurve: [0.68, -0.55, 0.265, 1.55], // Significant overshoot curve
@@ -110,7 +110,7 @@ if (import.meta.env.DEV) {
                     time: 2.2,
                     params: {
                         position: new THREE.Vector3(0, -0.3, 1),
-                        zoom: 1,
+                        
                         target: camTarget,
                     },
                     bezierCurve: [0.68, -0.55, 0.265, 1.55], // Significant overshoot curve
