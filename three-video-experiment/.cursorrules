@@ -1,0 +1,3 @@
+- never use javascript function expression without curly braces () => { return null } instead of () => null
+- to conditionally change classes in jsx use the classNames utility from classnames package, don't use ${}
+- when using classnames() in jsx, never use the object syntax, always use && or inline if. for example  <div className={classNames('foo', true && 'bar')} /> instead of  <div className={classNames('foo', { bar: true })} /> 

@@ -77,7 +77,8 @@ if (import.meta.env.DEV) {
                 },
             ],
         }),
-
+        effectControllers.depthOfField.create({
+        }),
         effectControllers.camera.create({
             keyframes: [
                 {

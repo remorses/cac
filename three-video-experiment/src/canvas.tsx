@@ -32,8 +32,6 @@ import { getHandleForMediaId, getFileForMediaHandle } from './files'
 
 export const deg = Math.PI / 180
 
-export const globalPaneContainer = document.createElement('div')
-
 export function createThreeCanvas({
     initialImageSize,
 }: {
@@ -41,13 +39,6 @@ export function createThreeCanvas({
 } = {}) {
     const canvas = document.createElement('canvas')
     canvas.className = 'bg-black border-0  !max-w-full !max-h-full !h-auto'
-
-    const pane = preparePane(
-        new Pane({
-            container: globalPaneContainer,
-            title: 'Tweakpane',
-        }),
-    )
 
     const scene = new THREE.Scene()
     // scene.fog = new THREE.Fog(0x000000, 1, 2)
@@ -201,9 +192,7 @@ export function createThreeCanvas({
     renderer.getSize(size)
 
     const inverseTonemapPass = new InverseTonemapPass({ intensity: 0.7 })
-    pane.addBinding(inverseTonemapPass, 'enabled', {
-        label: 'Enable Inverse Tonemap',
-    })
+
     composer.addPass(inverseTonemapPass)
 
     const bokehPass = new BokehPass({
@@ -217,35 +206,6 @@ export function createThreeCanvas({
     })
     composer.addPass(bokehPass)
 
-    pane.addBinding({ value: 0 }, 'value', {
-        min: -1,
-        // view: 'cameraring',
-        max: 1,
-        step: 0.01,
-        label: 'Focus Distance',
-        series: 2,
-        unit: {
-            pixels: 50,
-            ticks: 10,
-            value: 0.1,
-        },
-    }).on('change', (value) => {
-        const distance = camera.position.distanceTo(plane.position)
-        bokehPass.uniforms.focus.value = distance + value.value
-    })
-
-    pane.addBinding(bokehPass, 'enabled', {
-        label: 'Enable Bokeh',
-    })
-
-    pane.addBinding(transformControls, 'mode', {
-        label: 'Transform Mode',
-        options: {
-            translate: 'translate',
-            rotate: 'rotate',
-            scale: 'scale',
-        },
-    })
     const handleKeyDown = (event: KeyboardEvent) => {
         if (event.shiftKey) {
             if (transformControls.mode === 'translate') {
@@ -421,11 +381,6 @@ export function createThreeCanvas({
         plane.scale.set(aspectRatio, 1, 1)
     }
 
-    pane.on('change', () => {
-        applyAllEffects({ isUserChange: true })
-        render()
-    })
-
     function calculateScaleFactor(rectangleHeight) {
         // Convert FOV to radians
         const fovRadians = camera.fov * (Math.PI / 180)
@@ -553,7 +508,7 @@ export function createThreeCanvas({
         material.dispose()
         texture.dispose()
         renderer.dispose()
-        pane.dispose()
+
         window.removeEventListener('keydown', handleKeyDown)
         window.removeEventListener('keyup', handleKeyUp)
         unsubscribeIsPlaying()
@@ -566,6 +521,8 @@ export function createThreeCanvas({
     }
 
     return {
+        bokehPass,
+        inverseTonemapPass,
         beforeExport() {
             useEditorState.setState({ isExporting: true })
             const scaleMultiplier = 1 / calculateScaleFactor(holeSize)

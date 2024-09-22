@@ -23,7 +23,11 @@ type Prettify<T> = { [K in keyof T]: T[K] }
 
 export type GroupEffect = GenericEffect<'group', {}>
 
-export type Effect = MeshEffect | CameraEffect | GroupEffect
+export type Effect =
+    | MeshEffect
+    | CameraEffect
+    | GroupEffect
+    | DepthOfFieldEffect
 
 interface EffectController<T extends Effect> {
     create(options: { keyframes?: T['keyframes'] }): T
@@ -82,6 +86,74 @@ const meshEffectController: EffectController<MeshEffect> = {
             view: 'rotation',
             rotationMode: 'quaternion',
             unit: 'turn',
+        })
+        return folder
+    },
+}
+export type DepthOfFieldEffect = Prettify<
+    GenericEffect<
+        'depthOfField',
+        {
+            focus: number
+            focalLength: number
+            maxBlur: number
+            fStops: number
+        }
+    >
+>
+
+const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
+    create({ keyframes = [] }) {
+        const params = {
+            focus: 10,
+            focalLength: 35,
+            maxBlur: 2,
+            fStops: 5.6,
+        }
+        return {
+            id: 'depthOfField',
+            name: 'Depth of Field',
+            keyframes,
+            type: 'depthOfField',
+            params,
+        }
+    },
+    apply(effect, params) {
+        const { bokehPass } = threeCanvas
+        if (bokehPass) {
+            bokehPass.uniforms.focus.value = params.focus
+            bokehPass.uniforms.uFocalLength.value = params.focalLength
+            bokehPass.uniforms.maxBlur.value = params.maxBlur
+            bokehPass.uniforms.uFStop.value = params.fStops
+        }
+    },
+    configure(effect, pane, params) {
+        const folder = pane.addFolder({
+            title: 'Depth of Field',
+        })
+        folder.addBinding(params, 'focus', {
+            label: 'Focus Distance',
+            min: 0.1,
+            max: 100,
+            step: 0.1,
+        })
+        folder.addBinding(params, 'focalLength', {
+            label: 'Focal Length',
+            min: 12,
+            max: 200,
+            step: 1,
+        })
+        folder.addBinding(params, 'fStops', {
+            label: 'F-Stops',
+            min: 1,
+            max: 22,
+            step: 0.1,
+        })
+        folder.addBinding(params, 'maxBlur', {
+            label: 'Max Blur',
+            min: 0,
+            max: 500,
+            step: 0.1,
         })
         return folder
     },
@@ -160,6 +232,7 @@ export const effectControllers: Record<
     mesh: meshEffectController,
     camera: cameraEffectController,
     group: groupEffectController,
+    depthOfField: depthOfFieldEffectController,
 }
 
 export function applyEffect(effect: Effect, params: Effect['params']) {

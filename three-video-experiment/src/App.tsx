@@ -21,7 +21,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import classNames from 'classnames'
 import { Pane } from 'tweakpane'
-import { globalPaneContainer, threeCanvas } from './canvas'
+import { threeCanvas } from './canvas'
 import { exportVideo } from './export'
 import { getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
@@ -109,7 +109,7 @@ function EditorLayout() {
             style={{
                 '--padding': '16px',
             }}
-            className=' bg-black grid grid-cols-[300px_1fr_300px] gap-x-4 grid-rows-[40px_50%_50px_1fr] h-full pt-4 max-h-screen w-full max-w-full'
+            className=' bg-black grid grid-cols-[1fr_auto] gap-x-4 grid-rows-[40px_50%_50px_1fr] h-full pt-4 max-h-screen w-full max-w-full'
         >
             <div className='flex px-[--padding] flex-row col-span-3 gap-4 '>
                 <Button
@@ -140,11 +140,11 @@ function EditorLayout() {
                     Export Video
                 </Button>
             </div>
-            <div className='pl-[--padding] pb-[--padding] flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
+            {/* <div className='pl-[--padding] pb-[--padding] flex-shrink-0 grow overflow-y-auto max-h-full w-full flex flex-col gap-4 '>
                 <Controls />
                 <div className='grow'></div>
-            </div>
-            <div className='flex group relative overflow-hidden items-start justify-center row-span-1'>
+            </div> */}
+            <div className='flex group relative overflow-hidden items-start pl-[--padding] pb-[--padding] justify-start row-span-1'>
                 <CanvasComponent
                     style={{
                         aspectRatio: (size.width / size.height).toFixed(2),
@@ -152,7 +152,7 @@ function EditorLayout() {
                     className='max-w-full max-h-full rounded-md overflow-hidden'
                 />
             </div>
-            <div className='pr-[--padding] pb-[--padding]'>
+            <div className='max-w-[400px] pb-[--padding]'>
                 <EffectsControls />
             </div>
             <div className='row-span-1 bg-gray-900 flex flex-col items-center justify-center col-span-3'>
@@ -169,6 +169,7 @@ function Entities() {
     const setSelectedEffectIds = useEditorState(
         (state) => state.setSelectedEffectIds,
     )
+    const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)
 
     return (
         <div
@@ -176,10 +177,14 @@ function Entities() {
             className='flex bg-gray-900 flex-col min-w-[120px] pr-6 gap-2'
         >
             {effects.map((effect, index) => {
+                const isSelected = selectedEffectIds.includes(effect.id)
                 return (
                     <div
                         key={effect.id}
-                        className='overflow-hidden flex items-center justify-end text-xs cursor-pointer'
+                        className={classNames(
+                            'overflow-hidden flex items-center justify-end text-xs cursor-pointer',
+                            isSelected && 'text-yellow-200 font-bold',
+                        )}
                         style={{
                             height: `${clipHeight}px`,
                         }}
@@ -195,21 +200,6 @@ function Entities() {
     )
 }
 
-function Controls() {
-    const container = useRef<HTMLDivElement>(null)
-    useEffect(() => {
-        if (container.current) {
-            container.current.appendChild(globalPaneContainer)
-        }
-
-        return () => {
-            if (container.current) {
-                container.current.removeChild(globalPaneContainer)
-            }
-        }
-    }, [])
-    return <div ref={container}></div>
-}
 
 type EffectState = {
     effects: Effect[]
@@ -1015,7 +1005,7 @@ function EffectsControls() {
 
             {showKeyframeButton && (
                 <button
-                    className='flex items-center justify-center px-4 py-2 mt-4 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                    className='flex items-center justify-center mt-4 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
                     onClick={() => {
                         const currentTime = snapToTimeGrid(
                             useEditorState.getState().currentTime,
