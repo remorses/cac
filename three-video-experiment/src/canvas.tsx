@@ -752,7 +752,7 @@ function _applyEffects(effects: Effect[]) {
             const prevKeyframe = getPreviousKeyframe(currentTime)
             let nextKeyframe = getNextKeyframe(currentTime)
 
-            const params = effect.params
+            let params = effect.params
             // console.log(currentTime, prevKeyframe, nextKeyframe)
 
             // Handle different keyframe scenarios
@@ -787,10 +787,10 @@ function _applyEffects(effects: Effect[]) {
                 }
 
                 // Update the effect's params with the interpolated values
-                Object.assign(params, interpolatedParams)
+                params = interpolatedParams
             } else if (prevKeyframe) {
                 // Handle the last keyframe
-                Object.assign(params, prevKeyframe.params)
+                params = prevKeyframe.params
             }
 
             // console.log('progress', rawProgress, easedProgress)
