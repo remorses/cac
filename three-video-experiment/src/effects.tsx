@@ -95,6 +95,7 @@ export type DepthOfFieldEffect = Prettify<
         'depthOfField',
         {
             focus: number
+            enabled: boolean
             focalLength: number
             maxBlur: number
             fStops: number
@@ -105,9 +106,10 @@ export type DepthOfFieldEffect = Prettify<
 const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
     create({ keyframes = [] }) {
         const params = {
+            enabled: true,
             focus: 10,
-            focalLength: 35,
-            maxBlur: 2,
+            focalLength: 27,
+            maxBlur: 500,
             fStops: 5.6,
         }
         return {
@@ -121,6 +123,8 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
     apply(effect, params) {
         const { bokehPass } = threeCanvas
         if (bokehPass) {
+            bokehPass.enabled = params.enabled
+
             bokehPass.uniforms.focus.value = params.focus
             bokehPass.uniforms.uFocalLength.value = params.focalLength
             bokehPass.uniforms.maxBlur.value = params.maxBlur
@@ -131,17 +135,20 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
         const folder = pane.addFolder({
             title: 'Depth of Field',
         })
+        folder.addBinding(params, 'enabled', {
+            label: 'Enable',
+        })
         folder.addBinding(params, 'focus', {
             label: 'Focus Distance',
             min: 0.1,
-            max: 100,
+            max: 1,
             step: 0.1,
         })
         folder.addBinding(params, 'focalLength', {
             label: 'Focal Length',
-            min: 12,
+            min: 1,
             max: 200,
-            step: 1,
+            step: 0.1,
         })
         folder.addBinding(params, 'fStops', {
             label: 'F-Stops',
