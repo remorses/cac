@@ -176,7 +176,7 @@ function Entities() {
             style={{
                 gap: clipSpacing,
             }}
-            className='flex bg-gray-950 flex-col min-w-[120px] pr-6'
+            className='flex bg-gray-950 flex-col min-w-[160px] pr-6'
         >
             <div
                 style={{
