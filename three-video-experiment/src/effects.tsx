@@ -104,7 +104,7 @@ export type BackgroundEffect = Prettify<
             enabled: boolean
             type: 'color' | 'hdr'
             color: string
-            imageUrl: string
+
             hdrUrl: string
         }
     >
@@ -116,7 +116,7 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
             enabled: true,
             type: 'color' as const,
             color: '#000000',
-            imageUrl: '',
+
             hdrUrl: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/2294472375_24a3b8ef46_o.jpg',
         }
         return {
@@ -127,7 +127,7 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
             params,
         }
     },
-    apply(effect, params) {
+    async apply(effect, params) {
         if (!params.enabled) {
             threeCanvas.scene.background = null
             return
@@ -142,32 +142,37 @@ const backgroundEffectController: EffectController<BackgroundEffect> = {
             const pmremGenerator = new THREE.PMREMGenerator(
                 threeCanvas.renderer,
             )
-            new THREE.TextureLoader().load(
-                params.hdrUrl,
-                function (texture) {
-                    texture.mapping = THREE.EquirectangularReflectionMapping
-                    threeCanvas.scene.background = texture
-                    const envMap =
-                        pmremGenerator.fromEquirectangular(texture).texture
+            try {
+                const texture = await new Promise<THREE.Texture>(
+                    (resolve, reject) => {
+                        new THREE.TextureLoader().load(
+                            params.hdrUrl,
+                            resolve,
+                            undefined,
+                            reject,
+                        )
+                    },
+                )
 
-                    threeCanvas.scene.traverse((object) => {
-                        if (
-                            object instanceof THREE.Mesh &&
-                            object.material instanceof
-                                THREE.MeshStandardMaterial
-                        ) {
-                            object.material.envMap = envMap
-                            object.material.needsUpdate = true
-                        }
-                    })
+                texture.mapping = THREE.EquirectangularReflectionMapping
+                threeCanvas.scene.background = texture
+                const envMap =
+                    pmremGenerator.fromEquirectangular(texture).texture
 
-                    pmremGenerator.dispose()
-                },
-                undefined,
-                (e) => {
-                    console.error(e)
-                },
-            )
+                threeCanvas.scene.traverse((object) => {
+                    if (
+                        object instanceof THREE.Mesh &&
+                        object.material instanceof THREE.MeshStandardMaterial
+                    ) {
+                        object.material.envMap = envMap
+                        object.material.needsUpdate = true
+                    }
+                })
+
+                pmremGenerator.dispose()
+            } catch (e) {
+                console.error(e)
+            }
             return
         }
     },

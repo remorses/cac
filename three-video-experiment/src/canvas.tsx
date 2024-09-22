@@ -800,7 +800,8 @@ function _applyEffects(effects: Effect[]) {
             } else {
                 const controller = effectControllers[effect.type]
                 if (controller) {
-                    return controller.apply(effect, params)
+                    // console.log('applying effect', effect.type, params)
+                    controller.apply(effect, params)
                 } else {
                     console.warn(
                         'No controller found for effect type',
