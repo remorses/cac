@@ -223,3 +223,7 @@ export function useLatestValue<T>(value: T) {
     })
     return ref
 }
+
+export function assertNever(x: never): never {
+    throw new Error(`Unexpected object: ${x}`)
+}

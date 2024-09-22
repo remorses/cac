@@ -3,7 +3,189 @@ import { threeCanvas } from './canvas'
 import { useEditorState } from './state'
 import { Pane, FolderApi } from 'tweakpane'
 import { deg } from './canvas'
-import { createProxy } from './utils'
+import { assertNever, createProxy } from './utils'
+
+export type EditorKeyframe<Params = any> = {
+    time: number
+    id: string
+    bezierCurve: BezierCurve
+    params: Params
+}
+
+export interface EffectBase {
+    id: string
+    name: string
+
+    // start: number
+    // end: number
+
+    children?: Effect[]
+    keyframes: EditorKeyframe[]
+}
+
+export type MeshEffect = EffectBase & {
+    type: 'mesh'
+    params: {
+        position: THREE.Vector3
+        rotation: THREE.Quaternion
+    }
+}
+
+export type CameraEffect = EffectBase & {
+    type: 'camera'
+    params: {
+        position: THREE.Vector3
+        target: THREE.Vector3
+    }
+}
+
+export type GroupEffect = EffectBase & {
+    type: 'group'
+    params: {}
+}
+
+export type Effect = MeshEffect | CameraEffect | GroupEffect
+
+export function applyEffect(effect: Effect, params) {
+    if (effect.type === 'mesh') {
+        const mesh = threeCanvas.plane
+        mesh.position.copy(params.position)
+        mesh.quaternion.copy(params.rotation)
+        mesh.updateMatrix()
+        mesh.updateMatrixWorld(true)
+        threeCanvas.transformControls.updateMatrixWorld()
+
+        return
+    } else if (effect.type === 'camera') {
+        const { camera, controls } = threeCanvas
+        controls.object.position.copy(params.position)
+        controls.target.copy(params.target)
+        controls.update()
+    } else if (effect.type === 'group') {
+        // Handle group effect
+    } else {
+        assertNever(effect)
+    }
+}
+
+export function configureEffect(
+    effect: Effect,
+    pane: Pane,
+    _params: Effect['params'],
+) {
+    if (effect.type === 'mesh') {
+        let params = _params as MeshEffect['params']
+        const folder = pane.addFolder({
+            title: 'Mesh Transform',
+        })
+        folder.addBinding(params.position, 'x', {
+            label: 'X Position',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'y', {
+            label: 'Y Position',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'z', {
+            label: 'Z Position',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params, 'rotation', {
+            label: 'Rotation',
+            picker: 'inline',
+            expanded: true,
+            view: 'rotation',
+            rotationMode: 'quaternion',
+
+            unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
+        })
+        return folder
+    } else if (effect.type === 'camera') {
+        let params = _params as CameraEffect['params']
+        const folder = pane.addFolder({
+            title: 'Camera Transform',
+        })
+
+        folder.addBinding(params.position, 'x', {
+            label: 'Camera X',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'y', {
+            label: 'Camera Y',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.position, 'z', {
+            label: 'Camera Z',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.target, 'x', {
+            label: 'Target X',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.target, 'y', {
+            label: 'Target Y',
+            picker: 'inline',
+            expanded: true,
+        })
+        folder.addBinding(params.target, 'z', {
+            label: 'Target Z',
+            picker: 'inline',
+            expanded: true,
+        })
+
+        return folder
+    } else if (effect.type === 'group') {
+    } else {
+        assertNever(effect)
+    }
+}
+
+export function createMeshEffect({
+    keyframes = [] as EditorKeyframe[],
+}): MeshEffect {
+    const params = {
+        position: new THREE.Vector3(0, 0, 0),
+        rotation: new THREE.Quaternion(0, 0, 0),
+    }
+    params.position.copy(threeCanvas.plane.position)
+    params.rotation.copy(threeCanvas.plane.quaternion)
+    return {
+        id: 'mesh',
+        name: 'Mesh',
+        keyframes,
+
+        type: 'mesh',
+
+        params,
+    }
+}
+
+export function createCameraEffect({
+    keyframes = [] as EditorKeyframe[],
+}): CameraEffect {
+    const params = {
+        position: new THREE.Vector3(0, 0, 0),
+        target: new THREE.Vector3(0, 0, 0),
+    }
+    params.position.copy(threeCanvas.controls.object.position)
+    params.target.copy(threeCanvas.controls.target)
+    // params.zoom = threeCanvas.camera.zoom
+    return {
+        name: 'Camera',
+        keyframes: keyframes,
+        id: 'camera',
+        type: 'camera',
+
+        params,
+    }
+}
 
 export type BezierCurve = [number, number, number, number]
 
@@ -72,47 +254,6 @@ export function evaluate2Beziers(
     return clampedPrevValue * (1 - normalizedT) + clampedNextValue * normalizedT
 }
 
-export type EditorKeyframe<Params = any> = {
-    time: number
-    id: string
-    bezierCurve: BezierCurve
-    params: Params
-}
-
-export interface EffectBase {
-    id: string
-    name: string
-
-    // start: number
-    // end: number
-
-    children?: Effect[]
-    keyframes: EditorKeyframe[]
-}
-
-export type MeshEffect = EffectBase & {
-    type: 'mesh'
-    params: {
-        position: THREE.Vector3
-        rotation: THREE.Quaternion
-    }
-}
-
-export type CameraEffect = EffectBase & {
-    type: 'camera'
-    params: {
-        position: THREE.Vector3
-        target: THREE.Vector3
-    }
-}
-
-export type GroupEffect = EffectBase & {
-    type: 'group'
-    params: {}
-}
-
-export type Effect = MeshEffect | CameraEffect | GroupEffect
-
 type WithParent = { node: Effect; parent: Effect | null }
 
 export function bfs(
@@ -169,142 +310,6 @@ export function filterEffectTree(
 }
 
 export type EffectType = 'mesh' | 'camera' | 'group'
-
-export function applyEffect(effect: Effect, params) {
-    if (effect.type === 'mesh') {
-        const mesh = threeCanvas.plane
-        mesh.position.copy(params.position)
-        mesh.quaternion.copy(params.rotation)
-        mesh.updateMatrix()
-        mesh.updateMatrixWorld(true)
-        threeCanvas.transformControls.updateMatrixWorld()
-
-        return
-    }
-    if (effect.type === 'camera') {
-        const { camera, controls } = threeCanvas
-        controls.object.position.copy(params.position)
-        controls.target.copy(params.target)
-        controls.update()
-    }
-}
-
-export function configureEffect(
-    effect: Effect,
-    pane: Pane,
-    _params: Effect['params'],
-) {
-    if (effect.type === 'mesh') {
-        let params = _params as MeshEffect['params']
-        const folder = pane.addFolder({
-            title: 'Mesh Transform',
-        })
-        folder.addBinding(params.position, 'x', {
-            label: 'X Position',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.position, 'y', {
-            label: 'Y Position',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.position, 'z', {
-            label: 'Z Position',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params, 'rotation', {
-            label: 'Rotation',
-            picker: 'inline',
-            expanded: true,
-            view: 'rotation',
-            rotationMode: 'quaternion',
-
-            unit: 'turn', // or 'rad' or 'turn'. optional, 'rad' by default
-        })
-        return folder
-    }
-    if (effect.type === 'camera') {
-        let params = _params as CameraEffect['params']
-        const folder = pane.addFolder({
-            title: 'Camera Transform',
-        })
-
-        folder.addBinding(params.position, 'x', {
-            label: 'Camera X',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.position, 'y', {
-            label: 'Camera Y',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.position, 'z', {
-            label: 'Camera Z',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.target, 'x', {
-            label: 'Target X',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.target, 'y', {
-            label: 'Target Y',
-            picker: 'inline',
-            expanded: true,
-        })
-        folder.addBinding(params.target, 'z', {
-            label: 'Target Z',
-            picker: 'inline',
-            expanded: true,
-        })
-
-        return folder
-    }
-}
-
-export function createMeshEffect({
-    keyframes = [] as EditorKeyframe[],
-}): MeshEffect {
-    const params = {
-        position: new THREE.Vector3(0, 0, 0),
-        rotation: new THREE.Quaternion(0, 0, 0),
-    }
-    params.position.copy(threeCanvas.plane.position)
-    params.rotation.copy(threeCanvas.plane.quaternion)
-    return {
-        id: 'mesh',
-        name: 'Mesh',
-        keyframes,
-
-        type: 'mesh',
-
-        params,
-    }
-}
-
-export function createCameraEffect({
-    keyframes = [] as EditorKeyframe[],
-}): CameraEffect {
-    const params = {
-        position: new THREE.Vector3(0, 0, 0),
-        target: new THREE.Vector3(0, 0, 0),
-    }
-    params.position.copy(threeCanvas.controls.object.position)
-    params.target.copy(threeCanvas.controls.target)
-    // params.zoom = threeCanvas.camera.zoom
-    return {
-        name: 'Camera',
-        keyframes: keyframes,
-        id: 'camera',
-        type: 'camera',
-
-        params,
-    }
-}
 
 export function bezierControlBinding({
     folder,

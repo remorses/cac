@@ -269,33 +269,6 @@ export function createThreeCanvas({
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
 
-    pane.addBinding(bokehPass.uniforms.uDOFDebug, 'value', {
-        label: 'Debug Bokeh',
-    })
-    pane.addBinding(bokehPass.uniforms.uFocalLength, 'value', {
-        // view: 'cameraring',
-        min: 1,
-        max: 300,
-        step: 1,
-        label: 'Focal Length (mm)',
-        // unit: {
-        //     pixels: 50,
-        //     ticks: 40,
-        //     value: 10,
-        // },
-    })
-    pane.addBinding(bokehPass.uniforms.uFStop, 'value', {
-        // view: 'cameraring',
-        min: 0.1,
-        max: 26,
-        step: 0.1,
-        label: 'Aperture (f-stops)',
-        unit: {
-            pixels: 50,
-            ticks: 20,
-            value: 1,
-        },
-    })
     // const bloomPass = new UnrealBloomPass(
     //     new THREE.Vector2(window.innerWidth, window.innerHeight),
     //     1.5,
