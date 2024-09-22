@@ -183,10 +183,10 @@ export const useEditorState = create<AppState>()((
 
         selectedEffectIds: [],
         setSelectedEffectIds: (id: string[]) => {
-            set({ selectedEffectIds: id })
+            setWithoutUndo({ selectedEffectIds: id })
         },
         setSelectedKeyframeIds: (ids: string[], effectIds: string[]) => {
-            set({
+            setWithoutUndo({
                 selectedKeyframeIds: ids,
                 selectedEffectIds: effectIds,
             })
