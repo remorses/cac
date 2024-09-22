@@ -92,6 +92,7 @@ function DropArea() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onClick={pickMedia}
         >
             <div
                 className={classNames(
@@ -158,6 +159,21 @@ function CanvasComponent({ ...rest }) {
     return <div {...rest} ref={containerRef}></div>
 }
 
+const pickMedia = async () => {
+    const state = useEditorState.getState()
+    const mediaHandle = await pickMediaHandle()
+    if (!mediaHandle) {
+        console.log(`could not get media handle`)
+        useEditorState.setState({
+            mediaHandleId: undefined,
+        })
+        return
+    }
+    useEditorState.setState({
+        mediaHandleId: await getMediaHandleId(mediaHandle),
+    })
+}
+
 function EditorLayout() {
     const mediaHandleId = useEditorState((state) => state.mediaHandleId)
 
@@ -175,25 +191,7 @@ function EditorLayout() {
                         // accept='image/*,video/*'
                         onChange={handleFileChange}
                     /> */}
-                    <Button
-                        onClick={async () => {
-                            const state = useEditorState.getState()
-                            const mediaHandle = await pickMediaHandle()
-                            if (!mediaHandle) {
-                                console.log(`could not get media handle`)
-                                useEditorState.setState({
-                                    mediaHandleId: undefined,
-                                })
-                                return
-                            }
-                            useEditorState.setState({
-                                mediaHandleId:
-                                    await getMediaHandleId(mediaHandle),
-                            })
-                        }}
-                    >
-                        Open File
-                    </Button>
+                    <Button onClick={pickMedia}>Open File</Button>
                 </div>
             </Container>
         )
