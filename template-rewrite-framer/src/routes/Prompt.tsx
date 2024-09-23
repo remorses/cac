@@ -32,6 +32,7 @@ import {
     isFrameNode,
     isTextNode,
     supportsBackgroundColor,
+    supportsLink,
     supportsVisible,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
@@ -147,8 +148,13 @@ function SimplePromptComponent({}) {
         let i = 0
 
         function addText({ node, nodeId, text, hierarchy }) {
+            let href = null
+            if (supportsLink(node)) {
+                href = node.link
+            }
             const textData: RewriteSchema['textToReplace'][number] = {
                 // index: i,
+                href,
                 nodeId,
                 content: text,
                 hierarchy: hierarchy,
@@ -159,6 +165,7 @@ function SimplePromptComponent({}) {
 
         async function handleNode(node: AnyNode) {
             // console.log('node', node.constructor.name)
+
             if (isTextNode(node)) {
                 const isVisible = await isNodeVisible(node)
                 if (!isVisible) {
@@ -232,6 +239,7 @@ function SimplePromptComponent({}) {
             }
         }
 
+        // return
         // console.log('oldText', JSON.stringify(oldText, null, 2))
 
         if (!oldText.length) {
@@ -248,6 +256,7 @@ function SimplePromptComponent({}) {
                     textToReplace: oldText,
                     exampleTextToMigrate: globalState.exampleTextToMigrate,
                     sourceHtml: globalState.sourceHtml,
+                    url: globalState.sourceUrl,
                 },
                 {
                     fetch: {
@@ -373,10 +382,10 @@ function SimplePromptComponent({}) {
                     setRemainingCredits(Math.max(0, credits.remaining - words))
                 }
 
-                // TODO change href when framer supports it
-                // if (chunk.href) {
-                //     // if (!supports)
-                // }
+                if (supportsLink(node) && chunk.href) {
+                    console.log('setting link', chunk.href)
+                    await node.setAttributes({ link: chunk.href })
+                }
             }
             await sleep(200)
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
@@ -591,16 +600,14 @@ async function getInstanceComponent(componentInstance: AnyNode) {
     }
     // console.log('controls', componentInstance.controls)
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
-        console.log(
-            `component ${componentInstance.name} ${componentInstance.componentIdentifier} is not a local module`,
-        )
+        console.log(`component ${componentInstance.name} is not a local module`)
         return
     }
     const regex = /local-module:.*\/(.*):.*/
     const match = componentInstance.componentIdentifier.match(regex)
     if (!match) {
         console.log(
-            `component ${componentInstance.name} ${componentInstance.componentIdentifier} does not match regex to get component id`,
+            `component ${componentInstance.name} does not match regex to get component id`,
         )
         return
     }

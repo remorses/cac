@@ -42,6 +42,7 @@ export const rewritePluginApp = new Spiceflow({
                 sourceHtml,
                 exampleTextToMigrate,
                 textToReplace,
+                url,
             } = body
             // console.log(sourceHtml)
             let words = 0
@@ -51,6 +52,7 @@ export const rewritePluginApp = new Spiceflow({
                 exampleTextToMigrate,
                 textToReplace,
                 sourceHtml,
+                url,
                 onToken(token) {
                     // process.stdout.write(token)
                 },

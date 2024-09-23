@@ -38,6 +38,7 @@ async function action({ request }) {
             throw error
         }
         globalState.sourceHtml = data.html
+        globalState.sourceUrl = domain
         globalState.extractedDescription = data.extractedDescription || ''
         return redirect(withMode(Paths.prompt))
     } catch (error) {

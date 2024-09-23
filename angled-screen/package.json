@@ -6,7 +6,6 @@
     "main": "src/api/index.ts",
     "scripts": {
         "dev": "doppler run -- vite",
-        
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "format": "prettier . --write",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -18,7 +17,7 @@
         "@types/three": "^0.168.0",
         "colord": "^2.9.3",
         "framer-motion": "^11.5.4",
-        "framer-plugin": "^0.3.3",
+        "framer-plugin": "^0.4.0",
         "postcss": "8.4.24",
         "react": "19.0.0-rc-e4953922-20240919",
         "react-dom": "19.0.0-rc-e4953922-20240919",

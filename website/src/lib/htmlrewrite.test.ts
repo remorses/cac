@@ -336,7 +336,7 @@ test(
 )
 
 test('formatHtmlForPrompt', async () => {
-    const res = await fetch('https://notaku.so')
+    const res = await fetch('https://framer.com')
     // const html = await res.text()
     const newHtml = await formatHtmlForPrompt(res)
     expect(newHtml).toMatchInlineSnapshot(

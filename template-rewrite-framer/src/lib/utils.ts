@@ -224,6 +224,7 @@ export const globalState = {
     exampleTextToMigrate: [] as RewriteSchema['exampleTextToMigrate'],
     sourceHtml: '',
     extractedDescription: '',
+    sourceUrl: '',
 }
 
 export async function collectGenerator<T>(

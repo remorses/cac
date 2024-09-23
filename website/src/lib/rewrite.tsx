@@ -18,6 +18,7 @@ export const RewriteSchema = z.object({
         }),
     ),
     sourceHtml: z.string().nullable(),
+    url: z.string(),
     exampleTextToMigrate: z.array(
         z.object({
             hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
@@ -34,17 +35,25 @@ const STEP_BY_STEP_REASONING = 'stepByStepReasoning'
 const CONVERTED_ITEMS = 'convertedItems'
 const framerIdLen = 9
 
-function renderHtmlSnippet(sourceHtml: string = ''): string {
+function renderHtmlSnippet({
+    sourceHtml,
+    url,
+}: {
+    sourceHtml: string
+    url
+}): string {
     if (!sourceHtml) {
         console.warn('no sourceHtml provided')
         return ''
     }
 
     return dedent`
-    Original HTML Content from existing website being migrated:
+    Original HTML Content from existing website being migrated, with url "${url}":
     \`\`\`html
     ${sourceHtml}
     \`\`\`
+
+    if the html has duplicate elements because of hidden variants you can ignore those parts, it isn't actually duplicated content, the user never wants duplicated content.
 
     try to use the exact same content as the original website HTML, only change if the content length is vastly different, in that case you can add new content or remove it, as a last resort you can even rephrase the content to match the template length.
 
@@ -53,6 +62,8 @@ function renderHtmlSnippet(sourceHtml: string = ''): string {
     for example if a website has the following html: <h1>More than a website builder</h1> in the hero section you should use "More than a website builder" exactly for the hero heading too.
 
     Even for the rest of the website, try to keep the generated content as close as possible to the HTML of the original website.
+
+    never repeat content, if 2 items appear to have the same content, try to find the right element from the HTML and use that instead. For example typically under the hero section there is a description/subheading, you should use that instead of the heading again.
 
     `
 }
@@ -70,28 +81,33 @@ let schema = z.object({
                 .describe(
                     'The original node id, this field should come first.',
                 ),
-            htmlTag: z
-                .string()
-                .describe(
-                    'The html tag of the node, helpful to understand which part of the original HTML should be used. this field should come second.',
-                ),
+            // htmlTag: z
+            //     .string()
+            //     .describe(
+            //         'The html tag of the node, helpful to understand which part of the original HTML should be used. this field should come second.',
+            //     ),
             contentFromTheHtml: z
                 .string()
                 .nullable()
                 .describe(
-                    'The associated content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come third',
+                    'The associated content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come second',
                 ),
             templateContent: z
                 .string()
                 .describe(
-                    'The previous content of the node, from the template, this field should come fourth.',
+                    'The previous content of the node, from the template, this field should come third.',
                 ),
             content: z
                 .string()
                 .describe(
                     'The new content to apply to this node, based on user provided data and with similar length and phrasing as previous template node.',
                 ),
-            href: z.string().nullable(),
+            href: z
+                .string()
+                .nullable()
+                .describe(
+                    'The href from the original HTML, should always have the url protocol, such as https://. Ignore all relative links, you should return an href only if it redirects to another website like twitter.com, facebook.com, etc.',
+                ),
         }),
     ),
 })
@@ -100,22 +116,22 @@ function generateMigrationPrompt({
     description,
     sourceHtml,
     exampleTextToMigrate,
+    url,
 }): string {
     return `
 You are an expert copywriter tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
 
 ${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
-${renderHtmlSnippet(sourceHtml)}
+${renderHtmlSnippet({ sourceHtml, url })}
 
 Instructions:
-* Replace the content of each item in the template with text that aligns with the website owner's description and the migrated website.
-* Maintain similar content length and structure to the original template where appropriate.
+* Replace the content of each item in the template with text from the original HTML that aligns with the website owner's description and the migrated website.
+* Maintain similar content length and structure as the original template where appropriate, for example understand when an item is an heading, subheading, paragraph, bullet point, etc.
 * Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
-* Update href values if present and relevant to the new content.
 * Use content from the website HTML being migrated 
 * as a last resort, If the migrated content doesn't fit, create new content that matches the style and intent of the website being migrated.
-* remove anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should be always replaced.
+* never use anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should be always replaced.
 * never add asterisks * at the end of the text, these would be used to add a note at the bottom of the page, but you can't add notes.
 * if the text to replace contains new lines \\n or special characters you should mimic them too and try to keep the same structure
 
@@ -124,6 +140,7 @@ Remember:
 * Aim for a similar text length as the original template items. If you can't find an example content from the examples you can invent new one
 * Ensure all items from the template are represented in the output.
 * Maintain the overall tone and style of the website being migrated.
+* never repeat content, always find different elements from the original HTML or generate new ones
 
 Please provide a well-structured and valid JSON object as your response, adhering to the schema defined.
 
@@ -176,6 +193,7 @@ export async function* rewriteTemplateContent({
     signal,
     onToken,
     sourceHtml,
+    url,
 }: RewriteSchema & {
     signal: AbortSignal
     onToken?: (token: string) => void
@@ -191,6 +209,7 @@ export async function* rewriteTemplateContent({
                 description,
                 exampleTextToMigrate,
                 sourceHtml,
+                url,
             }),
         },
     ]
@@ -241,19 +260,13 @@ export async function* rewriteTemplateContent({
         })
         let lastId = ''
         for await (let { fullItem, partialItem } of objectStream) {
-            if (
-                partialItem?.nodeId?.length === framerIdLen &&
-                partialItem?.nodeId !== lastId
-            ) {
+            if (partialItem?.nodeId?.length === framerIdLen) {
                 yield {
                     nextItemId: partialItem.nodeId,
+                    partialItem: partialItem,
                     finalObject: undefined,
                 }
                 lastId = partialItem.nodeId
-            }
-            yield {
-                partialItem: partialItem,
-                finalObject: undefined,
             }
             if (fullItem) {
                 console.log('rewrite item', fullItem)

@@ -5,7 +5,6 @@
     "scripts": {
         "dev": "doppler run -- vite",
         "check": "pnpm tsc --incremental",
-        
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "deployment_": "pnpm build && pnpm wrangler pages deploy dist",
         "preview": "vite preview"
@@ -22,7 +21,7 @@
         "db": "workspace:^",
         "eventsource-parser": "^1.1.2",
         "framer-motion": "^11.5.4",
-        "framer-plugin": "^0.3.3",
+        "framer-plugin": "^0.4.0",
         "isbot": "^4.4.0",
         "nextjs-progressbar": "^0.0.16",
         "nprogress": "^0.2.0",
