@@ -319,7 +319,7 @@ function SimplePromptComponent({}) {
                 // Process each chunk (value)
 
                 if (chunk.nodeId == null) {
-                    console.log(`no nodeId found: ${chunk}`)
+                    console.log(`no nodeId found: ${JSON.stringify(chunk)}`)
                     continue
                 }
 
@@ -349,7 +349,7 @@ function SimplePromptComponent({}) {
                 }
 
                 if (!chunk.content) {
-                    console.log('no text found in chunk', chunk)
+                    // console.log('no text found in chunk', chunk)
                     continue
                 }
                 if (isTextNode(node)) {
@@ -592,7 +592,7 @@ async function getInstanceComponent(componentInstance: AnyNode) {
     // console.log('controls', componentInstance.controls)
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
         console.log(
-            `component ${componentInstance.componentIdentifier} is not a local module`,
+            `component ${componentInstance.name} ${componentInstance.componentIdentifier} is not a local module`,
         )
         return
     }
@@ -600,7 +600,7 @@ async function getInstanceComponent(componentInstance: AnyNode) {
     const match = componentInstance.componentIdentifier.match(regex)
     if (!match) {
         console.log(
-            `component ${componentInstance.componentIdentifier} does not match regex to get component id`,
+            `component ${componentInstance.name} ${componentInstance.componentIdentifier} does not match regex to get component id`,
         )
         return
     }
@@ -693,14 +693,15 @@ async function isNodeZoomable(node: AnyNode) {
     if (!(await isNodeVisible(node))) {
         return false
     }
-    const parents = await collectGenerator(getParentNodes(node))
-    const componentChild = parents.some((parent) => {
-        if (isComponentNode(parent)) {
-            return true
-        }
-        return false
-    })
-    return !componentChild
+    return true
+    // const parents = await collectGenerator(getParentNodes(node))
+    // const componentChild = parents.some((parent) => {
+    //     if (isComponentNode(parent)) {
+    //         return true
+    //     }
+    //     return false
+    // })
+    // return !componentChild
 }
 
 const possibleInstanceTextFields = [
