@@ -2,7 +2,7 @@ import { prisma } from 'db/prisma'
 import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 
-const FREE_CREDITS = 1000
+const FREE_CREDITS = 500
 
 import { validateLicense, activateLicense } from '@lemonsqueezy/lemonsqueezy.js'
 import { db } from 'db/kysely'

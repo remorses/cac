@@ -5,8 +5,8 @@
     "scripts": {
         "dev": "doppler run -- vite",
         "check": "pnpm tsc --incremental",
-        "copy-plugin": "export OUT=../website/public/ && mkdir -p $OUT && cp -r ./dist/ $OUT",
-        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build && pnpm copy-plugin",
+        
+        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "deployment_": "pnpm build && pnpm wrangler pages deploy dist",
         "preview": "vite preview"
     },
@@ -27,8 +27,8 @@
         "nextjs-progressbar": "^0.0.16",
         "nprogress": "^0.2.0",
         "openai": "^4.52.7",
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
+        "react": "19.0.0-rc-e4953922-20240919",
+        "react-dom": "19.0.0-rc-e4953922-20240919",
         "react-router": "^6.25.1",
         "react-router-dom": "^6.25.1",
         "react-use-measure": "^2.1.1",

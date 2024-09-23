@@ -4,10 +4,11 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import react from '@vitejs/plugin-react-swc'
 import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
+import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
 
 const building = process.env.NODE_ENV === 'production'
 
-const basePath = '/framer-plugin/react-export'
+const basePath = process.env.BASE_PATH || '/framer-plugin/react-export'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,13 +16,12 @@ export default defineConfig({
         react(),
         mkcert(),
         framer(),
+        CopyOnEnd({
+            basePath,
+            out: '../website/public',
+        }),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
-    base: building ? basePath : undefined,
-    build: {
-        target: 'ES2020',
-        sourcemap: true,
-        outDir: 'dist' + basePath,
-    },
+    
 })
