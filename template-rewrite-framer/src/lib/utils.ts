@@ -156,15 +156,15 @@ export async function* getParentNodes(node: AnyNode | string | null) {
         return
     }
     let parent = await node.getParent()
-    if (isRootLevelNode(node)) {
-        yield node
-    }
+    // if (isRootLevelNode(node)) {
+    //     yield node
+    // }
     if (!parent) {
         console.log('no parent found', node.id)
         // if (isTextNode(node)) {
         //     console.log('text node', await node.getText())
         // }
-        yield node
+
         return
     }
     while (parent) {

@@ -33,6 +33,7 @@ import {
     isTextNode,
     supportsBackgroundColor,
     supportsLink,
+    supportsName,
     supportsVisible,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
@@ -44,9 +45,13 @@ import {
     useRevalidator,
 } from 'react-router'
 
-import { RewriteSchema } from 'website/src/lib/rewrite'
+import { OldTextTree, RewriteSchema } from 'website/src/lib/rewrite'
 
-import { sleep } from 'website/src/lib/utils'
+import {
+    bfsOldTextTree,
+    cleanupOldTextTree,
+    sleep,
+} from 'website/src/lib/utils'
 
 let abortController = new AbortController()
 
@@ -63,9 +68,7 @@ function SimplePromptComponent({}) {
         globalState.extractedDescription || '',
     )
     const [isLoading, setIsLoading] = useState(false)
-    const [oldNodes, setOldNodes] = useState<
-        Array<RewriteSchema['textToReplace'][number] & { node: AnyNode }>
-    >([])
+    const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
 
     useEffect(() => {
         // abort when leaving the page
@@ -121,7 +124,7 @@ function SimplePromptComponent({}) {
     }, [])
 
     async function replaceTextClient() {
-        setOldNodes([])
+        setPreviousOldText([])
         setError('')
         // const root = await framer.getCanvasRoot()
 
@@ -144,24 +147,8 @@ function SimplePromptComponent({}) {
             setError('No desktop found')
             return
         }
-        let oldText = [] as RewriteSchema['textToReplace']
+        let oldText = [] as OldTextTree
         let i = 0
-
-        function addText({ node, nodeId, text, hierarchy }) {
-            let href = null
-            if (supportsLink(node)) {
-                href = node.link
-            }
-            const textData: RewriteSchema['textToReplace'][number] = {
-                // index: i,
-                href,
-                nodeId,
-                content: text,
-                hierarchy: hierarchy,
-            }
-            setOldNodes((oldNodes) => [...oldNodes, { ...textData, node }])
-            oldText.push(textData)
-        }
 
         async function handleNode(node: AnyNode) {
             // console.log('node', node.constructor.name)
@@ -169,21 +156,21 @@ function SimplePromptComponent({}) {
             if (isTextNode(node)) {
                 const isVisible = await isNodeVisible(node)
                 if (!isVisible) {
-                    // console.log('node not visible', node.id)
+                    console.log('node not visible', node.id)
                     return
                 }
                 const text = await node.getText()
-                let nodeId = node.id
+
                 if (!text) {
-                    console.log('no text found for node', node.id)
+                    console.log('no text found for node', node.id, node.name)
                     return
                 }
                 if (text) {
-                    addText({
-                        nodeId,
-                        text,
-                        hierarchy: await getNodePath(node),
+                    oldText = await push({
                         node,
+                        tree: oldText,
+                        text,
+                        nodeId: node.id,
                     })
                 }
             }
@@ -193,12 +180,11 @@ function SimplePromptComponent({}) {
                     console.log('node not visible', node.id)
                     return
                 }
-                const _component = await getInstanceComponent(node)
-                if (!_component) {
-                    return
-                }
+                // const _component = await getInstanceComponent(node)
+                // if (!_component) {
+                //     return
+                // }
                 const controls = Object.entries(node.controls)
-                // let updatedControls = { ...node.controls }
 
                 for (let [key, value] of controls) {
                     if (
@@ -208,17 +194,18 @@ function SimplePromptComponent({}) {
                             key.toLocaleLowerCase(),
                         )
                     ) {
-                        let hierarchy = (await getNodePath(node)) + '/' + key
                         let nodeId = nineCharsRandomString()
                         instanceNodes.set(nodeId, {
                             node,
                             controlKey: key,
                         })
-                        addText({
-                            nodeId,
-                            text: value,
-                            hierarchy,
+
+                        oldText = await push({
+                            // parent: node,
                             node,
+                            nodeId,
+                            tree: oldText,
+                            text: value,
                         })
                     }
                 }
@@ -238,15 +225,8 @@ function SimplePromptComponent({}) {
                 await handleNode(node)
             }
         }
-
-        // return
-        // console.log('oldText', JSON.stringify(oldText, null, 2))
-
-        if (!oldText.length) {
-            setError('No text found to replace')
-            return
-        }
-        // Copy old text to clipboard if in dev mode
+        oldText = cleanupOldTextTree(oldText)
+        setPreviousOldText([...oldText])
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
@@ -257,6 +237,15 @@ function SimplePromptComponent({}) {
                 console.error('Failed to copy old text to clipboard:', error)
             }
         }
+        // return
+        // console.log('oldText', JSON.stringify(oldText, null, 2))
+
+        if (!oldText.length) {
+            setError('No text found to replace')
+            return
+        }
+        // Copy old text to clipboard if in dev mode
+
         // console.log('oldText', JSON.stringify(oldText, null, 2))
         // return
 
@@ -288,6 +277,7 @@ function SimplePromptComponent({}) {
         let prevBackground = null as string | null
         let lastTimeZoomed = Date.now()
         let minTimeOnNode = credits.free ? 900 : 200
+        const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
         try {
             for await (let {
                 partialItem: chunk,
@@ -332,8 +322,8 @@ function SimplePromptComponent({}) {
 
                     prevNode = currentParent
                 }
-                if (completeObj?.migratedContent) {
-                    let words = completeObj.migratedContent.split(/\s+/).length
+                if (completeObj?.newContent) {
+                    let words = completeObj.newContent.split(/\s+/).length
                     setRemainingCredits(Math.max(0, credits.remaining - words))
                     console.log(JSON.stringify(completeObj, null, 2))
                 }
@@ -356,7 +346,7 @@ function SimplePromptComponent({}) {
                     console.log(`no node found for id ${chunk.nodeId}`)
                     continue
                 }
-                const old = oldText.find(
+                const old = allOldNodes.find(
                     (x) => x.nodeId === chunk.nodeId,
                 )?.content
                 if (!old) {
@@ -373,30 +363,37 @@ function SimplePromptComponent({}) {
                     await sleep(time)
                 }
 
-                if (!chunk.migratedContent) {
+                if (!chunk.newContent) {
                     // console.log('no text found in chunk', chunk)
                     continue
                 }
                 if (isTextNode(node)) {
-                    await node.setText(chunk.migratedContent)
-                }
-                if (isComponentInstanceNode(node)) {
+                    await node.setText(chunk.newContent)
+                } else if (isComponentInstanceNode(node)) {
                     const instance = instanceNodes.get(chunk.nodeId)
                     if (!instance) {
                         console.log('no instance found for node', chunk.nodeId)
                         continue
                     }
-                    let key = instance.controlKey
-                    let controls = { ...node.controls }
-                    controls[key] = chunk.migratedContent
-                    console.log('setting node control', key)
+
+                    let controls = {
+                        ...node.controls,
+                        [instance.controlKey]: chunk.newContent,
+                    }
+
+                    console.log('setting node control', instance.controlKey)
                     await node.setAttributes({ controls })
+                } else {
+                    console.log(
+                        `node type for id ${chunk.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
+                    )
                 }
 
-                if (supportsLink(node) && chunk.href) {
-                    console.log('setting link', chunk.href)
-                    await node.setAttributes({ link: chunk.href })
-                }
+                // TODO add links
+                // if (supportsLink(node) && chunk.href) {
+                //     console.log('setting link', chunk.href)
+                //     await node.setAttributes({ link: chunk.href })
+                // }
             }
             await sleep(200)
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
@@ -412,34 +409,41 @@ function SimplePromptComponent({}) {
             abortController.abort()
             return
         }
-        if (!oldNodes.length) {
+        if (!previousOldText.length) {
             console.log('no old nodes to discard')
             return
         }
-        const promises = oldNodes.map((oldNodeObj) => {
-            const { nodeId, content: oldContent, node } = oldNodeObj
+        const allNodes = bfsOldTextTree(previousOldText).filter(
+            (x) => x?.nodeId,
+        )
+        const promises = allNodes.map(async (oldNodeObj) => {
+            const { nodeId, content: oldContent } = oldNodeObj
             if (!oldContent || !nodeId) {
                 console.log('no old content or node id found')
                 return Promise.resolve()
             }
 
+            let node =
+                instanceNodes.get(nodeId)?.node ||
+                (await framer.getNode(nodeId))
+
             if (isTextNode(node)) {
                 // console.log('setting text', oldContent)
-                return node.setText(oldContent)
+                return await node.setText(oldContent)
             }
             let instance = instanceNodes.get(nodeId)
             if (instance) {
                 const { node, controlKey } = instance
                 let controls = { ...node.controls }
                 controls[controlKey] = oldContent
-                return node.setAttributes({
+                return await node.setAttributes({
                     controls,
                 })
             }
         })
 
         await Promise.all(promises)
-        setOldNodes([])
+        setPreviousOldText([])
     })
 
     const buttonText = (() => {
@@ -537,7 +541,7 @@ function SimplePromptComponent({}) {
                     {buttonText}
                 </Button>
             </div>
-            {oldNodes.length > 0 && (
+            {previousOldText.length > 0 && (
                 <Button
                     // className='bg-transparent'
                     onClick={discard}
@@ -736,4 +740,64 @@ const possibleInstanceTextFields = [
 
 function nineCharsRandomString() {
     return Math.random().toString(36).substring(2, 10)
+}
+async function push({
+    node,
+    tree,
+    text,
+    nodeId,
+}: {
+    tree: OldTextTree
+    node: AnyNode
+    text?: string
+    nodeId: string
+}) {
+    console.log(`adding node ${node?.['name']}`)
+    const parents = (await collectGenerator(getParentNodes(node))).reverse()
+    console.log('parents', parents)
+    let currentLevel = tree
+
+    // Traverse or create the hierarchy
+    for (let i = 0; i < parents.length; i++) {
+        const parent = parents[i]
+
+        let existingNode = currentLevel.find(
+            (item) => item.nodeId === parent.id,
+        )
+
+        if (!existingNode) {
+            existingNode = {
+                // content: ,
+                nodeId: parent.id,
+                name: supportsName(parent) ? parent.name : '',
+                children: [],
+            }
+            currentLevel.push(existingNode)
+        }
+
+        if (!existingNode.children) {
+            existingNode.children = []
+        }
+
+        currentLevel = existingNode.children
+    }
+
+    let href = undefined as string | undefined
+    if (supportsLink(node)) {
+        href = node.link || undefined
+    }
+    let fontSize
+    if (isTextNode(node)) {
+        fontSize = node.inlineTextStyle?.fontSize || undefined
+    }
+    // Add the actual node
+    currentLevel.push({
+        content: text,
+        href,
+        nodeId,
+        name: 'name' in node ? node.name : '',
+        fontSize,
+        children: [],
+    })
+    return tree
 }

@@ -5,30 +5,24 @@ import { openai } from '@ai-sdk/openai'
 import { CoreMessage, streamObject } from 'ai'
 
 import { yieldNewArrayItems, yieldObjectStream } from 'website/src/lib/ndjson'
+import { bfsOldTextTree } from 'website/src/lib/utils'
+
+export type OldTextTree = Array<{
+    name?: string | null
+    content?: string | null
+    nodeId?: string | null
+    fontSize?: string
+
+    href?: string | null
+    children?: OldTextTree
+    // index: number;
+}>
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
-    textToReplace: z.array(
-        z.object({
-            hierarchy: z.string().optional().nullable(),
-            content: z.string().optional().nullable(),
-            nodeId: z.string().optional().nullable(),
-            href: z.string().optional().nullable(),
-            // index: z.number(),
-        }),
-    ),
+    textToReplace: z.custom<OldTextTree>(),
     sourceHtml: z.string().nullable(),
     url: z.string(),
-    // exampleTextToMigrate: z
-    //     .array(
-    //         z.object({
-    //             hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
-    //             content: z.string().optional().nullable(),
-    //             href: z.string().optional().nullable(),
-    //             // other possible fields like price for price plans, etc
-    //         }),
-    //     )
-    //     .optional(),
 })
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
@@ -81,35 +75,82 @@ let schema = z.object({
             nodeId: z
                 .string()
                 .describe(
-                    'The original node id, this field should come first.',
+                    'The template text node id, this field should come first.',
                 ),
             // htmlTag: z
             //     .string()
             //     .describe(
             //         'The html tag of the node, helpful to understand which part of the original HTML should be used. this field should come second.',
             //     ),
-            templateContent: z
+
+            // templateContent: z
+            //     .string()
+            //     .describe(
+            //         'The template content we are replacing. should be different from `contentFromTheHtml`, this field should come second',
+            //     ),
+            // contentFromTheHtml: z
+            //     .string()
+            //     .nullable()
+            //     .describe(
+            //         'The content that best corresponds to this template text, from the website being migrated, extracted from the HTML, without any modification. this field should come third',
+            //     ),
+            reasoning: z.string().describe(
+                dedent`
+                Think step by step to decide which should be the new content for the template text with this nodeId. 
+
+                In this field you should always respond to these questions:
+                - **semantic meaning**: what is the text semantic meaning for this template text? ignore its subject, just consider the  (for example hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
+                - **existing text**: What is the best piece of text from the existing website HTML you can use here? It should have same semantic meaning, for example if the template text is an hero heading, you should use site h1 heading. Don't consider text that is from different kind of elements.
+                - **length**: Is the content length too different? If yes you may have to rephrase it a bit, otherwise just return the existing website text as newContent.
+
+                Some examples of semantic meaning for sections of the template:
+                - nav (Navigation menu or links at the top of the page)
+                - footer (Section at the bottom with links, company info, and copyright notice)
+                - hero (Large, prominent section at the top with headline and call-to-action)
+                - features (Highlights of key product/service features)
+                - testimonial (Customer reviews or quotes)
+                - pricing (Pricing plans or tables)
+                - team (Team member profiles or information)
+                - stats (Key metrics or statistical information)
+                - steps (Numbered process or instruction steps)
+                - faq (Frequently asked questions and answers)
+                - contact (Contact form or contact information)
+                - newsletter (Email signup form)
+                - content (General content sections, such as blog posts, articles, or news)
+                - breadcrumbs (Navigation aid showing the page's location in the site hierarchy)
+
+                Each text in the template and website is part of a section and it also has a more fine grained semantic meaning, for example:
+                - [section]/heading (Main title or subtitle within a section)
+                - [section]/subheading (Secondary title or subtitle within a section)
+                - [section]/quote (text referencing a quote from a testimonial or customer review)
+                - [section]/paragraph (Block of text content)
+                - [section]/link (Clickable text or button leading to another page)
+                - [section]/list/item (Individual item within a bulleted or numbered list)
+                - [section]/table/row (A row of data within a table structure)
+                - [section]/image (Visual element or photograph)
+                - [section]/button (Clickable element for user actions)
+                - [section]/form/input (Text input field within a form)
+                - [section]/form/select (Dropdown selection menu within a form)
+                - [section]/form/checkbox (Checkable option within a form)
+                - [section]/form/radio (Single-select option within a form)
+                - [section]/icon (Small graphical element, often used with features or stats)
+
+                You should use these as a guide to decide the semantic meaning of each text.
+
+                
+                `,
+            ),
+            newContent: z
                 .string()
                 .describe(
-                    'The template content we are replacing. should be different from `contentFromTheHtml`, this field should come second',
+                    'The new content to apply, should be extracted from the existing website html if possible, only modify to match the template length',
                 ),
-            contentFromTheHtml: z
-                .string()
-                .nullable()
-                .describe(
-                    'The content that best corresponds to this template text, from the website being migrated, extracted from the HTML, without any modification. this field should come third',
-                ),
-            migratedContent: z
-                .string()
-                .describe(
-                    'The new content to apply, should be basically the same as `contentFromTheHtml` if possible, only modify to match the template length',
-                ),
-            href: z
-                .string()
-                .nullable()
-                .describe(
-                    'The href from the original HTML, should always have the url protocol, such as https://. Ignore all relative links, you should return an href only if it redirects to another website like twitter.com, facebook.com, etc.',
-                ),
+            // href: z
+            //     .string()
+            //     .nullable()
+            //     .describe(
+            //         'The href from the original HTML if relevant, should always have the url protocol, such as https://. Ignore all relative links, you should return an href only if it redirects to another website like twitter.com, facebook.com, etc.',
+            //     ),
         }),
     ),
 })
@@ -157,15 +198,34 @@ ${description || 'No specific instructions provided'}
 
 export const ITEMS_PER_ITERATION = 30
 
-function splitArrayInChunks(arr: any[], chunkSize: number) {
-    let result = [] as any[][]
-    for (let i = 0; i < arr.length; i += chunkSize) {
-        result.push(arr.slice(i, i + chunkSize))
+function splitTreeInChunks(
+    tree: OldTextTree,
+    maxChunkTreeSize: number = ITEMS_PER_ITERATION,
+): OldTextTree[] {
+    let result: OldTextTree[] = []
+    let buffer: OldTextTree = []
+
+    for (const node of tree) {
+        const nodes = bfsOldTextTree([...buffer, node])
+
+        if (nodes.length >= maxChunkTreeSize) {
+            // If a single node is larger than chunkSize, create a chunk for it
+            buffer.push(node)
+            result.push([...buffer])
+            buffer = []
+        } else {
+            // Add to buffer
+            buffer.push(node)
+        }
     }
+
+    // Add remaining buffer as a chunk if not empty
+    if (buffer.length > 0) {
+        result.push(buffer)
+    }
+
     return result
 }
-
-type YieldType = ReturnType<typeof rewriteTemplateContent>
 
 export async function* rewriteTemplateContent({
     description,
@@ -179,7 +239,7 @@ export async function* rewriteTemplateContent({
     onToken?: (token: string) => void
 }) {
     let finalObject: z.infer<typeof schema> | undefined
-    let missedItems: any[] = []
+
     let iterationsCount = 0
 
     let messages: CoreMessage[] = [
@@ -194,33 +254,29 @@ export async function* rewriteTemplateContent({
         },
     ]
 
-    const chunkedOldText = splitArrayInChunks(
-        oldText || [],
-        ITEMS_PER_ITERATION,
-    )
+    const chunkedOldText = splitTreeInChunks(oldText || [], ITEMS_PER_ITERATION)
 
     let model = openai('gpt-4o-2024-08-06', { structuredOutputs: true })
     // model = anthropic('claude-3-5-sonnet-20240620', {})
-    while (iterationsCount < chunkedOldText.length || missedItems.length > 0) {
+    while (iterationsCount < chunkedOldText.length) {
         console.log('iterationsCount', iterationsCount)
         let currentChunk = [] as any[]
         if (iterationsCount < chunkedOldText.length) {
             currentChunk = chunkedOldText[iterationsCount]
             console.log(`asking to convert ${currentChunk.length} items`)
-            console.log(currentChunk)
+            const serializedChunk = oldTextTreeToXml(currentChunk)
+            console.log(serializedChunk)
             messages.push({
                 role: 'user',
-                content: `Please convert the following template items (notice these are not from the website being migrate but only from the template, all this content should be replaced):\n${JSON.stringify(currentChunk, null, 2)}`,
+                content: dedent`
+                Please convert the following template section:
+                <template>
+                ${serializedChunk}
+                </template>
+
+                you should always try to replace the content of the template with the ones in the website HTML being migrated
+                `,
             })
-        } else if (missedItems.length > 0) {
-            console.log(`asking to convert ${missedItems.length} missing items`)
-            currentChunk = missedItems
-            messages.push({
-                role: 'user',
-                content: `You missed ${missedItems.length} items, please convert these remaining template items:\n${JSON.stringify(missedItems, null, 2)}`,
-            })
-        } else {
-            throw new Error('No more items to convert')
         }
 
         const stream1 = await streamObject({
@@ -261,6 +317,10 @@ export async function* rewriteTemplateContent({
             if (fullItem) {
                 console.log('rewrite item', fullItem)
                 yield {
+                    partialItem: fullItem,
+                    finalObject: undefined,
+                }
+                yield {
                     object: fullItem,
                     finalObject: undefined,
                 }
@@ -298,12 +358,80 @@ export async function* rewriteTemplateContent({
         iterationsCount++
 
         // Update missed items
-        missedItems =
-            oldText?.filter(
-                (oldItem) =>
-                    !finalObject!.convertedItems.some(
-                        (newItem) => newItem.nodeId === oldItem.nodeId,
-                    ),
-            ) || []
+        // missedItems =
+        //     oldText?.filter(
+        //         (oldItem) =>
+        //             !finalObject!.convertedItems.some(
+        //                 (newItem) => newItem.nodeId === oldItem.nodeId,
+        //             ),
+        //     ) || []
     }
+}
+
+export function oldTextTreeToXml(
+    tree: OldTextTree,
+    indent: string = '',
+): string {
+    let xml = ''
+
+    for (const node of tree) {
+        if (!node) {
+            continue
+        }
+        let name = node.name || 'Container'
+        const nodeName = name
+            .replace(/\s+/g, '_')
+            .replace(/\.+/g, '')
+            .replace(/[^a-zA-Z0-9_]/g, '_')
+            .replace(/^[^a-zA-Z_]+/, '_')
+        const attributes = [] as string[]
+
+        if (!node.children?.length) {
+            if (node.nodeId) {
+                attributes.push(`nodeId="${node.nodeId}"`)
+            }
+            if (node.fontSize) {
+                attributes.push(`fontSize="${node.fontSize}"`)
+            }
+            if (node.href) {
+                attributes.push(`href="${node.href}"`)
+            }
+        }
+
+        const attributesString =
+            attributes.length > 0 ? ' ' + attributes.join(' ') : ''
+
+        xml += `${indent}<${nodeName}${attributesString}>\n`
+
+        if (node.content) {
+            xml += `${indent}  ${escapeXml(node.content)}\n`
+        }
+
+        if (node.children && node.children.length > 0) {
+            xml += oldTextTreeToXml(node.children, indent + '  ')
+        }
+
+        xml += `${indent}</${nodeName}>\n`
+    }
+
+    return xml
+}
+
+function escapeXml(unsafe: string): string {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<':
+                return '&lt;'
+            case '>':
+                return '&gt;'
+            case '&':
+                return '&amp;'
+            case "'":
+                return '&apos;'
+            case '"':
+                return '&quot;'
+            default:
+                return c
+        }
+    })
 }

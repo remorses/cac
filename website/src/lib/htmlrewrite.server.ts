@@ -37,7 +37,7 @@ export async function formatHtmlForPrompt(
     ]
     const attributesToKeep = [
         'data-framer-name',
-        'class',
+        // 'class',
         // 'id',
         'label',
         'title',

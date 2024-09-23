@@ -3,12 +3,11 @@ import fs from 'fs'
 import path from 'path'
 import { describe, expect, test } from 'vitest'
 import { fetchFormattedHtml } from 'website/src/lib/htmlrewrite.server'
-import {
-    removeMarkdownSnippets
-} from 'website/src/lib/ndjson'
+import { removeMarkdownSnippets } from 'website/src/lib/ndjson'
 import {
     ITEMS_PER_ITERATION,
-    rewriteTemplateContent
+    oldTextTreeToXml,
+    rewriteTemplateContent,
 } from 'website/src/lib/rewrite'
 const testCases = [
     {
@@ -48,7 +47,7 @@ describe('rewrite eval', () => {
                     const stream = await rewriteTemplateContent({
                         description,
                         textToReplace,
-                        
+
                         sourceHtml,
                         signal: new AbortController().signal,
                         onToken(token) {

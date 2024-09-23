@@ -1,3 +1,4 @@
+import { OldTextTree } from 'website/src/lib/rewrite'
 import { env } from './env'
 
 export function loginRedirectUrl({ next = '' }) {
@@ -102,4 +103,71 @@ export function sortByKey<T>(arr: T[], key: (x: T) => string) {
         }
         return 0
     })
+}
+
+const namesToRemove = ['Desktop', 'Mobile', 'Tablet']
+export function cleanupOldTextTree(
+    tree: OldTextTree,
+    shouldRemoveTopTree = true,
+): OldTextTree {
+    // Helper function to process a single node
+    function processNode(
+        node: OldTextTree[number],
+    ): OldTextTree[number] | OldTextTree | null {
+        // Remove node if its name is in namesToRemove, but keep its children
+        if (node.name && namesToRemove.includes(node.name)) {
+            return node.children || null
+        }
+
+        // Use content as name if they are the same when lowercase
+        if (
+            node.content &&
+            node.name &&
+            node.content.toLowerCase() === node.name.toLowerCase()
+        ) {
+            node.name = 'text'
+        }
+
+        // Remove nodeId if the node has children
+        if (node.children && node.children.length > 0) {
+            const { nodeId, ...rest } = node
+            return {
+                ...rest,
+                children: cleanupOldTextTree(node.children, false),
+            }
+        }
+        return node
+    }
+
+    // Process each node in the tree
+    let cleanedTree = tree
+        .flatMap(processNode)
+        .filter((node): node is OldTextTree[number] => node !== null)
+
+    if (shouldRemoveTopTree) {
+        // Recursively remove top-level nodes with only one child
+        while (cleanedTree.length === 1 && cleanedTree[0].children) {
+            cleanedTree = cleanedTree[0].children
+        }
+    }
+
+    return cleanedTree
+}
+
+export function bfsOldTextTree(tree: OldTextTree): OldTextTree {
+    const queue: OldTextTree = [...tree]
+    const result: OldTextTree = []
+
+    while (queue.length > 0) {
+        const node = queue.shift()
+        if (node) {
+            result.push(node)
+
+            if (node.children && node.children.length > 0) {
+                queue.push(...node.children)
+            }
+        }
+    }
+
+    return result
 }
