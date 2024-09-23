@@ -1114,7 +1114,7 @@ importers:
     dependencies:
       '@builder.io/react-hydration-overlay':
         specifier: ^0.1.0
-        version: 0.1.0(@spotlightjs/spotlight@2.4.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(webpack@5.94.0(esbuild@0.17.6))
+        version: 0.1.0(@spotlightjs/spotlight@2.4.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(webpack@5.94.0)
       '@remix-run/node':
         specifier: ^2.11.2
         version: 2.11.2(typescript@5.6.2)
@@ -1462,6 +1462,9 @@ importers:
       spiceflow:
         specifier: workspace:*
         version: link:../spiceflow/spiceflow
+      string-dedent:
+        specifier: ^3.0.1
+        version: 3.0.1
       strip-json-comments:
         specifier: ^5.0.1
         version: 5.0.1
@@ -9513,6 +9516,10 @@ packages:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
 
+  string-dedent@3.0.1:
+    resolution: {integrity: sha512-A2zCXSgpPrpFi1lDJlDwIPYakBWeDtQZ8ZBKssB8M/WbtNEKTzsl1yCDRmHx55jSB27xZDQ6NOtRYekESWx6fw==}
+    engines: {node: '>=0.12.0'}
+
   string-hash@1.1.3:
     resolution: {integrity: sha512-kJUvRUFK49aub+a7T1nNE66EJbZBMnBgoC1UbCZ5n6bsZKBRga4KgBRTMn/pFkeCZSYtNeSyMxPDM0AXWELk2A==}
 
@@ -11070,14 +11077,14 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@builder.io/react-hydration-overlay@0.1.0(@spotlightjs/spotlight@2.4.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(webpack@5.94.0(esbuild@0.17.6))':
+  '@builder.io/react-hydration-overlay@0.1.0(@spotlightjs/spotlight@2.4.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(webpack@5.94.0)':
     dependencies:
       '@spotlightjs/spotlight': 2.4.1
       beautify: 0.0.8
       react: 19.0.0-rc-e4953922-20240919
       react-diff-viewer: 3.1.1(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
       react-dom: 19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919)
-      webpack: 5.94.0(esbuild@0.17.6)
+      webpack: 5.94.0
     transitivePeerDependencies:
       - supports-color
 
@@ -15220,7 +15227,7 @@ snapshots:
 
   '@types/node-forge@1.3.11':
     dependencies:
-      '@types/node': 22.5.5
+      '@types/node': 20.16.5
     optional: true
 
   '@types/node@12.20.55': {}
@@ -15242,6 +15249,7 @@ snapshots:
   '@types/node@22.5.5':
     dependencies:
       undici-types: 6.19.8
+    optional: true
 
   '@types/nprogress@0.2.3': {}
 
@@ -15450,7 +15458,7 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.6
+      esbuild: 0.17.19
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -15477,7 +15485,7 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.6
+      esbuild: 0.17.19
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -17039,7 +17047,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.17.19
       '@esbuild/win32-ia32': 0.17.19
       '@esbuild/win32-x64': 0.17.19
-    optional: true
 
   esbuild@0.17.6:
     optionalDependencies:
@@ -18307,7 +18314,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.5.5
+      '@types/node': 20.16.5
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -20533,6 +20540,8 @@ snapshots:
 
   streamsearch@1.1.0: {}
 
+  string-dedent@3.0.1: {}
+
   string-hash@1.1.3: {}
 
   string-width@4.2.3:
@@ -20859,16 +20868,14 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  terser-webpack-plugin@5.3.10(esbuild@0.17.6)(webpack@5.94.0(esbuild@0.17.6)):
+  terser-webpack-plugin@5.3.10(webpack@5.94.0):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.2
       terser: 5.33.0
-      webpack: 5.94.0(esbuild@0.17.6)
-    optionalDependencies:
-      esbuild: 0.17.6
+      webpack: 5.94.0
 
   terser@5.33.0:
     dependencies:
@@ -21528,7 +21535,7 @@ snapshots:
 
   webpack-sources@3.2.3: {}
 
-  webpack@5.94.0(esbuild@0.17.6):
+  webpack@5.94.0:
     dependencies:
       '@types/estree': 1.0.6
       '@webassemblyjs/ast': 1.12.1
@@ -21550,7 +21557,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.10(esbuild@0.17.6)(webpack@5.94.0(esbuild@0.17.6))
+      terser-webpack-plugin: 5.3.10(webpack@5.94.0)
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:

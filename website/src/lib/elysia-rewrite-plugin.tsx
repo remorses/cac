@@ -37,7 +37,13 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const { description, sourceHtml, exampleTextToMigrate, textToReplace } = body
+            const {
+                description,
+                sourceHtml,
+                exampleTextToMigrate,
+                textToReplace,
+            } = body
+            // console.log(sourceHtml)
             let words = 0
             let chars = 0
             let objectStream = rewriteTemplateContent({

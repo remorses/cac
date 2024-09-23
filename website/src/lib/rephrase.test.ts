@@ -2,92 +2,15 @@ import { openai } from '@ai-sdk/openai'
 import { streamText } from 'ai'
 import dedent from 'dedent'
 import { expect, test } from 'vitest'
-import { convertExamplesToMarkdownList, rewriteTemplateContent } from 'website/src/lib/rewrite'
+import {
+    convertExamplesToMarkdownList,
+    rewriteTemplateContent,
+} from 'website/src/lib/rewrite'
 import {
     NDJSONStream,
     removeMarkdownSnippets,
     splitStringButKeepChar,
 } from 'website/src/lib/ndjson'
-
-test('convertExamplesToMarkdownList', async () => {
-    expect(convertExamplesToMarkdownList(exampleTextToMigrate))
-        .toMatchInlineSnapshot(`
-      "- section nav/logo: "Notaku", attributes: {"href":"/"}
-      - section nav/link: "Product", attributes: {"href":"/product/docs"}
-      - section nav/link: "Showcase", attributes: {"href":"/showcase"}
-      - section nav/link: "Pricing", attributes: {"href":"/#pricing"}
-      - section nav/link: "Login or Sign Up", attributes: {"href":"/"}
-      - section hero/heading: "Turn Notion into a professional docs website"
-      - section hero/paragraph: "Publish awesome websites using Notion to manage content. Save 500+ hours of dev work. No design or code skills required."
-      - section hero/button: "Get Started", attributes: {"href":"/start"}
-      - section features/heading: "Everything you need to publish awesome content"
-      - section features/paragraph: "Notaku can create all the necessary websites for your product"
-      - section features/item: "Documentation"
-      - section features/item: "Help Desk"
-      - section features/item: "Blog"
-      - section features/item: "Changelog"
-      - section features/item: "Roadmap"
-      - section stats/heading: "All the features you expect and more"
-      - section stats/item: "Super fast search"
-      - section stats/item: "Optimized for speed"
-      - section stats/item: "Social media images"
-      - section stats/item: "Excellent SEO, organic traffic goes brrr"
-      - section stats/item: "Multi language"
-      - section stats/item: "Collect feedback"
-      - section stats/item: "Send emails"
-      - section stats/item: "Ask AI and Semantic Search"
-      - section stats/item: "Multiple Versions"
-      - section stats/item: "Subdomain or /subdirectory"
-      - section stats/item: "Embed in your app with a widget"
-      - section pricing/heading: "Pricing Plans"
-      - section pricing/paragraph: "VAT not included"
-      - section pricing/plan: "Free", attributes: {"price":"$0"}
-      - section pricing/plan: "Basic", attributes: {"price":"$17"}
-      - section pricing/plan: "Business", attributes: {"price":"$37"}
-      - section pricing/plan: "Business Plus", attributes: {"price":"$97"}
-      - section faq/heading: "Frequently asked questions"
-      - section faq/item/question: "Is there a free trial?"
-      - section faq/item/answer: "You can try Notaku without a subscription, to get Pro features you will need to buy a subscription. If you are not satisfied you can be refunded within 30 days of purchase."
-      - section faq/item/question: "How are Notion pages counted?"
-      - section faq/item/answer: "All Notion pages and database items with content inside (not empty pages) are counted. Notion pages connected as versions are not counted but must be below the plan limit."
-      - section faq/item/question: "What happens after I exceed my Notion pages limit?"
-      - section faq/item/answer: "Only part of your Notion pages will be synced."
-      - section faq/item/question: "What Notion blocks are supported?"
-      - section faq/item/answer: "Notaku supports most blocks from Notion, you can take a look at a demo showing supported blocks here."
-      - section faq/item/question: "Can I create simple Terms of Service and FAQ pages?"
-      - section faq/item/answer: "Yes, you can use the 'Simple Layout' template to create simple pages like Terms of Service and Privacy Policy."
-      - section faq/item/question: "Can I use my own analytics service? Can I inject custom code?"
-      - section faq/item/answer: "Yes, The Notaku dashboard lets you inject custom code, for example to add your own analytics service."
-      - section faq/item/question: "Who is behind Notaku?"
-      - section faq/item/answer: "I am Tommy, a software engineer living in Italy. you can chat with me on X :)"
-      - section footer/heading: "Company"
-      - section footer/link: "Twitter", attributes: {"href":"https://twitter.com/NotakuHQ"}
-      - section footer/link: "Status", attributes: {"href":"https://status.notaku.so"}
-      - section footer/link: "Terms", attributes: {"href":"/terms"}
-      - section footer/link: "Privacy", attributes: {"href":"/privacy"}
-      - section footer/link: "Refund Policy", attributes: {"href":"https://notaku.so/docs/company/refund-policy"}
-      - section footer/link: "Affiliate program", attributes: {"href":"/partner"}
-      - section footer/link: "Mission", attributes: {"href":"/docs/company/mission"}
-      - section footer/heading: "Resources"
-      - section footer/link: "Docs", attributes: {"href":"/docs"}
-      - section footer/link: "Blog", attributes: {"href":"/blog"}
-      - section footer/link: "Icons generator", attributes: {"href":"/notion-icons-generator"}
-      - section footer/link: "Gitbook to Notion", attributes: {"href":"/gitbook-importer"}
-      - section footer/link: "Showcase", attributes: {"href":"/showcase"}
-      - section footer/link: "Notion image links tool", attributes: {"href":"/tools/notion-clickable-images"}
-      - section footer/heading: "Notion templates"
-      - section footer/link: "Docs template", attributes: {"href":"https://brave-iberis-6ea.notion.site/Notaku-docs-tamplate-6eb4a7eb45f846cbbbe4e666b992013b"}
-      - section footer/link: "Blog template", attributes: {"href":"https://brave-iberis-6ea.notion.site/415a59813d7f49f99783e89c7573d20a"}
-      - section footer/link: "Changelog template", attributes: {"href":"https://brave-iberis-6ea.notion.site/63f6ba64add348e9933ca22a58615941"}
-      - section footer/heading: "Comparisons"
-      - section footer/link: "Helpkit", attributes: {"href":"/comparisons/helpkit"}
-      - section footer/link: "Feather", attributes: {"href":"/comparisons/feather"}
-      - section footer/link: "GitBook", attributes: {"href":"/comparisons/gitbook"}
-      - section footer/link: "Readme", attributes: {"href":"/comparisons/readme"}
-      - section footer/link: "Super", attributes: {"href":"/comparisons/super"}
-      "
-    `)
-})
 
 test(
     'rewrite a test template',

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import dedent from 'string-dedent'
 
 import { openai } from '@ai-sdk/openai'
 import { CoreMessage, streamObject } from 'ai'
@@ -9,7 +10,7 @@ export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
     textToReplace: z.array(
         z.object({
-            name: z.string().optional().nullable(),
+            hierarchy: z.string().optional().nullable(),
             content: z.string().optional().nullable(),
             nodeId: z.string().optional().nullable(),
             href: z.string().optional().nullable(),
@@ -35,14 +36,25 @@ const framerIdLen = 9
 
 function renderHtmlSnippet(sourceHtml: string = ''): string {
     if (!sourceHtml) {
+        console.warn('no sourceHtml provided')
         return ''
     }
-    return `
-Original HTML Content from existing website, you can use this as inspiration:
-\`\`\`html
-${sourceHtml}
-\`\`\`
-`
+
+    return dedent`
+    Original HTML Content from existing website being migrated:
+    \`\`\`html
+    ${sourceHtml}
+    \`\`\`
+
+    try to use the exact same content as the original website HTML, only change if the content length is vastly different, in that case you can add new content or remove it, as a last resort you can even rephrase the content to match the template length.
+
+    If the website has headings such as h1 and h2, try to reuse them, don't invent new content for these parts of the website.
+
+    for example if a website has the following html: <h1>More than a website builder</h1> in the hero section you should use "More than a website builder" exactly for the hero heading too.
+
+    Even for the rest of the website, try to keep the generated content as close as possible to the HTML of the original website.
+
+    `
 }
 
 let schema = z.object({
@@ -58,24 +70,35 @@ let schema = z.object({
                 .describe(
                     'The original node id, this field should come first.',
                 ),
-            previousContent: z
+            htmlTag: z
                 .string()
                 .describe(
-                    'The previous content of the node, from the template, this field should come second.',
+                    'The html tag of the node, helpful to understand which part of the original HTML should be used. this field should come second.',
+                ),
+            contentFromTheHtml: z
+                .string()
+                .nullable()
+                .describe(
+                    'The associated content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come third',
+                ),
+            templateContent: z
+                .string()
+                .describe(
+                    'The previous content of the node, from the template, this field should come fourth.',
                 ),
             content: z
                 .string()
                 .describe(
                     'The new content to apply to this node, based on user provided data and with similar length and phrasing as previous template node.',
                 ),
-            href: z.string().nullable().optional(),
+            href: z.string().nullable(),
         }),
     ),
 })
 
 function generateMigrationPrompt({
     description,
-    sourceHtml = '',
+    sourceHtml,
     exampleTextToMigrate,
 }): string {
     return `
@@ -90,16 +113,16 @@ Instructions:
 * Maintain similar content length and structure to the original template where appropriate.
 * Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
 * Update href values if present and relevant to the new content.
-* Use content from the website being migrated if it fits well within the template structure.
-* If the migrated content doesn't fit perfectly, create new content that matches the style and intent of the website being migrated.
-* remove anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should not be always replaced.
+* Use content from the website HTML being migrated 
+* as a last resort, If the migrated content doesn't fit, create new content that matches the style and intent of the website being migrated.
+* remove anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should be always replaced.
 * never add asterisks * at the end of the text, these would be used to add a note at the bottom of the page, but you can't add notes.
 * if the text to replace contains new lines \\n or special characters you should mimic them too and try to keep the same structure
 
+
 Remember:
-* Aim for a similar text length to the original template items. If you can't find an example content from the examples rephrase it or invent a new one
+* Aim for a similar text length as the original template items. If you can't find an example content from the examples you can invent new one
 * Ensure all items from the template are represented in the output.
-* Balance between using migrated content and creating new content that fits the template and owner's description.
 * Maintain the overall tone and style of the website being migrated.
 
 Please provide a well-structured and valid JSON object as your response, adhering to the schema defined.
@@ -134,7 +157,7 @@ export function convertExamplesToMarkdownList(
     return 'Content from Website Being Migrated:\n' + markdown
 }
 
-const ITEMS_PER_ITERATION = 25
+const ITEMS_PER_ITERATION = 30
 
 function splitArrayInChunks(arr: any[], chunkSize: number) {
     let result = [] as any[][]
@@ -152,6 +175,7 @@ export async function* rewriteTemplateContent({
     textToReplace: oldText = [],
     signal,
     onToken,
+    sourceHtml,
 }: RewriteSchema & {
     signal: AbortSignal
     onToken?: (token: string) => void
@@ -166,6 +190,7 @@ export async function* rewriteTemplateContent({
             content: generateMigrationPrompt({
                 description,
                 exampleTextToMigrate,
+                sourceHtml,
             }),
         },
     ]
@@ -181,6 +206,7 @@ export async function* rewriteTemplateContent({
         if (iterationsCount < chunkedOldText.length) {
             currentChunk = chunkedOldText[iterationsCount]
             console.log(`asking to convert ${currentChunk.length} items`)
+            console.log(currentChunk)
             messages.push({
                 role: 'user',
                 content: `Please convert the following template items:\n${JSON.stringify(currentChunk, null, 2)}`,
@@ -199,7 +225,7 @@ export async function* rewriteTemplateContent({
         const stream1 = await streamObject({
             messages,
             schema,
-            model: openai('gpt-4o'),
+            model: openai('gpt-4o-2024-08-06', { structuredOutputs: true }),
             temperature: 0.5,
             abortSignal: signal,
         })
@@ -230,7 +256,7 @@ export async function* rewriteTemplateContent({
                 finalObject: undefined,
             }
             if (fullItem) {
-                // console.log('fullItem', fullItem)
+                console.log('rewrite item', fullItem)
                 yield {
                     object: fullItem,
                     finalObject: undefined,

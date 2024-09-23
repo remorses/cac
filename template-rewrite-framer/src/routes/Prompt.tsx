@@ -146,12 +146,12 @@ function SimplePromptComponent({}) {
         let oldText = [] as RewriteSchema['textToReplace']
         let i = 0
 
-        function addText({ node, nodeId, text, name }) {
+        function addText({ node, nodeId, text, hierarchy }) {
             const textData: RewriteSchema['textToReplace'][number] = {
                 // index: i,
                 nodeId,
                 content: text,
-                name,
+                hierarchy: hierarchy,
             }
             setOldNodes((oldNodes) => [...oldNodes, { ...textData, node }])
             oldText.push(textData)
@@ -175,7 +175,7 @@ function SimplePromptComponent({}) {
                     addText({
                         nodeId,
                         text,
-                        name: await getNodePath(node),
+                        hierarchy: await getNodePath(node),
                         node,
                     })
                 }
@@ -201,7 +201,7 @@ function SimplePromptComponent({}) {
                             key.toLocaleLowerCase(),
                         )
                     ) {
-                        let name = (await getNodePath(node)) + '/' + key
+                        let hierarchy = (await getNodePath(node)) + '/' + key
                         let nodeId = nineCharsRandomString()
                         instanceNodes.set(nodeId, {
                             node,
@@ -210,7 +210,7 @@ function SimplePromptComponent({}) {
                         addText({
                             nodeId,
                             text: value,
-                            name,
+                            hierarchy,
                             node,
                         })
                     }
