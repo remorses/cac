@@ -70,11 +70,7 @@ function GetWebsiteInfo() {
                     name='domain'
                     className='rounded-md p-2 w-full bg-framer-tertiary'
                 />
-                <Button
-                    type='submit'
-                    className='framer-button-primary'
-                    isLoading={isLoading}
-                >
+                <Button type='submit' variant='primary' isLoading={isLoading}>
                     Get Content
                 </Button>
             </div>
