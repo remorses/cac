@@ -7,10 +7,6 @@ import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
 import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
 
-const building = process.env.NODE_ENV === 'production'
-
-
-
 const basePath = process.env.BASE_PATH || '/framer-plugin/github'
 
 // https://vitejs.dev/config/
@@ -26,5 +22,4 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
-    
 })

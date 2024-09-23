@@ -1,4 +1,5 @@
 import { defineConfig, Plugin } from 'vite'
+import { execSync } from 'child_process'
 import EnvironmentPlugin from 'vite-plugin-environment'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import react from '@vitejs/plugin-react-swc'
@@ -38,7 +39,6 @@ export function CopyOnEnd({ basePath, out: OUT }): Plugin {
                     return
                 }
 
-                const { execSync } = require('child_process')
                 execSync(`mkdir -p ${OUT} && cp -r ./dist/ ${OUT}`)
                 console.log('Copied build files to', OUT)
             },
