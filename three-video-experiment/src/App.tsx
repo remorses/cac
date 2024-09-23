@@ -1,5 +1,6 @@
 import {
     createBrowserRouter,
+    redirect,
     RouterProvider,
     useNavigate,
 } from 'react-router-dom'
@@ -8,6 +9,7 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import {
     bezierControlBinding,
     bfs,
+    createNewProject,
     EditorKeyframe,
     Effect,
     effectControllers,
@@ -15,6 +17,7 @@ import {
     updateEffectInTree,
 } from './effects'
 import {
+    EditorState,
     getKeyframeOnCurrentTime,
     snapToTimeGrid,
     useEditorState,
@@ -28,15 +31,57 @@ import classNames from 'classnames'
 import { Pane } from 'tweakpane'
 import { deserializeParams, threeCanvas } from './canvas'
 import { exportVideo } from './export'
-import { getMediaHandleId, pickMediaHandle } from './files'
+import { getHandleForMediaId, getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
 import { Scrubber } from './scrubber'
-import { preparePane, useForceRender, useLatestValue } from './utils'
+import {
+    generateId,
+    preparePane,
+    projectStateKey as projectStateKey,
+    useForceRender,
+    useLatestValue,
+} from './utils'
 import useMeasure, { RectReadOnly } from 'react-use-measure'
 
+const router = createBrowserRouter(
+    [
+        {
+            path: '/',
+
+            element: <DropArea />,
+        },
+        {
+            path: '/project/:projectId',
+            loader: async ({ params }) => {
+                const { projectId } = params
+                const serState = await indexDb.get(
+                    projectStateKey({ projectId }),
+                )
+                if (!serState) {
+                    return redirect('/')
+                }
+                console.log('loading editor state from db', serState)
+                const state = deserializeParams(serState) as EditorState
+                if (!state.mediaHandleId) {
+                    return redirect('/')
+                }
+                const media = await getHandleForMediaId(state.mediaHandleId)
+                if (!media) {
+                    return redirect('/')
+                }
+                console.log(media)
+                useEditorState.setState(state)
+
+                return {}
+            },
+            element: <EditorLayout />,
+        },
+    ],
+    // { basename: basePath },
+)
 function DropArea() {
     const [isDragging, setIsDragging] = useState(false)
-
+    const projectId = generateId()
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault()
         setIsDragging(true)
@@ -82,8 +127,9 @@ function DropArea() {
 
         useEditorState.setState({
             mediaHandleId,
+            projectId,
         })
-        navigate('/app')
+        navigate(`/project/${projectId}`)
     }
 
     return (
@@ -93,8 +139,8 @@ function DropArea() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={async () => {
-                await pickMedia()
-                navigate('/app')
+                const { projectId } = await pickMedia()
+                if (projectId) navigate(`/project/${projectId}`)
             }}
         >
             <div
@@ -113,29 +159,6 @@ function DropArea() {
         </div>
     )
 }
-
-const router = createBrowserRouter(
-    [
-        {
-            path: '/',
-
-            element: <DropArea />,
-        },
-        {
-            path: '/app',
-            loader: async () => {
-                const state = await indexDb.get('editorState')
-                if (state) {
-                    console.log('loading editor state from db', state)
-                    useEditorState.setState(deserializeParams(state) as any)
-                }
-                return {}
-            },
-            element: <EditorLayout />,
-        },
-    ],
-    // { basename: basePath },
-)
 
 export function App() {
     useUndoRedo()
@@ -170,35 +193,21 @@ const pickMedia = async () => {
         useEditorState.setState({
             mediaHandleId: undefined,
         })
-        return
+        return { projectId: '' }
     }
+    const projectId = generateId()
     useEditorState.setState({
+        projectId,
         mediaHandleId: await getMediaHandleId(mediaHandle),
     })
+    return { projectId }
 }
 
 function EditorLayout() {
-    const mediaHandleId = useEditorState((state) => state.mediaHandleId)
-
     const isExporting = useEditorState((state) => state.isExporting)
     const size = useEditorState((state) => state.outputSize)
 
-    if (!mediaHandleId) {
-        return (
-            <Container className='flex flex-col items-center justify-center'>
-                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
-                    <p>Select an Image or Video First</p>
-                    {/* <input
-                        type='file'
-                        className='!bg-gray-50 !rounded-lg'
-                        // accept='image/*,video/*'
-                        onChange={handleFileChange}
-                    /> */}
-                    <Button onClick={pickMedia}>Open File</Button>
-                </div>
-            </Container>
-        )
-    }
+    const navigate = useNavigate()
 
     return (
         <Container
@@ -226,6 +235,15 @@ function EditorLayout() {
                     }}
                 >
                     Open File
+                </Button>
+                <Button
+                    onClick={async () => {
+                        const { projectId } = await createNewProject()
+                        navigate(`/project/${projectId}`)
+                    }}
+                    className='w-auto'
+                >
+                    New Project
                 </Button>
                 <div className='grow'></div>
                 <Button
@@ -1180,10 +1198,6 @@ function EffectsControls() {
             )}
         </div>
     )
-}
-
-function generateId() {
-    return Math.random().toString(36).substr(2, 9)
 }
 
 export function KeyframeAddIcon(props) {

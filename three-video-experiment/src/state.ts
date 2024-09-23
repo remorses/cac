@@ -4,8 +4,9 @@ import * as indexDb from 'idb-keyval'
 
 import { bfs, EditorKeyframe, Effect, updateEffectInTree } from './effects'
 
-interface AppState {
+export interface EditorState {
     isExporting: boolean
+    projectId: string
     currentTime: number
     timeGridTick: number
     outputSize: { width: number; height: number }
@@ -37,7 +38,7 @@ import { useEffect, useRef, useState } from 'react'
 import { threeCanvas } from './canvas'
 import { deserializeParams, serializeParams } from './canvas'
 import { undoRedo } from './undoredo'
-import { debounce } from './utils'
+import { debounce, projectStateKey } from './utils'
 export function getKeyframeOnCurrentTime() {
     const state = useEditorState.getState()
     const allEffects = bfs(state.effects)
@@ -92,7 +93,7 @@ export const useThrottledCurrentTime = () => {
     const lastUpdateTimeRef = useRef(0)
 
     useEffect(() => {
-        const throttledUpdate = (state: AppState, prevState: AppState) => {
+        const throttledUpdate = (state: EditorState, prevState: EditorState) => {
             const { isPlaying } = state
             if (!isPlaying) {
                 setCurrentTime(snapToTimeGrid(state.currentTime))
@@ -116,7 +117,7 @@ export const useThrottledCurrentTime = () => {
 
     return currentTime
 }
-export const useEditorState = create<AppState>()((
+export const useEditorState = create<EditorState>()((
     setWithoutUndo,
     get,
     store,
@@ -130,25 +131,25 @@ export const useEditorState = create<AppState>()((
     } = undoRedo({
         store,
         debounce: 200,
-        onStateChange(state, prevState) {
-            if (import.meta.env.DEV) {
-                const prevSerialized = serializeParams(prevState)
+        // onStateChange(state, prevState) {
+        //     if (import.meta.env.DEV) {
+        //         const prevSerialized = serializeParams(prevState)
 
-                const currentSerialized = serializeParams(state)
-                // const diffed = diffLines(prevSerialized, currentSerialized)
-                const patch = createPatch(
-                    '',
-                    prevSerialized,
-                    currentSerialized,
-                    '',
-                    '',
-                )
+        //         const currentSerialized = serializeParams(state)
+        //         // const diffed = diffLines(prevSerialized, currentSerialized)
+        //         const patch = createPatch(
+        //             '',
+        //             prevSerialized,
+        //             currentSerialized,
+        //             '',
+        //             '',
+        //         )
 
-                // const linesDiff = diffChars(prevSerialized, currentSerialized)
+        //         // const linesDiff = diffChars(prevSerialized, currentSerialized)
 
-                console.log('state changed:', patch)
-            }
-        },
+        //         console.log('state changed:', patch)
+        //     }
+        // },
         mapState(state, prevState) {
             const prevSerialized = serializeParams(prevState)
             const currentSerialized = serializeParams(state)
@@ -164,12 +165,14 @@ export const useEditorState = create<AppState>()((
     store.subscribe(
         debounce(async (state) => {
             const temp = serializeParams(state)
-            console.log('saving editor state to db', temp)
-            await indexDb.set('editorState', temp)
-        }, 100),
+            const projectId = state.projectId
+            // console.log('saving editor state to db', temp)
+            await indexDb.set(projectStateKey({ projectId }), temp)
+        }, 200),
     )
 
     return {
+        projectId: '',
         canRedo,
         canUndo,
         redo,

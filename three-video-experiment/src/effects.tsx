@@ -1,6 +1,10 @@
 import * as THREE from 'three'
+import * as indexDb from 'idb-keyval'
+
 import { FolderApi, Pane } from 'tweakpane'
-import { threeCanvas } from './canvas'
+import { serializeParams, threeCanvas } from './canvas'
+import { useEditorState } from './state'
+import { generateId, projectStateKey } from './utils'
 
 export type Effect =
     | MeshEffect
@@ -123,6 +127,8 @@ const colorAdjustEffectController: EffectController<ColorAdjustEffect> = {
     apply(effect, params) {
         // Apply color adjust effect logic here
         // This might involve updating a shader or post-processing effect
+        threeCanvas.inverseTonemapPass.uniforms.uIntensity.value =
+            params.inverseToneMappingIntensity
     },
     configure({ effect, pane, params }) {
         const folder = pane.addFolder({
@@ -131,7 +137,7 @@ const colorAdjustEffectController: EffectController<ColorAdjustEffect> = {
         folder.addBinding(params, 'inverseToneMappingIntensity', {
             label: 'Inverse Tone Mapping',
             min: 0,
-            max: 2,
+            max: 1,
             step: 0.01,
         })
         return folder
@@ -713,3 +719,18 @@ export function updateEffectInTree(effects: Effect[], node: Partial<Effect>) {
 //         return true
 //     })
 // }
+
+export async function createNewProject() {
+    const effects = [
+        effectControllers.mesh.create({}),
+        effectControllers.camera.create({}),
+        effectControllers.depthOfField.create({}),
+        effectControllers.background.create({}),
+    ]
+    const projectId = generateId()
+    useEditorState.setState({ effects, projectId })
+    await indexDb.set(projectStateKey({ projectId }), serializeParams(effects))
+    return {
+        projectId,
+    }
+}

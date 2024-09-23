@@ -10,6 +10,7 @@ import { getHandleForMediaId, getFileForMediaHandle } from './files'
 export const exportVideo = async () => {
     const { mediaHandleId } = useEditorState.getState()
     if (!mediaHandleId) {
+        console.log('no media handle id found')
         return
     }
     const mediaHandle = await getHandleForMediaId(mediaHandleId)
@@ -24,149 +25,151 @@ export const exportVideo = async () => {
     }
 
     const state = useEditorState.getState()
-    if (media.type.startsWith('video/')) {
-        const { setIsPlaying } = useEditorState.getState()
-        setIsPlaying(false)
-        let maxHeight = 1080
-        let maxWidth = 1920
-        let width = state.outputSize.width || 1280
-        let height = state.outputSize.height || 720
-        if (height > maxHeight) {
-            width = Math.round((maxHeight / height) * width)
-            height = Math.round(maxHeight)
-        }
-        if (width > maxWidth) {
-            height = Math.round((maxWidth / width) * height)
-            width = Math.round(maxWidth)
-        }
+    if (!media.type.startsWith('video/')) {
+        // TODO
+        console.log('not a video')
+        return
+    }
+    const { setIsPlaying } = useEditorState.getState()
+    setIsPlaying(false)
+    let maxHeight = 1080
+    let maxWidth = 1920
+    let width = state.outputSize.width || 1280
+    let height = state.outputSize.height || 720
+    if (height > maxHeight) {
+        width = Math.round((maxHeight / height) * width)
+        height = Math.round(maxHeight)
+    }
+    if (width > maxWidth) {
+        height = Math.round((maxWidth / width) * height)
+        width = Math.round(maxWidth)
+    }
 
-        let outFps = 60
-        const muxer = new MP4Muxer({
-            target: new ArrayBufferTarget(),
-            fastStart: false,
-            firstTimestampBehavior: 'offset',
-            video: {
-                codec: 'avc',
+    let outFps = 60
+    const muxer = new MP4Muxer({
+        target: new ArrayBufferTarget(),
+        fastStart: false,
+        firstTimestampBehavior: 'offset',
+        video: {
+            codec: 'avc',
 
-                width: width,
-                height: height,
-                frameRate: outFps,
-            },
-        })
+            width: width,
+            height: height,
+            frameRate: outFps,
+        },
+    })
 
-        const videoEncoder = new VideoEncoder({
-            output: (chunk, meta) => {
-                muxer.addVideoChunk(chunk, meta)
-            },
-            error: (e) => {
-                console.error(e)
-            },
-        })
-        await videoEncoder.configure({
-            codec: 'avc1.4D0028', // Updated to a higher AVC level
-            width,
-            height,
-            bitrate: 5_000_000, // 5 Mbps for better quality
-            framerate: outFps,
-        })
+    const videoEncoder = new VideoEncoder({
+        output: (chunk, meta) => {
+            muxer.addVideoChunk(chunk, meta)
+        },
+        error: (e) => {
+            console.error(e)
+        },
+    })
+    await videoEncoder.configure({
+        codec: 'avc1.4D0028', // Updated to a higher AVC level
+        width,
+        height,
+        bitrate: 5_000_000, // 5 Mbps for better quality
+        framerate: outFps,
+    })
 
-        // Stop recording and download video
-        async function stopRecording() {
-            threeCanvas.afterExport()
-            await videoEncoder.flush()
+    // Stop recording and download video
+    async function stopRecording() {
+        threeCanvas.afterExport()
+        await videoEncoder.flush()
 
-            muxer.finalize()
-            videoEncoder.close()
+        muxer.finalize()
+        videoEncoder.close()
 
-            const arrayBuffer = muxer.target.buffer
-            const blob = new Blob([arrayBuffer], { type: 'video/mp4' })
+        const arrayBuffer = muxer.target.buffer
+        const blob = new Blob([arrayBuffer], { type: 'video/mp4' })
 
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'recorded-video.mp4'
-            a.click()
-            URL.revokeObjectURL(url)
-        }
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'recorded-video.mp4'
+        a.click()
+        URL.revokeObjectURL(url)
+    }
 
-        let timestamp = 0
+    let timestamp = 0
 
-        threeCanvas.beforeExport()
-        let fps: number | null = null
-        const result = await parseMedia({
-            src: media,
-            reader: webFileReader,
-            onFps(_fps) {
-                fps = _fps
-            },
-            onVideoTrack: async (track) => {
-                console.log('onVideoTrack', track)
+    threeCanvas.beforeExport()
+    let fps: number | null = null
+    const result = await parseMedia({
+        src: media,
+        reader: webFileReader,
+        onFps(_fps) {
+            fps = _fps
+        },
+        onVideoTrack: async (track) => {
+            console.log('onVideoTrack', track)
 
-                const videoDecoder = new VideoDecoder({
-                    output: (frame) => {
-                        const currentTime = timestamp / 1000 / 1000
-                        useEditorState.setState({
-                            currentTime,
-                        })
-                        const shouldRender =
-                            currentTime >= state.start &&
-                            currentTime <= state.duration
-                        if (shouldRender) {
-                            threeCanvas.changeImage(frame)
-                            threeCanvas.render({ isPreview: false })
-                            const outputFrame = new VideoFrame(
-                                threeCanvas.renderer.domElement,
-                                {
-                                    timestamp,
-                                },
-                            )
-                            videoEncoder.encode(outputFrame)
-                            outputFrame.close()
-                            frame.close()
-                        }
-                        if (!fps) {
-                            console.warn('no fps found')
-                        }
-                        const frameDuration = 1000_000 / (fps || 60)
-                        timestamp += frameDuration
-                    },
-                    error: console.error,
-                })
-                await videoDecoder.configure(track)
+            const videoDecoder = new VideoDecoder({
+                output: (frame) => {
+                    const currentTime = timestamp / 1000 / 1000
+                    useEditorState.setState({
+                        currentTime,
+                    })
+                    const shouldRender =
+                        currentTime >= state.start &&
+                        currentTime <= state.duration
+                    if (shouldRender) {
+                        threeCanvas.changeImage(frame)
+                        threeCanvas.render({ isPreview: false })
+                        const outputFrame = new VideoFrame(
+                            threeCanvas.renderer.domElement,
+                            {
+                                timestamp,
+                            },
+                        )
+                        videoEncoder.encode(outputFrame)
+                        outputFrame.close()
+                        frame.close()
+                    }
+                    if (!fps) {
+                        console.warn('no fps found')
+                    }
+                    const frameDuration = 1000_000 / (fps || 60)
+                    timestamp += frameDuration
+                },
+                error: console.error,
+            })
+            await videoDecoder.configure(track)
 
-                return async (sample) => {
-                    if (videoDecoder.decodeQueueSize > 10) {
-                        let resolve = () => {}
+            return async (sample) => {
+                if (videoDecoder.decodeQueueSize > 10) {
+                    let resolve = () => {}
 
-                        const cb = () => {
-                            resolve()
-                        }
-
-                        await new Promise<void>((r) => {
-                            resolve = r
-                            videoDecoder.addEventListener('dequeue', cb)
-                        })
-                        videoDecoder.removeEventListener('dequeue', cb)
+                    const cb = () => {
+                        resolve()
                     }
 
-                    videoDecoder.decode(new EncodedVideoChunk(sample))
+                    await new Promise<void>((r) => {
+                        resolve = r
+                        videoDecoder.addEventListener('dequeue', cb)
+                    })
+                    videoDecoder.removeEventListener('dequeue', cb)
                 }
-            },
 
-            fields: {
-                durationInSeconds: true,
-                dimensions: true,
-                fps: true,
-            },
-        })
-        if (!result.fps) {
-            console.warn('no fps in input video found')
-        }
-        // if (result.durationInSeconds) {
-        //     useEditorState.setState({ duration: result.durationInSeconds })
-        // }
+                videoDecoder.decode(new EncodedVideoChunk(sample))
+            }
+        },
 
-        await stopRecording()
-    } else {
+        fields: {
+            durationInSeconds: true,
+            dimensions: true,
+            fps: true,
+        },
+    })
+    if (!result.fps) {
+        console.warn('no fps in input video found')
     }
+    // if (result.durationInSeconds) {
+    //     useEditorState.setState({ duration: result.durationInSeconds })
+    // }
+
+    await stopRecording()
 }
