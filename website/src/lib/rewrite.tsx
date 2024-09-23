@@ -5,6 +5,7 @@ import { openai } from '@ai-sdk/openai'
 import { CoreMessage, streamObject } from 'ai'
 
 import { yieldNewArrayItems, yieldObjectStream } from 'website/src/lib/ndjson'
+import { anthropic } from '@ai-sdk/anthropic'
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
@@ -69,11 +70,11 @@ function renderHtmlSnippet({
 }
 
 let schema = z.object({
-    [STEP_BY_STEP_REASONING]: z
-        .array(z.string())
-        .describe(
-            'Chain of thoughts, think step by step. This field should come first.',
-        ),
+    // [STEP_BY_STEP_REASONING]: z
+    //     .array(z.string())
+    //     .describe(
+    //         'Chain of thoughts, think step by step. This field should come first.',
+    //     ),
     [CONVERTED_ITEMS]: z.array(
         z.object({
             nodeId: z
@@ -86,21 +87,21 @@ let schema = z.object({
             //     .describe(
             //         'The html tag of the node, helpful to understand which part of the original HTML should be used. this field should come second.',
             //     ),
+            templateContent: z
+                .string()
+                .describe(
+                    'The template content we are replacing, this field should come third. should be different from `contentFromTheHtml`, this field should come second',
+                ),
             contentFromTheHtml: z
                 .string()
                 .nullable()
                 .describe(
-                    'The associated content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come second',
-                ),
-            templateContent: z
-                .string()
-                .describe(
-                    'The previous content of the node, from the template, this field should come third.',
+                    'The content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come third',
                 ),
             content: z
                 .string()
                 .describe(
-                    'The new content to apply to this node, based on user provided data and with similar length and phrasing as previous template node.',
+                    'The new content to apply, should be very similar to `contentFromTheHtml`, only modified to match the template length and phrasing.',
                 ),
             href: z
                 .string()
@@ -133,7 +134,7 @@ Instructions:
 * as a last resort, If the migrated content doesn't fit, create new content that matches the style and intent of the website being migrated.
 * never use anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should be always replaced.
 * never add asterisks * at the end of the text, these would be used to add a note at the bottom of the page, but you can't add notes.
-* if the text to replace contains new lines \\n or special characters you should mimic them too and try to keep the same structure
+* if the template text contains new lines \\n or special characters you should mimic them too and try to keep the same structure
 
 
 Remember:
@@ -219,6 +220,8 @@ export async function* rewriteTemplateContent({
         ITEMS_PER_ITERATION,
     )
 
+    let model = openai('gpt-4o-2024-08-06', { structuredOutputs: true })
+    // model = anthropic('claude-3-5-sonnet-20240620', {})
     while (iterationsCount < chunkedOldText.length || missedItems.length > 0) {
         console.log('iterationsCount', iterationsCount)
         let currentChunk = [] as any[]
@@ -228,7 +231,7 @@ export async function* rewriteTemplateContent({
             console.log(currentChunk)
             messages.push({
                 role: 'user',
-                content: `Please convert the following template items:\n${JSON.stringify(currentChunk, null, 2)}`,
+                content: `Please convert the following template items (notice these are not from the website being migrate but only from the template, all this content should be replaced):\n${JSON.stringify(currentChunk, null, 2)}`,
             })
         } else if (missedItems.length > 0) {
             console.log(`asking to convert ${missedItems.length} missing items`)
@@ -244,7 +247,7 @@ export async function* rewriteTemplateContent({
         const stream1 = await streamObject({
             messages,
             schema,
-            model: openai('gpt-4o-2024-08-06', { structuredOutputs: true }),
+            model,
             temperature: 0.5,
             abortSignal: signal,
         })
@@ -254,19 +257,27 @@ export async function* rewriteTemplateContent({
 
             stream: yieldObjectStream({
                 stream: stream1.fullStream,
-                ms: 10,
+                ms: 200,
                 onToken,
             }),
         })
         let lastId = ''
         for await (let { fullItem, partialItem } of objectStream) {
-            if (partialItem?.nodeId?.length === framerIdLen) {
+            if (
+                partialItem?.nodeId?.length === framerIdLen &&
+                partialItem?.nodeId !== lastId
+            ) {
                 yield {
                     nextItemId: partialItem.nodeId,
-                    partialItem: partialItem,
                     finalObject: undefined,
                 }
                 lastId = partialItem.nodeId
+            }
+            if (partialItem?.nodeId?.length === framerIdLen) {
+                yield {
+                    partialItem: partialItem,
+                    finalObject: undefined,
+                }
             }
             if (fullItem) {
                 console.log('rewrite item', fullItem)
@@ -294,9 +305,9 @@ export async function* rewriteTemplateContent({
         if (!finalObject) {
             finalObject = iterationObject
         } else {
-            finalObject.stepByStepReasoning.push(
-                ...iterationObject.stepByStepReasoning,
-            )
+            // finalObject.stepByStepReasoning.push(
+            //     ...iterationObject.stepByStepReasoning,
+            // )
             finalObject.convertedItems.push(...iterationObject.convertedItems)
         }
 

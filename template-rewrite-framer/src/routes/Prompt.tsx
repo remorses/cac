@@ -321,6 +321,11 @@ function SimplePromptComponent({}) {
 
                     prevNode = currentParent
                 }
+                if (completeObj?.content) {
+                    let words = completeObj.content.split(/\s+/).length
+                    setRemainingCredits(Math.max(0, credits.remaining - words))
+                    console.log(JSON.stringify(completeObj, null, 2))
+                }
                 if (!chunk) {
                     continue
                 }
@@ -375,11 +380,6 @@ function SimplePromptComponent({}) {
                     controls[key] = chunk.content
                     console.log('setting node control', key)
                     await node.setAttributes({ controls })
-                }
-
-                if (completeObj?.content) {
-                    let words = completeObj.content.split(/\s+/).length
-                    setRemainingCredits(Math.max(0, credits.remaining - words))
                 }
 
                 if (supportsLink(node) && chunk.href) {

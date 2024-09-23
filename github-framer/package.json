@@ -16,7 +16,7 @@
         "@sindresorhus/slugify": "^2.2.1",
         "@supabase/supabase-js": "^2.45.2",
         "@tailwindcss/forms": "^0.5.7",
-        "ai": "^3.3.26",
+        "ai": "^3.4.0",
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "eventsource-parser": "^1.1.2",
