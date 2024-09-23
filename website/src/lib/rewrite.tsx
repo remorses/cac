@@ -92,18 +92,18 @@ let schema = z.object({
             templateContent: z
                 .string()
                 .describe(
-                    'The template content we are replacing, this field should come third. should be different from `contentFromTheHtml`, this field should come second',
+                    'The template content we are replacing. should be different from `contentFromTheHtml`, this field should come second',
                 ),
             contentFromTheHtml: z
                 .string()
                 .nullable()
                 .describe(
-                    'The content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come third',
+                    'The content from the website being migrated HTML, extracted from the HTML in the prompt as is, without any modification. this field should come third',
                 ),
             migratedContent: z
                 .string()
                 .describe(
-                    'The new content to apply, should be very similar to `contentFromTheHtml`, only modified to match the template length and phrasing.',
+                    'The new content to apply, should be basically the same as `contentFromTheHtml` if possible, only modify to match the template length',
                 ),
             href: z
                 .string()

@@ -37,7 +37,7 @@ export async function formatHtmlForPrompt(
     ]
     const attributesToKeep = [
         'data-framer-name',
-        // 'class',
+        'class',
         // 'id',
         'label',
         'title',
@@ -86,6 +86,9 @@ export async function formatHtmlForPrompt(
 }
 
 export async function fetchFormattedHtml(url) {
+    if (!url) {
+        return ''
+    }
     console.time(`fetchFormattedHtml: ${url}`)
     const res = await fetch(url, {
         headers: {

@@ -17,6 +17,7 @@ export const env = {
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GITHUB_APP_NAME: process.env.GITHUB_APP_NAME,
+    BROWSERBASE_DCP: process.env.BROWSERBASE_DCP,
 }
 
 // console.log(env)
