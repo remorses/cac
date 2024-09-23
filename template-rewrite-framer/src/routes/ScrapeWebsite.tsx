@@ -62,14 +62,14 @@ function ScrapeWebsiteComponent() {
                     throw error
                 }
 
-                globalState.exampleTextToMigrate.length = 0
+                // globalState.exampleTextToMigrate!.length = 0
                 for await (let chunk of stream) {
                     if (abortController.signal.aborted) {
                         break
                     }
                     // console.log('chunk', chunk)
                     if (chunk.object) {
-                        globalState.exampleTextToMigrate.push(chunk.object)
+                        // globalState.exampleTextToMigrate!.push(chunk.object)
                     }
 
                     if (chunk.extractedDescription) {

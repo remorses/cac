@@ -1,20 +1,15 @@
-import { openai } from '@ai-sdk/openai'
-import fs from 'fs'
-import { streamText } from 'ai'
 import dedent from 'dedent'
-import { describe, expect, test } from 'vitest'
-import {
-    convertExamplesToMarkdownList,
-    ITEMS_PER_ITERATION,
-    rewriteTemplateContent,
-} from 'website/src/lib/rewrite'
-import {
-    NDJSONStream,
-    removeMarkdownSnippets,
-    splitStringButKeepChar,
-} from 'website/src/lib/ndjson'
-import { fetchFormattedHtml } from 'website/src/lib/htmlrewrite.server'
+import fs from 'fs'
 import path from 'path'
+import { describe, expect, test } from 'vitest'
+import { fetchFormattedHtml } from 'website/src/lib/htmlrewrite.server'
+import {
+    removeMarkdownSnippets
+} from 'website/src/lib/ndjson'
+import {
+    ITEMS_PER_ITERATION,
+    rewriteTemplateContent
+} from 'website/src/lib/rewrite'
 const testCases = [
     {
         url: '',
@@ -53,7 +48,7 @@ describe('rewrite eval', () => {
                     const stream = await rewriteTemplateContent({
                         description,
                         textToReplace,
-                        exampleTextToMigrate: [],
+                        
                         sourceHtml,
                         signal: new AbortController().signal,
                         onToken(token) {

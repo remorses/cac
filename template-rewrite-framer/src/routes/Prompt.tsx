@@ -256,7 +256,6 @@ function SimplePromptComponent({}) {
             } catch (error) {
                 console.error('Failed to copy old text to clipboard:', error)
             }
-            return
         }
         // console.log('oldText', JSON.stringify(oldText, null, 2))
         // return
@@ -266,7 +265,7 @@ function SimplePromptComponent({}) {
                 {
                     description,
                     textToReplace: oldText,
-                    exampleTextToMigrate: globalState.exampleTextToMigrate,
+                    // exampleTextToMigrate: globalState.exampleTextToMigrate,
                     sourceHtml: globalState.sourceHtml,
                     url: globalState.sourceUrl,
                 },

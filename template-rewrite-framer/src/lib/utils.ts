@@ -221,7 +221,7 @@ export function createBuyLink({ email, orgId }) {
 }
 
 export const globalState = {
-    exampleTextToMigrate: [] as RewriteSchema['exampleTextToMigrate'],
+    // exampleTextToMigrate: [] as RewriteSchema['exampleTextToMigrate'],
     sourceHtml: '',
     extractedDescription: '',
     sourceUrl: '',

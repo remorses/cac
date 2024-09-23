@@ -37,19 +37,12 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const {
-                description,
-                sourceHtml,
-                exampleTextToMigrate,
-                textToReplace,
-                url,
-            } = body
+            const { description, sourceHtml, textToReplace, url } = body
             // console.log(sourceHtml)
             let words = 0
             let chars = 0
             let objectStream = rewriteTemplateContent({
                 description,
-                exampleTextToMigrate,
                 textToReplace,
                 sourceHtml,
                 url,
@@ -67,7 +60,8 @@ export const rewritePluginApp = new Spiceflow({
                     if (object) {
                         chars += object?.migratedContent?.length || 0
                         words +=
-                            splitIntoWords(object.migratedContent || '')?.length || 0
+                            splitIntoWords(object.migratedContent || '')
+                                ?.length || 0
                     }
 
                     if (chunk.finalObject) {

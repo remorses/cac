@@ -1,11 +1,10 @@
-import { z } from 'zod'
 import dedent from 'string-dedent'
+import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'
 import { CoreMessage, streamObject } from 'ai'
 
 import { yieldNewArrayItems, yieldObjectStream } from 'website/src/lib/ndjson'
-import { anthropic } from '@ai-sdk/anthropic'
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
@@ -20,16 +19,16 @@ export const RewriteSchema = z.object({
     ),
     sourceHtml: z.string().nullable(),
     url: z.string(),
-    exampleTextToMigrate: z
-        .array(
-            z.object({
-                hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
-                content: z.string().optional().nullable(),
-                href: z.string().optional().nullable(),
-                // other possible fields like price for price plans, etc
-            }),
-        )
-        .optional(),
+    // exampleTextToMigrate: z
+    //     .array(
+    //         z.object({
+    //             hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
+    //             content: z.string().optional().nullable(),
+    //             href: z.string().optional().nullable(),
+    //             // other possible fields like price for price plans, etc
+    //         }),
+    //     )
+    //     .optional(),
 })
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
@@ -52,9 +51,9 @@ function renderHtmlSnippet({
 
     return dedent`
     Original HTML Content from existing website being migrated, with url "${url}":
-    \`\`\`html
+    
     ${sourceHtml}
-    \`\`\`
+    
 
     if the html has duplicate elements because of hidden variants you can ignore those parts, it isn't actually duplicated content, the user never wants duplicated content.
 
@@ -98,7 +97,7 @@ let schema = z.object({
                 .string()
                 .nullable()
                 .describe(
-                    'The content from the website being migrated HTML, extracted from the HTML in the prompt as is, without any modification. this field should come third',
+                    'The content that best corresponds to this template text, from the website being migrated, extracted from the HTML, without any modification. this field should come third',
                 ),
             migratedContent: z
                 .string()
@@ -118,13 +117,12 @@ let schema = z.object({
 function generateMigrationPrompt({
     description,
     sourceHtml,
-    exampleTextToMigrate,
+
     url,
 }): string {
     return `
 You are an expert copywriter tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
 
-${convertExamplesToMarkdownList(exampleTextToMigrate)}
 
 ${renderHtmlSnippet({ sourceHtml, url })}
 
@@ -157,26 +155,6 @@ ${description || 'No specific instructions provided'}
 `
 }
 
-export function convertExamplesToMarkdownList(
-    examples: RewriteSchema['exampleTextToMigrate'],
-) {
-    if (!examples?.length) {
-        return ''
-    }
-    let markdown = ''
-
-    for (let example of examples) {
-        const { content, hierarchy, ...attributes } = example
-        markdown += `- section ${example.hierarchy}: ${JSON.stringify(example.content)}`
-        if (Object.keys(attributes).length) {
-            markdown += `, attributes: ${JSON.stringify(attributes)}`
-        }
-        markdown += '\n'
-    }
-
-    return 'Content from Website Being Migrated:\n' + markdown
-}
-
 export const ITEMS_PER_ITERATION = 30
 
 function splitArrayInChunks(arr: any[], chunkSize: number) {
@@ -190,7 +168,6 @@ function splitArrayInChunks(arr: any[], chunkSize: number) {
 type YieldType = ReturnType<typeof rewriteTemplateContent>
 
 export async function* rewriteTemplateContent({
-    exampleTextToMigrate,
     description,
     textToReplace: oldText = [],
     signal,
@@ -210,7 +187,7 @@ export async function* rewriteTemplateContent({
             role: 'user',
             content: generateMigrationPrompt({
                 description,
-                exampleTextToMigrate,
+
                 sourceHtml,
                 url,
             }),
