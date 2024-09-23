@@ -407,7 +407,7 @@ function normalizeFilePathForSearch(filePath: string) {
 }
 
 export type MarkdownPluginFrontMatterProperty = {
-    values: any[]
+    values: string[]
     name: string
     id: string
 }

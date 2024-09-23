@@ -129,15 +129,25 @@ function getFieldConfigForProp(
         }
     }
     if (type === 'enum') {
-        return {
-            type: 'enum',
-            cases: [...new Set(property.values)].map((option) => ({
-                id: option.id,
-                name: option.name,
-            })),
+        const x = {
+            type: 'enum' as const,
+            cases: [...new Set(property.values)]
+                .map((option) =>
+                    option != undefined ? String(option) : option,
+                )
+                .filter((option) => option)
+                .map((option) => ({
+                    id: option,
+                    name: option,
+                })),
             id: property.id,
             name: property.name,
         }
+        if (x.cases.length <= 1) {
+            return getFieldConfigForProp(property, 'string')
+        }
+        // console.log(x)
+        return x
     }
     return {
         type: type as any,
@@ -162,7 +172,8 @@ function getCollectionFieldForProperty(property: {
 
     if (
         onlyType === 'string' &&
-        new Set(property.values).size < property.values.length / 3 // low cardinality
+        new Set(property.values).size < property.values.length / 3 && // low cardinality
+        false // TODO enum is bugged a lot
     ) {
         return getFieldConfigForProp(property, 'enum')
     } else if (
@@ -256,9 +267,8 @@ export function MapFields({}: {}) {
                     encType: 'application/json',
                 })
             }}
-            className='flex flex-col gap-4 flex-1'
+            className='flex flex-col gap-4 '
         >
-            <hr className='' />
             <div className='flex-1 flex flex-col gap-4'>
                 <div className='grid grid-cols-[1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
                     <span className=' '>Front Matter Property</span>

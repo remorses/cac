@@ -59,7 +59,7 @@ const router = createBrowserRouter(
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 480
+                let width = 380
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
                     typeof loader
                 >
@@ -97,11 +97,15 @@ const router = createBrowserRouter(
                     >
                         <AnimatePresence mode='wait'>
                             <div className='overflow-hidden '>
+                                <div className='px-4 w-full'>
+                                    <hr className='loading-bar relative' />
+                                </div>
                                 <div
                                     ref={ref}
-                                    className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
+                                    className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
                                 >
                                     <NProgressComponent />
+                                    
                                     <Outlet />
 
                                     {showSettings && (

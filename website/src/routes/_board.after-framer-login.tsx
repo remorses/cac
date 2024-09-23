@@ -59,6 +59,7 @@ export default function Page({}) {
                     <Button
                         isLoading={isLoading}
                         className='w-auto shrink'
+                        color='primary'
                         type='submit'
                     >
                         Confirm Login

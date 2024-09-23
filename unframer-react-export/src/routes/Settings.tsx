@@ -60,7 +60,6 @@ function Component() {
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-4'>
-            <hr className='' />
             <div className='flex items-center'>
                 <div className=''>
                     Currently logged in as{' '}

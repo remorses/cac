@@ -102,7 +102,7 @@ async function loader({}: LoaderFunctionArgs) {
             id: CollectionFieldIds.content,
         },
         ...(mapFieldsConfig
-            .filter((field) => field?.type)
+            .filter((field) => field?.type && field.id)
             .filter((x) => x.id !== CollectionFieldIds.content) as any[]),
     ])
 
