@@ -65,9 +65,9 @@ export const rewritePluginApp = new Spiceflow({
                     yield chunk
                     let object = chunk.object
                     if (object) {
-                        chars += object?.content?.length || 0
+                        chars += object?.migratedContent?.length || 0
                         words +=
-                            splitIntoWords(object.content || '')?.length || 0
+                            splitIntoWords(object.migratedContent || '')?.length || 0
                     }
 
                     if (chunk.finalObject) {

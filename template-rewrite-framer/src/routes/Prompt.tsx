@@ -246,6 +246,18 @@ function SimplePromptComponent({}) {
             setError('No text found to replace')
             return
         }
+        // Copy old text to clipboard if in dev mode
+        // @ts-ignore
+        if (import.meta.env?.DEV) {
+            try {
+                const oldTextJson = JSON.stringify(oldText, null, 2)
+                await navigator.clipboard.writeText(oldTextJson)
+                console.log('Old text copied to clipboard as JSON')
+            } catch (error) {
+                console.error('Failed to copy old text to clipboard:', error)
+            }
+            return
+        }
         // console.log('oldText', JSON.stringify(oldText, null, 2))
         // return
 
@@ -321,8 +333,8 @@ function SimplePromptComponent({}) {
 
                     prevNode = currentParent
                 }
-                if (completeObj?.content) {
-                    let words = completeObj.content.split(/\s+/).length
+                if (completeObj?.migratedContent) {
+                    let words = completeObj.migratedContent.split(/\s+/).length
                     setRemainingCredits(Math.max(0, credits.remaining - words))
                     console.log(JSON.stringify(completeObj, null, 2))
                 }
@@ -362,12 +374,12 @@ function SimplePromptComponent({}) {
                     await sleep(time)
                 }
 
-                if (!chunk.content) {
+                if (!chunk.migratedContent) {
                     // console.log('no text found in chunk', chunk)
                     continue
                 }
                 if (isTextNode(node)) {
-                    await node.setText(chunk.content)
+                    await node.setText(chunk.migratedContent)
                 }
                 if (isComponentInstanceNode(node)) {
                     const instance = instanceNodes.get(chunk.nodeId)
@@ -377,7 +389,7 @@ function SimplePromptComponent({}) {
                     }
                     let key = instance.controlKey
                     let controls = { ...node.controls }
-                    controls[key] = chunk.content
+                    controls[key] = chunk.migratedContent
                     console.log('setting node control', key)
                     await node.setAttributes({ controls })
                 }

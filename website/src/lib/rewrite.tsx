@@ -20,14 +20,16 @@ export const RewriteSchema = z.object({
     ),
     sourceHtml: z.string().nullable(),
     url: z.string(),
-    exampleTextToMigrate: z.array(
-        z.object({
-            hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
-            content: z.string().optional().nullable(),
-            href: z.string().optional().nullable(),
-            // other possible fields like price for price plans, etc
-        }),
-    ),
+    exampleTextToMigrate: z
+        .array(
+            z.object({
+                hierarchy: z.string().optional().nullable(), // for example "hero/heading" or "features/paragraph"
+                content: z.string().optional().nullable(),
+                href: z.string().optional().nullable(),
+                // other possible fields like price for price plans, etc
+            }),
+        )
+        .optional(),
 })
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
@@ -98,7 +100,7 @@ let schema = z.object({
                 .describe(
                     'The content from the website being migrated, extracted from the HTML in the prompt as is, without any modification. this field should come third',
                 ),
-            content: z
+            migratedContent: z
                 .string()
                 .describe(
                     'The new content to apply, should be very similar to `contentFromTheHtml`, only modified to match the template length and phrasing.',
@@ -175,7 +177,7 @@ export function convertExamplesToMarkdownList(
     return 'Content from Website Being Migrated:\n' + markdown
 }
 
-const ITEMS_PER_ITERATION = 30
+export const ITEMS_PER_ITERATION = 30
 
 function splitArrayInChunks(arr: any[], chunkSize: number) {
     let result = [] as any[][]

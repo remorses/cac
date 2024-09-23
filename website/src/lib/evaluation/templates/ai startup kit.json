@@ -1,0 +1,573 @@
+[
+
+    {
+      "href": null,
+      "nodeId": "suzx2ff9",
+      "content": "NEW",
+      "hierarchy": "AI Kit/Navigation/Nav Features/Feature Big/AI Kit/Badge Small/text"
+    },
+    {
+      "href": null,
+      "nodeId": "5buboeis",
+      "content": "See the latest features",
+      "hierarchy": "AI Kit/Navigation/Nav Features/Feature Big/AI Kit/CTA/title"
+    },
+    {
+      "href": null,
+      "nodeId": "duqoby88",
+      "content": "Latest integration just arrived",
+      "hierarchy": "Hero/Header/Stack/AI Kit/Badge/title"
+    },
+    {
+      "href": null,
+      "nodeId": "BmPmnKu3U",
+      "content": "Boost your rankings with AI.",
+      "hierarchy": "Hero/Header/Stack/Boost your rankings with AI."
+    },
+    {
+      "href": null,
+      "nodeId": "Ga6gDXZIe",
+      "content": "Elevate your site’s visibility effortlessly with AI, where smart technology meets user-friendly SEO tools.",
+      "hierarchy": "Hero/Header/Stack/Elevate your site’s visibility effortlessly with AI, where smart technology meets user-friendly SEO tools."
+    },
+    {
+      "href": null,
+      "nodeId": "qof22ebv",
+      "content": "Start for free",
+      "hierarchy": "Hero/Header/Stack/AI Kit/Button/title"
+    },
+    {
+      "href": null,
+      "nodeId": "y8xplxOnV",
+      "content": "Trusted by the world’s most innovative teams",
+      "hierarchy": "Companies/Trusted by the world’s most innovative teams"
+    },
+    {
+      "href": null,
+      "nodeId": "vnzxmNCxb",
+      "content": "Acme Corp",
+      "hierarchy": "Companies/Grid/Stack/Stack/Acme Corp"
+    },
+    {
+      "href": null,
+      "nodeId": "DRefZ4FzF",
+      "content": "PULSE",
+      "hierarchy": "Companies/Grid/Stack/Stack/PULSE"
+    },
+    {
+      "href": null,
+      "nodeId": "pS_YhKn9o",
+      "content": "Quantum",
+      "hierarchy": "Companies/Grid/Stack/Stack/Quantum"
+    },
+    {
+      "href": null,
+      "nodeId": "AyR81ds0k",
+      "content": "Echo Valley",
+      "hierarchy": "Companies/Grid/Stack/Stack/Echo Valley"
+    },
+    {
+      "href": null,
+      "nodeId": "TFRpDFYzu",
+      "content": "Outside",
+      "hierarchy": "Companies/Grid/Stack/Stack/Outside"
+    },
+    {
+      "href": null,
+      "nodeId": "madIrBbne",
+      "content": "APEX",
+      "hierarchy": "Companies/Grid/Stack/Stack/APEX"
+    },
+    {
+      "href": null,
+      "nodeId": "DAMdlcgD8",
+      "content": "Celestial",
+      "hierarchy": "Companies/Grid/Stack/Stack/Celestial"
+    },
+    {
+      "href": null,
+      "nodeId": "Ue0rEtsfG",
+      "content": "2TWICE",
+      "hierarchy": "Companies/Grid/Stack/Stack/2TWICE"
+    },
+    {
+      "href": null,
+      "nodeId": "C9Wau5gv1",
+      "content": "Harness the power of AI, making search engine optimization intuitive and effective for all skill levels.",
+      "hierarchy": "Features/Stack/Harness the power of AI, making search engine optimization intuitive and effective for all skill levels."
+    },
+    {
+      "href": null,
+      "nodeId": "M2ZPHDqe6",
+      "content": "SEO goal setting",
+      "hierarchy": "Features/Grid/Card/Stack/SEO goal setting"
+    },
+    {
+      "href": null,
+      "nodeId": "UMkipYqxL",
+      "content": "Helps you set and achieve SEO goals with guided assistance.",
+      "hierarchy": "Features/Grid/Card/Stack/Helps you set and achieve SEO goals with guided assistance."
+    },
+    {
+      "href": null,
+      "nodeId": "kKZ8P977O",
+      "content": "User-friendly dashboard",
+      "hierarchy": "Features/Grid/Card/Stack/User-friendly dashboard"
+    },
+    {
+      "href": null,
+      "nodeId": "JxpYmedKj",
+      "content": "Perform complex SEO audits and optimizations with a single click.",
+      "hierarchy": "Features/Grid/Card/Stack/Perform complex SEO audits and optimizations with a single click."
+    },
+    {
+      "href": null,
+      "nodeId": "kxskj_v2Y",
+      "content": "Visual reports",
+      "hierarchy": "Features/Grid/Card/Stack/Visual reports"
+    },
+    {
+      "href": null,
+      "nodeId": "HybKQJqce",
+      "content": "Visual insights into your site’s performance.",
+      "hierarchy": "Features/Grid/Card/Stack/Visual insights into your site’s performance."
+    },
+    {
+      "href": null,
+      "nodeId": "Lf5rDin2b",
+      "content": "Smart Keyword Generator",
+      "hierarchy": "Features/Grid/Card/Stack/Smart Keyword Generator"
+    },
+    {
+      "href": null,
+      "nodeId": "h1vQET5E8",
+      "content": "Automatic suggestions and the best keywords to target.",
+      "hierarchy": "Features/Grid/Card/Stack/Automatic suggestions and the best keywords to target."
+    },
+    {
+      "href": null,
+      "nodeId": "X7dGENFhp",
+      "content": "Elevate your SEO efforts.",
+      "hierarchy": "Features/Stack/Stack/Elevate your SEO efforts."
+    },
+    {
+      "href": null,
+      "nodeId": "g78b24x4",
+      "content": "User-friendly dashboard",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "shqaqqgg",
+      "content": "Visual reports",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "y3diy66h",
+      "content": "Smart Keyword Generator",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "lmdmi4yx",
+      "content": "Content evaluation",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "77lscayx",
+      "content": "SEO goal setting",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "w5vvrwwj",
+      "content": "Automated alerts",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "does42sj",
+      "content": "Link Optimization Wizard",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "zesiwcuy",
+      "content": "One-click optimization",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "7kwkg6l1",
+      "content": "Competitor reports",
+      "hierarchy": "Features/Stack/Grid/AI Kit/Feature Small/title"
+    },
+    {
+      "href": null,
+      "nodeId": "VnsoGbFNe",
+      "content": "Our clients",
+      "hierarchy": "Testimonial/Header/Our clients"
+    },
+    {
+      "href": null,
+      "nodeId": "dz5DJhQEt",
+      "content": "Hear firsthand how our solutions have boosted online success for users like you.",
+      "hierarchy": "Testimonial/Header/Hear firsthand how our solutions have boosted online success for users like you."
+    },
+    {
+      "href": null,
+      "nodeId": "KieeeXdS9",
+      "content": "Pricing",
+      "hierarchy": "Pricing/Stack/Pricing"
+    },
+    {
+      "href": null,
+      "nodeId": "M1ujC7fU7",
+      "content": "Choose the right plan to meet your SEO needs and start optimizing today.",
+      "hierarchy": "Pricing/Stack/Choose the right plan to meet your SEO needs and start optimizing today."
+    },
+    {
+      "href": null,
+      "nodeId": "T9mpK1PfL",
+      "content": "Billed yearly",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Toggle/Billed yearly"
+    },
+    {
+      "href": null,
+      "nodeId": "PoRTmjKBW",
+      "content": "Basic",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Basic"
+    },
+    {
+      "href": null,
+      "nodeId": "N30TdewxQ",
+      "content": "$29/mo",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Price yearly"
+    },
+    {
+      "href": null,
+      "nodeId": "avka9fsa",
+      "content": "Keyword optimization",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "n0lzz4b2",
+      "content": "Automated meta tags",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "ow0lltzn",
+      "content": "SEO monitoring",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "1l4vxorr",
+      "content": "Monthly reports",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "ot26mdc1",
+      "content": "Try for free",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/AI Kit/Button/title"
+    },
+    {
+      "href": null,
+      "nodeId": "OwDFYmdpp",
+      "content": "Pro",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Stack/Pro"
+    },
+    {
+      "href": null,
+      "nodeId": "ohpffjf4",
+      "content": "popular",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Stack/AI Kit/Badge Small/text"
+    },
+    {
+      "href": null,
+      "nodeId": "GeexG4Q6l",
+      "content": "$79/mo",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Price yearly"
+    },
+    {
+      "href": null,
+      "nodeId": "q4suiyx2",
+      "content": "Keyword optimization",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "kiag31km",
+      "content": "Automated meta tags",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "p4erbm11",
+      "content": "SEO monitoring",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "ujtdttaa",
+      "content": "Monthly reports",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "amhdb6ih",
+      "content": "Content suggestions",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "ygbhhnsw",
+      "content": "Link optimization",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "85g01ie5",
+      "content": "Get started",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/AI Kit/Button/title"
+    },
+    {
+      "href": null,
+      "nodeId": "mEJkR8gSd",
+      "content": "Business",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Business"
+    },
+    {
+      "href": null,
+      "nodeId": "z6QQYuEpN",
+      "content": "$149/mo",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/Price yearly"
+    },
+    {
+      "href": null,
+      "nodeId": "2bglyxd9",
+      "content": "Keyword optimization",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "ry9q2wf4",
+      "content": "Automated meta tags",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "pgkyveru",
+      "content": "SEO monitoring",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "9poq6ucx",
+      "content": "Monthly reports",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "gegw7jfs",
+      "content": "Content suggestions",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "xlm53ppp",
+      "content": "Link optimization",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "uk6j0oa9",
+      "content": "Multi-user access",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "7alrnrj6",
+      "content": "API integration",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/Stack/Stack/AI Kit/Pricing Row/title"
+    },
+    {
+      "href": null,
+      "nodeId": "qjb9vizk",
+      "content": "Get started",
+      "hierarchy": "AI Kit/Pricing/Desktop Yearly/Cards/Card/AI Kit/Button/title"
+    },
+    {
+      "href": null,
+      "nodeId": "jNbMw8czL",
+      "content": "AI-driven SEO for everyone.",
+      "hierarchy": "CTA/Stack/AI-driven SEO for everyone."
+    },
+    {
+      "href": null,
+      "nodeId": "vv3uuf4c",
+      "content": "Sign up",
+      "hierarchy": "CTA/Stack/Stack/Form/Label/AI Kit/Button Form/title"
+    },
+    {
+      "href": null,
+      "nodeId": "rWBTs8Okn",
+      "content": "No credit card required",
+      "hierarchy": "CTA/Stack/Stack/Stack/No credit card required"
+    },
+    {
+      "href": null,
+      "nodeId": "htHwgSLYv",
+      "content": "·",
+      "hierarchy": "CTA/Stack/Stack/Stack/·"
+    },
+    {
+      "href": null,
+      "nodeId": "iPLEkv3W4",
+      "content": "7-days free trial",
+      "hierarchy": "CTA/Stack/Stack/Stack/7-days free trial"
+    },
+    {
+      "href": null,
+      "nodeId": "V7lsGkOXU",
+      "content": "AI Startup Website Kit",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/AI Startup Website Kit"
+    },
+    {
+      "href": null,
+      "nodeId": "fA2Sjk1Sc",
+      "content": "Product",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Product"
+    },
+    {
+      "href": null,
+      "nodeId": "rrtcjzcb6",
+      "content": "Features",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Features"
+    },
+    {
+      "href": null,
+      "nodeId": "hNVCISRuV",
+      "content": "Integrations",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Integrations"
+    },
+    {
+      "href": null,
+      "nodeId": "S9AbtRz7j",
+      "content": "Updates",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Updates"
+    },
+    {
+      "href": null,
+      "nodeId": "wiMWwOANL",
+      "content": "FAQ",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/FAQ"
+    },
+    {
+      "href": null,
+      "nodeId": "KlKQ9h0fo",
+      "content": "Pricing",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Pricing"
+    },
+    {
+      "href": null,
+      "nodeId": "CdOjbbA5q",
+      "content": "Company",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Company"
+    },
+    {
+      "href": null,
+      "nodeId": "lbV6SPbcC",
+      "content": "About",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/About"
+    },
+    {
+      "href": null,
+      "nodeId": "svm4eNSre",
+      "content": "Blog",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Blog"
+    },
+    {
+      "href": null,
+      "nodeId": "BrEGvozun",
+      "content": "Careers",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Careers"
+    },
+    {
+      "href": null,
+      "nodeId": "NC0eJBoUh",
+      "content": "Manifesto",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Manifesto"
+    },
+    {
+      "href": null,
+      "nodeId": "zGw1dP51l",
+      "content": "Press",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Press"
+    },
+    {
+      "href": null,
+      "nodeId": "nC3QgIwqa",
+      "content": "Contact",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Contact"
+    },
+    {
+      "href": null,
+      "nodeId": "r_vsAZGLh",
+      "content": "Resources",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Resources"
+    },
+    {
+      "href": null,
+      "nodeId": "lajgwvlwZ",
+      "content": "Examples",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Examples"
+    },
+    {
+      "href": null,
+      "nodeId": "efFx2ken5",
+      "content": "Community",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Community"
+    },
+    {
+      "href": null,
+      "nodeId": "DV8YVlo4z",
+      "content": "Guides",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Guides"
+    },
+    {
+      "href": null,
+      "nodeId": "j5UU679OK",
+      "content": "Docs",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Docs"
+    },
+    {
+      "href": null,
+      "nodeId": "lidVdUEUD",
+      "content": "Legal",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Legal"
+    },
+    {
+      "href": null,
+      "nodeId": "ncUfuggDf",
+      "content": "Privacy",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Privacy"
+    },
+    {
+      "href": null,
+      "nodeId": "HhoYkpfew",
+      "content": "Terms",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Terms"
+    },
+    {
+      "href": null,
+      "nodeId": "qaAEjzjKP",
+      "content": "Security",
+      "hierarchy": "AI Kit/Footer/Stack/Stack/Stack/Security"
+    }
+  ]
