@@ -55,8 +55,9 @@ let instanceNodes = new Map<
 >()
 
 function SimplePromptComponent({}) {
-    const { shouldShowProgress, buyMoreCreditsUrl, credits } =
-        useLoaderData() as LoaderReturnType<typeof loader>
+    const { buyMoreCreditsUrl, credits } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
     const [description, setDescription] = useState(
         globalState.extractedDescription || '',
     )
@@ -266,7 +267,7 @@ function SimplePromptComponent({}) {
 
         let prevBackground = null as string | null
         let lastTimeZoomed = Date.now()
-        let minTimeOnNode = 200
+        let minTimeOnNode = credits.free ? 900 : 200
         try {
             for await (let {
                 partialItem: chunk,
