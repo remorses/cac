@@ -122,7 +122,6 @@ function LoginComponent() {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    console.log('login loader')
     const { data, error } =
         await pluginApiClient.api.plugins.getSessionForKey.post({
             key,
@@ -135,8 +134,6 @@ async function loader({}: LoaderFunctionArgs) {
     //     return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
     // }
     if (data.key) {
-        console.log('login was completed, got session', data)
-
         let requestData: any = (data.requestData || {}) as any
 
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)

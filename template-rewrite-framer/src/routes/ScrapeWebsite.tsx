@@ -67,7 +67,7 @@ function ScrapeWebsiteComponent() {
                     if (abortController.signal.aborted) {
                         break
                     }
-                    console.log('chunk', chunk)
+                    // console.log('chunk', chunk)
                     if (chunk.object) {
                         globalState.exampleTextToMigrate.push(chunk.object)
                     }

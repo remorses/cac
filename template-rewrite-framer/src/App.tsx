@@ -68,7 +68,6 @@ const router = createBrowserRouter(
                 useFocusOnMount()
 
                 useLayoutEffect(() => {
-                    console.log('opening framer ui')
                     framer.showUI({
                         // title: 'Migrate',
                         position: 'top left',
@@ -141,18 +140,12 @@ const router = createBrowserRouter(
                     async loader({ request }) {
                         const { sessionKey } = await getPluginData()
 
-                        console.log(' session key', sessionKey)
-
                         if (!sessionKey) {
                             console.log(
                                 `redirecting to login because there is no session`,
                             )
                             return redirect(withMode(Paths.login))
                         }
-
-                        console.log(
-                            'redirecting to choose website from / because user is logged in',
-                        )
 
                         return redirect(
                             withMode(Paths.doYouAlreadyHaveAWebsite),
@@ -169,7 +162,7 @@ const router = createBrowserRouter(
                     element: <AlreadyHaveWebsite />,
                     handle: 'Do you already have an existing website?',
                 },
-                
+
                 WebsiteInfo(),
                 SimplePrompt(),
                 LicenseKey(),

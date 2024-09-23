@@ -58,7 +58,7 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
 export function withMode(path, query?: Record<string, any>) {
     let mode =
         new URL(window.location.href).searchParams.get('mode') || 'canvas'
-    console.log('using mode', mode)
+
     const searchParams = new URLSearchParams({ mode, ...query })
     return `${path}?${searchParams.toString()}`
 }
@@ -161,9 +161,9 @@ export async function* getParentNodes(node: AnyNode | string | null) {
     }
     if (!parent) {
         console.log('no parent found', node.id)
-        if (isTextNode(node)) {
-            console.log('text node', await node.getText())
-        }
+        // if (isTextNode(node)) {
+        //     console.log('text node', await node.getText())
+        // }
         yield node
         return
     }

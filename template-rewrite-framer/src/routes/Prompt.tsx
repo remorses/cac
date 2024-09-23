@@ -161,7 +161,7 @@ function SimplePromptComponent({}) {
             if (isTextNode(node)) {
                 const isVisible = await isNodeVisible(node)
                 if (!isVisible) {
-                    console.log('node not visible', node.id)
+                    // console.log('node not visible', node.id)
                     return
                 }
                 const text = await node.getText()
@@ -231,7 +231,7 @@ function SimplePromptComponent({}) {
             }
         }
 
-        console.log('oldText', JSON.stringify(oldText, null, 2))
+        // console.log('oldText', JSON.stringify(oldText, null, 2))
 
         if (!oldText.length) {
             setError('No text found to replace')
@@ -273,7 +273,6 @@ function SimplePromptComponent({}) {
                 object: completeObj,
                 nextItemId,
             } of eventSource!) {
-                console.log({ chunk, nextItemId })
                 if (nextItemId) {
                     let node =
                         instanceNodes.get(nextItemId)?.node ||
@@ -328,7 +327,7 @@ function SimplePromptComponent({}) {
                     (await framer.getNode(chunk.nodeId))
 
                 if (!node) {
-                    console.log(`no node found for id ${name}`)
+                    console.log(`no node found for id ${chunk.nodeId}`)
                     continue
                 }
                 const old = oldText.find(
@@ -635,7 +634,7 @@ export async function getComponentCodeUrl(componentNode?: AnyNode) {
         let id = componentNode.id
         return `https://framer.com/m/${nameEncoding}-${id}.js`
     }
-    console.log('not a component node', componentNode?.constructor?.name)
+    // console.log('not a component node', componentNode?.constructor?.name)
 }
 Object.assign(globalThis, { getComponentCodeUrl })
 
