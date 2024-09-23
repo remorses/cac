@@ -23,7 +23,7 @@ export function CopyOnEnd({ basePath, out: OUT }): Plugin {
                 base: isBuilding ? basePath : undefined,
 
                 build: {
-                    target: 'ES2020',
+                    // target: 'ES2020',
                     // 30kb in bytes
                     // assetsInlineLimit: 30720,
                     sourcemap: true,
