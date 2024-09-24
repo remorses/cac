@@ -146,165 +146,165 @@ export const rewritePluginApp = new Spiceflow({
         },
     )
 
-    .post(
-        '/scrapeWebsite',
-        async function* scrape({ request, state: store }) {
-            let body = await request.json()
-            let { domain } = body
+    // .post(
+    //     '/scrapeWebsite',
+    //     async function* scrape({ request, state: store }) {
+    //         let body = await request.json()
+    //         let { domain } = body
 
-            const userId = store.userId
-            if (!userId) {
-                throw unauthorizedResponse
-            }
-            try {
-                let url = domain
-                // if there is no https:// or http:// prefix, add it
-                if (!url.startsWith('https://') && !url.startsWith('http://')) {
-                    url = 'https://' + url
-                }
-                try {
-                    new URL(url)
-                } catch (e) {
-                    throw new Response('Invalid url', { status: 400 })
-                }
-                const alreadyScraped = await db
-                    .selectFrom('ScrapedWebsitePage')
-                    .where('url', '=', url)
-                    .selectAll()
-                    .executeTakeFirst()
-                let shouldUseCache = true
-                if (process.env.NODE_ENV !== 'development') {
-                    shouldUseCache = false
-                }
-                const dayAgo = new Date().getTime() - 1000 * 60 * 60 * 24
-                // shouldUseCache = false
-                if (
-                    alreadyScraped &&
-                    new Date(alreadyScraped?.createdAt).getTime() > dayAgo &&
-                    shouldUseCache &&
-                    alreadyScraped?.extractedDescription &&
-                    alreadyScraped?.data
-                ) {
-                    // return { message: 'already scraped', object: null }
-                    const data = alreadyScraped?.data as any
-                    if (!Array.isArray(data)) {
-                        throw new Error(
-                            'previously scraped data is not an array',
-                        )
-                    }
-                    for (let object of data) {
-                        yield {
-                            message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
-                            object,
-                        }
-                    }
-                    if (alreadyScraped.extractedDescription) {
-                        yield {
-                            message: '',
-                            object: null,
-                            extractedDescription:
-                                alreadyScraped.extractedDescription,
-                        }
-                    }
-                    return
-                }
+    //         const userId = store.userId
+    //         if (!userId) {
+    //             throw unauthorizedResponse
+    //         }
+    //         try {
+    //             let url = domain
+    //             // if there is no https:// or http:// prefix, add it
+    //             if (!url.startsWith('https://') && !url.startsWith('http://')) {
+    //                 url = 'https://' + url
+    //             }
+    //             try {
+    //                 new URL(url)
+    //             } catch (e) {
+    //                 throw new Response('Invalid url', { status: 400 })
+    //             }
+    //             const alreadyScraped = await db
+    //                 .selectFrom('ScrapedWebsitePage')
+    //                 .where('url', '=', url)
+    //                 .selectAll()
+    //                 .executeTakeFirst()
+    //             let shouldUseCache = true
+    //             if (process.env.NODE_ENV !== 'development') {
+    //                 shouldUseCache = false
+    //             }
+    //             const dayAgo = new Date().getTime() - 1000 * 60 * 60 * 24
+    //             // shouldUseCache = false
+    //             if (
+    //                 alreadyScraped &&
+    //                 new Date(alreadyScraped?.createdAt).getTime() > dayAgo &&
+    //                 shouldUseCache &&
+    //                 alreadyScraped?.extractedDescription &&
+    //                 alreadyScraped?.data
+    //             ) {
+    //                 // return { message: 'already scraped', object: null }
+    //                 const data = alreadyScraped?.data as any
+    //                 if (!Array.isArray(data)) {
+    //                     throw new Error(
+    //                         'previously scraped data is not an array',
+    //                     )
+    //                 }
+    //                 for (let object of data) {
+    //                     yield {
+    //                         message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
+    //                         object,
+    //                     }
+    //                 }
+    //                 if (alreadyScraped.extractedDescription) {
+    //                     yield {
+    //                         message: '',
+    //                         object: null,
+    //                         extractedDescription:
+    //                             alreadyScraped.extractedDescription,
+    //                     }
+    //                 }
+    //                 return
+    //             }
 
-                // if (!isValidDomain(domain)) {
-                //     throw new AppError('Invalid domain')
-                // }
+    //             // if (!isValidDomain(domain)) {
+    //             //     throw new AppError('Invalid domain')
+    //             // }
 
-                yield {
-                    message: 'analyzing the website content...',
-                    object: null,
-                }
-                // yield {
-                //     message: 'taking screenshot of the page...',
-                //     object: null,
-                // }
+    //             yield {
+    //                 message: 'analyzing the website content...',
+    //                 object: null,
+    //             }
+    //             // yield {
+    //             //     message: 'taking screenshot of the page...',
+    //             //     object: null,
+    //             // }
 
-                const [
-                    html, //
-                    // { image },
-                ] = await Promise.all([
-                    fetchFormattedHtml(url),
+    //             const [
+    //                 html, //
+    //                 // { image },
+    //             ] = await Promise.all([
+    //                 fetchFormattedHtml(url),
 
-                    // screenshot(url),
-                ])
+    //                 // screenshot(url),
+    //             ])
 
-                let stream = getWebsiteInfo({
-                    html,
-                    signal: request.signal,
-                })
-                let finalObject: Iterated<typeof stream>['finalObject']
-                let extractedDescription = ''
-                for await (let chunk of stream) {
-                    if (chunk.finalObject) {
-                        finalObject = chunk.finalObject
-                        const websiteDescription =
-                            chunk.finalObject.websiteDescription
-                        extractedDescription = websiteDescription
-                        yield {
-                            extractedDescription,
-                            message: 'scraped website description',
-                        }
-                    }
+    //             let stream = getWebsiteInfo({
+    //                 html,
+    //                 signal: request.signal,
+    //             })
+    //             let finalObject: Iterated<typeof stream>['finalObject']
+    //             let extractedDescription = ''
+    //             for await (let chunk of stream) {
+    //                 if (chunk.finalObject) {
+    //                     finalObject = chunk.finalObject
+    //                     const websiteDescription =
+    //                         chunk.finalObject.websiteDescription
+    //                     extractedDescription = websiteDescription
+    //                     yield {
+    //                         extractedDescription,
+    //                         message: 'scraped website description',
+    //                     }
+    //                 }
 
-                    let object = chunk.object
-                    if (object) {
-                        yield {
-                            object,
-                            message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
-                        }
-                    }
-                }
+    //                 let object = chunk.object
+    //                 if (object) {
+    //                     yield {
+    //                         object,
+    //                         message: `scraped ${object.hierarchy} ${JSON.stringify(object.content || '')}`,
+    //                     }
+    //                 }
+    //             }
 
-                if (request.signal.aborted) {
-                    return
-                }
+    //             if (request.signal.aborted) {
+    //                 return
+    //             }
 
-                let host = new URL(url).hostname
-                const allObjects = finalObject?.extractedContent || []
-                if (!allObjects.length) {
-                    console.log(`getWebsiteInfo did not return any objects`)
-                }
-                await Promise.all([
-                    db
-                        .insertInto('ScrapedWebsitePage')
-                        .values({
-                            url,
-                            data: JSON.stringify(allObjects),
-                            // siteId: userId,
-                            extractedDescription,
-                            domain: host,
-                            orgId: userId,
-                        })
-                        .onConflict((oc) => {
-                            return oc.columns(['url']).doUpdateSet({
-                                data: JSON.stringify(allObjects),
-                                createdAt: new Date(),
-                                extractedDescription,
-                                orgId: userId,
-                            })
-                        })
-                        .execute(),
-                ])
-            } catch (e) {
-                notifyError(e, 'error scraping website ' + domain)
-                throw e
-            } finally {
-            }
+    //             let host = new URL(url).hostname
+    //             const allObjects = finalObject?.extractedContent || []
+    //             if (!allObjects.length) {
+    //                 console.log(`getWebsiteInfo did not return any objects`)
+    //             }
+    //             await Promise.all([
+    //                 db
+    //                     .insertInto('ScrapedWebsitePage')
+    //                     .values({
+    //                         url,
+    //                         data: JSON.stringify(allObjects),
+    //                         // siteId: userId,
+    //                         extractedDescription,
+    //                         domain: host,
+    //                         orgId: userId,
+    //                     })
+    //                     .onConflict((oc) => {
+    //                         return oc.columns(['url']).doUpdateSet({
+    //                             data: JSON.stringify(allObjects),
+    //                             createdAt: new Date(),
+    //                             extractedDescription,
+    //                             orgId: userId,
+    //                         })
+    //                     })
+    //                     .execute(),
+    //             ])
+    //         } catch (e) {
+    //             notifyError(e, 'error scraping website ' + domain)
+    //             throw e
+    //         } finally {
+    //         }
 
-            // const res = await fetch(`https://${domain}`)
-        },
-        {
-            body: z.object({
-                domain: z.string(),
-            }),
-            // response: {
-            //     200: t.AsyncIterator(t.String()),
-            // },
-        },
-    )
+    //         // const res = await fetch(`https://${domain}`)
+    //     },
+    //     {
+    //         body: z.object({
+    //             domain: z.string(),
+    //         }),
+    //         // response: {
+    //         //     200: t.AsyncIterator(t.String()),
+    //         // },
+    //     },
+    // )
 
     .post(
         '/getWebsiteHtml',

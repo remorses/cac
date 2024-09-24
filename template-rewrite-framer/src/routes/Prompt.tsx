@@ -327,7 +327,10 @@ function SimplePromptComponent({}) {
                 if (completeObj?.newContent) {
                     let words = completeObj.newContent.split(/\s+/).length
                     setRemainingCredits(Math.max(0, credits.remaining - words))
-                    console.log(JSON.stringify(completeObj, null, 2))
+                    console.log(
+                        'new text',
+                        JSON.stringify(completeObj, null, 2),
+                    )
                 }
                 if (!chunk) {
                     continue
@@ -361,7 +364,7 @@ function SimplePromptComponent({}) {
 
                 if (Date.now() - lastTimeZoomed < minTimeOnNode) {
                     let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
-                    console.log('waiting before zooming', time)
+                    // console.log('waiting before zooming', time)
                     await sleep(time)
                 }
 
@@ -736,6 +739,7 @@ const possibleInstanceTextFields = [
     'description',
     'hint',
     'question',
+    'answer',
     'buttontext',
     'content',
 ]
