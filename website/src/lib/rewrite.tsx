@@ -27,7 +27,6 @@ export const RewriteSchema = z.object({
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
 
-const STEP_BY_STEP_REASONING = 'stepByStepReasoning'
 const CONVERTED_ITEMS = 'convertedItems'
 const framerIdLen = 9
 
@@ -99,9 +98,9 @@ let schema = z.object({
                 Think step by step to decide which should be the new content for the template text with this nodeId. 
 
                 In this field you should always respond to these questions:
-                - **semantic meaning**: what is the text semantic meaning for this template text? ignore its subject, just consider the  (for example hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
-                - **existing text**: What is the best piece of text from the existing website HTML you can use here? It should have same semantic meaning, for example if the template text is an hero heading, you should use site h1 heading. Don't consider text that is from different kind of elements.
-                - **length**: Is the content length too different? If yes you may have to rephrase it a bit, otherwise just return the existing website text as newContent.
+                - **section and role**: what is the text semantic meaning for this template text? ignore its subject, just consider the section and design language/role (for example main hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
+                - **existing text**: What is the best piece of text from the existing website HTML you can use here? don't return text that you already used previously. It should have same design language and role, for example if the template text is an hero heading, you should use site main h1 heading. Don't consider text that is from different kind of elements. NEVER REPEAT CONTENT.
+                - **length**: Is the content length too different? If yes you may have to rephrase it a bit, otherwise just return the existing website text.
 
                 Some examples of semantic meaning for sections of the template:
                 - nav (Navigation menu or links at the top of the page)
@@ -119,7 +118,7 @@ let schema = z.object({
                 - content (General content sections, such as blog posts, articles, or news)
                 - breadcrumbs (Navigation aid showing the page's location in the site hierarchy)
 
-                Each text in the template and website is part of a section and it also has a more fine grained semantic meaning, for example:
+                Each text in the template and website is part of a section and it also has a more fine grained role, for example:
                 - [section]/heading (Main title or subtitle within a section)
                 - [section]/subheading (Secondary title or subtitle within a section)
                 - [section]/quote (text referencing a quote from a testimonial or customer review)
@@ -244,7 +243,7 @@ export async function* rewriteTemplateContent({
 
     let messages: CoreMessage[] = [
         {
-            role: 'user',
+            role: 'system',
             content: generateMigrationPrompt({
                 description,
 
@@ -328,12 +327,6 @@ export async function* rewriteTemplateContent({
         }
 
         const iterationObject = await stream1.object
-        if (iterationObject[STEP_BY_STEP_REASONING]) {
-            console.log(
-                'step by step reasoning',
-                iterationObject[STEP_BY_STEP_REASONING],
-            )
-        }
 
         if (iterationObject[CONVERTED_ITEMS].length !== currentChunk.length) {
             console.log(
@@ -352,7 +345,22 @@ export async function* rewriteTemplateContent({
 
         messages.push({
             role: 'assistant',
-            content: JSON.stringify(iterationObject, null, 2),
+            content: JSON.stringify(
+                {
+                    [CONVERTED_ITEMS]: iterationObject[CONVERTED_ITEMS].map(
+                        (x) => {
+                            // remove reasoning, makes messages too big
+                            const { nodeId, newContent, reasoning } = x
+                            return {
+                                nodeId,
+                                newContent,
+                            }
+                        },
+                    ),
+                },
+                null,
+                2,
+            ),
         })
 
         iterationsCount++
