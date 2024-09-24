@@ -298,9 +298,11 @@ function SimplePromptComponent({}) {
                     await prevNode?.setAttributes({
                         backgroundColor: prevBackground,
                     })
+                    // prevNode = undefined
+                    // prevBackground = null
                     let currentParent = (await node.getParent()) || undefined
-                    const isVisible = await isNodeZoomable(node)
-                    if (!isVisible) {
+                    const isZoomable = await isNodeZoomable(node)
+                    if (!isZoomable) {
                         console.log('node not visible, skipping zoom')
                         continue
                     }
