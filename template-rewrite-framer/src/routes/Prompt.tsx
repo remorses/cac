@@ -752,9 +752,8 @@ async function push({
     text?: string
     nodeId: string
 }) {
-    console.log(`adding node ${node?.['name']}`)
+    // console.log(`adding node ${node?.['name']}`)
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
-    console.log('parents', parents)
     let currentLevel = tree
 
     // Traverse or create the hierarchy
