@@ -26,6 +26,7 @@ import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import {} from 'react-router'
 import { framer } from 'framer-plugin'
+import { feedbackUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
     const [{ email, orgId }, credits] = await Promise.all([
@@ -129,6 +130,14 @@ function Component() {
                 <Link to={withMode(Paths.licenseKey)}>
                     <Button className='w-auto'>Redeem License</Button>
                 </Link>
+            </div>
+            <hr className='' />
+            <div className='flex gap-2 items-center'>
+                <div className=''>Questions or requests?</div>
+                <div className='grow'></div>
+                <a target='_blank' href={feedbackUrl}>
+                    <Button className='w-auto'>Share Feedback</Button>
+                </a>
             </div>
             <hr className='' />
             <div className='flex group self-stretch gap-4 flex-row-reverse items-center'>
