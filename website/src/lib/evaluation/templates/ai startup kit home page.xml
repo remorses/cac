@@ -1,0 +1,91 @@
+
+<Container>
+  <Hero>
+    <Header>
+      <Stack>
+        <AI_Kit_Badge nodeId="kvaze3i5">
+          NEW
+        </AI_Kit_Badge>
+        <text nodeId="BmPmnKu3U" fontSize="82px">
+          The web builder for stunning sites.
+        </text>
+        <text nodeId="Ga6gDXZIe" fontSize="20px">
+          Design and publish modern sites at any scale with Framer’s web builder.
+        </text>
+        <AI_Kit_Button nodeId="rgayf1f9">
+          Sign up for free
+        </AI_Kit_Button>
+      </Stack>
+    </Header>
+  </Hero>
+  <Companies>
+    <text nodeId="y8xplxOnV" fontSize="16px">
+      Trusted by innovative companies
+    </text>
+    <Grid>
+      <Stack>
+        <Stack>
+          <text nodeId="vnzxmNCxb">
+            The Browser Company
+          </text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <text nodeId="DRefZ4FzF">
+            Dribbble
+          </text>
+        </Stack>
+      </Stack>
+    </Grid>
+  </Companies>
+  <Features>
+    <Stack>
+      <text nodeId="C9Wau5gv1" fontSize="32px">
+        Design beautiful responsive sites with an intuitive interface.
+      </text>
+    </Stack>
+    <Grid>
+      <Card>
+        <Stack>
+          <text nodeId="M2ZPHDqe6" fontSize="16px">
+            Design
+          </text>
+          <text nodeId="UMkipYqxL" fontSize="16px">
+            Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="kKZ8P977O" fontSize="16px">
+            Collaborate
+          </text>
+          <text nodeId="JxpYmedKj" fontSize="16px">
+            Collaboration in Framer is seamless. Invite your team and work together in real-time.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="kxskj_v2Y" fontSize="16px">
+            Layout &amp; Breakpoints
+          </text>
+          <text nodeId="HybKQJqce" fontSize="16px">
+            Design your site on a familiar free-form canvas. Add flexible Grids &amp; Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="Lf5rDin2b" fontSize="16px">
+            Effects
+          </text>
+          <text nodeId="h1vQET5E8" fontSize="16px">
+            Bring your site to life without code. Add effects with a few clicks and capture your audience’s attention when they land on your website.
+          </text>
+        </Stack>
+      </Card>
+    </Grid>
+  </Features>
+</AI_Kit_Footer>

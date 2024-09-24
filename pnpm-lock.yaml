@@ -1354,6 +1354,9 @@ importers:
       '@types/marked':
         specifier: ^6.0.0
         version: 6.0.0
+      '@types/xml2js':
+        specifier: ^0.4.14
+        version: 0.4.14
       '@xmorse/deployment-utils':
         specifier: ^0.2.11
         version: 0.2.11(@types/node@20.16.5)(terser@5.33.0)
@@ -1385,7 +1388,7 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       fast-xml-parser:
-        specifier: ^4.4.0
+        specifier: ^4.5.0
         version: 4.5.0
       github-slugger:
         specifier: ^2.0.0
@@ -1495,6 +1498,9 @@ importers:
       website:
         specifier: workspace:*
         version: 'link:'
+      xml2js:
+        specifier: ^0.6.2
+        version: 0.6.2
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -5113,6 +5119,9 @@ packages:
 
   '@types/ws@8.5.12':
     resolution: {integrity: sha512-3tPRkv1EtkDpzlgyKyI8pGsGZAGPEaXeu0DOj5DI25Ja91bdAYddYHbADRYVrZMRbfW+1l5YwXVDKohDJNQxkQ==}
+
+  '@types/xml2js@0.4.14':
+    resolution: {integrity: sha512-4YnrRemBShWRO2QjvUin8ESA41rH+9nQGLUGZV/1IDhi3SL9OhdpNC/MrulTWuptXKwhx/aDxE7toV0f/ypIXQ==}
 
   '@typescript-eslint/eslint-plugin@6.21.0':
     resolution: {integrity: sha512-oy9+hTPCUFpngkEZUSzbf9MxI65wbKFoQYsgPdILTfbUldp5ovUuphZVe4i30emU9M/kP+T64Di0mxl7dSw3MA==}
@@ -10499,6 +10508,10 @@ packages:
     resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
     engines: {node: '>=4.0.0'}
 
+  xml2js@0.6.2:
+    resolution: {integrity: sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA==}
+    engines: {node: '>=4.0.0'}
+
   xmlbuilder@11.0.1:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
     engines: {node: '>=4.0'}
@@ -15344,6 +15357,10 @@ snapshots:
       '@types/node': 20.16.5
 
   '@types/ws@8.5.12':
+    dependencies:
+      '@types/node': 20.16.5
+
+  '@types/xml2js@0.4.14':
     dependencies:
       '@types/node': 20.16.5
 
@@ -21731,6 +21748,11 @@ snapshots:
   ws@8.18.0: {}
 
   xml2js@0.5.0:
+    dependencies:
+      sax: 1.4.1
+      xmlbuilder: 11.0.1
+
+  xml2js@0.6.2:
     dependencies:
       sax: 1.4.1
       xmlbuilder: 11.0.1

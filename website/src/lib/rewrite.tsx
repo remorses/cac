@@ -2,10 +2,10 @@ import dedent from 'string-dedent'
 import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'
-import { CoreMessage, streamObject } from 'ai'
+import { CoreMessage, generateObject, streamObject } from 'ai'
 
 import { yieldNewArrayItems, yieldObjectStream } from 'website/src/lib/ndjson'
-import { bfsOldTextTree } from 'website/src/lib/utils'
+import { bfsOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
 
 export type OldTextTree = Array<{
     name?: string | null
@@ -226,6 +226,99 @@ function splitTreeInChunks(
     return result
 }
 
+export async function* rewriteTemplateChunk({
+    description,
+    xml,
+    signal,
+    onToken,
+    sourceHtml,
+    url,
+}: {
+    description?: string
+    xml: string
+    signal: AbortSignal
+    onToken?: (token: string) => void
+    sourceHtml?: string
+    url: string
+}) {
+    let messages: CoreMessage[] = [
+        {
+            role: 'system',
+            content: generateMigrationPrompt({
+                description,
+                sourceHtml,
+                url,
+            }),
+        },
+    ]
+
+    console.log(xml)
+    messages.push({
+        role: 'user',
+        content: dedent`
+        Please convert the following template section:
+        <template>
+        ${xml}
+        </template>
+
+        you should always try to replace the content of the template with the ones in the website HTML being migrated
+        `,
+    })
+
+    const model = openai('gpt-4o-2024-08-06', { structuredOutputs: true })
+    const stream1 = await streamObject({
+        messages,
+        schema,
+        model,
+        temperature: 0.5,
+        abortSignal: signal,
+    })
+
+    let objectStream = yieldNewArrayItems({
+        arrayField: CONVERTED_ITEMS,
+        stream: yieldObjectStream({
+            stream: stream1.fullStream,
+            ms: 200,
+            onToken,
+        }),
+    })
+
+    let lastId = ''
+    for await (let { fullItem, partialItem } of objectStream) {
+        if (
+            partialItem?.nodeId?.length === framerIdLen &&
+            partialItem?.nodeId !== lastId
+        ) {
+            yield {
+                nextItemId: partialItem.nodeId,
+                finalObject: undefined,
+            }
+            lastId = partialItem.nodeId
+        }
+        if (partialItem?.nodeId?.length === framerIdLen) {
+            yield {
+                partialItem: partialItem,
+                finalObject: undefined,
+            }
+        }
+        if (fullItem) {
+            console.log('rewrite item', fullItem)
+            // yield {
+            //     partialItem: fullItem,
+            //     finalObject: undefined,
+            // }
+            yield {
+                object: fullItem,
+                finalObject: undefined,
+            }
+        }
+    }
+
+    const iterationObject = await stream1.object
+
+    return iterationObject
+}
+
 export async function* rewriteTemplateContent({
     description,
     textToReplace: oldText = [],
@@ -239,207 +332,148 @@ export async function* rewriteTemplateContent({
 }) {
     let finalObject: z.infer<typeof schema> | undefined
 
-    let iterationsCount = 0
-
-    let messages: CoreMessage[] = [
-        {
-            role: 'system',
-            content: generateMigrationPrompt({
-                description,
-
-                sourceHtml,
-                url,
-            }),
-        },
-    ]
-
     const chunkedOldText = splitTreeInChunks(oldText || [], ITEMS_PER_ITERATION)
 
-    let model = openai('gpt-4o-2024-08-06', { structuredOutputs: true })
-    // model = anthropic('claude-3-5-sonnet-20240620', {})
-    while (iterationsCount < chunkedOldText.length) {
-        console.log('iterationsCount', iterationsCount)
-        let currentChunk = [] as any[]
-        if (iterationsCount < chunkedOldText.length) {
-            currentChunk = chunkedOldText[iterationsCount]
-            console.log(`asking to convert ${currentChunk.length} items`)
-            const serializedChunk = oldTextTreeToXml(currentChunk)
-            console.log(serializedChunk)
-            messages.push({
-                role: 'user',
-                content: dedent`
-                Please convert the following template section:
-                <template>
-                ${serializedChunk}
-                </template>
+    for (let i = 0; i < chunkedOldText.length; i++) {
+        console.log('iterationsCount', i)
+        const chunk = chunkedOldText[i]
 
-                you should always try to replace the content of the template with the ones in the website HTML being migrated
-                `,
-            })
-        }
-
-        const stream1 = await streamObject({
-            messages,
-            schema,
-            model,
-            temperature: 0.5,
-            abortSignal: signal,
+        console.log(`asking to convert ${chunk.length} items`)
+        const xml = oldTextTreeToXml(chunk)
+        const iterationObject = yield* rewriteTemplateChunk({
+            description: description || undefined,
+            xml,
+            signal,
+            onToken,
+            sourceHtml: sourceHtml || undefined,
+            url,
         })
-
-        let objectStream = yieldNewArrayItems({
-            arrayField: CONVERTED_ITEMS,
-
-            stream: yieldObjectStream({
-                stream: stream1.fullStream,
-                ms: 200,
-                onToken,
-            }),
-        })
-        let lastId = ''
-        for await (let { fullItem, partialItem } of objectStream) {
-            if (
-                partialItem?.nodeId?.length === framerIdLen &&
-                partialItem?.nodeId !== lastId
-            ) {
-                yield {
-                    nextItemId: partialItem.nodeId,
-                    finalObject: undefined,
-                }
-                lastId = partialItem.nodeId
-            }
-            if (partialItem?.nodeId?.length === framerIdLen) {
-                yield {
-                    partialItem: partialItem,
-                    finalObject: undefined,
-                }
-            }
-            if (fullItem) {
-                console.log('rewrite item', fullItem)
-                yield {
-                    partialItem: fullItem,
-                    finalObject: undefined,
-                }
-                yield {
-                    object: fullItem,
-                    finalObject: undefined,
-                }
-            }
-        }
-
-        const iterationObject = await stream1.object
-
-        if (iterationObject[CONVERTED_ITEMS].length !== currentChunk.length) {
-            console.log(
-                `LLM returned different number of items than we asked for: ${currentChunk.length} vs ${iterationObject[CONVERTED_ITEMS].length}`,
-            )
-        }
 
         if (!finalObject) {
             finalObject = iterationObject
         } else {
-            // finalObject.stepByStepReasoning.push(
-            //     ...iterationObject.stepByStepReasoning,
-            // )
             finalObject.convertedItems.push(...iterationObject.convertedItems)
         }
-
-        messages.push({
-            role: 'assistant',
-            content: JSON.stringify(
-                {
-                    [CONVERTED_ITEMS]: iterationObject[CONVERTED_ITEMS].map(
-                        (x) => {
-                            // remove reasoning, makes messages too big
-                            const { nodeId, newContent, reasoning } = x
-                            return {
-                                nodeId,
-                                newContent,
-                            }
-                        },
-                    ),
-                },
-                null,
-                2,
-            ),
-        })
-
-        iterationsCount++
-
-        // Update missed items
-        // missedItems =
-        //     oldText?.filter(
-        //         (oldItem) =>
-        //             !finalObject!.convertedItems.some(
-        //                 (newItem) => newItem.nodeId === oldItem.nodeId,
-        //             ),
-        //     ) || []
-    }
-}
-
-export function oldTextTreeToXml(
-    tree: OldTextTree,
-    indent: string = '',
-): string {
-    let xml = ''
-
-    for (const node of tree) {
-        if (!node) {
-            continue
-        }
-        let name = node.name || 'Container'
-        const nodeName = name
-            .replace(/\s+/g, '_')
-            .replace(/\.+/g, '')
-            .replace(/[^a-zA-Z0-9_]/g, '_')
-            .replace(/^[^a-zA-Z_]+/, '_')
-        const attributes = [] as string[]
-
-        if (!node.children?.length) {
-            if (node.nodeId) {
-                attributes.push(`nodeId="${node.nodeId}"`)
-            }
-            if (node.fontSize) {
-                attributes.push(`fontSize="${node.fontSize}"`)
-            }
-            if (node.href) {
-                attributes.push(`href="${node.href}"`)
-            }
-        }
-
-        const attributesString =
-            attributes.length > 0 ? ' ' + attributes.join(' ') : ''
-
-        xml += `${indent}<${nodeName}${attributesString}>\n`
-
-        if (node.content) {
-            xml += `${indent}  ${escapeXml(node.content)}\n`
-        }
-
-        if (node.children && node.children.length > 0) {
-            xml += oldTextTreeToXml(node.children, indent + '  ')
-        }
-
-        xml += `${indent}</${nodeName}>\n`
     }
 
-    return xml
+    return finalObject
 }
 
-function escapeXml(unsafe: string): string {
-    return unsafe.replace(/[<>&'"]/g, (c) => {
-        switch (c) {
-            case '<':
-                return '&lt;'
-            case '>':
-                return '&gt;'
-            case '&':
-                return '&amp;'
-            case "'":
-                return '&apos;'
-            case '"':
-                return '&quot;'
-            default:
-                return c
+export async function extractExternalLinks({
+    websiteUrl,
+    formattedHtml,
+    oldText,
+}: {
+    websiteUrl: string
+    formattedHtml?: string
+    oldText?: OldTextTree
+}): Promise<z.infer<typeof LinksSchema>> {
+    if (!formattedHtml) {
+        return []
+    }
+
+    if (!oldText?.length) {
+        return []
+    }
+
+    oldText = structuredClone(
+        oldText.filter((node) => {
+            return bfsOldTextTree([node]).some(
+                (child) => child.href !== undefined,
+            )
+        }),
+    )
+
+    // remove node ids if node has no href, this makes it easier for the LLM to remember node ids
+    const allNodes = bfsOldTextTree(oldText)
+    for (let node of allNodes) {
+        if (!node.href) {
+            delete node.nodeId
         }
+    }
+
+    if (!oldText.length) {
+        return []
+    }
+
+    const prompt = createExtractLinksPrompt({
+        websiteUrl,
+        formattedHtml,
+        oldText,
     })
+
+    const res = await generateObject({
+        model: openai('gpt-4o-2024-08-06', {
+            structuredOutputs: true,
+        }),
+        messages: [
+            {
+                role: 'user',
+                content: prompt,
+            },
+        ],
+        schema: LinksSchema,
+    })
+
+    const extractedLinks = await res.object
+
+    return extractedLinks
+}
+
+const LinkSchema = z.object({
+    nodeId: z.string().describe('The nodeId of the link'),
+    reasoning: z.string().describe(
+        dedent`
+            A detailed reasoning to decide the new url for the link, extracted from the HTML document anchor tags, it should always answer the following questions:
+            - *section and role*: what is the section of the document the link is part of? for example footer link, a header nav, a feature link item, etc.
+            - *where does the link redirect to and why*: what is the goal of the link content? what is this link redirecting to and what it's for?
+            `,
+    ),
+    newHref: z
+        .string()
+        .url()
+        .describe(
+            'The external full URL of the link, should come from the HTML document',
+        ),
+    // newContent: z
+    //     .string()
+    //     .describe('The visible text content of the link, in text format'),
+    shouldOpenInNewTab: z
+        .boolean()
+        .describe(
+            'Whether the link is set to open in a new tab (true) or not (false), based on the target _blank attribute',
+        ),
+})
+
+const LinksSchema = z.array(LinkSchema)
+
+export function createExtractLinksPrompt({
+    websiteUrl,
+    formattedHtml,
+    oldText,
+}: {
+    websiteUrl: string
+    formattedHtml: string
+    oldText: OldTextTree
+}): string {
+    const xml = oldTextTreeToXml(oldText)
+    console.log(xml)
+    return `
+Extract all external links from the HTML document. Only include links that redirect to websites different from ${websiteUrl}.
+
+This is the HTML document for the url ${websiteUrl}:
+
+${formattedHtml}
+
+This is the template content in xml format, you need to return new links for these templates that have links, using their nodeId 
+
+<template>
+${xml}
+</template>
+
+
+Only return external links, not relative links or links with ${websiteUrl} as base url.
+
+Return all anchor tags links in the document
+`
 }

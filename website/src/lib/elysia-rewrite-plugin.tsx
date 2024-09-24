@@ -9,7 +9,11 @@ import {
     getWebsiteDescription,
     getWebsiteInfo,
 } from 'website/src/lib/htmlrewrite.server'
-import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
+import {
+    extractExternalLinks,
+    RewriteSchema,
+    rewriteTemplateContent,
+} from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { Iterated } from 'website/src/lib/utils'
 import { z } from 'zod'
@@ -38,7 +42,13 @@ export const rewritePluginApp = new Spiceflow({
                 JSON.stringify(body.description),
             )
             const { description, sourceHtml, textToReplace, url } = body
-            // console.log(sourceHtml)
+            let linksPromise = extractExternalLinks({
+                websiteUrl: url,
+                formattedHtml: sourceHtml || undefined,
+            }).catch((e) => {
+                notifyError(e, 'error extracting links')
+                return []
+            })
             let words = 0
             let chars = 0
             let objectStream = rewriteTemplateContent({
@@ -66,6 +76,13 @@ export const rewritePluginApp = new Spiceflow({
                     if (chunk.finalObject) {
                         finalObject = chunk.finalObject
                     }
+                }
+                let links = await linksPromise
+                yield {
+                    links,
+                    partialItem: null,
+                    object: null,
+                    nextItemId: null,
                 }
             } catch (e) {
                 notifyError(e, 'error rephrasing ')

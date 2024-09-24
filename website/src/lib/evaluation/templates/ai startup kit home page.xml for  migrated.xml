@@ -1,0 +1,88 @@
+<Container>
+  <Hero>
+    <Header>
+      <Stack>
+        <AI_Kit_Badge nodeId="kvaze3i5">
+        </AI_Kit_Badge>
+        <text>
+          <_ nodeId="BmPmnKu3U" fontSize="82px">
+          </_>
+          <_ nodeId="Ga6gDXZIe" fontSize="20px">
+          </_>
+        </text>
+        <AI_Kit_Button nodeId="rgayf1f9">
+        </AI_Kit_Button>
+      </Stack>
+    </Header>
+  </Hero>
+  <Companies>
+    <text nodeId="y8xplxOnV" fontSize="16px">
+    </text>
+    <Grid>
+      <Stack>
+        <_>
+          <Stack>
+            <text nodeId="vnzxmNCxb">
+            </text>
+          </Stack>
+        </_>
+        <_>
+          <Stack>
+            <text nodeId="DRefZ4FzF">
+            </text>
+          </Stack>
+        </_>
+      </Stack>
+    </Grid>
+  </Companies>
+  <Features>
+    <Stack>
+      <text nodeId="C9Wau5gv1" fontSize="32px">
+      </text>
+    </Stack>
+    <Grid>
+      <Card>
+        <_>
+          <Stack>
+            <text>
+              <_ nodeId="M2ZPHDqe6" fontSize="16px">
+              </_>
+              <_ nodeId="UMkipYqxL" fontSize="16px">
+              </_>
+            </text>
+          </Stack>
+        </_>
+        <_>
+          <Stack>
+            <text>
+              <_ nodeId="kKZ8P977O" fontSize="16px">
+              </_>
+              <_ nodeId="JxpYmedKj" fontSize="16px">
+              </_>
+            </text>
+          </Stack>
+        </_>
+        <_>
+          <Stack>
+            <text>
+              <_ nodeId="kxskj_v2Y" fontSize="16px">
+              </_>
+              <_ nodeId="HybKQJqce" fontSize="16px">
+              </_>
+            </text>
+          </Stack>
+        </_>
+        <_>
+          <Stack>
+            <text>
+              <_ nodeId="Lf5rDin2b" fontSize="16px">
+              </_>
+              <_ nodeId="h1vQET5E8" fontSize="16px">
+              </_>
+            </text>
+          </Stack>
+        </_>
+      </Card>
+    </Grid>
+  </Features>
+</Container>

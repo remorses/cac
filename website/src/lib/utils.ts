@@ -1,4 +1,6 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
+import { XMLParser } from 'fast-xml-parser'
+import { parseString } from 'xml2js'
 import { env } from './env'
 
 export function loginRedirectUrl({ next = '' }) {
@@ -116,24 +118,25 @@ export function cleanupOldTextTree(
     ): OldTextTree[number] | OldTextTree | null {
         // Remove node if its name is in namesToRemove, but keep its children
         if (node.name && namesToRemove.includes(node.name)) {
-            return node.children || null
+            return node.children?.flatMap(processNode).filter(isTruthy) || []
         }
 
+        console.log('node', node.content, node.name)
         // Use content as name if they are the same when lowercase
         if (
             node.content &&
             node.name &&
-            node.content.toLowerCase() === node.name.toLowerCase()
+            node.content.trim().toLowerCase() === node.name.trim().toLowerCase()
         ) {
             node.name = 'text'
         }
 
         // Remove nodeId if the node has children
-        if (node.children && node.children.length > 0) {
+        if (node.children?.length) {
             const { nodeId, ...rest } = node
             return {
                 ...rest,
-                children: cleanupOldTextTree(node.children, false),
+                children: node.children.flatMap(processNode).filter(isTruthy),
             }
         }
         return node
@@ -147,7 +150,15 @@ export function cleanupOldTextTree(
     if (shouldRemoveTopTree) {
         // Recursively remove top-level nodes with only one child
         while (cleanedTree.length === 1 && cleanedTree[0].children) {
+            const removedNodeName = cleanedTree[0].name
             cleanedTree = cleanedTree[0].children
+            // Add the removed node's name to all child nodes
+            cleanedTree = cleanedTree.map((child) => {
+                if (child.name) {
+                    child.name = `${removedNodeName}_${child.name}`
+                }
+                return child
+            })
         }
     }
 
@@ -167,6 +178,127 @@ export function bfsOldTextTree(tree: OldTextTree): OldTextTree {
                 queue.push(...node.children)
             }
         }
+    }
+
+    return result
+}
+
+export function oldTextTreeToXml(
+    tree: OldTextTree,
+    indent: string = '',
+): string {
+    let xml = ''
+
+    for (const node of tree) {
+        if (!node) {
+            continue
+        }
+        let name = node.name || 'Container'
+        const nodeName = name
+            .replace(/\s+/g, '_')
+            .replace(/\.+/g, '')
+            .replace(/[^a-zA-Z0-9_]/g, '_')
+            .replace(/^[^a-zA-Z_]+/, '_')
+        const attributes = [] as string[]
+
+        if (!node.children?.length) {
+            if (node.nodeId) {
+                attributes.push(`nodeId="${node.nodeId}"`)
+            }
+            if (node.fontSize) {
+                attributes.push(`fontSize="${node.fontSize}"`)
+            }
+            if (node.href) {
+                attributes.push(`href="${node.href}"`)
+            }
+        }
+
+        const attributesString =
+            attributes.length > 0 ? ' ' + attributes.join(' ') : ''
+
+        xml += `${indent}<${nodeName}${attributesString}>\n`
+
+        if (node.content) {
+            xml += `${indent}  ${escapeXml(node.content)}\n`
+        }
+
+        if (node.children && node.children.length > 0) {
+            xml += oldTextTreeToXml(node.children, indent + '  ')
+        }
+
+        xml += `${indent}</${nodeName}>\n`
+    }
+
+    return xml
+}
+
+function escapeXml(unsafe: string): string {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<':
+                return '&lt;'
+            case '>':
+                return '&gt;'
+            case '&':
+                return '&amp;'
+            case "'":
+                return '&apos;'
+            case '"':
+                return '&quot;'
+            default:
+                return c
+        }
+    })
+}
+
+export async function parseXmlToOldTextTree(xml: string): Promise<OldTextTree> {
+    const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '',
+        textNodeName: '_',
+    })
+    const result = parser.parse(xml)
+    return convertToOldTextTree(result)
+}
+
+function convertToOldTextTree(obj: any): OldTextTree {
+    if (typeof obj === 'string') {
+        return [{ content: obj }]
+    }
+
+    const result: OldTextTree = []
+
+    for (const [key, value] of Object.entries(obj)) {
+        if (key === '_') continue // Skip text content, it's handled separately
+
+        const node: any = { name: key }
+
+        if (value && typeof value === 'object') {
+            // Handle attributes
+            const attributes = Object.entries(value).filter(
+                ([k, v]) => k !== '_' && typeof v !== 'object',
+            )
+            Object.assign(node, Object.fromEntries(attributes))
+
+            // Handle text content
+            if ('_' in value) {
+                node.content = value._
+            }
+
+            // Handle children
+            const children = Object.entries(value).filter(
+                ([k, v]) => k !== '_' && typeof v === 'object',
+            )
+            if (children.length > 0) {
+                node.children = convertToOldTextTree(
+                    Object.fromEntries(children),
+                )
+            }
+        } else if (value !== undefined) {
+            node.content = String(value).trim()
+        }
+
+        result.push(node)
     }
 
     return result

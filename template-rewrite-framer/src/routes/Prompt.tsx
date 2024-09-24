@@ -50,6 +50,7 @@ import { OldTextTree, RewriteSchema } from 'website/src/lib/rewrite'
 import {
     bfsOldTextTree,
     cleanupOldTextTree,
+    oldTextTreeToXml,
     sleep,
 } from 'website/src/lib/utils'
 
@@ -230,8 +231,9 @@ function SimplePromptComponent({}) {
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
-                const oldTextJson = JSON.stringify(oldText, null, 2)
-                await navigator.clipboard.writeText(oldTextJson)
+                const xml = oldTextTreeToXml(oldText)
+                await navigator.clipboard.writeText(xml)
+                await navigator.clipboard.writeText(JSON.stringify(oldText, null, 2))
                 console.log('Old text copied to clipboard as JSON')
             } catch (error) {
                 console.error('Failed to copy old text to clipboard:', error)
@@ -279,11 +281,12 @@ function SimplePromptComponent({}) {
         let minTimeOnNode = credits.free ? 900 : 200
         const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
         try {
-            for await (let {
-                partialItem: chunk,
-                object: completeObj,
-                nextItemId,
-            } of eventSource!) {
+            for await (let streamPart of eventSource!) {
+                const {
+                    partialItem: chunk,
+                    object: completeObj,
+                    nextItemId,
+                } = streamPart
                 if (nextItemId) {
                     let node =
                         instanceNodes.get(nextItemId)?.node ||
@@ -294,6 +297,7 @@ function SimplePromptComponent({}) {
 
                         continue
                     }
+                    // console.log(`nextItemId is ${nextItemId} ${node?.name}`)
 
                     await prevNode?.setAttributes({
                         backgroundColor: prevBackground,
@@ -331,6 +335,12 @@ function SimplePromptComponent({}) {
                         'new text',
                         JSON.stringify(completeObj, null, 2),
                     )
+                }
+                if ('links' in streamPart && streamPart.links?.length) {
+                    const links = streamPart.links
+                    console.log('found links', links)
+
+
                 }
                 if (!chunk) {
                     continue

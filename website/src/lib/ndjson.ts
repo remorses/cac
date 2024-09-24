@@ -141,6 +141,10 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
 
     if (lastItem != null) {
         yield {
+            partialItem: lastItem,
+            fullItem: undefined,
+        }
+        yield {
             fullItem: lastItem,
             partialItem: undefined,
         }
