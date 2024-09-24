@@ -105,9 +105,7 @@ export async function fetchFormattedHtml(url) {
     })
     if (!res.ok) {
         console.timeEnd(`fetchFormattedHtml: ${url}`)
-        throw new Error(
-            `Could not fetch html for ${url}, error ${res.status}`,
-        )
+        throw new Error(`Could not fetch html for ${url}, error ${res.status}`)
     }
     console.time(`formatHtmlForPrompt: ${url}`)
     const formattedHtml = await formatHtmlForPrompt(res)
@@ -275,7 +273,7 @@ export async function* getWebsiteInfo({
     // }
 }
 
-export async function getWebsiteDescription({ html, signal }) {
+export async function getWebsiteDescription({ html, url, signal }) {
     console.time('getWebsiteDescription ' + html.length)
     const result = await generateText({
         abortSignal: signal,

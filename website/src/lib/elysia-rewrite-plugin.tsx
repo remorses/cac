@@ -60,8 +60,7 @@ export const rewritePluginApp = new Spiceflow({
                     if (object) {
                         chars += object?.newContent?.length || 0
                         words +=
-                            splitIntoWords(object.newContent || '')
-                                ?.length || 0
+                            splitIntoWords(object.newContent || '')?.length || 0
                     }
 
                     if (chunk.finalObject) {
@@ -328,11 +327,55 @@ export const rewritePluginApp = new Spiceflow({
             } catch (e) {
                 throw new Response('Invalid url', { status: 400 })
             }
-            const html = await fetchFormattedHtml(url)
+            const [html, existingEntry] = await Promise.all([
+                fetchFormattedHtml(url),
+                db
+                    .selectFrom('ScrapedWebsitePage')
+                    .selectAll()
+                    .where('url', '=', url)
+                    .executeTakeFirst(),
+            ])
+            // Check if the database already has a description for this URL
+
+            const dayAgo = new Date().getTime() - 1000 * 60 * 60 * 24
+            if (
+                existingEntry?.extractedDescription &&
+                new Date(existingEntry.createdAt).getTime() > dayAgo
+            ) {
+                return {
+                    html,
+                    extractedDescription: existingEntry.extractedDescription,
+                }
+            }
+
+            // If no existing description, proceed to extract a new one
             const { extractedDescription } = await getWebsiteDescription({
                 html,
+                url,
                 signal: request.signal,
             })
+
+            await Promise.all([
+                db
+                    .insertInto('ScrapedWebsitePage')
+                    .values({
+                        url,
+                        // siteId: userId,
+                        data: JSON.stringify([]),
+                        extractedDescription,
+                        domain,
+                        orgId: userId,
+                    })
+                    .onConflict((oc) => {
+                        return oc.columns(['url']).doUpdateSet({
+                            data: JSON.stringify([]),
+                            createdAt: new Date(),
+                            extractedDescription,
+                            orgId: userId,
+                        })
+                    })
+                    .execute(),
+            ])
             return {
                 html,
                 extractedDescription,
