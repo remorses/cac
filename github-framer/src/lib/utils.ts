@@ -60,9 +60,6 @@ export enum RouteIds {
 
 export const globalState = {}
 
-// @ts-ignore
-export const basePath = import.meta.env.BASE_URL || '/'
-
 export enum PluginDataKeys {
     sessionKey = 'sessionKey',
     githubRepoSlug = 'repoSlug',

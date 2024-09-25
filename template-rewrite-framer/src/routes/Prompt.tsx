@@ -343,14 +343,7 @@ function SimplePromptComponent({}) {
                         JSON.stringify(completeObj, null, 2),
                     )
                 }
-                if (
-                    streamPart &&
-                    'links' in streamPart &&
-                    streamPart.links?.length
-                ) {
-                    const links = streamPart.links
-                    console.log('found links', links)
-                }
+                
                 if (!partialItem) {
                     continue
                 }

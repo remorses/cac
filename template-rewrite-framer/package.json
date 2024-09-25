@@ -5,8 +5,9 @@
     "scripts": {
         "dev": "doppler run -- vite",
         "check": "pnpm tsc --incremental",
+        "start": "vite preview --port 5173",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
-        "deployment_": "pnpm build && pnpm wrangler pages deploy dist",
+        "deployment": "pnpm build && pnpm wrangler pages deploy dist",
         "preview": "vite preview"
     },
     "dependencies": {

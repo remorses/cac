@@ -40,8 +40,12 @@ import {
 import { createBrowserRouter } from 'react-router-dom'
 import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
+
+
+
 globalThis.framer = framer
 async function loader({ request }) {
+
     const { sessionKey } = await getPluginData()
 
     return { sessionKey }

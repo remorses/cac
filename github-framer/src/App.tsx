@@ -14,7 +14,6 @@ import {
     LoaderReturnType,
     Paths,
     RouteIds,
-    basePath,
     getMarkdownPluginData,
     withMode,
 } from '@/lib/utils'
@@ -38,7 +37,7 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
-import { reload } from 'template-rewrite-framer/src/lib/utils'
+import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
 
 globalThis.framer = framer
 
@@ -105,7 +104,7 @@ const router = createBrowserRouter(
                                     className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
                                 >
                                     <NProgressComponent />
-                                    
+
                                     <Outlet />
 
                                     {showSettings && (
