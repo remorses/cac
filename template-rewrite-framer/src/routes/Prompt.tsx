@@ -283,53 +283,58 @@ function SimplePromptComponent({}) {
 
         let prevBackground = null as string | null
         let lastTimeZoomed = Date.now()
-        let minTimeOnNode = credits.free ? 900 : 200
+        let minTimeOnNode = credits.free ? 1000 : 200
         const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
+
+        let currentNodeId = undefined as string | undefined
+
+        async function highlightNextNode(nextItemId) {
+            let node =
+                instanceNodes.get(nextItemId)?.node ||
+                (await framer.getNode(nextItemId))
+
+            if (!node) {
+                console.log('no node to zoom found for id', nextItemId)
+
+                return
+            }
+            // console.log(`nextItemId is ${nextItemId} ${node?.name}`)
+
+            await prevNode?.setAttributes({
+                backgroundColor: prevBackground,
+            })
+            // prevNode = undefined
+            // prevBackground = null
+            let currentParent = (await node.getParent()) || undefined
+            const isZoomable = await isNodeZoomable(node)
+            if (!isZoomable) {
+                console.log('node not visible, skipping zoom')
+                return
+            }
+            lastTimeZoomed = Date.now()
+            await node.zoomIntoView({ maxZoom: 0.9 })
+            if (isTextNode(node)) {
+                // await node.setText('')
+            }
+
+            if (!currentParent || !supportsBackgroundColor(currentParent)) {
+                return
+            }
+
+            prevBackground = currentParent?.backgroundColor || null
+            await currentParent?.setAttributes({ backgroundColor })
+
+            prevNode = currentParent
+        }
+
         try {
             for await (let streamPart of eventSource!) {
-                const { object: completeObj, nextItemId } = streamPart
+                const { completeObj, partialItem } = streamPart
 
-                if (nextItemId) {
-                    let node =
-                        instanceNodes.get(nextItemId)?.node ||
-                        (await framer.getNode(nextItemId))
-
-                    if (!node) {
-                        console.log('no node to zoom found for id', nextItemId)
-
-                        continue
-                    }
-                    // console.log(`nextItemId is ${nextItemId} ${node?.name}`)
-
-                    await prevNode?.setAttributes({
-                        backgroundColor: prevBackground,
-                    })
-                    // prevNode = undefined
-                    // prevBackground = null
-                    let currentParent = (await node.getParent()) || undefined
-                    const isZoomable = await isNodeZoomable(node)
-                    if (!isZoomable) {
-                        console.log('node not visible, skipping zoom')
-                        continue
-                    }
-                    lastTimeZoomed = Date.now()
-                    await node.zoomIntoView({ maxZoom: 0.9 })
-                    if (isTextNode(node)) {
-                        // await node.setText('')
-                    }
-
-                    if (
-                        !currentParent ||
-                        !supportsBackgroundColor(currentParent)
-                    ) {
-                        continue
-                    }
-
-                    prevBackground = currentParent?.backgroundColor || null
-                    await currentParent?.setAttributes({ backgroundColor })
-
-                    prevNode = currentParent
+                if (partialItem && currentNodeId !== partialItem.nodeId) {
+                    await highlightNextNode(partialItem.nodeId)
                 }
+                currentNodeId = partialItem?.nodeId
                 if (completeObj?.newContent) {
                     let words = completeObj.newContent.split(/\s+/).length
                     setRemainingCredits(Math.max(0, credits.remaining - words))
@@ -346,33 +351,33 @@ function SimplePromptComponent({}) {
                     const links = streamPart.links
                     console.log('found links', links)
                 }
-                if (!completeObj) {
+                if (!partialItem) {
                     continue
                 }
 
                 // Process each chunk (value)
 
-                if (completeObj.nodeId == null) {
+                if (partialItem.nodeId == null) {
                     console.log(
-                        `no nodeId found: ${JSON.stringify(completeObj)}`,
+                        `no nodeId found: ${JSON.stringify(partialItem)}`,
                     )
                     continue
                 }
 
                 const node =
-                    instanceNodes.get(completeObj.nodeId)?.node ||
-                    (await framer.getNode(completeObj.nodeId))
+                    instanceNodes.get(partialItem.nodeId)?.node ||
+                    (await framer.getNode(partialItem.nodeId))
 
                 if (!node) {
-                    console.log(`no node found for id ${completeObj.nodeId}`)
+                    console.log(`no node found for id ${partialItem.nodeId}`)
                     continue
                 }
                 const old = allOldNodes.find(
-                    (x) => x.nodeId === completeObj.nodeId,
+                    (x) => x.nodeId === partialItem.nodeId,
                 )?.content
                 if (!old) {
                     console.log(
-                        `no old text found for node ${completeObj.nodeId}`,
+                        `no old text found for node ${partialItem.nodeId}`,
                     )
                     continue
                 }
@@ -380,40 +385,38 @@ function SimplePromptComponent({}) {
                 //     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
                 // )
 
-                
-
                 if (Date.now() - lastTimeZoomed < minTimeOnNode) {
                     let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
                     // console.log('waiting before zooming', time)
                     await sleep(time)
                 }
 
-                if (!completeObj.newContent) {
+                if (!partialItem.newContent) {
                     // console.log('no text found in chunk', chunk)
                     continue
                 }
                 if (isTextNode(node)) {
-                    await node.setText(completeObj.newContent)
+                    await node.setText(partialItem.newContent)
                 } else if (isComponentInstanceNode(node)) {
-                    const instance = instanceNodes.get(completeObj.nodeId)
+                    const instance = instanceNodes.get(partialItem.nodeId)
                     if (!instance) {
                         console.log(
                             'no instance found for node',
-                            completeObj.nodeId,
+                            partialItem.nodeId,
                         )
                         continue
                     }
 
                     let controls = {
                         ...node.controls,
-                        [instance.controlKey]: completeObj.newContent,
+                        [instance.controlKey]: partialItem.newContent,
                     }
 
                     console.log('setting node control', instance.controlKey)
                     await node.setAttributes({ controls })
                 } else {
                     console.log(
-                        `node type for id ${completeObj.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
+                        `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
                     )
                 }
 
@@ -665,7 +668,7 @@ async function getInstanceComponent(componentInstance: AnyNode) {
     return componentNode
 }
 
-export async function getComponentCodeUrl(componentNode?: AnyNode) {
+async function getComponentCodeUrl(componentNode?: AnyNode) {
     // example is https://framer.com/m/FAQ-Row-Copy-FR9A9RBHB.js
     // https://framer.com/m/AccordionOne-V8Wz.js@FR9A9RBHB
     if (isComponentInstanceNode(componentNode)) {

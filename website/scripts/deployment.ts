@@ -7,6 +7,7 @@ async function main() {
     await shell(`pnpm --filter spiceflow build`, {
         env,
     })
+
     await Promise.all([
         shell(`pnpm tsc`, {
             env,

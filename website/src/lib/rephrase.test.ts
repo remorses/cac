@@ -61,7 +61,7 @@ describe('rewrite eval', () => {
                     for await (let chunk of stream) {
                         let prevLen = resultNodeIds.size
 
-                        let object = chunk.object
+                        let object = chunk.completeObj
                         if (object) {
                             console.log('object', object)
                             resultNodeIds.add(object.nodeId!)

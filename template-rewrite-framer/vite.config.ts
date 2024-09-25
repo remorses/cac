@@ -6,9 +6,9 @@ import react from '@vitejs/plugin-react-swc'
 import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
 
-const basePath = process.env.BASE_PATH || '/framer-plugin/migrate'
+const basePath = process.env.BASE_PATH
 
-export function CopyOnEnd({ basePath, out: OUT }): Plugin {
+export function CopyOnEnd({ basePath = '', out: OUT }): Plugin {
     // const building = process.env.NODE_ENV === 'production'
     if (basePath && !basePath.startsWith('/')) {
         throw new Error('basePath must start with /')

@@ -8,3 +8,4 @@ esm
 coverage
 *.env
 __pycache__
+plugin.zip

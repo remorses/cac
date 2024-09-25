@@ -50,52 +50,6 @@ function ScrapeWebsiteComponent() {
 
         const fetchData = async () => {
             NProgress.start()
-            try {
-                const { error, data: stream } =
-                    await pluginApiClient.api.plugins.rewritePlugin.scrapeWebsite.post(
-                        {
-                            domain,
-                        },
-                        { fetch: { signal: abortController.signal } },
-                    )
-                if (error) {
-                    throw error
-                }
-
-                // globalState.exampleTextToMigrate!.length = 0
-                for await (let chunk of stream) {
-                    if (abortController.signal.aborted) {
-                        break
-                    }
-                    // console.log('chunk', chunk)
-                    if (chunk.object) {
-                        // globalState.exampleTextToMigrate!.push(chunk.object)
-                    }
-
-                    if (chunk.extractedDescription) {
-                        globalState.extractedDescription =
-                            chunk.extractedDescription
-                    }
-
-                    flushSync(() => {
-                        setLogs((logs) => [...logs, chunk.message || ''])
-                    })
-                    // scroll to bottom
-                    const container = containerRef.current
-                    if (container && !hasScrolled.current) {
-                        container.scrollTop = container.scrollHeight
-                    }
-                }
-                navigate(withMode(Paths.prompt), { replace: true })
-            } catch (e) {
-                setError(String(e))
-                setIsLoading(false)
-                setLogs([])
-                notifyError(e, 'error scraping website')
-            } finally {
-                // setIsLoading(false)
-                // setLogs([])
-            }
         }
 
         fetchData()

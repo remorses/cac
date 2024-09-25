@@ -311,27 +311,17 @@ export async function* rewriteTemplateChunk({
         arrayField: CONVERTED_ITEMS,
         stream: yieldObjectStream({
             stream: stream1.fullStream,
-            ms: 200,
+            ms: 100,
             onToken,
         }),
     })
 
     let lastId = ''
     for await (let { fullItem, partialItem } of objectStream) {
-        if (
-            partialItem?.nodeId?.length === framerIdLen &&
-            partialItem?.nodeId !== lastId
-        ) {
-            yield {
-                nextItemId: partialItem.nodeId,
-                finalObject: undefined,
-            }
-            lastId = partialItem.nodeId
-        }
         if (partialItem?.nodeId?.length === framerIdLen) {
             yield {
                 partialItem: partialItem,
-                finalObject: undefined,
+                completeObj: undefined,
             }
         }
         if (fullItem) {
@@ -341,7 +331,7 @@ export async function* rewriteTemplateChunk({
             //     finalObject: undefined,
             // }
             yield {
-                object: fullItem,
+                completeObj: fullItem,
                 finalObject: undefined,
             }
         }

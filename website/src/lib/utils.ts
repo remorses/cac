@@ -108,10 +108,7 @@ export function sortByKey<T>(arr: T[], key: (x: T) => string) {
 }
 
 const namesToRemove = ['Desktop', 'Mobile', 'Tablet']
-export function cleanupOldTextTree(
-    tree: OldTextTree,
-    shouldRemoveTopTree = true,
-): OldTextTree {
+export function cleanupOldTextTree(tree: OldTextTree): OldTextTree {
     // Helper function to process a single node
     function processNode(
         node: OldTextTree[number],
@@ -121,7 +118,6 @@ export function cleanupOldTextTree(
             return node.children?.flatMap(processNode).filter(isTruthy) || []
         }
 
-        console.log('node', node.content, node.name)
         // Use content as name if they are the same when lowercase
         if (
             node.content &&

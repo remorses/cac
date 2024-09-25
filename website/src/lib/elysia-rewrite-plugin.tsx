@@ -41,7 +41,12 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const { description, sourceHtml, oldText: textToReplace, url } = body
+            const {
+                description,
+                sourceHtml,
+                oldText: textToReplace,
+                url,
+            } = body
             let linksPromise = extractExternalLinks({
                 websiteUrl: url,
                 formattedHtml: sourceHtml || undefined,
@@ -66,7 +71,7 @@ export const rewritePluginApp = new Spiceflow({
                 for await (let chunk of objectStream) {
                     // console.log('chunk', chunk)
                     yield chunk
-                    let object = chunk.object
+                    let object = chunk.completeObj
                     if (object) {
                         chars += object?.newContent?.length || 0
                         words +=
@@ -81,8 +86,7 @@ export const rewritePluginApp = new Spiceflow({
                 yield {
                     links,
                     partialItem: null,
-                    object: null,
-                    nextItemId: null,
+                    completeObj: null,
                 }
             } catch (e) {
                 notifyError(e, 'error rephrasing ')
