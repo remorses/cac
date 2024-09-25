@@ -103,8 +103,8 @@ let schema = z.object({
 
                 In this field you should always respond to these questions:
                 - **section and role**: what is the text semantic meaning for this template text? ignore its subject, just consider the section and design language/role (for example main hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
-                - **existing text**: What is the best piece of text from the existing website HTML you can use here? don't return text that you already used previously. It should have same design language and role, for example if the template text is an hero heading, you should use site main h1 heading. Don't consider text that is from different kind of elements. NEVER REPEAT CONTENT.
-                - **length**: Is the content length too different? If yes you may have to rephrase it a bit, otherwise just return the existing website text.
+                - **existing text**: What is the best piece of text from the existing website HTML you can use here? don't return text that you returned previously or already in the template! It should have same design language and role, for example if the template text is an hero heading, you should use site main h1 heading. Don't consider text that is from different kind of elements. NEVER RETURN PREVIOUSLY RETURNED CONTENT.
+                - **length**: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.
 
                 Some examples of semantic meaning for sections of the template:
                 - nav (Navigation menu or links at the top of the page)
@@ -291,12 +291,12 @@ export async function* rewriteTemplateChunk({
     messages.push({
         role: 'user',
         content: dedent`
-        Please convert the following template section:
+        Please migrate the following template section:
         <template>
         ${xml}
         </template>
 
-        you should always try to replace the content of the template with the ones in the website HTML being migrated
+        you should always try to replace the content of the template with the ones in the website HTML being migrated or create new content
         `,
     })
 
@@ -306,6 +306,8 @@ export async function* rewriteTemplateChunk({
         schema,
         model,
         temperature: 0.5,
+
+        // frequencyPenalty: 0.8,
         abortSignal: signal,
     })
 
@@ -446,7 +448,7 @@ const LinkSchema = z.object({
             nodeId: z
                 .string()
                 .describe(
-                    'The nodeId of the text element, it is always a 9 letters string, you can find it in the nodeId attribute in the template xml, not all elements have it, you have to skip those that don\'t have it',
+                    "The nodeId of the text element, it is always a 9 letters string, you can find it in the nodeId attribute in the template xml, not all elements have it, you have to skip those that don't have it",
                 ),
             reasoning: z.string().describe(
                 dedent`

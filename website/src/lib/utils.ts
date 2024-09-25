@@ -1,6 +1,4 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
-import { XMLParser } from 'fast-xml-parser'
-import { parseString } from 'xml2js'
 import { env } from './env'
 
 export function loginRedirectUrl({ next = '' }) {

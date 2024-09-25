@@ -278,7 +278,7 @@ function SimplePromptComponent({}) {
         }
 
         // a red background showing we are changing this text, with 0.7 opacity
-        const backgroundColor = 'rgba(128, 0, 128, 0.3)'
+        const backgroundColor = 'rgba(1, 153, 255, 0.3)'
         let prevNode: AnyNode | undefined
 
         let prevBackground = null as string | null
@@ -329,6 +329,8 @@ function SimplePromptComponent({}) {
 
         try {
             for await (let streamPart of eventSource!) {
+                // console.log('partialItem', streamPart)
+
                 const { completeObj, partialItem } = streamPart
 
                 if (partialItem && currentNodeId !== partialItem.nodeId) {
@@ -343,7 +345,7 @@ function SimplePromptComponent({}) {
                         JSON.stringify(completeObj, null, 2),
                     )
                 }
-                
+
                 if (!partialItem) {
                     continue
                 }
@@ -401,7 +403,7 @@ function SimplePromptComponent({}) {
                     }
 
                     let controls = {
-                        ...node.controls,
+                        // ...node.controls,
                         [instance.controlKey]: partialItem.newContent,
                     }
 
@@ -494,8 +496,7 @@ function SimplePromptComponent({}) {
         element.style.height = `${element.scrollHeight}px`
     }
     return (
-        <motion.form
-            layoutId='content'
+        <form
             // exit={{
             //     opacity: 0,
             // }}
@@ -565,7 +566,7 @@ function SimplePromptComponent({}) {
                     {buttonText}
                 </Button>
             </div>
-            {previousOldText.length > 0 && (
+            {Boolean(isLoading || previousOldText.length) && (
                 <Button
                     // className='bg-transparent'
                     onClick={discard}
@@ -580,7 +581,7 @@ function SimplePromptComponent({}) {
                 </span>{' '}
                 credits remaining
             </div> */}
-        </motion.form>
+        </form>
     )
 }
 
@@ -764,7 +765,7 @@ const possibleInstanceTextFields = [
 ]
 
 function nineCharsRandomString() {
-    return Math.random().toString(36).substring(2, 10)
+    return Math.random().toString(36).substring(2, 11)
 }
 async function push({
     node,

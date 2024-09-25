@@ -5,6 +5,65 @@ import fs from 'fs'
 import path from 'path'
 import { splitTreeInChunks } from 'website/src/lib/rewrite'
 
+import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
+import dedent from 'dedent'
+import { ElementType, parseDocument, Parser } from 'htmlparser2'
+import { DomHandler } from 'domhandler'
+import { default as domSerializer } from 'dom-serializer'
+
+test('xml partial content', () => {
+    const str = dedent`
+  <Container>
+    <Hero>
+      <Header>
+        <Stack>
+          <AI_Kit_Badge nodeId="kvaze3i5">
+          </AI_Kit_Badge>
+          <text nodeId="BmPmnKu3U" fontSize="82px">
+            The web builder for stunning sites.
+          </text>
+          <text nodeId="Ga6gDXZIe" fontSize="20px">
+            Design and publish modern sites at any scale with Framer’s web builder.
+          </text>
+          <AI_Kit_Button nodeId="rgayf1f9">
+            Sign up for free
+          </AI_Kit_Button>
+
+  `
+
+    const handler = new DomHandler((error, dom) => {
+        if (error) {
+            console.error(error)
+        } else {
+            const dfs = (node) => {
+                if (
+                    node.type === ElementType.Tag &&
+                    node.attribs &&
+                    node.attribs.nodeId
+                ) {
+                    node.children.forEach((child) => {
+                        if (child.type === 'text') {
+                            child.data = child.data.trimEnd()
+                            child.data += 'xxx'
+                        }
+                    })
+                }
+                if (node.children) {
+                    node.children.forEach(dfs)
+                }
+            }
+
+            dom.forEach(dfs)
+        }
+    })
+
+    const parser = new Parser(handler, { xmlMode: true })
+    parser.write(str)
+    parser.end()
+    const serialized = domSerializer(handler.dom, { xmlMode: true })
+    console.log(serialized)
+})
+
 test('oldTextTreeToXml', async () => {
     const res = oldTextTreeToXml(
         cleanupOldTextTree([
