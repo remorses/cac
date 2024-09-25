@@ -1,28 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { cleanupOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
 
-import { parseXmlToOldTextTree } from 'website/src/lib/utils'
 import fs from 'fs'
 import path from 'path'
-
-describe('parseXmlToOldTextTree', () => {
-    const templateDir = path.join(__dirname, './evaluation/templates')
-    const xmlFiles = fs
-        .readdirSync(templateDir)
-        .filter((file) => file.endsWith('.xml'))
-
-    xmlFiles.forEach((xmlFile) => {
-        test(`parses ${xmlFile} correctly`, async () => {
-            const xmlPath = path.join(templateDir, xmlFile)
-            const xmlContent = fs.readFileSync(xmlPath, 'utf-8')
-
-            const oldTextTree = await parseXmlToOldTextTree(xmlContent)
-
-            // Save snapshot as JSON
-            expect(oldTextTree).toMatchSnapshot(`evaluation/templates/json-generated-${xmlFile}.json`)
-        })
-    })
-})
 
 test('oldTextTreeToXml', async () => {
     const res = oldTextTreeToXml(

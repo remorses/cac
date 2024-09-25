@@ -1,1564 +1,327 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`parseXmlToOldTextTree > parses ai startup kit footer.xml correctly > evaluation/templates/json-generated-ai startup kit footer.xml.json 1`] = `
-[
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "content": "Startup kit",
-                "fontSize": "13px",
-                "name": "text",
-                "nodeId": "V7lsGkOXU",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "0",
-      },
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Tools",
-                        "fontSize": "13px",
-                        "name": "0",
-                        "nodeId": "fA2Sjk1Sc",
-                      },
-                      {
-                        "content": "Features",
-                        "fontSize": "13px",
-                        "name": "1",
-                        "nodeId": "rrtcjzcb6",
-                      },
-                      {
-                        "content": "Developers",
-                        "fontSize": "13px",
-                        "name": "2",
-                        "nodeId": "hNVCISRuV",
-                      },
-                      {
-                        "content": "Updates",
-                        "fontSize": "13px",
-                        "name": "3",
-                        "nodeId": "S9AbtRz7j",
-                      },
-                      {
-                        "content": "Support",
-                        "fontSize": "13px",
-                        "name": "4",
-                        "nodeId": "wiMWwOANL",
-                      },
-                      {
-                        "content": "Pricing",
-                        "fontSize": "13px",
-                        "name": "5",
-                        "nodeId": "KlKQ9h0fo",
-                      },
-                    ],
-                    "name": "text",
-                  },
-                ],
-                "name": "0",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Company",
-                        "fontSize": "13px",
-                        "name": "0",
-                        "nodeId": "CdOjbbA5q",
-                      },
-                      {
-                        "content": "Brand",
-                        "fontSize": "13px",
-                        "name": "1",
-                        "nodeId": "lbV6SPbcC",
-                      },
-                      {
-                        "content": "Blog",
-                        "fontSize": "13px",
-                        "name": "2",
-                        "nodeId": "svm4eNSre",
-                      },
-                      {
-                        "content": "Careers",
-                        "fontSize": "13px",
-                        "name": "3",
-                        "nodeId": "BrEGvozun",
-                      },
-                      {
-                        "content": "Brand",
-                        "fontSize": "13px",
-                        "name": "4",
-                        "nodeId": "NC0eJBoUh",
-                      },
-                      {
-                        "content": "Brand",
-                        "fontSize": "13px",
-                        "name": "5",
-                        "nodeId": "zGw1dP51l",
-                      },
-                      {
-                        "content": "Contact",
-                        "fontSize": "13px",
-                        "name": "6",
-                        "nodeId": "nC3QgIwqa",
-                      },
-                    ],
-                    "name": "text",
-                  },
-                ],
-                "name": "1",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Resources",
-                        "fontSize": "13px",
-                        "name": "0",
-                        "nodeId": "r_vsAZGLh",
-                      },
-                      {
-                        "content": "Templates",
-                        "fontSize": "13px",
-                        "name": "1",
-                        "nodeId": "lajgwvlwZ",
-                      },
-                      {
-                        "content": "Community",
-                        "fontSize": "13px",
-                        "name": "2",
-                        "nodeId": "efFx2ken5",
-                      },
-                      {
-                        "content": "Academy",
-                        "fontSize": "13px",
-                        "name": "3",
-                        "nodeId": "DV8YVlo4z",
-                      },
-                      {
-                        "content": "Developers",
-                        "fontSize": "13px",
-                        "href": "https://twitter.com/__morse",
-                        "name": "4",
-                        "nodeId": "j5UU679OK",
-                      },
-                    ],
-                    "name": "text",
-                  },
-                ],
-                "name": "2",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Legal",
-                        "fontSize": "13px",
-                        "name": "0",
-                        "nodeId": "lidVdUEUD",
-                      },
-                      {
-                        "content": "Privacy",
-                        "fontSize": "13px",
-                        "name": "1",
-                        "nodeId": "ncUfuggDf",
-                      },
-                      {
-                        "content": "Terms",
-                        "fontSize": "13px",
-                        "name": "2",
-                        "nodeId": "HhoYkpfew",
-                      },
-                      {
-                        "content": "Security",
-                        "fontSize": "13px",
-                        "name": "3",
-                        "nodeId": "qaAEjzjKP",
-                      },
-                    ],
-                    "name": "text",
-                  },
-                ],
-                "name": "3",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "1",
-      },
-    ],
-    "name": "AI_Kit_Footer_Stack_Stack",
-  },
-]
+exports[`parseXmlToOldTextTree > parses ai startup kit home page.xml correctly > xml 1`] = `
+"<Container>
+</Container>
+"
 `;
 
-exports[`parseXmlToOldTextTree > parses ai startup kit home page.xml correctly > evaluation/templates/json-generated-ai startup kit home page.xml.json 1`] = `
-[
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Features",
-                        "name": "0",
-                        "nodeId": "h43psysr",
-                      },
-                      {
-                        "content": "Developers",
-                        "name": "1",
-                        "nodeId": "c6jrwvg8",
-                      },
-                      {
-                        "content": "Brand",
-                        "name": "2",
-                        "nodeId": "fu01gm1p",
-                      },
-                      {
-                        "content": "Blog",
-                        "name": "3",
-                        "nodeId": "ow2l4qu7",
-                      },
-                      {
-                        "content": "Contact",
-                        "name": "4",
-                        "nodeId": "t1wku9mc",
-                      },
-                    ],
-                    "name": "AI_Kit_Navigation_Nav_Top_Item",
-                  },
-                ],
-                "name": "0",
-              },
-              {
-                "children": [
-                  {
-                    "content": "Sign up for free",
-                    "name": "AI_Kit_Button",
-                    "nodeId": "u49a816b",
-                  },
-                ],
-                "name": "1",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "Navigation",
-      },
-    ],
-    "name": "AI_Kit_Nav",
-  },
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "content": "About",
-                "name": "0",
-                "nodeId": "vjhjkgvz",
-              },
-              {
-                "content": "Careers",
-                "name": "1",
-                "nodeId": "7150f9sf",
-              },
-              {
-                "content": "Careers",
-                "name": "2",
-                "nodeId": "joao7gd2",
-              },
-              {
-                "content": "Careers",
-                "name": "3",
-                "nodeId": "ttxevknb",
-              },
-              {
-                "content": "Press Kit",
-                "name": "4",
-                "nodeId": "a8ppdlnp",
-              },
-              {
-                "content": "Brand",
-                "name": "5",
-                "nodeId": "9axpykxm",
-              },
-              {
-                "content": "Contact",
-                "name": "6",
-                "nodeId": "7d9xlywx",
-              },
-              {
-                "content": "Contact",
-                "name": "7",
-                "nodeId": "p2khgp8v",
-              },
-            ],
-            "name": "AI_Kit_Navigation_Nav_Item_Menu",
-          },
-        ],
-        "name": "Stack",
-      },
-    ],
-    "name": "AI_Kit_Navigation_Nav_Company",
-  },
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "content": "Dashboard",
-                "name": "0",
-                "nodeId": "k2nhj0lp",
-              },
-              {
-                "content": "SEO & Performance",
-                "name": "1",
-                "nodeId": "g2186uu7",
-              },
-              {
-                "content": "Content evaluation",
-                "name": "2",
-                "nodeId": "ya32pjre",
-              },
-              {
-                "content": "Support",
-                "name": "3",
-                "nodeId": "vee0so38",
-              },
-              {
-                "content": "SEO goals",
-                "name": "4",
-                "nodeId": "uahwlvoj",
-              },
-              {
-                "content": "SEO & Performance",
-                "name": "5",
-                "nodeId": "7qplul22",
-              },
-              {
-                "content": "Smart Keyword Generator",
-                "name": "6",
-                "nodeId": "gf1igj48",
-              },
-              {
-                "content": "AI Tools",
-                "name": "7",
-                "nodeId": "n3iqfrw1",
-              },
-              {
-                "content": "Automated alerts",
-                "name": "8",
-                "nodeId": "n54khv4y",
-              },
-              {
-                "content": "Plugins",
-                "name": "9",
-                "nodeId": "a9aj9ff0",
-              },
-            ],
-            "name": "AI_Kit_Navigation_Nav_Item_Menu",
-          },
-        ],
-        "name": "List",
-      },
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Design beautiful responsive sites with an intuitive interface.",
-                        "fontSize": "13px",
-                        "name": "0",
-                        "nodeId": "rgeW2Ysji",
-                      },
-                      {
-                        "content": "Framer is packed with powerful features, making it easy to grow and expand your website to fit your needs.",
-                        "fontSize": "13px",
-                        "name": "1",
-                        "nodeId": "LzfAj6Waj",
-                      },
-                    ],
-                    "name": "text",
-                  },
-                ],
-                "name": "Stack",
-              },
-            ],
-            "name": "Feature_Big",
-          },
-          {
-            "content": "NEW",
-            "name": "AI_Kit_Badge_Small",
-            "nodeId": "v9330bnv",
-          },
-          {
-            "content": "See the latest features",
-            "name": "AI_Kit_CTA",
-            "nodeId": "q855bcxg",
-          },
-        ],
-        "name": "Feature_Big",
-      },
-    ],
-    "name": "AI_Kit_Navigation_Nav_Features",
-  },
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "content": "NEW",
-                    "name": "AI_Kit_Badge",
-                    "nodeId": "kvaze3i5",
-                  },
-                  {
-                    "children": [
-                      {
-                        "content": "The web builder for stunning sites.",
-                        "fontSize": "82px",
-                        "name": "0",
-                        "nodeId": "BmPmnKu3U",
-                      },
-                      {
-                        "content": "Design and publish modern sites at any scale with Framer’s web builder.",
-                        "fontSize": "20px",
-                        "name": "1",
-                        "nodeId": "Ga6gDXZIe",
-                      },
-                    ],
-                    "name": "text",
-                  },
-                  {
-                    "content": "Sign up for free",
-                    "name": "AI_Kit_Button",
-                    "nodeId": "rgayf1f9",
-                  },
-                ],
-                "name": "Stack",
-              },
-            ],
-            "name": "Header",
-          },
-        ],
-        "name": "Hero",
-      },
-      {
-        "children": [
-          {
-            "content": "Trusted by innovative companies",
-            "fontSize": "16px",
-            "name": "text",
-            "nodeId": "y8xplxOnV",
-          },
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "The Browser Company",
-                            "name": "text",
-                            "nodeId": "vnzxmNCxb",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "0",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Dribbble",
-                            "name": "text",
-                            "nodeId": "DRefZ4FzF",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "1",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Perplexity",
-                            "name": "text",
-                            "nodeId": "pS_YhKn9o",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "2",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "SpaceX",
-                            "name": "text",
-                            "nodeId": "AyR81ds0k",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "3",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Lark",
-                            "name": "text",
-                            "nodeId": "TFRpDFYzu",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "4",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Zapier",
-                            "name": "text",
-                            "nodeId": "madIrBbne",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "5",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Mollie",
-                            "name": "text",
-                            "nodeId": "DAMdlcgD8",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "6",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Bird",
-                            "name": "text",
-                            "nodeId": "Ue0rEtsfG",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                    ],
-                    "name": "7",
-                  },
-                ],
-                "name": "Stack",
-              },
-            ],
-            "name": "Grid",
-          },
-        ],
-        "name": "Companies",
-      },
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "content": "Design beautiful responsive sites with an intuitive interface.",
-                    "fontSize": "32px",
-                    "name": "text",
-                    "nodeId": "C9Wau5gv1",
-                  },
-                ],
-                "name": "Stack",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "content": "Design",
-                                    "fontSize": "16px",
-                                    "name": "0",
-                                    "nodeId": "M2ZPHDqe6",
-                                  },
-                                  {
-                                    "content": "Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.",
-                                    "fontSize": "16px",
-                                    "name": "1",
-                                    "nodeId": "UMkipYqxL",
-                                  },
-                                ],
-                                "name": "text",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "0",
-                      },
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "content": "Collaborate",
-                                    "fontSize": "16px",
-                                    "name": "0",
-                                    "nodeId": "kKZ8P977O",
-                                  },
-                                  {
-                                    "content": "Collaboration in Framer is seamless. Invite your team and work together in real-time.",
-                                    "fontSize": "16px",
-                                    "name": "1",
-                                    "nodeId": "JxpYmedKj",
-                                  },
-                                ],
-                                "name": "text",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "1",
-                      },
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "content": "Layout & Breakpoints",
-                                    "fontSize": "16px",
-                                    "name": "0",
-                                    "nodeId": "kxskj_v2Y",
-                                  },
-                                  {
-                                    "content": "Design your site on a familiar free-form canvas. Add flexible Grids & Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.",
-                                    "fontSize": "16px",
-                                    "name": "1",
-                                    "nodeId": "HybKQJqce",
-                                  },
-                                ],
-                                "name": "text",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "2",
-                      },
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "content": "Effects",
-                                    "fontSize": "16px",
-                                    "name": "0",
-                                    "nodeId": "Lf5rDin2b",
-                                  },
-                                  {
-                                    "content": "Bring your site to life without code. Add effects with a few clicks and capture your audience’s attention when they land on your website.",
-                                    "fontSize": "16px",
-                                    "name": "1",
-                                    "nodeId": "h1vQET5E8",
-                                  },
-                                ],
-                                "name": "text",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "3",
-                      },
-                    ],
-                    "name": "Card",
-                  },
-                ],
-                "name": "Grid",
-              },
-            ],
-            "name": "0",
-          },
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "A complete website builder with all the features you need.",
-                        "fontSize": "56px",
-                        "name": "text",
-                        "nodeId": "X7dGENFhp",
-                      },
-                    ],
-                    "name": "Stack",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Navigation",
-                            "name": "0",
-                            "nodeId": "yssmrs2g",
-                          },
-                          {
-                            "content": "Plugins",
-                            "name": "1",
-                            "nodeId": "kbzowjug",
-                          },
-                          {
-                            "content": "SEO & Performance",
-                            "name": "2",
-                            "nodeId": "knsq257u",
-                          },
-                          {
-                            "content": "Built-in CMS",
-                            "name": "3",
-                            "nodeId": "7jhjhfm3",
-                          },
-                          {
-                            "content": "AI Tools",
-                            "name": "4",
-                            "nodeId": "3j0ht3k9",
-                          },
-                          {
-                            "content": "Localization",
-                            "name": "5",
-                            "nodeId": "4emzbrg9",
-                          },
-                          {
-                            "content": "Design",
-                            "name": "6",
-                            "nodeId": "ahkt6cvx",
-                          },
-                          {
-                            "content": "Collaborate",
-                            "name": "7",
-                            "nodeId": "g44z19jr",
-                          },
-                          {
-                            "content": "Effects",
-                            "name": "8",
-                            "nodeId": "fmsx4tan",
-                          },
-                        ],
-                        "name": "AI_Kit_Feature_Small",
-                      },
-                    ],
-                    "name": "Grid",
-                  },
-                ],
-                "name": "Stack",
-              },
-            ],
-            "name": "1",
-          },
-        ],
-        "name": "Features",
-      },
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "content": "People love using Framer.",
-                    "fontSize": "56px",
-                    "name": "0",
-                    "nodeId": "VnsoGbFNe",
-                  },
-                  {
-                    "content": "Thousands before you have successfully launched websites with Framer and loved it.",
-                    "fontSize": "20px",
-                    "name": "1",
-                    "nodeId": "dz5DJhQEt",
-                  },
-                ],
-                "name": "text",
-              },
-            ],
-            "name": "Header",
-          },
-        ],
-        "name": "Testimonial",
-      },
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "content": "Pricing",
-                    "fontSize": "56px",
-                    "name": "0",
-                    "nodeId": "KieeeXdS9",
-                  },
-                  {
-                    "content": "Choose the right plan and start building today.",
-                    "fontSize": "20px",
-                    "name": "1",
-                    "nodeId": "M1ujC7fU7",
-                  },
-                ],
-                "name": "text",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "Pricing",
-      },
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "content": "Design smarter, publish faster.",
-                "fontSize": "56px",
-                "name": "text",
-                "nodeId": "jNbMw8czL",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "Sign up for free",
-                            "name": "AI_Kit_Button_Form",
-                            "nodeId": "f83hfav6",
-                          },
-                        ],
-                        "name": "Label",
-                      },
-                    ],
-                    "name": "Form",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "content": "No credit card required",
-                            "fontSize": "14px",
-                            "name": "0",
-                            "nodeId": "rWBTs8Okn",
-                          },
-                          {
-                            "content": "·",
-                            "fontSize": "14px",
-                            "name": "1",
-                            "nodeId": "htHwgSLYv",
-                          },
-                          {
-                            "content": "7-days free trial",
-                            "fontSize": "14px",
-                            "name": "2",
-                            "nodeId": "iPLEkv3W4",
-                          },
-                        ],
-                        "name": "text",
-                      },
-                    ],
-                    "name": "Stack",
-                  },
-                ],
-                "name": "Stack",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "CTA",
-      },
-    ],
-    "name": "Container",
-  },
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "content": "Annual discount",
-                "fontSize": "16px",
-                "name": "text",
-                "nodeId": "T9mpK1PfL",
-              },
-            ],
-            "name": "Toggle",
-          },
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "content": "Basic",
-                                    "fontSize": "24px",
-                                    "name": "text",
-                                    "nodeId": "PoRTmjKBW",
-                                  },
-                                  {
-                                    "content": "$15/mo",
-                                    "fontSize": "16px",
-                                    "name": "Price_yearly",
-                                    "nodeId": "N30TdewxQ",
-                                  },
-                                ],
-                                "name": "0",
-                              },
-                              {
-                                "children": [
-                                  {
-                                    "children": [
-                                      {
-                                        "content": "For personal sites",
-                                        "name": "0",
-                                        "nodeId": "sdtddsnk",
-                                      },
-                                      {
-                                        "content": "1 CMS collection",
-                                        "name": "1",
-                                        "nodeId": "hc3f8b18",
-                                      },
-                                      {
-                                        "content": "Password protect",
-                                        "name": "2",
-                                        "nodeId": "d5r4vwck",
-                                      },
-                                      {
-                                        "content": "500 form submissions",
-                                        "name": "3",
-                                        "nodeId": "uh9ki4do",
-                                      },
-                                    ],
-                                    "name": "AI_Kit_Pricing_Row",
-                                  },
-                                ],
-                                "name": "1",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                      {
-                        "content": "Get site plan",
-                        "name": "AI_Kit_Button",
-                        "nodeId": "2nkpmge4",
-                      },
-                    ],
-                    "name": "0",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "children": [
-                                      {
-                                        "content": "Pro",
-                                        "fontSize": "24px",
-                                        "name": "text",
-                                        "nodeId": "OwDFYmdpp",
-                                      },
-                                      {
-                                        "content": "popular",
-                                        "name": "AI_Kit_Badge_Small",
-                                        "nodeId": "6k71ms6d",
-                                      },
-                                    ],
-                                    "name": "Stack",
-                                  },
-                                  {
-                                    "content": "$30/mo",
-                                    "fontSize": "16px",
-                                    "name": "Price_yearly",
-                                    "nodeId": "GeexG4Q6l",
-                                  },
-                                ],
-                                "name": "0",
-                              },
-                              {
-                                "children": [
-                                  {
-                                    "children": [
-                                      {
-                                        "content": "For larger sites",
-                                        "name": "0",
-                                        "nodeId": "zrq31zks",
-                                      },
-                                      {
-                                        "content": "10 CMS collections",
-                                        "name": "1",
-                                        "nodeId": "yzt4j2wo",
-                                      },
-                                      {
-                                        "content": "Analytics + cookies",
-                                        "name": "2",
-                                        "nodeId": "p9pfa9de",
-                                      },
-                                      {
-                                        "content": "2.5K form submissions",
-                                        "name": "3",
-                                        "nodeId": "h0jlm3ng",
-                                      },
-                                      {
-                                        "content": "Staging environment",
-                                        "name": "4",
-                                        "nodeId": "y2lteql2",
-                                      },
-                                      {
-                                        "content": "Custom domain",
-                                        "name": "5",
-                                        "nodeId": "3egbiabv",
-                                      },
-                                    ],
-                                    "name": "AI_Kit_Pricing_Row",
-                                  },
-                                ],
-                                "name": "1",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                      {
-                        "content": "Get site plan",
-                        "name": "AI_Kit_Button",
-                        "nodeId": "awonxhj7",
-                      },
-                    ],
-                    "name": "1",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "children": [
-                                  {
-                                    "content": "Pro Plus",
-                                    "fontSize": "24px",
-                                    "name": "text",
-                                    "nodeId": "mEJkR8gSd",
-                                  },
-                                  {
-                                    "content": "$30/mo",
-                                    "fontSize": "16px",
-                                    "name": "Price_yearly",
-                                    "nodeId": "z6QQYuEpN",
-                                  },
-                                ],
-                                "name": "0",
-                              },
-                              {
-                                "children": [
-                                  {
-                                    "children": [
-                                      {
-                                        "content": "For larger sites",
-                                        "name": "0",
-                                        "nodeId": "ogr7tivq",
-                                      },
-                                      {
-                                        "content": "10 CMS collections",
-                                        "name": "1",
-                                        "nodeId": "8p7qlwj7",
-                                      },
-                                      {
-                                        "content": "Analytics + cookies",
-                                        "name": "2",
-                                        "nodeId": "iyoewot2",
-                                      },
-                                      {
-                                        "content": "Analytics + cookies",
-                                        "name": "3",
-                                        "nodeId": "4s5xz7pm",
-                                      },
-                                      {
-                                        "content": "Staging environment",
-                                        "name": "4",
-                                        "nodeId": "ix7a5qrn",
-                                      },
-                                      {
-                                        "content": "Custom domain",
-                                        "name": "5",
-                                        "nodeId": "maohy2ao",
-                                      },
-                                      {
-                                        "content": "Collaborate on all sites",
-                                        "name": "6",
-                                        "nodeId": "1glqi8ug",
-                                      },
-                                      {
-                                        "content": "Developers",
-                                        "name": "7",
-                                        "nodeId": "zivbn4gs",
-                                      },
-                                    ],
-                                    "name": "AI_Kit_Pricing_Row",
-                                  },
-                                ],
-                                "name": "1",
-                              },
-                            ],
-                            "name": "Stack",
-                          },
-                        ],
-                        "name": "Stack",
-                      },
-                      {
-                        "content": "Get site plan",
-                        "name": "AI_Kit_Button",
-                        "nodeId": "uhxgwsq9",
-                      },
-                    ],
-                    "name": "2",
-                  },
-                ],
-                "name": "Card",
-              },
-            ],
-            "name": "Cards",
-          },
-        ],
-        "name": "Desktop_Yearly",
-      },
-    ],
-    "name": "AI_Kit_Pricing",
-  },
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Startup kit",
-                        "fontSize": "13px",
-                        "name": "text",
-                        "nodeId": "V7lsGkOXU",
-                      },
-                    ],
-                    "name": "Stack",
-                  },
-                ],
-                "name": "0",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "content": "Tools",
-                                "fontSize": "13px",
-                                "name": "0",
-                                "nodeId": "fA2Sjk1Sc",
-                              },
-                              {
-                                "content": "Features",
-                                "fontSize": "13px",
-                                "name": "1",
-                                "nodeId": "rrtcjzcb6",
-                              },
-                              {
-                                "content": "Developers",
-                                "fontSize": "13px",
-                                "name": "2",
-                                "nodeId": "hNVCISRuV",
-                              },
-                              {
-                                "content": "Updates",
-                                "fontSize": "13px",
-                                "name": "3",
-                                "nodeId": "S9AbtRz7j",
-                              },
-                              {
-                                "content": "Support",
-                                "fontSize": "13px",
-                                "name": "4",
-                                "nodeId": "wiMWwOANL",
-                              },
-                              {
-                                "content": "Pricing",
-                                "fontSize": "13px",
-                                "name": "5",
-                                "nodeId": "KlKQ9h0fo",
-                              },
-                            ],
-                            "name": "text",
-                          },
-                        ],
-                        "name": "0",
-                      },
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "content": "Company",
-                                "fontSize": "13px",
-                                "name": "0",
-                                "nodeId": "CdOjbbA5q",
-                              },
-                              {
-                                "content": "Brand",
-                                "fontSize": "13px",
-                                "name": "1",
-                                "nodeId": "lbV6SPbcC",
-                              },
-                              {
-                                "content": "Blog",
-                                "fontSize": "13px",
-                                "name": "2",
-                                "nodeId": "svm4eNSre",
-                              },
-                              {
-                                "content": "Careers",
-                                "fontSize": "13px",
-                                "name": "3",
-                                "nodeId": "BrEGvozun",
-                              },
-                              {
-                                "content": "Brand",
-                                "fontSize": "13px",
-                                "name": "4",
-                                "nodeId": "NC0eJBoUh",
-                              },
-                              {
-                                "content": "Brand",
-                                "fontSize": "13px",
-                                "name": "5",
-                                "nodeId": "zGw1dP51l",
-                              },
-                              {
-                                "content": "Contact",
-                                "fontSize": "13px",
-                                "name": "6",
-                                "nodeId": "nC3QgIwqa",
-                              },
-                            ],
-                            "name": "text",
-                          },
-                        ],
-                        "name": "1",
-                      },
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "content": "Resources",
-                                "fontSize": "13px",
-                                "name": "0",
-                                "nodeId": "r_vsAZGLh",
-                              },
-                              {
-                                "content": "Templates",
-                                "fontSize": "13px",
-                                "name": "1",
-                                "nodeId": "lajgwvlwZ",
-                              },
-                              {
-                                "content": "Community",
-                                "fontSize": "13px",
-                                "name": "2",
-                                "nodeId": "efFx2ken5",
-                              },
-                              {
-                                "content": "Academy",
-                                "fontSize": "13px",
-                                "name": "3",
-                                "nodeId": "DV8YVlo4z",
-                              },
-                              {
-                                "content": "Developers",
-                                "fontSize": "13px",
-                                "href": "https://twitter.com/__morse",
-                                "name": "4",
-                                "nodeId": "j5UU679OK",
-                              },
-                            ],
-                            "name": "text",
-                          },
-                        ],
-                        "name": "2",
-                      },
-                      {
-                        "children": [
-                          {
-                            "children": [
-                              {
-                                "content": "Legal",
-                                "fontSize": "13px",
-                                "name": "0",
-                                "nodeId": "lidVdUEUD",
-                              },
-                              {
-                                "content": "Privacy",
-                                "fontSize": "13px",
-                                "name": "1",
-                                "nodeId": "ncUfuggDf",
-                              },
-                              {
-                                "content": "Terms",
-                                "fontSize": "13px",
-                                "name": "2",
-                                "nodeId": "HhoYkpfew",
-                              },
-                              {
-                                "content": "Security",
-                                "fontSize": "13px",
-                                "name": "3",
-                                "nodeId": "qaAEjzjKP",
-                              },
-                            ],
-                            "name": "text",
-                          },
-                        ],
-                        "name": "3",
-                      },
-                    ],
-                    "name": "Stack",
-                  },
-                ],
-                "name": "1",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "Stack",
-      },
-    ],
-    "name": "AI_Kit_Footer",
-  },
-]
+exports[`parseXmlToOldTextTree > parses ai startup kit home page.xml for  migrated.xml correctly > xml 1`] = `
+"<Container>
+  <Hero>
+    <Header>
+      <Stack>
+        <AI_Kit_Badge nodeId="kvaze3i5">
+        </AI_Kit_Badge>
+        <text>
+          <Container nodeId="BmPmnKu3U" fontSize="82px">
+          </Container>
+          <Container nodeId="Ga6gDXZIe" fontSize="20px">
+          </Container>
+        </text>
+        <AI_Kit_Button nodeId="rgayf1f9">
+        </AI_Kit_Button>
+      </Stack>
+    </Header>
+  </Hero>
+  <Companies>
+    <text nodeId="y8xplxOnV" fontSize="16px">
+    </text>
+    <Grid>
+      <Stack>
+        <Container>
+          <Stack>
+            <text nodeId="vnzxmNCxb">
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text nodeId="DRefZ4FzF">
+            </text>
+          </Stack>
+        </Container>
+      </Stack>
+    </Grid>
+  </Companies>
+  <Features>
+    <Stack>
+      <text nodeId="C9Wau5gv1" fontSize="32px">
+      </text>
+    </Stack>
+    <Grid>
+      <Card>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="M2ZPHDqe6" fontSize="16px">
+              </Container>
+              <Container nodeId="UMkipYqxL" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="kKZ8P977O" fontSize="16px">
+              </Container>
+              <Container nodeId="JxpYmedKj" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="kxskj_v2Y" fontSize="16px">
+              </Container>
+              <Container nodeId="HybKQJqce" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="Lf5rDin2b" fontSize="16px">
+              </Container>
+              <Container nodeId="h1vQET5E8" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+      </Card>
+    </Grid>
+  </Features>
+</Container>
+"
 `;
 
-exports[`parseXmlToOldTextTree > parses ai startup kit nav.xml correctly > evaluation/templates/json-generated-ai startup kit nav.xml.json 1`] = `
-[
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "content": "Features",
-                        "name": "0",
-                        "nodeId": "w2keh4di",
-                      },
-                      {
-                        "content": "Developers",
-                        "name": "1",
-                        "nodeId": "f9jqiq3c",
-                      },
-                      {
-                        "content": "Brand",
-                        "name": "2",
-                        "nodeId": "ttyq47m7",
-                      },
-                      {
-                        "content": "Blog",
-                        "name": "3",
-                        "nodeId": "5mjfkk9h",
-                      },
-                      {
-                        "content": "Contact",
-                        "name": "4",
-                        "nodeId": "phn7sz8d",
-                      },
-                    ],
-                    "name": "AI_Kit_Navigation_Nav_Top_Item",
-                  },
-                ],
-                "name": "0",
-              },
-              {
-                "children": [
-                  {
-                    "content": "Sign up for free",
-                    "name": "AI_Kit_Button",
-                    "nodeId": "koeyy0nt",
-                  },
-                ],
-                "name": "1",
-              },
-            ],
-            "name": "Stack",
-          },
-        ],
-        "name": "Navigation",
-      },
-    ],
-    "name": "AI_Kit_Nav",
-  },
-  {
-    "children": [
-      {
-        "children": [
-          {
-            "children": [
-              {
-                "content": "About",
-                "name": "0",
-                "nodeId": "w3ac9nh0",
-              },
-              {
-                "content": "Careers",
-                "name": "1",
-                "nodeId": "2u7a9p9m",
-              },
-              {
-                "content": "Careers",
-                "name": "2",
-                "nodeId": "3h3znr75",
-              },
-              {
-                "content": "Careers",
-                "name": "3",
-                "nodeId": "oqfzwygx",
-              },
-              {
-                "content": "Press Kit",
-                "name": "4",
-                "nodeId": "t9pfihdz",
-              },
-              {
-                "content": "Brand",
-                "name": "5",
-                "nodeId": "pz8l7xza",
-              },
-              {
-                "content": "Contact",
-                "name": "6",
-                "nodeId": "1i29av2h",
-              },
-              {
-                "content": "Contact",
-                "name": "7",
-                "nodeId": "x3cs3uxp",
-              },
-            ],
-            "name": "AI_Kit_Navigation_Nav_Item_Menu",
-          },
-        ],
-        "name": "Stack",
-      },
-    ],
-    "name": "AI_Kit_Navigation_Nav_Company",
-  },
-]
+exports[`parseXmlToOldTextTree > parses ai startup kit home page.xml for framer.com migrated.xml correctly > xml 1`] = `
+"<Container>
+  <Hero>
+    <Header>
+      <Stack>
+        <AI_Kit_Badge nodeId="kvaze3i5">
+        </AI_Kit_Badge>
+        <text>
+          <Container nodeId="BmPmnKu3U" fontSize="82px">
+          </Container>
+          <Container nodeId="Ga6gDXZIe" fontSize="20px">
+          </Container>
+        </text>
+        <AI_Kit_Button nodeId="rgayf1f9">
+        </AI_Kit_Button>
+      </Stack>
+    </Header>
+  </Hero>
+  <Companies>
+    <text nodeId="y8xplxOnV" fontSize="16px">
+    </text>
+    <Grid>
+      <Stack>
+        <Container>
+          <Stack>
+            <text nodeId="vnzxmNCxb">
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text nodeId="DRefZ4FzF">
+            </text>
+          </Stack>
+        </Container>
+      </Stack>
+    </Grid>
+  </Companies>
+  <Features>
+    <Stack>
+      <text nodeId="C9Wau5gv1" fontSize="32px">
+      </text>
+    </Stack>
+    <Grid>
+      <Card>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="M2ZPHDqe6" fontSize="16px">
+              </Container>
+              <Container nodeId="UMkipYqxL" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="kKZ8P977O" fontSize="16px">
+              </Container>
+              <Container nodeId="JxpYmedKj" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="kxskj_v2Y" fontSize="16px">
+              </Container>
+              <Container nodeId="HybKQJqce" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+        <Container>
+          <Stack>
+            <text>
+              <Container nodeId="Lf5rDin2b" fontSize="16px">
+              </Container>
+              <Container nodeId="h1vQET5E8" fontSize="16px">
+              </Container>
+            </text>
+          </Stack>
+        </Container>
+      </Card>
+    </Grid>
+  </Features>
+</Container>
+"
+`;
+
+exports[`parseXmlToOldTextTree > parses ai startup kit nav.xml correctly > xml 1`] = `
+"<AI_Kit_Nav>
+  Features
+			
+			
+				Developers
+			
+			
+				Brand
+			
+			
+				Blog
+			
+			
+				Contact
+			
+		
+		
+			
+				Sign up for free
+  <Navigation>
+    Features
+			
+			
+				Developers
+			
+			
+				Brand
+			
+			
+				Blog
+			
+			
+				Contact
+			
+		
+		
+			
+				Sign up for free
+    <Stack>
+      Features
+			
+			
+				Developers
+			
+			
+				Brand
+			
+			
+				Blog
+			
+			
+				Contact
+      <AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
+        Features
+      </AI_Kit_Navigation_Nav_Top_Item>
+      <AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
+        Developers
+      </AI_Kit_Navigation_Nav_Top_Item>
+      <AI_Kit_Navigation_Nav_Top_Item nodeId="ttyq47m7">
+        Brand
+      </AI_Kit_Navigation_Nav_Top_Item>
+      <AI_Kit_Navigation_Nav_Top_Item nodeId="5mjfkk9h">
+        Blog
+      </AI_Kit_Navigation_Nav_Top_Item>
+      <AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
+        Contact
+      </AI_Kit_Navigation_Nav_Top_Item>
+    </Stack>
+    <Stack>
+      Sign up for free
+      <AI_Kit_Button nodeId="koeyy0nt">
+        Sign up for free
+      </AI_Kit_Button>
+    </Stack>
+  </Navigation>
+</AI_Kit_Nav>
+"
+`;
+
+exports[`parseXmlToOldTextTree > parses ai startup kit nav.xml for  migrated.xml correctly > xml 1`] = `
+"<AI_Kit_Nav>
+  <Navigation>
+    <Stack>
+      <Container>
+        <AI_Kit_Navigation_Nav_Top_Item>
+          <Container nodeId="w2keh4di">
+          </Container>
+          <Container nodeId="f9jqiq3c">
+          </Container>
+          <Container nodeId="ttyq47m7">
+          </Container>
+          <Container nodeId="5mjfkk9h">
+          </Container>
+          <Container nodeId="phn7sz8d">
+          </Container>
+        </AI_Kit_Navigation_Nav_Top_Item>
+      </Container>
+      <Container>
+        <AI_Kit_Button nodeId="koeyy0nt">
+        </AI_Kit_Button>
+      </Container>
+    </Stack>
+  </Navigation>
+</AI_Kit_Nav>
+"
+`;
+
+exports[`parseXmlToOldTextTree > parses ai startup kit nav.xml for framer.com migrated.xml correctly > xml 1`] = `
+"<AI_Kit_Nav>
+  <Navigation>
+    <Stack>
+      <Container>
+        <AI_Kit_Navigation_Nav_Top_Item>
+          <Container nodeId="w2keh4di">
+          </Container>
+          <Container nodeId="f9jqiq3c">
+          </Container>
+          <Container nodeId="ttyq47m7">
+          </Container>
+          <Container nodeId="5mjfkk9h">
+          </Container>
+          <Container nodeId="phn7sz8d">
+          </Container>
+        </AI_Kit_Navigation_Nav_Top_Item>
+      </Container>
+      <Container>
+        <AI_Kit_Button nodeId="koeyy0nt">
+        </AI_Kit_Button>
+      </Container>
+    </Stack>
+  </Navigation>
+</AI_Kit_Nav>
+"
 `;

@@ -302,7 +302,7 @@ export async function* rewriteTemplateChunk({
             }
         }
         if (fullItem) {
-            console.log('rewrite item', fullItem)
+            // console.log('rewrite item', fullItem)
             // yield {
             //     partialItem: fullItem,
             //     finalObject: undefined,

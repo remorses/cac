@@ -1,6 +1,6 @@
 import { vitePlugin as remix } from '@remix-run/dev'
 
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import Inspect from 'vite-plugin-inspect'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import EnvironmentPlugin from 'vite-plugin-environment'
@@ -22,6 +22,7 @@ export default defineConfig({
 
     test: {
         pool: 'threads',
+
         exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],
         // disableConsoleIntercept: true,
 

@@ -9,26 +9,26 @@ import {
     rewriteTemplateChunk,
     rewriteTemplateContent,
 } from 'website/src/lib/rewrite'
-import {
-    bfsOldTextTree,
-    oldTextTreeToXml,
-    parseXmlToOldTextTree,
-} from 'website/src/lib/utils'
+import { bfsOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
+import { DOMParser, XMLSerializer } from 'xmldom'
+
 const testCases = [
+    {
+        url: 'https://framer.com',
+        description: 'A website builder called Framer',
+    },
     {
         url: '',
         description:
             'A website builder called Framer, to design websites in Figma like interface',
     },
-    {
-        url: 'https://framer.com',
-        description: 'A website builder called Framer',
-    },
 ]
 
-const templateContentFiles = fs.readdirSync(
+let templateContentFiles = fs.readdirSync(
     path.resolve(__dirname, './evaluation/templates'),
 )
+
+// templateContentFiles = templateContentFiles.slice(0, 1)
 
 describe('rewrite eval', () => {
     templateContentFiles.forEach((templateFile) => {
@@ -73,19 +73,29 @@ describe('rewrite eval', () => {
                         }
                     }
 
-                    let tree = await parseXmlToOldTextTree(xml)
-                    const allNodes = bfsOldTextTree(tree)
-                    allNodes.forEach((node) => {
-                        const matchingResult = results.find(
-                            (result) => result.nodeId === node.nodeId,
-                        )
-                        if (matchingResult) {
-                            node.content = matchingResult.content
-                        } else if (node.content) {
-                            node.content += ' (NOT GENERATED)'
+                    const parser = new DOMParser()
+                    const xmlDoc = parser.parseFromString(xml, 'text/xml')
+
+                    const updateNode = (element) => {
+                        const nodeId = element.getAttribute('nodeId')
+                        if (nodeId) {
+                            const matchingResult = results.find(
+                                (result) => result.nodeId === nodeId,
+                            )
+                            if (matchingResult) {
+                                element.textContent = matchingResult.content
+                            } else if (element.textContent) {
+                                element.textContent += ' (NOT GENERATED)'
+                            }
                         }
-                    })
-                    const resultXml = await oldTextTreeToXml(tree)
+                        Array.from(element.children || []).forEach(updateNode)
+                    }
+
+                    updateNode(xmlDoc.documentElement)
+
+                    const serializer = new XMLSerializer()
+                    const resultXml = serializer.serializeToString(xmlDoc)
+
                     await expect(resultXml).toMatchFileSnapshot(
                         `./evaluation/templates/${templateFile} for ${formatUrl(url)} migrated.xml`,
                     )
