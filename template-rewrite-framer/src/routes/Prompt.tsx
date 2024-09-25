@@ -287,11 +287,8 @@ function SimplePromptComponent({}) {
         const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
         try {
             for await (let streamPart of eventSource!) {
-                const {
-                    partialItem: chunk,
-                    object: completeObj,
-                    nextItemId,
-                } = streamPart
+                const { object: completeObj, nextItemId } = streamPart
+
                 if (nextItemId) {
                     let node =
                         instanceNodes.get(nextItemId)?.node ||
@@ -341,39 +338,49 @@ function SimplePromptComponent({}) {
                         JSON.stringify(completeObj, null, 2),
                     )
                 }
-                if ('links' in streamPart && streamPart.links?.length) {
+                if (
+                    streamPart &&
+                    'links' in streamPart &&
+                    streamPart.links?.length
+                ) {
                     const links = streamPart.links
                     console.log('found links', links)
                 }
-                if (!chunk) {
+                if (!completeObj) {
                     continue
                 }
 
                 // Process each chunk (value)
 
-                if (chunk.nodeId == null) {
-                    console.log(`no nodeId found: ${JSON.stringify(chunk)}`)
+                if (completeObj.nodeId == null) {
+                    console.log(
+                        `no nodeId found: ${JSON.stringify(completeObj)}`,
+                    )
                     continue
                 }
 
                 const node =
-                    instanceNodes.get(chunk.nodeId)?.node ||
-                    (await framer.getNode(chunk.nodeId))
+                    instanceNodes.get(completeObj.nodeId)?.node ||
+                    (await framer.getNode(completeObj.nodeId))
 
                 if (!node) {
-                    console.log(`no node found for id ${chunk.nodeId}`)
+                    console.log(`no node found for id ${completeObj.nodeId}`)
                     continue
                 }
                 const old = allOldNodes.find(
-                    (x) => x.nodeId === chunk.nodeId,
+                    (x) => x.nodeId === completeObj.nodeId,
                 )?.content
                 if (!old) {
-                    console.log(`no old text found for node ${chunk.nodeId}`)
+                    console.log(
+                        `no old text found for node ${completeObj.nodeId}`,
+                    )
                     continue
                 }
                 // console.log(
                 //     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
                 // )
+
+                
 
                 if (Date.now() - lastTimeZoomed < minTimeOnNode) {
                     let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
@@ -381,29 +388,32 @@ function SimplePromptComponent({}) {
                     await sleep(time)
                 }
 
-                if (!chunk.newContent) {
+                if (!completeObj.newContent) {
                     // console.log('no text found in chunk', chunk)
                     continue
                 }
                 if (isTextNode(node)) {
-                    await node.setText(chunk.newContent)
+                    await node.setText(completeObj.newContent)
                 } else if (isComponentInstanceNode(node)) {
-                    const instance = instanceNodes.get(chunk.nodeId)
+                    const instance = instanceNodes.get(completeObj.nodeId)
                     if (!instance) {
-                        console.log('no instance found for node', chunk.nodeId)
+                        console.log(
+                            'no instance found for node',
+                            completeObj.nodeId,
+                        )
                         continue
                     }
 
                     let controls = {
                         ...node.controls,
-                        [instance.controlKey]: chunk.newContent,
+                        [instance.controlKey]: completeObj.newContent,
                     }
 
                     console.log('setting node control', instance.controlKey)
                     await node.setAttributes({ controls })
                 } else {
                     console.log(
-                        `node type for id ${chunk.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
+                        `node type for id ${completeObj.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
                     )
                 }
 
