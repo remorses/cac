@@ -199,20 +199,35 @@ ${description || 'No specific instructions provided'}
 
 export const ITEMS_PER_ITERATION = 30
 
-function splitTreeInChunks(
+function findFirstChildrenLayer(tree: OldTextTree): {
+    layer: OldTextTree
+    parents: OldTextTree
+} {
+    let currentLayer = tree
+    let parents: OldTextTree = []
+    while (currentLayer.length === 1 && currentLayer[0].children?.length) {
+        parents.push({ ...currentLayer[0], children: [] })
+        currentLayer = currentLayer[0].children
+    }
+    return { layer: currentLayer, parents }
+}
+
+export function splitTreeInChunks(
     tree: OldTextTree,
     maxChunkTreeSize: number = ITEMS_PER_ITERATION,
 ): OldTextTree[] {
     let result: OldTextTree[] = []
     let buffer: OldTextTree = []
 
-    for (const node of tree) {
+    // Find the first layer with more than one child
+    const { layer: currentLayer, parents } = findFirstChildrenLayer(tree)
+
+    for (const node of currentLayer) {
         const nodes = bfsOldTextTree([...buffer, node])
 
         if (nodes.length >= maxChunkTreeSize) {
-            // If a single node is larger than chunkSize, create a chunk for it
-            buffer.push(node)
-            result.push([...buffer])
+            const chunk = createChunkWithParents(parents, [...buffer, node])
+            result.push(chunk)
             buffer = []
         } else {
             // Add to buffer
@@ -222,10 +237,26 @@ function splitTreeInChunks(
 
     // Add remaining buffer as a chunk if not empty
     if (buffer.length > 0) {
-        result.push(buffer)
+        const chunk = createChunkWithParents(parents, buffer)
+        result.push(chunk)
     }
 
     return result
+}
+
+function createChunkWithParents(
+    parents: OldTextTree,
+    children: OldTextTree,
+): OldTextTree {
+    if (parents.length === 0) {
+        return children
+    }
+
+    let currentParent = { ...parents[parents.length - 1], children }
+    for (let i = parents.length - 2; i >= 0; i--) {
+        currentParent = { ...parents[i], children: [currentParent] }
+    }
+    return [currentParent]
 }
 
 export async function* rewriteTemplateChunk({

@@ -147,21 +147,6 @@ export function cleanupOldTextTree(
         .flatMap(processNode)
         .filter((node): node is OldTextTree[number] => node !== null)
 
-    if (shouldRemoveTopTree) {
-        // Recursively remove top-level nodes with only one child
-        while (cleanedTree.length === 1 && cleanedTree[0].children?.length) {
-            const removedNodeName = cleanedTree[0].name
-            cleanedTree = cleanedTree[0].children
-            // Add the removed node's name to all child nodes
-            cleanedTree = cleanedTree.map((child) => {
-                if (child.name) {
-                    child.name = `${removedNodeName}_${child.name}`
-                }
-                return child
-            })
-        }
-    }
-
     return cleanedTree
 }
 
