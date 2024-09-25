@@ -1,7 +1,8 @@
 import { captureException, init } from '@sentry/browser'
 
 init({
-    dsn: 'https://b3801661934e0cd1f5e211e0305782ce@o4507497807609856.ingest.de.sentry.io/4507497810821200',
+    dsn: 'https://d6ad60582fec2961afffe60e5a189844@o4508014272446464.ingest.de.sentry.io/4508014275985488',
+
     integrations: [],
 
     // Performance Monitoring
@@ -25,5 +26,5 @@ init({
 export function notifyError(error, msg?: string) {
     // framer.notify(String(error.message || error), { variant: 'error' })
     console.error(error)
-    // captureException(error, { extra: { msg } })
+    captureException(error, { extra: { msg } })
 }

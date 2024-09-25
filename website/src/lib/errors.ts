@@ -2,7 +2,8 @@ import { init, captureException, flush } from '@sentry/node'
 import { sortUserPlugins } from 'vite'
 
 init({
-    dsn: 'https://b3801661934e0cd1f5e211e0305782ce@o4507497807609856.ingest.de.sentry.io/4507497810821200',
+    dsn: 'https://3e3f1075fec9ee2de1e0f79026b5f734@o4508014272446464.ingest.de.sentry.io/4508014292697168',
+
     integrations: [],
 
     // Performance Monitoring
