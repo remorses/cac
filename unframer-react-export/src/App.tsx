@@ -14,7 +14,6 @@ import {
     LoaderReturnType,
     Paths,
     RouteIds,
-    basePath,
     getReactPluginData,
     withMode,
 } from '@/lib/utils'
@@ -37,7 +36,7 @@ import {
     useRouteError,
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
-import { reload } from 'template-rewrite-framer/src/lib/utils'
+import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
 
 globalThis.framer = framer
 

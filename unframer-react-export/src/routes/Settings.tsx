@@ -5,8 +5,7 @@ import {
     LoaderReturnType,
     Paths,
     PluginDataKeys,
-    basePath,
-    pluginApiClient,
+    pluginApiClient
 } from '@/lib/utils'
 import { useState } from 'react'
 import {
@@ -17,11 +16,11 @@ import {
     useNavigate,
 } from 'react-router'
 
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
-import {} from 'react-router'
+import { } from 'react-router'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
 async function loader({}: LoaderFunctionArgs) {
     const [org, credits] = await Promise.all([

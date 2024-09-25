@@ -1,15 +1,11 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import { reload } from 'template-rewrite-framer/src/lib/utils'
 
 import {
     LoaderReturnType,
     Paths,
-    PluginDataKeys,
-    basePath,
     getReactPluginData,
-    pluginApiClient,
+    pluginApiClient
 } from '@/lib/utils'
-import { Fragment, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -19,13 +15,11 @@ import {
     useNavigation,
 } from 'react-router'
 
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import classNames from 'classnames'
-import { motion } from 'framer-motion'
-import { framer } from 'framer-plugin'
-import {} from 'react-router'
-import { Form } from 'react-router-dom'
 import { notifyError } from '@/lib/errors'
+import { framer } from 'framer-plugin'
+import { } from 'react-router'
+import { Form } from 'react-router-dom'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
