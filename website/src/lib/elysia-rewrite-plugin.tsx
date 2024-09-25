@@ -15,7 +15,7 @@ import {
     rewriteTemplateContent,
 } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { Iterated } from 'website/src/lib/utils'
+import { Iterated, oldTextTreeToXml } from 'website/src/lib/utils'
 import { z } from 'zod'
 
 export const rewritePluginApp = new Spiceflow({
@@ -41,14 +41,12 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const {
-                description,
-                sourceHtml,
-                oldText: textToReplace,
-                url,
-            } = body
+            const { description, sourceHtml, oldText: oldText, url } = body
+            const xml = oldTextTreeToXml(oldText)
+
             let linksPromise = extractExternalLinks({
                 websiteUrl: url,
+                xml,
                 formattedHtml: sourceHtml || undefined,
             }).catch((e) => {
                 notifyError(e, 'error extracting links')
@@ -58,7 +56,7 @@ export const rewritePluginApp = new Spiceflow({
             let chars = 0
             let objectStream = rewriteTemplateContent({
                 description,
-                oldText: textToReplace,
+                oldText: oldText,
                 sourceHtml,
                 url,
                 onToken(token) {

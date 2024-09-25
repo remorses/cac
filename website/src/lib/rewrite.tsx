@@ -1,4 +1,6 @@
 import dedent from 'string-dedent'
+import { DOMParser, XMLSerializer } from 'xmldom'
+
 import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'
@@ -385,44 +387,39 @@ export async function* rewriteTemplateContent({
 export async function extractExternalLinks({
     websiteUrl,
     formattedHtml,
-    oldText,
+    xml,
 }: {
     websiteUrl: string
     formattedHtml?: string
-    oldText?: OldTextTree
-}): Promise<z.infer<typeof LinksSchema>> {
+    xml: string
+}) {
     if (!formattedHtml) {
-        return []
+        return
     }
 
-    if (!oldText?.length) {
-        return []
+    if (!xml?.length) {
+        return
     }
-
-    oldText = structuredClone(
-        oldText.filter((node) => {
-            return bfsOldTextTree([node]).some(
-                (child) => child.attributes?.href !== undefined,
-            )
-        }),
-    )
 
     // remove node ids if node has no href, this makes it easier for the LLM to remember node ids
-    const allNodes = bfsOldTextTree(oldText)
-    for (let node of allNodes) {
-        if (!node.attributes?.href) {
-            delete node.nodeId
+    const parser = new DOMParser()
+    const xmlDoc = parser.parseFromString(xml, 'text/xml')
+    const allNodes = xmlDoc.getElementsByTagName('*')
+
+    for (let i = 0; i < allNodes.length; i++) {
+        const node = allNodes[i]
+        if (!node.getAttribute('href')) {
+            node.removeAttribute('nodeId')
         }
     }
+    const serializer = new XMLSerializer()
 
-    if (!oldText.length) {
-        return []
-    }
+    xml = serializer.serializeToString(xmlDoc)
 
     const prompt = createExtractLinksPrompt({
         websiteUrl,
         formattedHtml,
-        oldText,
+        xml,
     })
 
     const res = await generateObject({
@@ -435,52 +432,55 @@ export async function extractExternalLinks({
                 content: prompt,
             },
         ],
-        schema: LinksSchema,
+        schema: LinkSchema,
     })
 
     const extractedLinks = await res.object
 
-    return extractedLinks
+    return extractedLinks?.links
 }
 
 const LinkSchema = z.object({
-    nodeId: z.string().describe('The nodeId of the link'),
-    reasoning: z.string().describe(
-        dedent`
+    links: z.array(
+        z.object({
+            nodeId: z
+                .string()
+                .describe(
+                    'The nodeId of the text element, it is always a 9 letters string, you can find it in the nodeId attribute in the template xml, not all elements have it, you have to skip those that don\'t have it',
+                ),
+            reasoning: z.string().describe(
+                dedent`
             A detailed reasoning to decide the new url for the link, extracted from the HTML document anchor tags, it should always answer the following questions:
             - *section and role*: what is the section of the document the link is part of? for example footer link, a header nav, a feature link item, etc.
             - *where does the link redirect to and why*: what is the goal of the link content? what is this link redirecting to and what it's for?
             `,
+            ),
+            newHref: z
+                .string()
+                .describe(
+                    'The external full URL of the link, should come from the HTML document',
+                ),
+            // newContent: z
+            //     .string()
+            //     .describe('The visible text content of the link, in text format'),
+            shouldOpenInNewTab: z
+                .boolean()
+                .describe(
+                    'Whether the link is set to open in a new tab (true) or not (false), based on the target _blank attribute',
+                ),
+        }),
     ),
-    newHref: z
-        .string()
-        .url()
-        .describe(
-            'The external full URL of the link, should come from the HTML document',
-        ),
-    // newContent: z
-    //     .string()
-    //     .describe('The visible text content of the link, in text format'),
-    shouldOpenInNewTab: z
-        .boolean()
-        .describe(
-            'Whether the link is set to open in a new tab (true) or not (false), based on the target _blank attribute',
-        ),
 })
-
-const LinksSchema = z.array(LinkSchema)
 
 export function createExtractLinksPrompt({
     websiteUrl,
     formattedHtml,
-    oldText,
+    xml,
 }: {
     websiteUrl: string
     formattedHtml: string
-    oldText: OldTextTree
+    xml
 }): string {
-    const xml = oldTextTreeToXml(oldText)
-    console.log(xml)
     return `
 Extract all external links from the HTML document. Only include links that redirect to websites different from ${websiteUrl}.
 

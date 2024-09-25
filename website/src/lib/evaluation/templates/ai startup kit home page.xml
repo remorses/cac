@@ -25,14 +25,14 @@
     <Grid>
       <Stack>
         <Stack>
-          <text nodeId="vnzxmNCxb">
+          <text href="https://thebrowser.company" nodeId="vnzxmNCxb">
             The Browser Company
           </text>
         </Stack>
       </Stack>
       <Stack>
         <Stack>
-          <text nodeId="DRefZ4FzF">
+          <text href="https://dribbble.com" nodeId="DRefZ4FzF">
             Dribbble
           </text>
         </Stack>
@@ -78,7 +78,7 @@
       </Card>
       <Card>
         <Stack>
-          <text nodeId="Lf5rDin2b" fontSize="16px">
+          <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
             Effects
           </text>
           <text nodeId="h1vQET5E8" fontSize="16px">

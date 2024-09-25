@@ -285,7 +285,7 @@ export async function getWebsiteDescription({ html, url, signal }) {
         ],
 
         // model: anthropic('claude-3-sonnet-20240229'),
-        model: openai('gpt-4o-2024-08-06'),
+        model: openai('gpt-4o-mini'),
     })
 
     let extractedDescription = result.text

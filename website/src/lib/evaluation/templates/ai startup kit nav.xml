@@ -7,10 +7,10 @@
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
 				Developers
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<AI_Kit_Navigation_Nav_Top_Item nodeId="ttyq47m7">
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/brand" nodeId="ttyq47m7">
 				Brand
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<AI_Kit_Navigation_Nav_Top_Item nodeId="5mjfkk9h">
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/blog" nodeId="5mjfkk9h">
 				Blog
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
