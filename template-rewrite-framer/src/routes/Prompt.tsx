@@ -149,7 +149,6 @@ function SimplePromptComponent({}) {
             return
         }
         let oldText = [] as OldTextTree
-        let i = 0
 
         async function handleNode(node: AnyNode) {
             // console.log('node', node.constructor.name)
@@ -203,6 +202,7 @@ function SimplePromptComponent({}) {
 
                         oldText = await push({
                             // parent: node,
+                            controlKey: key,
                             node,
                             nodeId,
                             tree: oldText,
@@ -217,23 +217,27 @@ function SimplePromptComponent({}) {
             if (!rootNode) {
                 continue
             }
-            for await (let node of rootNode.walk()) {
-                i += 1
 
-                for await (let child of recurseIntoComponent(node)) {
+            for await (let node of rootNode.walk()) {
+                await handleNode(node)
+                for await (let child of recurseIntoComponent(rootNode)) {
                     await handleNode(child)
                 }
-                await handleNode(node)
             }
         }
+
         oldText = cleanupOldTextTree(oldText)
-        setPreviousOldText([...oldText])
+
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
                 const xml = oldTextTreeToXml(oldText)
+
+                await navigator.clipboard.writeText(
+                    JSON.stringify(oldText, null, 2),
+                )
+                await sleep(400)
                 await navigator.clipboard.writeText(xml)
-                await navigator.clipboard.writeText(JSON.stringify(oldText, null, 2))
                 console.log('Old text copied to clipboard as JSON')
             } catch (error) {
                 console.error('Failed to copy old text to clipboard:', error)
@@ -246,6 +250,7 @@ function SimplePromptComponent({}) {
             setError('No text found to replace')
             return
         }
+        setPreviousOldText([...oldText])
         // Copy old text to clipboard if in dev mode
 
         // console.log('oldText', JSON.stringify(oldText, null, 2))
@@ -255,7 +260,7 @@ function SimplePromptComponent({}) {
             await pluginApiClient.api.plugins.rewritePlugin.rephrase.post(
                 {
                     description,
-                    textToReplace: oldText,
+                    oldText: oldText,
                     // exampleTextToMigrate: globalState.exampleTextToMigrate,
                     sourceHtml: globalState.sourceHtml,
                     url: globalState.sourceUrl,
@@ -339,8 +344,6 @@ function SimplePromptComponent({}) {
                 if ('links' in streamPart && streamPart.links?.length) {
                     const links = streamPart.links
                     console.log('found links', links)
-
-
                 }
                 if (!chunk) {
                     continue
@@ -762,12 +765,15 @@ async function push({
     tree,
     text,
     nodeId,
+    controlKey,
 }: {
     tree: OldTextTree
     node: AnyNode
     text?: string
     nodeId: string
+    controlKey?: string
 }) {
+    // console.trace('push')
     // console.log(`adding node ${node?.['name']}`)
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
     let currentLevel = tree
@@ -808,10 +814,13 @@ async function push({
     // Add the actual node
     currentLevel.push({
         content: text,
-        href,
         nodeId,
         name: 'name' in node ? node.name : '',
-        fontSize,
+        attributes: {
+            href,
+            fontSize,
+            controlKey,
+        },
         children: [],
     })
     return tree

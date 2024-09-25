@@ -11,16 +11,18 @@ export type OldTextTree = Array<{
     name?: string | null
     content?: string | null
     nodeId?: string | null
-    fontSize?: string
-
-    href?: string | null
+    attributes?: {
+        fontSize?: string
+        controlKey?: string
+        href?: string | null
+    }
     children?: OldTextTree
     // index: number;
 }>
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
-    textToReplace: z.custom<OldTextTree>(),
+    oldText: z.custom<OldTextTree>(),
     sourceHtml: z.string().nullable(),
     url: z.string(),
 })
@@ -321,7 +323,7 @@ export async function* rewriteTemplateChunk({
 
 export async function* rewriteTemplateContent({
     description,
-    textToReplace: oldText = [],
+    oldText = [],
     signal,
     onToken,
     sourceHtml,
@@ -379,7 +381,7 @@ export async function extractExternalLinks({
     oldText = structuredClone(
         oldText.filter((node) => {
             return bfsOldTextTree([node]).some(
-                (child) => child.href !== undefined,
+                (child) => child.attributes?.href !== undefined,
             )
         }),
     )
@@ -387,7 +389,7 @@ export async function extractExternalLinks({
     // remove node ids if node has no href, this makes it easier for the LLM to remember node ids
     const allNodes = bfsOldTextTree(oldText)
     for (let node of allNodes) {
-        if (!node.href) {
+        if (!node.attributes?.href) {
             delete node.nodeId
         }
     }

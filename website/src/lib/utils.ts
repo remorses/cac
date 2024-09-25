@@ -149,7 +149,7 @@ export function cleanupOldTextTree(
 
     if (shouldRemoveTopTree) {
         // Recursively remove top-level nodes with only one child
-        while (cleanedTree.length === 1 && cleanedTree[0].children) {
+        while (cleanedTree.length === 1 && cleanedTree[0].children?.length) {
             const removedNodeName = cleanedTree[0].name
             cleanedTree = cleanedTree[0].children
             // Add the removed node's name to all child nodes
@@ -201,15 +201,14 @@ export function oldTextTreeToXml(
             .replace(/^[^a-zA-Z_]+/, '_')
         const attributes = [] as string[]
 
-        if (!node.children?.length) {
-            if (node.nodeId) {
-                attributes.push(`nodeId="${node.nodeId}"`)
-            }
-            if (node.fontSize) {
-                attributes.push(`fontSize="${node.fontSize}"`)
-            }
-            if (node.href) {
-                attributes.push(`href="${node.href}"`)
+        if (!node?.children?.length && node.nodeId) {
+            attributes.push(`nodeId="${node.nodeId}"`)
+        }
+        if (node.attributes) {
+            for (const [key, value] of Object.entries(node.attributes)) {
+                if (value !== undefined && value !== null) {
+                    attributes.push(`${key}="${value}"`)
+                }
             }
         }
 

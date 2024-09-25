@@ -41,7 +41,7 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const { description, sourceHtml, textToReplace, url } = body
+            const { description, sourceHtml, oldText: textToReplace, url } = body
             let linksPromise = extractExternalLinks({
                 websiteUrl: url,
                 formattedHtml: sourceHtml || undefined,
@@ -53,7 +53,7 @@ export const rewritePluginApp = new Spiceflow({
             let chars = 0
             let objectStream = rewriteTemplateContent({
                 description,
-                textToReplace,
+                oldText: textToReplace,
                 sourceHtml,
                 url,
                 onToken(token) {
