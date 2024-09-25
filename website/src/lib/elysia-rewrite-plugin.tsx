@@ -44,14 +44,14 @@ export const rewritePluginApp = new Spiceflow({
             const { description, sourceHtml, oldText: oldText, url } = body
             const xml = oldTextTreeToXml(oldText)
 
-            let linksPromise = extractExternalLinks({
-                websiteUrl: url,
-                xml,
-                formattedHtml: sourceHtml || undefined,
-            }).catch((e) => {
-                notifyError(e, 'error extracting links')
-                return []
-            })
+            // let linksPromise = extractExternalLinks({
+            //     websiteUrl: url,
+            //     xml,
+            //     formattedHtml: sourceHtml || undefined,
+            // }).catch((e) => {
+            //     notifyError(e, 'error extracting links')
+            //     return []
+            // })
             let words = 0
             let chars = 0
             let objectStream = rewriteTemplateContent({
@@ -79,12 +79,6 @@ export const rewritePluginApp = new Spiceflow({
                     if (chunk.finalObject) {
                         finalObject = chunk.finalObject
                     }
-                }
-                let links = await linksPromise
-                yield {
-                    links,
-                    partialItem: null,
-                    completeObj: null,
                 }
             } catch (e) {
                 notifyError(e, 'error rephrasing ')
