@@ -77,7 +77,7 @@ export const plansConfig = [
     {
         variantId: 495828,
 
-        limits: { words: 10_000 },
+        limits: { words: 15_000 },
     },
 ]
 

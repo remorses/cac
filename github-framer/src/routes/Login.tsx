@@ -77,7 +77,6 @@ function LoginComponent() {
                     // }
                     setIsLoading(true)
                     try {
-                        await sleep(1_000)
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
@@ -115,7 +114,7 @@ async function loader({}: LoaderFunctionArgs) {
     if (data.key) {
         console.log('login was completed, got session', data)
 
-        const collection = await framer. getManagedCollection()
+        const collection = await framer.getManagedCollection()
         let requestData: GithubLoginRequestData = (data.requestData ||
             {}) as any
 
