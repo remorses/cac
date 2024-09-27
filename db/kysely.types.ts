@@ -298,11 +298,15 @@ export interface FramerLoginSession {
 }
 
 export interface Generation {
-  arguments: Json | null;
   chars: number;
   createdAt: Generated<Timestamp>;
+  description: string | null;
+  domain: string | null;
   id: Generated<number>;
+  initialXml: string | null;
   orgId: string;
+  resultXml: string | null;
+  status: Generated<"accepted" | "discarded">;
   words: number;
 }
 

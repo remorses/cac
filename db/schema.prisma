@@ -390,10 +390,22 @@ model Generation {
   orgId     String
   words     Int
   chars     Int
-  arguments Json?
   org       Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
+  domain      String?
+  description String?
+  status      GenerationStatus @default(accepted)
+  initialXml  String?
+  resultXml   String?
+
   @@index([orgId])
+  @@schema("public")
+}
+
+enum GenerationStatus {
+  accepted
+  discarded
+
   @@schema("public")
 }
 

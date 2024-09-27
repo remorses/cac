@@ -7,15 +7,11 @@ import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
 import {
     fetchFormattedHtml,
     getWebsiteDescription,
-    getWebsiteInfo,
 } from 'website/src/lib/htmlrewrite.server'
-import {
-    extractExternalLinks,
-    RewriteSchema,
-    rewriteTemplateContent,
-} from 'website/src/lib/rewrite'
+import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { Iterated, oldTextTreeToXml } from 'website/src/lib/utils'
+import { oldTextTreeToXml } from 'website/src/lib/utils'
+import { rewriteXmlContent } from 'website/src/lib/xml'
 import { z } from 'zod'
 
 export const rewritePluginApp = new Spiceflow({
@@ -64,39 +60,61 @@ export const rewritePluginApp = new Spiceflow({
                 },
                 signal: request.signal,
             })
-            let finalObject: Iterated<typeof objectStream>['finalObject']
+            let resultXml = ''
+
+            const newContent: { nodeId: string; newContent?: string }[] = []
             try {
                 for await (let chunk of objectStream) {
                     // console.log('chunk', chunk)
-                    yield chunk
+                    yield { type: 'chunk' as const, ...chunk }
                     let object = chunk.completeObj
                     if (object) {
                         chars += object?.newContent?.length || 0
                         words +=
                             splitIntoWords(object.newContent || '')?.length || 0
                     }
-
-                    if (chunk.finalObject) {
-                        finalObject = chunk.finalObject
+                    if (chunk.completeObj?.nodeId) {
+                        newContent.push({
+                            nodeId: chunk.completeObj.nodeId,
+                            newContent: chunk.completeObj.newContent || '',
+                        })
                     }
+                }
+                try {
+                    resultXml = rewriteXmlContent({
+                        newContent: newContent,
+                        xml: xml,
+                    })
+                } catch (e) {
+                    notifyError(e, 'error rewriting xml')
                 }
             } catch (e) {
                 notifyError(e, 'error rephrasing ')
                 throw e
             } finally {
                 console.log('saving generation on db')
-                await Promise.all([
+                const [gen] = await Promise.all([
                     db
                         .insertInto('Generation')
                         .values({
                             words,
                             orgId: userId,
+                            description,
+                            domain: url,
+                            initialXml: xml,
+                            resultXml,
+                            status: 'accepted',
                             chars,
-                            arguments: body,
+                            // arguments: body,
                             createdAt: new Date(),
                         })
+                        .returningAll()
                         .execute(),
                 ])
+                yield {
+                    type: 'generation' as const,
+                    generationId: gen[0]?.id,
+                }
             }
         },
         {
@@ -104,6 +122,34 @@ export const rewritePluginApp = new Spiceflow({
             // response: {
             //     200: t.AsyncIterator(t.String()),
             // },
+        },
+    )
+    .post(
+        '/discardGeneration',
+        async ({ state: store, request }) => {
+            let body = await request.json()
+            const userId = store.userId
+            if (!userId) {
+                throw new Error('Unauthorized')
+            }
+
+            const { id } = body
+            if (!id) {
+                throw new Error('No id provided')
+            }
+
+            await db
+                .updateTable('Generation')
+                .set({ status: 'discarded' })
+                .where('id', '=', id)
+                .execute()
+
+            return { success: true }
+        },
+        {
+            body: z.object({
+                id: z.number(),
+            }),
         },
     )
     .post(

@@ -68,6 +68,7 @@ function SimplePromptComponent({}) {
     const [description, setDescription] = useState(
         globalState.extractedDescription || '',
     )
+
     const [isLoading, setIsLoading] = useState(false)
     const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
 
@@ -115,6 +116,7 @@ function SimplePromptComponent({}) {
     }
     let [error, setError] = useState('')
 
+    const [generationId, setGenerationId] = useState(0)
     const [selectedNodes, setSelectedNodes] = useState<AnyNode[]>([])
 
     useEffect(() => {
@@ -125,6 +127,8 @@ function SimplePromptComponent({}) {
 
     async function replaceTextClient() {
         setPreviousOldText([])
+        instanceNodes.clear()
+        setGenerationId(0)
         setError('')
         // const root = await framer.getCanvasRoot()
 
@@ -330,6 +334,13 @@ function SimplePromptComponent({}) {
             for await (let streamPart of eventSource!) {
                 // console.log('partialItem', streamPart)
 
+                if (streamPart.type === 'generation') {
+                    setGenerationId(streamPart.generationId)
+                    continue
+                }
+                if (streamPart.type !== 'chunk') {
+                    continue
+                }
                 const { completeObj, partialItem } = streamPart
 
                 if (partialItem && currentNodeId !== partialItem.nodeId) {
@@ -337,8 +348,7 @@ function SimplePromptComponent({}) {
                 }
                 currentNodeId = partialItem?.nodeId
                 if (completeObj?.newContent) {
-                    let words = completeObj.newContent.split(/\s+/).length
-                    setRemainingCredits(Math.max(0, credits.remaining - words))
+                    // let words = completeObj.newContent.split(/\s+/).length
                     console.log(
                         'new text',
                         JSON.stringify(completeObj, null, 2),
@@ -467,7 +477,13 @@ function SimplePromptComponent({}) {
             }
         })
 
-        await Promise.all(promises)
+        await Promise.all([
+            ...promises,
+            pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post({
+                id: generationId,
+            }),
+        ])
+        setGenerationId(0)
         setPreviousOldText([])
     })
 
@@ -481,7 +497,6 @@ function SimplePromptComponent({}) {
         return 'Replace'
     })()
 
-    const [remainingCredits, setRemainingCredits] = useState(credits.remaining)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     useEffect(() => {
         if (textareaRef.current) {

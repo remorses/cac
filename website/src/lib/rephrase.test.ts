@@ -11,7 +11,7 @@ import {
     rewriteTemplateContent,
 } from 'website/src/lib/rewrite'
 import { bfsOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
-import { DOMParser, XMLSerializer } from 'xmldom'
+import { rewriteXmlContent } from 'website/src/lib/xml'
 
 const testCases = [
     {
@@ -103,28 +103,7 @@ runTestForEachTemplate(
             }
         }
 
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(xml, 'text/xml')
-
-        const updateNode = (element) => {
-            const nodeId = element.getAttribute('nodeId')
-            if (nodeId) {
-                const matchingResult = results.find(
-                    (result) => result.nodeId === nodeId,
-                )
-                if (matchingResult) {
-                    element.textContent = matchingResult.content
-                } else if (element.textContent) {
-                    element.textContent += ' (NOT GENERATED)'
-                }
-            }
-            Array.from(element.children || []).forEach(updateNode)
-        }
-
-        updateNode(xmlDoc.documentElement)
-
-        const serializer = new XMLSerializer()
-        const resultXml = serializer.serializeToString(xmlDoc)
+        const resultXml = rewriteXmlContent({ xml, newContent: results })
 
         await expect(resultXml).toMatchFileSnapshot(
             `./evaluation/templates/${templateFile} for ${formatUrl(url)} migrated.xml`,
@@ -145,30 +124,7 @@ runTestForEachTemplate(
             return
         }
 
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(xml, 'text/xml')
-
-        const updateNode = (element) => {
-            const nodeId = element.getAttribute('nodeId')
-            if (nodeId) {
-                const matchingResult = links.find(
-                    (link) => link.nodeId === nodeId,
-                )
-                if (matchingResult) {
-                    element.setAttribute('NEWHREF', matchingResult.newHref)
-                    element.setAttribute(
-                        'target',
-                        matchingResult.shouldOpenInNewTab ? '_blank' : '_self',
-                    )
-                }
-            }
-            Array.from(element.children || []).forEach(updateNode)
-        }
-
-        updateNode(xmlDoc.documentElement)
-
-        const serializer = new XMLSerializer()
-        const resultXml = serializer.serializeToString(xmlDoc)
+        const resultXml = rewriteXmlContent({ xml, newContent: links })
 
         await expect(resultXml).toMatchSnapshot()
     },

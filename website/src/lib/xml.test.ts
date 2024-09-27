@@ -1,29 +1,28 @@
-import { describe, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { cleanupOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
 
-import fs from 'fs'
-import path from 'path'
 import { splitTreeInChunks } from 'website/src/lib/rewrite'
 
-import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
 import dedent from 'dedent'
-import { ElementType, parseDocument, Parser } from 'htmlparser2'
-import { DomHandler } from 'domhandler'
 import { default as domSerializer } from 'dom-serializer'
+import { DomHandler } from 'domhandler'
+import { ElementType, Parser } from 'htmlparser2'
+import { rewriteXmlContent } from 'website/src/lib/xml'
 
-test('xml partial content', () => {
+test('xml partial content, rewriteXmlContent', () => {
     const str = dedent`
   <Container>
     <Hero>
       <Header>
         <Stack>
           <AI_Kit_Badge nodeId="kvaze3i5">
+          badge
           </AI_Kit_Badge>
           <text nodeId="BmPmnKu3U" fontSize="82px">
             The web builder for stunning sites.
           </text>
           <text nodeId="Ga6gDXZIe" fontSize="20px">
-            Design and publish modern sites at any scale with Framer’s web builder.
+            Design and publish modern sites at any scale with Framer's web builder.
           </text>
           <AI_Kit_Button nodeId="rgayf1f9">
             Sign up for free
@@ -31,37 +30,37 @@ test('xml partial content', () => {
 
   `
 
-    const handler = new DomHandler((error, dom) => {
-        if (error) {
-            console.error(error)
-        } else {
-            const dfs = (node) => {
-                if (
-                    node.type === ElementType.Tag &&
-                    node.attribs &&
-                    node.attribs.nodeId
-                ) {
-                    node.children.forEach((child) => {
-                        if (child.type === 'text') {
-                            child.data = child.data.trimEnd()
-                            child.data += 'xxx'
-                        }
-                    })
-                }
-                if (node.children) {
-                    node.children.forEach(dfs)
-                }
-            }
+    const newContent = [
+        {
+            nodeId: 'BmPmnKu3U',
+            newContent: 'Hero replaced',
+        },
+        {
+            nodeId: 'Ga6gDXZIe',
+            newContent: 'Description replaced',
+        },
+        { nodeId: 'rgayf1f9', newContent: 'cta replaced' },
+    ]
 
-            dom.forEach(dfs)
-        }
-    })
-
-    const parser = new Parser(handler, { xmlMode: true })
-    parser.write(str)
-    parser.end()
-    const serialized = domSerializer(handler.dom, { xmlMode: true })
-    console.log(serialized)
+    const result = rewriteXmlContent({ xml: str, newContent })
+    expect(result).toMatchInlineSnapshot(`
+      "<Container>
+        <Hero>
+          <Header>
+            <Stack>
+              <AI_Kit_Badge nodeId="kvaze3i5">
+              badge
+              </AI_Kit_Badge>
+              <text nodeId="BmPmnKu3U" fontSize="82px">
+                Hero replaced
+              </text>
+              <text nodeId="Ga6gDXZIe" fontSize="20px">
+                Description replaced
+              </text>
+              <AI_Kit_Button nodeId="rgayf1f9">
+                cta replaced
+              </AI_Kit_Button></Stack></Header></Hero></Container>"
+    `)
 })
 
 test('oldTextTreeToXml', async () => {

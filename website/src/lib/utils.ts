@@ -1,6 +1,7 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
 import { env } from './env'
 
+
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
     if (next) {
@@ -178,6 +179,7 @@ export function oldTextTreeToXml(
             .replace(/\.+/g, '')
             .replace(/[^a-zA-Z0-9_]/g, '_')
             .replace(/^[^a-zA-Z_]+/, '_')
+            .replace(/[_-]+/g, '_')
         const attributes = [] as string[]
 
         if (!node?.children?.length && node.nodeId) {
