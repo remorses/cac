@@ -96,7 +96,6 @@ function LoginComponent() {
                 onClick={async () => {
                     setIsLoading(true)
                     try {
-                        await sleep(1_000)
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
