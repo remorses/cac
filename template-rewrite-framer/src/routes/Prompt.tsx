@@ -81,7 +81,6 @@ function SimplePromptComponent({}) {
 
     const revalidator = useRevalidator()
     const buyCreditsInstead = !credits.remaining
-    const disabled = buyCreditsInstead ? false : isLoading || !description
     // console.log('credits', credits)
     async function onSubmit() {
         if (buyCreditsInstead) {
@@ -220,7 +219,7 @@ function SimplePromptComponent({}) {
 
             for await (let node of rootNode.walk()) {
                 await handleNode(node)
-                for await (let child of recurseIntoComponent(rootNode)) {
+                for await (let child of recurseIntoComponent(node)) {
                     await handleNode(child)
                 }
             }
