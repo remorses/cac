@@ -18,6 +18,7 @@ export const rewritePluginApp = new Spiceflow({
     basePath: '/rewritePlugin',
 })
     .state('userId', '')
+    .state('userEmail', '')
     .state('orgId', '')
 
     .post(
@@ -25,6 +26,7 @@ export const rewritePluginApp = new Spiceflow({
         async function* ({ state: store, request }) {
             let body = await request.json()
             const userId = store.userId
+            const userEmail = store.userEmail
 
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
@@ -55,6 +57,7 @@ export const rewritePluginApp = new Spiceflow({
                 oldText: oldText,
                 sourceHtml,
                 url,
+                user: userEmail,
                 onToken(token) {
                     // process.stdout.write(token)
                 },
@@ -369,6 +372,7 @@ export const rewritePluginApp = new Spiceflow({
         '/getWebsiteHtml',
         async function scrape({ request, state: store }) {
             let body = await request.json()
+            const userEmail = store.userEmail
             let { domain } = body
 
             const userId = store.userId
@@ -411,6 +415,7 @@ export const rewritePluginApp = new Spiceflow({
             const { extractedDescription } = await getWebsiteDescription({
                 html,
                 url,
+                user: userEmail,
                 signal: request.signal,
             })
 

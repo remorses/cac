@@ -80,6 +80,7 @@ runTestForEachTemplate(
             xml,
             sourceHtml,
             signal: new AbortController().signal,
+            user: 'tests',
             onToken(token) {
                 // process.stdout.write(token)
             },
@@ -117,6 +118,7 @@ runTestForEachTemplate(
         const links = await extractExternalLinks({
             websiteUrl: url,
             formattedHtml: sourceHtml,
+            user: 'tests',
             xml,
         })
         console.log(links)

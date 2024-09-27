@@ -268,6 +268,7 @@ export async function* rewriteTemplateChunk({
     onToken,
     sourceHtml,
     url,
+    user,
 }: {
     description?: string
     xml: string
@@ -275,6 +276,7 @@ export async function* rewriteTemplateChunk({
     onToken?: (token: string) => void
     sourceHtml?: string
     url: string
+    user: string
 }) {
     let messages: CoreMessage[] = [
         {
@@ -353,7 +355,9 @@ export async function* rewriteTemplateContent({
     onToken,
     sourceHtml,
     url,
+    user,
 }: RewriteSchema & {
+    user: string
     signal: AbortSignal
     onToken?: (token: string) => void
 }) {
@@ -373,6 +377,7 @@ export async function* rewriteTemplateContent({
             signal,
             onToken,
             sourceHtml: sourceHtml || undefined,
+            user,
             url,
         })
 
@@ -390,10 +395,12 @@ export async function extractExternalLinks({
     websiteUrl,
     formattedHtml,
     xml,
+    user,
 }: {
     websiteUrl: string
     formattedHtml?: string
     xml: string
+    user: string
 }) {
     if (!formattedHtml) {
         return
@@ -427,6 +434,7 @@ export async function extractExternalLinks({
     const res = await generateObject({
         model: openai('gpt-4o-2024-08-06', {
             structuredOutputs: true,
+            user,
         }),
         messages: [
             {

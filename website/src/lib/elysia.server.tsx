@@ -13,6 +13,7 @@ import { reactPluginApp } from 'website/src/lib/elysia-react-plugin'
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
     .state('orgId', '')
+    .state('userEmail', '')
     .use(openapi({ path: '/openapi' }))
     .use(cors())
     .use(rewritePluginApp)
@@ -59,6 +60,11 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             .selectFrom('FramerLoginSession')
             .where('key', '=', sessionKey)
             .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
+            .leftJoin(
+                'auth.users',
+                'FramerLoginSession.usedByUserId',
+                'auth.users.id',
+            )
             .selectAll()
             .executeTakeFirst()
         if (!session) {
@@ -68,6 +74,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         const orgId = session.orgId
         store.orgId = orgId || ''
         store.userId = userId || ''
+        store.userEmail = session.email || ''
     })
 
     .post('/currentOrg', async ({ state: store }) => {
