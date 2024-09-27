@@ -6,7 +6,6 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  // url        = "postgres://morse@localhost:5432/postgres"
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
   schemas    = ["auth", "public"]
 }
@@ -68,6 +67,7 @@ model mfa_challenges {
   created_at  DateTime    @db.Timestamptz(6)
   verified_at DateTime?   @db.Timestamptz(6)
   ip_address  String      @db.Inet
+  otp_code    String?
   mfa_factors mfa_factors @relation(fields: [factor_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "mfa_challenges_auth_factor_id_fkey")
 
   @@index([created_at(sort: Desc)], map: "mfa_challenge_created_at_idx")
@@ -75,17 +75,20 @@ model mfa_challenges {
 }
 
 model mfa_factors {
-  id             String           @id @db.Uuid
-  user_id        String           @db.Uuid
-  friendly_name  String?
-  factor_type    factor_type
-  status         factor_status
-  created_at     DateTime         @db.Timestamptz(6)
-  updated_at     DateTime         @db.Timestamptz(6)
-  secret         String?
-  mfa_challenges mfa_challenges[]
-  users          users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                 String           @id @db.Uuid
+  user_id            String           @db.Uuid
+  friendly_name      String?
+  factor_type        factor_type
+  status             factor_status
+  created_at         DateTime         @db.Timestamptz(6)
+  updated_at         DateTime         @db.Timestamptz(6)
+  secret             String?
+  phone              String?
+  last_challenged_at DateTime?        @unique @db.Timestamptz(6)
+  mfa_challenges     mfa_challenges[]
+  users              users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@unique([user_id, phone], map: "unique_phone_factor_per_user")
   @@index([user_id, created_at], map: "factor_id_created_at_idx")
   @@index([user_id])
   @@schema("auth")
@@ -237,17 +240,12 @@ model users {
   is_sso_user                 Boolean           @default(false)
   deleted_at                  DateTime?         @db.Timestamptz(6)
   is_anonymous                Boolean           @default(false)
+  githubLogin                 String?
   identities                  identities[]
   mfa_factors                 mfa_factors[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
-  // sites                       sites[]
-
-  // siteOperators               siteOperators[]
-  orgs OrgsUsers[]
-
-  // plainPassword String?
-  githubLogin String?
+  orgs                        OrgsUsers[]
 
   @@index([instance_id])
   @@index([is_anonymous])
@@ -279,7 +277,6 @@ model OrgsUsers {
   userId String   @db.Uuid
   orgId  String
   role   UserRole @default(MEMBER)
-  // guestSiteIds String[]
   org    Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
   user   users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -301,64 +298,44 @@ model OrgInviteLink {
 }
 
 model Org {
-  orgId            String       @id @default(cuid())
-  name             String       @default("")
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @default(now()) @updatedAt
+  orgId            String                @id @default(cuid())
+  name             String                @default("")
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @default(now()) @updatedAt
   stripeCustomerId String?
-  ssoProviderId    String?      @unique @db.Uuid
+  ssoProviderId    String?               @unique @db.Uuid
+  framerSessions   FramerLoginSession[]
   generations      Generation[]
-
-  ssoProvider     sso_providers?        @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
-  invitationLinks OrgInviteLink[]
-  users           OrgsUsers[]
-  payments        PaymentForCredits[]
-  // sites           Site[]
-  subscriptions   Subscription[]
-  licenses        LemonSqueezyLicense[]
-  scrapedUrls     ScrapedWebsitePage[]
-  framerSessions  FramerLoginSession[]
+  licenses         LemonSqueezyLicense[]
+  ssoProvider      sso_providers?        @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
+  invitationLinks  OrgInviteLink[]
+  users            OrgsUsers[]
+  payments         PaymentForCredits[]
+  scrapedUrls      ScrapedWebsitePage[]
+  subscriptions    Subscription[]
 
   @@schema("public")
 }
 
 model LemonSqueezyLicense {
-  // id Int @id @default(autoincrement())
   licenseKey String   @id
   usedAt     DateTime @default(now())
   orgId      String
   meta       Json     @default("{}")
+  credits    Int      @default(0)
   org        Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-
-  credits Int @default(0)
 
   @@schema("public")
 }
 
-// model Site {
-//   siteId         String   @id @default(cuid())
-//   name           String
-//   createdAt      DateTime @default(now())
-//   installationId Int?
-//   orgId          String
-
-//   org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-
-//   @@schema("public")
-// }
-
 model ScrapedWebsitePage {
-  url String @id
-
-  domain String
-  data   Json
-  // siteId String
-
-  orgId     String
-  org       Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
+  url                  String   @id
+  domain               String
+  data                 Json
+  createdAt            DateTime @default(now())
   extractedDescription String?
+  orgId                String
+  org                  Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")
 }
@@ -368,10 +345,8 @@ model FramerLoginSession {
   createdAt    DateTime @default(now())
   usedByUserId String   @db.Uuid
   orgId        String
-
-  data Json @default("{}")
-
-  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  data         Json     @default("{}")
+  org          Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")
 }
@@ -381,22 +356,14 @@ model GithubInstallation {
   accountLogin     String            @default("")
   appId            String
   accountAvatarUrl String            @default("")
-  accountType      GithubAccountType @default(USER)
   createdAt        DateTime          @default(now())
   orgId            String
   oauthToken       String?
   status           String            @default("active")
+  accountType      GithubAccountType @default(USER)
   memberLogins     String[]          @default([])
-  // org               Org                 @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@id([installationId, orgId])
-  @@schema("public")
-}
-
-enum GithubAccountType {
-  USER
-  ORGANIZATION
-
   @@schema("public")
 }
 
@@ -423,9 +390,8 @@ model Generation {
   orgId     String
   words     Int
   chars     Int
-  org       Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-
   arguments Json?
+  org       Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@index([orgId])
   @@schema("public")
@@ -449,6 +415,30 @@ model Subscription {
 
   @@id([subscriptionId, variantId])
   @@index([orgId])
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model one_time_tokens {
+  id         String              @id @db.Uuid
+  user_id    String              @db.Uuid
+  token_type one_time_token_type
+  token_hash String
+  relates_to String
+  created_at DateTime            @default(now()) @db.Timestamp(6)
+  updated_at DateTime            @default(now()) @db.Timestamp(6)
+  users      users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, token_type])
+  @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
+  @@index([token_hash], map: "one_time_tokens_token_hash_hash_idx", type: Hash)
+  @@schema("auth")
+}
+
+enum GithubAccountType {
+  USER
+  ORGANIZATION
+
   @@schema("public")
 }
 
@@ -480,23 +470,6 @@ enum SubscriptionStatus {
   @@schema("public")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model one_time_tokens {
-  id         String              @id @db.Uuid
-  user_id    String              @db.Uuid
-  token_type one_time_token_type
-  token_hash String
-  relates_to String
-  created_at DateTime            @default(now()) @db.Timestamp(6)
-  updated_at DateTime            @default(now()) @db.Timestamp(6)
-  users      users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([user_id, token_type])
-  @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
-  @@index([token_hash], map: "one_time_tokens_token_hash_hash_idx", type: Hash)
-  @@schema("auth")
-}
-
 enum aal_level {
   aal1
   aal2
@@ -515,6 +488,7 @@ enum factor_status {
 enum factor_type {
   totp
   webauthn
+  phone
 
   @@schema("auth")
 }
