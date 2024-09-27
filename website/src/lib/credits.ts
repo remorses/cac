@@ -93,6 +93,7 @@ export async function getOrgCredits({ orgId }) {
         prisma.generation.aggregate({
             where: {
                 orgId,
+                status: 'accepted',
                 // createdAt: {
                 //     gt: oneMonthAgo
                 // }
