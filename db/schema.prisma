@@ -405,6 +405,7 @@ model Generation {
 enum GenerationStatus {
   accepted
   discarded
+  cancelled
 
   @@schema("public")
 }

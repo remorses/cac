@@ -91,11 +91,11 @@ export const rewritePluginApp = new Spiceflow({
                 } catch (e) {
                     notifyError(e, 'error rewriting xml')
                 }
+                console.log('saving generation on db')
             } catch (e) {
                 notifyError(e, 'error rephrasing ')
                 throw e
             } finally {
-                console.log('saving generation on db')
                 const [gen] = await Promise.all([
                     db
                         .insertInto('Generation')
@@ -106,7 +106,9 @@ export const rewritePluginApp = new Spiceflow({
                             domain: url,
                             initialXml: xml,
                             resultXml,
-                            status: 'accepted',
+                            status: request.signal.aborted
+                                ? 'cancelled'
+                                : 'accepted',
                             chars,
                             // arguments: body,
                             createdAt: new Date(),

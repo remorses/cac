@@ -306,7 +306,7 @@ export interface Generation {
   initialXml: string | null;
   orgId: string;
   resultXml: string | null;
-  status: Generated<"accepted" | "discarded">;
+  status: Generated<"accepted" | "cancelled" | "discarded">;
   words: number;
 }
 
