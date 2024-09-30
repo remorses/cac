@@ -23,7 +23,7 @@
         "@types/three": "^0.168.0",
         "colord": "^2.9.3",
         "framer-motion": "^11.5.4",
-        "framer-plugin": "^0.4.1",
+        "framer-plugin": "^0.5.0",
         "mp4-muxer": "^5.1.1",
         "postcss": "8.4.24",
         "react": "19.0.0-rc-e4953922-20240919",

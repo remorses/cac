@@ -24,7 +24,7 @@
     "devDependencies": {
         "@remix-run/node": "^2.12.1",
         "@types/express": "^4.17.21",
-        "@types/node": "^20.14.12"
+        "@types/node": "^22.7.4"
     },
     "dependencies": {
         "@remix-run/express": "2.12.1",
