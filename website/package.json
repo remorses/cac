@@ -7,6 +7,7 @@
         "fly": "fly --app unframer-website-prod",
         "deployment": "pnpm tsx scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
+        "cleanup": "pnpx @line/ts-remove-unused --check --skip '/routes/' --skip /\\.test/ --skip /framer/ --skip entry\\. --skip '/root\\.'",
         "copy-prisma": "cp ../db/schema.prisma ./build/",
         "prisma-gen": "pnpm copy-prisma && pnpm prisma  generate --schema ../db/schema.prisma",
         "test": "doppler run -- vitest",
