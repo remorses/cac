@@ -26,36 +26,31 @@ function retryFetchTwice(url, init: RequestInit, count = 0) {
         }
     })
 }
+
 const allEmails = [] as {
     email: string
     exampleTemplate: string
     creatorName: string
     twitter: string
-    otherTemplates: string
     lastTemplateSubmitted: string
     ctaLink: string
     usesLemonSqueezy: boolean
 }[]
+
 async function main() {
     let links = await getSitemapLinks(
         'https://www.framer.com/marketplace/sitemap.xml',
     )
     let base = 'https://www.framer.com'
-    links = links.filter((x) => {
-        const url = new URL(x)
-        const path = url.pathname
-        // console.log(path)
-        return path.includes('/creator')
-    })
-    console.log(`found ${links.length} creators`)
+    links = links.filter((x) => x.includes('/template/'))
+    console.log(`found ${links.length} templates`)
 
-    // links = links.slice(0, 4)
-    for (let creatorLink of links) {
+    for (let templateLink of links) {
         console.log('........................................................')
-        let abortController1 = new AbortController()
-        console.log(`fetching ${creatorLink}`)
-        const res = await retryFetchTwice(creatorLink, {
-            signal: abortController1.signal,
+        let abortController = new AbortController()
+        console.log(`fetching ${templateLink}`)
+        const res = await retryFetchTwice(templateLink, {
+            signal: abortController.signal,
             headers: {
                 accept: 'text/html',
             },
@@ -64,14 +59,16 @@ async function main() {
             console.log('not ok', res.status)
             continue
         }
-        let firstTemplate = ''
-        // what comes after /creator/ in the url
-        let creatorSlug = creatorLink.split('/creator/')[1]
-        let creatorName = ''
-        // let templateCreatorName = link.split('/creator/')[1]
-        let twitter = ''
 
-        const r = await new HTMLRewriter({})
+        let creatorName = ''
+        let twitter = ''
+        let emailLink = ''
+        let lastTemplateSubmitted = ''
+        let usesLemonSqueezy = false
+        let ctaLink = ''
+        let lastText = ''
+
+        await new HTMLRewriter()
             .on('h1', {
                 text(e) {
                     creatorName += e.text
@@ -80,11 +77,6 @@ async function main() {
             .on('a', {
                 element(e) {
                     const href = e.getAttribute('href')
-                    // console.log('href', href)
-                    if (href && href.includes('/template/')) {
-                        firstTemplate = href
-                        // abortController1.abort()
-                    }
                     if (!href) {
                         return
                     }
@@ -93,70 +85,28 @@ async function main() {
                         (href.includes('x.com') || href.includes('twitter.com'))
                     ) {
                         twitter = href
-                        // abortController1.abort()
-                    }
-                },
-            })
-            .transform(res)
-            .text()
-            .catch(ignoreAbortError)
-        // console.log({ r })
-        // console.log('firstTemplate', firstTemplate)
-        if (!firstTemplate) {
-            console.log('no template found for', creatorLink)
-            continue
-        }
-        let lastTemplateSubmitted = ''
-        let abortController2 = new AbortController()
-        console.log(`fetching ${firstTemplate}`)
-        const res2 = await retryFetchTwice(new URL(firstTemplate, base), {
-            signal: abortController2.signal,
-            headers: {
-                accept: 'text/html',
-            },
-        })
-        let emailLink = ''
-        let lastText = ''
-        let usesLemonSqueezy = false
-        let ctaLink = ''
-        await new HTMLRewriter()
-            .on('a', {
-                element(e) {
-                    const href = e.getAttribute('href')
-                    if (!href) {
-                        return
                     }
                     if (
                         href.includes('mailto:') &&
                         !href.includes('@framer.com')
                     ) {
                         emailLink = extractEmailFromLink(href)
-                        // abortController2.abort()
                     }
                     if (href.includes('lemonsqueezy.com')) {
                         usesLemonSqueezy = true
-                        // abortController2.abort()
                     }
-                },
-            })
-            .on('a', {
-                element(e) {
                     const className = e.getAttribute('class')
-                    if (!className) {
-                        return
-                    }
-                    const target = e.getAttribute('target')
-                    if (target !== '_blank') {
-                        return
-                    }
-                    if (className.includes('btn-primary')) {
-                        ctaLink = e.getAttribute('href') || ''
+                    if (
+                        className &&
+                        className.includes('btn-primary') &&
+                        e.getAttribute('target') === '_blank'
+                    ) {
+                        ctaLink = href
                     }
                 },
             })
             .on('p', {
                 text(chunk) {
-                    // const before = chunk.
                     if (!chunk.text.trim()) {
                         return
                     }
@@ -176,23 +126,25 @@ async function main() {
                     lastText = chunk.text
                 },
             })
-            .transform(res2)
+            .transform(res)
             .text()
             .catch(ignoreAbortError)
+
         if (!emailLink) {
             console.log('no email found for', creatorName)
             continue
         }
+
         allEmails.push({
             email: emailLink,
             creatorName: creatorName,
-            exampleTemplate: new URL(firstTemplate, base).toString(),
+            exampleTemplate: templateLink,
             twitter,
             lastTemplateSubmitted,
-            otherTemplates: creatorLink,
             ctaLink,
             usesLemonSqueezy,
         })
+        console.log('Last:', allEmails[allEmails.length - 1])
     }
     return allEmails
 }
@@ -209,8 +161,6 @@ main().finally(() => {
     // Convert the data to CSV format with a header
     const csv = Papa.unparse(allEmails, {
         header: true,
-        
-
     })
 
     // Write the CSV data to a file
