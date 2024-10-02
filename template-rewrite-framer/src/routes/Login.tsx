@@ -129,7 +129,7 @@ async function loader({}: LoaderFunctionArgs) {
     const { id: projectId, name: projectName } = await framer.getProjectInfo()
     const { data, error } =
         await pluginApiClient.api.plugins.getSessionForKey.post({
-            sessionKey: key,
+            key: key,
             projectId: projectId,
         })
     if (error) {

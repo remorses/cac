@@ -113,7 +113,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             let body = await request.json()
             // check in database if user with key has logged in, if yes, generate a supabase session for it
 
-            if (!body.sessionKey) {
+            if (!body.key) {
                 return { error: 'No key provided' }
             }
             // const hourAgo = new Date()
@@ -121,7 +121,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             const [framerSession] = await Promise.all([
                 db
                     .selectFrom('FramerLoginSession')
-                    .where('key', '=', body.sessionKey)
+                    .where('key', '=', body.key)
                     .where('usedByUserId', 'is not', null)
                     // .where('createdAt', '>', hourAgo)
                     .selectAll()
@@ -160,7 +160,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         },
         {
             body: z.object({
-                sessionKey: z.string().optional(),
+                key: z.string().optional(),
                 projectId: z.string().optional(),
             }),
             // response: {
