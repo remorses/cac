@@ -60,9 +60,6 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         const session = await db
             .selectFrom('FramerLoginSession')
             .where('key', '=', sessionKey)
-            .$if(!!projectId, (q) => {
-                return q.where('projectId', '=', projectId)
-            })
             .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
             .leftJoin(
                 'auth.users',
@@ -72,6 +69,9 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             .selectAll()
             .executeTakeFirst()
         if (!session) {
+            return
+        }
+        if (projectId && session.projectId && session.projectId !== projectId) {
             return
         }
         const userId = session.usedByUserId
@@ -122,9 +122,6 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                 db
                     .selectFrom('FramerLoginSession')
                     .where('key', '=', body.sessionKey)
-                    .$if(!!body.projectId, (qb) =>
-                        qb.where('projectId', '=', body.projectId || ''),
-                    )
                     .where('usedByUserId', 'is not', null)
                     // .where('createdAt', '>', hourAgo)
                     .selectAll()
@@ -132,6 +129,12 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             ])
             if (!framerSession) {
                 console.log('no framer session found')
+                return { error: 'No valid framer request found' }
+            }
+            if (
+                framerSession.projectId &&
+                framerSession.projectId !== body.projectId
+            ) {
                 return { error: 'No valid framer request found' }
             }
             const user = await db
@@ -157,7 +160,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         },
         {
             body: z.object({
-                sessionKey: z.string(),
+                sessionKey: z.string().optional(),
                 projectId: z.string().optional(),
             }),
             // response: {
