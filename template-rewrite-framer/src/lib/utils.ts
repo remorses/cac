@@ -19,6 +19,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
             if (response.status === 401) {
                 console.log('clearing session because api returned 401')
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
+                window.location.href = withMode(Paths.login)
             }
         },
         async onRequest() {
@@ -27,7 +28,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
             return {
                 headers: {
                     sessionKey,
-                    projectId: projectId,
+                    projectId,
                 },
             }
         },

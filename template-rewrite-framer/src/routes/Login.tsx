@@ -140,8 +140,6 @@ async function loader({}: LoaderFunctionArgs) {
     //     return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
     // }
     if (data.key) {
-        let requestData: any = (data.requestData || {}) as any
-
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
