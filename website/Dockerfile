@@ -24,10 +24,6 @@ env PORT=8040
 
 EXPOSE $PORT
 
-# cache the bytecode
-ENV NODE_COMPILE_CACHE=./bytecode
-# add source maps
-ENV NODE_OPTIONS=--enable-source-maps
-RUN export BYTECODE_RUN=true && node ./build/server/index.js || true
+
 
 CMD ["remix-serve-but-not-shit", "./build/server/index.js"]

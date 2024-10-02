@@ -2,7 +2,7 @@ import { prisma } from 'db/prisma'
 import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 
-const FREE_CREDITS = 500
+const FREE_CREDITS = 200
 
 import { validateLicense, activateLicense } from '@lemonsqueezy/lemonsqueezy.js'
 import { db } from 'db/kysely'
@@ -24,22 +24,25 @@ export async function validateLicenseKey({ orgId, licenseKey }) {
     if (!data.valid) {
         throw new AppError('Invalid license key')
     }
+    throw new AppError('Invalid license key')
 
-    let credits = 10_000
-    await db
-        .insertInto('LemonSqueezyLicense')
-        .values({
-            licenseKey,
-            orgId,
-            credits,
-            meta: data.meta,
-        })
-        .onConflict((oc) => {
-            return oc.column('licenseKey').doNothing()
-        })
-        .execute()
+    // TODO add logic to associate third party products to license keys
+    // allow other payment providers, by using a different license key made of my own
+    // let credits = 10_000
+    // await db
+    //     .insertInto('LemonSqueezyLicense')
+    //     .values({
+    //         licenseKey,
+    //         orgId,
+    //         credits,
+    //         meta: data.meta,
+    //     })
+    //     .onConflict((oc) => {
+    //         return oc.column('licenseKey').doNothing()
+    //     })
+    //     .execute()
 
-    return { valid: data.valid, credits }
+    // return { valid: data.valid, credits }
 }
 
 // export async function getOrgSubscriptions({ orgId }) {

@@ -158,7 +158,7 @@ importers:
         version: 4.4.0
       nextjs-progressbar:
         specifier: ^0.0.16
-        version: 0.0.16(next@14.2.13(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
+        version: 0.0.16(next@14.2.13(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
@@ -513,7 +513,7 @@ importers:
         version: 4.4.0
       nextjs-progressbar:
         specifier: ^0.0.16
-        version: 0.0.16(next@14.2.13(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
+        version: 0.0.16(next@14.2.13(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
@@ -741,7 +741,7 @@ importers:
         version: 4.4.0
       nextjs-progressbar:
         specifier: ^0.0.16
-        version: 0.0.16(next@14.2.13(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
+        version: 0.0.16(next@14.2.13(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
@@ -1011,7 +1011,7 @@ importers:
         version: 4.4.0
       nextjs-progressbar:
         specifier: ^0.0.16
-        version: 0.0.16(next@14.2.13(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
+        version: 0.0.16(next@14.2.13(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
@@ -15565,7 +15565,7 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.6
       '@vanilla-extract/css': 1.15.5
-      esbuild: 0.17.6
+      esbuild: 0.17.19
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -17154,7 +17154,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.17.19
       '@esbuild/win32-ia32': 0.17.19
       '@esbuild/win32-x64': 0.17.19
-    optional: true
 
   esbuild@0.17.6:
     optionalDependencies:
@@ -19359,7 +19358,7 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  nextjs-progressbar@0.0.16(next@14.2.13(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919):
+  nextjs-progressbar@0.0.16(next@14.2.13(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919):
     dependencies:
       '@types/nprogress': 0.2.3
       next: 14.2.13(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)

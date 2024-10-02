@@ -1,4 +1,4 @@
-import { getSitemapLinks } from 'website/src/lib/sitemap'
+import { getSitemapLinks } from './sitemap'
 import fs from 'fs'
 import * as Papa from 'papaparse'
 
