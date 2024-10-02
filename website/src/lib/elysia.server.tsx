@@ -54,11 +54,15 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
 
     .use(async function checkSession({ request, state: store }) {
         const sessionKey = request.headers.get('sessionKey')
+        const projectId = request.headers.get('projectId')
 
         // console.log(`checking session key`)
         const session = await db
             .selectFrom('FramerLoginSession')
             .where('key', '=', sessionKey)
+            .$if(!!projectId, (q) => {
+                return q.where('projectId', '=', projectId)
+            })
             .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
             .leftJoin(
                 'auth.users',
@@ -109,7 +113,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             let body = await request.json()
             // check in database if user with key has logged in, if yes, generate a supabase session for it
 
-            if (!body.key) {
+            if (!body.sessionKey) {
                 return { error: 'No key provided' }
             }
             // const hourAgo = new Date()
@@ -117,7 +121,10 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             const [framerSession] = await Promise.all([
                 db
                     .selectFrom('FramerLoginSession')
-                    .where('key', '=', body.key)
+                    .where('key', '=', body.sessionKey)
+                    .$if(!!body.projectId, (qb) =>
+                        qb.where('projectId', '=', body.projectId || ''),
+                    )
                     .where('usedByUserId', 'is not', null)
                     // .where('createdAt', '>', hourAgo)
                     .selectAll()
@@ -150,7 +157,8 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         },
         {
             body: z.object({
-                key: z.string(),
+                sessionKey: z.string(),
+                projectId: z.string().optional(),
             }),
             // response: {
             //     200: t.Object({

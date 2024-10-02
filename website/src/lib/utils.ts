@@ -1,7 +1,6 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
 import { env } from './env'
 
-
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
     if (next) {
@@ -32,6 +31,8 @@ export function framerLoginUrl({
     key,
     code,
     pluginName = PluginNames.migrate,
+    projectId,
+    projectName,
 }) {
     let url: URL
     if (pluginName === PluginNames.github) {
@@ -40,6 +41,12 @@ export function framerLoginUrl({
         url = new URL('/api/auth/framer-login', env.PUBLIC_URL)
     }
     url.searchParams.set('key', key)
+    if (projectId) {
+        url.searchParams.set('projectId', projectId)
+    }
+    if (projectName) {
+        url.searchParams.set('projectName', projectName)
+    }
     url.searchParams.set('code', code)
     return url.toString()
 }
@@ -83,9 +90,15 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
     return Boolean(val)
 }
 
-export function afterFramerLogin({ key, code }) {
+export function afterFramerLogin({ key, projectId, projectName, code }) {
     const url = new URL('/after-framer-login', env.PUBLIC_URL)
     url.searchParams.set('key', key)
+    if (projectId) {
+        url.searchParams.set('projectId', projectId)
+    }
+    if (projectName) {
+        url.searchParams.set('projectName', projectName)
+    }
     url.searchParams.set('code', code)
     return url.toString()
 }

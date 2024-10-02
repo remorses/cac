@@ -3,13 +3,14 @@ import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 
-export async function loader({ request, }:LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const key = url.searchParams.get('key') || ''
     const code = url.searchParams.get('code') || ''
+    const projectId = url.searchParams.get('projectId') || ''
+    const projectName = url.searchParams.get('projectName') || ''
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
-       
     })
     if (!key) {
         throw new Error('URL is malformed, missing key param')
@@ -21,7 +22,7 @@ export async function loader({ request, }:LoaderFunctionArgs) {
         options: {
             skipBrowserRedirect: true,
             redirectTo: loginRedirectUrl({
-                next: afterFramerLogin({ key, code }),
+                next: afterFramerLogin({ key, code, projectId, projectName }),
             }),
         },
     })

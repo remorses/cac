@@ -27,6 +27,8 @@ export const RewriteSchema = z.object({
     oldText: z.custom<OldTextTree>(),
     sourceHtml: z.string().nullable(),
     url: z.string(),
+    projectName: z.string().optional(),
+    pagePath: z.string().optional(),
 })
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>

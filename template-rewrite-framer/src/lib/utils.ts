@@ -23,9 +23,11 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
         },
         async onRequest() {
             const { sessionKey } = await getPluginData()
+            const { id: projectId } = await framer.getProjectInfo()
             return {
                 headers: {
                     sessionKey,
+                    projectId: projectId,
                 },
             }
         },

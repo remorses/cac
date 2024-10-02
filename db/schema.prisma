@@ -344,6 +344,8 @@ model FramerLoginSession {
   key          String   @id
   createdAt    DateTime @default(now())
   usedByUserId String   @db.Uuid
+  projectId    String?
+  projectName  String?
   orgId        String
   data         Json     @default("{}")
   org          Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
@@ -394,6 +396,8 @@ model Generation {
 
   domain      String?
   description String?
+  pagePath    String?
+  projectName String?
   status      GenerationStatus @default(accepted)
   initialXml  String?
   resultXml   String?

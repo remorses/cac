@@ -24,6 +24,7 @@ import {
 import { motion } from 'framer-motion'
 import {
     AnyNode,
+    ColorStyle,
     ComponentInstanceNode,
     ComponentNode,
     framer,
@@ -31,6 +32,7 @@ import {
     isComponentNode,
     isFrameNode,
     isTextNode,
+    isWebPageNode,
     supportsBackgroundColor,
     supportsLink,
     supportsName,
@@ -258,6 +260,14 @@ function SimplePromptComponent({}) {
 
         // console.log('oldText', JSON.stringify(oldText, null, 2))
         // return
+        const { name: projectName } = await framer.getProjectInfo()
+        let pagePath = ''
+        const root = await framer.getCanvasRoot()
+        if (isWebPageNode(root)) {
+            pagePath = root.path || ''
+        } else if (isComponentNode(root)) {
+            pagePath = '/__component/' + root.componentName || ''
+        }
 
         const { data: eventSource, error } =
             await pluginApiClient.api.plugins.rewritePlugin.rephrase.post(
@@ -267,6 +277,8 @@ function SimplePromptComponent({}) {
                     // exampleTextToMigrate: globalState.exampleTextToMigrate,
                     sourceHtml: globalState.sourceHtml,
                     url: globalState.sourceUrl,
+                    pagePath,
+                    projectName,
                 },
                 {
                     fetch: {
@@ -284,7 +296,7 @@ function SimplePromptComponent({}) {
         const backgroundColor = 'rgba(1, 153, 255, 0.3)'
         let prevNode: AnyNode | undefined
 
-        let prevBackground = null as string | null
+        let prevBackground = null as string | ColorStyle | null
         let lastTimeZoomed = Date.now()
         let minTimeOnNode = credits.free ? 1000 : 200
         const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)

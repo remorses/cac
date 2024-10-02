@@ -4,13 +4,14 @@ import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 import { env } from '../lib/env'
 
-export async function loader({ request, }:LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const key = url.searchParams.get('key') || ''
     const code = url.searchParams.get('code') || ''
+    const projectId = url.searchParams.get('projectId') || ''
+    const projectName = url.searchParams.get('projectName') || ''
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
-       
     })
     if (!key) {
         throw new Error('URL is malformed, missing key param')
@@ -18,7 +19,10 @@ export async function loader({ request, }:LoaderFunctionArgs) {
     // const next = url.searchParams.get('next') || '/x'
     let next = new URL(`/api/markdown-plugin/github/install`, env.PUBLIC_URL)
 
-    next.searchParams.set('next', afterFramerLogin({ key, code }))
+    next.searchParams.set(
+        'next',
+        afterFramerLogin({ key, code, projectId, projectName }),
+    )
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',

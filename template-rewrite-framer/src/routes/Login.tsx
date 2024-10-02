@@ -4,6 +4,7 @@ import logo from 'template-rewrite-framer/public/gradient-icon@2x.png'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import {
+    LoaderReturnType,
     Paths,
     pluginApiClient,
     PluginDataKeys,
@@ -15,6 +16,7 @@ import {
     LoaderFunctionArgs,
     redirect,
     RouteObject,
+    useLoaderData,
     useNavigation,
     useRevalidator,
 } from 'react-router'
@@ -35,9 +37,12 @@ function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
     const navigation = useNavigation()
+    const data = useLoaderData() as LoaderReturnType<typeof loader>
     const url = framerLoginUrl({
         key,
         pluginName: PluginNames.migrate,
+        projectId: data?.projectId,
+        projectName: data?.projectName,
         code,
     })
     useRefreshOnVisible({ enabled: !isLoading })
@@ -121,9 +126,11 @@ function LoginComponent() {
 }
 
 async function loader({}: LoaderFunctionArgs) {
+    const { id: projectId, name: projectName } = await framer.getProjectInfo()
     const { data, error } =
         await pluginApiClient.api.plugins.getSessionForKey.post({
-            key,
+            sessionKey: key,
+            projectId: projectId,
         })
     if (error) {
         notifyError(error, 'Error logging in for framer')
@@ -138,11 +145,11 @@ async function loader({}: LoaderFunctionArgs) {
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
-        return redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
+        throw redirect(withMode(Paths.doYouAlreadyHaveAWebsite))
     } else {
         console.log(data)
     }
-    return {}
+    return { projectId, projectName }
 }
 
 export function LoginPage(): RouteObject {

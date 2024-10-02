@@ -39,7 +39,14 @@ export const rewritePluginApp = new Spiceflow({
                 'starting to rephrase',
                 JSON.stringify(body.description),
             )
-            const { description, sourceHtml, oldText: oldText, url } = body
+            const {
+                description,
+                sourceHtml,
+                oldText: oldText,
+                url,
+                pagePath,
+                projectName,
+            } = body
             const xml = oldTextTreeToXml(oldText)
 
             // let linksPromise = extractExternalLinks({
@@ -54,6 +61,8 @@ export const rewritePluginApp = new Spiceflow({
             let chars = 0
             let objectStream = rewriteTemplateContent({
                 description,
+                pagePath,
+                projectName,
                 oldText: oldText,
                 sourceHtml,
                 url,
@@ -110,6 +119,8 @@ export const rewritePluginApp = new Spiceflow({
                                 ? 'cancelled'
                                 : 'accepted',
                             chars,
+                            pagePath,
+                            projectName,
                             // arguments: body,
                             createdAt: new Date(),
                         })

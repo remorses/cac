@@ -114,6 +114,8 @@ export async function action({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
 
     const key = url.searchParams.get('key') || ''
+    const projectName = url.searchParams.get('projectName') || ''
+    const projectId = url.searchParams.get('projectId') || ''
     let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
     // console.log({ requestData })
     if (!key) {
@@ -138,6 +140,8 @@ export async function action({ request }: LoaderFunctionArgs) {
                 createdAt: new Date(),
                 usedByUserId: user.id,
                 data: requestData,
+                projectId,
+                projectName,
                 orgId,
             })
             .onConflict((oc) => {

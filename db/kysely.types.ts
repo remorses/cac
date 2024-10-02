@@ -294,6 +294,8 @@ export interface FramerLoginSession {
   data: Generated<Json>;
   key: string;
   orgId: string;
+  projectId: string | null;
+  projectName: string | null;
   usedByUserId: string;
 }
 
@@ -305,6 +307,8 @@ export interface Generation {
   id: Generated<number>;
   initialXml: string | null;
   orgId: string;
+  pagePath: string | null;
+  projectName: string | null;
   resultXml: string | null;
   status: Generated<"accepted" | "cancelled" | "discarded">;
   words: number;
