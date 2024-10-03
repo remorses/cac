@@ -81,7 +81,7 @@ export default function Page({}) {
                     >
                         Confirm Login
                     </Button>
-                    <Button
+                    {/* <Button
                         onClick={() => {
                             window.location.href = env.PUBLIC_URL!
                         }}
@@ -90,7 +90,7 @@ export default function Page({}) {
                         type='button'
                     >
                         Cancel Login
-                    </Button>
+                    </Button> */}
                 </div>
             </Form>
         )
