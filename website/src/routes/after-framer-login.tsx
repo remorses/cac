@@ -18,6 +18,20 @@ import {
 } from 'website/src/components/otp'
 import { env } from 'website/src/lib/env'
 
+export function PhFramerLogoFill(props) {
+    return (
+        <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 256 256'
+            {...props}
+        >
+            <path
+                fill='currentColor'
+                d='M200 112h-51l56.27 50a8 8 0 0 1-5.27 14h-64v64a8 8 0 0 1-13.66 5.66l-72-72A8 8 0 0 1 48 168v-64a8 8 0 0 1 8-8h51L50.69 46A8 8 0 0 1 56 32h144a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8'
+            ></path>
+        </svg>
+    )
+}
 export default function Page({}) {
     const actionData = useActionData<typeof action>()
     const [searchParams] = useSearchParams()
@@ -26,10 +40,13 @@ export default function Page({}) {
 
     const isLoading = useNavigation().state !== 'idle'
 
-    if (actionData?.confirmed) {
+    if (true) {
         inner = (
-            <div className='text-2xl max-w-[300px] text-center'>
-                You can go back to Framer to complete the login
+            <div className='text-2xl flex flex-col gap-6 items-center max-w-[300px] text-center'>
+                <PhFramerLogoFill className='!w-12 text-white' />
+                <div className=''>
+                    You can go back to Framer to complete the login
+                </div>
             </div>
         )
     } else {
@@ -81,7 +98,7 @@ export default function Page({}) {
 
     return (
         <>
-            <div className='w-full gap-[60px] flex flex-col items-center'>
+            <div className='w-full md:-mt-[100px] grow justify-center h-full gap-[60px] flex flex-col items-center'>
                 {inner}
             </div>
         </>
