@@ -187,12 +187,15 @@ export function oldTextTreeToXml(
             continue
         }
         let name = node.name || 'Container'
-        const nodeName = name
-            .replace(/\s+/g, '_')
-            .replace(/\.+/g, '')
-            .replace(/[^a-zA-Z0-9_]/g, '_')
-            .replace(/^[^a-zA-Z_]+/, '_')
-            .replace(/[_-]+/g, '_')
+        const nodeName =
+            name
+                .replace(/\s+/g, '_')
+                .replace(/\.+/g, '')
+                .replace(/[^a-zA-Z0-9_]/g, '_')
+                .replace(/^[^a-zA-Z_]+/, '_')
+                .replace(/[_-]+/g, '_')
+                .replace(/^_+/, '') || 'Node'
+
         const attributes = [] as string[]
 
         if (!node?.children?.length && node.nodeId) {
