@@ -89,7 +89,7 @@ select {
     background: var(--framer-color-bg-tertiary);
     border-radius: 8px;
     font-weight: 500;
-    padding: 0px 8px;
+    padding: 0px 10px;
     outline: none;
     border: none;
 }
@@ -122,7 +122,7 @@ input[type="checkbox"] {
     margin: 0;
     padding: 0;
     border-radius: 4px;
-    border: 1px solid var(--framer-color-border);
+    border: 1px solid transparent;
     background-color: var(--framer-color-bg-secondary);
 }
 
@@ -184,7 +184,6 @@ button {
     cursor: pointer;
     font-weight: 600;
     width: 100%;
-    text-wrap: nowrap;
     user-select: none;
     background-color: var(--framer-color-bg-tertiary);
     transition: background-color 0.2s;
@@ -275,9 +274,16 @@ input[type="range"]::-webkit-slider-thumb {
     box-shadow: -1000px 0px 0px 1000px #666;
 }
 
-input[type="range"]:focus,
+/* Rule is not shared with `input[type="range"]::-moz-focus-outer` otherwise it does not work.  */
+input[type="range"]:focus {
+    border: 0;
+    box-shadow: none;
+    outline: none;
+}
+
 input[type="range"]::-moz-focus-outer {
     border: 0;
+    box-shadow: none;
     outline: none;
 }
 
@@ -368,6 +374,7 @@ input::file-selector-button:hover {
 }
 
 #framer-environment-error {
+    all: unset;
     display: none;
     position: fixed;
     width: 100%;
@@ -379,16 +386,27 @@ input::file-selector-button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #666;
     z-index: 1000;
     background: white;
     padding: 20px;
     background: #fff;
+}
+
+#framer-environment-error > p {
+    all: unset;
+    color: #666;
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 220px;
+    margin: 0;
+    padding: 0;
     text-align: center;
 }
 
-#framer-environment-error p {
-    max-width: 220px;
+#framer-environment-error > p > a {
+    all: unset;
+    text-decoration: none;
+    color: var(--framer-color-tint, #09f);
 }
 
 /* Spinner */
@@ -420,6 +438,10 @@ input::file-selector-button:hover {
     animation-timing-function: linear;
 }
 
+.framer-button-primary .framer-spinner,
+.framer-button-primary .framer-spinner-large {
+    background-color: var(--framer-color-text-reversed);
+}
 
 @keyframes spin {
     0% {

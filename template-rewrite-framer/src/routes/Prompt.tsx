@@ -55,6 +55,7 @@ import {
     oldTextTreeToXml,
     sleep,
 } from 'website/src/lib/utils'
+import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 
 let abortController = new AbortController()
 
@@ -127,11 +128,16 @@ function SimplePromptComponent({}) {
         })
     }, [])
 
-    async function replaceTextClient() {
+    function reset() {
         setPreviousOldText([])
         instanceNodes.clear()
         setGenerationId(0)
         setError('')
+        setStars(0)
+    }
+
+    async function replaceTextClient() {
+        reset()
         // const root = await framer.getCanvasRoot()
 
         let desktop = await getDesktop()
@@ -464,43 +470,49 @@ function SimplePromptComponent({}) {
             console.log('no old nodes to discard')
             return
         }
-        const allNodes = bfsOldTextTree(previousOldText).filter(
-            (x) => x?.nodeId,
-        )
-        const promises = allNodes.map(async (oldNodeObj) => {
-            const { nodeId, content: oldContent } = oldNodeObj
-            if (!oldContent || !nodeId) {
-                console.log('no old content or node id found')
-                return Promise.resolve()
-            }
+        setIsDiscarding(true)
+        try {
+            const allNodes = bfsOldTextTree(previousOldText).filter(
+                (x) => x?.nodeId,
+            )
+            const promises = allNodes.map(async (oldNodeObj) => {
+                const { nodeId, content: oldContent } = oldNodeObj
+                if (!oldContent || !nodeId) {
+                    console.log('no old content or node id found')
+                    return Promise.resolve()
+                }
 
-            let node =
-                instanceNodes.get(nodeId)?.node ||
-                (await framer.getNode(nodeId))
+                let node =
+                    instanceNodes.get(nodeId)?.node ||
+                    (await framer.getNode(nodeId))
 
-            if (isTextNode(node)) {
-                // console.log('setting text', oldContent)
-                return await node.setText(oldContent)
-            }
-            let instance = instanceNodes.get(nodeId)
-            if (instance) {
-                const { node, controlKey } = instance
-                let controls = { ...node.controls }
-                controls[controlKey] = oldContent
-                return await node.setAttributes({
-                    controls,
-                })
-            }
-        })
+                if (isTextNode(node)) {
+                    // console.log('setting text', oldContent)
+                    return await node.setText(oldContent)
+                }
+                let instance = instanceNodes.get(nodeId)
+                if (instance) {
+                    const { node, controlKey } = instance
+                    let controls = { ...node.controls }
+                    controls[controlKey] = oldContent
+                    return await node.setAttributes({
+                        controls,
+                    })
+                }
+            })
 
-        await Promise.all([
-            ...promises,
-            pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post({
-                id: generationId,
-            }),
-        ])
-        setGenerationId(0)
-        setPreviousOldText([])
+            await Promise.all([
+                ...promises,
+                pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
+                    {
+                        id: generationId,
+                    },
+                ),
+            ])
+            reset()
+        } finally {
+            setIsDiscarding(false)
+        }
     })
 
     const buttonText = (() => {
@@ -525,6 +537,32 @@ function SimplePromptComponent({}) {
         element.style.height = 'auto'
         element.style.height = `${element.scrollHeight}px`
     }
+    const [stars, setStars] = useState(0)
+
+    useEffect(() => {
+        if (!generationId) {
+            return
+        }
+        const debounceTimeout = setTimeout(() => {
+            if (stars > 0) {
+                pluginApiClient.api.plugins.rewritePlugin.submitReview
+                    .post({
+                        stars,
+                        generationId,
+                    })
+                    .catch((error) => {
+                        console.error('Failed to submit review:', error)
+                    })
+            }
+        }, 700)
+
+        return () => {
+            clearTimeout(debounceTimeout)
+        }
+    }, [stars, generationId])
+
+    const [isDiscarding, setIsDiscarding] = useState(false)
+    const shouldShowStars = !!previousOldText.length && !isLoading
     return (
         <form
             // exit={{
@@ -542,12 +580,24 @@ function SimplePromptComponent({}) {
             }}
             className='flex grow flex-col items-start w-full justify-start gap-3'
         >
-            <div className='flex flex-col items-center w-full py-[50px] shrink-0 justify-center grow gap-3 text-center text-balance'>
-                <div className='font-semibold'>Add a description</div>
-                <div className='opacity-70'>
-                    The plugin will use this description to replace content on
-                    your page.
-                </div>
+            <div className='flex flex-col w-full min-h-[160px]'>
+                {!shouldShowStars && (
+                    <div className='flex flex-col items-center w-full py-[50px] shrink-0 justify-center grow gap-3 text-center text-balance'>
+                        <div className='font-semibold'>Add a description</div>
+                        <div className='opacity-70'>
+                            The plugin will use this description to replace
+                            content on your page.
+                        </div>
+                    </div>
+                )}
+                {shouldShowStars && (
+                    <div className='flex grow justify-center w-full gap-3 flex-col items-center'>
+                        <div className='opacity-70'>
+                            How good was the result?
+                        </div>
+                        <StarReview value={stars} onChange={setStars} />
+                    </div>
+                )}
             </div>
             <div className='w-full'>
                 <textarea
@@ -600,11 +650,13 @@ function SimplePromptComponent({}) {
                 <Button
                     // className='bg-transparent'
                     onClick={discard}
+                    isLoading={isDiscarding}
                     type='button'
                 >
                     {isLoading ? 'Cancel' : 'Discard Replacement'}
                 </Button>
             )}
+
             {/* <div className='text-[11px] opacity-70'>
                 <span className='font-mono tracking-wider font-semibold'>
                     {formatLargeNumber(remainingCredits)}

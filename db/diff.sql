@@ -1,15 +1,3 @@
 -- AlterTable
-ALTER TABLE
-    "public"."FramerLoginSession"
-ADD
-    COLUMN "projectId" TEXT,
-ADD
-    COLUMN "projectName" TEXT;
+ALTER TABLE "public"."Generation" ADD COLUMN     "starsReview" INTEGER;
 
--- AlterTable
-ALTER TABLE
-    "public"."Generation"
-ADD
-    COLUMN "pagePath" TEXT,
-ADD
-    COLUMN "projectName" TEXT;

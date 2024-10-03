@@ -8,6 +8,15 @@
 
 /* Reset */
 
+::selection {
+    color: var(--framer-color-text-reversed);
+    background: var(--framer-color-tint);
+}
+
+button {
+    text-wrap: nowrap;
+}
+
 body,
 html,
 #root {
@@ -24,7 +33,7 @@ html,
 #nprogress .bar {
     top: unset !important;
     bottom: 0 !important;
-    background: var(--framer-color-tint) !important
+    background: var(--framer-color-tint) !important;
 }
 
 #nprogress .peg {

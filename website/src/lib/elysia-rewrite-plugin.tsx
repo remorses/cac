@@ -20,6 +20,40 @@ export const rewritePluginApp = new Spiceflow({
     .state('userId', '')
     .state('userEmail', '')
     .state('orgId', '')
+    .post(
+        '/submitReview',
+        async ({ state: store, request }) => {
+            const body = await request.json()
+
+            const { stars, generationId } = body
+            const userId = store.userId
+            const orgId = store.orgId
+
+            if (!userId || !orgId) {
+                throw unauthorizedResponse
+            }
+
+            try {
+                await db
+                    .updateTable('Generation')
+                    .set({ starsReview: stars })
+                    .where('id', '=', generationId)
+                    .where('orgId', '=', orgId)
+                    .execute()
+
+                return { success: true }
+            } catch (error) {
+                console.error('Failed to submit review:', error)
+                return { success: false, error: 'Failed to submit review' }
+            }
+        },
+        {
+            body: z.object({
+                stars: z.number().int().min(1).max(5),
+                generationId: z.number().int().positive(),
+            }),
+        },
+    )
 
     .post(
         '/rephrase',

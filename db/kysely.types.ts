@@ -310,6 +310,7 @@ export interface Generation {
   pagePath: string | null;
   projectName: string | null;
   resultXml: string | null;
+  starsReview: number | null;
   status: Generated<"accepted" | "cancelled" | "discarded">;
   words: number;
 }

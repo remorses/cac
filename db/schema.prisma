@@ -401,6 +401,7 @@ model Generation {
   status      GenerationStatus @default(accepted)
   initialXml  String?
   resultXml   String?
+  starsReview Int?
 
   @@index([orgId])
   @@schema("public")
