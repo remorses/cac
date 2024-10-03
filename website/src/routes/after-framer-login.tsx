@@ -40,7 +40,7 @@ export default function Page({}) {
 
     const isLoading = useNavigation().state !== 'idle'
 
-    if (true) {
+    if (actionData?.confirmed) {
         inner = (
             <div className='text-2xl flex flex-col gap-6 items-center max-w-[300px] text-center'>
                 <PhFramerLogoFill className='!w-12 text-white' />
