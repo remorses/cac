@@ -43,9 +43,10 @@ async function main() {
         'https://www.framer.com/marketplace/sitemap.xml',
     )
     let base = 'https://www.framer.com'
-    links = links.filter((x) => x.includes('/template/'))
+    links = links.filter((x) => x.includes('/templates/'))
     console.log(`found ${links.length} templates`)
-    const sema = new Sema(10)
+    const sema = new Sema(3)
+    console.log('starting', links)
 
     await Promise.all(
         links.map(async (templateLink) => {
@@ -202,6 +203,8 @@ function extractEmailFromLink(link: string) {
     return link
 }
 
+console.time('main execution');
+
 main().finally(() => {
     // Convert the data to CSV format with a header
     const csv = Papa.unparse(allEmails, {
@@ -211,4 +214,6 @@ main().finally(() => {
     // Write the CSV data to a file
     fs.writeFileSync('scripts/framer-template-creators.csv', csv)
     console.log(JSON.stringify(allEmails, null, 2))
+
+    console.timeEnd('main execution');
 })

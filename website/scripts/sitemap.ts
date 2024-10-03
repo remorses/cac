@@ -28,10 +28,13 @@ const fetchSitemap = async (url: string, timeout = 60000): Promise<any> => {
             throw new Error(`HTTP error ${res.status} ${res.statusText}`)
         }
         const xml = await res.text()
-        const { sitemapindex, urlset } = parser.parse(xml) as {
+
+        const parsed = parser.parse(xml) as {
             sitemapindex?: { sitemap: SitemapURL | SitemapURL[] }
             urlset?: SitemapURLSet
         }
+        const { sitemapindex, urlset } = parsed
+        // console.log(urlset.url.slice(0, 3))
 
         // sitemap contains URLs directly, return them
         if (urlset)
@@ -56,6 +59,7 @@ const fetchSitemap = async (url: string, timeout = 60000): Promise<any> => {
             return groups.flat()
         }
 
+        console.log('sitemap not found', xml)
         // Something else, return empty array
         return []
     } catch (e) {
