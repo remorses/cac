@@ -74,7 +74,7 @@ function runTestForEachTemplate(
 runTestForEachTemplate(
     'rewrite template',
     async ({ xml, templateFile, url, description }) => {
-        const sourceHtml = await fetchFormattedHtml(url)
+        const sourceHtml = await fetchFormattedHtml({url})
         const stream = await rewriteTemplateChunk({
             description,
             xml,
@@ -114,7 +114,7 @@ runTestForEachTemplate(
 runTestForEachTemplate(
     'extract links',
     async ({ xml, templateFile, url, description }) => {
-        const sourceHtml = await fetchFormattedHtml(url)
+        const sourceHtml = await fetchFormattedHtml({url})
         const links = await extractExternalLinks({
             websiteUrl: url,
             formattedHtml: sourceHtml,

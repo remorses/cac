@@ -84,34 +84,66 @@ export async function formatHtmlForPrompt(
 
     return newHtml
 }
-
-export async function fetchFormattedHtml(url) {
+export async function fetchFormattedHtml({
+    url,
+    signal,
+    timeout = 5000,
+}: {
+    url: string
+    signal?: AbortSignal
+    timeout?: number
+}): Promise<string> {
     if (!url) {
         return ''
     }
     console.time(`fetchFormattedHtml: ${url}`)
-    const res = await fetch(url, {
-        headers: {
-            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            Connection: 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
 
-            Referer: 'https://www.google.com/',
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => {
+        controller.abort()
+    }, timeout)
 
-            'User-Agent':
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
-        },
-    })
-    if (!res.ok) {
-        console.timeEnd(`fetchFormattedHtml: ${url}`)
-        throw new Error(`Could not fetch html for ${url}, error ${res.status}`)
+    if (signal) {
+        signal.addEventListener('abort', () => {
+            controller.abort()
+        })
     }
-    console.time(`formatHtmlForPrompt: ${url}`)
-    const formattedHtml = await formatHtmlForPrompt(res)
-    console.timeEnd(`formatHtmlForPrompt: ${url}`)
-    console.timeEnd(`fetchFormattedHtml: ${url}`)
-    return formattedHtml
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                Connection: 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                Referer: 'https://www.google.com/',
+                'User-Agent':
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+            },
+            signal: controller.signal,
+        })
+
+        if (!res.ok) {
+            console.timeEnd(`fetchFormattedHtml: ${url}`)
+            throw new Error(
+                `Could not get content, server responded with ${res.status}`,
+            )
+        }
+
+        console.time(`formatHtmlForPrompt: ${url}`)
+        const formattedHtml = await formatHtmlForPrompt(res)
+        console.timeEnd(`formatHtmlForPrompt: ${url}`)
+        console.timeEnd(`fetchFormattedHtml: ${url}`)
+        return formattedHtml
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.timeEnd(`fetchFormattedHtml: ${url}`)
+            throw new Error(`${url} took too long to respond`)
+        }
+        throw error
+    } finally {
+        clearTimeout(timeoutId)
+    }
 }
 
 export async function getWebsiteDescription({ html, user, url, signal }) {

@@ -24,7 +24,8 @@ export async function validateLicenseKey({ orgId, licenseKey }) {
     if (!data.valid) {
         throw new AppError('Invalid license key')
     }
-    throw new AppError('Invalid license key')
+    // throw new AppError('Invalid license key')
+    return { valid: false, credits: 0 }
 
     // TODO add logic to associate third party products to license keys
     // allow other payment providers, by using a different license key made of my own

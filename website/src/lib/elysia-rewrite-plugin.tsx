@@ -404,7 +404,7 @@ export const rewritePluginApp = new Spiceflow({
                 throw new Response('Invalid url', { status: 400 })
             }
             const [html, existingEntry] = await Promise.all([
-                fetchFormattedHtml(url),
+                fetchFormattedHtml({ url, signal: request.signal }),
                 db
                     .selectFrom('ScrapedWebsitePage')
                     .selectAll()
