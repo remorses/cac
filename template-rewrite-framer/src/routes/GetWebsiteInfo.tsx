@@ -79,7 +79,7 @@ function GetWebsiteInfo() {
                 </div>
                 {actionData?.error && (
                     <>
-                        <div className='opacity-70 truncate text-red-500 text-center'>
+                        <div className='opacity-70 text-red-500 text-center'>
                             {actionData?.error}
                         </div>
                     </>
