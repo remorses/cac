@@ -155,6 +155,7 @@ function SimplePromptComponent({}) {
         }
         let oldText = [] as OldTextTree
 
+        let componentInstanceChildrenSeen = new Set<string>()
         async function handleNode(node: AnyNode) {
             // console.log('node', node.constructor.name)
 
@@ -225,7 +226,10 @@ function SimplePromptComponent({}) {
 
             for await (let node of rootNode.walk()) {
                 await handleNode(node)
-                for await (let child of recurseIntoComponent(node)) {
+                for await (let child of recurseIntoComponent(
+                    node,
+                    componentInstanceChildrenSeen,
+                )) {
                     await handleNode(child)
                 }
             }
@@ -712,7 +716,10 @@ async function getComponentCodeUrl(componentNode?: AnyNode) {
 }
 Object.assign(globalThis, { getComponentCodeUrl })
 
-async function* recurseIntoComponent(componentInstance: AnyNode) {
+async function* recurseIntoComponent(
+    componentInstance: AnyNode,
+    encounteredIds: Set<string>,
+) {
     const componentNode = await getInstanceComponent(componentInstance)
     if (!componentNode) {
         return
@@ -726,30 +733,13 @@ async function* recurseIntoComponent(componentInstance: AnyNode) {
     }
 
     for await (let child of primary.walk()) {
-        yield child
-        yield* recurseIntoComponent(child)
+        if (!encounteredIds.has(child.id)) {
+            encounteredIds.add(child.id)
+            yield child
+            yield* recurseIntoComponent(child, encounteredIds)
+        }
     }
-    // const nonPrimary = (await componentNode.getChildren()).filter(
-    //     (x) => isFrameNode(x) && x.isReplica,
-    // )
-
-    // for (let child of nonPrimary) {
-    //     for await (let grandChild of child.walk()) {
-    //         if (isTextNode(grandChild)) {
-    //             const primaryText = nodeIdToText.get(grandChild.id)
-    //             console.log('primaryText', primaryText)
-    //             const text = await grandChild.getText()
-    //             if (primaryText !== text) {
-    //                 console.log('text mismatch', text, primaryText)
-    //                 yield grandChild
-    //             }
-    //         }
-    //         if (!grandChild.isReplica) {
-    //             console.log('non primary child', grandChild)
-    //             yield grandChild
-    //         }
-    //     }
-    // }
+    // TODO get modified text nodes in replicas, so there is nothing left that is stale because text is overridden in breakpoint
 }
 
 async function isNodeVisible(node: AnyNode) {
