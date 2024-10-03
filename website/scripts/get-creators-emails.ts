@@ -113,6 +113,7 @@ async function main() {
                                 ctaLink = href
                             }
                         },
+                        
                     })
                     .on('p', {
                         text(chunk) {
