@@ -151,7 +151,7 @@ export const rewritePluginApp = new Spiceflow({
 
             const { id } = body
             if (!id) {
-                throw new Error('No id provided')
+                return { error: 'No id provided' }
             }
 
             await db
