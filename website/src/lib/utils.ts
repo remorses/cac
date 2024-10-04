@@ -187,7 +187,7 @@ export function oldTextTreeToXml(
             continue
         }
         let name = node.name || 'Container'
-        const nodeName =
+        let nodeName =
             name
                 .replace(/\s+/g, '_')
                 .replace(/\.+/g, '')
@@ -196,6 +196,16 @@ export function oldTextTreeToXml(
                 .replace(/[_-]+/g, '_')
                 .replace(/^_+/, '') || 'Node'
 
+        // Truncate nodeName if it's too long (e.g., more than 50 characters)
+        let max = 50
+        if (nodeName.length > max) {
+            const lastUnderscoreIndex = nodeName.indexOf('_', max)
+            if (lastUnderscoreIndex > 0) {
+                nodeName = nodeName.substring(0, lastUnderscoreIndex)
+            } else {
+                nodeName = nodeName.substring(0, 50)
+            }
+        }
         const attributes = [] as string[]
 
         if (!node?.children?.length && node.nodeId) {

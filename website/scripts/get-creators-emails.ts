@@ -1,6 +1,7 @@
 import { getSitemapLinks } from './sitemap'
 import { Sema } from 'sema4'
 import fs from 'fs'
+import * as cheerio from 'cheerio'
 import * as Papa from 'papaparse'
 
 import { HTMLRewriter } from 'htmlrewriter'
@@ -32,11 +33,14 @@ const allEmails = [] as {
     email: string
     exampleTemplate: string
     creatorName: string
+    firstName: string
+    secondName: string
     twitter: string
     lastTemplateSubmitted: string
     ctaLink: string
     usesLemonSqueezy: boolean
     templateName: string
+    templateDescription: string
 }[]
 async function main() {
     let links = await getSitemapLinks(
@@ -64,7 +68,7 @@ async function main() {
                     },
                 })
                 if (!res.ok) {
-                    console.log('not ok', res.status)
+                    console.log('not ok', res.status, templateLink)
                     return
                 }
 
@@ -77,7 +81,7 @@ async function main() {
                 let lastText = ''
                 let templateName = ''
 
-                await new HTMLRewriter()
+                const html = await new HTMLRewriter()
                     .on('h1', {
                         text(e) {
                             templateName += e.text
@@ -114,11 +118,10 @@ async function main() {
                                 ctaLink = href
                             }
                         },
-                        
                     })
                     .on('p', {
                         text(chunk) {
-                            if (!chunk.text.trim()) {
+                            if (!chunk.text?.trim()) {
                                 return
                             }
                             if (chunk.text && lastText.includes('Published')) {
@@ -127,7 +130,7 @@ async function main() {
                                     let parsed = Date.parse(
                                         chunk.text
                                             .replace('Published ', '')
-                                            .trim(),
+                                            ?.trim(),
                                     )
                                     lastTemplateSubmitted = new Date(
                                         parsed,
@@ -151,19 +154,37 @@ async function main() {
                     return
                 }
 
+                let $ = cheerio.load(html || '')
+                // Find all 'a' tags with href containing '/creator/'
+                $('a[href*="/marketplace/creator/"]').each((index, element) => {
+                    // Get the text content of the 'a' tag
+                    const linkText = $(element).text()
+
+                    if (!linkText.toLowerCase().includes('show profile')) {
+                        creatorName = linkText
+                    }
+                })
+
                 const existingEmailIndex = allEmails.findIndex(
                     (item) => item.email === emailLink,
                 )
                 if (existingEmailIndex === -1) {
+                    let [name, templateDescription] = templateName.split('—')
+
+                    let [firstName, ...secondNames] = creatorName.split(' ')
+                    const secondName = secondNames.join(' ')
                     allEmails.push({
                         email: emailLink,
                         creatorName: creatorName,
+                        firstName,
+                        secondName,
                         exampleTemplate: templateLink,
                         twitter,
                         lastTemplateSubmitted,
                         ctaLink,
                         usesLemonSqueezy,
-                        templateName,
+                        templateName: name?.trim(),
+                        templateDescription: templateDescription?.trim(),
                     })
                     console.log('Last:', allEmails[allEmails.length - 1])
                 } else {
@@ -203,7 +224,7 @@ function extractEmailFromLink(link: string) {
     return link
 }
 
-console.time('main execution');
+console.time('main execution')
 
 main().finally(() => {
     // Convert the data to CSV format with a header
@@ -215,5 +236,5 @@ main().finally(() => {
     fs.writeFileSync('scripts/framer-template-creators.csv', csv)
     console.log(JSON.stringify(allEmails, null, 2))
 
-    console.timeEnd('main execution');
+    console.timeEnd('main execution')
 })
