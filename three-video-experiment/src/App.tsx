@@ -29,7 +29,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import classNames from 'classnames'
 import { Pane } from 'tweakpane'
-import { deserializeParams, threeCanvas } from './canvas'
+import { deserializeParams, serializeParams, threeCanvas } from './canvas'
 import { exportVideo } from './export'
 import { getHandleForMediaId, getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
@@ -54,19 +54,26 @@ const router = createBrowserRouter(
             path: '/project/:projectId',
             loader: async ({ params }) => {
                 const { projectId } = params
+                console.log('loading editor state from db', projectId)
+
                 const serState = await indexDb.get(
                     projectStateKey({ projectId }),
                 )
                 if (!serState) {
+                    console.log('no state found, redirecting')
                     return redirect('/')
                 }
                 console.log('loading editor state from db', serState)
                 const state = deserializeParams(serState) as EditorState
                 if (!state.mediaHandleId) {
+                    console.log('no state media handle id, redirecting')
                     return redirect('/')
                 }
                 const media = await getHandleForMediaId(state.mediaHandleId)
                 if (!media) {
+                    console.log(
+                        `no media found for ${state.mediaHandleId}, redirecting`,
+                    )
                     return redirect('/')
                 }
                 console.log(media)
@@ -94,6 +101,23 @@ function DropArea() {
 
     const navigate = useNavigate()
 
+    const handleMediaHandle = async (mediaHandle: FileSystemFileHandle) => {
+        const mediaHandleId = await getMediaHandleId(mediaHandle)
+        await indexDb.set(mediaHandleId, mediaHandle)
+
+        let state: Partial<EditorState> = {
+            mediaHandleId,
+            projectId,
+        }
+        console.log(serializeParams(state))
+        await indexDb.set(
+            projectStateKey({ projectId }),
+            serializeParams(state),
+        )
+
+        navigate(`/project/${projectId}`)
+    }
+
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault()
         setIsDragging(false)
@@ -118,18 +142,11 @@ function DropArea() {
 
         if (!validFileHandles.length) {
             console.log('No Dropped files')
-
             return
         }
-        const [mediaHandle] = validFileHandles
-        const mediaHandleId = await getMediaHandleId(mediaHandle)
-        await indexDb.set(mediaHandleId, mediaHandle)
 
-        useEditorState.setState({
-            mediaHandleId,
-            projectId,
-        })
-        navigate(`/project/${projectId}`)
+        const [mediaHandle] = validFileHandles
+        await handleMediaHandle(mediaHandle)
     }
 
     return (
@@ -139,8 +156,12 @@ function DropArea() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={async () => {
-                const { projectId } = await pickMedia()
-                if (projectId) navigate(`/project/${projectId}`)
+                const mediaHandle = await pickMediaHandle()
+                if (!mediaHandle) {
+                    return
+                }
+
+                await handleMediaHandle(mediaHandle)
             }}
         >
             <div
@@ -183,24 +204,6 @@ function CanvasComponent({ ...rest }) {
     }, [])
 
     return <div {...rest} ref={containerRef}></div>
-}
-
-const pickMedia = async () => {
-    const state = useEditorState.getState()
-    const mediaHandle = await pickMediaHandle()
-    if (!mediaHandle) {
-        console.log(`could not get media handle`)
-        useEditorState.setState({
-            mediaHandleId: undefined,
-        })
-        return { projectId: '' }
-    }
-    const projectId = generateId()
-    useEditorState.setState({
-        projectId,
-        mediaHandleId: await getMediaHandleId(mediaHandle),
-    })
-    return { projectId }
 }
 
 function EditorLayout() {

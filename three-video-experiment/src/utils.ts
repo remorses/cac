@@ -267,7 +267,7 @@ export function useForceRender() {
 }
 
 export function generateId() {
-    return Math.random().toString(36).substr(2, 9)
+    return encodeURIComponent(Math.random().toString(36).substr(2, 9))
 }
 
 export function projectStateKey({ projectId }) {
