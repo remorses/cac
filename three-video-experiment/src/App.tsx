@@ -87,7 +87,11 @@ const router = createBrowserRouter(
                 //     return redirect('/')
                 // }
                 // console.log(media)
-                useEditorState.setState({ ...state, isExporting: false })
+                useEditorState.setState({
+                    ...state,
+                    isExporting: false,
+                    isPlaying: false,
+                })
 
                 return {}
             },
@@ -462,7 +466,6 @@ function Timeline() {
     }, [])
 
     function scrub(e: { clientX: number }) {
-        const containerRect = containerRef.current?.getBoundingClientRect()
         if (!containerRect) {
             return
         }
@@ -497,7 +500,7 @@ function Timeline() {
                     }}
                     className='inset-0 absolute'
                 ></div>
-                <DurationScrubber containerRef={containerRef} />
+                <DurationScrubber containerRect={containerRect} />
                 <div className='relative overflow-x-visible '>
                     {allEffects.map(({ node: effect, parent }, index) => {
                         return (
@@ -515,15 +518,15 @@ function Timeline() {
                 </pre> */}
                 <ScrubBar containerRect={containerRect} />
 
-                <Scrubber containerRef={containerRef} />
+                <Scrubber containerRect={containerRect} />
             </div>
         </div>
     )
 }
 function DurationScrubber({
-    containerRef,
+    containerRect,
 }: {
-    containerRef: React.RefObject<HTMLDivElement>
+    containerRect: Readonly<RectReadOnly>
 }) {
     const duration = useEditorState((state) => state.duration)
     const start = useEditorState((state) => state.start)
@@ -554,10 +557,9 @@ function DurationScrubber({
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDragging.dragging && containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect()
-            const x = e.clientX - rect.left
-            const newTime = (x / rect.width) * visibleDuration
+        if (isDragging.dragging && containerRect) {
+            const x = e.clientX - containerRect.left
+            const newTime = (x / containerRect.width) * visibleDuration
             if (isDragging.isStart) {
                 setTempStart(
                     snapToTimeGrid(
@@ -650,7 +652,7 @@ function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
             document.removeEventListener('mouseup', handleMouseUp)
             document.removeEventListener('mousemove', handleMouseMove as any)
         }
-    }, [visibleDuration])
+    }, [containerRect, visibleDuration])
 
     const tickCount = Math.min(
         50,

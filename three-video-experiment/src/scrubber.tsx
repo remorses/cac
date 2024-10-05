@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useThrottledCurrentTime, useEditorState } from './state'
+import { RectReadOnly } from 'react-use-measure'
 
 export const scrubberHalfWidth = 16
 
@@ -18,17 +19,24 @@ export function ScrubberIcon() {
         </svg>
     )
 }
-export function Scrubber({ containerRef }) {
+
+export function Scrubber({ containerRect }: { containerRect: RectReadOnly }) {
     const currentTime = useThrottledCurrentTime()
     const visibleDuration = useEditorState(
         (state) => state.duration / state.timelineScale,
     )
-    const containerRect = containerRef.current?.getBoundingClientRect()
+
     const w = containerRect?.width || 0
     const h = containerRect?.height || 0
 
-    const left = ((currentTime / visibleDuration) * w) + (containerRect?.left || 0) - scrubberHalfWidth
+    const left =
+        (currentTime / visibleDuration) * w +
+        (containerRect?.left || 0) -
+        scrubberHalfWidth
     const top = containerRect?.top || 0
+    if (!containerRect) {
+        return null
+    }
 
     return (
         <>

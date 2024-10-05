@@ -115,7 +115,7 @@ const colorAdjustEffectController: EffectController<ColorAdjustEffect> = {
     // pass: new InverseTonemapPass({ intensity: 0.7 }),
     create({ keyframes = [] }) {
         const params = {
-            inverseToneMappingIntensity: 1,
+            inverseToneMappingIntensity: 0.1,
         }
         return {
             id: 'colorAdjust',
@@ -292,7 +292,7 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
     create({ keyframes = [] }) {
         const params = {
             enabled: true,
-            focus: 10,
+            focus: 0,
             focalLength: 27,
             maxBlur: 500,
             fStops: 5.6,
@@ -306,17 +306,18 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
         }
     },
     apply(effect, params) {
-        const { bokehPass } = threeCanvas
+        const { bokehPass, plane, camera } = threeCanvas
         if (bokehPass) {
             bokehPass.enabled = params.enabled
-
-            bokehPass.uniforms.focus.value = params.focus
+            const distance = camera.position.distanceTo(plane.position)
+            bokehPass.uniforms.focus.value = distance + params.focus
             bokehPass.uniforms.uFocalLength.value = params.focalLength
             bokehPass.uniforms.maxBlur.value = params.maxBlur
             bokehPass.uniforms.uFStop.value = params.fStops
         }
     },
     configure({ effect, pane, params }) {
+        const { bokehPass } = threeCanvas
         const folder = pane.addFolder({
             title: 'Depth of Field',
         })
@@ -325,9 +326,9 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
         })
         folder.addBinding(params, 'focus', {
             label: 'Focus Distance',
-            min: 0.1,
+            min: -1,
             max: 1,
-            step: 0.1,
+            step: 0.01,
         })
         folder.addBinding(params, 'focalLength', {
             label: 'Focal Length',
@@ -347,6 +348,12 @@ const depthOfFieldEffectController: EffectController<DepthOfFieldEffect> = {
             max: 500,
             step: 0.1,
         })
+
+        console.log(bokehPass.uniforms)
+        folder.addBinding(bokehPass.uniforms.uDOFDebug, 'value', {
+            label: 'Debug Mode',
+        })
+
         return folder
     },
 }

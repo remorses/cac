@@ -126,8 +126,9 @@ export function createThreeCanvas({
             console.log('ignoring orbit update to params')
             return
         }
+        const dofParams = getParamsForEffect('depthOfField')
         const planeDistance = camera.position.distanceTo(plane.position)
-        bokehPass.uniforms.focus.value = planeDistance
+        bokehPass.uniforms.focus.value = planeDistance + dofParams.focus
 
         const params = getParamsForEffect('camera')
         params.position.copy(controls.object.position)
@@ -172,6 +173,7 @@ export function createThreeCanvas({
         focus: distance,
         focalLength: 27,
         fStops: 3,
+        dofDebug: false,
         // sensorHeight: 25,
         size,
     })
@@ -658,7 +660,7 @@ const filmGrainShader = {
     uniforms: {
         tDiffuse: { value: null },
         time: { value: 1.0 },
-        grainIntensity: { value: 0.08 },
+        grainIntensity: { value: 0.04 },
     },
     vertexShader: `
       varying vec2 vUv;
