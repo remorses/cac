@@ -733,6 +733,7 @@ export async function createNewProject(mediaHandle?: FileSystemFileHandle) {
         effectControllers.camera.create({}),
         effectControllers.depthOfField.create({}),
         effectControllers.background.create({}),
+        effectControllers.colorAdjust.create({}),
     ]
 
     const state: Partial<EditorState> = {
