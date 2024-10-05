@@ -527,6 +527,8 @@ function Timeline() {
         </div>
     )
 }
+
+
 function DurationScrubber({
     containerRect,
 }: {
@@ -535,6 +537,8 @@ function DurationScrubber({
     const duration = useEditorState((state) => state.duration)
     const start = useEditorState((state) => state.start)
     const timelineScale = useEditorState((state) => state.timelineScale)
+    const effects = useEditorState((state) => state.effects)
+    const setEffects = useEditorState((state) => state.setEffects)
     const visibleDuration = duration / timelineScale
 
     const [isDragging, setIsDragging] = useState<{
@@ -558,6 +562,20 @@ function DurationScrubber({
             duration: lastTempDuration.current,
             start: lastTempStart.current,
         })
+
+        const updatedEffects = effects.map(effect => ({
+            ...effect,
+            keyframes: effect.keyframes.map(keyframe => {
+                if (isDragging.isStart && keyframe.time === start) {
+                    return { ...keyframe, time: lastTempStart.current }
+                }
+                if (!isDragging.isStart && keyframe.time === duration) {
+                    return { ...keyframe, time: lastTempDuration.current }
+                }
+                return keyframe
+            })
+        }))
+        setEffects(updatedEffects)
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
