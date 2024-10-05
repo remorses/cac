@@ -473,7 +473,7 @@ function Timeline() {
             ((e.clientX - containerRect.left) / containerRect.width) *
             visibleDuration
         useEditorState.setState({
-            currentTime: Math.max(0, Math.min(newTime, duration)),
+            currentTime: Math.max(0, newTime),
         })
     }
     const setSelectedKeyframeIds = useEditorState(
@@ -561,11 +561,7 @@ function DurationScrubber({
             const x = e.clientX - containerRect.left
             const newTime = (x / containerRect.width) * visibleDuration
             if (isDragging.isStart) {
-                setTempStart(
-                    snapToTimeGrid(
-                        Math.max(0, Math.min(newTime, tempDuration)),
-                    ),
-                )
+                setTempStart(snapToTimeGrid(Math.max(0, newTime)))
             } else {
                 setTempDuration(snapToTimeGrid(Math.max(tempStart, newTime)))
             }
@@ -641,7 +637,7 @@ function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
         if (isDraggingRef.current && containerRect) {
             const x = e.clientX - containerRect.left
             const newTime = (x / containerRect.width) * visibleDuration
-            setCurrentTime(Math.max(0, Math.min(newTime, duration)))
+            setCurrentTime(Math.max(0, newTime))
         }
     }
 
@@ -693,7 +689,7 @@ function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
                 onClick={(e) => {
                     const x = e.clientX - left
                     const newTime = (x / w) * visibleDuration
-                    setCurrentTime(Math.max(0, Math.min(newTime, duration)))
+                    setCurrentTime(Math.max(0, newTime))
                 }}
             >
                 {Array.from({

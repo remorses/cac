@@ -44,6 +44,8 @@ export const exportVideo = async () => {
         height = Math.round((maxWidth / width) * height)
         width = Math.round(maxWidth)
     }
+    // width = Math.round(width / 5)
+    // height = Math.round(height / 5)
 
     let outFps = 60
     const muxer = new MP4Muxer({

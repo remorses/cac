@@ -93,7 +93,10 @@ export const useThrottledCurrentTime = () => {
     const lastUpdateTimeRef = useRef(0)
 
     useEffect(() => {
-        const throttledUpdate = (state: EditorState, prevState: EditorState) => {
+        const throttledUpdate = (
+            state: EditorState,
+            prevState: EditorState,
+        ) => {
             const { isPlaying } = state
             if (!isPlaying) {
                 setCurrentTime(snapToTimeGrid(state.currentTime))
@@ -234,12 +237,16 @@ export const useEditorState = create<EditorState>()((
             })
         },
         setCurrentTime: (time) => {
-            // time = snapToTimeGrid(time)
-            const { duration, isLooping, setIsPlaying } = get()
-            if (isLooping) {
+            const { duration, isPlaying, start, isLooping, setIsPlaying } =
+                get()
+            if (isPlaying && time < start) {
+                setWithoutUndo({ currentTime: start })
+            } else if (isPlaying && isLooping) {
                 // If looping, wrap the time around to the beginning
-                setWithoutUndo({ currentTime: time % duration })
-            } else if (time >= duration) {
+                setWithoutUndo({
+                    currentTime: start + ((time - start) % (duration - start)),
+                })
+            } else if (isPlaying && time >= duration) {
                 // If not looping and time exceeds duration, pause and set to end
                 setWithoutUndo({ currentTime: duration })
                 setIsPlaying(false)
