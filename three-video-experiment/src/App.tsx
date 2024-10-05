@@ -3,6 +3,7 @@ import {
     redirect,
     RouterProvider,
     useNavigate,
+    useParams,
 } from 'react-router-dom'
 import * as indexDb from 'idb-keyval'
 import { Button } from 'template-rewrite-framer/src/components/Button'
@@ -69,19 +70,91 @@ const router = createBrowserRouter(
                     console.log('no state media handle id, redirecting')
                     return redirect('/')
                 }
-                const media = await getHandleForMediaId(state.mediaHandleId)
-                if (!media) {
-                    console.log(
-                        `no media found for ${state.mediaHandleId}, redirecting`,
-                    )
-                    return redirect('/')
+
+                const mediaHandle: FileSystemFileHandle = (await indexDb.get(
+                    state.mediaHandleId,
+                )) as any
+                const perm = await mediaHandle.queryPermission()
+                if (perm !== 'granted') {
+                    console.log('no permission, redirecting')
+                    return redirect(`/permission/${state.mediaHandleId}`)
                 }
-                console.log(media)
-                useEditorState.setState(state)
+                // const media = await mediaHandle.getFile()
+                // if (!media) {
+                //     console.log(
+                //         `no media found for ${state.mediaHandleId}, redirecting`,
+                //     )
+                //     return redirect('/')
+                // }
+                // console.log(media)
+                useEditorState.setState({ ...state, isExporting: false })
 
                 return {}
             },
             element: <EditorLayout />,
+        },
+        {
+            path: '/permission/:mediaHandleId',
+
+            Component: () => {
+                const navigate = useNavigate()
+                const { mediaHandleId } = useParams()
+
+                const handleRequestPermission = async () => {
+                    if (!mediaHandleId) {
+                        return
+                    }
+
+                    const mediaHandle: FileSystemFileHandle =
+                        (await indexDb.get(mediaHandleId)) as any
+                    if (!mediaHandle) {
+                        navigate('/')
+                        return
+                    }
+
+                    const newPermission = await mediaHandle.requestPermission({
+                        mode: 'read',
+                    })
+
+                    if (newPermission === 'granted') {
+                        navigate(-1)
+                        return
+                    }
+
+                    console.error('Permission not granted')
+                }
+
+                return (
+                    <div
+                        className={classNames(
+                            'flex',
+                            'flex-col',
+                            'items-center',
+                            'justify-center',
+                            'h-screen',
+                        )}
+                    >
+                        <h1 className={classNames('text-2xl', 'mb-4')}>
+                            Permission Required
+                        </h1>
+                        <p className={classNames('mb-4')}>
+                            We need your permission to access the selected file.
+                        </p>
+                        <button
+                            onClick={handleRequestPermission}
+                            className={classNames(
+                                'px-4',
+                                'py-2',
+                                'bg-blue-500',
+                                'text-white',
+                                'rounded',
+                            )}
+                        >
+                            Grant Permission
+                        </button>
+                    </div>
+                )
+            },
         },
     ],
     // { basename: basePath },
@@ -100,23 +173,6 @@ function DropArea() {
     }
 
     const navigate = useNavigate()
-
-    const handleMediaHandle = async (mediaHandle: FileSystemFileHandle) => {
-        const mediaHandleId = await getMediaHandleId(mediaHandle)
-        await indexDb.set(mediaHandleId, mediaHandle)
-
-        let state: Partial<EditorState> = {
-            mediaHandleId,
-            projectId,
-        }
-        console.log(serializeParams(state))
-        await indexDb.set(
-            projectStateKey({ projectId }),
-            serializeParams(state),
-        )
-
-        navigate(`/project/${projectId}`)
-    }
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault()
@@ -146,7 +202,8 @@ function DropArea() {
         }
 
         const [mediaHandle] = validFileHandles
-        await handleMediaHandle(mediaHandle)
+        const { projectId } = await createNewProject(mediaHandle)
+        navigate(`/project/${projectId}`)
     }
 
     return (
@@ -161,7 +218,8 @@ function DropArea() {
                     return
                 }
 
-                await handleMediaHandle(mediaHandle)
+                const { projectId } = await createNewProject(mediaHandle)
+                navigate(`/project/${projectId}`)
             }}
         >
             <div

@@ -3,8 +3,9 @@ import * as indexDb from 'idb-keyval'
 
 import { FolderApi, Pane } from 'tweakpane'
 import { serializeParams, threeCanvas } from './canvas'
-import { useEditorState } from './state'
+import { EditorState, useEditorState } from './state'
 import { generateId, projectStateKey } from './utils'
+import { getMediaHandleId } from './files'
 
 export type Effect =
     | MeshEffect
@@ -720,16 +721,26 @@ export function updateEffectInTree(effects: Effect[], node: Partial<Effect>) {
 //     })
 // }
 
-export async function createNewProject() {
+export async function createNewProject(mediaHandle?: FileSystemFileHandle) {
+    const projectId = generateId()
+    let mediaHandleId = ''
+    if (mediaHandle) {
+        mediaHandleId = await getMediaHandleId(mediaHandle)
+        await indexDb.set(mediaHandleId, mediaHandle)
+    }
     const effects = [
         effectControllers.mesh.create({}),
         effectControllers.camera.create({}),
         effectControllers.depthOfField.create({}),
         effectControllers.background.create({}),
     ]
-    const projectId = generateId()
-    useEditorState.setState({ effects, projectId })
-    await indexDb.set(projectStateKey({ projectId }), serializeParams(effects))
+
+    const state: Partial<EditorState> = {
+        effects,
+        mediaHandleId,
+        projectId,
+    }
+    await indexDb.set(projectStateKey({ projectId }), serializeParams(state))
     return {
         projectId,
     }

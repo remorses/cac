@@ -71,27 +71,36 @@ export const exportVideo = async () => {
         codec: 'avc1.4D0028', // Updated to a higher AVC level
         width,
         height,
-        bitrate: 5_000_000, // 5 Mbps for better quality
+
+        bitrate: 4_000_000, // 5 Mbps for better quality
         framerate: outFps,
+        hardwareAcceleration: 'prefer-hardware',
+        // latencyMode: 'realtime',
+        bitrateMode: 'variable',
     })
 
     // Stop recording and download video
     async function stopRecording() {
-        threeCanvas.afterExport()
+        console.log(`flushing video encoder`)
         await videoEncoder.flush()
 
-        muxer.finalize()
+        console.log(`finalizing muxer`)
         videoEncoder.close()
+        muxer.finalize()
 
+        console.log(`creating blob`)
         const arrayBuffer = muxer.target.buffer
         const blob = new Blob([arrayBuffer], { type: 'video/mp4' })
 
+        console.log(`creating url`)
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
         a.download = 'recorded-video.mp4'
+        console.log(`clicking download link`)
         a.click()
         URL.revokeObjectURL(url)
+        threeCanvas.afterExport()
     }
 
     let timestamp = 0
@@ -119,14 +128,18 @@ export const exportVideo = async () => {
                     if (shouldRender) {
                         threeCanvas.changeImage(frame)
                         threeCanvas.render({ isPreview: false })
+
                         const outputFrame = new VideoFrame(
                             threeCanvas.renderer.domElement,
                             {
                                 timestamp,
                             },
                         )
+                        frame.close()
+
                         videoEncoder.encode(outputFrame)
                         outputFrame.close()
+                    } else {
                         frame.close()
                     }
                     if (!fps) {
@@ -140,7 +153,7 @@ export const exportVideo = async () => {
             await videoDecoder.configure(track)
 
             return async (sample) => {
-                if (videoDecoder.decodeQueueSize > 10) {
+                if (videoDecoder.decodeQueueSize > 1) {
                     let resolve = () => {}
 
                     const cb = () => {

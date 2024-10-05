@@ -2,15 +2,24 @@ import mime from 'mime'
 import * as indexDb from 'idb-keyval'
 
 async function requestPersistentAccess(fileHandle: FileSystemFileHandle) {
-    if ((await fileHandle.queryPermission({ mode: 'read' })) !== 'granted') {
-        if (
-            (await fileHandle.requestPermission({ mode: 'read' })) !== 'granted'
-        ) {
+    const currentPermission = await fileHandle.queryPermission({ mode: 'read' })
+    if (currentPermission === 'granted') {
+        return true
+    }
+
+    try {
+        const newPermission = await fileHandle.requestPermission({
+            mode: 'read',
+        })
+        if (newPermission !== 'granted') {
             console.log('Permission not granted')
             return false
         }
+        return true
+    } catch (error) {
+        console.error('Error requesting permission:', error)
+        return false
     }
-    return true
 }
 
 export async function getFileForMediaHandle(mediaHandle: FileSystemFileHandle) {
