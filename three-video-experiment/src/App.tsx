@@ -483,7 +483,7 @@ function Timeline() {
         <div className='col-span-3 overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
             <Entities />
             <div
-                className='grow bg-gray-900 relative h-full overflow-x-visible flex flex-col gap-3'
+                className='grow overflow-x-visible  relative h-full flex flex-col gap-3'
                 ref={(elem) => {
                     parentRef(elem)
                     containerRef.current = elem
@@ -498,7 +498,11 @@ function Timeline() {
                         setSelectedEffectIds([])
                         setSelectedKeyframeIds([], [])
                     }}
-                    className='inset-0 absolute'
+
+                    style={{
+                        width: `${(duration / visibleDuration) * 100}%`,
+                    }}
+                    className='bg-gray-900 inset-0 absolute'
                 ></div>
                 <DurationScrubber containerRect={containerRect} />
                 <div className='relative overflow-x-visible '>
