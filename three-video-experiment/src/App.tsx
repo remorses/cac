@@ -558,9 +558,16 @@ function DurationScrubber({
 
     const handleMouseUp = () => {
         setIsDragging({ dragging: false, isStart: false })
-        useEditorState.setState({
-            duration: lastTempDuration.current,
-            start: lastTempStart.current,
+        useEditorState.setState((state) => {
+            const newDuration = lastTempDuration.current
+            const newStart = lastTempStart.current
+            // keep previous relative timeline scale
+            const newTimelineScale = (state.timelineScale * newDuration) / state.duration
+            return {
+                duration: newDuration,
+                start: newStart,
+                timelineScale: newTimelineScale
+            }
         })
 
         const updatedEffects = effects.map(effect => ({
