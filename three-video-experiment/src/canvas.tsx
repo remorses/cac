@@ -326,11 +326,11 @@ export function createThreeCanvas({
     }
 
     function changeImage(bitmap: ImageBitmap | VideoFrame) {
-        texture.dispose()
+        // texture.dispose()
         texture.image = bitmap
 
         texture.needsUpdate = true
-
+        material.needsUpdate = true
         const size = getDimensions(bitmap)
         const aspectRatio = size.width / size.height
         camera.updateProjectionMatrix()
@@ -338,11 +338,12 @@ export function createThreeCanvas({
     }
 
     function changeVideo(video: HTMLVideoElement) {
-        texture.dispose()
+        // texture.dispose()
         texture.flipY = false
         texture = new THREE.VideoTexture(video)
         texture.colorSpace = THREE.LinearSRGBColorSpace
         texture.needsUpdate = true
+        material.needsUpdate = true
         const aspectRatio = video.videoWidth / video.videoHeight || 1
 
         camera.updateProjectionMatrix()
