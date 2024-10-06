@@ -469,8 +469,10 @@ function Timeline() {
         if (!containerRect) {
             return
         }
+        const scrollLeft = containerRef.current?.scrollLeft || 0
         const newTime =
-            ((e.clientX - containerRect.left) / containerRect.width) *
+            ((e.clientX + scrollLeft - containerRect.left) /
+                containerRect.width) *
             visibleDuration
         useEditorState.setState({
             currentTime: Math.max(0, newTime),
@@ -503,7 +505,10 @@ function Timeline() {
                     }}
                     className='bg-gray-900 inset-0 absolute'
                 ></div>
-                <DurationScrubber containerRect={containerRect} />
+                {/* <DurationScrubber
+                    containerRef={containerRef}
+                    containerRect={containerRect}
+                /> */}
                 <div className='relative overflow-x-visible '>
                     {allEffects.map(({ node: effect, parent }, index) => {
                         return (
@@ -532,8 +537,10 @@ function Timeline() {
 
 function DurationScrubber({
     containerRect,
+    containerRef,
 }: {
     containerRect: Readonly<RectReadOnly>
+    containerRef: React.RefObject<HTMLDivElement>
 }) {
     const duration = useEditorState((state) => state.duration)
     const start = useEditorState((state) => state.start)
@@ -586,10 +593,10 @@ function DurationScrubber({
         }))
         setEffects(updatedEffects)
     }
-
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDragging.dragging && containerRect) {
-            const x = e.clientX - containerRect.left
+        if (isDragging.dragging && containerRect && containerRef.current) {
+            const scrollLeft = containerRef.current.scrollLeft
+            const x = e.clientX - containerRect.left + scrollLeft
             const newTime = (x / containerRect.width) * visibleDuration
             if (isDragging.isStart) {
                 setTempStart(snapToTimeGrid(Math.max(0, newTime)))
@@ -718,7 +725,10 @@ function ScrubBar({
             }}
         >
             {Array.from({
-                length: Math.ceil(visibleDuration / (step / Math.max(timelineScale, 1))) + 1,
+                length:
+                    Math.ceil(
+                        visibleDuration / (step / Math.max(timelineScale, 1)),
+                    ) + 1,
             }).map((_, index) => {
                 const time = index * step
                 const isSecond = time % 1 < 0.01
@@ -849,6 +859,7 @@ function KeyframeAddButton({
         const handleMouseMove = (e) => {
             // Check if the current position is near an existing keyframe
             const containerWidth = container.clientWidth
+            const scrollLeft = container.scrollLeft
             const rect = container.getBoundingClientRect()
 
             const time = getTime({
@@ -882,9 +893,11 @@ function KeyframeAddButton({
     const halfWidth = 24
 
     function getTime(position: { x: number; y: number }) {
+        const scrollLeft = containerRef.current?.scrollLeft || 0
         const time =
             start +
-            (position.x / containerRef.current!.clientWidth) * (end - start)
+            ((position.x + scrollLeft) / containerRef.current!.clientWidth) *
+                (end - start)
         const snappedTime = snapToTimeGrid(time)
         return snappedTime
     }
@@ -979,7 +992,8 @@ function KeyframeComponent({
         const containerRect = containerRef.current?.getBoundingClientRect()
         if (!containerRect) return
 
-        const newPosition = e.clientX - containerRect.left
+        const scrollLeft = containerRef.current?.scrollLeft || 0
+        const newPosition = e.clientX + scrollLeft - containerRect.left
         const newRelativeTime =
             (newPosition / containerRect.width) * clipDuration
         const newAbsoluteTime = start + newRelativeTime
