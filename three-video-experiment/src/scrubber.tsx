@@ -19,20 +19,17 @@ export function ScrubberIcon() {
         </svg>
     )
 }
-
 export function Scrubber({ containerRect }: { containerRect: RectReadOnly }) {
     const currentTime = useThrottledCurrentTime()
     const visibleDuration = useEditorState(
         (state) => state.duration / state.timelineScale,
     )
+    const start = useEditorState((state) => state.start / state.timelineScale)
 
     const w = containerRect?.width || 0
     const h = containerRect?.height || 0
 
-    const left =
-        (currentTime / visibleDuration) * w +
-        (containerRect?.left || 0) -
-        scrubberHalfWidth
+    const leftPercentage = (currentTime / visibleDuration) * 100
     const top = containerRect?.top || 0
     if (!containerRect) {
         return null
@@ -41,11 +38,11 @@ export function Scrubber({ containerRect }: { containerRect: RectReadOnly }) {
     return (
         <>
             <div
-                className='fixed pointer-events-none'
+                className='absolute pointer-events-none'
                 style={{
-                    left: `${left}px`,
-                    top: `${top}px`,
-                    height: `${h}px`,
+                    left: `calc(${leftPercentage}% - ${scrubberHalfWidth}px)`,
+                    top: `0px`,
+                    bottom: 0,
                     width: scrubberHalfWidth * 2,
                 }}
             >

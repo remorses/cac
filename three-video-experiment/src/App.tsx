@@ -480,10 +480,9 @@ function Timeline() {
         (state) => state.setSelectedKeyframeIds,
     )
     return (
-        <div className='col-span-3 overflow-y-auto row-span-1 cursor-pointer shrink-0 flex flex-row'>
+        <div className='flex flex-row grow col-span-3 w-full row-span-1'>
             <Entities />
             <div
-                className='grow overflow-x-visible  relative h-full flex flex-col gap-3'
                 ref={(elem) => {
                     parentRef(elem)
                     containerRef.current = elem
@@ -491,6 +490,7 @@ function Timeline() {
                 style={{
                     paddingTop: scrubBarHeight + clipSpacing,
                 }}
+                className=' h-full grow relative overflow-x-auto overflow-y-hidden  cursor-pointer shrink-0 flex flex-col gap-3 '
             >
                 <div
                     onClick={(e) => {
@@ -498,7 +498,6 @@ function Timeline() {
                         setSelectedEffectIds([])
                         setSelectedKeyframeIds([], [])
                     }}
-
                     style={{
                         width: `${(duration / visibleDuration) * 100}%`,
                     }}
@@ -520,14 +519,16 @@ function Timeline() {
                 {/* <pre className='shrink-0'>
                     {JSON.stringify(effects, null, 2)}
                 </pre> */}
-                <ScrubBar containerRect={containerRect} />
+                <ScrubBar
+                    containerRef={containerRef}
+                    containerRect={containerRect}
+                />
 
                 <Scrubber containerRect={containerRect} />
             </div>
         </div>
     )
 }
-
 
 function DurationScrubber({
     containerRect,
@@ -562,17 +563,18 @@ function DurationScrubber({
             const newDuration = lastTempDuration.current
             const newStart = lastTempStart.current
             // keep previous relative timeline scale
-            const newTimelineScale = (state.timelineScale * newDuration) / state.duration
+            const newTimelineScale =
+                (state.timelineScale * newDuration) / state.duration
             return {
                 duration: newDuration,
                 start: newStart,
-                timelineScale: newTimelineScale
+                timelineScale: newTimelineScale,
             }
         })
 
-        const updatedEffects = effects.map(effect => ({
+        const updatedEffects = effects.map((effect) => ({
             ...effect,
-            keyframes: effect.keyframes.map(keyframe => {
+            keyframes: effect.keyframes.map((keyframe) => {
                 if (isDragging.isStart && keyframe.time === start) {
                     return { ...keyframe, time: lastTempStart.current }
                 }
@@ -580,7 +582,7 @@ function DurationScrubber({
                     return { ...keyframe, time: lastTempDuration.current }
                 }
                 return keyframe
-            })
+            }),
         }))
         setEffects(updatedEffects)
     }
@@ -638,7 +640,13 @@ function DurationScrubber({
 
 const scrubBarHeight = 30
 
-function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
+function ScrubBar({
+    containerRect,
+    containerRef,
+}: {
+    containerRect: RectReadOnly
+    containerRef: React.RefObject<HTMLDivElement>
+}) {
     const duration = useEditorState((state) => state.duration)
     const isDraggingRef = useRef(false)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
@@ -665,7 +673,9 @@ function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
     const handleMouseMove = (e: React.MouseEvent) => {
         if (isDraggingRef.current && containerRect) {
             const x = e.clientX - containerRect.left
-            const newTime = (x / containerRect.width) * visibleDuration
+            const scrollLeft = containerRef.current?.scrollLeft || 0
+            const newTime =
+                ((x + scrollLeft) / containerRect.width) * visibleDuration
             setCurrentTime(Math.max(0, newTime))
         }
     }
@@ -687,79 +697,64 @@ function ScrubBar({ containerRect }: { containerRect: RectReadOnly }) {
         Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
 
     // const containerRect = parentRef.current?.getBoundingClientRect()
-    const w = containerRect?.width || 0
-    const left = containerRect?.left || 0
+
     const top = containerRect?.top || 0
 
     return (
         <div
+            className='absolute shrink-0 bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
             style={{
-                top: top,
-                left: 0,
-                height: scrubBarHeight,
+                top: 0,
+                width: `${(duration / visibleDuration) * 100}%`,
+                height: scrubBarHeight + 1,
             }}
-            className='fixed flex flex-col justify-center w-full h-full bg-gray-800'
+            onMouseDown={handleMouseDown}
+            onClick={(e) => {
+                const scrollLeft = containerRef.current?.scrollLeft || 0
+                const x = e.clientX - containerRect.left
+                const newTime =
+                    ((x + scrollLeft) / containerRect.width) * visibleDuration
+                setCurrentTime(Math.max(0, newTime))
+            }}
         >
-            <div
-                style={{
-                    width: `calc(100% - ${w}px)`,
-                }}
-                className='flex flex-col  items-end px-3 pr-6'
-            ></div>
+            {Array.from({
+                length: Math.ceil(visibleDuration / (step / Math.max(timelineScale, 1))) + 1,
+            }).map((_, index) => {
+                const time = index * step
+                const isSecond = time % 1 < 0.01
 
-            <div
-                className='absolute bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
-                style={{
-                    left: `${left}px`,
-                    top: 0,
-                    width: `${w}px`,
-                }}
-                onMouseDown={handleMouseDown}
-                onClick={(e) => {
-                    const x = e.clientX - left
-                    const newTime = (x / w) * visibleDuration
-                    setCurrentTime(Math.max(0, newTime))
-                }}
-            >
-                {Array.from({
-                    length: Math.ceil(visibleDuration / step) + 1,
-                }).map((_, index) => {
-                    const time = index * step
-                    const isSecond = time % 1 < 0.01
-
-                    return (
-                        <div
-                            key={index}
-                            className='absolute top-0 bottom-0 gap-1 flex flex-row'
-                            style={{
-                                left: `${(time / visibleDuration) * 100}%`,
-                            }}
-                        >
-                            {!isSecond && (
-                                <div
-                                    className={`grow border-r-2 self-center ${
-                                        isSecond ? 'opacity-70' : 'opacity-20'
-                                    }`}
-                                    style={{
-                                        height: isSecond ? '100%' : '30%',
-                                    }}
-                                ></div>
-                            )}
-                            {isSecond && (
-                                <div
-                                    className={classNames(
-                                        'text-xs h-full content-center text-gray-500 font-mono',
-                                        index !== 0 && '-translate-x-1/2',
-                                        index == 0 && 'pl-1',
-                                    )}
-                                >
-                                    {time.toFixed(1)}s
-                                </div>
-                            )}
-                        </div>
-                    )
-                })}
-            </div>
+                return (
+                    <div
+                        key={index}
+                        className='absolute top-0 bottom-0 gap-1 flex flex-row'
+                        style={{
+                            left: `${(time / visibleDuration) * 100}%`,
+                        }}
+                    >
+                        {!isSecond && (
+                            <div
+                                className={`grow border-r-2 self-center ${
+                                    isSecond ? 'opacity-70' : 'opacity-20'
+                                }`}
+                                style={{
+                                    height: isSecond ? '100%' : '30%',
+                                }}
+                            ></div>
+                        )}
+                        {isSecond && (
+                            <div
+                                className={classNames(
+                                    'text-xs h-full content-center text-gray-500 font-mono',
+                                    index !== 0 && '-translate-x-1/2',
+                                    index == 0 && 'pl-1',
+                                )}
+                            >
+                                {time.toFixed(1)}s
+                            </div>
+                        )}
+                    </div>
+                )
+            })}
         </div>
     )
 }
@@ -792,7 +787,7 @@ function Clip({
     return (
         <div
             className={classNames(
-                'absolute rounded-md overflow-x-visible flex flex-row items-center justify-between text-white text-xs',
+                'absolute rounded-md overflow-x-visible  flex flex-row items-center justify-between text-white text-xs',
             )}
             style={{
                 left: `${startPercent}%`,
