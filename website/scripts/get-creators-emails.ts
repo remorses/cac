@@ -35,8 +35,8 @@ const allEmails = [] as {
     creatorName: string
     firstName: string
     secondName: string
-    twitter: string
-    lastTemplateSubmitted: string
+    
+    lastTemplateSubmitted?: string
     ctaLink: string
     usesLemonSqueezy: boolean
     templateName: string
@@ -73,9 +73,8 @@ async function main() {
                 }
 
                 let creatorName = ''
-                let twitter = ''
                 let emailLink = ''
-                let lastTemplateSubmitted = ''
+
                 let usesLemonSqueezy = false
                 let ctaLink = ''
                 let lastText = ''
@@ -93,13 +92,13 @@ async function main() {
                             if (!href) {
                                 return
                             }
-                            if (
-                                !href.includes('/framer') &&
-                                (href.includes('x.com') ||
-                                    href.includes('twitter.com'))
-                            ) {
-                                twitter = href
-                            }
+                            // if (
+                            //     !href.includes('/framer') &&
+                            //     (href.includes('x.com') ||
+                            //         href.includes('twitter.com'))
+                            // ) {
+                            //     twitter = href
+                            // }
                             if (
                                 href.includes('mailto:') &&
                                 !href.includes('@framer.com')
@@ -119,32 +118,7 @@ async function main() {
                             }
                         },
                     })
-                    .on('p', {
-                        text(chunk) {
-                            if (!chunk.text?.trim()) {
-                                return
-                            }
-                            if (chunk.text && lastText.includes('Published')) {
-                                try {
-                                    console.log(`parsing ${chunk.text}`)
-                                    let parsed = Date.parse(
-                                        chunk.text
-                                            .replace('Published ', '')
-                                            ?.trim(),
-                                    )
-                                    lastTemplateSubmitted = new Date(
-                                        parsed,
-                                    ).toISOString()
-                                } catch (e) {
-                                    console.log(
-                                        'error parsing date',
-                                        chunk.text,
-                                    )
-                                }
-                            }
-                            lastText = chunk.text
-                        },
-                    })
+
                     .transform(res)
                     .text()
                     .catch(ignoreAbortError)
@@ -160,7 +134,10 @@ async function main() {
                     // Get the text content of the 'a' tag
                     const linkText = $(element).text()
 
-                    if (!linkText.toLowerCase().includes('show profile')) {
+                    if (
+                        !creatorName &&
+                        !linkText.toLowerCase().includes('show profile')
+                    ) {
                         creatorName = linkText
                     }
                 })
@@ -179,8 +156,7 @@ async function main() {
                         firstName,
                         secondName,
                         exampleTemplate: templateLink,
-                        twitter,
-                        lastTemplateSubmitted,
+
                         ctaLink,
                         usesLemonSqueezy,
                         templateName: name?.trim(),
@@ -190,19 +166,19 @@ async function main() {
                 } else {
                     console.log('Creator already processed:', emailLink)
                     // Update the existing entry if needed
-                    if (
-                        lastTemplateSubmitted &&
-                        (!allEmails[existingEmailIndex].lastTemplateSubmitted ||
-                            new Date(lastTemplateSubmitted) >
-                                new Date(
-                                    allEmails[
-                                        existingEmailIndex
-                                    ].lastTemplateSubmitted,
-                                ))
-                    ) {
-                        allEmails[existingEmailIndex].lastTemplateSubmitted =
-                            lastTemplateSubmitted
-                    }
+                    // if (
+                    //     lastTemplateSubmitted &&
+                    //     (!allEmails[existingEmailIndex].lastTemplateSubmitted ||
+                    //         new Date(lastTemplateSubmitted) >
+                    //             new Date(
+                    //                 allEmails[
+                    //                     existingEmailIndex
+                    //                 ].lastTemplateSubmitted,
+                    //             ))
+                    // ) {
+                    //     allEmails[existingEmailIndex].lastTemplateSubmitted =
+                    //         lastTemplateSubmitted
+                    // }
                     allEmails[existingEmailIndex].usesLemonSqueezy =
                         usesLemonSqueezy ||
                         allEmails[existingEmailIndex].usesLemonSqueezy
