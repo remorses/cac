@@ -8,12 +8,12 @@ const components: MDXComponents = {}
 export default function Page() {
     return (
         <MDXProvider components={components}>
-            <div className='px-6  md:px-12 pt-12 pb-24 md:pt-24 w-full flex flex-col items-center '>
+            <div className='px-6 md:px-12 pt-12 pb-24 md:pt-24 w-full flex flex-col items-center '>
                 <div
                     style={{
                         contentVisibility: 'auto',
                     }}
-                    className='prose dark:prose-invert prose-quoteless gap-1 flex flex-col items-start min-w-0 w-full max-w-[800px]'
+                    className='prose dark:prose-invert prose-quoteless items-start min-w-0 w-full max-w-[800px] prose-img:max-w-[500px] prose-img:mx-auto'
                 >
                     <Outlet />
                 </div>
