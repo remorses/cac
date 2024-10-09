@@ -18,7 +18,7 @@ export default function Page() {
                     <Outlet />
                 </div>
                 <div className='pt-24 flex flex-col text-sm items-center gap-4'>
-                    <div className=''>
+                    {/* <div className=''>
                         Written by{' '}
                         <a
                             className='underline'
@@ -26,7 +26,7 @@ export default function Page() {
                         >
                             @__morse
                         </a>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </MDXProvider>
