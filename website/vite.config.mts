@@ -1,14 +1,18 @@
-import { vitePlugin as remix } from '@remix-run/dev'
+import { remarkCodeHike } from '@code-hike/mdx'
+import withSlugs from 'rehype-slug'
+import withToc from '@stefanprobst/rehype-extract-toc'
 
-import { defineConfig } from 'vitest/config'
-import Inspect from 'vite-plugin-inspect'
+import { vitePlugin as remix } from '@remix-run/dev'
+import mdx from '@mdx-js/rollup'
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import remarkFrontmatter from 'remark-frontmatter'
+import rehypeMdxImportMedia from 'rehype-mdx-import-media'
+import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import Inspect from 'vite-plugin-inspect'
 import EnvironmentPlugin from 'vite-plugin-environment'
 import { viteExternalsPlugin } from '@xmorse/deployment-utils/dist/vite-externals-plugin'
-
 import { visualizer } from 'rollup-plugin-visualizer'
-
-const building = process.env.NODE_ENV === 'production'
 
 const NODE_ENV = JSON.stringify(process.env.NODE_ENV || 'production')
 
@@ -19,23 +23,28 @@ export default defineConfig({
     define: {
         'process.env.NODE_ENV': NODE_ENV,
     },
-
     test: {
         pool: 'threads',
-
         exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],
-        // disableConsoleIntercept: true,
-
         poolOptions: {
             threads: {
                 isolate: false,
-                // useAtomics: true,
             },
         },
     },
     plugins: [
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         Inspect(),
+        mdx({
+            remarkPlugins: [
+                remarkFrontmatter,
+                remarkMdxFrontmatter,
+                // [remarkCodeHike, { theme: 'github-dark' }],
+            ],
+            rehypePlugins: [withSlugs, withToc, rehypeMdxImportMedia],
+            mdxExtensions: ['.md', '.mdx'],
+            mdExtensions: [],
+        }),
         remix({
             appDirectory: 'src',
             serverModuleFormat: 'cjs',
@@ -57,11 +66,8 @@ export default defineConfig({
             },
             ...visualizer({ filename: 'build/trace.html' }),
         },
-        // bundleGraphPlugin(),
     ],
-
     optimizeDeps: {},
-
     build: {
         sourcemap: true,
         commonjsOptions: {
