@@ -475,7 +475,7 @@ function Timeline() {
         (state) => state.setSelectedKeyframeIds,
     )
     return (
-        <div className='flex flex-row grow col-span-3 w-full row-span-1'>
+        <div className='flex  flex-row grow col-span-3 w-full row-span-1'>
             <Entities />
             <div
                 ref={(elem) => {
@@ -485,7 +485,7 @@ function Timeline() {
                 style={{
                     paddingTop: scrubBarHeight + clipSpacing,
                 }}
-                className=' h-full grow relative overflow-x-auto overflow-y-hidden  cursor-pointer shrink-0 flex flex-col gap-3 '
+                className='h-full grow relative overflow-x-auto overflow-y-hidden  cursor-pointer shrink-0 flex flex-col gap-3 '
             >
                 <div
                     onClick={(e) => {
@@ -1355,7 +1355,7 @@ export function Scrubber({ containerRect }: { containerRect: RectReadOnly }) {
     const w = containerRect?.width || 0
     const h = containerRect?.height || 0
 
-    const leftPercentage = (currentTime / timelineDuration) * 100
+    const leftPercentage = Math.max(0, (currentTime / timelineDuration) * 100)
     const top = containerRect?.top || 0
     if (!containerRect) {
         return null
