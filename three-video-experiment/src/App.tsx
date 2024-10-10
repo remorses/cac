@@ -359,7 +359,7 @@ function Entities() {
         >
             <div
                 style={{
-                    height: scrubBarHeight,
+                    height: scrubBarHeight + durationRangeHeight,
                 }}
             ></div>
             {effects.map((effect, index) => {
