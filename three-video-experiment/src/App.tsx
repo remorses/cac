@@ -570,6 +570,7 @@ function DurationScrubber({
             // keep previous relative timeline scale
             const newTimelineScale =
                 (state.timelineScale * tempDuration) / state.duration
+            console.log(`new duration: ${tempDuration}`)
             return {
                 duration: tempDuration,
                 start: tempStart,
