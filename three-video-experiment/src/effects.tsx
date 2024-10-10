@@ -743,10 +743,12 @@ export async function createNewProject(mediaHandle?: FileSystemFileHandle) {
         effectControllers.colorAdjust.create({}),
     ]
 
+    const timelineDuration = 10
     const state: Partial<EditorState> = {
         effects,
         mediaHandleId,
         projectId,
+        timelineDuration
     }
     await indexDb.set(projectStateKey({ projectId }), serializeParams(state))
     return {

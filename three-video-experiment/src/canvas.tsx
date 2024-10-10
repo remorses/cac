@@ -439,12 +439,11 @@ export function createThreeCanvas({
                             video.play()
                             let duration = video.duration
 
-                            const secondsInTimeline = 7
-                            const timelineScale = Math.max(
-                                1,
-                                duration / secondsInTimeline,
-                            )
-                            useEditorState.setState({ duration, timelineScale })
+                            const timelineDuration = Math.min(20, duration)
+                            useEditorState.setState({
+                                duration,
+                                timelineDuration,
+                            })
                         })
                     } catch (error) {
                         console.error('Error loading media:', error)
