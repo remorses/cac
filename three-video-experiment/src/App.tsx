@@ -396,7 +396,9 @@ type EffectState = {
 function Timeline() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
-    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
+    const visibleTimelineSeconds = useEditorState(
+        (state) => state.visibleTimelineSeconds,
+    )
     const draggingEffect = useRef<EffectState>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
@@ -415,7 +417,10 @@ function Timeline() {
                 e.preventDefault()
                 const delta = e.deltaY > 0 ? 0.9 : 1.1
                 useEditorState.setState((state) => {
-                    return { visibleTimelineSeconds: state.visibleTimelineSeconds / delta }
+                    return {
+                        visibleTimelineSeconds:
+                            state.visibleTimelineSeconds / delta,
+                    }
                 })
             }
         }
@@ -544,7 +549,9 @@ function DurationScrubber({
 }) {
     const duration = useEditorState((state) => state.duration)
     const start = useEditorState((state) => state.start)
-    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
+    const visibleTimelineSeconds = useEditorState(
+        (state) => state.visibleTimelineSeconds,
+    )
     const effects = useEditorState((state) => state.effects)
     const setEffects = useEditorState((state) => state.setEffects)
     const isDraggingRef = useRef<{ dragging: boolean; isStart: boolean }>({
@@ -563,7 +570,6 @@ function DurationScrubber({
     const handleMouseUp = () => {
         isDraggingRef.current = { dragging: false, isStart: false }
         useEditorState.setState((state) => {
-            
             // keep previous relative timeline scale
             const newVisibleTimelineSeconds =
                 (state.visibleTimelineSeconds * tempDuration) / state.duration
@@ -605,9 +611,7 @@ function DurationScrubber({
             if (isDraggingRef.current.isStart) {
                 setTempStart(snapToTimeGrid(Math.max(0, newTime)))
             } else {
-                setTempDuration(snapToTimeGrid(
-                    Math.max(tempStart, newTime)
-                ))
+                setTempDuration(snapToTimeGrid(Math.max(tempStart, newTime)))
             }
         }
     }
@@ -622,29 +626,40 @@ function DurationScrubber({
     }, [handleMouseMove, tempDuration])
 
     const top = scrubBarHeight
-    let width = 10
+    const width = 10
+    const leftPoint = (tempStart / visibleTimelineSeconds) * containerRect.width
+    const rightPoint = (tempDuration / visibleTimelineSeconds) * containerRect.width - width
+
     return (
         <>
             <div
                 className='absolute w-2 top-0 rounded bg-gray-600 cursor-ew-resize'
                 style={{
-                    left: `${(tempStart / visibleTimelineSeconds) * containerRect.width}px`,
-
+                    left: leftPoint,
                     top,
                     width,
                     height: durationRangeHeight,
                 }}
-                onMouseDown={(e) => handleMouseDown(e, true)}
+                onMouseDown={(e) => { handleMouseDown(e, true) }}
+            />
+            <div
+                className='absolute top-0 rounded bg-gray-950 cursor-move'
+                style={{
+                    left: leftPoint + width,
+                    width: rightPoint - leftPoint - width,
+                    top,
+                    height: durationRangeHeight,
+                }}
             />
             <div
                 className='absolute w-2 top-0  rounded  bg-gray-600 cursor-ew-resize'
                 style={{
-                    left: `${(tempDuration / visibleTimelineSeconds) * containerRect.width - width}px`,
+                    left: rightPoint,
                     top,
                     width,
                     height: durationRangeHeight,
                 }}
-                onMouseDown={(e) => handleMouseDown(e, false)}
+                onMouseDown={(e) => { handleMouseDown(e, false) }}
             />
         </>
     )
@@ -664,8 +679,11 @@ function ScrubBar({
     const isPlaying = useEditorState((state) => state.isPlaying)
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const wasPlaying = useRef(isPlaying)
-    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
+    const visibleTimelineSeconds = useEditorState(
+        (state) => state.visibleTimelineSeconds,
+    )
     const timeGridSize = useEditorState((state) => state.timeGridTick)
+    const start = useEditorState((state) => state.start)
 
     const handleMouseDown = () => {
         isDraggingRef.current = true
@@ -687,7 +705,8 @@ function ScrubBar({
         }
         const x = e.clientX - containerRect.left
         const scrollLeft = containerRef.current?.scrollLeft || 0
-        const newTime = ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
+        const newTime =
+            ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
         setCurrentTime(Math.max(0, newTime))
     }
 
@@ -713,21 +732,24 @@ function ScrubBar({
             className='absolute shrink-0 bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
             style={{
                 top: 0,
-                width: `${(duration / visibleTimelineSeconds) * containerRect.width}px`,
+                left: `${(start / visibleTimelineSeconds) * containerRect.width}px`,
+                width: `${((duration - start) / visibleTimelineSeconds) * containerRect.width}px`,
                 height: scrubBarHeight + 1,
             }}
             onMouseDown={handleMouseDown}
             onClick={(e) => {
                 const scrollLeft = containerRef.current?.scrollLeft || 0
                 const x = e.clientX - containerRect.left
-                const newTime = ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
-                setCurrentTime(Math.max(0, newTime))
+                const newTime =
+                    ((x + scrollLeft) / containerRect.width) *
+                    visibleTimelineSeconds
+                setCurrentTime(Math.max(start, newTime))
             }}
         >
             {Array.from({
-                length: Math.ceil(duration / step) + 1,
+                length: Math.ceil((duration - start) / step) + 1,
             }).map((_, index) => {
-                const time = index * step
+                const time = start + index * step
                 const isSecond = time % 1 < 0.01
 
                 return (
@@ -735,7 +757,7 @@ function ScrubBar({
                         key={index}
                         className='absolute top-0 bottom-0 gap-1 flex flex-row'
                         style={{
-                            left: `${(time / duration) * 100}%`,
+                            left: `${((time - start) / (duration - start)) * 100}%`,
                         }}
                     >
                         {!isSecond && (
@@ -743,7 +765,7 @@ function ScrubBar({
                                 className={classNames(
                                     'grow border-r-2 self-center',
                                     isSecond && 'opacity-70',
-                                    !isSecond && 'opacity-20'
+                                    !isSecond && 'opacity-20',
                                 )}
                                 style={{
                                     height: isSecond ? '100%' : '30%',
@@ -755,7 +777,7 @@ function ScrubBar({
                                 className={classNames(
                                     'text-xs h-full content-center text-gray-500 font-mono',
                                     index !== 0 && '-translate-x-1/2',
-                                    index === 0 && 'pl-1'
+                                    index === 0 && 'pl-1',
                                 )}
                             >
                                 {time.toFixed(1)}s
@@ -782,10 +804,15 @@ function Clip({
 }) {
     let start = 0
     const duration = useEditorState((state) => state.duration)
-    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
+    const visibleTimelineSeconds = useEditorState(
+        (state) => state.visibleTimelineSeconds,
+    )
     let end = duration
     const startPercent = (start / visibleTimelineSeconds) * 100
-    const widthPercent = Math.max(0, ((end - start) / visibleTimelineSeconds) * 100)
+    const widthPercent = Math.max(
+        0,
+        ((end - start) / visibleTimelineSeconds) * 100,
+    )
 
     let top = (clipHeight + clipSpacing) * index + durationRangeHeight
     const containerRef = useRef<HTMLDivElement>(null)
@@ -949,7 +976,7 @@ function KeyframeComponent({
 }) {
     const halfWidth = 12
     const duration = useEditorState((state) => state.duration)
-    
+
     let start = 0
     let end = duration
     const clipDuration = end - start
