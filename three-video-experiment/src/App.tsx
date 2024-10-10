@@ -675,7 +675,6 @@ function ScrubBar({
     const wasPlaying = useRef(isPlaying)
     const timelineDuration = useEditorState((state) => state.timelineDuration)
     const timeGridSize = useEditorState((state) => state.timeGridTick)
-    const start = useEditorState((state) => state.start)
 
     const handleMouseDown = () => {
         isDraggingRef.current = true
@@ -718,15 +717,13 @@ function ScrubBar({
     let step =
         Math.ceil(timelineDuration / tickCount / timeGridSize) * timeGridSize
 
-    const top = containerRect?.top || 0
-
     return (
         <div
             className='absolute shrink-0 bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
             style={{
                 top: 0,
-                left: `${(start / timelineDuration) * containerRect.width}px`,
-                width: `${((duration - start) / timelineDuration) * containerRect.width}px`,
+                left: 0,
+                width: '100%',
                 height: scrubBarHeight + 1,
             }}
             onMouseDown={handleMouseDown}
@@ -735,13 +732,13 @@ function ScrubBar({
                 const x = e.clientX - containerRect.left
                 const newTime =
                     ((x + scrollLeft) / containerRect.width) * timelineDuration
-                setCurrentTime(Math.max(start, newTime))
+                setCurrentTime(Math.max(0, newTime))
             }}
         >
             {Array.from({
-                length: Math.ceil((duration - start) / step) + 1,
+                length: Math.ceil(timelineDuration / step) + 1,
             }).map((_, index) => {
-                const time = start + index * step
+                const time = index * step
                 const isSecond = time % 1 < 0.01
 
                 return (
@@ -749,7 +746,7 @@ function ScrubBar({
                         key={index}
                         className='absolute top-0 bottom-0 gap-1 flex flex-row'
                         style={{
-                            left: `${((time - start) / (duration - start)) * 100}%`,
+                            left: `${(time / timelineDuration) * 100}%`,
                         }}
                     >
                         {!isSecond && (
