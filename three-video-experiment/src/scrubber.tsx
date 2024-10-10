@@ -21,15 +21,13 @@ export function ScrubberIcon() {
 }
 export function Scrubber({ containerRect }: { containerRect: RectReadOnly }) {
     const currentTime = useThrottledCurrentTime()
-    const visibleDuration = useEditorState(
-        (state) => state.duration / state.timelineScale,
-    )
-    const start = useEditorState((state) => state.start / state.timelineScale)
+    const timelineDuration = useEditorState((state) => state.timelineDuration)
+    const start = useEditorState((state) => state.start)
 
     const w = containerRect?.width || 0
     const h = containerRect?.height || 0
 
-    const leftPercentage = (currentTime / visibleDuration) * 100
+    const leftPercentage = (currentTime / timelineDuration) * 100
     const top = containerRect?.top || 0
     if (!containerRect) {
         return null

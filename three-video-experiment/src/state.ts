@@ -18,8 +18,8 @@ export interface EditorState {
     effects: Effect[]
     selectedEffectIds: string[]
     selectedKeyframeIds: string[]
-    visibleTimelineSeconds: number
-    // timelineDuration: number
+    // visibleTimelineSeconds: number
+    timelineDuration: number
     setMediaHandleId: (mediaHandleId: string) => void
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
