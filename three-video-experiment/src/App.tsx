@@ -643,13 +643,14 @@ function DurationScrubber({
                 onMouseDown={(e) => { handleMouseDown(e, true) }}
             />
             <div
-                className='absolute top-0 rounded bg-gray-950 cursor-move'
+                className='absolute flex flex-col text-opacity-70 items-center justify-center top-0 rounded bg-gray-950 cursor-move'
                 style={{
                     left: leftPoint + width,
                     width: rightPoint - leftPoint - width,
                     top,
                     height: durationRangeHeight,
                 }}
+                children='Start & End'
             />
             <div
                 className='absolute w-2 top-0  rounded  bg-gray-600 cursor-ew-resize'
