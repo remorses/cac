@@ -34,7 +34,7 @@ import { deserializeParams, serializeParams, threeCanvas } from './canvas'
 import { exportVideo } from './export'
 import { getHandleForMediaId, getMediaHandleId, pickMediaHandle } from './files'
 import { PauseIcon, PlayIcon } from './icons'
-import { Scrubber } from './scrubber'
+
 import {
     generateId,
     preparePane,
@@ -1336,4 +1336,55 @@ export function KeyframeIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const distancePoint = (p1, p2) => {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
+}
+
+const scrubberHalfWidth = 16
+
+export function ScrubberIcon() {
+    return (
+        <svg xmlns='http://www.w3.org/2000/svg' width='10' height='20'>
+            <path
+                d='M 0 2.25 C 0 1.145 0.895 0.25 2 0.25 L 9 0.25 C 10.105 0.25 11 1.145 11 2.25 L 11 14.997 C 11 15.721 10.609 16.388 9.977 16.742 L 5.5 19.25 L 1.023 16.742 C 0.391 16.388 0 15.721 0 14.997 Z'
+                fill='currentColor'
+            ></path>
+        </svg>
+    )
+}
+export function Scrubber({ containerRect }: { containerRect: RectReadOnly }) {
+    const currentTime = useThrottledCurrentTime()
+    const timelineDuration = useEditorState((state) => state.timelineDuration)
+    const start = useEditorState((state) => state.start)
+
+    const w = containerRect?.width || 0
+    const h = containerRect?.height || 0
+
+    const leftPercentage = (currentTime / timelineDuration) * 100
+    const top = containerRect?.top || 0
+    if (!containerRect) {
+        return null
+    }
+
+    return (
+        <>
+            <div
+                className='absolute pointer-events-none'
+                style={{
+                    left: `calc(${leftPercentage}% - ${scrubberHalfWidth}px)`,
+                    top: `0px`,
+                    bottom: 0,
+                    width: scrubberHalfWidth * 2,
+                }}
+            >
+                <div className='relative w-full flex flex-col items-center'>
+                    <ScrubberIcon />
+                </div>
+                <div
+                    className='w-[1px] bg-white absolute top-0 h-full left-0 pointer-events-none'
+                    style={{
+                        left: scrubberHalfWidth,
+                    }}
+                />
+            </div>
+        </>
+    )
 }
