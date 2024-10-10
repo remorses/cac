@@ -396,13 +396,11 @@ type EffectState = {
 function Timeline() {
     const effects = useEditorState((state) => state.effects)
     const duration = useEditorState((state) => state.duration)
-    const timelineScale = useEditorState((state) => state.timelineScale)
+    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
     const draggingEffect = useRef<EffectState>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const setIsPlaying = useEditorState((state) => state.setIsPlaying)
     const isPlaying = useEditorState((state) => state.isPlaying)
-
-    const visibleDuration = duration / timelineScale
 
     const allEffects = bfs(effects)
     const setSelectedEffectIds = useEditorState(
@@ -417,7 +415,7 @@ function Timeline() {
                 e.preventDefault()
                 const delta = e.deltaY > 0 ? 0.9 : 1.1
                 useEditorState.setState((state) => {
-                    return { timelineScale: state.timelineScale * delta }
+                    return { visibleTimelineSeconds: state.visibleTimelineSeconds / delta }
                 })
             }
         }
@@ -473,7 +471,7 @@ function Timeline() {
         const newTime =
             ((e.clientX + scrollLeft - containerRect.left) /
                 containerRect.width) *
-            visibleDuration
+            visibleTimelineSeconds
         useEditorState.setState({
             currentTime: Math.max(0, newTime),
         })
@@ -501,7 +499,7 @@ function Timeline() {
                         setSelectedKeyframeIds([], [])
                     }}
                     style={{
-                        width: `${(duration / visibleDuration) * 100}%`,
+                        width: `${(duration / visibleTimelineSeconds) * 100}%`,
                     }}
                     className='bg-gray-900 inset-0 absolute'
                 ></div>
@@ -546,10 +544,9 @@ function DurationScrubber({
 }) {
     const duration = useEditorState((state) => state.duration)
     const start = useEditorState((state) => state.start)
-    const timelineScale = useEditorState((state) => state.timelineScale)
+    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
     const effects = useEditorState((state) => state.effects)
     const setEffects = useEditorState((state) => state.setEffects)
-    const visibleDuration = duration / timelineScale
     const isDraggingRef = useRef<{ dragging: boolean; isStart: boolean }>({
         dragging: false,
         isStart: false,
@@ -568,13 +565,13 @@ function DurationScrubber({
         useEditorState.setState((state) => {
             
             // keep previous relative timeline scale
-            const newTimelineScale =
-                (state.timelineScale * tempDuration) / state.duration
+            const newVisibleTimelineSeconds =
+                (state.visibleTimelineSeconds * tempDuration) / state.duration
             console.log(`new duration: ${tempDuration}`)
             return {
                 duration: tempDuration,
                 start: tempStart,
-                timelineScale: newTimelineScale,
+                // visibleTimelineSeconds: newVisibleTimelineSeconds,
             }
         })
 
@@ -604,7 +601,7 @@ function DurationScrubber({
         ) {
             const scrollLeft = containerRef.current.scrollLeft
             const x = e.clientX - containerRect.left + scrollLeft
-            const newTime = (x / containerRect.width) * visibleDuration
+            const newTime = (x / containerRect.width) * visibleTimelineSeconds
             if (isDraggingRef.current.isStart) {
                 setTempStart(snapToTimeGrid(Math.max(0, newTime)))
             } else {
@@ -631,7 +628,7 @@ function DurationScrubber({
             <div
                 className='absolute w-2 top-0 rounded bg-gray-600 cursor-ew-resize'
                 style={{
-                    left: `${(tempStart / visibleDuration) * containerRect.width}px`,
+                    left: `${(tempStart / visibleTimelineSeconds) * containerRect.width}px`,
 
                     top,
                     width,
@@ -642,7 +639,7 @@ function DurationScrubber({
             <div
                 className='absolute w-2 top-0  rounded  bg-gray-600 cursor-ew-resize'
                 style={{
-                    left: `${(tempDuration / visibleDuration) * containerRect.width - width}px`,
+                    left: `${(tempDuration / visibleTimelineSeconds) * containerRect.width - width}px`,
                     top,
                     width,
                     height: durationRangeHeight,
@@ -668,10 +665,8 @@ function ScrubBar({
     const isPlaying = useEditorState((state) => state.isPlaying)
     const setCurrentTime = useEditorState((state) => state.setCurrentTime)
     const wasPlaying = useRef(isPlaying)
-    const timelineScale = useEditorState((state) => state.timelineScale)
+    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
     const timeGridSize = useEditorState((state) => state.timeGridTick)
-
-    const visibleDuration = duration / timelineScale
 
     const handleMouseDown = () => {
         isDraggingRef.current = true
@@ -690,7 +685,7 @@ function ScrubBar({
             const x = e.clientX - containerRect.left
             const scrollLeft = containerRef.current?.scrollLeft || 0
             const newTime =
-                ((x + scrollLeft) / containerRect.width) * visibleDuration
+                ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
             setCurrentTime(Math.max(0, newTime))
         }
     }
@@ -702,14 +697,14 @@ function ScrubBar({
             document.removeEventListener('mouseup', handleMouseUp)
             document.removeEventListener('mousemove', handleMouseMove as any)
         }
-    }, [containerRect, visibleDuration])
+    }, [containerRect, visibleTimelineSeconds])
 
     const tickCount = Math.min(
         50,
-        Math.max(2, Math.floor(visibleDuration / timeGridSize)),
+        Math.max(2, Math.floor(visibleTimelineSeconds / timeGridSize)),
     )
     let step =
-        Math.ceil(visibleDuration / tickCount / timeGridSize) * timeGridSize
+        Math.ceil(visibleTimelineSeconds / tickCount / timeGridSize) * timeGridSize
 
     // const containerRect = parentRef.current?.getBoundingClientRect()
 
@@ -720,7 +715,7 @@ function ScrubBar({
             className='absolute shrink-0 bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
             style={{
                 top: 0,
-                width: `${(duration / visibleDuration) * containerRect.width}px`,
+                width: `${(duration / visibleTimelineSeconds) * containerRect.width}px`,
                 height: scrubBarHeight + 1,
             }}
             onMouseDown={handleMouseDown}
@@ -728,14 +723,14 @@ function ScrubBar({
                 const scrollLeft = containerRef.current?.scrollLeft || 0
                 const x = e.clientX - containerRect.left
                 const newTime =
-                    ((x + scrollLeft) / containerRect.width) * visibleDuration
+                    ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
                 setCurrentTime(Math.max(0, newTime))
             }}
         >
             {Array.from({
                 length:
                     Math.ceil(
-                        visibleDuration / (step / Math.max(timelineScale, 1)),
+                        visibleTimelineSeconds / (step / Math.max(visibleTimelineSeconds, 1)),
                     ) + 1,
             }).map((_, index) => {
                 const time = index * step
@@ -746,7 +741,7 @@ function ScrubBar({
                         key={index}
                         className='absolute top-0 bottom-0 gap-1 flex flex-row'
                         style={{
-                            left: `${(time / visibleDuration) * 100}%`,
+                            left: `${(time / visibleTimelineSeconds) * 100}%`,
                         }}
                     >
                         {!isSecond && (
@@ -791,11 +786,10 @@ function Clip({
 }) {
     let start = 0
     const duration = useEditorState((state) => state.duration)
-    const timelineScale = useEditorState((state) => state.timelineScale)
+    const visibleTimelineSeconds = useEditorState((state) => state.visibleTimelineSeconds)
     let end = duration
-    const visibleDuration = duration / timelineScale
-    const startPercent = (start / visibleDuration) * 100
-    const widthPercent = Math.max(0, ((end - start) / visibleDuration) * 100)
+    const startPercent = (start / visibleTimelineSeconds) * 100
+    const widthPercent = Math.max(0, ((end - start) / visibleTimelineSeconds) * 100)
 
     let top = (clipHeight + clipSpacing) * index + durationRangeHeight
     const containerRef = useRef<HTMLDivElement>(null)
@@ -959,7 +953,7 @@ function KeyframeComponent({
 }) {
     const halfWidth = 12
     const duration = useEditorState((state) => state.duration)
-    const timelineScale = useEditorState((state) => state.timelineScale)
+    
     let start = 0
     let end = duration
     const clipDuration = end - start

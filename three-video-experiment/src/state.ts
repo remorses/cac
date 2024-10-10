@@ -18,7 +18,8 @@ export interface EditorState {
     effects: Effect[]
     selectedEffectIds: string[]
     selectedKeyframeIds: string[]
-    timelineScale: number
+    visibleTimelineSeconds: number
+    // timelineDuration: number
     setMediaHandleId: (mediaHandleId: string) => void
     setCurrentTime: (time: number) => void
     setIsPlaying: (isPlaying: boolean) => void
@@ -188,9 +189,10 @@ export const useEditorState = create<EditorState>()((
             set({ mediaHandleId: id })
         },
         currentTime: 0,
+        timelineDuration: 100,
         timeGridTick: (1 / 30) * 3,
         outputSize: { width: 1920, height: 1080 },
-        timelineScale: 1,
+        visibleTimelineSeconds: 10,
         isLooping: true,
         isPlaying: false,
         effects: [],
