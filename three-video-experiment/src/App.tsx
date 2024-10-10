@@ -505,10 +505,14 @@ function Timeline() {
                     }}
                     className='bg-gray-900 inset-0 absolute'
                 ></div>
-                {/* <DurationScrubber
+                <ScrubBar
+                    containerRect={containerRect}
+                    containerRef={containerRef}
+                />
+                <DurationScrubber
                     containerRef={containerRef}
                     containerRect={containerRect}
-                /> */}
+                />
                 <div className='relative overflow-x-visible '>
                     {allEffects.map(({ node: effect, parent }, index) => {
                         return (
@@ -524,16 +528,14 @@ function Timeline() {
                 {/* <pre className='shrink-0'>
                     {JSON.stringify(effects, null, 2)}
                 </pre> */}
-                <ScrubBar
-                    containerRef={containerRef}
-                    containerRect={containerRect}
-                />
 
                 <Scrubber containerRect={containerRect} />
             </div>
         </div>
     )
 }
+
+const durationRangeHeight = 26
 
 function DurationScrubber({
     containerRect,
@@ -548,33 +550,29 @@ function DurationScrubber({
     const effects = useEditorState((state) => state.effects)
     const setEffects = useEditorState((state) => state.setEffects)
     const visibleDuration = duration / timelineScale
-
-    const [isDragging, setIsDragging] = useState<{
-        dragging: boolean
-        isStart: boolean
-    }>({ dragging: false, isStart: false })
+    const isDraggingRef = useRef<{ dragging: boolean; isStart: boolean }>({
+        dragging: false,
+        isStart: false,
+    })
     const [tempDuration, setTempDuration] = useState(duration)
     const [tempStart, setTempStart] = useState(start)
-    const lastTempDuration = useLatestValue(tempDuration)
-    const lastTempStart = useLatestValue(tempStart)
 
     const handleMouseDown = (e: React.MouseEvent, isStart: boolean) => {
         e.preventDefault()
         e.stopPropagation()
-        setIsDragging({ dragging: true, isStart })
+        isDraggingRef.current = { dragging: true, isStart }
     }
 
     const handleMouseUp = () => {
-        setIsDragging({ dragging: false, isStart: false })
+        isDraggingRef.current = { dragging: false, isStart: false }
         useEditorState.setState((state) => {
-            const newDuration = lastTempDuration.current
-            const newStart = lastTempStart.current
+            
             // keep previous relative timeline scale
             const newTimelineScale =
-                (state.timelineScale * newDuration) / state.duration
+                (state.timelineScale * tempDuration) / state.duration
             return {
-                duration: newDuration,
-                start: newStart,
+                duration: tempDuration,
+                start: tempStart,
                 timelineScale: newTimelineScale,
             }
         })
@@ -582,62 +580,71 @@ function DurationScrubber({
         const updatedEffects = effects.map((effect) => ({
             ...effect,
             keyframes: effect.keyframes.map((keyframe) => {
-                if (isDragging.isStart && keyframe.time === start) {
-                    return { ...keyframe, time: lastTempStart.current }
+                if (isDraggingRef.current.isStart && keyframe.time === start) {
+                    return { ...keyframe, time: tempStart }
                 }
-                if (!isDragging.isStart && keyframe.time === duration) {
-                    return { ...keyframe, time: lastTempDuration.current }
+                if (
+                    !isDraggingRef.current.isStart &&
+                    keyframe.time === duration
+                ) {
+                    return { ...keyframe, time: tempDuration }
                 }
                 return keyframe
             }),
         }))
         setEffects(updatedEffects)
     }
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDragging.dragging && containerRect && containerRef.current) {
+
+    const handleMouseMove = (e: MouseEvent) => {
+        if (
+            isDraggingRef.current.dragging &&
+            containerRect &&
+            containerRef.current
+        ) {
             const scrollLeft = containerRef.current.scrollLeft
             const x = e.clientX - containerRect.left + scrollLeft
             const newTime = (x / containerRect.width) * visibleDuration
-            if (isDragging.isStart) {
+            if (isDraggingRef.current.isStart) {
                 setTempStart(snapToTimeGrid(Math.max(0, newTime)))
             } else {
-                setTempDuration(snapToTimeGrid(Math.max(tempStart, newTime)))
+                setTempDuration(snapToTimeGrid(
+                    Math.max(tempStart, newTime)
+                ))
             }
         }
     }
 
     useEffect(() => {
         document.addEventListener('mouseup', handleMouseUp)
-        document.addEventListener('mousemove', handleMouseMove as any)
+        document.addEventListener('mousemove', handleMouseMove)
         return () => {
             document.removeEventListener('mouseup', handleMouseUp)
-            document.removeEventListener('mousemove', handleMouseMove as any)
+            document.removeEventListener('mousemove', handleMouseMove)
         }
-    }, [isDragging, visibleDuration])
+    }, [handleMouseMove, tempDuration])
 
     const top = scrubBarHeight
+    let width = 10
     return (
         <>
             <div
-                className='absolute top-0 pointer-events-none bottom-0 left-0 bg-gray-950'
+                className='absolute w-2 top-0 rounded bg-gray-600 cursor-ew-resize'
                 style={{
-                    width: `${(tempStart / visibleDuration) * 100}%`,
+                    left: `${(tempStart / visibleDuration) * containerRect.width}px`,
+
                     top,
-                }}
-            />
-            <div
-                className='absolute w-1 top-0 bottom-0 left-0 bg-opacity-30 border-l border-gray-800 cursor-ew-resize'
-                style={{
-                    left: `${(tempStart / visibleDuration) * 100}%`,
-                    top,
+                    width,
+                    height: durationRangeHeight,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, true)}
             />
             <div
-                className='absolute top-0 bottom-0 right-0  border-l border-gray-800 bg-gray-950 cursor-ew-resize'
+                className='absolute w-2 top-0  rounded  bg-gray-600 cursor-ew-resize'
                 style={{
-                    left: `${(tempDuration / visibleDuration) * 100}%`,
+                    left: `${(tempDuration / visibleDuration) * containerRect.width - width}px`,
                     top,
+                    width,
+                    height: durationRangeHeight,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, false)}
             />
@@ -712,7 +719,7 @@ function ScrubBar({
             className='absolute shrink-0 bg-gray-800 rounded-md h-full select-none cursor-pointer isolate'
             style={{
                 top: 0,
-                width: `${(duration / visibleDuration) * 100}%`,
+                width: `${(duration / visibleDuration) * containerRect.width}px`,
                 height: scrubBarHeight + 1,
             }}
             onMouseDown={handleMouseDown}
@@ -789,7 +796,7 @@ function Clip({
     const startPercent = (start / visibleDuration) * 100
     const widthPercent = Math.max(0, ((end - start) / visibleDuration) * 100)
 
-    let top = (clipHeight + clipSpacing) * index
+    let top = (clipHeight + clipSpacing) * index + durationRangeHeight
     const containerRef = useRef<HTMLDivElement>(null)
 
     const selectedEffectIds = useEditorState((state) => state.selectedEffectIds)

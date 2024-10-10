@@ -616,46 +616,6 @@ export function deserializeParams(params: any) {
     return res
 }
 
-const vignetteShader = {
-    uniforms: {
-        tDiffuse: { value: null },
-        rotation: { value: 0 },
-        intensity: { value: 0.5 },
-        color: { value: new THREE.Color(0x000000) }, // Added color parameter
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float rotation;
-      uniform float intensity;
-      uniform vec3 color; // Added color uniform
-      varying vec2 vUv;
-      
-      void main() {
-        vec4 texel = texture2D(tDiffuse, vUv);
-        
-        // Rotate UV coordinates
-        vec2 rotatedUv = vUv - 0.5;
-        float s = sin(rotation);
-        float c = cos(rotation);
-        rotatedUv = vec2(rotatedUv.x * c - rotatedUv.y * s, rotatedUv.x * s + rotatedUv.y * c);
-        rotatedUv += 0.5;
-        
-        // Calculate vignette
-        float vignette = smoothstep(1.1, 0.4, rotatedUv.x);
-        vignette = pow(vignette, intensity);
-        gl_FragColor = vec4(mix(texel.rgb, color, 1.0 - vignette), texel.a);
-        
-      }
-    `,
-}
-
 const filmGrainShader = {
     uniforms: {
         tDiffuse: { value: null },
@@ -815,44 +775,6 @@ function _applyEffects(effects: Effect[]) {
         }
     }
 }
-
-let rectangleMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-        color: { value: new THREE.Color(0x000000) },
-        vignetteStrength: { value: 6 },
-        squircleN: { value: 100 }, // Controls the squircle shape
-    },
-    vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-    fragmentShader: `
-        uniform vec3 color;
-        uniform float vignetteStrength;
-        uniform float squircleN;
-        varying vec2 vUv;
-
-        float squircle(vec2 uv, float n) {
-            uv = abs(uv);
-            float r = pow(pow(uv.x, n) + pow(uv.y, n), 1.0 / n);
-            return r;
-        }
-
-        void main() {
-            vec2 uv = vUv; // Transform UV to [-1, 1] range
-            float dist = squircle(uv, squircleN);
-            float vignette = smoothstep(0.0, 1.0, dist);
-            float opacity = pow(vignette, vignetteStrength);
-            
-            gl_FragColor = vec4(color, opacity);
-        }
-    `,
-    transparent: true,
-    side: THREE.DoubleSide,
-})
 
 export const threeCanvas = createThreeCanvas()
 
