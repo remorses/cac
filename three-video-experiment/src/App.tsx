@@ -651,7 +651,6 @@ function DurationScrubber({
 }
 
 const scrubBarHeight = 30
-
 function ScrubBar({
     containerRect,
     containerRef,
@@ -675,19 +674,21 @@ function ScrubBar({
     }
 
     const handleMouseUp = () => {
-        if (!isDraggingRef.current) return
+        if (!isDraggingRef.current) {
+            return
+        }
         isDraggingRef.current = false
         setIsPlaying(wasPlaying.current)
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDraggingRef.current && containerRect) {
-            const x = e.clientX - containerRect.left
-            const scrollLeft = containerRef.current?.scrollLeft || 0
-            const newTime =
-                ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
-            setCurrentTime(Math.max(0, newTime))
+        if (!isDraggingRef.current || !containerRect) {
+            return
         }
+        const x = e.clientX - containerRect.left
+        const scrollLeft = containerRef.current?.scrollLeft || 0
+        const newTime = ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
+        setCurrentTime(Math.max(0, newTime))
     }
 
     useEffect(() => {
@@ -701,12 +702,9 @@ function ScrubBar({
 
     const tickCount = Math.min(
         50,
-        Math.max(2, Math.floor(visibleTimelineSeconds / timeGridSize)),
+        Math.max(2, Math.floor(duration / timeGridSize)),
     )
-    let step =
-        Math.ceil(visibleTimelineSeconds / tickCount / timeGridSize) * timeGridSize
-
-    // const containerRect = parentRef.current?.getBoundingClientRect()
+    let step = Math.ceil(duration / tickCount / timeGridSize) * timeGridSize
 
     const top = containerRect?.top || 0
 
@@ -722,16 +720,12 @@ function ScrubBar({
             onClick={(e) => {
                 const scrollLeft = containerRef.current?.scrollLeft || 0
                 const x = e.clientX - containerRect.left
-                const newTime =
-                    ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
+                const newTime = ((x + scrollLeft) / containerRect.width) * visibleTimelineSeconds
                 setCurrentTime(Math.max(0, newTime))
             }}
         >
             {Array.from({
-                length:
-                    Math.ceil(
-                        visibleTimelineSeconds / (step / Math.max(visibleTimelineSeconds, 1)),
-                    ) + 1,
+                length: Math.ceil(duration / step) + 1,
             }).map((_, index) => {
                 const time = index * step
                 const isSecond = time % 1 < 0.01
@@ -741,14 +735,16 @@ function ScrubBar({
                         key={index}
                         className='absolute top-0 bottom-0 gap-1 flex flex-row'
                         style={{
-                            left: `${(time / visibleTimelineSeconds) * 100}%`,
+                            left: `${(time / duration) * 100}%`,
                         }}
                     >
                         {!isSecond && (
                             <div
-                                className={`grow border-r-2 self-center ${
-                                    isSecond ? 'opacity-70' : 'opacity-20'
-                                }`}
+                                className={classNames(
+                                    'grow border-r-2 self-center',
+                                    isSecond && 'opacity-70',
+                                    !isSecond && 'opacity-20'
+                                )}
                                 style={{
                                     height: isSecond ? '100%' : '30%',
                                 }}
@@ -759,7 +755,7 @@ function ScrubBar({
                                 className={classNames(
                                     'text-xs h-full content-center text-gray-500 font-mono',
                                     index !== 0 && '-translate-x-1/2',
-                                    index == 0 && 'pl-1',
+                                    index === 0 && 'pl-1'
                                 )}
                             >
                                 {time.toFixed(1)}s
