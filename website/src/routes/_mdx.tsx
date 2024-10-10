@@ -13,7 +13,7 @@ export default function Page() {
                     style={{
                         contentVisibility: 'auto',
                     }}
-                    className='prose dark:prose-invert prose-quoteless items-start min-w-0 w-full max-w-[800px] prose-img:max-w-[500px] prose-img:mx-auto'
+                    className='prose dark:prose-invert prose-quoteless items-start min-w-0 w-full max-w-[800px] lg:prose-img:max-w-[500px] prose-img:mx-auto'
                 >
                     <Outlet />
                 </div>
