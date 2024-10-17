@@ -761,7 +761,7 @@ function _applyEffects(effects: Effect[]) {
                 _applyEffects(effect.children)
             } else {
                 const controller = effectControllers[effect.type]
-                if (controller) {
+                if (controller && params) {
                     // console.log('applying effect', effect.type, params)
                     controller.apply(effect, params)
                 } else {

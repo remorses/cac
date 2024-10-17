@@ -35,16 +35,11 @@ export const supabaseRef = env
     .replace('https://', '')
 
 export const framerUrl = 'https://framer.com?via=xmorse'
-export const framerPluginUrl = new URL(
-    '/framer-plugin/migrate',
-    env.PUBLIC_URL,
-).toString()
+
 
 // TODO use the framer marketplace url
-export const installFramerPluginUrl = new URL(
-    '/framer-plugin/migrate',
-    env.PUBLIC_URL,
-).toString()
+export const installFramerPluginUrl =
+    'https://www.framer.com/marketplace/plugins/migrate--atog5qz8imo0pji1b10z8alr7/'
 
 export const companyName = 'Unframer'
 export const domain = env.PUBLIC_URL!.replace('https://', '').replace('/', '')

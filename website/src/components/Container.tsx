@@ -1,12 +1,12 @@
 import NavFramerComponent from '../framer/nav'
-import { framerPluginUrl, framerUrl } from '../lib/env'
+import { installFramerPluginUrl } from '../lib/env'
 import { Footer } from '../routes/home'
 
 export function PageContainer({ children }) {
     return (
         <div className='pt-2 w-full grow flex flex-col h-full'>
             <NavFramerComponent.Responsive
-                framerPlugin={framerPluginUrl}
+                framerPlugin={installFramerPluginUrl}
                 ctaVariant=' Login button'
                 className='!w-full'
                 
