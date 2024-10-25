@@ -18,30 +18,6 @@ export function splitStringButKeepChar(str: string, char: string) {
     return result
 }
 
-export async function* yieldMaxEveryMs<T>({
-    ms,
-    stream,
-}: {
-    ms: number
-    stream: AsyncIterable<T>
-}): AsyncIterable<T> {
-    let start = Date.now()
-    let lastObj: T | undefined
-    for await (let obj of stream) {
-        let now = Date.now()
-        if (now - start > ms) {
-            yield obj
-            start = now
-            lastObj = undefined
-        } else {
-            lastObj = obj
-        }
-    }
-    if (lastObj !== undefined) {
-        yield lastObj
-    }
-}
-
 export async function* yieldObjectStream<T>({
     onToken,
     onError,
