@@ -50,6 +50,10 @@ export function rewriteXmlContent({
     parser.write(xml)
     parser.end()
 
-    const serialized = domSerializer(handler.dom, { xmlMode: true })
+    const serialized = domSerializer(handler.dom, {
+        xmlMode: true,
+        encodeEntities: false,
+        decodeEntities: false,
+    })
     return serialized
 }
