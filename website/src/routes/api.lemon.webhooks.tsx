@@ -1,4 +1,7 @@
-import { whatwgWebhooksHandler } from 'lemonsqueezy-webhooks'
+import {
+    DiscriminatedWebhookPayload,
+    whatwgWebhooksHandler,
+} from 'lemonsqueezy-webhooks'
 import { prisma, Prisma } from 'db/prisma'
 import { env, plansConfig } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
@@ -16,6 +19,20 @@ export const loader = () => {
     })
 }
 
+function getUserEmail(payload: DiscriminatedWebhookPayload) {
+    switch (payload.event_name) {
+        case 'order_created':
+            return payload.data.attributes.user_email
+        case 'subscription_created':
+        case 'subscription_updated':
+            return payload.data.attributes.user_email
+        case 'subscription_cancelled':
+            return payload.data.attributes.user_email
+        default:
+            return ''
+    }
+}
+
 export const action = ({ request }: ActionFunctionArgs) => {
     return whatwgWebhooksHandler({
         async onData(payload) {
@@ -30,8 +47,27 @@ export const action = ({ request }: ActionFunctionArgs) => {
                     ),
                     'lemon squeezy webhook',
                 )
-                // orgId = '1'
-                return
+                const email = getUserEmail(payload)
+                if (!email) {
+                    return // no matching user found, exit early
+                }
+                const userWithEmail = await prisma.users.findFirst({
+                    where: {
+                        email,
+                    },
+                    include: {
+                        orgs: true,
+                    },
+                })
+
+                if (userWithEmail?.orgs?.[0]?.orgId) {
+                    console.log(
+                        `Found user with email ${email} and orgId ${userWithEmail.orgs[0].orgId}, using that`,
+                    )
+                    orgId = userWithEmail.orgs[0].orgId
+                } else {
+                    return // no matching user found, exit early
+                }
             }
             let org = await prisma.org.findFirst({
                 where: {
