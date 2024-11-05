@@ -59,11 +59,8 @@ function permutations(chars: string, length: number) {
 }
 const all2Permutations = permutations(hintChars, 2)
 
-/**
- * Finds hints
- * @param {string} hintType - the type of elements to find (currently unused)
- */
-export function findHints(hintType = 'input, textarea, select') {
+
+export function findHints(hintType = 'input,textarea,select') {
     // on Firefox, getComputedStyle() may return null for conditions I don't fully understand
     // try-catch block prevents link hints generation from breaking.
     // https://bugzilla.mozilla.org/show_bug.cgi?id=548397
@@ -75,6 +72,7 @@ export function findHints(hintType = 'input, textarea, select') {
         // 2. find hintable elements
 
         let index = 0
+        console.log('found possible elements on the page:', allElements.length)
         let hints = [...allElements]
             .map((element: Element) => {
                 if (!isClickable(element)) {
@@ -83,6 +81,7 @@ export function findHints(hintType = 'input, textarea, select') {
                 index += 1
                 const rect = firstVisibleRect(element)
                 if (!rect) {
+                    console.log('no rect found for', element)
                     return
                 }
                 const label = all2Permutations[index - 1]
@@ -99,6 +98,7 @@ export function findHints(hintType = 'input, textarea, select') {
                         ?.backgroundColor,
                     computedStyle,
                 }
+                console.log('hint', hint)
                 return hint
             })
             .filter(isTruthy)

@@ -330,20 +330,20 @@ async function action({ request, context }: LoaderFunctionArgs) {
             })
             .map(async (file) => {
                 console.log('file type', file.type)
-                if (file.type.startsWith('application/pdf')) {
-                    console.log('converting pdf to image')
-                    const arrayBuffer = await file.arrayBuffer()
-                    const res = await renderPageAsImage(arrayBuffer, 0)
-                    const type = 'image/png'
-                    const dataUrl = await getFileDataUrl(
-                        new File([res], file.name, { type }),
-                    )
-                    return {
-                        name: file.name,
-                        type,
-                        dataUrl,
-                    }
-                }
+                // if (file.type.startsWith('application/pdf')) {
+                //     console.log('converting pdf to image')
+                //     const arrayBuffer = await file.arrayBuffer()
+                //     const res = await renderPageAsImage(arrayBuffer, 0)
+                //     const type = 'image/png'
+                //     const dataUrl = await getFileDataUrl(
+                //         new File([res], file.name, { type }),
+                //     )
+                //     return {
+                //         name: file.name,
+                //         type,
+                //         dataUrl,
+                //     }
+                // }
                 const dataUrl = await getFileDataUrl(file)
                 return {
                     name: file.name,

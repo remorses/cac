@@ -89,14 +89,14 @@ export const extractedFormInputSchema = z.object({
 //     value: z.string(),
 // })
 
-let model = anthropic('claude-3-5-sonnet-20240620', {
+let model = anthropic('claude-3-5-sonnet-latest', {
     // cacheControl: true,
 })
 
-model = openai('gpt-4o-2024-08-06', {
-    structuredOutputs: true,
-    // cacheControl: true,
-})
+// model = openai('gpt-4o-2024-08-06', {
+//     structuredOutputs: true,
+//     // cacheControl: true,
+// })
 
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
@@ -208,33 +208,41 @@ chrome.runtime.onMessage.addListener(
                             )
                         }
                         console.log('screenshots', screenshots)
-                        const initialMessages: CoreMessage[] = []
-                        if (screenshots.length) {
-                            initialMessages.push({
-                                role: 'user',
-                                content: [
-                                    ...screenshots
-                                        .filter(Boolean)
-                                        .filter((x) => x.dataUrl)
-                                        .map((screenshot, index) => {
-                                            return {
-                                                image: screenshot.dataUrl,
-                                                type: 'image' as const,
-                                            }
-                                        }),
-                                ],
-                            })
+                        const messages: CoreMessage[] = []
+                        const images = files.filter(
+                            (x) => x && x.type.startsWith('image/'),
+                        )
+                        const pdfs = files.filter((x) =>
+                            x.type.startsWith('application/pdf'),
+                        )
+                        console.log(model.provider)
+                        if (pdfs.length) {
+                            console.log('adding pdfs into LLM', pdfs.length)
                         }
-                        const images = files
-                            .filter((x) => x && x.type.startsWith('image/'))
-                            .map((file) => ({
+
+                        const allFiles = [
+                            ...screenshots
+                                .filter(Boolean)
+                                .filter((x) => x.dataUrl)
+                                .map((screenshot) => ({
+                                    image: screenshot.dataUrl,
+                                    type: 'image' as const,
+                                })),
+                            ...images.map((file) => ({
                                 image: file.dataUrl,
                                 type: 'image' as const,
+                            })),
+                            ...pdfs.map((file) => ({
+                                data: file.dataUrl,
+                                mimeType: file.type,
+                                type: 'file' as const,
                             }))
-                        if (images.length) {
-                            initialMessages.push({
+                        ]
+
+                        if (allFiles.length) {
+                            messages.push({
                                 role: 'user',
-                                content: images,
+                                content: allFiles
                             })
                         }
                         const textFiles = files.filter(
@@ -243,7 +251,7 @@ chrome.runtime.onMessage.addListener(
                                 x.type.startsWith('application/json'),
                         )
                         if (textFiles.length) {
-                            initialMessages.push({
+                            messages.push({
                                 role: 'user',
                                 content: generateTextFilesPrompt({
                                     files: textFiles,
@@ -251,7 +259,7 @@ chrome.runtime.onMessage.addListener(
                             })
                         }
 
-                        initialMessages.push({
+                        messages.push({
                             role: 'user',
                             content: promptExtractFromHtml({
                                 description,
@@ -268,7 +276,7 @@ chrome.runtime.onMessage.addListener(
 
                         screenshots = []
 
-                        console.log('starting llm extraction of the labels')
+                        console.log('starting llm extraction of the labels and filling')
                         const schema = z.object({
                             thinkStepByStep: z
                                 .string()
@@ -280,14 +288,18 @@ chrome.runtime.onMessage.addListener(
                         })
                         const res = await streamObject({
                             model,
-                            onFinish({ object, rawResponse }) {
+                            onFinish({ object }) {
                                 console.log(
                                     'extract inputs llm response',
                                     JSON.stringify(object, null, 2),
                                 )
                             },
                             schema,
-                            messages: [...initialMessages],
+                            messages: [...messages],
+                            headers: {
+                                'anthropic-dangerous-direct-browser-access':
+                                    'true',
+                            },
                         })
 
                         const foundHints = [] as Array<ExtractedFormInput>
@@ -467,6 +479,7 @@ chrome.runtime.onMessage.addListener(
             .then((response) => sendResponse(response))
             .catch((error) => {
                 console.error('Error processing message', error)
+                console.error(error.stack)
                 sendResponse({ status: 'error', error: error.message })
             })
 

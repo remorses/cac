@@ -10,7 +10,7 @@ import {
     LoaderReturnType,
     Paths,
     RouteIds,
-    basePath,
+
     getExtensionData,
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
@@ -152,7 +152,7 @@ const router = createMemoryRouter(
             ],
         },
     ],
-    { basename: basePath },
+    // { basename: basePath },
 )
 
 async function rootLoader({ request }) {

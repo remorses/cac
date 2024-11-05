@@ -187,7 +187,7 @@ chrome.runtime.onMessage.addListener(
 )
 function findHint({ label }) {
     if (!hints.length) {
-        console.error('No hints found')
+        console.error('No hints found on the page, no inputs found')
         return { status: 'error', error: 'No hints found' }
     }
     const foundHint = hints.find(
