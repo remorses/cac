@@ -73,7 +73,7 @@ const router = createBrowserRouter(
                     location.pathname as any,
                 )
                     ? 350
-                    : 280
+                    : 270
                 useLayoutEffect(() => {
                     console.log('opening framer ui')
                     framer.showUI({

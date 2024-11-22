@@ -56,6 +56,8 @@ This is an example markdown file.
 
 # This should not be a title
 
+![Example Image](/example-image.png)
+
 ![A missing relative image](./images/missing.png)
 
 ![An internet image](https://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1000)
@@ -98,7 +100,9 @@ test('processMarkdown', async () => {
         content: exampleMarkdown1,
         basePath: '/',
         pagePath: '/example',
-        allAssetPaths: [],
+        allAssetPaths: [
+            '/example-image.png',
+        ],
         branch,
         owner,
         repo,
@@ -124,8 +128,9 @@ test('processMarkdown', async () => {
       <p>a quote</p>
       </blockquote>
       <h1>This should not be a title</h1>
+      <p><img src="https://raw.githubusercontent.com/x/y/z/example-image.png" alt="Example Image"></p>
       <p></p>
-      <p><img src="https://raw.githubusercontent.com/x/y/zhttps://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1000" alt="An internet image"></p>
+      <p><img src="https://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1000" alt="An internet image"></p>
       <h2>another h2</h2>
       <h1>@elysiajs/eden</h1>
       <p>Fully type-safe Spiceflow client refers to the <a href="https://elysiajs.com/eden/overview">documentation</a></p>

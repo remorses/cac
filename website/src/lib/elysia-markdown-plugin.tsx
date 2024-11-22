@@ -208,16 +208,27 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
 
             if (repoResult.data.private) {
                 mapImageUrl = async ({ imgPath, owner, repo, branch }) => {
-                    const res = await octokit.rest.repos.getContent({
-                        owner,
-                        repo,
-                        path: imgPath,
-                        ref: branch,
-                    })
-                    if (!('download_url' in res.data)) {
-                        throw new Error('Could not get download url for image')
+                    try {
+                        const res = await octokit.rest.repos.getContent({
+                            owner,
+                            repo,
+                            path: imgPath,
+                            ref: branch,
+                        })
+                        if (!('download_url' in res.data)) {
+                            throw new Error(
+                                'Could not get download url for image',
+                            )
+                        }
+                        console.log('download url', res.data.download_url)
+                        return res.data.download_url || ''
+                    } catch (error) {
+                        notifyError(
+                            error,
+                            'error getting download url for image',
+                        )
+                        throw error
                     }
-                    return res.data.download_url || ''
                 }
             }
 
@@ -507,7 +518,7 @@ export async function processMarkdown({
                 if (node.type === 'tag') {
                     if (node.name === 'a') {
                         const href = node.attribs?.href
-                        if (href) {
+                        if (!isAbsoluteUrl(href)) {
                             const match = findMatchInPaths({
                                 filePath: href,
                                 paths: allAssetPaths,
@@ -528,13 +539,23 @@ export async function processMarkdown({
                     if (node.name === 'img') {
                         try {
                             const src = node.attribs?.src
-                            if (!src) return
+                            if (!src) {
+                                console.log('no src found for img')
+                                domutils.removeElement(node)
+                                continue
+                            }
 
                             const imgPath = findMatchInPaths({
                                 filePath: src,
                                 paths: allAssetPaths,
                             })
-                            if (imgPath) {
+                            if (!imgPath) {
+                                imagesNotFound.push(src)
+                                console.log(`image not found in repo: ${src}`)
+                                domutils.removeElement(node)
+                                continue
+                            }
+                            if (!isAbsoluteUrl(imgPath)) {
                                 console.log(
                                     `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
                                 )
@@ -552,10 +573,6 @@ export async function processMarkdown({
                                     )
                                 }
                                 node.attribs.src = newSrc
-                            } else {
-                                imagesNotFound.push(src)
-                                console.log(`image not found in repo: ${src}`)
-                                domutils.removeElement(node)
                             }
                         } catch (e) {
                             notifyError(e, 'error transforming image src')
@@ -577,6 +594,7 @@ export async function processMarkdown({
             encodeEntities: false,
             decodeEntities: false,
         })
+        console.log('formattedHtml', formattedHtml)
         if (imagesNotFound.length) {
             console.log(
                 `${imagesNotFound.length} images not found in ${pagePath}:`,
