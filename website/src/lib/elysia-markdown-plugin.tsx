@@ -16,6 +16,7 @@ import {
 } from 'website/src/lib/github.server'
 import { isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
+import { redirect } from '@remix-run/react'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -197,6 +198,24 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
                 )
             }
+
+            let mapImageUrl = publicMapImageUrl
+
+            if (repoResult.data.private) {
+                mapImageUrl = async ({ imgPath, owner, repo, branch }) => {
+                    const res = await octokit.rest.repos.getContent({
+                        owner,
+                        repo,
+                        path: imgPath,
+                        ref: branch,
+                    })
+                    if (!('download_url' in res.data)) {
+                        throw new Error('Could not get download url for image')
+                    }
+                    return res.data.download_url || ''
+                }
+            }
+
             let withMarkdown = await Promise.all(
                 filtered.map(async (x) => {
                     if (!x?.content) {
@@ -213,6 +232,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         onError(e) {
                             notifyError(e, 'error parsing markdown')
                         },
+                        mapImageUrl,
                     })
                     return data
                 }),
@@ -251,6 +271,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }),
         },
     )
+
     .post(
         '/checkBasePath',
         async ({ request, state: store }) => {
@@ -416,6 +437,20 @@ export type MarkdownPluginFrontMatter = {
     properties: Record<string, MarkdownPluginFrontMatterProperty>
 }
 
+export async function publicMapImageUrl({
+    owner,
+    repo,
+    branch,
+    imgPath,
+}: {
+    owner: string
+    repo: string
+    branch: string
+    imgPath: string
+}) {
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
+}
+
 export async function processMarkdown({
     basePath,
     allAssetPaths,
@@ -425,8 +460,10 @@ export async function processMarkdown({
     pagePath,
     onError,
     content,
+    mapImageUrl = publicMapImageUrl,
 }) {
     try {
+        let imagesNotFound = [] as string[]
         const grayMatter = matter(content || '')
         const html = await marked(grayMatter?.content || '')
 
@@ -467,7 +504,7 @@ export async function processMarkdown({
                 },
             })
             .on('img', {
-                element(element) {
+                async element(element) {
                     try {
                         //  map relative image sources to absolute links
                         const src = element.getAttribute('src')
@@ -482,11 +519,29 @@ export async function processMarkdown({
                             console.log(
                                 `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
                             )
-                            let newSrc = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
+
+                            let newSrc = await mapImageUrl({
+                                imgPath,
+                                owner,
+                                repo,
+                                branch,
+                            })
+                            if (!newSrc) {
+                                throw new Error(
+                                    'Could not get github image url for image ' +
+                                        imgPath,
+                                )
+                            }
                             element.setAttribute('src', newSrc)
+                        } else {
+                            imagesNotFound.push(imgPath)
+                            console.log(`image not found in repo: ${imgPath}`)
+                            // remove the image by setting src to empty string
+                            element.remove()
                         }
                     } catch (e) {
                         notifyError(e, 'error transforming image src')
+                        element.remove()
                     }
                 },
             })
@@ -503,6 +558,13 @@ export async function processMarkdown({
                 'error transforming html',
             )
         }
+        if (imagesNotFound.length) {
+            console.log(
+                `${imagesNotFound.length} images not found in ${pagePath}:`,
+                imagesNotFound,
+            )
+        }
+        // console.log('formattedHtml', formattedHtml)
         // TODO map relative image urls to github signed urls, make a proxy that also caches the images
         let slug = turnPagePathIntoSlug(pagePath, basePath)
         if (!title) {

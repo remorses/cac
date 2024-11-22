@@ -56,7 +56,9 @@ export default defineConfig({
             },
         }),
         tsconfigPaths(),
-        viteExternalsPlugin({ externals: ['dprint-node', 'playwright'] }),
+        viteExternalsPlugin({
+            externals: ['dprint-node', 'playwright', 'htmlrewriter'],
+        }),
         {
             apply(config, env) {
                 if (env.isSsrBuild) {
@@ -74,6 +76,7 @@ export default defineConfig({
             transformMixedEsModules: true,
         },
     },
+
     legacy: {
         proxySsrExternalModules: true,
     },

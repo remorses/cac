@@ -51,9 +51,10 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             // headers: { 'Content-Type': 'text/plain' },
         })
     })
-
     .use(async function checkSession({ request, state: store }) {
-        const sessionKey = request.headers.get('sessionKey')
+        const searchParams = new URL(request.url).searchParams
+        const sessionKey =
+            request.headers.get('sessionKey') || searchParams.get('sessionKey')
         const projectId = request.headers.get('projectId')
 
         // console.log(`checking session key`)
