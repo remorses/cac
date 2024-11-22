@@ -1,4 +1,7 @@
 import matter from 'gray-matter'
+import * as domutils from 'domutils'
+import domSerializer from 'dom-serializer'
+
 import { Spiceflow } from 'spiceflow'
 
 import { notifyError } from 'website/src/lib/errors'
@@ -17,6 +20,8 @@ import {
 import { isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
 import { redirect } from '@remix-run/react'
+import DomHandler from 'domhandler'
+import { Parser } from 'htmlparser2'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -450,7 +455,6 @@ export async function publicMapImageUrl({
 }) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
 }
-
 export async function processMarkdown({
     basePath,
     allAssetPaths,
@@ -468,104 +472,118 @@ export async function processMarkdown({
         const html = await marked(grayMatter?.content || '')
 
         let title = ''
-        let foundParagraph = false
-        const { HTMLRewriter } = await import('htmlrewriter')
-        let formattedHtml = await new HTMLRewriter()
-            .on('p,h2,h3', {
-                element(element) {
-                    foundParagraph = true
-                },
-            })
-            .on('h1:first-child', {
-                text(text) {
-                    if (!foundParagraph) {
-                        title += text.text
-                    }
-                },
-            })
-            .on('a', {
-                element(element) {
-                    // map relative links to absolute links using the same slug mapper
-                    const href = element.getAttribute('href')
-                    if (!href) {
-                        return
-                    }
-                    const match = findMatchInPaths({
-                        filePath: href,
-                        paths: allAssetPaths,
-                    })
-                    if (match) {
-                        let newHref = turnPagePathIntoSlug(match, basePath)
-                        console.log(
-                            `replaced link href from ${JSON.stringify(href)} to ${JSON.stringify(newHref)}`,
-                        )
-                        element.setAttribute('href', newHref)
-                    }
-                },
-            })
-            .on('img', {
-                async element(element) {
-                    try {
-                        //  map relative image sources to absolute links
-                        const src = element.getAttribute('src')
-                        if (!src) {
-                            return
-                        }
-                        let imgPath = findMatchInPaths({
-                            filePath: src,
-                            paths: allAssetPaths,
-                        })
-                        if (imgPath) {
-                            console.log(
-                                `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
-                            )
 
-                            let newSrc = await mapImageUrl({
-                                imgPath,
-                                owner,
-                                repo,
-                                branch,
+        // Parse HTML
+        const handler = new DomHandler(async (error, dom) => {
+            if (error) {
+                throw error
+            }
+
+            // Find first h1 and set title to its content
+            const walk = (nodes: any[]) => {
+                for (const node of nodes) {
+                    if (node.type === 'tag' && node.name === 'h1') {
+                        const textNode = node.children[0]
+                        if (textNode?.type === 'text') {
+                            title = textNode.data
+                            break
+                        }
+                    }
+                    if (node.children) {
+                        walk(node.children)
+                    }
+                }
+            }
+            walk(dom)
+        })
+
+        const parser = new Parser(handler, { decodeEntities: false })
+        parser.write(html)
+        parser.end()
+
+        // Process links and images
+        const processNodes = async (nodes: any[]) => {
+            for (const [index, node] of nodes.slice().entries()) {
+                if (node.type === 'tag') {
+                    if (node.name === 'a') {
+                        const href = node.attribs?.href
+                        if (href) {
+                            const match = findMatchInPaths({
+                                filePath: href,
+                                paths: allAssetPaths,
                             })
-                            if (!newSrc) {
-                                throw new Error(
-                                    'Could not get github image url for image ' +
-                                        imgPath,
+                            if (match) {
+                                const newHref = turnPagePathIntoSlug(
+                                    match,
+                                    basePath,
                                 )
+                                console.log(
+                                    `replaced link href from ${JSON.stringify(href)} to ${JSON.stringify(newHref)}`,
+                                )
+                                node.attribs.href = newHref
                             }
-                            element.setAttribute('src', newSrc)
-                        } else {
-                            imagesNotFound.push(imgPath)
-                            console.log(`image not found in repo: ${imgPath}`)
-                            // remove the image by setting src to empty string
-                            element.remove()
                         }
-                    } catch (e) {
-                        notifyError(e, 'error transforming image src')
-                        element.remove()
                     }
-                },
-            })
-            .transform(new Response(html))
-            .text()
-            .catch((e) => {
-                notifyError(e, 'error transforming html')
-                return html
-            })
 
-        if (!formattedHtml && html) {
-            notifyError(
-                new Error(`htmlrewriter returned empty html`),
-                'error transforming html',
-            )
+                    if (node.name === 'img') {
+                        try {
+                            const src = node.attribs?.src
+                            if (!src) return
+
+                            const imgPath = findMatchInPaths({
+                                filePath: src,
+                                paths: allAssetPaths,
+                            })
+                            if (imgPath) {
+                                console.log(
+                                    `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
+                                )
+
+                                let newSrc = await mapImageUrl({
+                                    imgPath,
+                                    owner,
+                                    repo,
+                                    branch,
+                                })
+                                if (!newSrc) {
+                                    throw new Error(
+                                        'Could not get github image url for image ' +
+                                            imgPath,
+                                    )
+                                }
+                                node.attribs.src = newSrc
+                            } else {
+                                imagesNotFound.push(src)
+                                console.log(`image not found in repo: ${src}`)
+                                domutils.removeElement(node)
+                            }
+                        } catch (e) {
+                            notifyError(e, 'error transforming image src')
+                            // Remove the image node
+                            domutils.removeElement(node)
+                        }
+                    }
+
+                    if (node.children) {
+                        await processNodes(node.children)
+                    }
+                }
+            }
         }
+        await processNodes(handler.dom)
+
+        const formattedHtml = domSerializer(handler.dom, {
+            // xmlMode: true,
+            encodeEntities: false,
+            decodeEntities: false,
+        })
         if (imagesNotFound.length) {
             console.log(
                 `${imagesNotFound.length} images not found in ${pagePath}:`,
                 imagesNotFound,
             )
         }
-        // console.log('formattedHtml', formattedHtml)
-        // TODO map relative image urls to github signed urls, make a proxy that also caches the images
+
         let slug = turnPagePathIntoSlug(pagePath, basePath)
         if (!title) {
             console.log(`no title found for ${slug}, using page slug for it`)
@@ -574,12 +592,13 @@ export async function processMarkdown({
         if (grayMatter.data?.title) {
             title = grayMatter.data.title
         }
+
         return {
-            html: formattedHtml,
-            frontMatter: grayMatter.data,
             pagePath,
             slug,
             title,
+            frontMatter: grayMatter.data,
+            html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
         }
     } catch (e) {
         onError?.(e)

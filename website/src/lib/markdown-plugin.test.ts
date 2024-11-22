@@ -56,6 +56,12 @@ This is an example markdown file.
 
 # This should not be a title
 
+![A missing relative image](./images/missing.png)
+
+![An internet image](https://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1000)
+
+
+
 ## another h2
 
 # @elysiajs/eden
@@ -118,12 +124,14 @@ test('processMarkdown', async () => {
       <p>a quote</p>
       </blockquote>
       <h1>This should not be a title</h1>
+      <p></p>
+      <p><img src="https://raw.githubusercontent.com/x/y/zhttps://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1000" alt="An internet image"></p>
       <h2>another h2</h2>
       <h1>@elysiajs/eden</h1>
       <p>Fully type-safe Spiceflow client refers to the <a href="https://elysiajs.com/eden/overview">documentation</a></p>
       <h2>Example</h2>
       <pre><code class="language-typescript">// server.ts
-      import { Spiceflow, t } from &#39;elysia&#39;
+      import { Spiceflow, t } from &#39;spiceflow&#39;
 
       const app = new Spiceflow()
           .get(&#39;/&#39;, () =&gt; &#39;Hi Spiceflow&#39;)
