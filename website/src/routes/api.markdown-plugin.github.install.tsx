@@ -59,6 +59,7 @@ export default function ChooseOrg() {
                         add another organization
                     </option>
                 </select>
+
                 {/* add all other search params with hidden inputs */}
                 {Array.from(searchParams).map(([key, value]) => {
                     return (

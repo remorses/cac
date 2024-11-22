@@ -36,7 +36,8 @@ function Component() {
             <div className='flex my-[40px] grow items-center justify-center gap-2 flex-col text-balance text-center'>
                 <div className='font-semibold'>Choose GitHub Repository</div>
                 <div className='opacity-70 max-w-[220px]'>
-                    Choose a repository and folder to import markdown files from.
+                    Choose a repository and folder to import markdown files
+                    from.
                 </div>
             </div>
 
@@ -50,7 +51,10 @@ function Component() {
                     >
                         {repos.map((repo) => (
                             <option key={repo.url} value={repo.repoSlug}>
-                                {repo.repoSlug}
+                                {repo.repoSlug ===
+                                `${owner}/${repo.repoSlug.split('/')[1]}`
+                                    ? repo.repoSlug.split('/')[1]
+                                    : repo.repoSlug}
                             </option>
                         ))}
                     </select>
@@ -64,7 +68,7 @@ function Component() {
                     <input
                         type='text'
                         name={FormFields.basePath}
-                        defaultValue={basePath || '/'}
+                        defaultValue={basePath}
                         placeholder='/path/to/files'
                         className='w-full p-2 bg-framer-tertiary rounded-md'
                     />
@@ -150,7 +154,7 @@ export function ChooseRepo(): RouteObject {
                 PluginDataKeys.basePath,
                 formattedBasePath,
             )
-            return redirect(withMode(Paths.mapFields))
+            return redirect(withMode(Paths.mapFields, { firstSync: 'true' }))
         },
     }
 }

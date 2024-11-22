@@ -7,7 +7,7 @@ import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
 import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
 
-const basePath = process.env.BASE_PATH || '/framer-plugin/github'
+const basePath = process.env.BASE_PATH
 
 // https://vitejs.dev/config/
 export default defineConfig({

@@ -8,7 +8,7 @@ import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
 
 const building = process.env.NODE_ENV === 'production'
 
-const basePath = process.env.BASE_PATH || '/framer-plugin/react-export'
+const basePath = process.env.BASE_PATH
 
 // https://vitejs.dev/config/
 export default defineConfig({

@@ -27,7 +27,7 @@ import {
     MarkdownPluginFrontMatterProperty,
 } from 'website/src/lib/elysia-markdown-plugin'
 
-async function loader({}: LoaderFunctionArgs) {
+async function loader({ request }: LoaderFunctionArgs) {
     const { owner, githubAccountLogin, repo, basePath, mapFieldsConfig } =
         await getMarkdownPluginData()
     const { data, error } =
@@ -42,13 +42,15 @@ async function loader({}: LoaderFunctionArgs) {
     }
 
     const { frontMatter } = data
-    console.log('framer.mode', framer.mode)
-    const showMapFields = Object.keys(frontMatter?.properties).length
-    if (framer.mode !== 'configureManagedCollection' && !showMapFields) {
+
+    let shouldShowSettings = !new URL(request.url).searchParams.get('firstSync')
+
+    const showMapFields = Boolean(Object.keys(frontMatter?.properties).length)
+    if (!shouldShowSettings && !showMapFields) {
         console.log('no front matter found, redirecting to sync')
         throw redirect(withMode(Paths.sync))
     }
-    return { frontMatter, mapFieldsConfig, showMapFields }
+    return { shouldShowSettings, frontMatter, mapFieldsConfig, showMapFields }
 }
 
 export function MapFieldsPage(): RouteObject {
@@ -234,6 +236,7 @@ export function MapFields({}: {}) {
         frontMatter,
         mapFieldsConfig: defaultFieldConfigs,
         showMapFields,
+        shouldShowSettings,
     } = useLoaderData() as LoaderReturnType<typeof loader>
     const [fieldConfigs, setFieldConfig] = useState(() => {
         const suggested = createFieldConfig(frontMatter)
@@ -258,7 +261,7 @@ export function MapFields({}: {}) {
 
     const actionData = useActionData() as any
     const navigation = useNavigation()
-    const isLoading = navigation.state === 'submitting'
+    const isLoading = navigation.state !== 'idle'
     const error = String(actionData?.error || '')
     // assert(isFullDatabase(database))
 
@@ -275,7 +278,7 @@ export function MapFields({}: {}) {
             }}
             className='flex flex-col gap-4 '
         >
-            {showMapFields && (
+            {!!showMapFields && (
                 <div className='flex-1 flex flex-col gap-4'>
                     <div className='grid grid-cols-[1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
                         <span className=' '>Front Matter Property</span>
@@ -408,7 +411,7 @@ export function MapFields({}: {}) {
                     Import
                 </Button>
 
-                {framer.mode === 'configureManagedCollection' && (
+                {shouldShowSettings && (
                     <Link
                         className='w-full block'
                         to={withMode(Paths.settings)}
