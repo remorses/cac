@@ -46,6 +46,9 @@ async function loader({ request }) {
 
     return { sessionKey }
 }
+
+let width = 350
+
 const router = createBrowserRouter(
     [
         {
@@ -58,7 +61,7 @@ const router = createBrowserRouter(
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 380
+
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
                     typeof loader
                 >
@@ -106,29 +109,6 @@ const router = createBrowserRouter(
                                     <NProgressComponent />
 
                                     <Outlet />
-
-                                    {showSettings && (
-                                        <div className='flex text-[11px] items-center pt-3 opacity-70 justify-between '>
-                                            {canGoBack && (
-                                                <button
-                                                    type='button'
-                                                    onClick={() => {
-                                                        navigate(-1)
-                                                    }}
-                                                    className='w-auto flex flex-row items-center -ml-2 gap-1 bg-transparent !py-px text-[11px] '
-                                                >
-                                                    <BackIcon className='w-2' />
-                                                    <div className=''>back</div>
-                                                </button>
-                                            )}
-                                            <div className='grow'></div>
-                                            <Link to={withMode(Paths.settings)}>
-                                                <Button className='w-auto bg-transparent !py-px text-[11px] '>
-                                                    settings
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </AnimatePresence>

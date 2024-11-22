@@ -1,13 +1,14 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
+import { LoaderReturnType, Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
     redirect,
     RouteObject,
+    useLoaderData,
     useNavigation,
     useRevalidator,
 } from 'react-router'
@@ -29,10 +30,13 @@ function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
     const navigation = useNavigation()
+    const data = useLoaderData() as LoaderReturnType<typeof loader>
     const url = framerLoginUrl({
         key,
         pluginName: PluginNames.github,
         code,
+        projectId: data?.projectId,
+        projectName: data?.projectName,
     })
     useRefreshOnVisible({ enabled: !isLoading })
     return (
@@ -92,7 +96,7 @@ function LoginComponent() {
                         // revalidator.revalidate()
                     }
                 }}
-                className='bg-framer-secondary'
+                variant='primary'
                 isLoading={isLoading || navigation.state !== 'idle'}
             >
                 Login With GitHub
@@ -127,11 +131,12 @@ async function loader({}: LoaderFunctionArgs) {
         await collection.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
-        return redirect(withMode(Paths.chooseRepo))
+        throw redirect(withMode(Paths.chooseRepo))
     } else {
         console.log(data)
     }
-    return {}
+    const { id: projectId, name: projectName } = await framer.getProjectInfo()
+    return { projectId, projectName }
 }
 
 export function LoginPage(): RouteObject {
