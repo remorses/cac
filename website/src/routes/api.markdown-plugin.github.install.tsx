@@ -35,7 +35,7 @@ export default function ChooseOrg() {
                 <h1 className='text-2xl max-w-md text-center text-balance'>
                     Choose a GitHub organization or account to connect to Framer
                 </h1>
-                <p className='opacity-70 max-w-md text-center text-balance'>
+                <p className='opacity-70 max-w-md text-center text-medium text-balance'>
                     Choose which GitHub organization or account you want to
                     connect to Framer. You can add more organizations later.
                 </p>
