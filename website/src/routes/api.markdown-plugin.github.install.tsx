@@ -30,10 +30,16 @@ export default function ChooseOrg() {
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
     return (
-        <PageContainer>
-            <h1 className='text-2xl max-w-md text-center text-balance'>
-                Choose a GitHub organization or account to connect to Framer
-            </h1>
+        <div className='w-full md:-mt-[100px] grow justify-center h-full gap-[60px] flex flex-col items-center'>
+            <div className='flex flex-col gap-4 text-center'>
+                <h1 className='text-2xl max-w-md text-center text-balance'>
+                    Choose a GitHub organization or account to connect to Framer
+                </h1>
+                <p className='opacity-70 max-w-md text-center text-balance'>
+                    Choose which GitHub organization or account you want to
+                    connect to Framer. You can add more organizations later.
+                </p>
+            </div>
             <Form className='flex dark flex-col gap-6'>
                 <select
                     className='rounded-md py-1 border-0 dark:bg-default-200'
@@ -65,15 +71,15 @@ export default function ChooseOrg() {
                     )
                 })}
 
-                <Button isLoading={isLoading} type='submit'>
+                <Button color='primary' isLoading={isLoading} type='submit'>
                     Connect GitHub
                 </Button>
             </Form>
-        </PageContainer>
+        </div>
     )
 }
 
-export async function loader({ request, }:LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     let afterFramerLoginUrl = url.searchParams.get('next') || ''
 
@@ -82,7 +88,6 @@ export async function loader({ request, }:LoaderFunctionArgs) {
 
     const { supabase, session, userId, headers } = await getSupabaseSession({
         request,
-       
     })
     if (!afterFramerLoginUrl) {
         throw new Error('URL is malformed, missing next param')

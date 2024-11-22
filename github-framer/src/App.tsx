@@ -47,8 +47,6 @@ async function loader({ request }) {
     return { sessionKey }
 }
 
-let width = 350
-
 const router = createBrowserRouter(
     [
         {
@@ -68,8 +66,10 @@ const router = createBrowserRouter(
                 const [handle] = useMatches().filter((match) => match?.handle)
                 const navigate = useNavigate()
 
+                const location = useLocation()
                 useFocusOnMount()
 
+                const width = location.pathname === Paths.mapFields ? 350 : 280
                 useLayoutEffect(() => {
                     console.log('opening framer ui')
                     framer.showUI({
@@ -80,7 +80,6 @@ const router = createBrowserRouter(
                     })
                 }, [height])
 
-                const location = useLocation()
                 const showSettings =
                     sessionKey && location.pathname !== Paths.settings
                 const revalidator = useRevalidator()
