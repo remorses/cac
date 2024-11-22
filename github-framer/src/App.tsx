@@ -80,14 +80,6 @@ const router = createBrowserRouter(
                     })
                 }, [height])
 
-                const showSettings =
-                    sessionKey && location.pathname !== Paths.settings
-                const revalidator = useRevalidator()
-
-                const navigationType = useNavigationType()
-                const canGoBack = ![Paths.login, '/'].includes(
-                    location.pathname as any,
-                )
                 return (
                     <MotionConfig
                         transition={{

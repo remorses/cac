@@ -21,7 +21,7 @@ import {
     useLoaderData,
     useNavigation,
 } from 'react-router'
-import { useSubmit } from 'react-router-dom'
+import { Link, useSubmit } from 'react-router-dom'
 import {
     MarkdownPluginFrontMatter,
     MarkdownPluginFrontMatterProperty,
@@ -40,12 +40,15 @@ async function loader({}: LoaderFunctionArgs) {
     if (error) {
         throw error
     }
+
     const { frontMatter } = data
-    if (!Object.keys(frontMatter?.properties).length) {
+    console.log('framer.mode', framer.mode)
+    const showMapFields = Object.keys(frontMatter?.properties).length
+    if (framer.mode !== 'configureManagedCollection' && !showMapFields) {
         console.log('no front matter found, redirecting to sync')
         throw redirect(withMode(Paths.sync))
     }
-    return { frontMatter, mapFieldsConfig }
+    return { frontMatter, mapFieldsConfig, showMapFields }
 }
 
 export function MapFieldsPage(): RouteObject {
@@ -227,8 +230,11 @@ function Input({ className, ...rest }: ComponentProps<'input'>) {
 }
 
 export function MapFields({}: {}) {
-    const { frontMatter, mapFieldsConfig: defaultFieldConfigs } =
-        useLoaderData() as LoaderReturnType<typeof loader>
+    const {
+        frontMatter,
+        mapFieldsConfig: defaultFieldConfigs,
+        showMapFields,
+    } = useLoaderData() as LoaderReturnType<typeof loader>
     const [fieldConfigs, setFieldConfig] = useState(() => {
         const suggested = createFieldConfig(frontMatter)
 
@@ -252,7 +258,7 @@ export function MapFields({}: {}) {
 
     const actionData = useActionData() as any
     const navigation = useNavigation()
-    const isLoading = navigation.state !== 'idle'
+    const isLoading = navigation.state === 'submitting'
     const error = String(actionData?.error || '')
     // assert(isFullDatabase(database))
 
@@ -269,82 +275,84 @@ export function MapFields({}: {}) {
             }}
             className='flex flex-col gap-4 '
         >
-            <div className='flex-1 flex flex-col gap-4'>
-                <div className='grid grid-cols-[1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
-                    <span className=' '>Front Matter Property</span>
-                    <div className=''></div>
-                    <span>Collection Field</span>
+            {showMapFields && (
+                <div className='flex-1 flex flex-col gap-4'>
+                    <div className='grid grid-cols-[1fr_8px_1fr] gap-3 -mt-1 w-full items-center justify-center'>
+                        <span className=' '>Front Matter Property</span>
+                        <div className=''></div>
+                        <span>Collection Field</span>
 
-                    {fieldConfigs.map((fieldConfig) => {
-                        const isDisabled = fieldConfig.type === ''
+                        {fieldConfigs.map((fieldConfig) => {
+                            const isDisabled = fieldConfig.type === ''
 
-                        return (
-                            <Fragment key={fieldConfig?.id}>
-                                <Input
-                                    type='text'
-                                    className={classNames(
-                                        'w-full opacity-50',
-                                        isDisabled && 'opacity-50',
-                                    )}
-                                    name=''
-                                    readOnly
-                                    disabled
-                                    value={fieldConfig?.name || ''}
-                                />
-                                <div
-                                    className={classNames(
-                                        'flex items-center justify-center',
-                                        isDisabled && 'opacity-50',
-                                    )}
-                                >
-                                    <IconChevron />
-                                </div>
-                                <select
-                                    // disabled={!fieldConfig}
-                                    onChange={(e) => {
-                                        const newType = e.target.value as any
-                                        // if (!newType) return
-                                        let isDisabled = newType === ''
-                                        setFieldConfig((current) => {
-                                            const newConfig = current.map(
-                                                (config) => {
-                                                    if (
-                                                        config?.id ===
-                                                        fieldConfig?.id
-                                                    ) {
-                                                        const property =
-                                                            frontMatter
-                                                                .properties[
-                                                                config.id
-                                                            ]
-                                                        return getFieldConfigForProp(
-                                                            property,
-                                                            newType,
-                                                        )
-                                                    }
-                                                    return config
-                                                },
-                                            )
+                            return (
+                                <Fragment key={fieldConfig?.id}>
+                                    <Input
+                                        type='text'
+                                        className={classNames(
+                                            'w-full opacity-50',
+                                            isDisabled && 'opacity-50',
+                                        )}
+                                        name=''
+                                        readOnly
+                                        disabled
+                                        value={fieldConfig?.name || ''}
+                                    />
+                                    <div
+                                        className={classNames(
+                                            'flex items-center justify-center',
+                                            isDisabled && 'opacity-50',
+                                        )}
+                                    >
+                                        <IconChevron />
+                                    </div>
+                                    <select
+                                        // disabled={!fieldConfig}
+                                        onChange={(e) => {
+                                            const newType = e.target
+                                                .value as any
+                                            // if (!newType) return
+                                            let isDisabled = newType === ''
+                                            setFieldConfig((current) => {
+                                                const newConfig = current.map(
+                                                    (config) => {
+                                                        if (
+                                                            config?.id ===
+                                                            fieldConfig?.id
+                                                        ) {
+                                                            const property =
+                                                                frontMatter
+                                                                    .properties[
+                                                                    config.id
+                                                                ]
+                                                            return getFieldConfigForProp(
+                                                                property,
+                                                                newType,
+                                                            )
+                                                        }
+                                                        return config
+                                                    },
+                                                )
 
-                                            return newConfig
-                                        })
-                                    }}
-                                    className={classNames(
-                                        'w-full',
-                                        isDisabled && 'opacity-50',
-                                    )}
-                                    value={fieldConfig?.type || ''}
-                                >
-                                    <option value=''>disable</option>
-                                    {possibleTypes.map((type) => (
-                                        <option key={type} value={type}>
-                                            {mapCollectionFieldToReadableName(
-                                                type,
-                                            )}
-                                        </option>
-                                    ))}
-                                </select>
-                                {/* <Input
+                                                return newConfig
+                                            })
+                                        }}
+                                        className={classNames(
+                                            'w-full',
+                                            isDisabled && 'opacity-50',
+                                        )}
+                                        value={fieldConfig?.type || ''}
+                                    >
+                                        <option value=''>disable</option>
+                                        {possibleTypes.map((type) => (
+                                            <option key={type} value={type}>
+                                                {mapCollectionFieldToReadableName(
+                                                    type,
+                                                )}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {/* <Input
                                     type='text'
                                     className={classNames(
                                         'w-full',
@@ -373,16 +381,23 @@ export function MapFields({}: {}) {
                                         )
                                     }}
                                 ></Input> */}
-                            </Fragment>
-                        )
-                    })}
+                                </Fragment>
+                            )
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
+            {!showMapFields && (
+                <div className='text-center text-balance'>
+                    <div className=''>No frontmatter properties found</div>
+                </div>
+            )}
             <hr className='' />
-            <div className='left-0 bottom-0 w-full flex justify-between sticky items-center max-w-full overflow-hidden'>
+            <div className='w-full flex-col gap-3 flex items-center max-w-full overflow-hidden'>
                 <div className='inline-flex items-center gap-1 min-w-0'>
                     {error && <span className='text-red-500'>{error}</span>}
                 </div>
+
                 <Button
                     variant='primary'
                     isLoading={isLoading}
@@ -392,6 +407,17 @@ export function MapFields({}: {}) {
                 >
                     Import
                 </Button>
+
+                {framer.mode === 'configureManagedCollection' && (
+                    <Link
+                        className='w-full block'
+                        to={withMode(Paths.settings)}
+                    >
+                        <Button type='button' variant='normal'>
+                            Settings
+                        </Button>
+                    </Link>
+                )}
             </div>
         </form>
     )
