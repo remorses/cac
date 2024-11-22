@@ -69,7 +69,11 @@ const router = createBrowserRouter(
                 const location = useLocation()
                 useFocusOnMount()
 
-                const width = location.pathname === Paths.mapFields ? 350 : 270
+                const width = [Paths.mapFields, Paths.settings].includes(
+                    location.pathname as any,
+                )
+                    ? 350
+                    : 280
                 useLayoutEffect(() => {
                     console.log('opening framer ui')
                     framer.showUI({

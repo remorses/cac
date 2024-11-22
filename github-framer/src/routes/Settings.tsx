@@ -5,7 +5,8 @@ import {
     LoaderReturnType,
     Paths,
     PluginDataKeys,
-    pluginApiClient
+    getMarkdownPluginData,
+    pluginApiClient,
 } from '@/lib/utils'
 import { useState } from 'react'
 import {
@@ -19,11 +20,12 @@ import {
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
-import { } from 'react-router'
+import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [org, credits] = await Promise.all([
+    const [pluginData, org, credits] = await Promise.all([
+        getMarkdownPluginData(),
         pluginApiClient.api.plugins.currentOrg
             .post({})
             .then(({ data, error }) => {
@@ -33,15 +35,9 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             }),
         null,
-        // pluginApiClient.api.plugins.getCredits.post({}).then(({ data, error }) => {
-        //     if (error) {
-        //         throw error
-        //     }
-        //     return data
-        // }),
     ])
     const { email, orgId } = org
-    return { credits, email, orgId }
+    return { ...pluginData, credits, email, orgId }
 }
 
 export function Settings(): RouteObject {
@@ -56,7 +52,8 @@ export function Settings(): RouteObject {
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
-    const { email } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { email, owner, repo, basePath } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
 
     const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
@@ -70,6 +67,7 @@ function Component() {
                     Currently logged in as{' '}
                     <span className='font-semibold inline'>{email}</span>
                 </div>
+
                 <div className='grow'></div>
                 <Button
                     onClick={async () => {
@@ -95,6 +93,23 @@ function Component() {
                 >
                     Sign Out
                 </Button>
+            </div>
+            <div className='flex items-center'>
+                <div>Repository</div>
+                <div className='grow'></div>
+                <a
+                    href={`https://github.com/${owner}/${repo}`}
+                    className='font-semibold text-blue-500 underline inline'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                >
+                    {`${owner}/${repo}`}
+                </a>
+            </div>
+            <div className='flex items-center'>
+                <div className=''>Base Path: </div>
+                <div className='grow'></div>
+                <code className='font-semibold inline'>{basePath || '/'}</code>
             </div>
             <hr className='' />
 

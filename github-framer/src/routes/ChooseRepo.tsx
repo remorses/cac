@@ -20,7 +20,7 @@ import {
 } from 'react-router'
 import { Form } from 'react-router-dom'
 function Component() {
-    const { repos, owner, repo, basePath } =
+    const { repos, owner, githubAccountLogin, repo, basePath } =
         useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
     useRefreshOnVisible({ enabled: true })
@@ -49,14 +49,20 @@ function Component() {
                         className='w-full'
                         name={FormFields.repoSlug}
                     >
-                        {repos.map((repo) => (
-                            <option key={repo.url} value={repo.repoSlug}>
-                                {repo.repoSlug ===
-                                `${owner}/${repo.repoSlug.split('/')[1]}`
-                                    ? repo.repoSlug.split('/')[1]
-                                    : repo.repoSlug}
-                            </option>
-                        ))}
+                        {repos.map((repo) => {
+                            const repoName = repo.repoSlug.split('/')[1]
+
+                            const displayName =
+                                repo.repoSlug ===
+                                `${githubAccountLogin}/${repoName}`
+                                    ? repoName
+                                    : repo.repoSlug
+                            return (
+                                <option key={repo.url} value={repo.repoSlug}>
+                                    {displayName}
+                                </option>
+                            )
+                        })}
                     </select>
                 </div>
                 <div className='flex flex-col gap-2'>
@@ -97,7 +103,7 @@ async function loader({}: LoaderFunctionArgs) {
     }
     const { repos } = data
     console.log('repos', repos)
-    return { repos, basePath, owner, repo }
+    return { repos, basePath, githubAccountLogin, owner, repo }
 }
 
 enum FormFields {
