@@ -59,8 +59,10 @@ function permutations(chars: string, length: number) {
 }
 const all2Permutations = permutations(hintChars, 2)
 
-
-export function findHints(hintType = 'input,textarea,select') {
+export function findHints({
+    hintType = 'input,textarea,select',
+    pastHintCount = 0,
+} = {}) {
     // on Firefox, getComputedStyle() may return null for conditions I don't fully understand
     // try-catch block prevents link hints generation from breaking.
     // https://bugzilla.mozilla.org/show_bug.cgi?id=548397
@@ -84,7 +86,7 @@ export function findHints(hintType = 'input,textarea,select') {
                     console.log('no rect found for', element)
                     return
                 }
-                const label = all2Permutations[index - 1]
+                const label = all2Permutations[index + pastHintCount - 1]
                 const computedStyle = demandComputedStyle(element)
                 let hint: Hint = {
                     element,

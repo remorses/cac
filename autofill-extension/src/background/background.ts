@@ -1,3 +1,4 @@
+import dedent from 'dedent'
 import {
     ChromeMessageType,
     DATA_LLM_ID,
@@ -6,6 +7,7 @@ import {
     ExtractedFormInput,
     FileObject,
     sleep,
+    isTruthy,
 } from '@/lib/utils'
 
 import { anthropic } from '@ai-sdk/anthropic'
@@ -63,11 +65,16 @@ let filledFormInputs = [] as ExtractedFormInput[]
 
 export const extractedFormInputSchema = z.object({
     label: z.string().describe('the Vimium label of the input'),
-    description: z
-        .string()
-        .describe(
-            'the description of the input, including if required, the input pattern if any, and any other relevant information extracted from surrounding attributes, labels and elements',
-        ),
+    description: z.string().describe(
+        dedent`the description of the input, this description field should always come before the others. 
+            
+            should always answer the questions:
+            - what information should go in this form field? what is the data from the files or user information to fill?
+            - what format should the data be in based on other surrounding context information?
+
+            
+            `,
+    ),
     options: z
         .array(z.object({ title: z.string(), value: z.string() }))
 
@@ -78,9 +85,10 @@ export const extractedFormInputSchema = z.object({
     value: z
         .string()
         .describe(
-            'the value to fill in the input, based on user <description>, format the value according to the form requirements, change casing and punctuation if necessary.' +
+            'the value to fill in the input, based on user <description> and files, format the value according to the form requirements, change casing and punctuation if necessary.' +
                 `You can think of a new value for an input field if the user did not pass all the required information in the <description>, you can guess one based on the context.`,
-        ),
+        )
+        .nullable(),
 })
 
 // export const filledFormInputSchema = z.object({
@@ -97,6 +105,8 @@ let model = anthropic('claude-3-5-sonnet-latest', {
 //     structuredOutputs: true,
 //     // cacheControl: true,
 // })
+
+const hintLabelToFrameId = new Map<string, number>()
 
 chrome.runtime.onMessage.addListener(
     (request: ChromeMessageType, sender, sendResponse) => {
@@ -182,30 +192,75 @@ chrome.runtime.onMessage.addListener(
                             console.error('No active tab')
                             return { status: 'error', error: 'No active tab' }
                         }
-                        console.log('sending message to screenshot')
-                        const message: ChromeMessageType =
-                            await chrome.tabs.sendMessage(activeTab.id, {
-                                action: 'showHints',
-                            } satisfies ChromeMessageType)
-                        let documentHtml = ''
-                        if (
-                            message.action === 'showHints' &&
-                            message.documentHtml
-                        ) {
-                            documentHtml = await formatHtmlForPrompt(
-                                new Response(message.documentHtml),
-                                HTMLRewriter,
-                            )
+                        console.log(
+                            'sending message to get hints and html from all frames',
+                        )
+                        const frames =
+                            (await chrome.webNavigation.getAllFrames({
+                                tabId: activeTab.id,
+                            })) || []
+
+                        if (!frames?.length) {
+                            console.log('no frames found, aborting')
+                            return { status: 'error', error: 'No frames found' }
                         }
-                        if (!documentHtml) {
-                            console.log('no documentHtml found')
+                        let pastHintCount = 0
+                        let documentHtmls = [] as string[]
+                        for (const frame of frames) {
+                            try {
+                                const message: ChromeMessageType =
+                                    await chrome.tabs.sendMessage(
+                                        activeTab!.id as number,
+                                        {
+                                            action: 'showHints',
+                                            pastHintCount,
+                                        } satisfies ChromeMessageType,
+                                        { frameId: frame.frameId },
+                                    )
+
+                                if (
+                                    message.action === 'showHints' &&
+                                    message.documentHtml
+                                ) {
+                                    if (message.hints) {
+                                        pastHintCount += message.hints.length
+                                        for (let hint of message.hints) {
+                                            hintLabelToFrameId.set(
+                                                hint.label,
+                                                frame.frameId,
+                                            )
+                                        }
+                                    }
+
+                                    const formattedHtml =
+                                        await formatHtmlForPrompt(
+                                            new Response(message.documentHtml),
+                                            HTMLRewriter,
+                                        )
+                                    if (formattedHtml) {
+                                        documentHtmls.push(formattedHtml)
+                                    }
+                                }
+                            } catch (e) {
+                                console.log(
+                                    `Error getting HTML from frame ${frame.frameId} (${frame.url.slice(0, 200)}):`,
+                                    e,
+                                )
+                            }
                         }
+
+                        if (!documentHtmls.length) {
+                            console.log('no documentHtml found in any frames')
+                        }
+                        console.log(
+                            'extracted HTML from',
+                            documentHtmls.length,
+                            'frames',
+                        )
                         // console.log('documentHtml', documentHtml)
 
                         if (!screenshots.length) {
-                            console.log(
-                                'no screenshots found, aborting extraction',
-                            )
+                            console.log('no screenshots found')
                         }
                         console.log('screenshots', screenshots)
                         const messages: CoreMessage[] = []
@@ -234,15 +289,15 @@ chrome.runtime.onMessage.addListener(
                             })),
                             ...pdfs.map((file) => ({
                                 data: file.dataUrl,
-                                mimeType: file.type,
+                                mimeType: 'application/pdf',
                                 type: 'file' as const,
-                            }))
+                            })),
                         ]
 
                         if (allFiles.length) {
                             messages.push({
                                 role: 'user',
-                                content: allFiles
+                                content: allFiles,
                             })
                         }
                         const textFiles = files.filter(
@@ -263,7 +318,7 @@ chrome.runtime.onMessage.addListener(
                             role: 'user',
                             content: promptExtractFromHtml({
                                 description,
-                                documentHtml,
+                                documentHtml: documentHtmls.join('\n\n'),
                             }),
                             experimental_providerMetadata: {
                                 // anthropic: {
@@ -276,7 +331,9 @@ chrome.runtime.onMessage.addListener(
 
                         screenshots = []
 
-                        console.log('starting llm extraction of the labels and filling')
+                        console.log(
+                            'starting llm extraction of the labels and filling',
+                        )
                         const schema = z.object({
                             thinkStepByStep: z
                                 .string()
@@ -337,12 +394,18 @@ chrome.runtime.onMessage.addListener(
                             //         chunk.fullItem.value = option.value || ''
                             //     }
                             // }
-
+                            const frameId = hintLabelToFrameId.get(
+                                chunk.fullItem.label,
+                            )
                             const response: ChromeMessageType =
-                                await chrome.tabs.sendMessage(activeTab.id, {
-                                    action: 'highlightInputFound',
-                                    data: chunk.fullItem,
-                                } satisfies ChromeMessageType)
+                                await chrome.tabs.sendMessage(
+                                    activeTab.id,
+                                    {
+                                        action: 'highlightInputFound',
+                                        data: chunk.fullItem,
+                                    } satisfies ChromeMessageType,
+                                    { frameId },
+                                )
                             // if (
                             //     response.action === 'enrichedElement' &&
                             //     response.data
@@ -355,6 +418,7 @@ chrome.runtime.onMessage.addListener(
                             //     )
                             //     Object.assign(chunk.fullItem, response.data)
                             // }
+
                             foundHints.push(chunk.fullItem)
                             chrome.runtime
                                 .sendMessage({
@@ -363,12 +427,14 @@ chrome.runtime.onMessage.addListener(
                                 } satisfies ChromeMessageType)
                                 .catch((e) => null) // the popup can be closed
                             // don't await here, so popup can be closed
+
                             const res = await chrome.tabs.sendMessage(
                                 activeTab.id,
                                 {
                                     action: 'setHintValue',
                                     data: chunk.fullItem,
                                 } satisfies ChromeMessageType,
+                                { frameId },
                             )
 
                             console.log('setHintValue response', res)

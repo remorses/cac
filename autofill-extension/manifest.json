@@ -4,7 +4,13 @@
     "name": "AutoFill",
     "version": "1.0",
     "description": "Captures a screenshot of the current tab with options",
-    "permissions": ["activeTab", "tabs", "storage", "downloads"],
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "storage",
+        "downloads",
+        "webNavigation"
+    ],
     "action": {
         "default_popup": "index.html"
     },
@@ -25,6 +31,8 @@
     "content_scripts": [
         {
             "js": ["src/content/content.tsx"],
+            "all_frames": true,
+
             "matches": ["<all_urls>"]
         }
     ]

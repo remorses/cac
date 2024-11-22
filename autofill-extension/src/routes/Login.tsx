@@ -1,14 +1,13 @@
 import { Button } from '@/components/Button'
-import { renderPageAsImage } from 'unpdf'
 import {
     ChromeMessageType,
-    PRESET_ID_LEN,
     debounce,
     ExtensionStorage,
     generateRandomString,
     LoaderReturnType,
     Paths,
     PopupLoaderData,
+    PRESET_ID_LEN,
     truncateString,
 } from '@/lib/utils'
 
@@ -232,7 +231,7 @@ function LoginComponent() {
                     <textarea
                         name={FormFields.description}
                         ref={textareaRef}
-                        required
+                        // required
                         defaultValue={currentPreset?.prompt || ''}
                         onChange={(e) => {
                             // setDescription(e.target.value)

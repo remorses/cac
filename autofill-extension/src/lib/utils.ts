@@ -6,6 +6,7 @@ import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { z } from 'zod'
 import { extractedFormInputSchema } from '@/background/background'
+import { Hint } from '@/content/findHints'
 
 export function sleep(ms: number) {
     return new Promise((resolve) => {
@@ -53,7 +54,12 @@ export type EnrichedElementPart = {
 }
 
 export type ChromeMessageType =
-    | { action: 'showHints'; documentHtml?: string }
+    | {
+          action: 'showHints'
+          documentHtml?: string
+          pastHintCount?: number
+          hints?: { label: string }[]
+      }
     | { action: 'hideHints' }
     | { action: 'setHintValue'; data: ExtractedFormInput }
     | { action: 'highlightInputFound'; data: ExtractedFormInput }
