@@ -72,7 +72,12 @@ export default function ChooseOrg() {
                     )
                 })}
 
-                <Button color='primary' isLoading={isLoading} type='submit'>
+                <Button
+                    color='primary'
+                    className='font-semibold'
+                    isLoading={isLoading}
+                    type='submit'
+                >
                     Connect GitHub
                 </Button>
             </Form>

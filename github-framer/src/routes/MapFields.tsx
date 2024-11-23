@@ -36,6 +36,7 @@ async function loader({ request }: LoaderFunctionArgs) {
             repo,
             basePath,
             githubAccountLogin,
+            onlyGetFrontmatter: true,
         })
     if (error) {
         throw error

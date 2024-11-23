@@ -1,4 +1,5 @@
 import matter from 'gray-matter'
+import yaml from 'js-yaml'
 import * as domutils from 'domutils'
 import domSerializer from 'dom-serializer'
 
@@ -144,7 +145,13 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         '/syncGithub',
         async ({ request, state: store }) => {
             const body = await request.json()
-            let { owner, githubAccountLogin, basePath, repo } = body
+            let {
+                owner,
+                onlyGetFrontmatter,
+                githubAccountLogin,
+                basePath,
+                repo,
+            } = body
             if (!basePath) {
                 basePath = ''
             }
@@ -183,7 +190,9 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             const files = await getRepoFiles({
                 fetchBlob(pagePath) {
                     return (
-                        pagePath?.startsWith(basePath) && isMarkdown(pagePath)
+                        !onlyGetFrontmatter &&
+                        pagePath?.startsWith(basePath) &&
+                        isMarkdown(pagePath)
                     )
                 },
                 branch: branch,
@@ -206,7 +215,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
 
             let mapImageUrl = publicMapImageUrl
 
-            if (repoResult.data.private) {
+            if (!onlyGetFrontmatter && repoResult.data.private) {
                 mapImageUrl = async ({ imgPath, owner, repo, branch }) => {
                     try {
                         const res = await octokit.rest.repos.getContent({
@@ -275,7 +284,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 properties,
             }
             console.log(`finished syncing ${owner}/${repo}`)
-            return { frontMatter, files: withMarkdown.filter(isTruthy) }
+            return {
+                frontMatter,
+                files: onlyGetFrontmatter ? [] : withMarkdown.filter(isTruthy),
+            }
         },
         {
             body: z.object({
@@ -283,6 +295,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 repo: z.string(),
                 basePath: z.string(),
                 githubAccountLogin: z.string(),
+                onlyGetFrontmatter: z.boolean().optional(),
                 // userId: z.string(),
             }),
         },
@@ -475,12 +488,26 @@ export async function processMarkdown({
     pagePath,
     onError,
     content,
+    onlyGetFrontmatter = false,
     mapImageUrl = publicMapImageUrl,
 }) {
     try {
         let imagesNotFound = [] as string[]
-        const grayMatter = matter(content || '')
-        const html = await marked(grayMatter?.content || '')
+        const grayMatter = matter(content || '', {
+            engines: {
+                // Keep dates in string format
+                yaml: (s) =>
+                    yaml.load(s, {
+                        schema: yaml.JSON_SCHEMA,
+                    }) as any,
+            },
+        })
+        if (onlyGetFrontmatter) {
+            return {
+                frontMatter: grayMatter.data,
+            }
+        }
+        const html = await marked(grayMatter?.content || '', { gfm: true })
 
         let title = ''
 
@@ -587,6 +614,7 @@ export async function processMarkdown({
                 }
             }
         }
+
         await processNodes(handler.dom)
 
         const formattedHtml = domSerializer(handler.dom, {

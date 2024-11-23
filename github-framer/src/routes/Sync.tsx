@@ -1,19 +1,48 @@
 import {
     getMarkdownPluginData,
+    LoaderReturnType,
     Paths,
     pluginApiClient,
     simpleHash,
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
 import { CollectionItemData, framer } from 'framer-plugin'
-import { LoaderFunctionArgs, RouteObject } from 'react-router'
+import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
 import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
 
+const ErrorIcon = () => (
+    <svg
+        className='w-5 h-5 mr-2 fill-current text-red-500'
+        xmlns='http://www.w3.org/2000/svg'
+        viewBox='0 0 20 20'
+    >
+        <path d='M10 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm.93-12.36a1.5 1.5 0 00-2.86 0L3.18 13.5a1.5 1.5 0 001.43 2h10.78a1.5 1.5 0 001.43-2L10.93 2.64zM10 12a1 1 0 110-2 1 1 0 010 2zm0-3a1 1 0 01-1-1V7a1 1 0 112 0v1a1 1 0 01-1 1z' />
+    </svg>
+)
+
 function Component() {
-    // useRefreshOnVisible({ enabled: true })
+    const { errorList } = useLoaderData() as LoaderReturnType<typeof loader>
+
     return (
         <div className='flex flex-col justify-center items-center min-h-[200px] gap-4'>
-            <Spinner />
+            {/* <Spinner /> */}
+            {errorList && errorList.length > 0 && (
+                <div
+                    className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative'
+                    role='alert'
+                >
+                    <strong className='font-bold'>Error(s) occurred:</strong>
+                    <div className='mt-2 font-bold'>{errorList.length} pages were not imported</div>
+                    <ul className='list-disc list-inside mt-2'>
+                        {errorList.map((error, index) => (
+                            <li key={index} className='flex items-start mb-2'>
+                                <ErrorIcon />
+                                {error.message} (Slug: {error.slug})
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     )
 }
@@ -136,7 +165,20 @@ async function loader({}: LoaderFunctionArgs) {
         })
     }
 
-    await collection.addItems(itemsToAdd)
+    console.log(itemsToAdd)
+
+    const errorList = [] as { message: string; slug: string }[]
+
+    for (const item of itemsToAdd) {
+        try {
+            await collection.addItems([item])
+        } catch (error) {
+            console.log('error adding item', item)
+            console.error(`Error adding item with id ${item.id}:`, error)
+            console.log(item.fieldData[CollectionFieldIds.content])
+            errorList.push({ message: error.message, slug: item.slug })
+        }
+    }
 
     // Remove all the items that weren't in the new feed
     const itemsToDelete = Array.from(unseenItemIds)
@@ -146,6 +188,11 @@ async function loader({}: LoaderFunctionArgs) {
     await framer.notify(`Imported ${itemsToAdd.length} files`, {
         variant: 'success',
     })
+    if (errorList.length) {
+        return {
+            errorList,
+        }
+    }
     await framer.closePlugin()
     return {}
 }

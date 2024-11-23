@@ -1,0 +1,94 @@
+<p>import SnippetIntro from &#39;/snippets/snippet-intro.mdx&#39;;</p>
+<snippetintro>
+
+<h2>Creating a custom snippet</h2>
+<p><strong>Pre-condition</strong>: You must create your snippet file in the <code>snippets</code> directory.</p>
+<note>
+  Any page in the `snippets` directory will be treated as a snippet and will not
+  be rendered into a standalone page. If you want to create a standalone page
+  from the snippet, import the snippet into another file and call it as a
+  component.
+</note>
+
+<h3>Default export</h3>
+<ol>
+<li>Add content to your snippet file that you want to re-use across multiple
+locations. Optionally, you can add variables that can be filled in via props
+when you import the snippet.</li>
+</ol>
+<pre><code class="language-mdx">Hello world! This is my content I want to reuse across pages. My keyword of the
+day is {word}.
+</code></pre>
+<warning>
+  The content that you want to reuse must be inside the `snippets` directory in
+  order for the import to work.
+</warning>
+
+<ol start="2">
+<li>Import the snippet into your destination file.</li>
+</ol>
+<pre><code class="language-mdx">---
+title: My title
+description: My Description
+---
+
+import MySnippet from &#39;/snippets/path/to/my-snippet.mdx&#39;;
+
+## Header
+
+Lorem impsum dolor sit amet.
+
+&lt;MySnippet word=&quot;bananas&quot; /&gt;
+</code></pre>
+<h3>Reusable variables</h3>
+<ol>
+<li>Export a variable from your snippet file:</li>
+</ol>
+<pre><code class="language-mdx">export const myName = &#39;my name&#39;;
+
+export const myObject = { fruit: &#39;strawberries&#39; };
+</code></pre>
+<ol start="2">
+<li>Import the snippet from your destination file and use the variable:</li>
+</ol>
+<pre><code class="language-mdx">---
+title: My title
+description: My Description
+---
+
+import { myName, myObject } from &#39;/snippets/path/to/custom-variables.mdx&#39;;
+
+Hello, my name is {myName} and I like {myObject.fruit}.
+</code></pre>
+<h3>Reusable components</h3>
+<ol>
+<li>Inside your snippet file, create a component that takes in props by exporting
+your component in the form of an arrow function.</li>
+</ol>
+<pre><code class="language-mdx">export const MyComponent = ({ title }) =&gt; (
+  &lt;div&gt;
+    &lt;h1&gt;{title}&lt;/h1&gt;
+    &lt;p&gt;... snippet content ...&lt;/p&gt;
+  &lt;/div&gt;
+);
+</code></pre>
+<warning>
+  MDX does not compile inside the body of an arrow function. Stick to HTML
+  syntax when you can or use a default export if you need to use MDX.
+</warning>
+
+<ol start="2">
+<li>Import the snippet into your destination file and pass in the props</li>
+</ol>
+<pre><code class="language-mdx">---
+title: My title
+description: My Description
+---
+
+import { MyComponent } from &#39;/snippets/custom-component.mdx&#39;;
+
+Lorem ipsum dolor sit amet.
+
+&lt;MyComponent title={&#39;Custom title&#39;} /&gt;
+</code></pre>
+</snippetintro>
