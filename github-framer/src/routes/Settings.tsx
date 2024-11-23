@@ -99,7 +99,7 @@ function Component() {
                 <div className='grow'></div>
                 <a
                     href={`https://github.com/${owner}/${repo}`}
-                    className='font-semibold text-blue-500 underline inline'
+                    className='font-semibold text-right text-blue-400 underline inline'
                     target='_blank'
                     rel='noopener noreferrer'
                 >

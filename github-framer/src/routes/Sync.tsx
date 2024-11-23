@@ -32,7 +32,9 @@ function Component() {
                     role='alert'
                 >
                     <strong className='font-bold'>Error(s) occurred:</strong>
-                    <div className='mt-2 font-bold'>{errorList.length} pages were not imported</div>
+                    <div className='mt-2 font-bold'>
+                        {errorList.length} pages were not imported
+                    </div>
                     <ul className='list-disc list-inside mt-2'>
                         {errorList.map((error, index) => (
                             <li key={index} className='flex items-start mb-2'>
@@ -65,7 +67,7 @@ function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
     }
     if (field.type === 'date') {
         try {
-            return new Date(Date.parse(value))
+            return new Date(Date.parse(value)).toUTCString()
         } catch (e) {
             return null
         }
