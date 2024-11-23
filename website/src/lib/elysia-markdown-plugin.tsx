@@ -190,9 +190,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             const files = await getRepoFiles({
                 fetchBlob(pagePath) {
                     return (
-                        !onlyGetFrontmatter &&
-                        pagePath?.startsWith(basePath) &&
-                        isMarkdown(pagePath)
+                        pagePath?.startsWith(basePath) && isMarkdown(pagePath)
                     )
                 },
                 branch: branch,
