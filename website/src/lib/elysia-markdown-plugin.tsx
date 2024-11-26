@@ -383,6 +383,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         branch,
                         pagePath: x.pagePath,
                         content: x.content,
+                        onlyGetFrontmatter,
                         onError(e) {
                             notifyError(e, 'error parsing markdown')
                         },
@@ -771,7 +772,7 @@ export async function processMarkdown({
             slug,
             path: pagePath,
             title,
-            frontMatter: frontmatter.data,
+            frontMatter: frontmatter,
             foundMdx,
             html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
         }

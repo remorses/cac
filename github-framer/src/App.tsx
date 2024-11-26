@@ -74,7 +74,7 @@ const router = createBrowserRouter(
                     Paths.settings,
                     Paths.sync,
                 ].includes(location.pathname as any)
-                    ? 350
+                    ? 360
                     : 270
                 useLayoutEffect(() => {
                     console.log('opening framer ui')

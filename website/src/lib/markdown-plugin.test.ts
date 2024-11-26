@@ -106,6 +106,7 @@ test('processMarkdown', async () => {
         branch,
         owner,
         repo,
+        extension: 'md',
         onError: (e) => {
             errors.push(e)
         },
