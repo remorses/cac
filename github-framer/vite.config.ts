@@ -20,6 +20,7 @@ export default defineConfig({
             out: '../website/public',
         }),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
+        EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
     ],
 })

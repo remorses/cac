@@ -1,5 +1,5 @@
 import { unified } from 'unified'
-import { SafeMdxRenderer } from 'safe-mdx'
+import { MdastToJsx, SafeMdxRenderer } from 'safe-mdx'
 import remarkParse from 'remark-parse'
 import remarkMdx from 'remark-mdx'
 import remarkFrontmatter from 'remark-frontmatter'
@@ -24,20 +24,27 @@ function extractFrontmatter() {
 
 function convertJSXToHTML() {
     return (tree, file) => {
+        let foundMdx = false // Initialize foundMdx as false
+
         visit(
             tree,
             ['mdxJsxFlowElement', 'mdxJsxTextElement', 'mdxjsEsm'],
             (node, index, parent) => {
                 if (node.type === 'mdxjsEsm') {
+                    foundMdx = true // Set foundMdx to true if mdxjsEsm is found
                     if (parent && typeof index === 'number') {
                         parent.children.splice(index, 1)
                     }
                     return SKIP
                 }
 
-                const res = renderToStaticMarkup(
-                    SafeMdxRenderer({ mdast: node, components: {} }),
-                )
+                const visitor = new MdastToJsx({ mdast: node, components: {} })
+                const result = visitor.run()
+
+                const res = renderToStaticMarkup(result)
+                if (visitor.errors) {
+                    foundMdx = true
+                }
 
                 if (!res) {
                     return
@@ -55,6 +62,10 @@ function convertJSXToHTML() {
                 }
             },
         )
+
+        if (foundMdx) {
+            file.data.foundMdx = true // Add foundMdx to the file if any MDX elements were found
+        }
     }
 }
 
@@ -86,24 +97,23 @@ const mdxPlugins = unified()
     .use(remarkParse)
     .use(remarkMdx)
     .use(convertJSXToHTML)
-    .use(debugMdast)
+    // .use(debugMdast)
     .use(remarkFrontmatter, ['yaml'])
     .use(extractFrontmatter)
     .use(rehype, { allowDangerousHtml: true })
     .use(rehypeStringify, { allowDangerousHtml: true })
 
 // Main function
-export async function markdownToHtml(
-    markdown: string,
-    extension: 'md' | 'mdx',
-): Promise<{ html: string; frontmatter: Record<string, any> }> {
-    const processor = extension === 'mdx' ? mdxPlugins : markdownPlugins
+export async function markdownToHtml(markdown: string, extension: string) {
+    const processor = extension.includes('mdx') ? mdxPlugins : markdownPlugins
 
     // Process the input Markdown or MDX
     const file = await processor.process(markdown)
 
+    const foundMdx = file.data.foundMdx || false
     return {
+        foundMdx,
         html: String(file), // Extract the resulting HTML
-        frontmatter: file.data.frontmatter || {}, // Extract the frontmatter
+        frontmatter: (file.data.frontmatter || {}) as any, // Extract the frontmatter
     }
 }

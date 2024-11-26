@@ -626,7 +626,7 @@ export async function processMarkdown({
 }) {
     try {
         let imagesNotFound = [] as string[]
-        const { frontmatter, html } = await markdownToHtml(
+        const { frontmatter, html, foundMdx } = await markdownToHtml(
             content || '',
             extension,
         )
@@ -762,15 +762,17 @@ export async function processMarkdown({
             console.log(`no title found for ${slug}, using page slug for it`)
             title = slug
         }
-        if (frontmatter.data?.title) {
-            title = frontmatter.data.title
+        if (frontmatter?.title) {
+            title = frontmatter.title
         }
 
         return {
             pagePath,
             slug,
+            path: pagePath,
             title,
             frontMatter: frontmatter.data,
+            foundMdx,
             html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
         }
     } catch (e) {

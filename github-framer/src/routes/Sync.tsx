@@ -1,3 +1,4 @@
+import { Sema } from 'sema4'
 import {
     getMarkdownPluginData,
     LoaderReturnType,
@@ -21,10 +22,12 @@ const ErrorIcon = () => (
 )
 
 function Component() {
-    const { errorList } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { errorList, notImported } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
 
     return (
-        <div className='flex flex-col justify-center items-center min-h-[200px] gap-4'>
+        <div className='flex flex-col justify-center items-center min-h-[200px] max-h-[500px] overflow-y-auto gap-4'>
             {/* <Spinner /> */}
             {errorList && errorList.length > 0 && (
                 <div
@@ -32,14 +35,16 @@ function Component() {
                     role='alert'
                 >
                     <strong className='font-bold'>Error(s) occurred:</strong>
-                    <div className='mt-2 font-bold'>
-                        {errorList.length} pages were not imported
-                    </div>
+                    {!!notImported && (
+                        <div className='mt-2 font-bold'>
+                            {notImported} pages were not imported
+                        </div>
+                    )}
                     <ul className='list-disc list-inside mt-2'>
                         {errorList.map((error, index) => (
                             <li key={index} className='flex items-start mb-2'>
                                 <ErrorIcon />
-                                {error.message} (Slug: {error.slug})
+                                {error.message} (File: {error.path})
                             </li>
                         ))}
                     </ul>
@@ -140,61 +145,75 @@ async function loader({}: LoaderFunctionArgs) {
     ])
 
     const unseenItemIds = new Set(await collection.getItemIds())
+    const errorList = [] as { message: string; path: string }[]
+    const semaphore = new Sema(10)
+    let notImported = 0
 
-    const itemsToAdd: CollectionItemData[] = []
+    await Promise.all(
+        files.map(async (item) => {
+            if (item.foundMdx) {
+                errorList.push({
+                    message: `MDX custom components which are not supported yet`,
+                    path: item.path,
+                })
+            }
 
-    for (const item of files) {
-        if (!item?.html) {
-            continue
-        }
+            if (!item?.html) {
+                return
+            }
 
-        const id = simpleHash(item.pagePath)
+            const id = simpleHash(item.pagePath)
 
-        unseenItemIds.delete(id)
+            unseenItemIds.delete(id)
 
-        let frontMatterFields = getFieldsForFrontMatter(
-            item.frontMatter,
-            mapFieldsConfig,
-        )
+            let frontMatterFields = getFieldsForFrontMatter(
+                item.frontMatter,
+                mapFieldsConfig,
+            )
 
-        itemsToAdd.push({
-            id,
-            slug: item.slug,
+            const collectionItem: CollectionItemData = {
+                id,
+                slug: item.slug,
 
-            fieldData: {
-                // title: item.title,
-                [CollectionFieldIds.content]: item.html,
-                ...frontMatterFields,
-            },
-        })
-    }
+                fieldData: {
+                    // title: item.title,
+                    [CollectionFieldIds.content]: item.html,
+                    ...frontMatterFields,
+                },
+            }
 
-    console.log(itemsToAdd)
-
-    const errorList = [] as { message: string; slug: string }[]
-
-    for (const item of itemsToAdd) {
-        try {
-            await collection.addItems([item])
-        } catch (error) {
-            console.log('error adding item', item)
-            console.error(`Error adding item with id ${item.id}:`, error)
-            console.log(item.fieldData[CollectionFieldIds.content])
-            errorList.push({ message: error.message, slug: item.slug })
-        }
-    }
+            await semaphore.acquire()
+            try {
+                await collection.addItems([collectionItem])
+            } catch (error) {
+                notImported++
+                console.log('error adding item', collectionItem)
+                console.error(
+                    `Error adding item with id ${collectionItem.id}:`,
+                    error,
+                )
+                console.log(
+                    collectionItem.fieldData[CollectionFieldIds.content],
+                )
+                errorList.push({ message: error.message, path: item.path })
+            } finally {
+                semaphore.release()
+            }
+        }),
+    )
 
     // Remove all the items that weren't in the new feed
     const itemsToDelete = Array.from(unseenItemIds)
     await collection.removeItems(itemsToDelete)
 
     // Save the data source ID for future plugin runs
-    await framer.notify(`Imported ${itemsToAdd.length} files`, {
+    await framer.notify(`Imported ${files.length} files`, {
         variant: 'success',
     })
     if (errorList.length) {
         return {
             errorList,
+            notImported,
         }
     }
     await framer.closePlugin()

@@ -43,6 +43,9 @@ describe('markdownToHtml', () => {
         bool: no
         ---
 
+        import { ExampleComponent } from 'components/ExampleComponent'
+
+
         # Hello MDX <p/>
 
         This is an MDX content and a {variable}.
@@ -67,7 +70,7 @@ describe('markdownToHtml', () => {
 
         const result = await markdownToHtml(mdx, 'mdx')
         expect(result.html).toMatchInlineSnapshot(`
-          "<h1>Hello MDX <p></p></h1>
+          "<h1>Hello MDX <div></div></h1>
           <p>This is an MDX content and a variable.</p>
           <p>this is a component with space above and below</p>
           <div></div>
