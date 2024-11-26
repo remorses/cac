@@ -286,7 +286,7 @@ export function MapFields({}: {}) {
                     encType: 'application/json',
                 })
             }}
-            className='flex flex-col gap-4 '
+            className='flex flex-col gap-3 '
         >
             {!!showMapFields && (
                 <div className='flex-1 flex flex-col gap-4'>
@@ -405,7 +405,7 @@ export function MapFields({}: {}) {
                     <div className=''>No frontmatter properties found</div>
                 </div>
             )}
-            <hr className='' />
+            {/* <hr className='' /> */}
             <div className='w-full flex-col gap-3 flex items-center max-w-full overflow-hidden'>
                 <div className='inline-flex items-center gap-1 min-w-0'>
                     {error && <span className='text-red-500'>{error}</span>}
