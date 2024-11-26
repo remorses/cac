@@ -428,15 +428,15 @@ export function MapFields({}: {}) {
 }
 
 const possibleTypes: CollectionField['type'][] = [
+    'string',
+    'formattedText',
+    'number',
     'boolean',
     'date',
     'enum',
-    'formattedText',
     'link',
-    'number',
-    'image',
+    // 'image', TODO to support image i have to upload them, which is more complex, i need to find a way to not upload images already uploaded
     'color',
-    'string',
 ]
 function mapCollectionFieldToReadableName(
     field: CollectionField['type'],
