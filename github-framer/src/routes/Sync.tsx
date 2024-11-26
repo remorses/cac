@@ -67,6 +67,8 @@ function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
     }
     if (field.type === 'date') {
         try {
+            return value || null
+            // TODO should i validate the Date or Framer?
             return new Date(Date.parse(value)).toUTCString()
         } catch (e) {
             return null

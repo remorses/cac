@@ -18,6 +18,10 @@ export const env = {
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GITHUB_APP_NAME: process.env.GITHUB_APP_NAME,
     BROWSERBASE_DCP: process.env.BROWSERBASE_DCP,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
 }
 
 // console.log(env)
@@ -35,7 +39,6 @@ export const supabaseRef = env
     .replace('https://', '')
 
 export const framerUrl = 'https://framer.com?via=xmorse'
-
 
 // TODO use the framer marketplace url
 export const installFramerPluginUrl =

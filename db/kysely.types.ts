@@ -97,6 +97,7 @@ export interface AuthMfaChallenges {
   ip_address: string;
   otp_code: string | null;
   verified_at: Timestamp | null;
+  web_authn_session_data: Json | null;
 }
 
 export interface AuthMfaFactors {
@@ -110,6 +111,8 @@ export interface AuthMfaFactors {
   status: AuthFactorStatus;
   updated_at: Timestamp;
   user_id: string;
+  web_authn_aaguid: string | null;
+  web_authn_credential: Json | null;
 }
 
 export interface AuthOneTimeTokens {

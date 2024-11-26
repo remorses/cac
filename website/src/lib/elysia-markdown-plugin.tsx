@@ -1,4 +1,5 @@
 import matter from 'gray-matter'
+import mime from 'mime'
 import yaml from 'js-yaml'
 import * as domutils from 'domutils'
 import domSerializer from 'dom-serializer'
@@ -142,6 +143,134 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         },
     )
     .post(
+        '/resolveFiles',
+        async ({ request, state: store }) => {
+            const body = await request.json()
+            const { owner, basePath = '/', repo, paths } = body
+
+            if (paths.length === 0) {
+                throw new Error('Paths must be a non-empty array')
+            }
+
+            const orgId = store.orgId
+            if (!orgId) {
+                throw unauthorizedResponse
+            }
+
+            const githubInstallation =
+                await prisma.githubInstallation.findFirst({
+                    where: {
+                        status: 'active',
+                        memberLogins: {
+                            has: store.githubUserLogin,
+                        },
+                        appId: env.GITHUB_APP_ID,
+                        accountLogin: body.githubAccountLogin,
+                    },
+                })
+            if (!githubInstallation) {
+                throw new Error('No github installation found')
+            }
+
+            const installationId = githubInstallation.installationId
+            const octokit = await getOctokit({ installationId })
+            const [repoResult, ok] = await Promise.all([
+                octokit.rest.repos.get({
+                    owner,
+                    repo,
+                }),
+                checkGitHubIsInstalled({ installationId }),
+            ])
+
+            if (!ok) {
+                throw new Error('Github app no longer installed')
+            }
+
+            const branch = repoResult.data.default_branch
+            const files = await getRepoFiles({
+                fetchBlob(pagePath) {
+                    return false
+                },
+                branch: branch,
+                octokit: octokit.rest,
+                owner,
+                repo,
+            })
+            let allAssetPaths = files.map((x) => x.pagePath)
+
+            const results = await Promise.all(
+                paths.map(async (src) => {
+                    const path = findMatchInPaths({
+                        filePath: src,
+                        paths: allAssetPaths,
+                    })
+                    if (!path) {
+                        return null
+                    }
+
+                    try {
+                        if (repoResult.data.private) {
+                            const url = publicFileMapUrl({
+                                owner,
+                                repo,
+                                branch,
+                                imgPath: path,
+                            })
+                            const type = mime.getType(path)
+                            return { url, type }
+                        } else {
+                            const { data: fileData } =
+                                await octokit.rest.repos.getContent({
+                                    owner,
+                                    repo,
+                                    path,
+                                    ref: branch,
+                                })
+
+                            if (!('download_url' in fileData)) {
+                                notifyError(
+                                    new Error(
+                                        'Could not get download url for image',
+                                    ),
+                                    'resolveFiles',
+                                )
+                                return null
+                            }
+                            if (fileData?.type !== 'file') {
+                                notifyError(
+                                    `Unsupported file type: ${fileData.type}`,
+                                    'resolveFiles',
+                                )
+                                return null
+                            }
+
+                            const url = fileData.download_url
+                            const type = mime.getType(fileData.name)
+                            return { url, type }
+                        }
+                    } catch (error) {
+                        console.error(
+                            `Error resolving file at path ${path}:`,
+                            error,
+                        )
+                        return null
+                    }
+                }),
+            )
+
+            return results.filter(Boolean)
+        },
+        {
+            body: z.object({
+                githubAccountLogin: z.string().min(1),
+                owner: z.string().min(1),
+                repo: z.string().min(1),
+                basePath: z.string().optional(),
+                paths: z.array(z.string().min(1)),
+            }),
+        },
+    )
+    .post(
         '/syncGithub',
         async ({ request, state: store }) => {
             const body = await request.json()
@@ -211,7 +340,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 )
             }
 
-            let mapImageUrl = publicMapImageUrl
+            let mapImageUrl = publicFileMapUrl
 
             if (!onlyGetFrontmatter && repoResult.data.private) {
                 mapImageUrl = async ({ imgPath, owner, repo, branch }) => {
@@ -409,6 +538,7 @@ function isAbsoluteUrl(url: string) {
     ].some((x) => url.startsWith(x))
     return abs
 }
+
 export function findMatchInPaths({
     filePath,
     paths,
@@ -464,7 +594,7 @@ export type MarkdownPluginFrontMatter = {
     properties: Record<string, MarkdownPluginFrontMatterProperty>
 }
 
-export async function publicMapImageUrl({
+export async function publicFileMapUrl({
     owner,
     repo,
     branch,
@@ -487,7 +617,7 @@ export async function processMarkdown({
     onError,
     content,
     onlyGetFrontmatter = false,
-    mapImageUrl = publicMapImageUrl,
+    mapImageUrl = publicFileMapUrl,
 }) {
     try {
         let imagesNotFound = [] as string[]

@@ -347,7 +347,7 @@ export function MapFields({}: {}) {
                                         )}
                                         value={fieldConfig?.type || ''}
                                     >
-                                        <option value=''>disable</option>
+                                        <option value=''>Disable</option>
                                         {possibleTypes.map((type) => (
                                             <option key={type} value={type}>
                                                 {mapCollectionFieldToReadableName(
@@ -451,9 +451,9 @@ function mapCollectionFieldToReadableName(
         case 'date':
             return 'Date'
         case 'enum':
-            return 'Option'
+            return 'Option (enum)'
         case 'formattedText':
-            return 'Formatted Text'
+            return 'Rich Text'
         case 'link':
             return 'Link'
         case 'image':
