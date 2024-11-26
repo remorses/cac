@@ -32,7 +32,7 @@ function convertJSXToHTML() {
                     if (parent && typeof index === 'number') {
                         parent.children.splice(index, 1)
                     }
-                    return
+                    return SKIP
                 }
 
                 const res = renderToStaticMarkup(
@@ -51,7 +51,7 @@ function convertJSXToHTML() {
                 }
                 if (parent && typeof index === 'number') {
                     parent.children[index] = htmlNode
-                    return
+                    return SKIP
                 }
             },
         )
