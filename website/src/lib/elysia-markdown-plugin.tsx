@@ -526,7 +526,7 @@ function turnPagePathIntoSlug(pagePath: string, basePath) {
         '/' +
         pagePath
             .replace(/\.mdx?$/, '')
-            .replace(/\/index$/, '')
+            // .replace(/\/index$/, '')
             .replace(/\//g, '-') // framer does not support folders inside CMS, you will need to create separate collections for each folderF
     return res
 }
