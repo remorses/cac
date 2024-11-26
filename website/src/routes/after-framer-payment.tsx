@@ -13,8 +13,7 @@ export default function AfterPayment() {
         <div className='flex flex-col max-w-md text-center mx-auto justify-center items-center h-screen'>
             <div className='text-2xl font-bold'>{message}</div>
             <div className='mt-4 opacity-60 text-balance '>
-                You can now return to Framer and continue using the Framer
-                plugin.
+                You can now return to Framer and continue using the plugin.
             </div>
         </div>
     )
