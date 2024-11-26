@@ -24,6 +24,8 @@ import { z } from 'zod'
 import { redirect } from '@remix-run/react'
 import DomHandler from 'domhandler'
 import { Parser } from 'htmlparser2'
+import { markdownToHtml } from 'website/src/lib/mdx'
+import path from 'path'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -385,6 +387,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                             notifyError(e, 'error parsing markdown')
                         },
                         mapImageUrl,
+                        extension: path.extname(x.pagePath),
                     })
                     return data
                 }),
@@ -403,7 +406,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         }
                     }
                     if (value != null) {
-                        properties[key].values.push(value)
+                        properties[key].values.push(value as any)
                     }
                 }
             }
@@ -607,6 +610,7 @@ export async function publicFileMapUrl({
 }) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
 }
+
 export async function processMarkdown({
     basePath,
     allAssetPaths,
@@ -618,24 +622,19 @@ export async function processMarkdown({
     content,
     onlyGetFrontmatter = false,
     mapImageUrl = publicFileMapUrl,
+    extension,
 }) {
     try {
         let imagesNotFound = [] as string[]
-        const grayMatter = matter(content || '', {
-            engines: {
-                // Keep dates in string format
-                yaml: (s) =>
-                    yaml.load(s, {
-                        schema: yaml.JSON_SCHEMA,
-                    }) as any,
-            },
-        })
+        const { frontmatter, html } = await markdownToHtml(
+            content || '',
+            extension,
+        )
         if (onlyGetFrontmatter) {
             return {
-                frontMatter: grayMatter.data,
+                frontMatter: frontmatter,
             }
         }
-        const html = await marked(grayMatter?.content || '', { gfm: true })
 
         let title = ''
 
@@ -763,15 +762,15 @@ export async function processMarkdown({
             console.log(`no title found for ${slug}, using page slug for it`)
             title = slug
         }
-        if (grayMatter.data?.title) {
-            title = grayMatter.data.title
+        if (frontmatter.data?.title) {
+            title = frontmatter.data.title
         }
 
         return {
             pagePath,
             slug,
             title,
-            frontMatter: grayMatter.data,
+            frontMatter: frontmatter.data,
             html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
         }
     } catch (e) {

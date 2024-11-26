@@ -192,7 +192,7 @@ export const getCurrentCommit = async ({
 }
 
 export function isMarkdown(p: string) {
-    return p.endsWith('.md') || p.endsWith('.markdown')
+    return p.endsWith('.md') || p.endsWith('.markdown') || p.endsWith('.mdx')
 }
 
 export async function getGithubUserLogin({ userId }) {

@@ -60,19 +60,21 @@ describe('markdownToHtml', () => {
         </test>
 
         <img src='sdfsdf' />
+
+        <a>test</a>
         
         `
 
         const result = await markdownToHtml(mdx, 'mdx')
         expect(result.html).toMatchInlineSnapshot(`
-          "<h1>Hello MDX <div></div></h1>
+          "<h1>Hello MDX <p></p></h1>
           <p>This is an MDX content and a variable.</p>
           <p>this is a component with space above and below</p>
           <div></div>
           <p>this one does not have space <div>test</div></p>
-          export const x = 7
           <div><p>xxxx</p></div>
-          <div></div>"
+          <link rel="preload" as="image" href="sdfsdf"/><img src="sdfsdf"/>
+          <p><a>test</a></p>"
         `)
         expect(result.frontmatter).toMatchInlineSnapshot(`
           {
