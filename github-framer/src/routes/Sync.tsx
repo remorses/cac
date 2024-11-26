@@ -143,9 +143,7 @@ async function loader({}: LoaderFunctionArgs) {
             projectId,
             projectName,
         })
-    if (error?.status === 402) {
-        throw redirect(Paths.buy)
-    }
+
     if (error) {
         throw error
     }

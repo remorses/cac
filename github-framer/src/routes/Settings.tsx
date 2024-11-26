@@ -137,9 +137,9 @@ function Component() {
                 <code className='font-semibold inline'>{basePath || '/'}</code>
             </div>
 
+            <hr className='' />
             {manageSubUrl && (
                 <>
-                    <hr className='' />
                     <div className='flex items-center'>
                         <div>Subscription active</div>
                         <div className='grow'></div>
@@ -154,53 +154,61 @@ function Component() {
                             </Button>
                         </a>
                     </div>
+                    <hr className='' />
                 </>
             )}
-            <hr className='' />
+
             {!sub && (
-                <div className='flex items-center'>
-                    <div>
-                        Get unlimited GitHub syncs.
-                        <br />
-                        {sub ? (
-                            'Unlimited syncs available'
-                        ) : (
-                            <>
-                                Free syncs remaining:{' '}
-                                {FREE_GITHUB_SYNCS_PER_MONTH - (syncs || 0)} /{' '}
-                                {FREE_GITHUB_SYNCS_PER_MONTH}
-                            </>
-                        )}
+                <>
+                    <div className='flex items-center'>
+                        <div>
+                            Get unlimited GitHub syncs.
+                            <br />
+                            {sub ? (
+                                'Unlimited syncs available'
+                            ) : (
+                                <>
+                                    Free syncs remaining:{' '}
+                                    {FREE_GITHUB_SYNCS_PER_MONTH - (syncs || 0)}{' '}
+                                    / {FREE_GITHUB_SYNCS_PER_MONTH}
+                                </>
+                            )}
+                        </div>
+                        <div className='grow'></div>
+                        <a
+                            href={getBuyGithubPluginUrl({
+                                orgId,
+                                projectId,
+                                email: '',
+                            })}
+                            target='_blank'
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                            rel='noopener noreferrer'
+                        >
+                            <Button className='font-semibold'>
+                                Buy the Plugin
+                            </Button>
+                        </a>
                     </div>
-                    <div className='grow'></div>
-                    <a
-                        href={getBuyGithubPluginUrl({
-                            orgId,
-                            projectId,
-                            email: '',
-                        })}
-                        target='_blank'
-                        style={{ textDecoration: 'none', color: 'inherit' }}
-                        rel='noopener noreferrer'
-                    >
-                        <Button className='font-semibold'>
-                            Buy the Plugin
-                        </Button>
-                    </a>
-                </div>
+                    <hr className='' />
+                </>
             )}
             {/* <hr className='' /> */}
             {!sub && (
-                <div className='flex flex-col gap-2'>
-                    <div className='grow'></div>
+                <>
+                    <div className='flex flex-col gap-2'>
+                        <div className='grow'></div>
 
-                    <ProgressBar
-                        progress={(syncs || 0) / FREE_GITHUB_SYNCS_PER_MONTH}
-                        className='w-full'
-                    />
-                </div>
+                        <ProgressBar
+                            progress={
+                                (syncs || 0) / FREE_GITHUB_SYNCS_PER_MONTH
+                            }
+                            className='w-full'
+                        />
+                    </div>
+                    <hr className='' />
+                </>
             )}
-            <hr className='' />
 
             <Button
                 onClick={() => {

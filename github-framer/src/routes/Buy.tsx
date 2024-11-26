@@ -3,8 +3,17 @@ import {
     Paths,
     getMarkdownPluginData,
     pluginApiClient,
+    withMode,
 } from '@/lib/utils'
-import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
+import { useEffect } from 'react'
+import {
+    LoaderFunctionArgs,
+    redirect,
+    RouteObject,
+    useLoaderData,
+    useRevalidator,
+} from 'react-router'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
 import {
     FREE_GITHUB_SYNCS_PER_MONTH,
@@ -12,7 +21,7 @@ import {
 } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [pluginData, org, credits] = await Promise.all([
+    const [pluginData, org] = await Promise.all([
         getMarkdownPluginData(),
         pluginApiClient.api.plugins.currentOrg
             .post({})
@@ -22,10 +31,21 @@ async function loader({}: LoaderFunctionArgs) {
                 }
                 return data
             }),
-        null,
     ])
+    const { activeSub } =
+        await pluginApiClient.api.plugins.markdownPlugin.subscriptions
+            .get({ query: { projectId: pluginData.projectId } })
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            })
+    if (activeSub) {
+        throw redirect(withMode(Paths.settings))
+    }
     const { email, orgId } = org
-    return { ...pluginData, credits, email, orgId }
+    return { ...pluginData, email, orgId }
 }
 
 export function BuyMoreSyncs(): RouteObject {
@@ -41,17 +61,27 @@ function Component() {
     const { orgId, projectId, email } = useLoaderData() as LoaderReturnType<
         typeof loader
     >
+    useRefreshOnVisible({ enabled: true })
+    const revalidator = useRevalidator()
+    useEffect(() => {
+        const interval = setInterval(() => {
+            revalidator.revalidate()
+        }, 2000)
+        return () => clearInterval(interval)
+    }, [])
 
     return (
         <div className='flex flex-col justify-start gap-4 text-center'>
             <div className='flex items-center'>
                 <div className='font-bold text-balance'>
-                    You have synced from GitHub more than the free limit of {FREE_GITHUB_SYNCS_PER_MONTH} times this month.
+                    You have synced from GitHub more than the free limit of{' '}
+                    {FREE_GITHUB_SYNCS_PER_MONTH} times this month.
                 </div>
             </div>
             <div className='flex items-center'>
                 <div className='opacity-60 text-balance'>
-                    The sync count resets on the 1st of the month.
+                    Please buy the plugin subscription to continue using the
+                    plugin.
                 </div>
             </div>
             <hr className='' />

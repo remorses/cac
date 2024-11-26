@@ -1,4 +1,5 @@
 // http://localhost:8040/api/markdown-plugin/buy?email=tommy@example.com&orgId=12345678
+// free with 2J5ZQHW3
 
 import { LoaderFunctionArgs, redirect } from '@remix-run/node'
 import Stripe from 'stripe'
@@ -27,6 +28,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         metadata: {
             ...params,
             orgId: orgId,
+        },
+        subscription_data: {
+            metadata: {
+                ...params,
+                orgId: orgId,
+            },
         },
 
         allow_promotion_codes: true, // Enable coupon/promotion code input

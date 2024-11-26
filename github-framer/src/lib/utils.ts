@@ -6,6 +6,8 @@ import { CollectionField, framer } from 'framer-plugin'
 import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
+import { redirect } from 'react-router'
+import { withMode } from 'template-rewrite-framer/src/lib/utils'
 
 export {
     withMode,
@@ -22,6 +24,9 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
                 const collection = await framer.getManagedCollection()
                 console.log('clearing session because api returned 401')
                 await collection.setPluginData(PluginDataKeys.sessionKey, null)
+            }
+            if (response?.status === 402) {
+                throw redirect(withMode(Paths.buy))
             }
         },
         async onRequest() {

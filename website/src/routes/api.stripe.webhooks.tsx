@@ -55,7 +55,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 console.log(`Unhandled event type ${event.type}`)
         }
     } catch (error) {
-        console.error('Error processing webhook:', error)
+        notifyError(
+            error,
+            `Error processing webhook for event type ${event.type}:`,
+        )
         return new Response('Webhook processing failed', { status: 500 })
     }
 
@@ -78,9 +81,10 @@ async function handleCheckoutSessionCompleted(
     }
 
     const item = session.line_items?.data[0] // Assuming single item checkout
-
+    console.log('item', item)
     if (!item || !item.price?.id) {
-        throw new AppError('No price id')
+        return
+        // throw new AppError('No price id')
     }
 
     const create: Prisma.PaymentForCreditsCreateManyInput = {
