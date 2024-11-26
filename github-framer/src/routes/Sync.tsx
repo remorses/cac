@@ -8,7 +8,12 @@ import {
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
 import { CollectionItemData, framer } from 'framer-plugin'
-import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
+import {
+    LoaderFunctionArgs,
+    redirect,
+    RouteObject,
+    useLoaderData,
+} from 'react-router'
 import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
 
 const ErrorIcon = () => (
@@ -119,8 +124,15 @@ function getFieldsForFrontMatter(
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    const { owner, repo, githubAccountLogin, basePath, mapFieldsConfig } =
-        await getMarkdownPluginData()
+    const {
+        owner,
+        repo,
+        githubAccountLogin,
+        basePath,
+        mapFieldsConfig,
+        projectId,
+        projectName,
+    } = await getMarkdownPluginData()
     console.log('syncing', owner, repo, githubAccountLogin, basePath)
     const { data, error } =
         await pluginApiClient.api.plugins.markdownPlugin.syncGithub.post({
@@ -128,7 +140,12 @@ async function loader({}: LoaderFunctionArgs) {
             repo,
             basePath,
             githubAccountLogin,
+            projectId,
+            projectName,
         })
+    if (error?.status === 402) {
+        throw redirect(Paths.buy)
+    }
     if (error) {
         throw error
     }

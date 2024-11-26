@@ -11,7 +11,7 @@ import { notifyError } from 'website/src/lib/errors'
 import { prisma } from 'db/prisma'
 import { marked } from 'marked'
 import { Octokit } from 'octokit'
-import { env } from 'website/src/lib/env'
+import { env, FREE_GITHUB_SYNCS_PER_MONTH } from 'website/src/lib/env'
 import {
     checkGitHubIsInstalled,
     getGithubUserLogin,
@@ -26,6 +26,9 @@ import DomHandler from 'domhandler'
 import { Parser } from 'htmlparser2'
 import { markdownToHtml } from 'website/src/lib/mdx'
 import path from 'path'
+import { db } from 'db/kysely'
+import Stripe from 'stripe'
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -273,6 +276,59 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         },
     )
     .post(
+        '/syncsThisMonth',
+        async ({ request, state: store }) => {
+            const body = await request.json()
+            const { projectId, projectName } = body
+            if (!store.orgId) {
+                throw unauthorizedResponse
+            }
+            return getSyncsThisMonth({
+                orgId: store.orgId,
+                projectId,
+                projectName,
+            })
+        },
+        {
+            body: z.object({
+                projectId: z.string().optional(),
+                projectName: z.string().optional(),
+            }),
+        },
+    )
+    .get(
+        '/subscriptions',
+        async ({ request, state: store, query }) => {
+            if (!store.orgId) {
+                throw unauthorizedResponse
+            }
+            const { projectId } = query
+            const activeSub = await getSub({ orgId: store.orgId, projectId })
+
+            let manageSubUrl: string | undefined
+            // const activeSub = subs.find((sub) => sub)
+            if (activeSub?.customerId) {
+                const portalSession =
+                    await stripe.billingPortal.sessions.create({
+                        customer: activeSub.customerId,
+
+                        return_url: new URL(
+                            '/after-framer-payment',
+                            env.PUBLIC_URL,
+                        ).toString(),
+                    })
+                manageSubUrl = portalSession.url
+            }
+
+            return { subs: [activeSub], activeSub, manageSubUrl }
+        },
+        {
+            query: z.object({
+                projectId: z.string().optional(),
+            }),
+        },
+    )
+    .post(
         '/syncGithub',
         async ({ request, state: store }) => {
             const body = await request.json()
@@ -282,6 +338,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 githubAccountLogin,
                 basePath,
                 repo,
+                projectId,
+                projectName,
             } = body
             if (!basePath) {
                 basePath = ''
@@ -290,23 +348,44 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             if (!orgId) {
                 throw unauthorizedResponse
             }
-            const githubInstallation =
-                await prisma.githubInstallation.findFirst({
-                    where: {
-                        status: 'active',
-                        memberLogins: {
-                            has: store.githubUserLogin,
+
+            const [githubInstallation, syncsThisMonth, sub] = await Promise.all(
+                [
+                    prisma.githubInstallation.findFirst({
+                        where: {
+                            status: 'active',
+                            memberLogins: {
+                                has: store.githubUserLogin,
+                            },
+                            appId: env.GITHUB_APP_ID,
+                            accountLogin: githubAccountLogin,
                         },
-                        appId: env.GITHUB_APP_ID,
-                        accountLogin: githubAccountLogin,
-                    },
-                })
+                    }),
+                    getSyncsThisMonth({
+                        orgId: store.orgId,
+                        projectId,
+                        projectName,
+                    }),
+                    getSub({ orgId, projectId }),
+                ],
+            )
             if (!githubInstallation) {
                 throw new Error('No github installation found')
             }
 
+            if (!sub && syncsThisMonth >= FREE_GITHUB_SYNCS_PER_MONTH) {
+                throw new Response(
+                    'You have reached the free limit of syncs this month: ' +
+                        FREE_GITHUB_SYNCS_PER_MONTH,
+                    {
+                        status: 402,
+                    },
+                )
+            }
+
             const installationId = githubInstallation.installationId
             const octokit = await getOctokit({ installationId })
+
             const [repoResult, ok] = await Promise.all([
                 octokit.rest.repos.get({
                     owner,
@@ -415,6 +494,16 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 properties,
             }
             console.log(`finished syncing ${owner}/${repo}`)
+
+            await prisma.gitHubSync.create({
+                data: {
+                    repoUrl: `https://github.com/${owner}/${repo}`,
+                    filesSynced: withMarkdown.length,
+                    orgId: store.orgId,
+                    projectName,
+                    projectId,
+                },
+            })
             return {
                 frontMatter,
                 files: onlyGetFrontmatter ? [] : withMarkdown.filter(isTruthy),
@@ -427,6 +516,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 basePath: z.string(),
                 githubAccountLogin: z.string(),
                 onlyGetFrontmatter: z.boolean().optional(),
+                projectId: z.string(),
+                projectName: z.string(),
                 // userId: z.string(),
             }),
         },
@@ -779,4 +870,40 @@ export async function processMarkdown({
     } catch (e) {
         onError?.(e)
     }
+}
+
+function startOfThisMonth() {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), 1)
+}
+
+async function getSyncsThisMonth({ orgId, projectId, projectName }) {
+    return await prisma.gitHubSync.count({
+        where: {
+            orgId: orgId,
+            projectId,
+            projectName,
+            createdAt: {
+                gte: startOfThisMonth(),
+            },
+        },
+    })
+}
+
+async function getSub({ orgId, projectId }) {
+    if (!projectId) {
+        throw new Error('projectId missing, cannot get subscription')
+    }
+    return await prisma.subscription.findFirst({
+        where: {
+            orgId: orgId,
+            status: {
+                in: ['active', 'trialing'],
+            },
+            metadata: {
+                path: ['projectId'],
+                equals: projectId,
+            },
+        },
+    })
 }

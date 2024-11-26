@@ -331,6 +331,16 @@ export interface GithubInstallation {
   status: Generated<string>;
 }
 
+export interface GitHubSync {
+  createdAt: Generated<Timestamp>;
+  filesSynced: Generated<number>;
+  id: Generated<number>;
+  orgId: string;
+  projectId: Generated<string>;
+  projectName: Generated<string>;
+  repoUrl: string;
+}
+
 export interface LemonSqueezyLicense {
   credits: Generated<number>;
   licenseKey: string;
@@ -364,11 +374,15 @@ export interface OrgsUsers {
 
 export interface PaymentForCredits {
   createdAt: Generated<Timestamp>;
+  customerId: string | null;
   email: string | null;
   id: string;
+  metadata: Json | null;
   orderId: string;
   orgId: string;
+  pluginName: Generated<"githubSync" | "migrate">;
   productId: string;
+  provider: Generated<"lemonsqueezy" | "stripe">;
   subscriptionId: string | null;
   variantId: string;
   variantName: string | null;
@@ -547,15 +561,18 @@ export interface StorageS3MultipartUploadsParts {
 
 export interface Subscription {
   createdAt: Generated<Timestamp>;
+  customerId: string | null;
   email: string | null;
   endsAt: Timestamp | null;
   itemId: string | null;
+  metadata: Json | null;
   orderId: string | null;
   orgId: string;
+  pluginName: Generated<"githubSync" | "migrate">;
   productId: string;
   provider: Generated<"lemonsqueezy" | "stripe">;
   quantity: Generated<number>;
-  status: "active" | "cancelled" | "expired" | "incomplete" | "on_trial" | "past_due" | "paused" | "unpaid";
+  status: "active" | "canceled" | "cancelled" | "expired" | "incomplete" | "incomplete_expired" | "on_trial" | "past_due" | "paused" | "trialing" | "unpaid";
   subscriptionId: string;
   variantId: string;
   variantName: string | null;
@@ -606,6 +623,7 @@ export interface DB {
   FramerLoginSession: FramerLoginSession;
   Generation: Generation;
   GithubInstallation: GithubInstallation;
+  GitHubSync: GitHubSync;
   LemonSqueezyLicense: LemonSqueezyLicense;
   Org: Org;
   OrgInviteLink: OrgInviteLink;

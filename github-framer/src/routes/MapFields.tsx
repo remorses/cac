@@ -28,8 +28,15 @@ import {
 } from 'website/src/lib/elysia-markdown-plugin'
 
 async function loader({ request }: LoaderFunctionArgs) {
-    const { owner, githubAccountLogin, repo, basePath, mapFieldsConfig } =
-        await getMarkdownPluginData()
+    const {
+        owner,
+        githubAccountLogin,
+        repo,
+        basePath,
+        mapFieldsConfig,
+        projectId,
+        projectName,
+    } = await getMarkdownPluginData()
     const { data, error } =
         await pluginApiClient.api.plugins.markdownPlugin.syncGithub.post({
             owner,
@@ -37,6 +44,8 @@ async function loader({ request }: LoaderFunctionArgs) {
             basePath,
             githubAccountLogin,
             onlyGetFrontmatter: true,
+            projectId,
+            projectName,
         })
     if (error) {
         throw error

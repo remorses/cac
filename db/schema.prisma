@@ -373,16 +373,20 @@ model GithubInstallation {
 }
 
 model PaymentForCredits {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
+  id             String          @id @default(cuid())
+  createdAt      DateTime        @default(now())
   orderId        String
   variantId      String
   productId      String
   variantName    String?
-  email          String?  @db.VarChar(255)
+  email          String?         @db.VarChar(255)
   orgId          String
   subscriptionId String?
-  org            Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  org            Org             @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  pluginName     PluginName      @default(migrate)
+  metadata       Json?
+  provider       PaymentProvider @default(lemonsqueezy)
+  customerId     String?
 
   @@index([orgId])
   @@index([orderId])
@@ -422,8 +426,11 @@ model Subscription {
   endsAt         DateTime?
   email          String?            @db.VarChar(255)
   orgId          String
+  metadata       Json?
   provider       PaymentProvider    @default(lemonsqueezy)
   org            Org                @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  pluginName     PluginName         @default(migrate)
+  customerId     String?
 
   @@id([subscriptionId, variantId])
   @@index([orgId])
@@ -477,6 +484,19 @@ enum PaymentProvider {
   @@schema("public")
 }
 
+model GitHubSync {
+  id          Int      @id @default(autoincrement())
+  repoUrl     String
+  filesSynced Int      @default(0)
+  createdAt   DateTime @default(now())
+  // userId      String   @db.Uuid
+  orgId       String
+  projectId   String   @default("")
+  projectName String   @default("")
+
+  @@schema("public")
+}
+
 enum SubscriptionStatus {
   on_trial
   active
@@ -486,6 +506,11 @@ enum SubscriptionStatus {
   cancelled
   expired
   incomplete
+
+  // stripe ones
+  canceled
+  incomplete_expired
+  trialing
 
   @@schema("public")
 }
@@ -529,4 +554,11 @@ enum one_time_token_type {
   phone_change_token
 
   @@schema("auth")
+}
+
+enum PluginName {
+  migrate
+  githubSync
+
+  @@schema("public")
 }

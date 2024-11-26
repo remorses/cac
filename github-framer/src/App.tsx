@@ -38,6 +38,7 @@ import {
 } from 'react-router'
 import { Link, createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
+import { BuyMoreSyncs } from '@/routes/Buy'
 
 globalThis.framer = framer
 
@@ -154,6 +155,7 @@ const router = createBrowserRouter(
                 MapFieldsPage(),
                 Sync(),
                 Settings(),
+                BuyMoreSyncs(),
             ],
         },
     ],

@@ -22,6 +22,7 @@ export const env = {
         process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
 }
 
 // console.log(env)
@@ -95,3 +96,13 @@ export const variantIdToCredits = Object.assign(
 )
 
 export const feedbackUrl = `mailto:tommy@unframer.co?subject=${encodeURIComponent('Migrate Plugin Feedback')}`
+
+export const FREE_GITHUB_SYNCS_PER_MONTH = 10
+
+export function getBuyGithubPluginUrl({ orgId, email, projectId }) {
+    const url = new URL('/api/markdown-plugin/buy', env.PUBLIC_URL)
+    url.searchParams.append('orgId', orgId)
+    url.searchParams.append('email', email)
+    url.searchParams.append('projectId', projectId)
+    return url.toString()
+}

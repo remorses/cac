@@ -52,6 +52,7 @@ export enum Paths {
     mapFields = '/map-fields',
     sync = '/sync',
     settings = '/settings',
+    buy = '/buy',
 }
 
 export enum RouteIds {
@@ -70,18 +71,21 @@ export enum PluginDataKeys {
 
 export async function getMarkdownPluginData() {
     const collection = await framer.getManagedCollection()
+
     const [
         repoSlug,
         mapFieldsConfigJson,
         basePath,
         githubAccountLogin,
         sessionKey,
+        project,
     ] = await Promise.all([
         collection.getPluginData(PluginDataKeys.githubRepoSlug),
         collection.getPluginData(PluginDataKeys.mapFieldsConfig),
         collection.getPluginData(PluginDataKeys.basePath) || '',
         collection.getPluginData(PluginDataKeys.githubAccountLogin) || '',
         collection.getPluginData(PluginDataKeys.sessionKey) || '',
+        framer.getProjectInfo(),
     ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
@@ -93,5 +97,7 @@ export async function getMarkdownPluginData() {
         basePath: basePath || '',
         githubAccountLogin: githubAccountLogin || '',
         sessionKey: sessionKey || '',
+        projectId: project.id,
+        projectName: project.name,
     }
 }

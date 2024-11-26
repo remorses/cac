@@ -24,7 +24,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     let event: Stripe.Event
 
     try {
-        console.log(env.STRIPE_WEBHOOK_SECRET)
         event = stripe.webhooks.constructEvent(
             body,
             sig,
@@ -67,8 +66,9 @@ async function handleCheckoutSessionCompleted(
     session: Stripe.Checkout.Session,
 ) {
     const customerEmail = session.customer_details?.email
-    const orgId = session.metadata?.orgId
 
+    const orgId = session.metadata?.orgId
+    const pluginName = session.metadata?.pluginName as any
     if (!orgId) {
         notifyError(
             new AppError('No orgId in Stripe metadata'),
@@ -77,40 +77,36 @@ async function handleCheckoutSessionCompleted(
         return
     }
 
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id)
-    const item = lineItems.data[0] // Assuming single item checkout
+    const item = session.line_items?.data[0] // Assuming single item checkout
 
-    if (!item.price?.id) throw new AppError('No price id')
-
-    if (item) {
-        const create: Prisma.PaymentForCreditsCreateManyInput = {
-            id: session.id,
-            email: customerEmail || '',
-            variantName: item.description || '',
-            orderId: session.id,
-            productId: item.price?.product.toString(),
-            variantId: item.price?.id,
-            orgId,
-
-            // googleUserEmail: orgId,
-        }
-
-        await prisma.paymentForCredits.upsert({
-            where: { id: session.id },
-            create,
-            update: create,
-        })
+    if (!item || !item.price?.id) {
+        throw new AppError('No price id')
     }
+
+    const create: Prisma.PaymentForCreditsCreateManyInput = {
+        id: session.id,
+        email: customerEmail || '',
+        variantName: item.description || '',
+        orderId: session.id,
+        productId: item.price?.product.toString(),
+        variantId: item.price?.id,
+        provider: 'stripe',
+        orgId,
+        pluginName,
+        metadata: session.metadata || {},
+    }
+
+    await prisma.paymentForCredits.upsert({
+        where: { id: session.id },
+        create,
+        update: create,
+    })
 }
 
 async function handleSubscriptionChange(
     subscription: Stripe.Subscription,
     eventType: string,
 ) {
-    const customer = await stripe.customers.retrieve(
-        subscription.customer as string,
-    )
-
     const orgId = subscription.metadata?.orgId
 
     if (!orgId) {
@@ -120,9 +116,10 @@ async function handleSubscriptionChange(
         )
         return
     }
+    const pluginName = subscription.metadata?.pluginName as any
 
     const create: Prisma.SubscriptionCreateManyInput = {
-        googleUserEmail: orgId,
+        orgId: orgId,
         orderId: subscription.id,
         productId: subscription.items.data[0]?.price.product.toString(),
         variantId: subscription.items.data[0]?.price.id,
@@ -134,6 +131,10 @@ async function handleSubscriptionChange(
         status: subscription.status,
         variantName: subscription.items.data[0]?.price.nickname || undefined,
         createdAt: new Date(subscription.created * 1000),
+        pluginName,
+        metadata: subscription.metadata || {},
+        provider: 'stripe',
+        customerId: subscription.customer.toString(),
     }
 
     await prisma.subscription.upsert({
@@ -168,23 +169,9 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
         subscriptionId: subscription.id,
         variantId: subscription.items.data[0]?.price.id,
         variantName: subscription.items.data[0]?.price.nickname || undefined,
-        // googleUserEmail: orgId,
+        customerId: subscription.customer.toString(),
         orgId,
     }
-
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    await prisma.paymentForCredits
-        .deleteMany({
-            where: {
-                orderId: invoice.id,
-                createdAt: {
-                    gt: yesterday,
-                },
-            },
-        })
-        .catch((e) => notifyError(e, 'delete old order'))
 
     await prisma.paymentForCredits.upsert({
         where: { id: invoice.id },
