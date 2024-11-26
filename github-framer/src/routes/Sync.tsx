@@ -170,7 +170,7 @@ async function loader({}: LoaderFunctionArgs) {
         files.map(async (item) => {
             if (item.foundMdx) {
                 errorList.push({
-                    message: `MDX custom components which are not supported yet`,
+                    message: `MDX custom components are not currently supported`,
                     path: item.path,
                 })
             }
