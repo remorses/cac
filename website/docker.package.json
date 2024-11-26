@@ -2,7 +2,7 @@
   "type": "commonjs",
   "scripts": {},
   "dependencies": {
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "^5.22.0",
     "@sentry/node": "^8.17.0",
     "dprint-node": "^1.0.8",
     "htmlrewriter": "^0.0.12",

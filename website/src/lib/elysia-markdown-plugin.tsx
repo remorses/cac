@@ -283,6 +283,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             if (!store.orgId) {
                 throw unauthorizedResponse
             }
+
             return getSyncsThisMonth({
                 orgId: store.orgId,
                 projectId,
@@ -495,15 +496,17 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
             console.log(`finished syncing ${owner}/${repo}`)
 
-            await prisma.gitHubSync.create({
-                data: {
-                    repoUrl: `https://github.com/${owner}/${repo}`,
-                    filesSynced: withMarkdown.length,
-                    orgId: store.orgId,
-                    projectName,
-                    projectId,
-                },
-            })
+            if (!onlyGetFrontmatter) {
+                await prisma.gitHubSync.create({
+                    data: {
+                        repoUrl: `https://github.com/${owner}/${repo}`,
+                        filesSynced: withMarkdown.length,
+                        orgId: store.orgId,
+                        projectName,
+                        projectId,
+                    },
+                })
+            }
             return {
                 frontMatter,
                 files: onlyGetFrontmatter ? [] : withMarkdown.filter(isTruthy),

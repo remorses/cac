@@ -18,7 +18,7 @@ import {
 } from 'react-router'
 
 import classNames from 'classnames'
-import { motion } from 'framer-motion'
+
 import { framer } from 'framer-plugin'
 
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
@@ -179,7 +179,7 @@ function Component() {
                             href={getBuyGithubPluginUrl({
                                 orgId,
                                 projectId,
-                                email: '',
+                                email,
                             })}
                             target='_blank'
                             style={{ textDecoration: 'none', color: 'inherit' }}
@@ -245,17 +245,17 @@ function ProgressBar({ progress, className = '' }) {
                 className,
             )}
         >
-            <motion.div
+            <div
                 // layout
-                transition={{ duration: 0.4 }}
-                animate={{
+                // transition={{ duration: 0.4 }}
+                style={{
                     width: Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
                 }}
                 className={classNames(
                     'h-full bg-gray-200 rounded overflow-hidden',
                     backgroundColor,
                 )}
-            ></motion.div>
+            ></div>
         </div>
     )
 }

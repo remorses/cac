@@ -1,5 +1,4 @@
 import NProgress from 'nprogress'
-import { Button } from 'template-rewrite-framer/src/components/Button'
 import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
 import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
@@ -19,11 +18,12 @@ import {
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 
+import { BuyMoreSyncs } from '@/routes/Buy'
 import { ChooseRepo } from '@/routes/ChooseRepo'
 import { MapFieldsPage } from '@/routes/MapFields'
 import { Settings } from '@/routes/Settings'
 import { Sync } from '@/routes/Sync'
-import { AnimatePresence, MotionConfig } from 'framer-motion'
+
 import {
     Outlet,
     RouterProvider,
@@ -32,13 +32,10 @@ import {
     useLocation,
     useMatches,
     useNavigate,
-    useNavigationType,
-    useRevalidator,
     useRouteError,
 } from 'react-router'
-import { Link, createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
-import { BuyMoreSyncs } from '@/routes/Buy'
 
 globalThis.framer = framer
 
@@ -88,29 +85,19 @@ const router = createBrowserRouter(
                 }, [height])
 
                 return (
-                    <MotionConfig
-                        transition={{
-                            duration: 0.2,
-                            type: 'spring',
-                            bounce: 0,
-                        }}
-                    >
-                        <AnimatePresence mode='wait'>
-                            <div className='overflow-hidden '>
-                                <div className='px-4 w-full'>
-                                    <hr className='loading-bar relative' />
-                                </div>
-                                <div
-                                    ref={ref}
-                                    className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
-                                >
-                                    <NProgressComponent />
+                    <div className='overflow-hidden '>
+                        <div className='px-4 w-full'>
+                            <hr className='loading-bar relative' />
+                        </div>
+                        <div
+                            ref={ref}
+                            className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
+                        >
+                            <NProgressComponent />
 
-                                    <Outlet />
-                                </div>
-                            </div>
-                        </AnimatePresence>
-                    </MotionConfig>
+                            <Outlet />
+                        </div>
+                    </div>
                 )
             },
 

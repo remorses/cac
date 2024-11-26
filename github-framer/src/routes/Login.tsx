@@ -1,4 +1,6 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
+// @ts-ignore
+import githubHero from '../../public/github-hero.jpeg'
 
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
@@ -86,7 +88,10 @@ function LoginComponent() {
         >
             <div className='flex flex-col items-center gap-6 min-h-[180px]'>
                 <div className='flex flex-col '>
-                    <img src='/github-hero.jpeg' className='grow object-cover h-[130px] rounded-lg' />
+                    <img
+                        src={githubHero}
+                        className='grow object-cover h-[130px] rounded-lg'
+                    />
                 </div>
                 <div className='text-center mx-auto items-center gap-2 flex flex-col max-w-xs'>
                     <div className='font-semibold'>Connect to GitHub</div>

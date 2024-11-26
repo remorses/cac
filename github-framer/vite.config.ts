@@ -8,6 +8,7 @@ import framer from 'vite-plugin-framer'
 import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
 
 const basePath = process.env.BASE_PATH
+console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,4 +24,12 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
     ],
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(
+            process.env.NODE_ENV || 'production',
+        ),
+    },
+    build: {
+        assetsInlineLimit: 512000, // 500kb in bytes
+    },
 })

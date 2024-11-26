@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const session = await stripe.checkout.sessions.create({
         line_items: [{ quantity: 1, price: env.STRIPE_PRICE_ID }],
         mode: 'subscription',
-        customer_email: params.email,
+        customer_email: params.email || undefined,
         client_reference_id: orgId,
         success_url: new URL('/after-framer-payment', baseUrl).toString(),
         cancel_url: new URL('/after-framer-payment', baseUrl).toString(),
