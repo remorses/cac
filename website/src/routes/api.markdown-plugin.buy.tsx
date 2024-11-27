@@ -1,6 +1,7 @@
 // http://localhost:8040/api/markdown-plugin/buy?email=tommy@example.com&orgId=12345678
 // free with 2J5ZQHW3
 
+import { PluginName } from '@prisma/client'
 import { LoaderFunctionArgs, redirect } from '@remix-run/node'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
@@ -18,6 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         throw new Error('orgId not found')
     }
 
+    let pluginName: PluginName = 'githubSync'
     const session = await stripe.checkout.sessions.create({
         line_items: [{ quantity: 1, price: env.STRIPE_PRICE_ID }],
         mode: 'subscription',
@@ -32,6 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         subscription_data: {
             metadata: {
                 ...params,
+                pluginName,
                 orgId: orgId,
             },
         },

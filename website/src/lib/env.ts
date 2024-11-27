@@ -1,3 +1,5 @@
+import { PluginName } from '@prisma/client'
+
 export const env = {
     //
     PUBLIC_URL: process.env.PUBLIC_URL,
@@ -103,6 +105,7 @@ export function getBuyGithubPluginUrl({ orgId, email, projectId }) {
     const url = new URL('/api/markdown-plugin/buy', env.PUBLIC_URL)
     url.searchParams.append('orgId', orgId)
     url.searchParams.append('email', email)
+    url.searchParams.append('pluginName', 'githubSync' satisfies PluginName)
     url.searchParams.append('projectId', projectId)
     return url.toString()
 }

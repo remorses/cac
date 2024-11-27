@@ -304,7 +304,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw unauthorizedResponse
             }
             const { projectId } = query
-            const activeSub = await getSub({ orgId: store.orgId, projectId })
+            const activeSub = await getGithubSub({ orgId: store.orgId, projectId })
 
             let manageSubUrl: string | undefined
             // const activeSub = subs.find((sub) => sub)
@@ -367,7 +367,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         projectId,
                         projectName,
                     }),
-                    getSub({ orgId, projectId }),
+                    getGithubSub({ orgId, projectId }),
                 ],
             )
             if (!githubInstallation) {
@@ -398,7 +398,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw new Error('Github app no longer installed')
             }
             let branch = repoResult.data.default_branch
-            
+
             const files = await getRepoFiles({
                 fetchBlob(pagePath) {
                     return (
@@ -897,7 +897,7 @@ async function getSyncsThisMonth({ orgId, projectId, projectName }) {
     })
 }
 
-async function getSub({ orgId, projectId }) {
+async function getGithubSub({ orgId, projectId }) {
     if (!projectId) {
         throw new Error('projectId missing, cannot get subscription')
     }
@@ -907,6 +907,7 @@ async function getSub({ orgId, projectId }) {
             status: {
                 in: ['active', 'trialing'],
             },
+            pluginName: 'githubSync',
             metadata: {
                 path: ['projectId'],
                 equals: projectId,
