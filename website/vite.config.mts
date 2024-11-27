@@ -34,6 +34,7 @@ export default defineConfig({
     },
     plugins: [
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
+        EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         Inspect(),
         mdx({
             remarkPlugins: [

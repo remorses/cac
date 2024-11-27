@@ -9,9 +9,9 @@ export let loader = async ({ request, }:LoaderFunctionArgs) => {
        
     })
 
-    if (session) {
-        return redirect('/x', { headers })
-    }
+    // if (session) {
+    //     return redirect('/x', { headers })
+    // }
 
     return json({ success: true }, { headers })
 }
