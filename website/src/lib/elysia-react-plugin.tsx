@@ -149,7 +149,7 @@ export const reactPluginApp = new Spiceflow({
     )
     .post(
         '/pushGithub',
-        async ({ request, state: store }) => {
+        async function pushGithub({ request, state: store }) {
             const body = await request.json()
             let { owner, githubAccountLogin, basePath, repo, components } = body
             if (!repo) {
@@ -542,7 +542,7 @@ export const reactPluginApp = new Spiceflow({
     )
     .post(
         '/checkBasePath',
-        async ({ request, state: store }) => {
+        async function checkBasePath({ request, state: store }) {
             const body = await request.json()
             let { owner, githubAccountLogin, basePath, repo } = body
 

@@ -90,13 +90,12 @@ export async function getRepoFiles({
 }) {
     if (!commitSha) {
         console.log(`getting current commit for ${branch}`)
-        let currentCommit = await getCurrentCommit({
-            octokit,
+        const { data: commitData } = await octokit.git.getRef({
             owner,
             repo,
-            branch,
+            ref: `heads/${branch}`,
         })
-        commitSha = currentCommit.commitSha
+        commitSha = commitData.object.sha
     }
     console.log(`getting github tree ${commitSha}`)
     const tree = await octokit.git.getTree({
@@ -159,36 +158,6 @@ export async function getRepoFiles({
         }),
     )
     return downloadedFiles.filter(isTruthy)
-}
-
-export const getCurrentCommit = async ({
-    octokit,
-    owner,
-    repo,
-    branch,
-}: {
-    octokit: OctokitRest
-    owner: string
-    repo: string
-    branch: string
-}) => {
-    console.log(`getting ref ${branch}`)
-    const { data: refData } = await octokit.git.getRef({
-        owner: owner,
-        repo,
-        ref: `heads/${branch}`,
-    })
-    const commitSha = refData.object.sha
-    console.log(`getting commit ${commitSha}`)
-    const { data: commitData } = await octokit.git.getCommit({
-        owner: owner,
-        repo,
-        commit_sha: commitSha,
-    })
-    return {
-        commitSha,
-        treeSha: commitData.tree.sha,
-    }
 }
 
 export function isMarkdown(p: string) {
@@ -372,13 +341,19 @@ export async function createNewRepo({
         throw e
     })
     const branch = repoResult.default_branch
-
-    const currentCommit = await getCurrentCommit({
-        octokit,
-        owner,
+    const { data: refData } = await octokit.git.getRef({
+        owner: owner,
         repo,
-        branch,
+        ref: `heads/${branch}`,
     })
+    const commitSha = refData.object.sha
+    console.log(`getting commit ${commitSha}`)
+    const { data: commitData } = await octokit.git.getCommit({
+        owner: owner,
+        repo,
+        commit_sha: commitSha,
+    })
+    const treeSha = commitData.tree.sha
     // const baseBranchRef = await octokit.git.getRef({
     //     owner,
     //     repo,
@@ -417,7 +392,7 @@ export async function createNewRepo({
         owner,
         repo,
         create: withBlobs,
-        parentTreeSha: currentCommit.treeSha,
+        parentTreeSha: treeSha,
     })
 
     // Create the new commit with all of the file changes
@@ -430,7 +405,7 @@ export async function createNewRepo({
         tree: newTree.sha,
 
         committer: committer,
-        parents: [currentCommit.commitSha],
+        parents: [commitSha],
     })
 
     try {
@@ -497,12 +472,20 @@ export async function pushChangesToNewBranch({
     branch: string
     baseBranch: string
 }) {
-    const currentCommit = await getCurrentCommit({
-        octokit,
+    const { data: refData } = await octokit.git.getRef({
         owner,
         repo,
-        branch: baseBranch,
+        ref: `heads/${branch}`,
     })
+    let commitSha = refData.object.sha
+    console.log(`getting commit ${commitSha}`)
+    const { data: commitData } = await octokit.git.getCommit({
+        owner: owner,
+        repo,
+        commit_sha: commitSha,
+    })
+    const treeSha = commitData.tree.sha
+
     console.log(
         'creating blobs for',
         files.map((x) => x.filePath),
@@ -529,7 +512,7 @@ export async function pushChangesToNewBranch({
         owner,
         repo,
         create: withBlobs,
-        parentTreeSha: currentCommit.treeSha,
+        parentTreeSha: treeSha,
     })
 
     console.log('creating commit')
@@ -542,7 +525,7 @@ export async function pushChangesToNewBranch({
         tree: newTree.sha,
 
         committer: committer,
-        parents: [currentCommit.commitSha],
+        parents: [commitSha],
     })
 
     // creates the branch

@@ -398,6 +398,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw new Error('Github app no longer installed')
             }
             let branch = repoResult.data.default_branch
+            
             const files = await getRepoFiles({
                 fetchBlob(pagePath) {
                     return (
