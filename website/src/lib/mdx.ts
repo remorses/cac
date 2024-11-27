@@ -105,15 +105,21 @@ const mdxPlugins = unified()
 
 // Main function
 export async function markdownToHtml(markdown: string, extension: string) {
+    const startTime = Date.now(); // Start time
+
     const processor = extension.includes('mdx') ? mdxPlugins : markdownPlugins
 
     // Process the input Markdown or MDX
     const file = await processor.process(markdown)
 
     const foundMdx = file.data.foundMdx || false
+
+    const endTime = Date.now(); // End time
+    console.log(`Markdown processing time: ${endTime - startTime}ms`); // Log the time it takes
+
     return {
         foundMdx,
         html: String(file), // Extract the resulting HTML
-        frontmatter: (file.data.frontmatter || {}) as any, // Extract the frontmatter
+        frontMatter: (file.data.frontmatter || {}) as any, // Extract the frontmatter
     }
 }

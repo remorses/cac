@@ -67,7 +67,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
 
     .post(
         '/githubRepoList',
-        async ({ request, state: store }) => {
+        async function getRepos({ request, state: store }) {
             const { githubAccountLogin } = await request.json()
             const orgId = store.orgId
 
@@ -149,7 +149,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     )
     .post(
         '/resolveFiles',
-        async ({ request, state: store }) => {
+        async function resolveFiles({ request, state: store }) {
             const body = await request.json()
             const { owner, basePath = '/', repo, paths } = body
 
@@ -331,7 +331,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     )
     .post(
         '/syncGithub',
-        async ({ request, state: store }) => {
+        async function syncGithub({ request, state: store }) {
             const body = await request.json()
             let {
                 owner,
@@ -422,10 +422,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 )
             }
 
-            let mapImageUrl = publicFileMapUrl
+            let mapImageUrl = (imgPath) =>
+                publicFileMapUrl({ branch, imgPath, owner, repo })
 
             if (!onlyGetFrontmatter && repoResult.data.private) {
-                mapImageUrl = async ({ imgPath, owner, repo, branch }) => {
+                mapImageUrl = async (imgPath) => {
                     try {
                         const res = await octokit.rest.repos.getContent({
                             owner,
@@ -455,22 +456,49 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     if (!x?.content) {
                         return
                     }
-                    const data = processMarkdown({
+                    const pagePath = x.pagePath
+                    let content = x.content
+                    let extension = path.extname(x.pagePath)
+                    const slug = turnPagePathIntoSlug(pagePath, basePath)
+                    const { frontMatter, html, foundMdx } =
+                        await markdownToHtml(content || '', extension)
+                    let title = frontMatter?.title
+
+                    if (onlyGetFrontmatter) {
+                        return {
+                            frontMatter,
+                            pagePath,
+                            slug,
+                            html: '',
+                            path: pagePath,
+                            title,
+                            foundMdx: false,
+                        }
+                    }
+
+                    const data = await processHtml({
                         basePath,
                         allAssetPaths,
-                        owner,
-                        repo,
-                        branch,
                         pagePath: x.pagePath,
-                        content: x.content,
-                        onlyGetFrontmatter,
-                        onError(e) {
-                            notifyError(e, 'error parsing markdown')
-                        },
+                        html,
                         mapImageUrl,
-                        extension: path.extname(x.pagePath),
+                    }).catch((e) => {
+                        notifyError(e, 'error parsing markdown')
+                        return null
                     })
-                    return data
+                    if (!title) {
+                        title = data?.title
+                    }
+
+                    return {
+                        ...data,
+                        frontMatter,
+                        slug,
+                        path: pagePath,
+                        pagePath,
+                        title,
+                        foundMdx,
+                    }
                 }),
             )
             let properties: MarkdownPluginFrontMatter['properties'] = {}
@@ -528,7 +556,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
 
     .post(
         '/checkBasePath',
-        async ({ request, state: store }) => {
+        async function checkBasePath({ request, state: store }) {
             const body = await request.json()
             let { owner, githubAccountLogin, basePath, repo } = body
 
@@ -706,172 +734,147 @@ export async function publicFileMapUrl({
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
 }
 
-export async function processMarkdown({
+export async function processHtml({
     basePath,
     allAssetPaths,
-    owner,
-    repo,
-    branch,
     pagePath,
-    onError,
-    content,
-    onlyGetFrontmatter = false,
-    mapImageUrl = publicFileMapUrl,
-    extension,
+    html,
+    mapImageUrl,
 }) {
-    try {
-        let imagesNotFound = [] as string[]
-        const { frontmatter, html, foundMdx } = await markdownToHtml(
-            content || '',
-            extension,
-        )
-        if (onlyGetFrontmatter) {
-            return {
-                frontMatter: frontmatter,
-            }
+    let imagesNotFound = [] as string[]
+
+    let title = ''
+
+    // Parse HTML
+    const handler = new DomHandler(async (error, dom) => {
+        if (error) {
+            throw error
         }
 
-        let title = ''
-
-        // Parse HTML
-        const handler = new DomHandler(async (error, dom) => {
-            if (error) {
-                throw error
-            }
-
-            // Find first h1 and set title to its content
-            const walk = (nodes: any[]) => {
-                for (const node of nodes) {
-                    if (node.type === 'tag' && node.name === 'h1') {
-                        const textNode = node.children[0]
-                        if (textNode?.type === 'text') {
-                            title = textNode.data
-                            break
-                        }
-                    }
-                    if (node.children) {
-                        walk(node.children)
+        // Find first h1 and set title to its content
+        const walk = (nodes: any[]) => {
+            for (const node of nodes) {
+                if (node.type === 'tag' && node.name === 'h1') {
+                    const textNode = node.children[0]
+                    if (textNode?.type === 'text') {
+                        title = textNode.data
+                        break
                     }
                 }
+
+                if (node.children) {
+                    walk(node.children)
+                }
             }
-            walk(dom)
-        })
+        }
+        walk(dom)
+    })
 
-        const parser = new Parser(handler, { decodeEntities: false })
-        parser.write(html)
-        parser.end()
+    const parser = new Parser(handler, { decodeEntities: false })
+    parser.write(html)
+    parser.end()
 
-        // Process links and images
-        const processNodes = async (nodes: any[]) => {
-            for (const [index, node] of nodes.slice().entries()) {
-                if (node.type === 'tag') {
-                    if (node.name === 'a') {
-                        const href = node.attribs?.href
-                        if (!isAbsoluteUrl(href)) {
-                            const match = findMatchInPaths({
-                                filePath: href,
-                                paths: allAssetPaths,
-                            })
-                            if (match) {
-                                const newHref = turnPagePathIntoSlug(
-                                    match,
-                                    basePath,
-                                )
-                                console.log(
-                                    `replaced link href from ${JSON.stringify(href)} to ${JSON.stringify(newHref)}`,
-                                )
-                                node.attribs.href = newHref
-                            }
+    // Process links and images
+    const processNodes = async (nodes: any[]) => {
+        for (const [index, node] of nodes.slice().entries()) {
+            if (node.type === 'tag') {
+                // remove parent p from img
+                if (node.type === 'tag' && node.name === 'img') {
+                    const parent = node.parent
+
+                    if (
+                        parent &&
+                        parent.type === 'tag' &&
+                        parent.name === 'p'
+                    ) {
+                        domutils.replaceElement(parent, node)
+                    }
+                }
+                if (node.name === 'a') {
+                    const href = node.attribs?.href
+                    if (!isAbsoluteUrl(href)) {
+                        const match = findMatchInPaths({
+                            filePath: href,
+                            paths: allAssetPaths,
+                        })
+                        if (match) {
+                            const newHref = turnPagePathIntoSlug(
+                                match,
+                                basePath,
+                            )
+                            console.log(
+                                `replaced link href from ${JSON.stringify(href)} to ${JSON.stringify(newHref)}`,
+                            )
+                            node.attribs.href = newHref
                         }
                     }
+                }
 
-                    if (node.name === 'img') {
-                        try {
-                            const src = node.attribs?.src
-                            if (!src) {
-                                console.log('no src found for img')
-                                domutils.removeElement(node)
-                                continue
-                            }
-
-                            const imgPath = findMatchInPaths({
-                                filePath: src,
-                                paths: allAssetPaths,
-                            })
-                            if (!imgPath) {
-                                imagesNotFound.push(src)
-                                console.log(`image not found in repo: ${src}`)
-                                domutils.removeElement(node)
-                                continue
-                            }
-                            if (!isAbsoluteUrl(imgPath)) {
-                                console.log(
-                                    `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
-                                )
-
-                                let newSrc = await mapImageUrl({
-                                    imgPath,
-                                    owner,
-                                    repo,
-                                    branch,
-                                })
-                                if (!newSrc) {
-                                    throw new Error(
-                                        'Could not get github image url for image ' +
-                                            imgPath,
-                                    )
-                                }
-                                node.attribs.src = newSrc
-                            }
-                        } catch (e) {
-                            notifyError(e, 'error transforming image src')
-                            // Remove the image node
+                if (node.name === 'img') {
+                    try {
+                        const src = node.attribs?.src
+                        if (!src) {
+                            console.log('no src found for img')
                             domutils.removeElement(node)
+                            continue
                         }
-                    }
 
-                    if (node.children) {
-                        await processNodes(node.children)
+                        const imgPath = findMatchInPaths({
+                            filePath: src,
+                            paths: allAssetPaths,
+                        })
+                        if (!imgPath) {
+                            imagesNotFound.push(src)
+                            console.log(`image not found in repo: ${src}`)
+                            domutils.removeElement(node)
+                            continue
+                        }
+                        if (!isAbsoluteUrl(imgPath)) {
+                            console.log(
+                                `replaced link img from ${JSON.stringify(src)} to ${JSON.stringify(imgPath)}`,
+                            )
+
+                            let newSrc = await mapImageUrl(imgPath)
+                            if (!newSrc) {
+                                throw new Error(
+                                    'Could not get github image url for image ' +
+                                        imgPath,
+                                )
+                            }
+                            node.attribs.src = newSrc
+                        }
+                    } catch (e) {
+                        notifyError(e, 'error transforming image src')
+                        // Remove the image node
+                        domutils.removeElement(node)
                     }
+                }
+
+                if (node.children) {
+                    await processNodes(node.children)
                 }
             }
         }
+    }
 
-        await processNodes(handler.dom)
+    await processNodes(handler.dom)
 
-        const formattedHtml = domSerializer(handler.dom, {
-            // xmlMode: true,
-            encodeEntities: false,
-            decodeEntities: false,
-        })
-        console.log('formattedHtml', formattedHtml)
-        if (imagesNotFound.length) {
-            console.log(
-                `${imagesNotFound.length} images not found in ${pagePath}:`,
-                imagesNotFound,
-            )
-        }
+    const formattedHtml = domSerializer(handler.dom, {
+        // xmlMode: true,
+        encodeEntities: false,
+        decodeEntities: false,
+    })
+    // console.log('formattedHtml', formattedHtml)
+    if (imagesNotFound.length) {
+        console.log(
+            `${imagesNotFound.length} images not found in ${pagePath}:`,
+            imagesNotFound,
+        )
+    }
 
-        let slug = turnPagePathIntoSlug(pagePath, basePath)
-        if (!title) {
-            console.log(`no title found for ${slug}, using page slug for it`)
-            title = slug
-        }
-        if (frontmatter?.title) {
-            title = frontmatter.title
-        }
-
-        return {
-            pagePath,
-            slug,
-            path: pagePath,
-            title,
-            frontMatter: frontmatter,
-            foundMdx,
-            html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
-        }
-    } catch (e) {
-        onError?.(e)
+    return {
+        title,
+        html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
     }
 }
 

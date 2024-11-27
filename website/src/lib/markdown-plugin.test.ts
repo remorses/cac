@@ -1,11 +1,12 @@
 import { test, expect } from 'vitest'
-import { processMarkdown } from './elysia-markdown-plugin'
+import { processHtml } from './elysia-markdown-plugin'
 import {
     checkGitHubIsInstalled,
     getOctokit,
 } from 'website/src/lib/github.server'
 import { prisma } from 'db/prisma'
 import { env } from 'website/src/lib/env'
+import { markdownToHtml } from 'website/src/lib/mdx'
 
 test('checkGitHubIsInstalled', async () => {
     const installation = await prisma.githubInstallation.findFirst({
@@ -94,55 +95,43 @@ const app = new Spiceflow()
 const owner = 'x'
 const repo = 'y'
 const branch = 'z'
-test('processMarkdown', async () => {
-    let errors = [] as any
-    const res = await processMarkdown({
-        content: exampleMarkdown1,
+test('processHtml', async () => {
+    const { html } = await markdownToHtml(exampleMarkdown1, 'mdx')
+    const res = await processHtml({
+        html,
         basePath: '/',
         pagePath: '/example',
-        allAssetPaths: [
-            '/example-image.png',
-        ],
-        branch,
-        owner,
-        repo,
-        extension: 'md',
-        onError: (e) => {
-            errors.push(e)
+        allAssetPaths: ['/example-image.png'],
+
+        mapImageUrl: (imgPath) => {
+            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
         },
     })
-    // console.log(errors)
-    expect(errors).toHaveLength(0)
 
     // console.log(res)
     expect(res).toMatchInlineSnapshot(`
       {
-        "frontMatter": {
-          "boolean": false,
-          "title": "Example Markdown",
-        },
         "html": "<h1>Example Markdown</h1>
       <p>This is an example markdown file.</p>
-      <pre><code>some code
-      </code></pre>
+      <p>some code</p>
       <blockquote>
       <p>a quote</p>
       </blockquote>
       <h1>This should not be a title</h1>
-      <p><img src="https://raw.githubusercontent.com/x/y/z/example-image.png" alt="Example Image"></p>
-      <p></p>
-      <p><img src="https://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1000" alt="An internet image"></p>
+      <img src="https://raw.githubusercontent.com/x/y/z/example-image.png" alt="Example Image">
+
+      <img src="https://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&#x26;w=1000" alt="An internet image">
       <h2>another h2</h2>
       <h1>@elysiajs/eden</h1>
       <p>Fully type-safe Spiceflow client refers to the <a href="https://elysiajs.com/eden/overview">documentation</a></p>
       <h2>Example</h2>
       <pre><code class="language-typescript">// server.ts
-      import { Spiceflow, t } from &#39;spiceflow&#39;
+      import { Spiceflow, t } from 'spiceflow'
 
       const app = new Spiceflow()
-          .get(&#39;/&#39;, () =&gt; &#39;Hi Spiceflow&#39;)
-          .get(&#39;/id/:id&#39;, ({ params: { id } }) =&gt; id)
-          .post(&#39;/mirror&#39;, ({ body }) =&gt; body, {
+          .get('/', () => 'Hi Spiceflow')
+          .get('/id/:id', ({ params: { id } }) => id)
+          .post('/mirror', ({ body }) => body, {
               schema: {
                   body: t.Object({
                       id: t.Number(),
@@ -151,10 +140,8 @@ test('processMarkdown', async () => {
               }
           })
           .listen(8080)
-      </code></pre>
-      ",
-        "pagePath": "/example",
-        "slug": "/example",
+
+      </code></pre>",
         "title": "Example Markdown",
       }
     `)
