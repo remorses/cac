@@ -1,13 +1,16 @@
 import { unified } from 'unified'
+import matter from 'gray-matter'
 import { MdastToJsx, SafeMdxRenderer } from 'safe-mdx'
 import remarkParse from 'remark-parse'
 import remarkMdx from 'remark-mdx'
 import remarkFrontmatter from 'remark-frontmatter'
 import rehype from 'remark-rehype'
 import rehypeStringify from 'rehype-stringify'
+
 import { SKIP, visit } from 'unist-util-visit'
 import yaml from 'js-yaml'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { marked } from 'marked'
 
 // Utility to extract and remove frontmatter
 function extractFrontmatter() {
@@ -84,18 +87,10 @@ function debugMdast() {
     }
 }
 
-// Plugins for Markdown
-const markdownPlugins = unified()
-    .use(remarkParse)
-    .use(remarkFrontmatter, ['yaml'])
-    .use(extractFrontmatter)
-    .use(rehype)
-    .use(rehypeStringify)
-
 // Plugins for MDX
 const mdxPlugins = unified()
     .use(remarkParse)
-    .use(remarkMdx)
+    .use(remarkMdx, {})
     .use(convertJSXToHTML)
     // .use(debugMdast)
     .use(remarkFrontmatter, ['yaml'])
@@ -105,17 +100,21 @@ const mdxPlugins = unified()
 
 // Main function
 export async function markdownToHtml(markdown: string, extension: string) {
-    const startTime = Date.now(); // Start time
+    const startTime = Date.now() // Start time
 
-    const processor = extension.includes('mdx') ? mdxPlugins : markdownPlugins
+    if (!extension.includes('mdx')) {
+        const { content, data } = matter(markdown)
+        const html = await marked(content, { gfm: true })
+        return { html, frontMatter: data, foundMdx: false }
+    }
 
     // Process the input Markdown or MDX
-    const file = await processor.process(markdown)
+    const file = await mdxPlugins.process(markdown)
 
     const foundMdx = file.data.foundMdx || false
 
-    const endTime = Date.now(); // End time
-    console.log(`Markdown processing time: ${endTime - startTime}ms`); // Log the time it takes
+    const endTime = Date.now() // End time
+    console.log(`Markdown processing time: ${endTime - startTime}ms`) // Log the time it takes
 
     return {
         foundMdx,

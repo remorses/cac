@@ -25,7 +25,8 @@ describe('markdownToHtml', () => {
           <ul>
           <li>list one</li>
           <li>list two</li>
-          </ul>"
+          </ul>
+          "
         `)
         expect(result.frontMatter).toMatchInlineSnapshot(`
           {

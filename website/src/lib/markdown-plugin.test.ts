@@ -95,7 +95,9 @@ const app = new Spiceflow()
 const owner = 'x'
 const repo = 'y'
 const branch = 'z'
-test('processHtml', async () => {
+
+
+test('processHtml mdx', async () => {
     const { html } = await markdownToHtml(exampleMarkdown1, 'mdx')
     const res = await processHtml({
         html,
