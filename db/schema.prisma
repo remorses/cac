@@ -485,14 +485,15 @@ enum PaymentProvider {
 }
 
 model GitHubSync {
-  id          Int      @id @default(autoincrement())
-  repoUrl     String
-  filesSynced Int      @default(0)
-  createdAt   DateTime @default(now())
+  id                Int      @id @default(autoincrement())
+  repoUrl           String
+  filesSynced       Int      @default(0)
+  createdAt         DateTime @default(now())
   // userId      String   @db.Uuid
-  orgId       String
-  projectId   String   @default("")
-  projectName String   @default("")
+  orgId             String
+  projectId         String   @default("")
+  projectName       String   @default("")
+  durationInSeconds Float?
 
   @@schema("public")
 }

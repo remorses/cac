@@ -1,4 +1,5 @@
 import matter from 'gray-matter'
+
 import mime from 'mime'
 import yaml from 'js-yaml'
 import * as domutils from 'domutils'
@@ -28,6 +29,7 @@ import { markdownToHtml } from 'website/src/lib/mdx'
 import path from 'path'
 import { db } from 'db/kysely'
 import Stripe from 'stripe'
+import { CollectionField } from 'framer-plugin'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 const unauthorizedResponse = new Response('Unauthorized', {
@@ -147,134 +149,134 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }),
         },
     )
-    .post(
-        '/resolveFiles',
-        async function resolveFiles({ request, state: store }) {
-            const body = await request.json()
-            const { owner, basePath = '/', repo, paths } = body
+    // .post(
+    //     '/resolveFiles',
+    //     async function resolveFiles({ request, state: store }) {
+    //         const body = await request.json()
+    //         const { owner, basePath = '/', repo, paths } = body
 
-            if (paths.length === 0) {
-                throw new Error('Paths must be a non-empty array')
-            }
+    //         if (paths.length === 0) {
+    //             throw new Error('Paths must be a non-empty array')
+    //         }
 
-            const orgId = store.orgId
-            if (!orgId) {
-                throw unauthorizedResponse
-            }
+    //         const orgId = store.orgId
+    //         if (!orgId) {
+    //             throw unauthorizedResponse
+    //         }
 
-            const githubInstallation =
-                await prisma.githubInstallation.findFirst({
-                    where: {
-                        status: 'active',
-                        memberLogins: {
-                            has: store.githubUserLogin,
-                        },
-                        appId: env.GITHUB_APP_ID,
-                        accountLogin: body.githubAccountLogin,
-                    },
-                })
-            if (!githubInstallation) {
-                throw new Error('No github installation found')
-            }
+    //         const githubInstallation =
+    //             await prisma.githubInstallation.findFirst({
+    //                 where: {
+    //                     status: 'active',
+    //                     memberLogins: {
+    //                         has: store.githubUserLogin,
+    //                     },
+    //                     appId: env.GITHUB_APP_ID,
+    //                     accountLogin: body.githubAccountLogin,
+    //                 },
+    //             })
+    //         if (!githubInstallation) {
+    //             throw new Error('No github installation found')
+    //         }
 
-            const installationId = githubInstallation.installationId
-            const octokit = await getOctokit({ installationId })
-            const [repoResult, ok] = await Promise.all([
-                octokit.rest.repos.get({
-                    owner,
-                    repo,
-                }),
-                checkGitHubIsInstalled({ installationId }),
-            ])
+    //         const installationId = githubInstallation.installationId
+    //         const octokit = await getOctokit({ installationId })
+    //         const [repoResult, ok] = await Promise.all([
+    //             octokit.rest.repos.get({
+    //                 owner,
+    //                 repo,
+    //             }),
+    //             checkGitHubIsInstalled({ installationId }),
+    //         ])
 
-            if (!ok) {
-                throw new Error('Github app no longer installed')
-            }
+    //         if (!ok) {
+    //             throw new Error('Github app no longer installed')
+    //         }
 
-            const branch = repoResult.data.default_branch
-            const files = await getRepoFiles({
-                fetchBlob(pagePath) {
-                    return false
-                },
-                branch: branch,
-                octokit: octokit.rest,
-                owner,
-                repo,
-            })
-            let allAssetPaths = files.map((x) => x.pagePath)
+    //         const branch = repoResult.data.default_branch
+    //         const files = await getRepoFiles({
+    //             fetchBlob(pagePath) {
+    //                 return false
+    //             },
+    //             branch: branch,
+    //             octokit: octokit.rest,
+    //             owner,
+    //             repo,
+    //         })
+    //         let allAssetPaths = files.map((x) => x.pagePath)
 
-            const results = await Promise.all(
-                paths.map(async (src) => {
-                    const path = findMatchInPaths({
-                        filePath: src,
-                        paths: allAssetPaths,
-                    })
-                    if (!path) {
-                        return null
-                    }
+    //         const results = await Promise.all(
+    //             paths.map(async (src) => {
+    //                 const path = findMatchInPaths({
+    //                     filePath: src,
+    //                     paths: allAssetPaths,
+    //                 })
+    //                 if (!path) {
+    //                     return null
+    //                 }
 
-                    try {
-                        if (repoResult.data.private) {
-                            const url = publicFileMapUrl({
-                                owner,
-                                repo,
-                                branch,
-                                imgPath: path,
-                            })
-                            const type = mime.getType(path)
-                            return { url, type }
-                        } else {
-                            const { data: fileData } =
-                                await octokit.rest.repos.getContent({
-                                    owner,
-                                    repo,
-                                    path,
-                                    ref: branch,
-                                })
+    //                 try {
+    //                     if (repoResult.data.private) {
+    //                         const url = publicFileMapUrl({
+    //                             owner,
+    //                             repo,
+    //                             branch,
+    //                             imgPath: path,
+    //                         })
+    //                         const type = mime.getType(path)
+    //                         return { url, type }
+    //                     } else {
+    //                         const { data: fileData } =
+    //                             await octokit.rest.repos.getContent({
+    //                                 owner,
+    //                                 repo,
+    //                                 path,
+    //                                 ref: branch,
+    //                             })
 
-                            if (!('download_url' in fileData)) {
-                                notifyError(
-                                    new Error(
-                                        'Could not get download url for image',
-                                    ),
-                                    'resolveFiles',
-                                )
-                                return null
-                            }
-                            if (fileData?.type !== 'file') {
-                                notifyError(
-                                    `Unsupported file type: ${fileData.type}`,
-                                    'resolveFiles',
-                                )
-                                return null
-                            }
+    //                         if (!('download_url' in fileData)) {
+    //                             notifyError(
+    //                                 new Error(
+    //                                     'Could not get download url for image',
+    //                                 ),
+    //                                 'resolveFiles',
+    //                             )
+    //                             return null
+    //                         }
+    //                         if (fileData?.type !== 'file') {
+    //                             notifyError(
+    //                                 `Unsupported file type: ${fileData.type}`,
+    //                                 'resolveFiles',
+    //                             )
+    //                             return null
+    //                         }
 
-                            const url = fileData.download_url
-                            const type = mime.getType(fileData.name)
-                            return { url, type }
-                        }
-                    } catch (error) {
-                        console.error(
-                            `Error resolving file at path ${path}:`,
-                            error,
-                        )
-                        return null
-                    }
-                }),
-            )
+    //                         const url = fileData.download_url
+    //                         const type = mime.getType(fileData.name)
+    //                         return { url, type }
+    //                     }
+    //                 } catch (error) {
+    //                     console.error(
+    //                         `Error resolving file at path ${path}:`,
+    //                         error,
+    //                     )
+    //                     return null
+    //                 }
+    //             }),
+    //         )
 
-            return results.filter(Boolean)
-        },
-        {
-            body: z.object({
-                githubAccountLogin: z.string().min(1),
-                owner: z.string().min(1),
-                repo: z.string().min(1),
-                basePath: z.string().optional(),
-                paths: z.array(z.string().min(1)),
-            }),
-        },
-    )
+    //         return results.filter(Boolean)
+    //     },
+    //     {
+    //         body: z.object({
+    //             githubAccountLogin: z.string().min(1),
+    //             owner: z.string().min(1),
+    //             repo: z.string().min(1),
+    //             basePath: z.string().optional(),
+    //             paths: z.array(z.string().min(1)),
+    //         }),
+    //     },
+    // )
     .post(
         '/syncsThisMonth',
         async ({ request, state: store }) => {
@@ -304,7 +306,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw unauthorizedResponse
             }
             const { projectId } = query
-            const activeSub = await getGithubSub({ orgId: store.orgId, projectId })
+            const activeSub = await getGithubSub({
+                orgId: store.orgId,
+                projectId,
+            })
 
             let manageSubUrl: string | undefined
             // const activeSub = subs.find((sub) => sub)
@@ -341,6 +346,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 repo,
                 projectId,
                 projectName,
+                mapFieldsConfig,
             } = body
             if (!basePath) {
                 basePath = ''
@@ -349,6 +355,18 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             if (!orgId) {
                 throw unauthorizedResponse
             }
+            const startTime = Date.now() // Start time
+
+            const urlLikeFields = new Set(
+                mapFieldsConfig
+                    ?.filter(
+                        (x) =>
+                            x.type === 'link' ||
+                            x.type === 'image' ||
+                            x.type === 'file',
+                    )
+                    .map((x) => x.name) || [],
+            )
 
             const [githubInstallation, syncsThisMonth, sub] = await Promise.all(
                 [
@@ -452,6 +470,37 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 }
             }
 
+            async function resolveUrlsInFrontmatter(
+                frontmatter: Record<string, any>,
+            ) {
+                if (!frontmatter || !urlLikeFields.size) {
+                    return frontmatter
+                }
+                if (typeof frontmatter !== 'object') {
+                    return frontmatter
+                }
+                for (const field of urlLikeFields) {
+                    const value = frontmatter[field]
+                    if (!value) {
+                        continue
+                    }
+                    const filePath = frontmatter[field]
+                    if (isValidUrl(filePath)) {
+                        continue
+                    }
+                    const resolved = findMatchInPaths({
+                        filePath,
+                        paths: allAssetPaths,
+                    })
+                    if (resolved) {
+                        frontmatter[field] = await mapImageUrl(resolved)
+                    } else {
+                        delete frontMatter[field]
+                    }
+                }
+                return frontmatter
+            }
+
             let withMarkdown = await Promise.all(
                 filtered.map(async (x) => {
                     if (!x?.content) {
@@ -461,8 +510,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     let content = x.content
                     let extension = path.extname(x.pagePath)
                     const slug = turnPagePathIntoSlug(pagePath, basePath)
-                    const { frontMatter, html, foundMdx } =
-                        await markdownToHtml(content || '', extension)
+                    let { frontMatter, html, foundMdx } = await markdownToHtml(
+                        content || '',
+                        extension,
+                    )
+                    frontMatter = await resolveUrlsInFrontmatter(frontMatter)
                     let title = frontMatter?.title
 
                     if (onlyGetFrontmatter) {
@@ -526,6 +578,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             console.log(`finished syncing ${owner}/${repo}`)
 
             if (!onlyGetFrontmatter) {
+                const end = Date.now()
+                const timeInSeconds = (end - startTime) / 1000
+                console.log(
+                    `Syncing time for ${owner}/repo: ${timeInSeconds} seconds`,
+                )
                 await prisma.gitHubSync.create({
                     data: {
                         repoUrl: `https://github.com/${owner}/${repo}`,
@@ -533,6 +590,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         orgId: store.orgId,
                         projectName,
                         projectId,
+                        durationInSeconds: timeInSeconds,
                     },
                 })
             }
@@ -550,6 +608,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 onlyGetFrontmatter: z.boolean().optional(),
                 projectId: z.string(),
                 projectName: z.string(),
+                mapFieldsConfig: z.custom<CollectionField[]>().optional(),
                 // userId: z.string(),
             }),
         },
@@ -914,4 +973,8 @@ async function getGithubSub({ orgId, projectId }) {
             },
         },
     })
+}
+
+function isValidUrl(string: string): boolean {
+    return string.startsWith('http://') || string.startsWith('https://')
 }

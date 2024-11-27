@@ -16,113 +16,6 @@ import {
 } from 'react-router'
 import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
 
-const ErrorIcon = () => (
-    <svg
-        className='w-4 h-4 mt-1 shrink-0 mr-2 fill-current text-red-500'
-        xmlns='http://www.w3.org/2000/svg'
-        viewBox='0 0 20 20'
-    >
-        <path d='M10 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm.93-12.36a1.5 1.5 0 00-2.86 0L3.18 13.5a1.5 1.5 0 001.43 2h10.78a1.5 1.5 0 001.43-2L10.93 2.64zM10 12a1 1 0 110-2 1 1 0 010 2zm0-3a1 1 0 01-1-1V7a1 1 0 112 0v1a1 1 0 01-1 1z' />
-    </svg>
-)
-
-function Component() {
-    const { errorList, notImported } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
-
-    return (
-        <div className='flex flex-col justify-center items-center min-h-[200px] max-h-[500px] overflow-y-auto gap-4'>
-            {/* <Spinner /> */}
-            {errorList && errorList.length > 0 && (
-                <div
-                    className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative'
-                    role='alert'
-                >
-                    <strong className='font-bold'>Error(s) occurred:</strong>
-                    {!!notImported && (
-                        <div className='mt-2 font-bold'>
-                            {notImported}{' '}
-                            {notImported === 1 ? 'page was' : 'pages were'} not
-                            imported
-                        </div>
-                    )}
-                    <ul className='list-disc list-inside mt-2'>
-                        {errorList.map((error, index) => (
-                            <li key={index} className='flex items-start mb-2'>
-                                <ErrorIcon />
-                                {error.message} (File: {error.path})
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-        </div>
-    )
-}
-
-function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
-    if (!field?.type) {
-        return null
-    }
-    if (value == null) {
-        return null
-    }
-    if (field.type === 'string') {
-        return String(value) || ''
-    }
-    if (field.type === 'number') {
-        return Number(value) ?? null
-    }
-    if (field.type === 'boolean') {
-        return Boolean(value)
-    }
-    if (field.type === 'date') {
-        try {
-            return value || null
-            // TODO should i validate the Date or Framer?
-            return new Date(Date.parse(value)).toUTCString()
-        } catch (e) {
-            return null
-        }
-    }
-    if (field.type === 'enum') {
-        return String(value) || ''
-    }
-    if (field.type === 'formattedText') {
-        return String(value) || ''
-    }
-    if (field.type === 'color') {
-        return String(value) || ''
-    }
-    if (field.type === 'link') {
-        return String(value) || ''
-    }
-    if (field.type === 'image') {
-        return String(value) || ''
-    }
-}
-
-function getFieldsForFrontMatter(
-    frontMatter: Record<string, any>,
-    mapFieldsConfig: CollectionFieldConfig[],
-) {
-    if (!frontMatter) {
-        return {}
-    }
-    const fields = {} as any
-    for (const field of mapFieldsConfig) {
-        if (!field) {
-            continue
-        }
-        const value = frontMatter[field.id]
-        if (value) {
-            fields[field.id] = mapValueToFieldValue(value, field)
-        }
-    }
-    return fields
-}
-
 async function loader({}: LoaderFunctionArgs) {
     const {
         owner,
@@ -142,6 +35,7 @@ async function loader({}: LoaderFunctionArgs) {
             githubAccountLogin,
             projectId,
             projectName,
+            mapFieldsConfig,
         })
 
     if (error) {
@@ -235,6 +129,111 @@ async function loader({}: LoaderFunctionArgs) {
     }
     await framer.closePlugin()
     return {}
+}
+
+const ErrorIcon = () => (
+    <svg
+        className='w-4 h-4 mt-1 shrink-0 mr-2 fill-current text-red-500'
+        xmlns='http://www.w3.org/2000/svg'
+        viewBox='0 0 20 20'
+    >
+        <path d='M10 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm.93-12.36a1.5 1.5 0 00-2.86 0L3.18 13.5a1.5 1.5 0 001.43 2h10.78a1.5 1.5 0 001.43-2L10.93 2.64zM10 12a1 1 0 110-2 1 1 0 010 2zm0-3a1 1 0 01-1-1V7a1 1 0 112 0v1a1 1 0 01-1 1z' />
+    </svg>
+)
+
+function Component() {
+    const { errorList, notImported } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
+
+    return (
+        <div className='flex flex-col justify-center items-center min-h-[200px] max-h-[500px] overflow-y-auto gap-4'>
+            {/* <Spinner /> */}
+            {errorList && errorList.length > 0 && (
+                <div
+                    className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative'
+                    role='alert'
+                >
+                    <strong className='font-bold'>Error(s) occurred:</strong>
+                    {!!notImported && (
+                        <div className='mt-2 font-bold'>
+                            {notImported}{' '}
+                            {notImported === 1 ? 'page was' : 'pages were'} not
+                            imported
+                        </div>
+                    )}
+                    <ul className='list-disc list-inside mt-2'>
+                        {errorList.map((error, index) => (
+                            <li key={index} className='flex items-start mb-2'>
+                                <ErrorIcon />
+                                {error.message} (File: {error.path})
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    )
+}
+
+function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
+    if (!field?.type) {
+        return null
+    }
+    if (value == null) {
+        return null
+    }
+    if (field.type === 'string') {
+        return String(value) || ''
+    }
+    if (field.type === 'number') {
+        return Number(value) ?? null
+    }
+    if (field.type === 'boolean') {
+        return Boolean(value)
+    }
+    if (field.type === 'date') {
+        try {
+            return value || null
+        } catch (e) {
+            return null
+        }
+    }
+    if (field.type === 'enum') {
+        return String(value) || ''
+    }
+    if (field.type === 'formattedText') {
+        return String(value) || ''
+    }
+    if (field.type === 'color') {
+        return String(value) || ''
+    }
+    if (field.type === 'link') {
+        return String(value) || ''
+    }
+    if (field.type === 'image') {
+        return String(value) || ''
+    }
+}
+
+function getFieldsForFrontMatter(
+    frontMatter: Record<string, any>,
+    mapFieldsConfig: CollectionFieldConfig[],
+) {
+    if (!frontMatter) {
+        return {}
+    }
+    const fields = {} as any
+    for (const field of mapFieldsConfig) {
+        if (!field) {
+            continue
+        }
+        const value = frontMatter[field.id]
+        if (value) {
+            fields[field.id] = mapValueToFieldValue(value, field)
+        }
+    }
+    return fields
 }
 
 enum CollectionFieldIds {

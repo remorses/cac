@@ -333,6 +333,7 @@ export interface GithubInstallation {
 
 export interface GitHubSync {
   createdAt: Generated<Timestamp>;
+  durationInSeconds: number | null;
   filesSynced: Generated<number>;
   id: Generated<number>;
   orgId: string;

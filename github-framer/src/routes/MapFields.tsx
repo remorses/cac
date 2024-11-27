@@ -196,10 +196,24 @@ function getCollectionFieldForProperty(property: {
         property.values.every((x) => {
             return x.startsWith('http://') || x.startsWith('https://')
         }) &&
-        property.values.some(
-            (x) =>
-                x.endsWith('.png') || x.endsWith('.jpg') || x.endsWith('.jpeg'),
-        )
+        property.values.slice(0, 100).every((x) => {
+            try {
+                if (!x) {
+                    return true
+                }
+                const url = new URL(x)
+                return (
+                    url.pathname.endsWith('.png') ||
+                    url.pathname.endsWith('.jpg') ||
+                    url.pathname.endsWith('.jpeg') ||
+                    url.pathname.endsWith('.bmp') ||
+                    url.pathname.endsWith('.webm') ||
+                    url.pathname.endsWith('.svg')
+                )
+            } catch (e) {
+                return false
+            }
+        })
     ) {
         return getFieldConfigForProp(property, 'image')
     } else if (
@@ -444,7 +458,8 @@ const possibleTypes: CollectionField['type'][] = [
     'date',
     'enum',
     'link',
-    // 'image', TODO to support image i have to upload them, which is more complex, i need to find a way to not upload images already uploaded
+    'image',
+    'file',
     'color',
 ]
 function mapCollectionFieldToReadableName(
@@ -469,6 +484,8 @@ function mapCollectionFieldToReadableName(
             return 'Image'
         case 'color':
             return 'Color'
+        case 'file':
+            return 'File'
         // case 'file':
         //     return 'File'
         default:
