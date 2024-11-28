@@ -23,6 +23,7 @@ import { framer } from 'framer-plugin'
 
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import {
+    feedbackUrl,
     FREE_GITHUB_SYNCS_PER_MONTH,
     getBuyGithubPluginUrl,
 } from 'website/src/lib/env'
@@ -157,6 +158,15 @@ function Component() {
                     <hr className='' />
                 </>
             )}
+
+            <div className='flex gap-2 items-center'>
+                <div className=''>Questions or requests?</div>
+                <div className='grow'></div>
+                <a target='_blank' href={feedbackUrl('Github Sync')}>
+                    <Button className='w-auto'>Share Feedback</Button>
+                </a>
+            </div>
+            <hr className='' />
 
             {!sub && (
                 <>

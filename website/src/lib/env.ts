@@ -97,7 +97,8 @@ export const variantIdToCredits = Object.assign(
     ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
 )
 
-export const feedbackUrl = `mailto:tommy@unframer.co?subject=${encodeURIComponent('Migrate Plugin Feedback')}`
+export const feedbackUrl = (pluginName) =>
+    `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' Plugin Feedback')}`
 
 export const FREE_GITHUB_SYNCS_PER_MONTH = 10
 
