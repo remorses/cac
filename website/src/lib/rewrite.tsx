@@ -75,6 +75,7 @@ let schema = z.object({
     //     .describe(
     //         'Chain of thoughts, think step by step. This field should come first.',
     //     ),
+    outputLanguage: z.string().describe('The output language to use for the rewritten content, for example English, reuse the same language as the HTML page unless the user asked otherwise.'),
     [CONVERTED_ITEMS]: z.array(
         z.object({
             nodeId: z
