@@ -164,12 +164,42 @@ function getFieldConfigForProp(
         // console.log(x)
         return x
     }
+    if (type === 'file') {
+        const x = {
+            type: 'file' as const,
+            allowedFileTypes: ALLOWED_FILE_TYPES,
+            id: property.id,
+            name: property.name,
+        }
+        return x
+    }
     return {
         type: type as any,
         id: property.id,
         name: property.name,
     }
 }
+
+const ALLOWED_FILE_TYPES = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'tiff',
+    'webp',
+    'pdf',
+    'doc',
+    'docx',
+    'ppt',
+    'pptx',
+    'xls',
+    'xlsx',
+    'txt',
+    'mp3',
+    'aac',
+    'mp4',
+    'webm',
+]
 
 /**
  * Given a Notion Database Properties object returns a CollectionField object
