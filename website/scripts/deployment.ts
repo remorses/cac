@@ -9,9 +9,6 @@ async function main() {
     })
 
     await Promise.all([
-        shell(`pnpm tsc`, {
-            env,
-        }),
         // shell(`pnpm --filter template-rewrite-framer build`, {
         //     env,
         // }),

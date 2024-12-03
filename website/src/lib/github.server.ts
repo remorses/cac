@@ -103,6 +103,7 @@ export async function getRepoFiles({
         repo,
         tree_sha: commitSha,
         recursive: 'true',
+
         baseUrl,
     })
 
@@ -135,12 +136,20 @@ export async function getRepoFiles({
                         type: file.type,
                     }
                 }
-                const { data } = await octokit.git.getBlob({
-                    owner,
-                    repo,
-                    file_sha: file.sha!,
-                    baseUrl,
-                })
+                const [{ data }, { data: commitData }] = await Promise.all([
+                    octokit.git.getBlob({
+                        owner,
+                        repo,
+                        file_sha: file.sha!,
+                        baseUrl,
+                    }),
+                    octokit.repos.getCommit({
+                        owner,
+                        repo,
+                        ref: file.sha!,
+                    }),
+                ])
+
                 const contents = Buffer.from(data.content, 'base64').toString(
                     'utf-8',
                 )

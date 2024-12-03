@@ -51,7 +51,8 @@ export default defineConfig({
             serverModuleFormat: 'cjs',
             future: {
                 v3_fetcherPersist: true,
-                unstable_singleFetch: true,
+                v3_singleFetch: true,
+                unstable_optimizeDeps: true,
                 v3_relativeSplatPath: true,
                 v3_throwAbortReason: true,
             },

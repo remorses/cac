@@ -72,6 +72,7 @@ export enum PluginDataKeys {
     mapFieldsConfig = 'mapFieldsConfig',
     githubAccountLogin = 'githubAccountLogin',
     basePath = 'basePath',
+    // lastSyncDate = 'lastSyncDate',
 }
 
 export async function getMarkdownPluginData() {
