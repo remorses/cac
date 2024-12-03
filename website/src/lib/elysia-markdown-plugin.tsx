@@ -333,6 +333,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     .post(
         '/syncGithub',
         async function syncGithub({ request, state: store }) {
+            const signal = request.signal
             const body = await request.json()
             console.log(body)
             let {
@@ -410,6 +411,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 octokit.rest.repos.get({
                     owner,
                     repo,
+                    request: { signal },
                 }),
                 checkGitHubIsInstalled({ installationId }),
                 prisma.gitHubSyncedFile.findMany({
@@ -455,6 +457,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 octokit: octokit.rest,
                 owner,
                 repo,
+                signal,
             })
 
             const allCurrentPagePaths = new Set(
@@ -499,6 +502,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                             repo,
                             path: imgPath,
                             ref: branch,
+                            request: { signal },
                         })
                         if (!('download_url' in res.data)) {
                             throw new Error(

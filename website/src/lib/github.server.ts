@@ -70,7 +70,6 @@ export async function getOctokit({ installationId }): Promise<Octokit> {
     // installationsCache.set(installationId, octokit)
     return octokit
 }
-
 export async function getRepoFiles({
     branch,
     owner,
@@ -79,6 +78,7 @@ export async function getRepoFiles({
     commitSha,
     fetchBlob,
     baseUrl,
+    signal,
 }: {
     octokit: OctokitRest
     owner: string
@@ -92,6 +92,7 @@ export async function getRepoFiles({
         type?: string
         mode?: string
     }) => boolean
+    signal?: AbortSignal
 }) {
     if (!commitSha) {
         console.log(`getting current commit for ${branch}`)
@@ -99,6 +100,7 @@ export async function getRepoFiles({
             owner,
             repo,
             ref: `heads/${branch}`,
+            request: { signal },
         })
         commitSha = commitData.object.sha
     }
@@ -108,8 +110,8 @@ export async function getRepoFiles({
         repo,
         tree_sha: commitSha,
         recursive: 'true',
-
         baseUrl,
+        request: { signal },
     })
 
     const files = tree.data.tree.filter((file) => {
@@ -147,6 +149,7 @@ export async function getRepoFiles({
                         repo,
                         file_sha: file.sha!,
                         baseUrl,
+                        request: { signal },
                     }),
                     // octokit.repos.getCommit({
                     //     owner,
