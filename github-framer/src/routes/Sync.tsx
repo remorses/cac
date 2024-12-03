@@ -214,6 +214,7 @@ function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
     if (field.type === 'image') {
         return String(value) || ''
     }
+    return value
 }
 
 function getFieldsForFrontMatter(
