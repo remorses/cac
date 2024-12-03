@@ -72,7 +72,7 @@ export enum PluginDataKeys {
     mapFieldsConfig = 'mapFieldsConfig',
     githubAccountLogin = 'githubAccountLogin',
     basePath = 'basePath',
-    // lastSyncDate = 'lastSyncDate',
+    enablePartialUpdate = 'disablePartialUpdate',
 }
 
 export async function getMarkdownPluginData() {
@@ -85,6 +85,7 @@ export async function getMarkdownPluginData() {
         githubAccountLogin,
         sessionKey,
         project,
+        enablePartialUpdate = false,
     ] = await Promise.all([
         collection.getPluginData(PluginDataKeys.githubRepoSlug),
         collection.getPluginData(PluginDataKeys.mapFieldsConfig),
@@ -92,6 +93,7 @@ export async function getMarkdownPluginData() {
         collection.getPluginData(PluginDataKeys.githubAccountLogin) || '',
         collection.getPluginData(PluginDataKeys.sessionKey) || '',
         framer.getProjectInfo(),
+        collection.getPluginData(PluginDataKeys.enablePartialUpdate) || '',
     ])
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
@@ -105,5 +107,6 @@ export async function getMarkdownPluginData() {
         sessionKey: sessionKey || '',
         projectId: project.id,
         projectName: project.name,
+        enablePartialUpdate: Boolean(enablePartialUpdate),
     }
 }

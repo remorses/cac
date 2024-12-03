@@ -100,8 +100,6 @@ export const variantIdToCredits = Object.assign(
 export const feedbackUrl = (pluginName) =>
     `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' Plugin Feedback')}`
 
-export const FREE_GITHUB_SYNCS_PER_MONTH = 10
-
 export function getBuyGithubPluginUrl({ orgId, email, projectId }) {
     const url = new URL('/api/markdown-plugin/buy', env.PUBLIC_URL)
     url.searchParams.append('orgId', orgId)

@@ -15,10 +15,7 @@ import {
 } from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
-import {
-    FREE_GITHUB_SYNCS_PER_MONTH,
-    getBuyGithubPluginUrl,
-} from 'website/src/lib/env'
+import { getBuyGithubPluginUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
     const [pluginData, org] = await Promise.all([
@@ -32,7 +29,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             }),
     ])
-    const { activeSub } =
+    const { activeSub, freeSyncs } =
         await pluginApiClient.api.plugins.markdownPlugin.subscriptions
             .get({ query: { projectId: pluginData.projectId } })
             .then(({ data, error }) => {
@@ -45,7 +42,7 @@ async function loader({}: LoaderFunctionArgs) {
         throw redirect(withMode(Paths.settings))
     }
     const { email, orgId } = org
-    return { ...pluginData, email, orgId }
+    return { ...pluginData, email, freeSyncs, orgId }
 }
 
 export function BuyMoreSyncs(): RouteObject {
@@ -58,9 +55,8 @@ export function BuyMoreSyncs(): RouteObject {
 }
 
 function Component() {
-    const { orgId, projectId, email } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { orgId, projectId, freeSyncs, email } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     useRefreshOnVisible({ enabled: true })
     const revalidator = useRevalidator()
     useEffect(() => {
@@ -75,7 +71,7 @@ function Component() {
             <div className='flex items-center'>
                 <div className='font-bold text-balance'>
                     You have synced from GitHub more than the free limit of{' '}
-                    {FREE_GITHUB_SYNCS_PER_MONTH} times this month.
+                    {freeSyncs} times this month.
                 </div>
             </div>
             <div className='flex items-center'>

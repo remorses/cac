@@ -40,7 +40,9 @@ import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
 globalThis.framer = framer
 
 async function loader({ request }) {
-    const { sessionKey } = await getMarkdownPluginData()
+    const data = await getMarkdownPluginData()
+    const { sessionKey } = data
+    console.log(data)
 
     return { sessionKey }
 }

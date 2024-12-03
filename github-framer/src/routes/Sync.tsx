@@ -4,6 +4,7 @@ import {
     LoaderReturnType,
     Paths,
     pluginApiClient,
+    PluginDataKeys,
     simpleHash,
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
@@ -25,6 +26,7 @@ async function loader({}: LoaderFunctionArgs) {
         mapFieldsConfig,
         projectId,
         projectName,
+        enablePartialUpdate,
     } = await getMarkdownPluginData()
     console.log('syncing', owner, repo, githubAccountLogin, basePath)
     const { data, error } =
@@ -36,12 +38,13 @@ async function loader({}: LoaderFunctionArgs) {
             projectId,
             projectName,
             mapFieldsConfig,
+            enablePartialUpdate: enablePartialUpdate,
         })
 
     if (error) {
         throw error
     }
-    const { files } = data
+    const { files, toDelete } = data
     const collection = await framer.getManagedCollection()
 
     await collection.setFields([
@@ -55,7 +58,6 @@ async function loader({}: LoaderFunctionArgs) {
             .filter((x) => x.id !== CollectionFieldIds.content) as any[]),
     ])
 
-    const unseenItemIds = new Set(await collection.getItemIds())
     const errorList = [] as { message: string; path: string }[]
     const semaphore = new Sema(10)
     let notImported = 0
@@ -74,8 +76,6 @@ async function loader({}: LoaderFunctionArgs) {
             }
 
             const id = simpleHash(item.pagePath)
-
-            unseenItemIds.delete(id)
 
             let frontMatterFields = getFieldsForFrontMatter(
                 item.frontMatter,
@@ -114,20 +114,29 @@ async function loader({}: LoaderFunctionArgs) {
     )
 
     // Remove all the items that weren't in the new feed
-    const itemsToDelete = Array.from(unseenItemIds)
-    await collection.removeItems(itemsToDelete)
+
+    console.log('removing items', toDelete)
+    await collection.removeItems(
+        toDelete.map((pagePath) => simpleHash(pagePath)),
+    )
 
     // Save the data source ID for future plugin runs
-    await framer.notify(`Imported ${files.length} files`, {
-        variant: 'success',
-    })
+    await framer.notify(
+        `Imported ${files.length} files${toDelete.length ? `, deleted ${toDelete.length} files` : ''}`,
+        {
+            variant: 'success',
+        },
+    )
+    await collection.setPluginData(PluginDataKeys.enablePartialUpdate, 'true')
     if (errorList.length) {
         return {
             errorList,
             notImported,
         }
     }
+
     await framer.closePlugin()
+
     return {}
 }
 

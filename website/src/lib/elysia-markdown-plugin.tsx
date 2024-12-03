@@ -1,36 +1,32 @@
-import matter from 'gray-matter'
-
-import mime from 'mime'
-import yaml from 'js-yaml'
-import * as domutils from 'domutils'
 import domSerializer from 'dom-serializer'
+import * as domutils from 'domutils'
 
 import { Spiceflow } from 'spiceflow'
 
 import { notifyError } from 'website/src/lib/errors'
 
 import { prisma } from 'db/prisma'
-import { marked } from 'marked'
+import DomHandler from 'domhandler'
+import { CollectionField } from 'framer-plugin'
+import { Parser } from 'htmlparser2'
 import { Octokit } from 'octokit'
-import { env, FREE_GITHUB_SYNCS_PER_MONTH } from 'website/src/lib/env'
+import path from 'path'
+import Stripe from 'stripe'
+import { env } from 'website/src/lib/env'
 import {
     checkGitHubIsInstalled,
     getGithubUserLogin,
     getOctokit,
     getRepoFiles,
+    githubPathToPageSlug,
     isMarkdown,
 } from 'website/src/lib/github.server'
+import { markdownToHtml } from 'website/src/lib/mdx'
 import { isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
-import { redirect } from '@remix-run/react'
-import DomHandler from 'domhandler'
-import { Parser } from 'htmlparser2'
-import { markdownToHtml } from 'website/src/lib/mdx'
-import path from 'path'
-import { db } from 'db/kysely'
-import Stripe from 'stripe'
-import { CollectionField } from 'framer-plugin'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
+
+const freeSyncs = 5
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -326,7 +322,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 manageSubUrl = portalSession.url
             }
 
-            return { subs: [activeSub], activeSub, manageSubUrl }
+            return { subs: [activeSub], activeSub, freeSyncs, manageSubUrl }
         },
         {
             query: z.object({
@@ -338,6 +334,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         '/syncGithub',
         async function syncGithub({ request, state: store }) {
             const body = await request.json()
+            console.log(body)
             let {
                 owner,
                 onlyGetFrontmatter,
@@ -347,9 +344,13 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 projectId,
                 projectName,
                 mapFieldsConfig,
+                enablePartialUpdate,
             } = body
             if (!basePath) {
                 basePath = ''
+            }
+            if (onlyGetFrontmatter) {
+                enablePartialUpdate = false
             }
             const orgId = store.orgId
             if (!orgId) {
@@ -392,10 +393,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw new Error('No github installation found')
             }
 
-            if (!sub && syncsThisMonth >= FREE_GITHUB_SYNCS_PER_MONTH) {
+            if (!sub && syncsThisMonth >= freeSyncs) {
                 throw new Response(
                     'You have reached the free limit of syncs this month: ' +
-                        FREE_GITHUB_SYNCS_PER_MONTH,
+                        freeSyncs,
                     {
                         status: 402,
                     },
@@ -405,41 +406,87 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             const installationId = githubInstallation.installationId
             const octokit = await getOctokit({ installationId })
 
-            const [repoResult, ok] = await Promise.all([
+            const [repoResult, ok, existingFiles] = await Promise.all([
                 octokit.rest.repos.get({
                     owner,
                     repo,
                 }),
                 checkGitHubIsInstalled({ installationId }),
+                prisma.gitHubSyncedFile.findMany({
+                    where: {
+                        installationId,
+                        orgId,
+                    },
+                }),
             ])
             if (!ok) {
                 throw new Error('Github app no longer installed')
             }
             let branch = repoResult.data.default_branch
-
+            // Create sets for tracking changes
+            const existingShas = new Set(existingFiles.map((f) => f.sha))
+            const existingPagePaths = new Set(
+                existingFiles.map((f) => f.pagePath),
+            )
+            let maxBlobFetches = onlyGetFrontmatter ? 200 : 10_000
+            let blobFetches = 0
             const files = await getRepoFiles({
-                fetchBlob(pagePath) {
-                    return (
-                        pagePath?.startsWith(basePath) && isMarkdown(pagePath)
-                    )
+                fetchBlob(file) {
+                    if (blobFetches > maxBlobFetches) {
+                        return false
+                    }
+                    let pagePath = githubPathToPageSlug(file.path || '')
+                    if (
+                        !file.sha ||
+                        !pagePath?.startsWith(basePath) ||
+                        !isMarkdown(pagePath)
+                    ) {
+                        return false
+                    }
+                    // If partial update enabled, only fetch files not in existing shas
+                    if (enablePartialUpdate) {
+                        return !existingShas.has(file.sha!)
+                    }
+                    blobFetches++
+                    return true
                 },
+
                 branch: branch,
                 octokit: octokit.rest,
                 owner,
                 repo,
             })
+
+            const allCurrentPagePaths = new Set(
+                files.map((x) => x.pagePath).filter(Boolean),
+            )
+            const toDelete: string[] = enablePartialUpdate
+                ? [...existingPagePaths].filter(
+                      (slug) => !allCurrentPagePaths.has(slug),
+                  )
+                : []
+
             let allAssetPaths = files.map((x) => x.pagePath)
-            let filtered = files.filter((x) => {
-                return (
-                    x?.pagePath?.startsWith(basePath) && isMarkdown(x.pagePath)
-                )
+            let onlyMarkdown = files.filter((x) => {
+                if (
+                    !x.content ||
+                    !x?.pagePath?.startsWith(basePath) ||
+                    !isMarkdown(x.pagePath)
+                ) {
+                    return false
+                }
+                return true
             })
 
-            if (!filtered.length) {
-                throw new Error(
-                    `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
-                )
-            }
+            console.log(
+                `found ${onlyMarkdown.length} files to sync, from ${files.filter((x) => x?.pagePath?.startsWith(basePath) && isMarkdown(x?.pagePath)).length} total files`,
+            )
+
+            // if (!onlyMarkdown.length && !toDelete.length) {
+            //     throw new Error(
+            //         `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
+            //     )
+            // }
 
             let mapImageUrl = (imgPath) =>
                 publicFileMapUrl({ branch, imgPath, owner, repo })
@@ -502,7 +549,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
 
             let withMarkdown = await Promise.all(
-                filtered.map(async (x) => {
+                onlyMarkdown.map(async (x) => {
                     if (!x?.content) {
                         return
                     }
@@ -526,6 +573,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                             path: pagePath,
                             title,
                             foundMdx: false,
+                            sha: x.sha,
                         }
                     }
 
@@ -551,6 +599,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         pagePath,
                         title,
                         foundMdx,
+                        sha: x.sha,
                     }
                 }),
             )
@@ -583,20 +632,56 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 console.log(
                     `Syncing time for ${owner}/repo: ${timeInSeconds} seconds`,
                 )
-                await prisma.gitHubSync.create({
-                    data: {
-                        repoUrl: `https://github.com/${owner}/${repo}`,
-                        filesSynced: withMarkdown.length,
-                        orgId: store.orgId,
-                        projectName,
-                        projectId,
-                        durationInSeconds: timeInSeconds,
-                    },
-                })
+
+                // Update synced files in database
+
+                await Promise.all([
+                    // Delete removed files
+                    prisma.gitHubSyncedFile.deleteMany({
+                        where: {
+                            installationId,
+                            orgId,
+                            pagePath: {
+                                in: toDelete,
+                            },
+                        },
+                    }),
+                    // Upsert modified/new files
+                    ...withMarkdown.filter(isTruthy).map((file) =>
+                        prisma.gitHubSyncedFile.upsert({
+                            where: {
+                                installationId_pagePath: {
+                                    installationId,
+                                    pagePath: file.pagePath,
+                                },
+                            },
+                            create: {
+                                installationId,
+                                orgId,
+                                pagePath: file.pagePath,
+                                sha: file.sha || '',
+                            },
+                            update: {
+                                sha: file.sha,
+                            },
+                        }),
+                    ),
+                    prisma.gitHubSync.create({
+                        data: {
+                            repoUrl: `https://github.com/${owner}/${repo}`,
+                            filesSynced: withMarkdown.length,
+                            orgId: store.orgId,
+                            projectName,
+                            projectId,
+                            durationInSeconds: timeInSeconds,
+                        },
+                    }),
+                ])
             }
             return {
                 frontMatter,
                 files: onlyGetFrontmatter ? [] : withMarkdown.filter(isTruthy),
+                toDelete,
             }
         },
         {
@@ -609,7 +694,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 projectId: z.string(),
                 projectName: z.string(),
                 mapFieldsConfig: z.custom<CollectionField[]>().optional(),
-                // userId: z.string(),
+                enablePartialUpdate: z.boolean().optional(),
             }),
         },
     )

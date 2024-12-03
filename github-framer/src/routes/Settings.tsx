@@ -22,44 +22,49 @@ import classNames from 'classnames'
 import { framer } from 'framer-plugin'
 
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import {
-    feedbackUrl,
-    FREE_GITHUB_SYNCS_PER_MONTH,
-    getBuyGithubPluginUrl,
-} from 'website/src/lib/env'
+import { feedbackUrl, getBuyGithubPluginUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
     const pluginData = await getMarkdownPluginData()
     const { projectId, projectName } = pluginData
-    const [org, syncs, { subs, manageSubUrl }] = await Promise.all([
-        pluginApiClient.api.plugins.currentOrg
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        pluginApiClient.api.plugins.markdownPlugin.syncsThisMonth
-            .post({ projectId, projectName })
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        pluginApiClient.api.plugins.markdownPlugin.subscriptions
-            .get({ query: { projectId } })
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-    ])
+    const [org, syncs, { subs, freeSyncs = 10, manageSubUrl }] =
+        await Promise.all([
+            pluginApiClient.api.plugins.currentOrg
+                .post({})
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            pluginApiClient.api.plugins.markdownPlugin.syncsThisMonth
+                .post({ projectId, projectName })
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            pluginApiClient.api.plugins.markdownPlugin.subscriptions
+                .get({ query: { projectId } })
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+        ])
     const { email, orgId } = org
     const sub = subs.find((x) => x)
-    return { ...pluginData, manageSubUrl, sub, syncs, email, orgId }
+    return {
+        ...pluginData,
+        manageSubUrl,
+        freeSyncs,
+        sub,
+        syncs,
+        email,
+        orgId,
+    }
 }
 
 export function Settings(): RouteObject {
@@ -84,6 +89,7 @@ function Component() {
         orgId,
         projectId,
         manageSubUrl,
+        freeSyncs,
     } = useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
 
@@ -107,6 +113,10 @@ function Component() {
                                 PluginDataKeys.sessionKey,
                                 null,
                             )
+                            const allKeys = await collection.getPluginDataKeys()
+                            for (let key of allKeys) {
+                                await collection.setPluginData(key, null)
+                            }
                             reload()
                         } finally {
                             // setIsLoading(false)
@@ -179,8 +189,7 @@ function Component() {
                             ) : (
                                 <>
                                     Free syncs remaining:{' '}
-                                    {FREE_GITHUB_SYNCS_PER_MONTH - (syncs || 0)}{' '}
-                                    / {FREE_GITHUB_SYNCS_PER_MONTH}
+                                    {freeSyncs - (syncs || 0)} / {freeSyncs}
                                 </>
                             )}
                         </div>
@@ -210,9 +219,7 @@ function Component() {
                         <div className='grow'></div>
 
                         <ProgressBar
-                            progress={
-                                (syncs || 0) / FREE_GITHUB_SYNCS_PER_MONTH
-                            }
+                            progress={(syncs || 0) / freeSyncs}
                             className='w-full'
                         />
                     </div>

@@ -336,10 +336,18 @@ export interface GitHubSync {
   durationInSeconds: number | null;
   filesSynced: Generated<number>;
   id: Generated<number>;
+  installationId: number | null;
   orgId: string;
   projectId: Generated<string>;
   projectName: Generated<string>;
   repoUrl: string;
+}
+
+export interface GitHubSyncedFile {
+  installationId: number;
+  orgId: string;
+  pagePath: Generated<string>;
+  sha: string;
 }
 
 export interface LemonSqueezyLicense {
@@ -625,6 +633,7 @@ export interface DB {
   Generation: Generation;
   GithubInstallation: GithubInstallation;
   GitHubSync: GitHubSync;
+  GitHubSyncedFile: GitHubSyncedFile;
   LemonSqueezyLicense: LemonSqueezyLicense;
   Org: Org;
   OrgInviteLink: OrgInviteLink;

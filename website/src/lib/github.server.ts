@@ -86,7 +86,12 @@ export async function getRepoFiles({
     branch: string
     commitSha?: string
     baseUrl?: string
-    fetchBlob: (p: string) => boolean
+    fetchBlob: (p: {
+        path?: string
+        sha?: string
+        type?: string
+        mode?: string
+    }) => boolean
 }) {
     if (!commitSha) {
         console.log(`getting current commit for ${branch}`)
@@ -127,7 +132,7 @@ export async function getRepoFiles({
                     return
                 }
                 // console.log(`getting blob for ${file.path}`)
-                if (!fetchBlob(pagePath)) {
+                if (!fetchBlob(file)) {
                     return {
                         pagePath,
                         githubPath: file.path,
@@ -136,18 +141,18 @@ export async function getRepoFiles({
                         type: file.type,
                     }
                 }
-                const [{ data }, { data: commitData }] = await Promise.all([
+                const [{ data }] = await Promise.all([
                     octokit.git.getBlob({
                         owner,
                         repo,
                         file_sha: file.sha!,
                         baseUrl,
                     }),
-                    octokit.repos.getCommit({
-                        owner,
-                        repo,
-                        ref: file.sha!,
-                    }),
+                    // octokit.repos.getCommit({
+                    //     owner,
+                    //     repo,
+                    //     ref: file.sha!,
+                    // }),
                 ])
 
                 const contents = Buffer.from(data.content, 'base64').toString(

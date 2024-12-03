@@ -7,7 +7,8 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
-  schemas    = ["auth", "public"]
+
+  schemas = ["auth", "public"]
 }
 
 model audit_log_entries {
@@ -358,15 +359,17 @@ model FramerLoginSession {
 
 model GithubInstallation {
   installationId   Int
-  accountLogin     String            @default("")
+  accountLogin     String             @default("")
   appId            String
-  accountAvatarUrl String            @default("")
-  createdAt        DateTime          @default(now())
+  accountAvatarUrl String             @default("")
+  createdAt        DateTime           @default(now())
   orgId            String
   oauthToken       String?
-  status           String            @default("active")
-  accountType      GithubAccountType @default(USER)
-  memberLogins     String[]          @default([])
+  status           String             @default("active")
+  accountType      GithubAccountType  @default(USER)
+  memberLogins     String[]           @default([])
+  syncs            GitHubSync[]
+  files            GitHubSyncedFile[]
 
   @@id([installationId, orgId])
   @@schema("public")
@@ -495,6 +498,21 @@ model GitHubSync {
   projectName       String   @default("")
   durationInSeconds Float?
 
+  installationId Int?
+
+  installation GithubInstallation? @relation(fields: [installationId, orgId], references: [installationId, orgId], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model GitHubSyncedFile {
+  sha            String
+  orgId          String
+  pagePath       String             @default("")
+  installationId Int
+  github         GithubInstallation @relation(fields: [installationId, orgId], references: [installationId, orgId], onDelete: Cascade)
+
+  @@id([installationId, pagePath])
   @@schema("public")
 }
 
