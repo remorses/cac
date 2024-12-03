@@ -18,6 +18,7 @@ import { isTruthy } from 'website/src/lib/utils'
 import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
 import { env } from '../lib/env'
 import { getSupabaseSession } from '../lib/supabase.server'
+import { useRef, useState } from 'react'
 
 enum FormNames {
     chooseAnother = '_chooseAnother',
@@ -29,6 +30,17 @@ export default function ChooseOrg() {
     const [searchParams] = useSearchParams()
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
+    const [selectedAccountLogin, setSelectedAccountLogin] = useState(
+        installations?.find((x) => x)?.accountLogin,
+    )
+    const installation = installations.find(
+        (org) => org.accountLogin === selectedAccountLogin,
+    )
+    const settings = installation
+        ? installation?.accountType === 'ORGANIZATION'
+            ? `https://github.com/organizations/${installation.accountLogin}/settings/installations/${installation.installationId}`
+            : `https://github.com/settings/installations/${installation?.installationId}`
+        : ''
     return (
         <div className='w-full md:-mt-[100px] grow justify-center h-full gap-[60px] flex flex-col items-center'>
             <div className='flex flex-col gap-4 text-center'>
@@ -42,8 +54,17 @@ export default function ChooseOrg() {
             </div>
             <Form className='flex dark flex-col gap-6'>
                 <select
+                    // value={selectedAccountLogin}
                     className='rounded-md py-1 border-0 dark:bg-default-200'
                     name={FormNames.chosenOrg}
+                    onChange={(e) => {
+                        const value = e.target.value
+                        if (value === FormNames.chooseAnother) {
+                            setSelectedAccountLogin(undefined)
+                        } else {
+                            setSelectedAccountLogin(value)
+                        }
+                    }}
                 >
                     {installations.map((org) => {
                         return (
@@ -59,6 +80,21 @@ export default function ChooseOrg() {
                         add another organization
                     </option>
                 </select>
+
+                {!!selectedAccountLogin && (
+                    <div className='flex flex-col gap-2'>
+                        <div className='text-sm opacity-70'>
+                            change accessible repositories{' '}
+                            <a
+                                href={settings}
+                                target='_blank'
+                                className='text-sm text-primary hover:opacity-80'
+                            >
+                                here
+                            </a>
+                        </div>
+                    </div>
+                )}
 
                 {/* add all other search params with hidden inputs */}
                 {Array.from(searchParams).map(([key, value]) => {
@@ -128,6 +164,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 if (ok) {
                     return installation
                 }
+                console.log('installation check failed, removing', {
+                    installationId: installation.installationId,
+                    orgId: installation.orgId,
+                })
+                // await prisma.githubInstallation.delete({
+                //     where: {
+                //         installationId_orgId: {
+                //             installationId: installation.installationId,
+                //             orgId: installation.orgId
+                //         }
+                //     },
+                // })
                 return null
             }),
         )
