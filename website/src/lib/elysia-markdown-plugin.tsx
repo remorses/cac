@@ -24,6 +24,7 @@ import {
 import { markdownToHtml } from 'website/src/lib/mdx'
 import { isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
+import { Sema } from 'sema4'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 const freeSyncs = 5
@@ -358,6 +359,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw unauthorizedResponse
             }
             const startTime = Date.now() // Start time
+            const timeId = Math.random().toString(36).slice(2, 8)
+            console.time(`${owner}/${repo} - total sync time ${timeId}`)
 
             const urlLikeFields = new Set(
                 mapFieldsConfig
@@ -370,6 +373,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     .map((x) => x.name) || [],
             )
 
+            console.time(`${owner}/${repo} - initial checks ${timeId}`)
             const [githubInstallation, syncsThisMonth, sub] = await Promise.all(
                 [
                     prisma.githubInstallation.findFirst({
@@ -390,6 +394,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     getGithubSub({ orgId, projectId }),
                 ],
             )
+            console.timeEnd(`${owner}/${repo} - initial checks ${timeId}`)
+
             if (!githubInstallation) {
                 throw new Error('No github installation found')
             }
@@ -405,8 +411,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
 
             const installationId = githubInstallation.installationId
+            console.time(`${owner}/${repo} - get octokit ${timeId}`)
             const octokit = await getOctokit({ installationId })
+            console.timeEnd(`${owner}/${repo} - get octokit ${timeId}`)
 
+            console.time(`${owner}/${repo} - repo checks ${timeId}`)
             const [repoResult, ok, existingFiles] = await Promise.all([
                 octokit.rest.repos.get({
                     owner,
@@ -421,6 +430,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     },
                 }),
             ])
+            console.timeEnd(`${owner}/${repo} - repo checks ${timeId}`)
+
             if (!ok) {
                 throw new Error('Github app no longer installed')
             }
@@ -430,8 +441,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             const existingPagePaths = new Set(
                 existingFiles.map((f) => f.pagePath),
             )
-            let maxBlobFetches = onlyGetFrontmatter ? 200 : 10_000
+            let maxBlobFetches = onlyGetFrontmatter ? 100 : 10_000
             let blobFetches = 0
+
+            console.time(`${owner}/${repo} - fetch files ${timeId}`)
             const files = await getRepoFiles({
                 fetchBlob(file) {
                     if (blobFetches > maxBlobFetches) {
@@ -459,6 +472,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 repo,
                 signal,
             })
+            console.timeEnd(`${owner}/${repo} - fetch files ${timeId}`)
 
             const allCurrentPagePaths = new Set(
                 files.map((x) => x.pagePath).filter(Boolean),
@@ -552,6 +566,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 return frontmatter
             }
 
+            console.time(`${owner}/${repo} - process markdown ${timeId}`)
             let withMarkdown = await Promise.all(
                 onlyMarkdown.map(async (x) => {
                     if (!x?.content) {
@@ -607,6 +622,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     }
                 }),
             )
+            console.timeEnd(`${owner}/${repo} - process markdown ${timeId}`)
+
             let properties: MarkdownPluginFrontMatter['properties'] = {}
             for (let file of withMarkdown) {
                 if (!file?.frontMatter) {
@@ -638,7 +655,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 )
 
                 // Update synced files in database
-
+                console.time(`${owner}/${repo} - database updates ${timeId}`)
+                const sema = new Sema(10)
                 await Promise.all([
                     // Delete removed files
                     prisma.gitHubSyncedFile.deleteMany({
@@ -650,26 +668,32 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                             },
                         },
                     }),
-                    // Upsert modified/new files
-                    ...withMarkdown.filter(isTruthy).map((file) =>
-                        prisma.gitHubSyncedFile.upsert({
-                            where: {
-                                installationId_pagePath: {
-                                    installationId,
-                                    pagePath: file.pagePath,
+                    // Upsert modified/new files with concurrency limit
+                    ...withMarkdown.filter(isTruthy).map(async (file) => {
+                        await sema.acquire()
+                        console.log('upserting', `${owner}/${repo}`, file.pagePath)
+                        try {
+                            return await prisma.gitHubSyncedFile.upsert({
+                                where: {
+                                    installationId_pagePath: {
+                                        installationId,
+                                        pagePath: file.pagePath,
+                                    },
                                 },
-                            },
-                            create: {
-                                installationId,
-                                orgId,
-                                pagePath: file.pagePath,
-                                sha: file.sha || '',
-                            },
-                            update: {
-                                sha: file.sha,
-                            },
-                        }),
-                    ),
+                                create: {
+                                    installationId,
+                                    orgId,
+                                    pagePath: file.pagePath,
+                                    sha: file.sha || '',
+                                },
+                                update: {
+                                    sha: file.sha,
+                                },
+                            })
+                        } finally {
+                            sema.release()
+                        }
+                    }),
                     prisma.gitHubSync.create({
                         data: {
                             repoUrl: `https://github.com/${owner}/${repo}`,
@@ -681,7 +705,9 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         },
                     }),
                 ])
+                console.timeEnd(`${owner}/${repo} - database updates ${timeId}`)
             }
+            console.timeEnd(`${owner}/${repo} - total sync time ${timeId}`)
             return {
                 frontMatter,
                 files: onlyGetFrontmatter ? [] : withMarkdown.filter(isTruthy),
