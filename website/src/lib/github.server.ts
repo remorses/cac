@@ -143,6 +143,9 @@ export async function getRepoFiles({
                         type: file.type,
                     }
                 }
+                console.log(
+                    `fetching blog for ${file.path} in ${owner}/${repo}`,
+                )
                 const [{ data }] = await Promise.all([
                     octokit.git.getBlob({
                         owner,

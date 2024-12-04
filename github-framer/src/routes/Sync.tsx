@@ -1,21 +1,14 @@
-import { Sema } from 'sema4'
 import {
     getMarkdownPluginData,
     LoaderReturnType,
     Paths,
     pluginApiClient,
     PluginDataKeys,
-    simpleHash,
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
 import { CollectionItemData, framer } from 'framer-plugin'
-import {
-    LoaderFunctionArgs,
-    redirect,
-    RouteObject,
-    useLoaderData,
-} from 'react-router'
-import { Spinner } from 'template-rewrite-framer/src/components/Spinner'
+import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
+import { Sema } from 'sema4'
 
 async function loader({}: LoaderFunctionArgs) {
     const {
@@ -28,7 +21,11 @@ async function loader({}: LoaderFunctionArgs) {
         projectName,
         enablePartialUpdate,
     } = await getMarkdownPluginData()
+    const collection = await framer.getManagedCollection()
+
     console.log('syncing', owner, repo, githubAccountLogin, basePath)
+    let itemIds = await collection.getItemIds()
+    const itemIdsSet = new Set(itemIds)
     const { data, error } =
         await pluginApiClient.api.plugins.markdownPlugin.syncGithub.post({
             owner,
@@ -39,13 +36,13 @@ async function loader({}: LoaderFunctionArgs) {
             projectName,
             mapFieldsConfig,
             enablePartialUpdate: enablePartialUpdate,
+            itemIds: [...itemIds],
         })
 
     if (error) {
         throw error
     }
-    const { files, toDelete } = data
-    const collection = await framer.getManagedCollection()
+    const { files, idsToDelete } = data
 
     await collection.setFields([
         {
@@ -59,7 +56,7 @@ async function loader({}: LoaderFunctionArgs) {
     ])
 
     const errorList = [] as { message: string; path: string }[]
-    const semaphore = new Sema(10)
+    const semaphore = new Sema(1)
     let notImported = 0
 
     await Promise.all(
@@ -75,7 +72,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return
             }
 
-            const id = simpleHash(item.pagePath)
+            const id = item.id
 
             let frontMatterFields = getFieldsForFrontMatter(
                 item.frontMatter,
@@ -84,7 +81,7 @@ async function loader({}: LoaderFunctionArgs) {
 
             const collectionItem: CollectionItemData = {
                 id,
-                slug: item.slug,
+                slug: item.pagePath,
 
                 fieldData: {
                     // title: item.title,
@@ -115,14 +112,20 @@ async function loader({}: LoaderFunctionArgs) {
 
     // Remove all the items that weren't in the new feed
 
-    console.log('removing items', toDelete)
-    await collection.removeItems(
-        toDelete.map((pagePath) => simpleHash(pagePath)),
-    )
+    console.log('removing items', idsToDelete)
+    try {
+        await collection.removeItems(
+            idsToDelete.map((id) => id).filter((id) => itemIdsSet.has(id)),
+        )
+    } catch (error) {
+        await framer.notify(`Error removing items: ${error.message}`, {
+            variant: 'error',
+        })
+    }
 
     // Save the data source ID for future plugin runs
     await framer.notify(
-        `Imported ${files.length} files${toDelete.length ? `, deleted ${toDelete.length} files` : ''}`,
+        `Imported ${files.length} files${idsToDelete.length ? `, deleted ${idsToDelete.length} files` : ''}`,
         {
             variant: 'success',
         },
@@ -156,22 +159,24 @@ function Component() {
     >
 
     return (
-        <div className='flex flex-col justify-center items-center min-h-[200px] max-h-[500px] overflow-y-auto gap-4'>
+        <div className='flex flex-col shrink-0 items-center min-h-[200px] max-h-[500px] overflow-y-auto gap-4'>
             {/* <Spinner /> */}
             {errorList && errorList.length > 0 && (
                 <div
-                    className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative'
+                    className='bg-red-100 border shrink-0 border-red-400 text-red-700 px-4 py-3 rounded relative'
                     role='alert'
                 >
-                    <strong className='font-bold'>Error(s) occurred:</strong>
+                    <strong className='shrink-0  font-bold'>
+                        Error(s) occurred:
+                    </strong>
                     {!!notImported && (
-                        <div className='mt-2 font-bold'>
+                        <div className='mt-2 shrink-0  font-bold'>
                             {notImported}{' '}
                             {notImported === 1 ? 'page was' : 'pages were'} not
                             imported
                         </div>
                     )}
-                    <ul className='list-disc list-inside mt-2'>
+                    <ul className='list-disc shrink-0 list-inside mt-2'>
                         {errorList.map((error, index) => (
                             <li key={index} className='flex items-start mb-2'>
                                 <ErrorIcon />

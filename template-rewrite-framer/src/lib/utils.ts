@@ -269,3 +269,5 @@ export function simpleHash(input: string) {
     }
     return Math.abs(hash).toString(36).substring(0, 8)
 }
+
+

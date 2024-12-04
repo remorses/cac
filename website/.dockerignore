@@ -1,3 +1,4 @@
 node_modules
-dist
 plugin.zip
+**/node_modules
+*.tsbuildinfo

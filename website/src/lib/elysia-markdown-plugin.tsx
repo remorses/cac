@@ -1,4 +1,5 @@
 import domSerializer from 'dom-serializer'
+import crypto from 'crypto'
 import * as domutils from 'domutils'
 
 import { Spiceflow } from 'spiceflow'
@@ -360,6 +361,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         async function syncGithub({ request, state: store }) {
             const signal = request.signal
             const body = await request.json()
+            console.log(body)
             let {
                 owner,
                 githubAccountLogin,
@@ -380,7 +382,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     orgId: store.orgId,
                     githubUserLogin: store.githubUserLogin,
                     signal,
-                })
+                }) as never
             }
             if (!basePath) {
                 basePath = ''
@@ -488,8 +490,8 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     ) {
                         return false
                     }
-                    if (enablePartialUpdate) {
-                        return !existingShas.has(file.sha!)
+                    if (enablePartialUpdate && existingShas.has(file.sha!)) {
+                        return false
                     }
                     blobFetches++
                     return true
@@ -589,15 +591,30 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
 
             console.time(`${owner}/${repo} - process markdown ${timeId}`)
+            const slugsFound = new Set<string>()
             let withMarkdown = await Promise.all(
                 onlyMarkdown.map(async (x) => {
                     if (!x?.content) {
                         return
                     }
+                    const id = idHash(x.pagePath)
+
                     const pagePath = x.pagePath
                     let content = x.content
                     let extension = path.extname(x.pagePath)
                     const slug = turnPagePathIntoSlug(pagePath, basePath)
+                    if (slugsFound.has(slug)) {
+                        console.log(
+                            'duplicate slug found',
+                            slug,
+                            'in',
+                            owner + '/' + repo,
+                            'at',
+                            pagePath,
+                        )
+                        return
+                    }
+                    slugsFound.add(slug)
                     let { frontMatter, markdown } = await getFrontmatter(
                         content || '',
                     )
@@ -625,6 +642,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     return {
                         ...data,
                         frontMatter,
+                        id,
                         slug,
                         path: pagePath,
                         pagePath,
@@ -697,10 +715,12 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             return {
                 files: withMarkdown.filter(isTruthy),
                 toDelete,
+                idsToDelete: toDelete.map((x) => idHash(x)),
             }
         },
         {
             body: z.object({
+                itemIds: z.array(z.string()).optional(),
                 owner: z.string(),
                 repo: z.string(),
                 basePath: z.string(),
@@ -1179,4 +1199,8 @@ async function getGithubSub({ orgId, projectId }) {
 
 function isValidUrl(string: string): boolean {
     return string.startsWith('http://') || string.startsWith('https://')
+}
+
+function idHash(pagePath: string) {
+    return crypto.createHash('md5').update(pagePath).digest('hex')
 }

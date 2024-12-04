@@ -13,7 +13,6 @@ export {
     withMode,
     formatLargeNumber,
     getDesktop,
-    simpleHash,
 } from 'template-rewrite-framer/src/lib/utils'
 export type { LoaderReturnType } from 'template-rewrite-framer/src/lib/utils'
 
