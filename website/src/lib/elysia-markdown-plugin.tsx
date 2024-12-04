@@ -372,9 +372,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 mapFieldsConfig,
                 enablePartialUpdate,
                 onlyGetFrontmatter,
+                itemIds,
             } = body
+            let itemIdsSet = new Set(itemIds || [])
             if (onlyGetFrontmatter) {
-                return await getFrontmatterForRepo({
+                return (await getFrontmatterForRepo({
                     owner,
                     githubAccountLogin,
                     basePath,
@@ -382,7 +384,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     orgId: store.orgId,
                     githubUserLogin: store.githubUserLogin,
                     signal,
-                }) as never
+                })) as never
             }
             if (!basePath) {
                 basePath = ''
@@ -491,6 +493,13 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         return false
                     }
                     if (enablePartialUpdate && existingShas.has(file.sha!)) {
+                        // in case the item is not in Framer fetch it again
+                        if (
+                            itemIds?.length &&
+                            !itemIdsSet.has(idHash(pagePath))
+                        ) {
+                            return true
+                        }
                         return false
                     }
                     blobFetches++
