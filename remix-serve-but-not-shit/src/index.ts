@@ -97,7 +97,7 @@ async function run() {
         '*',
         createRequestHandler({
             build,
-            mode: process.env.NODE_ENV,
+            mode: 'production',
 
             // getLoadContext(req, res) {
             //     const headers = new HeadersProxy(res)

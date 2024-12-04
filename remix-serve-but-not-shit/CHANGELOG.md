@@ -1,5 +1,11 @@
 # remix-serve-but-not-shit
 
+## 0.0.7
+
+### Patch Changes
+
+-   always production mode
+
 ## 0.0.6
 
 ### Patch Changes

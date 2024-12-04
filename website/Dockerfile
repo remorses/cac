@@ -16,9 +16,11 @@ RUN apt update && apt install openssl ca-certificates -y \
 
 COPY docker.package.json ./package.json
 
-RUN npm install -g remix-serve-but-not-shit && npm install
+RUN npm install -g remix-serve-but-not-shit@0.0.7 && npm install
 
 COPY ./build /app/build
+COPY ./public /app/public
+
 
 env PORT=8040
 
