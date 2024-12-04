@@ -21,7 +21,7 @@ import {
     githubPathToPageSlug,
     isMarkdown,
 } from 'website/src/lib/github.server'
-import { markdownToHtml } from 'website/src/lib/mdx'
+import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
 import { isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
 import { Sema } from 'sema4'
@@ -332,14 +332,36 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         },
     )
     .post(
+        '/frontmatter',
+        async function getFrontmatterHandler({ request, state: store }) {
+            const body = await request.json()
+            const { owner, githubAccountLogin, basePath, repo } = body
+            return await getFrontmatterForRepo({
+                owner,
+                githubAccountLogin,
+                basePath,
+                repo,
+                orgId: store.orgId,
+                githubUserLogin: store.githubUserLogin,
+                signal: request.signal,
+            })
+        },
+        {
+            body: z.object({
+                owner: z.string(),
+                repo: z.string(),
+                basePath: z.string(),
+                githubAccountLogin: z.string(),
+            }),
+        },
+    )
+    .post(
         '/syncGithub',
         async function syncGithub({ request, state: store }) {
             const signal = request.signal
             const body = await request.json()
-            console.log(body)
             let {
                 owner,
-                onlyGetFrontmatter,
                 githubAccountLogin,
                 basePath,
                 repo,
@@ -347,18 +369,27 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 projectName,
                 mapFieldsConfig,
                 enablePartialUpdate,
+                onlyGetFrontmatter,
             } = body
+            if (onlyGetFrontmatter) {
+                return await getFrontmatterForRepo({
+                    owner,
+                    githubAccountLogin,
+                    basePath,
+                    repo,
+                    orgId: store.orgId,
+                    githubUserLogin: store.githubUserLogin,
+                    signal,
+                })
+            }
             if (!basePath) {
                 basePath = ''
-            }
-            if (onlyGetFrontmatter) {
-                enablePartialUpdate = false
             }
             const orgId = store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
-            const startTime = Date.now() // Start time
+            const startTime = Date.now()
             const timeId = Math.random().toString(36).slice(2, 8)
             console.time(`${owner}/${repo} - total sync time ${timeId}`)
 
@@ -436,12 +467,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 throw new Error('Github app no longer installed')
             }
             let branch = repoResult.data.default_branch
-            // Create sets for tracking changes
             const existingShas = new Set(existingFiles.map((f) => f.sha))
             const existingPagePaths = new Set(
                 existingFiles.map((f) => f.pagePath),
             )
-            let maxBlobFetches = onlyGetFrontmatter ? 100 : 10_000
+            let maxBlobFetches = 4000
             let blobFetches = 0
 
             console.time(`${owner}/${repo} - fetch files ${timeId}`)
@@ -458,14 +488,12 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     ) {
                         return false
                     }
-                    // If partial update enabled, only fetch files not in existing shas
                     if (enablePartialUpdate) {
                         return !existingShas.has(file.sha!)
                     }
                     blobFetches++
                     return true
                 },
-
                 branch: branch,
                 octokit: octokit.rest,
                 owner,
@@ -499,16 +527,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 `found ${onlyMarkdown.length} files to sync, from ${files.filter((x) => x?.pagePath?.startsWith(basePath) && isMarkdown(x?.pagePath)).length} total files`,
             )
 
-            // if (!onlyMarkdown.length && !toDelete.length) {
-            //     throw new Error(
-            //         `No files found in ${owner}/${repo} inside folder ${basePath || '/'}`,
-            //     )
-            // }
-
             let mapImageUrl = (imgPath) =>
                 publicFileMapUrl({ branch, imgPath, owner, repo })
 
-            if (!onlyGetFrontmatter && repoResult.data.private) {
+            if (repoResult.data.private) {
                 mapImageUrl = async (imgPath) => {
                     try {
                         const res = await octokit.rest.repos.getContent({
@@ -560,7 +582,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     if (resolved) {
                         frontmatter[field] = await mapImageUrl(resolved)
                     } else {
-                        delete frontMatter[field]
+                        delete frontmatter[field]
                     }
                 }
                 return frontmatter
@@ -576,25 +598,15 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     let content = x.content
                     let extension = path.extname(x.pagePath)
                     const slug = turnPagePathIntoSlug(pagePath, basePath)
-                    let { frontMatter, html, foundMdx } = await markdownToHtml(
+                    let { frontMatter, markdown } = await getFrontmatter(
                         content || '',
+                    )
+                    let { html, foundMdx } = await markdownToHtml(
+                        markdown,
                         extension,
                     )
                     frontMatter = await resolveUrlsInFrontmatter(frontMatter)
                     let title = frontMatter?.title
-
-                    if (onlyGetFrontmatter) {
-                        return {
-                            frontMatter,
-                            pagePath,
-                            slug,
-                            html: '',
-                            path: pagePath,
-                            title,
-                            foundMdx: false,
-                            sha: x.sha,
-                        }
-                    }
 
                     const data = await processHtml({
                         basePath,
@@ -624,93 +636,66 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             )
             console.timeEnd(`${owner}/${repo} - process markdown ${timeId}`)
 
-            let properties: MarkdownPluginFrontMatter['properties'] = {}
-            for (let file of withMarkdown) {
-                if (!file?.frontMatter) {
-                    continue
-                }
-                for (let [key, value] of Object.entries(file.frontMatter)) {
-                    if (!properties[key]) {
-                        properties[key] = {
-                            values: [],
-                            name: key,
-                            id: key,
-                        }
-                    }
-                    if (value != null) {
-                        properties[key].values.push(value as any)
-                    }
-                }
-            }
-            const frontMatter: MarkdownPluginFrontMatter = {
-                properties,
-            }
             console.log(`finished syncing ${owner}/${repo}`)
 
-            if (!onlyGetFrontmatter) {
-                const end = Date.now()
-                const timeInSeconds = (end - startTime) / 1000
-                console.log(
-                    `Syncing time for ${owner}/repo: ${timeInSeconds} seconds`,
-                )
+            const end = Date.now()
+            const timeInSeconds = (end - startTime) / 1000
+            console.log(
+                `Syncing time for ${owner}/repo: ${timeInSeconds} seconds`,
+            )
 
-                // Update synced files in database
-                console.time(`${owner}/${repo} - database updates ${timeId}`)
-                const sema = new Sema(10)
-                await Promise.all([
-                    // Delete removed files
-                    prisma.gitHubSyncedFile.deleteMany({
-                        where: {
-                            installationId,
-                            orgId,
-                            pagePath: {
-                                in: toDelete,
-                            },
+            console.time(`${owner}/${repo} - database updates ${timeId}`)
+            const sema = new Sema(5)
+            await Promise.all([
+                prisma.gitHubSyncedFile.deleteMany({
+                    where: {
+                        installationId,
+                        orgId,
+                        pagePath: {
+                            in: toDelete,
                         },
-                    }),
-                    // Upsert modified/new files with concurrency limit
-                    ...withMarkdown.filter(isTruthy).map(async (file) => {
-                        await sema.acquire()
-                        console.log('upserting', `${owner}/${repo}`, file.pagePath)
-                        try {
-                            return await prisma.gitHubSyncedFile.upsert({
-                                where: {
-                                    installationId_pagePath: {
-                                        installationId,
-                                        pagePath: file.pagePath,
-                                    },
-                                },
-                                create: {
+                    },
+                }),
+                ...withMarkdown.filter(isTruthy).map(async (file) => {
+                    await sema.acquire()
+                    console.log('upserting', `${owner}/${repo}`, file.pagePath)
+                    try {
+                        return await prisma.gitHubSyncedFile.upsert({
+                            where: {
+                                installationId_pagePath: {
                                     installationId,
-                                    orgId,
                                     pagePath: file.pagePath,
-                                    sha: file.sha || '',
                                 },
-                                update: {
-                                    sha: file.sha,
-                                },
-                            })
-                        } finally {
-                            sema.release()
-                        }
-                    }),
-                    prisma.gitHubSync.create({
-                        data: {
-                            repoUrl: `https://github.com/${owner}/${repo}`,
-                            filesSynced: withMarkdown.length,
-                            orgId: store.orgId,
-                            projectName,
-                            projectId,
-                            durationInSeconds: timeInSeconds,
-                        },
-                    }),
-                ])
-                console.timeEnd(`${owner}/${repo} - database updates ${timeId}`)
-            }
+                            },
+                            create: {
+                                installationId,
+                                orgId,
+                                pagePath: file.pagePath,
+                                sha: file.sha || '',
+                            },
+                            update: {
+                                sha: file.sha,
+                            },
+                        })
+                    } finally {
+                        sema.release()
+                    }
+                }),
+                prisma.gitHubSync.create({
+                    data: {
+                        repoUrl: `https://github.com/${owner}/${repo}`,
+                        filesSynced: withMarkdown.length,
+                        orgId: store.orgId,
+                        projectName,
+                        projectId,
+                        durationInSeconds: timeInSeconds,
+                    },
+                }),
+            ])
+            console.timeEnd(`${owner}/${repo} - database updates ${timeId}`)
             console.timeEnd(`${owner}/${repo} - total sync time ${timeId}`)
             return {
-                frontMatter,
-                files: onlyGetFrontmatter ? [] : withMarkdown.filter(isTruthy),
+                files: withMarkdown.filter(isTruthy),
                 toDelete,
             }
         },
@@ -720,10 +705,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 repo: z.string(),
                 basePath: z.string(),
                 githubAccountLogin: z.string(),
-                onlyGetFrontmatter: z.boolean().optional(),
                 projectId: z.string(),
                 projectName: z.string(),
                 mapFieldsConfig: z.custom<CollectionField[]>().optional(),
+                onlyGetFrontmatter: z.boolean().optional(), // TODO remove this
                 enablePartialUpdate: z.boolean().optional(),
             }),
         },
@@ -808,6 +793,108 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }),
         },
     )
+
+async function getFrontmatterForRepo({
+    owner,
+    githubAccountLogin,
+    basePath = '',
+    repo,
+    orgId,
+    githubUserLogin,
+    signal,
+}) {
+    if (!orgId) {
+        throw unauthorizedResponse
+    }
+
+    const githubInstallation = await prisma.githubInstallation.findFirst({
+        where: {
+            status: 'active',
+            memberLogins: {
+                has: githubUserLogin,
+            },
+            appId: env.GITHUB_APP_ID,
+            accountLogin: githubAccountLogin,
+        },
+    })
+
+    if (!githubInstallation) {
+        throw new Error('No github installation found')
+    }
+
+    const octokit = await getOctokit({
+        installationId: githubInstallation.installationId,
+    })
+    const repoResult = await octokit.rest.repos.get({
+        owner,
+        repo,
+        request: { signal: signal },
+    })
+    let maxBlobFetches = 120
+    let blobFetches = 0
+
+    const files = await getRepoFiles({
+        fetchBlob(file) {
+            if (blobFetches > maxBlobFetches) {
+                return false
+            }
+            let pagePath = githubPathToPageSlug(file.path || '')
+            if (
+                !(
+                    file.sha &&
+                    pagePath?.startsWith(basePath) &&
+                    isMarkdown(pagePath)
+                )
+            ) {
+                return false
+            }
+            blobFetches++
+            return true
+        },
+        branch: repoResult.data.default_branch,
+        octokit: octokit.rest,
+        owner,
+        repo,
+        signal,
+    })
+
+    const withMarkdown = files
+        .filter(
+            (x) =>
+                x.content &&
+                x.pagePath?.startsWith(basePath) &&
+                isMarkdown(x.pagePath),
+        )
+        .map((x) => {
+            const { frontMatter } = getFrontmatter(x.content || '')
+            return {
+                frontMatter,
+                pagePath: x.pagePath,
+                path: x.pagePath,
+            }
+        })
+
+    let properties: MarkdownPluginFrontMatter['properties'] = {}
+    for (let file of withMarkdown) {
+        if (!file?.frontMatter) continue
+        for (let [key, value] of Object.entries(file.frontMatter)) {
+            if (!properties[key]) {
+                properties[key] = {
+                    values: [],
+                    name: key,
+                    id: key,
+                }
+            }
+            if (value != null) {
+                properties[key].values.push(value as any)
+            }
+        }
+    }
+
+    return {
+        frontMatter: { properties },
+    }
+}
 
 function turnPagePathIntoSlug(pagePath: string, basePath) {
     if (isAbsoluteUrl(pagePath)) {

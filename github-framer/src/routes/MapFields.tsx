@@ -38,14 +38,11 @@ async function loader({ request }: LoaderFunctionArgs) {
         projectName,
     } = await getMarkdownPluginData()
     const { data, error } =
-        await pluginApiClient.api.plugins.markdownPlugin.syncGithub.post({
+        await pluginApiClient.api.plugins.markdownPlugin.frontmatter.post({
             owner,
             repo,
             basePath,
             githubAccountLogin,
-            onlyGetFrontmatter: true,
-            projectId,
-            projectName,
         })
     if (error) {
         throw error

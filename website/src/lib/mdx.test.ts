@@ -28,12 +28,6 @@ describe('markdownToHtml', () => {
           </ul>
           "
         `)
-        expect(result.frontMatter).toMatchInlineSnapshot(`
-          {
-            "date": 2024-11-26T00:00:00.000Z,
-            "title": "Hello World",
-          }
-        `)
     })
 
     it('should convert mdx to HTML and extract frontmatter', async () => {
@@ -79,13 +73,6 @@ describe('markdownToHtml', () => {
           <div><p>xxxx</p></div>
           <link rel="preload" as="image" href="sdfsdf"/><img src="sdfsdf"/>
           <p><a>test</a></p>"
-        `)
-        expect(result.frontMatter).toMatchInlineSnapshot(`
-          {
-            "bool": "no",
-            "date": "2024-11-26",
-            "title": "MDX Example",
-          }
         `)
     })
     it('complex mdx', async () => {
@@ -178,7 +165,6 @@ describe('markdownToHtml', () => {
           &#x3C;MyComponent title={'Custom title'} />
           </code></pre>"
         `)
-        expect(complexResult.frontMatter).toMatchInlineSnapshot(`{}`)
     })
 })
 

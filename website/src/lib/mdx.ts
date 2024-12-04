@@ -98,14 +98,18 @@ const mdxPlugins = unified()
     .use(rehype, { allowDangerousHtml: true })
     .use(rehypeStringify, { allowDangerousHtml: true })
 
+export function getFrontmatter(markdown: string) {
+    const { data, content } = matter(markdown)
+    return { frontMatter: data, markdown: content }
+}
+
 // Main function
 export async function markdownToHtml(markdown: string, extension: string) {
     const startTime = Date.now() // Start time
 
     if (!extension.includes('mdx')) {
-        const { content, data } = matter(markdown)
-        const html = await marked(content, { gfm: true })
-        return { html, frontMatter: data, foundMdx: false }
+        const html = await marked(markdown, { gfm: true })
+        return { html, foundMdx: false }
     }
 
     // Process the input Markdown or MDX
@@ -119,6 +123,6 @@ export async function markdownToHtml(markdown: string, extension: string) {
     return {
         foundMdx,
         html: String(file), // Extract the resulting HTML
-        frontMatter: (file.data.frontmatter || {}) as any, // Extract the frontmatter
+        // frontMatter: (file.data.frontmatter || {}) as any, // Extract the frontmatter
     }
 }
