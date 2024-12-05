@@ -48,24 +48,40 @@ async function loader({}: LoaderFunctionArgs) {
 
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
-    const components = await framer.getNodesWithType('ComponentNode')
-    const [sessionKey, projectInfo] = await Promise.all([
+
+    const [components, styles, sessionKey, projectInfo] = await Promise.all([
+        framer.getNodesWithType('ComponentNode'),
+        framer.getColorStyles(),
         getReactPluginData(),
         framer.getProjectInfo(),
     ])
+
     // throw redirect(withMode(Paths.readme))
     const { id: projectId, name: projectName } = projectInfo
 
     const selectedComponentIds = new Set(formData.keys())
     console.log('selectedComponentIds', [...selectedComponentIds])
-    const filteredComponents = components.filter((component) =>
-        selectedComponentIds.has(component.id),
+    const filteredComponents = components.filter(
+        (component) =>
+            component.id &&
+            component.insertURL &&
+            selectedComponentIds.has(component.id),
     )
 
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
             projectId,
             projectName,
+            colorStyles: styles.map((x) => {
+                const { dark, light, name, id } = x
+                return {
+                    name,
+                    id,
+                    projectId: projectId!,
+                    lightColor: light,
+                    darkColor: dark ?? light, // Ensure darkColor is never null
+                }
+            }),
             components: filteredComponents.map((component) => {
                 const { name, id, insertURL, componentIdentifier } = component
                 return {

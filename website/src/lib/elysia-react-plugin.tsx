@@ -5,7 +5,7 @@ import { Sema } from 'sema4'
 import { Spiceflow } from 'spiceflow'
 import { bundle } from 'unframer-workspace/dist/exporter'
 
-import { prisma, ReactExportComponent } from 'db/prisma'
+import { prisma, ReactExportColorStyle, ReactExportComponent } from 'db/prisma'
 import dedent from 'dedent'
 import { Octokit } from 'octokit'
 import { env } from 'website/src/lib/env'
@@ -70,36 +70,54 @@ export const reactPluginApp = new Spiceflow({
         '/upsertProject',
         async ({ request, state: store }) => {
             const body = await request.json()
-            const { components, projectId, projectName = '' } = body
+            const {
+                colorStyles,
+                components,
+                projectId,
+                projectName = '',
+            } = body
             const orgId = store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
 
-            const project = await prisma.reactExportProject.upsert({
-                where: {
-                    orgId,
-                    projectId,
-                },
-                create: {
-                    orgId,
-                    projectId,
-                    projectName,
-                },
-                update: {
-                    projectId,
-                    projectName,
-                },
-            })
-            await prisma.reactExportProject.deleteMany({
-                where: { orgId, projectId },
-            })
-            await prisma.reactExportComponent.createMany({
-                data: components.map((component) => ({
-                    ...component,
-                    projectId,
-                })),
-            })
+            const [project] = await Promise.all([
+                prisma.reactExportProject.upsert({
+                    where: {
+                        orgId,
+                        projectId,
+                    },
+                    create: {
+                        orgId,
+                        projectId,
+                        projectName,
+                    },
+                    update: {
+                        projectId,
+                        projectName,
+                    },
+                }),
+                prisma.reactExportProject.deleteMany({
+                    where: { orgId, projectId },
+                }),
+                prisma.reactExportColorStyle.deleteMany({
+                    where: { projectId, project: { orgId } },
+                }),
+            ])
+            await Promise.all([
+                prisma.reactExportComponent.createMany({
+                    data: components.map((x) => ({
+                        ...x,
+                        projectId,
+                    })),
+                }),
+                prisma.reactExportColorStyle.createMany({
+                    data: colorStyles.map((x) => ({
+                        ...x,
+                        projectId,
+                    })),
+                }),
+            ])
 
             return {
                 success: true,
@@ -111,6 +129,7 @@ export const reactPluginApp = new Spiceflow({
                 components: z.array(z.custom<ReactExportComponent>()),
                 projectId: z.string(),
                 projectName: z.string().optional(),
+                colorStyles: z.array(z.custom<ReactExportColorStyle>()),
             }),
         },
     )

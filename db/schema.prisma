@@ -510,8 +510,9 @@ model ReactExportProject {
   projectId   String  @id
   projectName String?
 
-  createdAt  DateTime               @default(now())
-  components ReactExportComponent[]
+  createdAt   DateTime                @default(now())
+  components  ReactExportComponent[]
+  colorStyles ReactExportColorStyle[]
 
   @@schema("public")
 }
@@ -524,6 +525,17 @@ model ReactExportComponent {
   componentIdentifier String?
 
   project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model ReactExportColorStyle {
+  id         String             @id
+  name       String?
+  projectId  String
+  lightColor String
+  darkColor  String
+  project    ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@schema("public")
 }
