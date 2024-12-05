@@ -9,3 +9,4 @@ public/framer-plugin
 public/plugins
 *.pem
 outputs
+/framer
