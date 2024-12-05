@@ -98,17 +98,17 @@ function Component() {
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
             <div className=' flex flex-col  items-center justify-center'>
-                <h1 className='font-bold text-center text-md max-w-[200px]'>
+                <h1 className='text-balance text-center text-md max-w-[200px]'>
                     Choose the components you want to export
                 </h1>
             </div>
-            <div className='grid bg-framer-secondary  p-3 rounded-md py-4  overflow-y-auto max-h-[300px] grid-cols-1 gap-4 grow w-full items-center justify-center'>
+            <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>
                 {componentsData.map((component) => {
                     let isDisabled = false
                     return <Item {...component} />
                 })}
             </div>
-            <Button type='submit'>Create Repo</Button>
+            <Button type='submit'>Use Selected Components</Button>
         </Form>
     )
 }
@@ -117,7 +117,7 @@ function Item({ id, name }) {
     const ref = useRef<any>()
     return (
         <div
-            className='flex items-center bg-framer-primary gap-2 p-3 py-3  border-[--framer-color-bg-tertiary] rounded-lg h-full'
+            className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full'
             key={id}
         >
             <div className='flex items-center justify-center'>
