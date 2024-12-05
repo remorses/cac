@@ -52,15 +52,20 @@ export default defineConfig({
         react(),
         mkcert(),
         framer(),
-        CopyOnEnd({
-            basePath,
-            out: '../website/public',
-        }),
+        // CopyOnEnd({
+        //     basePath,
+        //     out: '../website/public',
+        // }),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
     ],
     build: {
         assetsInlineLimit: 30720,
+    },
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(
+            process.env.NODE_ENV || 'production',
+        ),
     },
 })
