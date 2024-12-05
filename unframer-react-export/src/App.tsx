@@ -1,5 +1,5 @@
 import NProgress from 'nprogress'
-import { Button } from 'template-rewrite-framer/src/components/Button'
+import {useLocation} from 'react-router'
 import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
 import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
@@ -19,25 +19,19 @@ import {
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 
-import { Settings } from '@/routes/Settings'
 import { Components } from '@/routes/Components'
+import { Settings } from '@/routes/Settings'
 
-import { AnimatePresence, MotionConfig } from 'framer-motion'
+import { Readme } from '@/routes/Readme'
 import {
     Outlet,
     RouterProvider,
     redirect,
     useLoaderData,
-    useLocation,
-    useMatches,
-    useNavigate,
-    useNavigationType,
-    useRevalidator,
     useRouteError,
 } from 'react-router'
-import { Link, createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
-import { Readme } from '@/routes/Readme'
 
 globalThis.framer = framer
 
@@ -58,12 +52,11 @@ const router = createBrowserRouter(
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 320
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
-                    typeof loader
+                typeof loader
                 >
-                const [handle] = useMatches().filter((match) => match?.handle)
-                const navigate = useNavigate()
+                const location = useLocation()
+                let width = location.pathname === Paths.login ? 260 : 320
 
                 useFocusOnMount()
 
@@ -77,15 +70,6 @@ const router = createBrowserRouter(
                     })
                 }, [height])
 
-                const location = useLocation()
-                const showSettings =
-                    sessionKey && location.pathname !== Paths.settings
-                const revalidator = useRevalidator()
-
-                const navigationType = useNavigationType()
-                const canGoBack = ![Paths.login, '/'].includes(
-                    location.pathname as any,
-                )
                 return (
                     <>
                         <div className='px-4 w-full'>
@@ -160,6 +144,8 @@ async function rootLoader({ request }) {
         console.log(`redirecting to login because there is no session`)
         return redirect(withMode(Paths.login))
     }
+    
+    // return redirect(withMode(Paths.login))
 
     const { owner, githubAccountLogin, repo } = await getReactPluginData()
 

@@ -25,6 +25,7 @@ export function sleep(ms: number) {
 export enum PluginNames {
     github = 'github',
     migrate = 'migrate',
+    react = 'react',
 }
 
 export function framerLoginUrl({
