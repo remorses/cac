@@ -70,7 +70,7 @@ function Component() {
     const { projectId, projectName } = useLoaderData() as LoaderReturnType<
         typeof loader
     >
-    const shortId = projectId.slice(0, 8)
+    const shortId = projectId.slice(0, 16)
     const markdownHtml = marked(markdown({ shortId }))
     const navigate = useNavigate()
     return (
@@ -83,7 +83,7 @@ function Component() {
                     }
                 ></div>
             </div>
-            <hr className='' />
+            {/* <hr className='' /> */}
 
             <Button
                 onClick={() => {

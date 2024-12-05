@@ -58,21 +58,57 @@ export const reactPluginApp = new Spiceflow({
     .get('/health', () => {
         return 'ok'
     })
+    .get(
+        '/project/:projectId',
+        async ({ params, state: store }) => {
+            const { projectId } = params
+            // const orgId = store.orgId
+            // if (!orgId) {
+            //     throw unauthorizedResponse
+            // }
+
+            const [project, components, colorStyles] = await Promise.all([
+                prisma.reactExportProject.findUnique({
+                    where: {
+                        // orgId,
+                        projectId,
+                    },
+                }),
+                prisma.reactExportComponent.findMany({
+                    where: {
+                        projectId,
+                    },
+                }),
+                prisma.reactExportColorStyle.findMany({
+                    where: {
+                        projectId,
+                    },
+                }),
+            ])
+
+            if (!project) {
+                return new Response('Project not found', { status: 404 })
+            }
+
+            return {
+                project,
+                components,
+                colorStyles,
+            }
+        },
+        {},
+    )
 
     .post(
         '/upsertProject',
         async ({ request, state: store }) => {
             const body = await request.json()
-            const {
-                colorStyles,
-                components,
-                projectId,
-                projectName = '',
-            } = body
+            let { colorStyles, components, projectId, projectName = '' } = body
             const orgId = store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
+            projectId = projectId.slice(0, 16)
 
             const [project] = await Promise.all([
                 prisma.reactExportProject.upsert({
@@ -112,13 +148,7 @@ export const reactPluginApp = new Spiceflow({
                 }),
             ])
 
-            const shortId = projectId.slice(0, 8)
-
-            return {
-                success: true,
-                shortId,
-                project,
-            }
+            return { projectId }
         },
         {
             body: z.object({
