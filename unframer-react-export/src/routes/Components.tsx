@@ -62,7 +62,7 @@ async function action({ request }: LoaderFunctionArgs) {
         throw new Error('No project id found')
     }
     const selectedComponentIds = new Set(formData.keys())
-    console.log('selectedComponentIds', [...selectedComponentIds])
+    // console.log('selectedComponentIds', [...selectedComponentIds])
     const filteredComponents = components.filter(
         (component) =>
             component.id &&
@@ -70,6 +70,7 @@ async function action({ request }: LoaderFunctionArgs) {
             selectedComponentIds.has(component.id),
     )
 
+    // console.log('styles', styles)
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
             projectId,

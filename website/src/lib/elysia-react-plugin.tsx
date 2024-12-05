@@ -127,10 +127,20 @@ export const reactPluginApp = new Spiceflow({
                     },
                 }),
                 prisma.reactExportComponent.deleteMany({
-                    where: { projectId },
+                    where: {
+                        OR: [
+                            { projectId },
+                            { id: { in: components.map((c) => c.id) } },
+                        ],
+                    },
                 }),
                 prisma.reactExportColorStyle.deleteMany({
-                    where: { projectId, project: { orgId } },
+                    where: {
+                        OR: [
+                            { projectId, project: { orgId } },
+                            { id: { in: colorStyles.map((c) => c.id) } },
+                        ],
+                    },
                 }),
             ])
             await Promise.all([

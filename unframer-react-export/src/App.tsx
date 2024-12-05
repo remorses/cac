@@ -1,5 +1,5 @@
 import NProgress from 'nprogress'
-import {useLocation} from 'react-router'
+import { useLocation } from 'react-router'
 import { NProgressComponent } from 'template-rewrite-framer/src/components/nprogress'
 import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
@@ -53,7 +53,7 @@ const router = createBrowserRouter(
             Component({}) {
                 const [ref, { height }] = useMeasure()
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
-                typeof loader
+                    typeof loader
                 >
                 const location = useLocation()
                 let width = location.pathname === Paths.login ? 260 : 320
@@ -96,6 +96,9 @@ const router = createBrowserRouter(
                 }, [error])
                 return (
                     <div className='flex max-w-full flex-col w-full h-full gap-2 items-center justify-center'>
+                        <div className='px-4 w-full'>
+                            <hr className='loading-bar relative' />
+                        </div>
                         <span className='dark:text-red-300'>
                             Something went wrong...
                         </span>
@@ -144,7 +147,7 @@ async function rootLoader({ request }) {
         console.log(`redirecting to login because there is no session`)
         return redirect(withMode(Paths.login))
     }
-    
+
     // return redirect(withMode(Paths.login))
 
     const { owner, githubAccountLogin, repo } = await getReactPluginData()

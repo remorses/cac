@@ -111,6 +111,9 @@ const router = createBrowserRouter(
                 }, [error])
                 return (
                     <div className='flex max-w-full flex-col w-full h-full gap-2 items-center justify-center'>
+                        <div className='px-4 w-full'>
+                            <hr className='loading-bar relative' />
+                        </div>
                         <span className='dark:text-red-300'>
                             Something went wrong...
                         </span>
