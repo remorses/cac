@@ -135,7 +135,7 @@ function Component() {
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>
                 {componentsData.map((component) => {
-                    return <Item {...component} />
+                    return <Item key={component.id} {...component} />
                 })}
             </div>
             <Button type='submit'>Use Selected Components</Button>
