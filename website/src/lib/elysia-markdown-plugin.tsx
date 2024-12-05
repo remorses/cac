@@ -23,7 +23,7 @@ import {
     isMarkdown,
 } from 'website/src/lib/github.server'
 import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
-import { isTruthy } from 'website/src/lib/utils'
+import { canHaveFreePlugin, isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
 import { Sema } from 'sema4'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
@@ -38,6 +38,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     // .state('sessionKey', '')
     .state('githubUserLogin', '')
     .state('orgId', '')
+    .state('userEmail', '')
     .state('userId', '')
     // .state('session', {} as Session)
 
@@ -430,12 +431,13 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 ],
             )
             console.timeEnd(`${owner}/${repo} - initial checks ${timeId}`)
-
+            
             if (!githubInstallation) {
                 throw new Error('No github installation found')
             }
+            
 
-            if (!sub && syncsThisMonth >= freeSyncs) {
+            if (!sub && !canHaveFreePlugin(store.userEmail) && syncsThisMonth >= freeSyncs) {
                 throw new Response(
                     'You have reached the free limit of syncs this month: ' +
                         freeSyncs,

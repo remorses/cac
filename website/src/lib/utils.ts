@@ -256,3 +256,16 @@ function escapeXml(unsafe: string): string {
         }
     })
 }
+
+export function canHaveFreePlugin(email?: string) {
+    if (!email) {
+        return false
+    }
+    if (email.endsWith('@framer.com')) {
+        return true
+    }
+    if (email === 't.de.rossi.01@gmail.com') {
+        return true
+    }
+    return false
+}
