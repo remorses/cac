@@ -62,7 +62,7 @@ function Component() {
     useEffect(() => {
         const interval = setInterval(() => {
             revalidator.revalidate()
-        }, 2000)
+        }, 5000)
         return () => clearInterval(interval)
     }, [])
 
