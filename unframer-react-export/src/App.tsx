@@ -56,7 +56,7 @@ const router = createBrowserRouter(
                     typeof loader
                 >
                 const location = useLocation()
-                let width = location.pathname === Paths.login ? 260 : 320
+                let width = location.pathname === Paths.login ? 260 : 340
 
                 useFocusOnMount()
 

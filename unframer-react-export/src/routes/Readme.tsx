@@ -24,18 +24,17 @@ import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 function markdown({ shortId }) {
     return `
-## Welcome to React Export
+### Your React components are ready
 
-This is a template for exporting React components to Framer.
-
-
-Run this command to download the Framer components as React components:
+To download and start using your React components, run the following command:
 
     npx unframer ${shortId}
 
-- This command will put your React components in the \`framer\` folder.
+- This command will download the React components in a \`framer\` folder.
+- Import them and use them with full **TypeScript** support.
+- Framer variables will be available as **React props**. Breakpoints too.
 
-- These files will also have a .d.ts to add type safety and autocomplete to your React components.
+- These files are **generated**, do not edit them. Instead run the command again after design changes.
 `
 }
 async function loader({}: LoaderFunctionArgs) {
@@ -79,20 +78,14 @@ function Component() {
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}
                     className={
-                        'max-w-full prose prose-sm text-sm dark:prose-invert prose-pre:text-sm prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
+                        'max-w-full tracking-normal leading-normal prose prose-sm text-sm dark:prose-invert prose-pre:text-sm prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
                     }
                 ></div>
             </div>
             {/* <hr className='' /> */}
-
-            <Button
-                onClick={() => {
-                    navigate(-1)
-                }}
-                className=''
-            >
-                Go Back
-            </Button>
+            <a target='_blank' href='https://github.com/remorses/unframer'>
+                <Button className=''>Read More on GitHub</Button>
+            </a>
         </div>
     )
 }
