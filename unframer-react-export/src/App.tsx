@@ -57,7 +57,7 @@ const router = createBrowserRouter(
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                let width = 480
+                let width = 320
                 const { sessionKey } = useLoaderData() as LoaderReturnType<
                     typeof loader
                 >
@@ -86,56 +86,28 @@ const router = createBrowserRouter(
                     location.pathname as any,
                 )
                 return (
-                    <MotionConfig
-                        transition={{
-                            duration: 0.2,
-                            type: 'spring',
-                            bounce: 0,
-                        }}
-                    >
-                        <AnimatePresence mode='wait'>
-                            <div className='overflow-hidden '>
-                                <div
-                                    ref={ref}
-                                    className='shrink-0 grow  flex-col p-4 pt-[2px] w-full justify-start '
-                                >
-                                    <NProgressComponent />
-                                    <Outlet />
+                    <>
+                        <div className='px-4 w-full'>
+                            <hr className='loading-bar relative' />
+                        </div>
+                        <div
+                            ref={ref}
+                            className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
+                        >
+                            <NProgressComponent />
 
-                                    {showSettings && (
-                                        <div className='flex text-[11px] items-center pt-3 opacity-70 justify-between '>
-                                            {canGoBack && (
-                                                <button
-                                                    type='button'
-                                                    onClick={() => {
-                                                        navigate(-1)
-                                                    }}
-                                                    className='w-auto flex flex-row items-center -ml-2 gap-1 bg-transparent !py-px text-[11px] '
-                                                >
-                                                    <BackIcon className='w-2' />
-                                                    <div className=''>back</div>
-                                                </button>
-                                            )}
-                                            <div className='grow'></div>
-                                            <Link to={withMode(Paths.settings)}>
-                                                <Button className='w-auto bg-transparent !py-px text-[11px] '>
-                                                    settings
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </AnimatePresence>
-                    </MotionConfig>
+                            <Outlet />
+                        </div>
+                    </>
                 )
             },
 
             ErrorBoundary() {
                 const error = useRouteError() as any
-                NProgress.done()
+
                 useEffect(() => {
                     notifyError(error, 'ErrorBoundary')
+                    NProgress.done()
                 }, [error])
                 return (
                     <div className='flex max-w-full flex-col w-full h-full gap-2 items-center justify-center'>

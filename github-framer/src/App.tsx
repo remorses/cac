@@ -105,9 +105,9 @@ const router = createBrowserRouter(
 
             ErrorBoundary() {
                 const error = useRouteError() as any
-                NProgress.done()
                 useEffect(() => {
                     notifyError(error, 'ErrorBoundary')
+                    NProgress.done()
                 }, [error])
                 return (
                     <div className='flex max-w-full flex-col w-full h-full gap-2 items-center justify-center'>

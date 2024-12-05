@@ -4,7 +4,7 @@ import {
     LoaderReturnType,
     Paths,
     getReactPluginData,
-    pluginApiClient
+    pluginApiClient,
 } from '@/lib/utils'
 import {
     LoaderFunctionArgs,
@@ -17,9 +17,10 @@ import {
 
 import { notifyError } from '@/lib/errors'
 import { framer } from 'framer-plugin'
-import { } from 'react-router'
+import {} from 'react-router'
 import { Form } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import { useRef } from 'react'
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
@@ -96,34 +97,55 @@ function Component() {
     const navigate = useNavigate()
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
-            <div className='grid grid-cols-3 gap-3 grow w-full items-center justify-center'>
+            <div className=' flex flex-col  items-center justify-center'>
+                <h1 className='font-bold text-center text-md max-w-[200px]'>
+                    Choose the components you want to export
+                </h1>
+            </div>
+            <div className='grid bg-framer-secondary  p-3 rounded-md py-4  overflow-y-auto max-h-[300px] grid-cols-1 gap-4 grow w-full items-center justify-center'>
                 {componentsData.map((component) => {
                     let isDisabled = false
-                    return (
-                        <div
-                            className='flex items-center gap-2 p-3 border rounded-lg h-full'
-                            key={component.id}
-                        >
-                            <div className='flex items-center justify-center'>
-                                <input type='checkbox' />
-                            </div>
-                            <div className=''>
-                                <h3>{component.name}</h3>
-                            </div>
-                            {/* <div
-                                className={classNames(
-                                    'flex items-center justify-center',
-                                    isDisabled && 'opacity-50',
-                                )}
-                            >
-                                <IconChevron />
-                            </div> */}
-                        </div>
-                    )
+                    return <Item {...component} />
                 })}
             </div>
             <Button type='submit'>Create Repo</Button>
         </Form>
+    )
+}
+
+function Item({ id, name }) {
+    const ref = useRef<any>()
+    return (
+        <div
+            className='flex items-center bg-framer-primary gap-2 p-3 py-3  border-[--framer-color-bg-tertiary] rounded-lg h-full'
+            key={id}
+        >
+            <div className='flex items-center justify-center'>
+                <input
+                    name={id}
+                    defaultChecked
+                    ref={ref}
+                    className='!size-[16px]'
+                    type='checkbox'
+                />
+            </div>
+            <div
+                onClick={() => {
+                    ref.current?.click()
+                }}
+                className=''
+            >
+                <h3>{name}</h3>
+            </div>
+            {/* <div
+            className={classNames(
+                'flex items-center justify-center',
+                isDisabled && 'opacity-50',
+            )}
+        >
+            <IconChevron />
+        </div> */}
+        </div>
     )
 }
 
