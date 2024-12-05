@@ -59,29 +59,16 @@ export const globalState = {}
 
 export enum PluginDataKeys {
     sessionKey = 'sessionKey',
-    githubRepoSlug = 'repoSlug',
-    githubAccountLogin = 'githubAccountLogin',
-    // mapFieldsConfig = 'mapFieldsConfig',
-    basePath = 'basePath',
 }
 
 export async function getReactPluginData() {
-    const [repoSlug, basePath, githubAccountLogin, sessionKey] =
+    const [ sessionKey] =
         await Promise.all([
-            framer.getPluginData(PluginDataKeys.githubRepoSlug),
-
-            framer.getPluginData(PluginDataKeys.basePath) || '',
-            framer.getPluginData(PluginDataKeys.githubAccountLogin) || '',
             framer.getPluginData(PluginDataKeys.sessionKey) || '',
         ])
-    const [owner, repo = ''] = repoSlug?.split('/') || ''
-
+    
     return {
-        owner,
-        repo,
-
-        basePath: basePath || '',
-        githubAccountLogin: githubAccountLogin || '',
+        
         sessionKey: sessionKey || '',
     }
 }

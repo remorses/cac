@@ -49,24 +49,27 @@ async function loader({}: LoaderFunctionArgs) {
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
     const components = await framer.getNodesWithType('ComponentNode')
-    const { githubAccountLogin } = await getReactPluginData()
-    throw redirect(withMode(Paths.readme))
-    console.log(`pushing to github ${githubAccountLogin}`)
+    const [sessionKey, projectInfo] = await Promise.all([
+        getReactPluginData(),
+        framer.getProjectInfo(),
+    ])
+    // throw redirect(withMode(Paths.readme))
+    const { id: projectId, name: projectName } = projectInfo
+
     const { error, data } =
-        await pluginApiClient.api.plugins.reactExportPlugin.pushGithub.post({
-            basePath: '/',
+        await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
+            projectId,
+            projectName,
             components: components.map((component) => {
                 const { name, id, insertURL, componentIdentifier } = component
                 return {
-                    name: name || '',
+                    name: name ?? '',
                     id,
-                    url: insertURL || '',
+                    url: insertURL ?? '',
+                    projectId: projectId!,
                     componentIdentifier,
                 }
             }),
-            githubAccountLogin,
-            owner: githubAccountLogin,
-            repo: 'unframer-react-components-KZr',
         })
     if (error) {
         await notifyError(error, 'Error pushing to github')
@@ -102,8 +105,8 @@ function Component() {
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
             <div className=' flex flex-col px-4 items-center justify-center'>
                 <h1 className='text-balance text-center text-md '>
-                    Choose among the {componentsData.length} components which one you want
-                    to export
+                    Choose among the {componentsData.length} components which
+                    one you want to export
                 </h1>
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>

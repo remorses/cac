@@ -5,7 +5,7 @@ import { Sema } from 'sema4'
 import { Spiceflow } from 'spiceflow'
 import { bundle } from 'unframer-workspace/dist/exporter'
 
-import { prisma } from 'db/prisma'
+import { prisma, ReactExportComponent } from 'db/prisma'
 import dedent from 'dedent'
 import { Octokit } from 'octokit'
 import { env } from 'website/src/lib/env'
@@ -21,6 +21,7 @@ import {
 } from 'website/src/lib/github.server'
 import { generateSecurePassword, sortByKey } from 'website/src/lib/utils'
 import { z } from 'zod'
+import { ReactExportProject } from 'db/kysely.types'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -64,6 +65,55 @@ export const reactPluginApp = new Spiceflow({
     .get('/health', () => {
         return 'ok'
     })
+
+    .post(
+        '/upsertProject',
+        async ({ request, state: store }) => {
+            const body = await request.json()
+            const { components, projectId, projectName = '' } = body
+            const orgId = store.orgId
+            if (!orgId) {
+                throw unauthorizedResponse
+            }
+
+            const project = await prisma.reactExportProject.upsert({
+                where: {
+                    orgId,
+                    projectId,
+                },
+                create: {
+                    orgId,
+                    projectId,
+                    projectName,
+                },
+                update: {
+                    projectId,
+                    projectName,
+                },
+            })
+            await prisma.reactExportProject.deleteMany({
+                where: { orgId, projectId },
+            })
+            await prisma.reactExportComponent.createMany({
+                data: components.map((component) => ({
+                    ...component,
+                    projectId,
+                })),
+            })
+
+            return {
+                success: true,
+                project,
+            }
+        },
+        {
+            body: z.object({
+                components: z.array(z.custom<ReactExportComponent>()),
+                projectId: z.string(),
+                projectName: z.string().optional(),
+            }),
+        },
+    )
 
     .post(
         '/githubRepoList',

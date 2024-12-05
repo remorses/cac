@@ -505,6 +505,29 @@ model GitHubSync {
   @@schema("public")
 }
 
+model ReactExportProject {
+  orgId       String
+  projectId   String  @id
+  projectName String?
+
+  createdAt  DateTime               @default(now())
+  components ReactExportComponent[]
+
+  @@schema("public")
+}
+
+model ReactExportComponent {
+  id                  String  @id
+  url                 String
+  name                String
+  projectId           String
+  componentIdentifier String?
+
+  project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@schema("public")
+}
+
 model GitHubSyncedFile {
   sha            String
   orgId          String

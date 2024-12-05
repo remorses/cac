@@ -470,6 +470,21 @@ export interface PgsodiumValidKey {
   status: PgsodiumKeyStatus | null;
 }
 
+export interface ReactExportComponent {
+  componentIdentifier: string | null;
+  id: string;
+  name: string;
+  projectId: string;
+  url: string;
+}
+
+export interface ReactExportProject {
+  createdAt: Generated<Timestamp>;
+  orgId: string;
+  projectId: string;
+  projectName: string;
+}
+
 export interface RealtimeMessages {
   extension: string;
   id: Generated<Int8>;
@@ -644,6 +659,8 @@ export interface DB {
   "pgsodium.mask_columns": PgsodiumMaskColumns;
   "pgsodium.masking_rule": PgsodiumMaskingRule;
   "pgsodium.valid_key": PgsodiumValidKey;
+  ReactExportComponent: ReactExportComponent;
+  ReactExportProject: ReactExportProject;
   "realtime.messages": RealtimeMessages;
   "realtime.schema_migrations": RealtimeSchemaMigrations;
   "realtime.subscription": RealtimeSubscription;
