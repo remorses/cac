@@ -114,6 +114,7 @@ function SimplePromptComponent({}) {
             notifyError(e, 'submitting rewrite prompt')
         } finally {
             revalidator.revalidate()
+            setShouldShowStars(true)
             setIsLoading(false)
         }
     }
@@ -133,6 +134,7 @@ function SimplePromptComponent({}) {
         instanceNodes.clear()
         setGenerationId(0)
         setError('')
+        setShouldShowStars(false)
         setStars(0)
     }
 
@@ -266,6 +268,7 @@ function SimplePromptComponent({}) {
             return
         }
         setPreviousOldText([...oldText])
+
         // Copy old text to clipboard if in dev mode
 
         // console.log('oldText', JSON.stringify(oldText, null, 2))
@@ -562,7 +565,10 @@ function SimplePromptComponent({}) {
     }, [stars, generationId])
 
     const [isDiscarding, setIsDiscarding] = useState(false)
-    const shouldShowStars = !!previousOldText.length && !isLoading
+    const [shouldShowStars, setShouldShowStars] = useState(
+        !!previousOldText.length && !isLoading,
+    )
+
     return (
         <form
             // exit={{
@@ -595,7 +601,15 @@ function SimplePromptComponent({}) {
                         <div className='opacity-70'>
                             How good was the result?
                         </div>
-                        <StarReview value={stars} onChange={setStars} />
+                        <StarReview
+                            value={stars}
+                            onChange={(value) => {
+                                setStars(value)
+                                setTimeout(() => {
+                                    setShouldShowStars(false)
+                                }, 1000)
+                            }}
+                        />
                     </div>
                 )}
             </div>
