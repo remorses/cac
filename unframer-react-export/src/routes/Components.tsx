@@ -58,7 +58,9 @@ async function action({ request }: LoaderFunctionArgs) {
 
     // throw redirect(withMode(Paths.readme))
     const { id: projectId, name: projectName } = projectInfo
-
+    if (!projectId) {
+        throw new Error('No project id found')
+    }
     const selectedComponentIds = new Set(formData.keys())
     console.log('selectedComponentIds', [...selectedComponentIds])
     const filteredComponents = components.filter(
@@ -94,10 +96,10 @@ async function action({ request }: LoaderFunctionArgs) {
             }),
         })
     if (error) {
-        await notifyError(error, 'Error pushing to github')
+        throw error
     }
     console.log(data)
-    return { success: true }
+    throw redirect(withMode(Paths.readme))
 }
 
 export function Components(): RouteObject {
@@ -114,7 +116,7 @@ function Component() {
     const isLoading = navigation.state !== 'idle'
     useRefreshOnVisible({ enabled: !isLoading })
     const { email } = useLoaderData() as LoaderReturnType<typeof loader>
-    const actionData = useActionData() as any
+    const actionData = useActionData() as LoaderReturnType<typeof action>
     const { componentsData } = useLoaderData() as LoaderReturnType<
         typeof loader
     >
@@ -133,7 +135,6 @@ function Component() {
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>
                 {componentsData.map((component) => {
-                    let isDisabled = false
                     return <Item {...component} />
                 })}
             </div>

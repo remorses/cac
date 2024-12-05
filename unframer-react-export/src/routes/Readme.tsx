@@ -22,7 +22,7 @@ import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
 import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-function markdown({ projectId }) {
+function markdown({ shortId }) {
     return `
 ## Welcome to React Export
 
@@ -31,7 +31,7 @@ This is a template for exporting React components to Framer.
 
 Run this command to download the Framer components as React components:
 
-    npx unframer ${projectId}
+    npx unframer ${shortId}
 
 - This command will put your React components in the \`framer\` folder.
 
@@ -70,7 +70,8 @@ function Component() {
     const { projectId, projectName } = useLoaderData() as LoaderReturnType<
         typeof loader
     >
-    const markdownHtml = marked(markdown({ projectId: projectId.slice(0, 5) }))
+    const shortId = projectId.slice(0, 8)
+    const markdownHtml = marked(markdown({ shortId }))
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-4'>
