@@ -1070,6 +1070,9 @@ importers:
         specifier: ^4.5.4
         version: 4.5.5(@types/react@18.3.5)(immer@10.1.1)(react@19.0.0-rc-e4953922-20240919)
     devDependencies:
+      '@tailwindcss/typography':
+        specifier: ^0.5.13
+        version: 0.5.13(tailwindcss@3.4.10)
       '@types/react':
         specifier: ^18.3.5
         version: 18.3.5
@@ -1079,6 +1082,9 @@ importers:
       '@vitejs/plugin-react-swc':
         specifier: ^3.7.0
         version: 3.7.0(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.10.1)(terser@5.37.0))
+      marked:
+        specifier: ^13.0.2
+        version: 13.0.2
       vite:
         specifier: ^5.4.11
         version: 5.4.11(@types/node@22.10.1)(terser@5.37.0)
@@ -1372,9 +1378,6 @@ importers:
       '@tailwindcss/forms':
         specifier: ^0.5.7
         version: 0.5.7(tailwindcss@3.4.10)
-      '@tailwindcss/typography':
-        specifier: ^0.5.13
-        version: 0.5.13(tailwindcss@3.4.10)
       '@types/domutils':
         specifier: ^1.7.8
         version: 1.7.8
@@ -1474,9 +1477,6 @@ importers:
       lucide-react:
         specifier: ^0.395.0
         version: 0.395.0(react@19.0.0-rc-e4953922-20240919)
-      marked:
-        specifier: ^13.0.2
-        version: 13.0.2
       mime:
         specifier: ^4.0.4
         version: 4.0.4
@@ -1619,6 +1619,9 @@ importers:
       '@remix-run/dev':
         specifier: 2.15.0
         version: 2.15.0(@remix-run/react@2.15.0(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(typescript@5.6.2))(@remix-run/serve@2.15.0(typescript@5.6.2))(@types/node@22.7.4)(terser@5.37.0)(typescript@5.6.2)(vite@5.4.11(@types/node@22.7.4)(terser@5.37.0))(wrangler@3.79.0)
+      '@tailwindcss/typography':
+        specifier: ^0.5.13
+        version: 0.5.13(tailwindcss@3.4.10)
       '@types/node':
         specifier: ^22.7.4
         version: 22.7.4
@@ -1628,6 +1631,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.0
+      marked:
+        specifier: ^13.0.2
+        version: 13.0.2
       vite:
         specifier: ^5.4.11
         version: 5.4.11(@types/node@22.7.4)(terser@5.37.0)
