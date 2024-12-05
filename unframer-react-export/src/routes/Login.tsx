@@ -1,13 +1,20 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from '@/lib/errors'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { Paths, pluginApiClient, PluginDataKeys, withMode } from '@/lib/utils'
+import {
+    LoaderReturnType,
+    Paths,
+    pluginApiClient,
+    PluginDataKeys,
+    withMode,
+} from '@/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
     redirect,
     RouteObject,
+    useLoaderData,
     useNavigation,
     useRevalidator,
 } from 'react-router'
@@ -29,8 +36,13 @@ function LoginComponent() {
     const [isLoading, setIsLoading] = useState(false)
     const revalidator = useRevalidator()
     const navigation = useNavigation()
+    const { projectId, projectName } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
     const url = framerLoginUrl({
         key,
+        projectId,
+        projectName,
         pluginName: PluginNames.github,
         code,
     })
@@ -127,11 +139,15 @@ async function loader({}: LoaderFunctionArgs) {
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
-        return redirect(withMode(Paths.components))
+        throw redirect(withMode(Paths.components))
     } else {
         console.log(data)
     }
-    return {}
+    const { id: projectId, name: projectName } = await framer.getProjectInfo()
+    return {
+        projectId,
+        projectName,
+    }
 }
 
 export function LoginPage(): RouteObject {

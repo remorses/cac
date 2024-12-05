@@ -5,9 +5,11 @@ import {
     Paths,
     getReactPluginData,
     pluginApiClient,
+    withMode,
 } from '@/lib/utils'
 import {
     LoaderFunctionArgs,
+    redirect,
     RouteObject,
     useActionData,
     useLoaderData,
@@ -48,6 +50,7 @@ async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
     const components = await framer.getNodesWithType('ComponentNode')
     const { githubAccountLogin } = await getReactPluginData()
+    throw redirect(withMode(Paths.readme))
     console.log(`pushing to github ${githubAccountLogin}`)
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.pushGithub.post({
@@ -97,9 +100,10 @@ function Component() {
     const navigate = useNavigate()
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
-            <div className=' flex flex-col  items-center justify-center'>
-                <h1 className='text-balance text-center text-md max-w-[200px]'>
-                    Choose the components you want to export
+            <div className=' flex flex-col px-4 items-center justify-center'>
+                <h1 className='text-balance text-center text-md '>
+                    Choose among the {componentsData.length} components which one you want
+                    to export
                 </h1>
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>
@@ -125,7 +129,7 @@ function Item({ id, name }) {
                     name={id}
                     defaultChecked
                     ref={ref}
-                    className='!size-[16px]'
+                    className='!size-[14px]'
                     type='checkbox'
                 />
             </div>
