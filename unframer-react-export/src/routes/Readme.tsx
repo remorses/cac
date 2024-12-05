@@ -34,7 +34,7 @@ To download and start using your React components, run the following command:
 - Import them and use them with full **TypeScript** support.
 - Framer variables will be available as **React props**. Breakpoints too.
 
-- These files are **generated**, do not edit them. Instead run the command again after design changes.
+- These files are **generated**, do not edit them manually. Instead run the command again after changes in Framer.
 `
 }
 async function loader({}: LoaderFunctionArgs) {
