@@ -26,8 +26,9 @@ import { useRef } from 'react'
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
-
-    const [org, credits] = await Promise.all([
+    let { id: projectId } = await framer.getProjectInfo()
+    let shortId = projectId.slice(0, 16)
+    const [org, reactExportProject] = await Promise.all([
         pluginApiClient.api.plugins.currentOrg
             .post({})
             .then(({ data, error }) => {
@@ -36,24 +37,33 @@ async function loader({}: LoaderFunctionArgs) {
                 }
                 return data
             }),
-        null,
+        pluginApiClient.api.plugins.reactExportPlugin
+            .project({ projectId: shortId })
+            .get({})
+            .then(({ data, error }) => {
+                if (error) {
+                    return null
+                }
+                return data
+            }),
     ])
     const { email, orgId } = org
     let componentsData = components.map((component) => {
         const { name, id, insertURL, componentIdentifier } = component
         return { name, id, insertURL, componentIdentifier, node: component }
     })
-    return { credits, email, orgId, componentsData }
+    const componentIds = reactExportProject?.components?.map((x) => x.id) || []
+    return { componentIds, email, orgId, componentsData }
 }
 
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
 
-    const [components, styles, sessionKey, projectInfo] = await Promise.all([
+    const [components, styles, projectInfo] = await Promise.all([
         framer.getNodesWithType('ComponentNode'),
         framer.getColorStyles(),
-        getReactPluginData(),
         framer.getProjectInfo(),
+        getReactPluginData(),
     ])
 
     // throw redirect(withMode(Paths.readme))
@@ -118,11 +128,9 @@ function Component() {
     useRefreshOnVisible({ enabled: !isLoading })
     const { email } = useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as LoaderReturnType<typeof action>
-    const { componentsData } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { componentsData, componentIds = [] } =
+        useLoaderData() as LoaderReturnType<typeof loader>
 
-    const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
     // const isDocumentVisible = useIsDocumentVisibile()
 
     const navigate = useNavigate()
@@ -136,7 +144,16 @@ function Component() {
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>
                 {componentsData.map((component) => {
-                    return <Item key={component.id} {...component} />
+                    let defaultIsChecked =
+                        !componentIds?.length ||
+                        componentIds.includes(component.id)
+                    return (
+                        <Item
+                            defaultIsChecked={defaultIsChecked}
+                            key={component.id}
+                            {...component}
+                        />
+                    )
                 })}
             </div>
             <div className='flex gap-3 '>
@@ -153,7 +170,7 @@ function Component() {
     )
 }
 
-function Item({ id, name }) {
+function Item({ id, name, defaultIsChecked }) {
     const ref = useRef<any>()
     return (
         <div
@@ -163,7 +180,7 @@ function Item({ id, name }) {
             <div className='flex items-center justify-center'>
                 <input
                     name={id}
-                    defaultChecked
+                    defaultChecked={defaultIsChecked}
                     ref={ref}
                     className='!size-[14px]'
                     type='checkbox'

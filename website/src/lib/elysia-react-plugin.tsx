@@ -87,7 +87,7 @@ export const reactPluginApp = new Spiceflow({
             ])
 
             if (!project) {
-                return new Response(`Project with id ${projectId} not found`, {
+                throw new Response(`Project with id ${projectId} not found`, {
                     status: 404,
                 })
             }
