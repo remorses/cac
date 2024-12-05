@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react-swc'
 import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
 import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 const basePath = process.env.BASE_PATH
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
@@ -23,6 +24,15 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
+        {
+            apply(config, env) {
+                if (!env.isSsrBuild) {
+                    return true
+                }
+                return false
+            },
+            ...visualizer({ filename: 'dist/trace.html' }),
+        } as any,
     ],
     define: {
         'process.env.NODE_ENV': JSON.stringify(

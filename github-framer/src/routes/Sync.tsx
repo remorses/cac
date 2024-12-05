@@ -42,7 +42,7 @@ async function loader({}: LoaderFunctionArgs) {
     if (error) {
         throw error
     }
-    const { files, idsToDelete } = data
+    const { files = [], idsToDelete = [] } = data
 
     await collection.setFields([
         {
