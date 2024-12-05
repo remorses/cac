@@ -56,11 +56,17 @@ async function action({ request }: LoaderFunctionArgs) {
     // throw redirect(withMode(Paths.readme))
     const { id: projectId, name: projectName } = projectInfo
 
+    const selectedComponentIds = new Set(formData.keys())
+    console.log('selectedComponentIds', [...selectedComponentIds])
+    const filteredComponents = components.filter((component) =>
+        selectedComponentIds.has(component.id),
+    )
+
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
             projectId,
             projectName,
-            components: components.map((component) => {
+            components: filteredComponents.map((component) => {
                 const { name, id, insertURL, componentIdentifier } = component
                 return {
                     name: name ?? '',
