@@ -124,14 +124,14 @@ function Component() {
                 </a>
             </div>
             <hr className='' />
-            <div className='flex gap-2 items-center'>
+            {/* <div className='flex gap-2 items-center'>
                 <div className=''>Redeem third party credits</div>
                 <div className='grow'></div>
                 <Link to={withMode(Paths.licenseKey)}>
                     <Button className='w-auto'>Redeem License</Button>
                 </Link>
             </div>
-            <hr className='' />
+            <hr className='' /> */}
             <div className='flex gap-2 items-center'>
                 <div className=''>Questions or requests?</div>
                 <div className='grow'></div>
