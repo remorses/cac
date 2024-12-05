@@ -76,8 +76,7 @@ function Component() {
             </div>
             <div className='flex items-center'>
                 <div className='opacity-60 text-balance'>
-                    Please buy the plugin subscription to continue using the
-                    plugin.
+                    Please buy the plugin subscription to continue using GitHub Sync.
                 </div>
             </div>
             <hr className='' />
