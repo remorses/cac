@@ -3,7 +3,7 @@ import websiteConfig from 'website/tailwind.config'
 /** @type {import('tailwindcss').Config} */
 export default {
     // ...websiteConfig,
-    darkMode: ['selector', 'html[data-framer-theme="dark"]'],
+    darkMode: ['selector', '[data-framer-theme="dark"]'],
     content: [
         './src/**/*.{js,ts,jsx,tsx}', //
         // '../website/src/**/*.{js,ts,jsx,tsx}', //

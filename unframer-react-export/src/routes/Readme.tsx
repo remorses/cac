@@ -79,7 +79,7 @@ function Component() {
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}
                     className={
-                        'max-w-full prose prose-sm text-sm dark:prose-invert prose-pre:text-sm prose-pre:bg-framer-secondary prose-ul:list-disc prose-ul:pl-5'
+                        'max-w-full prose prose-sm text-sm dark:prose-invert prose-pre:text-sm prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
                     }
                 ></div>
             </div>
