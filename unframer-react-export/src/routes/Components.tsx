@@ -20,7 +20,7 @@ import {
 import { notifyError } from '@/lib/errors'
 import { framer } from 'framer-plugin'
 import {} from 'react-router'
-import { Form } from 'react-router-dom'
+import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { useRef } from 'react'
 
@@ -139,7 +139,16 @@ function Component() {
                     return <Item key={component.id} {...component} />
                 })}
             </div>
-            <Button type='submit'>Use Selected Components</Button>
+            <div className='flex gap-3 '>
+                <Link to={withMode(Paths.settings)}>
+                    <Button className='w-auto grow' type='submit'>
+                        Settings
+                    </Button>
+                </Link>
+                <Button className='w-auto grow' variant='primary' type='submit'>
+                    Use Selected Components
+                </Button>
+            </div>
         </Form>
     )
 }
