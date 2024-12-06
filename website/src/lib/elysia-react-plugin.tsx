@@ -94,7 +94,10 @@ export const reactPluginApp = new Spiceflow({
 
             return {
                 project,
-                components,
+                components: components.map((c) => ({
+                    ...c,
+                    url: c.url?.split('@')[0],
+                })),
                 colorStyles,
             }
         },
