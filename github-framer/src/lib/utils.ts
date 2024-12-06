@@ -23,6 +23,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
                 const collection = await framer.getManagedCollection()
                 console.log('clearing session because api returned 401')
                 await collection.setPluginData(PluginDataKeys.sessionKey, null)
+                throw redirect(withMode(Paths.login))
             }
             if (response?.status === 402) {
                 throw redirect(withMode(Paths.buy))
