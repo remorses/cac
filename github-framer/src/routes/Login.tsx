@@ -47,7 +47,7 @@ function LoginComponent() {
         projectId: data?.projectId,
         projectName: data?.projectName,
     })
-    useRefreshOnVisible({ enabled: !isLoading })
+    useRefreshOnVisible({ enabled: true })
     let containerStyle: React.CSSProperties = {}
     if (isLoading) {
         return (
