@@ -1,6 +1,8 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
 import { env } from './env'
 
+
+
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
     if (next) {
