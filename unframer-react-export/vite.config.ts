@@ -24,5 +24,12 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
     ],
-    
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(
+            process.env.NODE_ENV || 'production',
+        ),
+    },
+    build: {
+        assetsInlineLimit: 307200,
+    },
 })

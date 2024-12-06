@@ -142,7 +142,7 @@ function Component() {
                     one you want to export
                 </h1>
             </div>
-            <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[300px] grid-cols-1 grow w-full items-center justify-center'>
+            <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
                 {componentsData.map((component) => {
                     let defaultIsChecked =
                         !componentIds?.length ||

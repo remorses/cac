@@ -24,7 +24,7 @@ import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 function markdown({ shortId }) {
     return `
-### Your React components are ready
+### Your Components are Ready
 
 To download and start using your React components, run the following command:
 
@@ -73,7 +73,7 @@ function Component() {
     const markdownHtml = marked(markdown({ shortId }))
     const navigate = useNavigate()
     return (
-        <div className='flex flex-col justify-start gap-4'>
+        <div className='flex flex-col justify-start gap-3'>
             <div className='flex grow max-w-full'>
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}

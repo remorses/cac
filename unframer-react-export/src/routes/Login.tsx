@@ -1,6 +1,6 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 // @ts-ignore
-import hero from '../../public/react-export-hero@3x.jpg'
+import hero from '../../public/code-tailwind.jpeg'
 
 import { notifyError } from '@/lib/errors'
 import {
@@ -50,8 +50,8 @@ function LoginComponent() {
     let containerStyle: React.CSSProperties = {}
     if (isLoading) {
         return (
-            <div style={containerStyle} className='flex flex-col grow gap-4'>
-                <div className='flex grow shrink-0 justify-center h-full flex-col gap-4 items-center'>
+            <div style={containerStyle} className='flex flex-col grow gap-3'>
+                <div className='flex grow shrink-0 justify-center h-full flex-col gap-3 items-center'>
                     <div className='flex font-mono flex-row gap-2 text-xl'>
                         {code.split('').map((char, i) => {
                             return (
@@ -83,23 +83,24 @@ function LoginComponent() {
     return (
         <div
             style={containerStyle}
-            className='flex flex-col justify-end grow gap-4'
+            className='flex flex-col justify-end grow gap-3'
         >
-            <div className='flex flex-col items-center gap-6 min-h-[180px]'>
+            <div className='flex flex-col min-h-[180px]'>
                 <div className='flex flex-col grow'>
                     <img
                         src={hero}
-                        className='grow object-contain w-full h-[130px] rounded-lg'
+                        className='grow object-contain overflow-hidden w-full h-[138px] rounded-md shadow'
                     />
+
                 </div>
-                <div className='text-center mx-auto items-center gap-2 flex flex-col max-w-xs'>
+                <div className='text-center mx-auto my-12 grow gap-2 flex flex-col max-w-xs'>
                     <div className='font-semibold'>Connect to Google</div>
                     <div className='opacity-70 max-w-[200px] text-center text-balance'>
-                        Login to sync your Google content with Framer
+                        Login to download and use your components with the CLI
                     </div>
                 </div>
             </div>
-            <hr className='' />
+            {/* <hr className='' /> */}
             <Button
                 onClick={async () => {
                     setIsLoading(true)

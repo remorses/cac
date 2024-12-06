@@ -56,7 +56,7 @@ const router = createBrowserRouter(
                     typeof loader
                 >
                 const location = useLocation()
-                let width = location.pathname === Paths.login ? 260 : 340
+                let width = location.pathname === Paths.login ? 260 : 320
 
                 useFocusOnMount()
 
@@ -72,12 +72,12 @@ const router = createBrowserRouter(
 
                 return (
                     <>
-                        <div className='px-4 w-full'>
+                        <div className='px-3 w-full'>
                             <hr className='loading-bar relative' />
                         </div>
                         <div
                             ref={ref}
-                            className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
+                            className='shrink-0 grow pt-3 gap-3 flex-col p-3 w-full justify-start '
                         >
                             <NProgressComponent />
 
@@ -149,10 +149,6 @@ async function rootLoader({ request }) {
     }
 
     // return redirect(withMode(Paths.login))
-
-    const { owner, githubAccountLogin, repo } = await getReactPluginData()
-
-    let canRedirect = owner && repo && githubAccountLogin
 
     return redirect(withMode(Paths.components))
 }
