@@ -73,9 +73,9 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             return
         }
         // TODO remove this projectId check after plugin is updated
-        if (projectId && session.projectId && session.projectId !== projectId) {
-            return
-        }
+        // if (projectId && session.projectId && session.projectId !== projectId) {
+        //     return
+        // }
         const userId = session.usedByUserId
         const orgId = session.orgId
         store.orgId = orgId || ''
