@@ -28,7 +28,7 @@ function markdown({ shortId }) {
 
 To download and start using your React components, run the following command:
 
-    npx unframer ${shortId}
+    npx unframer@latest ${shortId}
 
 - This command will download the React components in a \`framer\` folder.
 - Import them and use them with full **TypeScript** support.
