@@ -519,7 +519,7 @@ model ReactExportProject {
 }
 
 model ReactExportComponent {
-  id                  String  @id
+  id                  String
   url                 String
   name                String
   projectId           String
@@ -527,28 +527,31 @@ model ReactExportComponent {
 
   project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
+  @@id([id, projectId])
   @@schema("public")
 }
 
 model ReactExportWebPage {
-  webPageId String @id
+  webPageId String
   // name      String
   path      String
   projectId String
 
   project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
+  @@id([webPageId, projectId])
   @@schema("public")
 }
 
 model ReactExportColorStyle {
-  id         String             @id
+  id         String
   name       String?
   projectId  String
   lightColor String
   darkColor  String
   project    ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
+  @@id([id, projectId])
   @@schema("public")
 }
 

@@ -171,7 +171,12 @@ function Component() {
                         Settings
                     </Button>
                 </Link>
-                <Button className='w-auto grow' variant='primary' type='submit'>
+                <Button
+                    isLoading={isLoading}
+                    className='w-auto grow'
+                    variant='primary'
+                    type='submit'
+                >
                     Export Selected Components
                 </Button>
             </div>

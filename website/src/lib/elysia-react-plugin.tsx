@@ -10,6 +10,7 @@ import {
 } from 'db/prisma'
 import { z } from 'zod'
 import { Sema } from 'async-sema'
+import { deduplicateByKey } from 'website/src/lib/utils'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -106,6 +107,7 @@ export const reactPluginApp = new Spiceflow({
         '/upsertProject',
         async ({ request, state: store }) => {
             const body = await request.json()
+            console.log('react upsertProject', body)
             let {
                 colorStyles,
                 pages,
@@ -113,6 +115,10 @@ export const reactPluginApp = new Spiceflow({
                 projectId,
                 projectName = '',
             } = body
+            
+            pages = deduplicateByKey(pages, (p) => p.webPageId)
+            components = deduplicateByKey(components, (c) => c.id)
+            colorStyles = deduplicateByKey(colorStyles, (s) => s.id)
             const orgId = store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
@@ -244,7 +250,7 @@ export const reactPluginApp = new Spiceflow({
                         await sema.acquire()
                         try {
                             await prisma.reactExportComponent.update({
-                                where: { id: component.id },
+                                where: { id_projectId: { id: component.id, projectId } },
                                 data: { ...component, projectId },
                             })
                         } finally {
@@ -261,7 +267,7 @@ export const reactPluginApp = new Spiceflow({
                         await sema.acquire()
                         try {
                             await prisma.reactExportWebPage.update({
-                                where: { webPageId: page.webPageId },
+                                where: { webPageId_projectId: { webPageId: page.webPageId, projectId } },
                                 data: { ...page, projectId },
                             })
                         } finally {
@@ -276,7 +282,7 @@ export const reactPluginApp = new Spiceflow({
                         await sema.acquire()
                         try {
                             await prisma.reactExportColorStyle.update({
-                                where: { id: style.id },
+                                where: { id_projectId: { id: style.id, projectId } },
                                 data: { ...style, projectId },
                             })
                         } finally {
