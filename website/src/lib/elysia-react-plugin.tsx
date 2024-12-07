@@ -1,28 +1,15 @@
 import fs from 'fs'
-import crypto from 'crypto'
-import GithubSlugger from 'github-slugger'
 import path from 'path'
-import { Sema } from 'sema4'
 import { Spiceflow } from 'spiceflow'
-import { bundle } from 'unframer-workspace/dist/exporter'
 
-import { prisma, ReactExportColorStyle, ReactExportComponent } from 'db/prisma'
-import dedent from 'dedent'
-import { Octokit } from 'octokit'
-import { env } from 'website/src/lib/env'
 import {
-    createNewRepo,
-    doesRepoExist,
-    getGithubUserLogin,
-    getOctokit,
-    getRepoFiles,
-    githubPathToPageSlug,
-    isMarkdown,
-    upsertGithubFile,
-} from 'website/src/lib/github.server'
-import { generateSecurePassword, sortByKey } from 'website/src/lib/utils'
+    prisma,
+    ReactExportColorStyle,
+    ReactExportComponent,
+    ReactExportWebPage,
+} from 'db/prisma'
 import { z } from 'zod'
-import { ReactExportProject } from 'db/kysely.types'
+import { Sema } from 'async-sema'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -84,6 +71,11 @@ export const reactPluginApp = new Spiceflow({
                         projectId,
                     },
                 }),
+                prisma.reactExportColorStyle.findMany({
+                    where: {
+                        projectId,
+                    },
+                }),
             ])
 
             if (!project) {
@@ -108,59 +100,183 @@ export const reactPluginApp = new Spiceflow({
         '/upsertProject',
         async ({ request, state: store }) => {
             const body = await request.json()
-            let { colorStyles, components, projectId, projectName = '' } = body
+            let {
+                colorStyles,
+                pages,
+                components,
+                projectId,
+                projectName = '',
+            } = body
             const orgId = store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
             projectId = projectId.slice(0, 16)
 
-            const [project] = await Promise.all([
-                prisma.reactExportProject.upsert({
-                    where: {
-                        orgId,
-                        projectId,
-                    },
-                    create: {
-                        orgId,
-                        projectId,
-                        projectName,
-                    },
-                    update: {
-                        projectId,
-                        projectName,
-                    },
+            // First upsert the project
+            const project = await prisma.reactExportProject.upsert({
+                where: {
+                    orgId,
+                    projectId,
+                },
+                create: {
+                    orgId,
+                    projectId,
+                    projectName,
+                },
+                update: {
+                    projectId,
+                    projectName,
+                },
+            })
+            if (!project) {
+                throw new Error('Project not found')
+            }
+            // Get existing records and handle components, color styles and pages
+            const [existingComponents, existingColorStyles, existingPages] =
+                await Promise.all([
+                    prisma.reactExportComponent.findMany({
+                        where: { projectId },
+                        select: { id: true },
+                    }),
+                    prisma.reactExportColorStyle.findMany({
+                        where: { projectId },
+                        select: { id: true },
+                    }),
+                    prisma.reactExportWebPage.findMany({
+                        where: { projectId },
+                        select: { webPageId: true },
+                    }),
+                ])
+
+            await Promise.all([
+                // Handle components
+                prisma.reactExportComponent.createMany({
+                    data: components
+                        .filter(
+                            (c) =>
+                                !existingComponents.some(
+                                    (ec) => ec.id === c.id,
+                                ),
+                        )
+                        .map((x) => ({ ...x, projectId })),
                 }),
                 prisma.reactExportComponent.deleteMany({
                     where: {
-                        OR: [
-                            { projectId },
-                            { id: { in: components.map((c) => c.id) } },
-                        ],
+                        id: {
+                            in: existingComponents
+                                .filter(
+                                    (ec) =>
+                                        !components.some((c) => c.id === ec.id),
+                                )
+                                .map((c) => c.id),
+                        },
                     },
+                }),
+
+                // Handle color styles
+                prisma.reactExportColorStyle.createMany({
+                    data: colorStyles
+                        .filter(
+                            (c) =>
+                                !existingColorStyles.some(
+                                    (ec) => ec.id === c.id,
+                                ),
+                        )
+                        .map((x) => ({ ...x, projectId })),
                 }),
                 prisma.reactExportColorStyle.deleteMany({
                     where: {
-                        OR: [
-                            { projectId, project: { orgId } },
-                            { id: { in: colorStyles.map((c) => c.id) } },
-                        ],
+                        id: {
+                            in: existingColorStyles
+                                .filter(
+                                    (ec) =>
+                                        !colorStyles.some(
+                                            (c) => c.id === ec.id,
+                                        ),
+                                )
+                                .map((c) => c.id),
+                        },
+                    },
+                }),
+
+                // Handle pages
+                prisma.reactExportWebPage.createMany({
+                    data: pages
+                        .filter(
+                            (p) =>
+                                !existingPages.some(
+                                    (ep) => ep.webPageId === p.webPageId,
+                                ),
+                        )
+                        .map((x) => ({ ...x, projectId })),
+                }),
+                prisma.reactExportWebPage.deleteMany({
+                    where: {
+                        webPageId: {
+                            in: existingPages
+                                .filter(
+                                    (ep) =>
+                                        !pages.some(
+                                            (p) => p.webPageId === ep.webPageId,
+                                        ),
+                                )
+                                .map((p) => p.webPageId),
+                        },
                     },
                 }),
             ])
+
+            // Update existing components and pages in parallel with rate limiting
+            const sema = new Sema(10) // Limit concurrent updates
             await Promise.all([
-                prisma.reactExportComponent.createMany({
-                    data: components.map((x) => ({
-                        ...x,
-                        projectId,
-                    })),
-                }),
-                prisma.reactExportColorStyle.createMany({
-                    data: colorStyles.map((x) => ({
-                        ...x,
-                        projectId,
-                    })),
-                }),
+                ...components
+                    .filter((component) =>
+                        existingComponents.some((ec) => ec.id === component.id),
+                    )
+                    .map(async (component) => {
+                        await sema.acquire()
+                        try {
+                            await prisma.reactExportComponent.update({
+                                where: { id: component.id },
+                                data: { ...component, projectId },
+                            })
+                        } finally {
+                            sema.release()
+                        }
+                    }),
+                ...pages
+                    .filter((page) =>
+                        existingPages.some(
+                            (ep) => ep.webPageId === page.webPageId,
+                        ),
+                    )
+                    .map(async (page) => {
+                        await sema.acquire()
+                        try {
+                            await prisma.reactExportWebPage.update({
+                                where: { webPageId: page.webPageId },
+                                data: { ...page, projectId },
+                            })
+                        } finally {
+                            sema.release()
+                        }
+                    }),
+                ...colorStyles
+                    .filter((style) =>
+                        existingColorStyles.some((es) => es.id === style.id),
+                    )
+                    .map(async (style) => {
+                        await sema.acquire()
+                        try {
+                            await prisma.reactExportColorStyle.update({
+                                where: { id: style.id },
+                                data: { ...style, projectId },
+                            })
+                        } finally {
+                            sema.release()
+                        }
+                    }),
             ])
 
             return { projectId }
@@ -168,6 +284,7 @@ export const reactPluginApp = new Spiceflow({
         {
             body: z.object({
                 components: z.array(z.custom<ReactExportComponent>()),
+                pages: z.array(z.custom<ReactExportWebPage>()),
                 projectId: z.string(),
                 projectName: z.string().optional(),
                 colorStyles: z.array(z.custom<ReactExportColorStyle>()),
