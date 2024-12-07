@@ -40,12 +40,8 @@ import {
 import { createBrowserRouter } from 'react-router-dom'
 import { useFocusOnMount } from 'template-rewrite-framer/src/lib/hooks'
 
-
-
-
 globalThis.framer = framer
 async function loader({ request }) {
-
     const { sessionKey } = await getPluginData()
 
     return { sessionKey }
@@ -206,9 +202,6 @@ export function ErrorBoundary() {
     return (
         <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>
             <span className='dark:text-red-300'>Something went wrong...</span>
-            <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                {error?.message || String(error)}
-            </div>
             <button
                 className='w-auto'
                 type='button'
@@ -218,6 +211,9 @@ export function ErrorBoundary() {
             >
                 Try again
             </button>
+            <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
+                {error?.message || String(error)}
+            </div>
         </div>
     )
 }

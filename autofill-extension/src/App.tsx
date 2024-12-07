@@ -10,7 +10,6 @@ import {
     LoaderReturnType,
     Paths,
     RouteIds,
-
     getExtensionData,
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
@@ -121,10 +120,6 @@ const router = createMemoryRouter(
                         <span className='dark:text-red-300'>
                             Something went wrong...
                         </span>
-                        <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
-                            {error?.message || JSON.stringify(error)}
-                            {error?.stack}
-                        </div>
                         <button
                             className='w-auto'
                             type='button'
@@ -135,6 +130,10 @@ const router = createMemoryRouter(
                         >
                             Try again
                         </button>
+                        <div className='text-[11px] text-red-400 text-center font-mono mx-4'>
+                            {error?.message || JSON.stringify(error)}
+                            {error?.stack}
+                        </div>
                     </div>
                 )
             },

@@ -102,9 +102,6 @@ const router = createBrowserRouter(
                         <span className='dark:text-red-300'>
                             Something went wrong...
                         </span>
-                        <div className='text-[11px] text-red-400 text-center font-mono mx-4 max-w-full'>
-                            {error?.message || String(error)}
-                        </div>
                         <button
                             className='w-auto'
                             type='button'
@@ -114,6 +111,9 @@ const router = createBrowserRouter(
                         >
                             Try again
                         </button>
+                        <div className='text-[11px] text-red-400 text-center font-mono mx-4 max-w-full'>
+                            {error?.message || String(error)}
+                        </div>
                     </div>
                 )
             },

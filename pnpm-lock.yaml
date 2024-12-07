@@ -1212,9 +1212,6 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      dedent:
-        specifier: ^1.5.3
-        version: 1.5.3
       dprint-node:
         specifier: ^1.0.8
         version: 1.0.8
@@ -1254,6 +1251,9 @@ importers:
       real-framer-motion:
         specifier: npm:framer-motion@11.2.10
         version: framer-motion@11.2.10(@emotion/is-prop-valid@1.3.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      string-dedent:
+        specifier: ^3.0.1
+        version: 3.0.1
     devDependencies:
       '@babel/core':
         specifier: ^7.24.9
@@ -1583,8 +1583,8 @@ importers:
         specifier: ^4.26.0
         version: 4.26.0
       unframer:
-        specifier: 2.7.2
-        version: 2.7.2(@emotion/is-prop-valid@1.3.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(undici@6.21.0)
+        specifier: 2.7.7
+        version: 2.7.7(@emotion/is-prop-valid@1.3.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(undici@6.21.0)
       unframer-workspace:
         specifier: link:../unframer/unframer
         version: link:../unframer/unframer
@@ -6964,11 +6964,6 @@ packages:
     resolution: {integrity: sha512-QCOllgZJtaUo9miYBcLChTUaHNjJF3PYs1VidD7AwiEj1kYxKeQTctLAezAOH5ZKRH0g2IgPn6KwB4IT8iRpvA==}
     engines: {node: '>= 0.4'}
 
-  esbuild-plugin-polyfill-node@0.3.0:
-    resolution: {integrity: sha512-SHG6CKUfWfYyYXGpW143NEZtcVVn8S/WHcEOxk62LuDXnY4Zpmc+WmxJKN6GMTgTClXJXhEM5KQlxKY6YjbucQ==}
-    peerDependencies:
-      esbuild: '*'
-
   esbuild-plugins-node-modules-polyfill@1.6.8:
     resolution: {integrity: sha512-bRB4qbgUDWrdY1eMk123KiaCSW9VzQ+QLZrmU7D//cCFkmksPd9mUMpmWoFK/rxjIeTfTSOpKCoGoimlvI+AWw==}
     engines: {node: '>=14.0.0'}
@@ -7807,9 +7802,6 @@ packages:
 
   import-in-the-middle@1.9.1:
     resolution: {integrity: sha512-E+3tEOutU1MV0mxhuCwfSPNNWRkbTJ3/YyL5be+blNIbHwZc53uYHQfuIhAU77xWR0BoF2eT7cqDJ6VlU5APPg==}
-
-  import-meta-resolve@3.1.1:
-    resolution: {integrity: sha512-qeywsE/KC3w9Fd2ORrRDUw6nS/nLwZpXgfrOc2IILvZYnCaEMd+D56Vfg9k4G29gIeVi3XKql1RQatME8iYsiw==}
 
   import-meta-resolve@4.1.0:
     resolution: {integrity: sha512-I6fiaX09Xivtk+THaMfAwnA3MVA5Big1WHF1Dfx9hFuvNIWpXnorlkzhcQf6ehrqQiiZECRt1poOAkPmer3ruw==}
@@ -10755,10 +10747,6 @@ packages:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
     engines: {node: '>=0.6.0'}
 
-  tmp@0.2.3:
-    resolution: {integrity: sha512-nZD7m9iCPC5g0pYmcaxogYKggSfLsdxl8of3Q/oIbqCqLLIO9IAF0GWjX1z9NZRHPiXv8Wex4yDCaZsgEw0Y8w==}
-    engines: {node: '>=14.14'}
-
   to-fast-properties@2.0.0:
     resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
@@ -10940,8 +10928,8 @@ packages:
   unfetch@4.2.0:
     resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
 
-  unframer@2.7.2:
-    resolution: {integrity: sha512-Ijm3QQI8FhROBRdTMXNtQaBRrtw4xoZ8MJ8A4LTxHP8BxDuSen9OSCkBrpVyo9GEE7/xpTM3Oa7x1zjR6Hrq2Q==}
+  unframer@2.7.7:
+    resolution: {integrity: sha512-DTIfsrf7pjrIIHZeM7W1PwoYSi4V7Ybv7uXhtWqBZ88BNmLkid6Xw/PKpa6mLnpxGqGCadDDwmqWG0DsGNNYfQ==}
     hasBin: true
     peerDependencies:
       react: '*'
@@ -18445,12 +18433,6 @@ snapshots:
       is-date-object: 1.0.5
       is-symbol: 1.0.4
 
-  esbuild-plugin-polyfill-node@0.3.0(esbuild@0.24.0):
-    dependencies:
-      '@jspm/core': 2.0.1
-      esbuild: 0.24.0
-      import-meta-resolve: 3.1.1
-
   esbuild-plugins-node-modules-polyfill@1.6.8(esbuild@0.17.6):
     dependencies:
       '@jspm/core': 2.0.1
@@ -19666,8 +19648,6 @@ snapshots:
       acorn-import-attributes: 1.9.5(acorn@8.14.0)
       cjs-module-lexer: 1.3.1
       module-details-from-path: 1.0.3
-
-  import-meta-resolve@3.1.1: {}
 
   import-meta-resolve@4.1.0: {}
 
@@ -23381,8 +23361,6 @@ snapshots:
     dependencies:
       os-tmpdir: 1.0.2
 
-  tmp@0.2.3: {}
-
   to-fast-properties@2.0.0: {}
 
   to-regex-range@5.0.1:
@@ -23543,15 +23521,14 @@ snapshots:
 
   unfetch@4.2.0: {}
 
-  unframer@2.7.2(@emotion/is-prop-valid@1.3.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(undici@6.21.0):
+  unframer@2.7.7(@emotion/is-prop-valid@1.3.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)(undici@6.21.0):
     dependencies:
       async-sema: 3.1.1
       cac: 6.7.14
-      chokidar: 3.6.0
       dedent: 1.5.3
       dprint-node: 1.0.8
       esbuild: 0.24.0
-      esbuild-plugin-polyfill-node: 0.3.0(esbuild@0.24.0)
+      esbuild-plugins-node-modules-polyfill: 1.6.8(esbuild@0.24.0)
       eventemitter3: 3.1.2
       find-up: 5.0.0
       fs-extra: 11.2.0
@@ -23564,8 +23541,6 @@ snapshots:
       react: 19.0.0-rc-e4953922-20240919
       react-dom: 19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919)
       real-framer-motion: framer-motion@11.2.10(@emotion/is-prop-valid@1.3.1)(react-dom@19.0.0-rc-e4953922-20240919(react@19.0.0-rc-e4953922-20240919))(react@19.0.0-rc-e4953922-20240919)
-      sema4: 0.1.3
-      tmp: 0.2.3
     transitivePeerDependencies:
       - '@emotion/is-prop-valid'
       - babel-plugin-macros
