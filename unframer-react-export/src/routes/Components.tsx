@@ -59,8 +59,9 @@ async function loader({}: LoaderFunctionArgs) {
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
 
-    const [components, styles, projectInfo] = await Promise.all([
+    const [components, pages, styles, projectInfo] = await Promise.all([
         framer.getNodesWithType('ComponentNode'),
+        framer.getNodesWithType('WebPageNode'),
         framer.getColorStyles(),
         framer.getProjectInfo(),
         getReactPluginData(),
@@ -105,6 +106,14 @@ async function action({ request }: LoaderFunctionArgs) {
                     componentIdentifier,
                 }
             }),
+            pages: pages.map((page) => {
+                const { id, collectionId, path } = page
+                return {
+                    path: path ?? '', // Ensure path is never null
+                    webPageId: id,
+                    projectId: projectId!,
+                }
+            }),
         })
     if (error) {
         throw error
@@ -138,8 +147,8 @@ function Component() {
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
             <div className=' flex flex-col px-4 items-center justify-center'>
                 <h1 className='text-balance text-center text-md '>
-                    Choose among the {componentsData.length} components which
-                    one you want to export
+                    Select which components you want to export from your{' '}
+                    {componentsData.length} available components
                 </h1>
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
@@ -163,7 +172,7 @@ function Component() {
                     </Button>
                 </Link>
                 <Button className='w-auto grow' variant='primary' type='submit'>
-                    Use Selected Components
+                    Export Selected Components
                 </Button>
             </div>
         </Form>

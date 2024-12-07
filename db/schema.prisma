@@ -513,6 +513,7 @@ model ReactExportProject {
   createdAt   DateTime                @default(now())
   components  ReactExportComponent[]
   colorStyles ReactExportColorStyle[]
+  pages       ReactExportWebPage[]
 
   @@schema("public")
 }
@@ -523,6 +524,17 @@ model ReactExportComponent {
   name                String
   projectId           String
   componentIdentifier String?
+
+  project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model ReactExportWebPage {
+  webPageId String @id
+  // name      String
+  path      String
+  projectId String
 
   project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 

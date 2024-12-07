@@ -54,29 +54,30 @@ export const reactPluginApp = new Spiceflow({
             //     throw unauthorizedResponse
             // }
 
-            const [project, components, colorStyles] = await Promise.all([
-                prisma.reactExportProject.findUnique({
-                    where: {
-                        // orgId,
-                        projectId,
-                    },
-                }),
-                prisma.reactExportComponent.findMany({
-                    where: {
-                        projectId,
-                    },
-                }),
-                prisma.reactExportColorStyle.findMany({
-                    where: {
-                        projectId,
-                    },
-                }),
-                prisma.reactExportColorStyle.findMany({
-                    where: {
-                        projectId,
-                    },
-                }),
-            ])
+            const [project, components, colorStyles, framerWebPages] =
+                await Promise.all([
+                    prisma.reactExportProject.findUnique({
+                        where: {
+                            // orgId,
+                            projectId,
+                        },
+                    }),
+                    prisma.reactExportComponent.findMany({
+                        where: {
+                            projectId,
+                        },
+                    }),
+                    prisma.reactExportColorStyle.findMany({
+                        where: {
+                            projectId,
+                        },
+                    }),
+                    prisma.reactExportWebPage.findMany({
+                        where: {
+                            projectId,
+                        },
+                    }),
+                ])
 
             if (!project) {
                 throw new Response(`Project with id ${projectId} not found`, {
@@ -86,10 +87,15 @@ export const reactPluginApp = new Spiceflow({
 
             return {
                 project,
-                components: components.map((c) => ({
-                    ...c,
-                    url: c.url?.split('@')[0],
-                })),
+                components: components
+                    .filter((x) => x?.url && x?.id)
+                    .map((c) => ({
+                        ...c,
+                        url: c.url?.split('@')[0],
+                    })),
+                framerWebPages: framerWebPages.filter(
+                    (x) => x.webPageId && x.path,
+                ),
                 colorStyles,
             }
         },

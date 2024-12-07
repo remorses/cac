@@ -493,6 +493,12 @@ export interface ReactExportProject {
   projectName: string | null;
 }
 
+export interface ReactExportWebPage {
+  path: string;
+  projectId: string;
+  webPageId: string;
+}
+
 export interface RealtimeMessages {
   extension: string;
   id: Generated<Int8>;
@@ -670,6 +676,7 @@ export interface DB {
   ReactExportColorStyle: ReactExportColorStyle;
   ReactExportComponent: ReactExportComponent;
   ReactExportProject: ReactExportProject;
+  ReactExportWebPage: ReactExportWebPage;
   "realtime.messages": RealtimeMessages;
   "realtime.schema_migrations": RealtimeSchemaMigrations;
   "realtime.subscription": RealtimeSubscription;
