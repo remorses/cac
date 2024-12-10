@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import {
     getMarkdownPluginData,
     LoaderReturnType,
@@ -55,7 +56,7 @@ async function loader({}: LoaderFunctionArgs) {
             .filter((x) => x.id !== CollectionFieldIds.content) as any[]),
     ])
 
-    const errorList = [] as { message: string; path: string }[]
+    const errorList = [] as { message: string; path: string; kind?: string }[]
     const semaphore = new Sema(1)
     let notImported = 0
 
@@ -63,6 +64,7 @@ async function loader({}: LoaderFunctionArgs) {
         files.map(async (item) => {
             if (item.foundMdx) {
                 errorList.push({
+                    kind: 'warning' as const,
                     message: `MDX custom components are not currently supported`,
                     path: item.path,
                 })
@@ -103,7 +105,11 @@ async function loader({}: LoaderFunctionArgs) {
                 console.log(
                     collectionItem.fieldData[CollectionFieldIds.content],
                 )
-                errorList.push({ message: error.message, path: item.path })
+                errorList.push({
+                    kind: 'error',
+                    message: error.message,
+                    path: item.path,
+                })
             } finally {
                 semaphore.release()
             }
@@ -143,9 +149,9 @@ async function loader({}: LoaderFunctionArgs) {
     return {}
 }
 
-const ErrorIcon = () => (
+const ErrorIcon = ({ kind = 'error' }) => (
     <svg
-        className='w-4 h-4 mt-1 shrink-0 mr-2 fill-current text-red-500'
+        className={`w-4 h-4 mt-1 shrink-0 mr-2 fill-current ${kind === 'warning' ? 'text-orange-500' : 'text-red-500'}`}
         xmlns='http://www.w3.org/2000/svg'
         viewBox='0 0 20 20'
     >
@@ -159,32 +165,37 @@ function Component() {
     >
 
     return (
-        <div className='flex flex-col shrink-0 items-center min-h-[200px] max-h-[500px] overflow-y-auto gap-4'>
+        <div className='flex flex-col shrink-0 gap-2'>
             {/* <Spinner /> */}
             {errorList && errorList.length > 0 && (
-                <div
-                    className='bg-red-100 border shrink-0 border-red-400 text-red-700 px-4 py-3 rounded relative'
-                    role='alert'
-                >
-                    <strong className='shrink-0  font-bold'>
-                        Error(s) occurred:
+                <>
+                    <strong className='shrink-0 font-bold'>
+                        Errors & Warnings:
                     </strong>
                     {!!notImported && (
-                        <div className='mt-2 shrink-0  font-bold'>
+                        <div className='mt-2 shrink-0 font-bold text-red-800'>
                             {notImported}{' '}
                             {notImported === 1 ? 'page was' : 'pages were'} not
                             imported
                         </div>
                     )}
-                    <ul className='list-disc shrink-0 list-inside mt-2'>
+                    <ul className='list-disc shrink-0 list-inside mt-2 w-full'>
                         {errorList.map((error, index) => (
-                            <li key={index} className='flex items-start mb-2'>
-                                <ErrorIcon />
+                            <li
+                                key={index}
+                                className={classNames(
+                                    'flex items-start mb-2 px-3 py-2 rounded',
+                                    error.kind === 'warning'
+                                        ? 'bg-orange-100 border-orange-400 text-orange-800'
+                                        : 'bg-red-100 border-red-400 text-red-800',
+                                )}
+                            >
+                                <ErrorIcon kind={error.kind} />
                                 {error.message} (File: {error.path})
                             </li>
                         ))}
                     </ul>
-                </div>
+                </>
             )}
         </div>
     )
