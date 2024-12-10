@@ -116,17 +116,14 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     })
                 }
                 {
-                    const octokit = new Octokit({
-                        auth: installation.oauthToken,
+                    const { data } = await octokit.rest.repos.listForUser({
+                        username: installation.accountLogin,
+                        per_page: 100,
+                        page: 1,
+                        direction: 'desc',
+                        sort: 'pushed',
+                        type: 'all',
                     })
-                    const { data } =
-                        await octokit.rest.repos.listForAuthenticatedUser({
-                            page: 1,
-                            per_page: 100,
-                            direction: 'desc',
-                            sort: 'pushed',
-                            type: 'all',
-                        })
                     return data.map((x) => {
                         const { private: p, url, owner, name } = x
                         return {
