@@ -334,7 +334,7 @@ export function MapFields({}: {}) {
                     encType: 'application/json',
                 })
             }}
-            className='flex flex-col gap-3 '
+            className='flex flex-col gap-3 max-h-[500px] overflow-y-auto'
         >
             {!!showMapFields && (
                 <div className='flex-1 flex flex-col gap-4'>
