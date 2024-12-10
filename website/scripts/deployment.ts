@@ -1,4 +1,5 @@
 import { deployFly, getDopplerEnv, shell } from '@xmorse/deployment-utils'
+import './openapi'
 
 async function main() {
     // const stage = getCurrentStage()
