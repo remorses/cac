@@ -25,6 +25,7 @@ export const env = {
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
+    STRIPE_PRICE_ID_REACT_EXPORT: process.env.STRIPE_PRICE_ID_REACT_EXPORT,
 }
 
 // console.log(env)
@@ -98,6 +99,8 @@ export const variantIdToCredits = Object.assign(
 )
 
 export const feedbackUrl = (pluginName) =>
+    `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' Discount Code')}`
+export const discountCodeUrl = (pluginName) =>
     `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' Plugin Feedback')}`
 
 export function getBuyGithubPluginUrl({ orgId, email, projectId }) {

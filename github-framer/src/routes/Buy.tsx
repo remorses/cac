@@ -13,9 +13,10 @@ import {
     useLoaderData,
     useRevalidator,
 } from 'react-router'
+import { Button } from 'template-rewrite-framer/src/components/Button'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 
-import { getBuyGithubPluginUrl } from 'website/src/lib/env'
+import { discountCodeUrl, getBuyGithubPluginUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
     const [pluginData, org] = await Promise.all([
@@ -69,20 +70,29 @@ function Component() {
     return (
         <div className='flex flex-col justify-start gap-4 text-center'>
             <div className='flex items-center'>
-                <div className='font-bold text-balance'>
-                    You have synced from GitHub more than the free limit of{' '}
-                    {freeSyncs} times this month.
+                <div className='font-semibold text-balance'>
+                    Please buy the plugin subscription to continue using GitHub
+                    Sync.
                 </div>
             </div>
             <div className='flex items-center'>
-                <div className='opacity-60 text-balance'>
-                    Please buy the plugin subscription to continue using GitHub Sync.
+                <div className='text-framer-secondary text-balance'>
+                    <a
+                        href={discountCodeUrl('GitHub Sync')}
+                        className='font-semibold text-black dark:text-white'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                    >
+                        Contact us
+                    </a>{' '}
+                    for non commercial or open source discount.
                 </div>
             </div>
             <hr className='' />
 
             <div className='flex flex-col items-center'>
-                <button
+                <Button
+                    variant='primary'
                     onClick={() =>
                         window.open(
                             getBuyGithubPluginUrl({
@@ -97,7 +107,7 @@ function Component() {
                     className='font-semibold '
                 >
                     Buy Plugin Subscription
-                </button>
+                </Button>
             </div>
         </div>
     )

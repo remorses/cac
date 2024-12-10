@@ -261,6 +261,7 @@ function escapeXml(unsafe: string): string {
 }
 
 export function canHaveFreePlugin(email?: string) {
+    // return false
     if (!email) {
         return false
     }
