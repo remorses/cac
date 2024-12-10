@@ -6,7 +6,7 @@
         "build": "NODE_ENV=production doppler run -c production -- pnpm concurrently 'pnpm remix vite:build' 'pnpm tsc' && pnpm copy-prisma",
         "prebuild": "pnpm --filter spiceflow build",
         "fly": "fly --app unframer-website-prod",
-        "deployment": "pnpm tsx scripts/deployment.ts",
+        "deployment": "doppler run -- pnpm tsx scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
         "openapi": "doppler run -- pnpm tsx -C import scripts/openapi.tsx",
         "cleanup": "pnpx @line/ts-remove-unused --check --skip '/routes/' --skip /\\.test/ --skip /framer/ --skip entry\\. --skip '/root\\.'",
