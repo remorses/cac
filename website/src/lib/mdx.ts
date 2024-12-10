@@ -105,6 +105,12 @@ export function getFrontmatter(markdown: string) {
 
 // Main function
 export async function markdownToHtml(markdown: string, extension: string) {
+    if (!markdown) {
+        return {
+            markdown: '',
+            foundMdx: false,
+        }
+    }
     const startTime = Date.now() // Start time
 
     if (!extension.includes('mdx')) {

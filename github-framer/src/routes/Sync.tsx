@@ -68,7 +68,7 @@ async function loader({}: LoaderFunctionArgs) {
                 })
             }
 
-            if (!item?.html) {
+            if (item?.html == null) {
                 return
             }
 

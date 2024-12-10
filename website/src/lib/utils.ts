@@ -270,6 +270,9 @@ export function canHaveFreePlugin(email?: string) {
     if (email === 't.de.rossi.01@gmail.com') {
         return true
     }
+    if (email === 'beats.by.morse@gmail.com') {
+        return true
+    }
     return false
 }
 

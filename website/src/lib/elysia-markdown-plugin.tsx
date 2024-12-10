@@ -431,13 +431,16 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 ],
             )
             console.timeEnd(`${owner}/${repo} - initial checks ${timeId}`)
-            
+
             if (!githubInstallation) {
                 throw new Error('No github installation found')
             }
-            
 
-            if (!sub && !canHaveFreePlugin(store.userEmail) && syncsThisMonth >= freeSyncs) {
+            if (
+                !sub &&
+                !canHaveFreePlugin(store.userEmail) &&
+                syncsThisMonth >= freeSyncs
+            ) {
                 throw new Response(
                     'You have reached the free limit of syncs this month: ' +
                         freeSyncs,
@@ -527,7 +530,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             let allAssetPaths = files.map((x) => x.pagePath)
             let onlyMarkdown = files.filter((x) => {
                 if (
-                    !x.content ||
+                    x.content == null ||
                     !x?.pagePath?.startsWith(basePath) ||
                     !isMarkdown(x.pagePath)
                 ) {
@@ -605,9 +608,10 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             const slugsFound = new Set<string>()
             let withMarkdown = await Promise.all(
                 onlyMarkdown.map(async (x) => {
-                    if (!x?.content) {
+                    if (x?.content == null) {
                         return
                     }
+
                     const id = idHash(x.pagePath)
 
                     const pagePath = x.pagePath
@@ -710,16 +714,17 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         sema.release()
                     }
                 }),
-                prisma.gitHubSync.create({
-                    data: {
-                        repoUrl: `https://github.com/${owner}/${repo}`,
-                        filesSynced: withMarkdown.length,
-                        orgId: store.orgId,
-                        projectName,
-                        projectId,
-                        durationInSeconds: timeInSeconds,
-                    },
-                }),
+                onlyMarkdown?.length > 0 &&
+                    prisma.gitHubSync.create({
+                        data: {
+                            repoUrl: `https://github.com/${owner}/${repo}`,
+                            filesSynced: withMarkdown.length,
+                            orgId: store.orgId,
+                            projectName,
+                            projectId,
+                            durationInSeconds: timeInSeconds,
+                        },
+                    }),
             ])
             console.timeEnd(`${owner}/${repo} - database updates ${timeId}`)
             console.timeEnd(`${owner}/${repo} - total sync time ${timeId}`)
@@ -1034,6 +1039,12 @@ export async function processHtml({
     html,
     mapImageUrl,
 }) {
+    if (!html) {
+        return {
+            html: '<html></html>',
+            title: '',
+        }
+    }
     let imagesNotFound = [] as string[]
 
     let title = ''

@@ -167,7 +167,7 @@ export async function getRepoFiles({
 
                 return {
                     pagePath: pagePath,
-                    content: contents!,
+                    content: contents! || '',
                     size: file.size,
                     sha: file.sha,
                     githubPath: file.path,
