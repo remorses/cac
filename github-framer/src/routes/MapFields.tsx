@@ -131,9 +131,21 @@ function createFieldConfig(
     console.log(
         'createFieldConfig',
         JSON.stringify(result, null, 2),
-        JSON.stringify(frontMatter.properties, null, 2),
+        JSON.stringify(frontMatter, null, 2),
     )
-    return result.sort(sortField)
+    return result.sort((a, b) => {
+        // First sort by frontMatter.order
+        const indexA = frontMatter.order?.indexOf(a.id) ?? -1
+        const indexB = frontMatter.order?.indexOf(b.id) ?? -1
+        if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB
+        }
+        if (indexA !== -1) return -1
+        if (indexB !== -1) return 1
+
+        // Then use the original sortField
+        return sortField(a, b)
+    })
 }
 
 function getFieldConfigForProp(

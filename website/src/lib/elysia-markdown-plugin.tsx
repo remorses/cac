@@ -725,7 +725,6 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }),
         },
     )
-
 async function getFrontmatterForRepo({
     owner,
     githubAccountLogin,
@@ -807,9 +806,17 @@ async function getFrontmatterForRepo({
         })
 
     let properties: MarkdownPluginFrontMatter['properties'] = {}
+    let maxPropsLength = 0
+    let frontmatterWithMostProps: any = null
+
     for (let file of withMarkdown) {
         if (!file?.frontMatter) continue
-        for (let [key, value] of Object.entries(file.frontMatter)) {
+        const entries = Object.entries(file.frontMatter)
+        if (entries.length > maxPropsLength) {
+            maxPropsLength = entries.length
+            frontmatterWithMostProps = file.frontMatter
+        }
+        for (let [key, value] of entries) {
             if (!properties[key]) {
                 properties[key] = {
                     values: [],
@@ -823,8 +830,15 @@ async function getFrontmatterForRepo({
         }
     }
 
+    const frontmatterOrder = frontmatterWithMostProps
+        ? Object.keys(frontmatterWithMostProps)
+        : []
+
     return {
-        frontMatter: { properties },
+        frontMatter: {
+            properties,
+            order: frontmatterOrder,
+        },
     }
 }
 
@@ -912,6 +926,7 @@ export type MarkdownPluginFrontMatterProperty = {
 
 export type MarkdownPluginFrontMatter = {
     properties: Record<string, MarkdownPluginFrontMatterProperty>
+    order?: string[]
 }
 
 export async function publicFileMapUrl({
