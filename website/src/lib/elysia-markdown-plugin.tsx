@@ -148,134 +148,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }),
         },
     )
-    // .post(
-    //     '/resolveFiles',
-    //     async function resolveFiles({ request, state: store }) {
-    //         const body = await request.json()
-    //         const { owner, basePath = '/', repo, paths } = body
 
-    //         if (paths.length === 0) {
-    //             throw new Error('Paths must be a non-empty array')
-    //         }
-
-    //         const orgId = store.orgId
-    //         if (!orgId) {
-    //             throw unauthorizedResponse
-    //         }
-
-    //         const githubInstallation =
-    //             await prisma.githubInstallation.findFirst({
-    //                 where: {
-    //                     status: 'active',
-    //                     memberLogins: {
-    //                         has: store.githubUserLogin,
-    //                     },
-    //                     appId: env.GITHUB_APP_ID,
-    //                     accountLogin: body.githubAccountLogin,
-    //                 },
-    //             })
-    //         if (!githubInstallation) {
-    //             throw new Error('No github installation found')
-    //         }
-
-    //         const installationId = githubInstallation.installationId
-    //         const octokit = await getOctokit({ installationId })
-    //         const [repoResult, ok] = await Promise.all([
-    //             octokit.rest.repos.get({
-    //                 owner,
-    //                 repo,
-    //             }),
-    //             checkGitHubIsInstalled({ installationId }),
-    //         ])
-
-    //         if (!ok) {
-    //             throw new Error('Github app no longer installed')
-    //         }
-
-    //         const branch = repoResult.data.default_branch
-    //         const files = await getRepoFiles({
-    //             fetchBlob(pagePath) {
-    //                 return false
-    //             },
-    //             branch: branch,
-    //             octokit: octokit.rest,
-    //             owner,
-    //             repo,
-    //         })
-    //         let allAssetPaths = files.map((x) => x.pagePath)
-
-    //         const results = await Promise.all(
-    //             paths.map(async (src) => {
-    //                 const path = findMatchInPaths({
-    //                     filePath: src,
-    //                     paths: allAssetPaths,
-    //                 })
-    //                 if (!path) {
-    //                     return null
-    //                 }
-
-    //                 try {
-    //                     if (repoResult.data.private) {
-    //                         const url = publicFileMapUrl({
-    //                             owner,
-    //                             repo,
-    //                             branch,
-    //                             imgPath: path,
-    //                         })
-    //                         const type = mime.getType(path)
-    //                         return { url, type }
-    //                     } else {
-    //                         const { data: fileData } =
-    //                             await octokit.rest.repos.getContent({
-    //                                 owner,
-    //                                 repo,
-    //                                 path,
-    //                                 ref: branch,
-    //                             })
-
-    //                         if (!('download_url' in fileData)) {
-    //                             notifyError(
-    //                                 new Error(
-    //                                     'Could not get download url for image',
-    //                                 ),
-    //                                 'resolveFiles',
-    //                             )
-    //                             return null
-    //                         }
-    //                         if (fileData?.type !== 'file') {
-    //                             notifyError(
-    //                                 `Unsupported file type: ${fileData.type}`,
-    //                                 'resolveFiles',
-    //                             )
-    //                             return null
-    //                         }
-
-    //                         const url = fileData.download_url
-    //                         const type = mime.getType(fileData.name)
-    //                         return { url, type }
-    //                     }
-    //                 } catch (error) {
-    //                     console.error(
-    //                         `Error resolving file at path ${path}:`,
-    //                         error,
-    //                     )
-    //                     return null
-    //                 }
-    //             }),
-    //         )
-
-    //         return results.filter(Boolean)
-    //     },
-    //     {
-    //         body: z.object({
-    //             githubAccountLogin: z.string().min(1),
-    //             owner: z.string().min(1),
-    //             repo: z.string().min(1),
-    //             basePath: z.string().optional(),
-    //             paths: z.array(z.string().min(1)),
-    //         }),
-    //     },
-    // )
     .post(
         '/syncsThisMonth',
         async ({ request, state: store }) => {
@@ -406,6 +279,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                             x.type === 'image' ||
                             x.type === 'file',
                     )
+                    .map((x) => x.name) || [],
+            )
+            const richTextFields = new Set(
+                mapFieldsConfig
+                    ?.filter((x) => x.type === 'formattedText')
                     .map((x) => x.name) || [],
             )
 
@@ -576,7 +454,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             async function resolveUrlsInFrontmatter(
                 frontmatter: Record<string, any>,
             ) {
-                if (!frontmatter || !urlLikeFields.size) {
+                if (!frontmatter) {
                     return frontmatter
                 }
                 if (typeof frontmatter !== 'object') {
@@ -599,6 +477,24 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         frontmatter[field] = await mapImageUrl(resolved)
                     } else {
                         delete frontmatter[field]
+                    }
+                }
+                // Handle rich text fields by converting markdown to HTML
+                for (const field of richTextFields) {
+                    try {
+                        const value = frontmatter[field]
+                        if (!value || typeof value !== 'string') {
+                            continue
+                        }
+                        const { html } = await markdownToHtml(value, '.md')
+                        frontmatter[field] = html
+                    } catch (error) {
+                        notifyError(
+                            error,
+                            `Error converting rich text field '${field}' to HTML`,
+                        )
+                        // Keep original value on error
+                        continue
                     }
                 }
                 return frontmatter
