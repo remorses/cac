@@ -87,13 +87,13 @@ const router = createBrowserRouter(
                 }, [height])
 
                 return (
-                    <div className='overflow-hidden '>
+                    <div className=' '>
                         <div className='px-4 w-full'>
                             <hr className='loading-bar relative' />
                         </div>
                         <div
                             ref={ref}
-                            className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start '
+                            className='shrink-0 grow pt-4 gap-3 flex-col p-4 w-full justify-start max-h-[600px] overflow-y-auto'
                         >
                             <NProgressComponent />
 

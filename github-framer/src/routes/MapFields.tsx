@@ -334,7 +334,7 @@ export function MapFields({}: {}) {
                     encType: 'application/json',
                 })
             }}
-            className='flex flex-col gap-3 max-h-[500px] overflow-y-auto'
+            className='flex flex-col gap-3 '
         >
             {!!showMapFields && (
                 <div className='flex-1 flex flex-col gap-4'>
@@ -448,6 +448,7 @@ export function MapFields({}: {}) {
                     </div>
                 </div>
             )}
+
             {!showMapFields && (
                 <div className='text-center text-balance'>
                     <div className=''>No frontmatter properties found</div>
