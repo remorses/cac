@@ -253,7 +253,7 @@ export const reactPluginApp = new Spiceflow({
                 components: z.array(z.custom<ReactExportComponent>()),
                 pages: z.array(z.custom<ReactExportWebPage>()).optional(),
                 projectId: z.string(),
-                projectName: z.string().optional(),
+                projectName: z.string().optional().nullable(),
                 colorStyles: z.array(z.custom<ReactExportColorStyle>()),
             }),
         },

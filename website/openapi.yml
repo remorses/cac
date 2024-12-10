@@ -345,7 +345,11 @@ paths:
                 projectId:
                   type: string
                 projectName:
-                  type: string
+                  anyOf:
+                    - anyOf:
+                        - not: {}
+                        - type: string
+                    - type: 'null'
                 colorStyles:
                   type: array
               required:
