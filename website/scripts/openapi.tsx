@@ -1,11 +1,13 @@
 import fs from 'fs'
 import path from 'path'
+import yaml from 'js-yaml'
 import { app } from '../src/lib/elysia.server'
 import { createSpiceflowClient } from 'spiceflow/client'
+
 async function main() {
     console.log('Creating Spiceflow client...')
     const client = createSpiceflowClient(app)
-    
+
     console.log('Fetching OpenAPI spec...')
     const { data: openapiJson, error } = await client.api.plugins.openapi.get()
     if (error) {
@@ -13,13 +15,17 @@ async function main() {
         throw error
     }
 
-    const outputPath = path.resolve(__dirname, '../openapi.json')
+    const outputPath = path.resolve(__dirname, '../openapi.yml')
     console.log('Writing OpenAPI spec to', outputPath)
     fs.writeFileSync(
         outputPath,
-        JSON.stringify(openapiJson, null, 2),
+        yaml.dump(openapiJson, {
+            indent: 2,
+            lineWidth: -1,
+        }),
     )
     console.log('Successfully wrote OpenAPI spec')
+    process.exit(0)
 }
 
 main().catch((e) => {
