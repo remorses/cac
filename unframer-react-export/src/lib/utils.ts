@@ -24,6 +24,9 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
                 throw redirect(withMode(Paths.login))
             }
+            if (response?.status === 402) {
+                throw redirect(withMode(Paths.buy))
+            }
         },
         async onRequest() {
             const { sessionKey } = await getReactPluginData()
@@ -52,6 +55,7 @@ export enum Paths {
     components = '/components',
     readme = '/readme',
     settings = '/settings',
+    buy = '/buy',
 }
 
 export enum RouteIds {
@@ -65,13 +69,14 @@ export enum PluginDataKeys {
 }
 
 export async function getReactPluginData() {
-    const [ sessionKey] =
-        await Promise.all([
-            framer.getPluginData(PluginDataKeys.sessionKey) || '',
-        ])
-    
+    const [sessionKey, info] = await Promise.all([
+        framer.getPluginData(PluginDataKeys.sessionKey) || '',
+        framer.getProjectInfo(),
+    ])
+    const projectId = info.id.slice(0, 16)
+
     return {
-        
         sessionKey: sessionKey || '',
+        projectId,
     }
 }

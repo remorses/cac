@@ -32,6 +32,7 @@ import {
 } from 'react-router'
 import { createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
+import { BuyMore } from '@/routes/Buy'
 
 globalThis.framer = framer
 
@@ -95,7 +96,7 @@ const router = createBrowserRouter(
                     NProgress.done()
                 }, [error])
                 return (
-                    <div className='flex max-w-full flex-col w-full h-full gap-2 items-center justify-center'>
+                    <div className='flex max-w-full flex-col w-full h-full gap-2 items-center '>
                         <div className='px-4 w-full'>
                             <hr className='loading-bar relative' />
                         </div>
@@ -132,6 +133,7 @@ const router = createBrowserRouter(
                 Components(),
                 Settings(),
                 Readme(),
+                BuyMore(),
             ],
         },
     ],

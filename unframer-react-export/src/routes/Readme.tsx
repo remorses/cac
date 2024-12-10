@@ -1,6 +1,6 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { marked } from 'marked'
-import { reload } from 'template-rewrite-framer/src/lib/utils'
+import { reload, withMode } from 'template-rewrite-framer/src/lib/utils'
 
 import {
     LoaderReturnType,
@@ -22,6 +22,7 @@ import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
 import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import { Link } from 'react-router-dom'
 function markdown({ shortId }) {
     return `
 ### Your Components are Ready
@@ -83,9 +84,18 @@ function Component() {
                 ></div>
             </div>
             {/* <hr className='' /> */}
-            <a target='_blank' href='https://github.com/remorses/unframer'>
-                <Button className=''>Read More on GitHub</Button>
-            </a>
+            <div className='flex gap-3 grow'>
+                <Link className='grow' to={withMode(Paths.settings)}>
+                    <Button className=''>Settings</Button>
+                </Link>
+                <a
+                    className='grow'
+                    target='_blank'
+                    href='https://github.com/remorses/unframer'
+                >
+                    <Button className=''>Read More on GitHub</Button>
+                </a>
+            </div>
         </div>
     )
 }

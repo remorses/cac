@@ -22,7 +22,9 @@ import { framer } from 'framer-plugin'
 import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+
+let maxSelected = 10
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
@@ -142,6 +144,13 @@ function Component() {
 
     // const isDocumentVisible = useIsDocumentVisibile()
 
+    const [selected, setSelected] = useState(() => {
+        if (componentIds.length) {
+            return componentIds
+        }
+        return componentsData.slice(0, 10).map((x) => x.id)
+    })
+
     const navigate = useNavigate()
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
@@ -151,14 +160,45 @@ function Component() {
                     {componentsData.length} available components
                 </h1>
             </div>
+            <div className='flex gap-2 '>
+                <Button
+                    variant='normal'
+                    onClick={() => {
+                        setSelected(componentsData.map((x) => x.id))
+                    }}
+                    className='w-auto grow bg-transparent disabled:opacity-50'
+                    disabled={selected.length === componentsData.length}
+                >
+                    Select All
+                </Button>
+                <Button
+                    variant='normal'
+                    onClick={() => {
+                        setSelected([])
+                    }}
+                    className='w-auto grow bg-transparent'
+                    disabled={selected.length === 0}
+                >
+                    Deselect All
+                </Button>
+            </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
-                {componentsData.map((component) => {
-                    let defaultIsChecked =
-                        !componentIds?.length ||
-                        componentIds.includes(component.id)
+                {componentsData.map((component, i) => {
                     return (
                         <Item
-                            defaultIsChecked={defaultIsChecked}
+                            defaultIsChecked={selected.includes(component.id)}
+                            onChange={(e) => {
+                                const checked = e.target.checked
+                                setSelected((prev) => {
+                                    if (checked) {
+                                        return [...prev, component.id]
+                                    }
+                                    return prev.filter(
+                                        (id) => id !== component.id,
+                                    )
+                                })
+                            }}
+                            checked={selected.includes(component.id)}
                             key={component.id}
                             {...component}
                         />
@@ -177,14 +217,14 @@ function Component() {
                     variant='primary'
                     type='submit'
                 >
-                    Export Selected Components
+                    Export <span className='font-mono'>{selected.length}</span>{' '}
+                    Components
                 </Button>
             </div>
         </Form>
     )
 }
-
-function Item({ id, name, defaultIsChecked }) {
+function Item({ id, name, defaultIsChecked, ...rest }) {
     const ref = useRef<any>()
     return (
         <div
@@ -198,6 +238,8 @@ function Item({ id, name, defaultIsChecked }) {
                     ref={ref}
                     className='!size-[14px]'
                     type='checkbox'
+                    {...rest}
+                    // onChange={onChange}
                 />
             </div>
             <div

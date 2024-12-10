@@ -389,7 +389,7 @@ export interface PaymentForCredits {
   metadata: Json | null;
   orderId: string;
   orgId: string;
-  pluginName: Generated<"githubSync" | "migrate">;
+  pluginName: Generated<"githubSync" | "migrate" | "reactExport">;
   productId: string;
   provider: Generated<"lemonsqueezy" | "stripe">;
   subscriptionId: string | null;
@@ -606,7 +606,7 @@ export interface Subscription {
   metadata: Json | null;
   orderId: string | null;
   orgId: string;
-  pluginName: Generated<"githubSync" | "migrate">;
+  pluginName: Generated<"githubSync" | "migrate" | "reactExport">;
   productId: string;
   provider: Generated<"lemonsqueezy" | "stripe">;
   quantity: Generated<number>;

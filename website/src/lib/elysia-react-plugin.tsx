@@ -11,6 +11,8 @@ import {
 import { z } from 'zod'
 import { Sema } from 'async-sema'
 import { deduplicateByKey } from 'website/src/lib/utils'
+import Stripe from 'stripe'
+import { env } from 'website/src/lib/env'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -20,6 +22,10 @@ export const componentObjectSchema = z.object({
     name: z.string(),
     url: z.string(),
 })
+
+export const freeComponents = 10
+
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 export type ComponentObject = z.infer<typeof componentObjectSchema>
 
@@ -102,7 +108,46 @@ export const reactPluginApp = new Spiceflow({
         },
         {},
     )
+    .get(
+        '/subscriptions',
+        async ({ request, state: store, query }) => {
+            if (!store.orgId) {
+                throw unauthorizedResponse
+            }
+            const { projectId } = query
+            const activeSub = await getReactSub({
+                orgId: store.orgId,
+                projectId,
+            })
 
+            let manageSubUrl: string | undefined
+            // const activeSub = subs.find((sub) => sub)
+            if (activeSub?.customerId) {
+                const portalSession =
+                    await stripe.billingPortal.sessions.create({
+                        customer: activeSub.customerId,
+
+                        return_url: new URL(
+                            '/after-framer-payment',
+                            env.PUBLIC_URL,
+                        ).toString(),
+                    })
+                manageSubUrl = portalSession.url
+            }
+
+            return {
+                freeComponents,
+                subs: [activeSub],
+                activeSub,
+                manageSubUrl,
+            }
+        },
+        {
+            query: z.object({
+                projectId: z.string(),
+            }),
+        },
+    )
     .post(
         '/upsertProject',
         async ({ request, state: store }) => {
@@ -116,9 +161,13 @@ export const reactPluginApp = new Spiceflow({
                 projectName = '',
             } = body
 
+            const shortId = projectId.slice(0, 4)
+            console.time(`[${shortId}] total upsert`)
+
             pages = deduplicateByKey(pages || [], (p) => p.webPageId)
             components = deduplicateByKey(components, (c) => c.id)
             colorStyles = deduplicateByKey(colorStyles, (s) => s.id)
+
             const orgId = store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
@@ -126,25 +175,41 @@ export const reactPluginApp = new Spiceflow({
             projectId = projectId.slice(0, 16)
 
             // First upsert the project
-            const project = await prisma.reactExportProject.upsert({
-                where: {
-                    orgId,
-                    projectId,
-                },
-                create: {
-                    orgId,
-                    projectId,
-                    projectName,
-                },
-                update: {
-                    projectId,
-                    projectName,
-                },
-            })
+            console.time(`[${shortId}] initial upsert`)
+            const [project, reactSub] = await Promise.all([
+                prisma.reactExportProject.upsert({
+                    where: {
+                        orgId,
+                        projectId,
+                    },
+                    create: {
+                        orgId,
+                        projectId,
+                        projectName,
+                    },
+                    update: {
+                        projectId,
+                        projectName,
+                    },
+                }),
+                getReactSub({ orgId, projectId }),
+            ])
+            console.timeEnd(`[${shortId}] initial upsert`)
+
             if (!project) {
                 throw new Error('Project not found')
             }
+            if (components.length > freeComponents && !reactSub) {
+                throw new Response(
+                    'You have reached the free limit of components',
+                    {
+                        status: 402,
+                    },
+                )
+            }
+
             // Get existing records and handle components, color styles and pages
+            console.time(`[${shortId}] fetch existing`)
             const [existingComponents, existingColorStyles, existingPages] =
                 await Promise.all([
                     prisma.reactExportComponent.findMany({
@@ -160,7 +225,9 @@ export const reactPluginApp = new Spiceflow({
                         select: { webPageId: true },
                     }),
                 ])
+            console.timeEnd(`[${shortId}] fetch existing`)
 
+            console.time(`[${shortId}] bulk operations`)
             await Promise.all([
                 // Handle components
                 prisma.reactExportComponent.createMany({
@@ -238,9 +305,11 @@ export const reactPluginApp = new Spiceflow({
                     },
                 }),
             ])
+            console.timeEnd(`[${shortId}] bulk operations`)
 
             // Update existing components and pages in parallel with rate limiting
-            const sema = new Sema(10) // Limit concurrent updates
+            console.time(`[${shortId}] update existing`)
+            const sema = new Sema(3) // Limit concurrent updates
             await Promise.all([
                 ...components
                     .filter((component) =>
@@ -302,6 +371,8 @@ export const reactPluginApp = new Spiceflow({
                         }
                     }),
             ])
+            console.timeEnd(`[${shortId}] update existing`)
+            console.timeEnd(`[${shortId}] total upsert`)
 
             return { projectId }
         },
@@ -325,4 +396,23 @@ export async function recursiveReaddir(dir: string) {
         }),
     )
     return files.flat()
+}
+
+async function getReactSub({ orgId, projectId }) {
+    if (!projectId) {
+        throw new Error('projectId missing, cannot get subscription')
+    }
+    return await prisma.subscription.findFirst({
+        where: {
+            orgId: orgId,
+            status: {
+                in: ['active', 'trialing'],
+            },
+            pluginName: 'reactExport',
+            metadata: {
+                path: ['projectId'],
+                equals: projectId,
+            },
+        },
+    })
 }

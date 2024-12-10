@@ -5,7 +5,8 @@ import {
     LoaderReturnType,
     Paths,
     PluginDataKeys,
-    pluginApiClient
+    getReactPluginData,
+    pluginApiClient,
 } from '@/lib/utils'
 import { useState } from 'react'
 import {
@@ -17,25 +18,40 @@ import {
 } from 'react-router'
 
 import classNames from 'classnames'
-import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
-import { } from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import { feedbackUrl, getBuyReactExportPluginUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [org, credits] = await Promise.all([
-        pluginApiClient.api.plugins.currentOrg
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        null,
-    ])
+    const { projectId } = await getReactPluginData()
+    const [org, { activeSub, freeComponents, manageSubUrl }] =
+        await Promise.all([
+            pluginApiClient.api.plugins.currentOrg
+                .post({})
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            pluginApiClient.api.plugins.reactExportPlugin.subscriptions
+                .get({ query: { projectId } })
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+        ])
     const { email, orgId } = org
-    return { credits, email, orgId }
+    return {
+        projectId,
+        email,
+        orgId,
+        manageSubUrl,
+        freeComponents,
+        sub: activeSub,
+    }
 }
 
 export function Settings(): RouteObject {
@@ -50,11 +66,9 @@ export function Settings(): RouteObject {
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
-    const { email } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { email, sub, orgId, projectId, manageSubUrl, freeComponents } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
-
-    const { credits } = useLoaderData() as LoaderReturnType<typeof loader>
-    // const isDocumentVisible = useIsDocumentVisibile()
 
     const navigate = useNavigate()
     return (
@@ -64,19 +78,16 @@ function Component() {
                     Currently logged in as{' '}
                     <span className='font-semibold inline'>{email}</span>
                 </div>
+
                 <div className='grow'></div>
                 <Button
                     onClick={async () => {
-                        // if (isLoading) {
-                        //     return
-                        // }
                         setIsLoading(true)
                         try {
                             await framer.setPluginData(
                                 PluginDataKeys.sessionKey,
                                 null,
                             )
-                            // await framer.closePlugin()
                             reload()
                         } finally {
                             // setIsLoading(false)
@@ -89,6 +100,67 @@ function Component() {
                 </Button>
             </div>
             <hr className='' />
+
+            {manageSubUrl && (
+                <>
+                    <div className='flex items-center'>
+                        <div>Subscription active</div>
+                        <div className='grow'></div>
+                        <a
+                            href={manageSubUrl}
+                            target='_blank'
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                            rel='noopener noreferrer'
+                        >
+                            <Button className='font-semibold'>
+                                Manage Subscription
+                            </Button>
+                        </a>
+                    </div>
+                    <hr className='' />
+                </>
+            )}
+
+            <div className='flex gap-2 items-center'>
+                <div className=''>Questions or requests?</div>
+                <div className='grow'></div>
+                <a target='_blank' href={feedbackUrl('React Export')}>
+                    <Button className='w-auto'>Share Feedback</Button>
+                </a>
+            </div>
+            <hr className='' />
+
+            {!sub && (
+                <>
+                    <div className='flex items-center'>
+                        <div>
+                            Get unlimited component exports.
+                            <br />
+                            {sub ? (
+                                'Unlimited exports available'
+                            ) : (
+                                <>Limit now is {freeComponents} components</>
+                            )}
+                        </div>
+                        <div className='grow'></div>
+                        <a
+                            href={getBuyReactExportPluginUrl({
+                                orgId,
+                                email,
+                                projectId,
+                            })}
+                            target='_blank'
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                            rel='noopener noreferrer'
+                        >
+                            <Button className='font-semibold'>
+                                Buy the Plugin
+                            </Button>
+                        </a>
+                    </div>
+                    <hr className='' />
+                </>
+            )}
 
             <Button
                 onClick={() => {
@@ -116,26 +188,22 @@ function ProgressBar({ progress, className = '' }) {
     if (progress < 0.03) {
         progress = 0.03
     }
-    // progress= 0.5
     return (
         <div
-            // style={{ backgroundColor }}
             className={classNames(
                 'relative rounded-md overflow-hidden w-full bg-gray-700 flex h-[8px]',
                 className,
             )}
         >
-            <motion.div
-                // layout
-                transition={{ duration: 0.4 }}
-                animate={{
+            <div
+                style={{
                     width: Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
                 }}
                 className={classNames(
                     'h-full bg-gray-200 rounded overflow-hidden',
                     backgroundColor,
                 )}
-            ></motion.div>
+            ></div>
         </div>
     )
 }
