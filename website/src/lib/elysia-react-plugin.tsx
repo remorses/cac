@@ -173,8 +173,6 @@ export const reactPluginApp = new Spiceflow({
                 throw unauthorizedResponse
             }
             projectId = projectId.slice(0, 16)
-
-            // First upsert the project
             console.time(`[${shortId}] initial upsert`)
             const [project, reactSub] = await Promise.all([
                 prisma.reactExportProject.upsert({
@@ -195,10 +193,10 @@ export const reactPluginApp = new Spiceflow({
                 getReactSub({ orgId, projectId }),
             ])
             console.timeEnd(`[${shortId}] initial upsert`)
-
             if (!project) {
                 throw new Error('Project not found')
             }
+
             if (components.length > freeComponents && !reactSub) {
                 throw new Response(
                     'You have reached the free limit of components',
@@ -208,173 +206,46 @@ export const reactPluginApp = new Spiceflow({
                 )
             }
 
-            // Get existing records and handle components, color styles and pages
-            console.time(`[${shortId}] fetch existing`)
-            const [existingComponents, existingColorStyles, existingPages] =
+            return await prisma.$transaction(async (tx) => {
+                // First upsert the project
+
+                // Delete all existing records
+                console.time(`[${shortId}] delete existing`)
                 await Promise.all([
-                    prisma.reactExportComponent.findMany({
+                    tx.reactExportComponent.deleteMany({
                         where: { projectId },
-                        select: { id: true },
                     }),
-                    prisma.reactExportColorStyle.findMany({
+                    tx.reactExportColorStyle.deleteMany({
                         where: { projectId },
-                        select: { id: true },
                     }),
-                    prisma.reactExportWebPage.findMany({
+                    tx.reactExportWebPage.deleteMany({
                         where: { projectId },
-                        select: { webPageId: true },
                     }),
                 ])
-            console.timeEnd(`[${shortId}] fetch existing`)
+                console.timeEnd(`[${shortId}] delete existing`)
 
-            console.time(`[${shortId}] bulk operations`)
-            await Promise.all([
-                // Handle components
-                prisma.reactExportComponent.createMany({
-                    data: components
-                        .filter(
-                            (c) =>
-                                !existingComponents.some(
-                                    (ec) => ec.id === c.id,
-                                ),
-                        )
-                        .map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportComponent.deleteMany({
-                    where: {
-                        id: {
-                            in: existingComponents
-                                .filter(
-                                    (ec) =>
-                                        !components.some((c) => c.id === ec.id),
-                                )
-                                .map((c) => c.id),
-                        },
-                    },
-                }),
+                // Insert all new records
+                console.time(`[${shortId}] insert new`)
+                await Promise.all(
+                    [
+                        tx.reactExportComponent.createMany({
+                            data: components.map((x) => ({ ...x, projectId })),
+                        }),
+                        tx.reactExportColorStyle.createMany({
+                            data: colorStyles.map((x) => ({ ...x, projectId })),
+                        }),
+                        pages?.length > 0
+                            ? tx.reactExportWebPage.createMany({
+                                  data: pages.map((x) => ({ ...x, projectId })),
+                              })
+                            : null,
+                    ].filter(Boolean),
+                )
+                console.timeEnd(`[${shortId}] insert new`)
+                console.timeEnd(`[${shortId}] total upsert`)
 
-                // Handle color styles
-                prisma.reactExportColorStyle.createMany({
-                    data: colorStyles
-                        .filter(
-                            (c) =>
-                                !existingColorStyles.some(
-                                    (ec) => ec.id === c.id,
-                                ),
-                        )
-                        .map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportColorStyle.deleteMany({
-                    where: {
-                        id: {
-                            in: existingColorStyles
-                                .filter(
-                                    (ec) =>
-                                        !colorStyles.some(
-                                            (c) => c.id === ec.id,
-                                        ),
-                                )
-                                .map((c) => c.id),
-                        },
-                    },
-                }),
-
-                // Handle pages
-                prisma.reactExportWebPage.createMany({
-                    data: pages
-                        .filter(
-                            (p) =>
-                                !existingPages.some(
-                                    (ep) => ep.webPageId === p.webPageId,
-                                ),
-                        )
-                        .map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportWebPage.deleteMany({
-                    where: {
-                        webPageId: {
-                            in: existingPages
-                                .filter(
-                                    (ep) =>
-                                        !pages.some(
-                                            (p) => p.webPageId === ep.webPageId,
-                                        ),
-                                )
-                                .map((p) => p.webPageId),
-                        },
-                    },
-                }),
-            ])
-            console.timeEnd(`[${shortId}] bulk operations`)
-
-            // Update existing components and pages in parallel with rate limiting
-            console.time(`[${shortId}] update existing`)
-            const sema = new Sema(3) // Limit concurrent updates
-            await Promise.all([
-                ...components
-                    .filter((component) =>
-                        existingComponents.some((ec) => ec.id === component.id),
-                    )
-                    .map(async (component) => {
-                        await sema.acquire()
-                        try {
-                            await prisma.reactExportComponent.update({
-                                where: {
-                                    id_projectId: {
-                                        id: component.id,
-                                        projectId,
-                                    },
-                                },
-                                data: { ...component, projectId },
-                            })
-                        } finally {
-                            sema.release()
-                        }
-                    }),
-                ...pages
-                    .filter((page) =>
-                        existingPages.some(
-                            (ep) => ep.webPageId === page.webPageId,
-                        ),
-                    )
-                    .map(async (page) => {
-                        await sema.acquire()
-                        try {
-                            await prisma.reactExportWebPage.update({
-                                where: {
-                                    webPageId_projectId: {
-                                        webPageId: page.webPageId,
-                                        projectId,
-                                    },
-                                },
-                                data: { ...page, projectId },
-                            })
-                        } finally {
-                            sema.release()
-                        }
-                    }),
-                ...colorStyles
-                    .filter((style) =>
-                        existingColorStyles.some((es) => es.id === style.id),
-                    )
-                    .map(async (style) => {
-                        await sema.acquire()
-                        try {
-                            await prisma.reactExportColorStyle.update({
-                                where: {
-                                    id_projectId: { id: style.id, projectId },
-                                },
-                                data: { ...style, projectId },
-                            })
-                        } finally {
-                            sema.release()
-                        }
-                    }),
-            ])
-            console.timeEnd(`[${shortId}] update existing`)
-            console.timeEnd(`[${shortId}] total upsert`)
-
-            return { projectId }
+                return { projectId }
+            })
         },
         {
             body: z.object({
