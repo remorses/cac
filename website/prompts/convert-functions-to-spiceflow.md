@@ -6,7 +6,7 @@ Here is an example of how to use spiceflow:
 
 ### POST Request with Body Schema
 
-```ts
+```
 import { z } from 'zod'
 import { Spiceflow } from 'spiceflow'
 
