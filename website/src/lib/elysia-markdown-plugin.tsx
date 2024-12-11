@@ -553,7 +553,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         id,
                         slug,
                         path: pagePath,
-                        pagePath,
+                        pagePath: slug, // TODO fix this
                         title,
                         foundMdx,
                         sha: x.sha,
@@ -621,10 +621,31 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             ])
             console.timeEnd(`${owner}/${repo} - database updates ${timeId}`)
             console.timeEnd(`${owner}/${repo} - total sync time ${timeId}`)
+            const idsToDelete = new Set(toDelete.map((x) => idHash(x)))
+
+            // TODO also add other itemIds not found in the repo
+            // add itemIds that were not found in the repo to idsToDelete
+            if (itemIds?.length) {
+                const foundIds = new Set(
+                    files
+                        .filter((x) => {
+                            return x.pagePath?.startsWith(basePath)
+                        })
+                        .filter((x) => {
+                            let pagePath = x.pagePath
+                            return isMarkdown(pagePath)
+                        })
+                        .map((x) => idHash(x?.pagePath!)),
+                )
+
+                itemIds
+                    .filter((id) => !foundIds.has(id))
+                    .forEach((id) => idsToDelete.add(id))
+            }
             return {
                 files: withMarkdown.filter(isTruthy),
                 toDelete,
-                idsToDelete: toDelete.map((x) => idHash(x)),
+                idsToDelete: [...idsToDelete],
             }
         },
         {
@@ -939,7 +960,6 @@ export async function publicFileMapUrl({
 }) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}${imgPath}`
 }
-
 export async function processHtml({
     basePath,
     allAssetPaths,
@@ -956,6 +976,7 @@ export async function processHtml({
     let imagesNotFound = [] as string[]
 
     let title = ''
+    let hasHtmlTag = false
 
     // Parse HTML
     const handler = new DomHandler(async (error, dom) => {
@@ -963,14 +984,19 @@ export async function processHtml({
             throw error
         }
 
-        // Find first h1 and set title to its content
+        // Find first h1 and check for html tag
         const walk = (nodes: any[]) => {
             for (const node of nodes) {
-                if (node.type === 'tag' && node.name === 'h1') {
-                    const textNode = node.children[0]
-                    if (textNode?.type === 'text') {
-                        title = textNode.data
-                        break
+                if (node.type === 'tag') {
+                    if (node.name === 'html') {
+                        hasHtmlTag = true
+                    }
+                    if (node.name === 'h1') {
+                        const textNode = node.children[0]
+                        if (textNode?.type === 'text') {
+                            title = textNode.data
+                            break
+                        }
                     }
                 }
 
@@ -1084,9 +1110,15 @@ export async function processHtml({
         )
     }
 
+    // Add html tag if not found during walk
+    let finalHtml = formattedHtml
+    if (!hasHtmlTag) {
+        finalHtml = `<html>\n${finalHtml}\n</html>`
+    }
+
     return {
         title,
-        html: formattedHtml, // Using original HTML for now since we need to serialize DOM back to HTML
+        html: finalHtml,
     }
 }
 

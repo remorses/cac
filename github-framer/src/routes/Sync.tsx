@@ -60,6 +60,19 @@ async function loader({}: LoaderFunctionArgs) {
     const semaphore = new Sema(1)
     let notImported = 0
 
+    // Remove all the items that weren't in the new feed
+
+    console.log('removing items', idsToDelete)
+    try {
+        await collection.removeItems(
+            idsToDelete.map((id) => id).filter((id) => itemIdsSet.has(id)),
+        )
+    } catch (error) {
+        await framer.notify(`Error removing items: ${error.message}`, {
+            variant: 'error',
+        })
+    }
+
     await Promise.all(
         files.map(async (item) => {
             if (item.foundMdx) {
@@ -83,7 +96,7 @@ async function loader({}: LoaderFunctionArgs) {
 
             const collectionItem: CollectionItemData = {
                 id,
-                slug: item.pagePath,
+                slug: item.slug,
 
                 fieldData: {
                     // title: item.title,
@@ -103,6 +116,7 @@ async function loader({}: LoaderFunctionArgs) {
                     error,
                 )
                 console.log(
+                    'content of the item with the error',
                     collectionItem.fieldData[CollectionFieldIds.content],
                 )
                 errorList.push({
@@ -115,19 +129,6 @@ async function loader({}: LoaderFunctionArgs) {
             }
         }),
     )
-
-    // Remove all the items that weren't in the new feed
-
-    console.log('removing items', idsToDelete)
-    try {
-        await collection.removeItems(
-            idsToDelete.map((id) => id).filter((id) => itemIdsSet.has(id)),
-        )
-    } catch (error) {
-        await framer.notify(`Error removing items: ${error.message}`, {
-            variant: 'error',
-        })
-    }
 
     // Save the data source ID for future plugin runs
     await framer.notify(
@@ -173,7 +174,7 @@ function Component() {
                         Errors & Warnings:
                     </strong>
                     {!!notImported && (
-                        <div className='mt-2 shrink-0 font-bold text-red-800'>
+                        <div className='mt-2 shrink-0 font-bold '>
                             {notImported}{' '}
                             {notImported === 1 ? 'page was' : 'pages were'} not
                             imported
