@@ -44,7 +44,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             })
     if (activeSub) {
-        throw redirect(withMode(Paths.settings))
+        throw redirect(withMode(Paths.components))
     }
     const { email, orgId } = org
     return { ...pluginData, freeComponents, email, orgId }
@@ -71,25 +71,27 @@ function Component() {
     }, [])
     const navigate = useNavigate()
     return (
-        <div className='flex flex-col justify-start gap-4 text-center'>
-            <div className='flex items-center'>
-                <div className=' text-sm text-balance'>
-                    Buy the plugin subscription to export more than{' '}
-                    {freeComponents} components.
+        <div className='flex flex-col justify-start gap-3 text-center'>
+            <div className='flex flex-col gap-3 my-4'>
+                <div className='flex items-center'>
+                    <div className=' text-sm text-balance'>
+                        Buy the plugin subscription to export more than{' '}
+                        {freeComponents} components.
+                    </div>
                 </div>
-            </div>
 
-            <div className='flex items-center'>
-                <div className='text-framer-secondary text-sm text-balance'>
-                    <a
-                        href={discountCodeUrl('React Export')}
-                        className='font-semibold text-black dark:text-white'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                    >
-                        Contact us
-                    </a>{' '}
-                    for non commercial or open source discount.
+                <div className='flex items-center'>
+                    <div className='text-framer-secondary text-balance'>
+                        <a
+                            href={discountCodeUrl('React Export')}
+                            className='font-semibold text-black dark:text-white'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                        >
+                            Contact us
+                        </a>{' '}
+                        for non commercial or open source discount.
+                    </div>
                 </div>
             </div>
             <hr className='' />

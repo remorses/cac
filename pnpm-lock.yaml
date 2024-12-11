@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      rollup-plugin-visualizer:
+        specifier: ^5.12.0
+        version: 5.12.0(rollup@4.28.0)
     devDependencies:
       '@changesets/cli':
         specifier: ^2.27.7

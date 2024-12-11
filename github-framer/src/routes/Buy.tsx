@@ -40,7 +40,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             })
     if (activeSub) {
-        throw redirect(withMode(Paths.settings))
+        throw redirect(withMode(Paths.mapFields))
     }
     const { email, orgId } = org
     return { ...pluginData, email, freeSyncs, orgId }
