@@ -1,8 +1,6 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
 import { env } from './env'
 
-
-
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
     if (next) {
@@ -261,11 +259,11 @@ function escapeXml(unsafe: string): string {
 }
 
 export function canHaveFreePlugin(email?: string) {
-    return false
+    // return false
     if (!email) {
         return false
     }
-    if (email.endsWith('@framer.com')) {
+    if (email?.endsWith('@framer.com')) {
         return true
     }
     if (email === 't.de.rossi.01@gmail.com') {
@@ -277,8 +275,10 @@ export function canHaveFreePlugin(email?: string) {
     return false
 }
 
-
-export function deduplicateByKey<T>(items: T[], getKey: (item: T) => string | number): T[] {
+export function deduplicateByKey<T>(
+    items: T[],
+    getKey: (item: T) => string | number,
+): T[] {
     const seen = new Map<string | number, T>()
     for (const item of items) {
         const key = getKey(item)
