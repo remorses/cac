@@ -92,6 +92,7 @@ export const reactPluginApp = new Spiceflow({
                 })
             }
 
+            
             return {
                 project,
                 components: components

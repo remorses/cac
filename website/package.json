@@ -111,7 +111,7 @@
         "stripe": "^17.4.0",
         "tailwindcss": "^3.4.5",
         "type-fest": "^4.26.0",
-        "unframer": "2.7.8",
+        "unframer": "2.7.11",
         "unframer-workspace": "link:../unframer/unframer",
         "unified": "^11.0.5",
         "unist-util-visit": "^5.0.0",
