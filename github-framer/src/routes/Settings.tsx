@@ -205,7 +205,7 @@ function Component() {
                             rel='noopener noreferrer'
                         >
                             <Button className='font-semibold'>
-                                Buy the Plugin
+                                Buy Plugin Subscription
                             </Button>
                         </a>
                     </div>
