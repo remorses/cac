@@ -4,11 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { hideHints, showHints } from '@/content/HintRenderer'
 import {
     ChromeMessageType,
-    DATA_LLM_ID,
-    PRESET_ID_LEN,
-    generateRandomString,
     isFillableElement,
-    sleep,
+    sleep
 } from '@/lib/utils'
 
 let hints = [] as Hint[]

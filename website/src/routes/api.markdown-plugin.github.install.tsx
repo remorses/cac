@@ -137,7 +137,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     let orgId = userId
     if (!orgId) {
-        throw new Error('User not found')
+        throw new Error('Unauthorized')
     }
     const githubLogin = await getGithubUserLogin({ userId })
     // if it is already installed, redirect to after now, needs database here
