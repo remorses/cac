@@ -6,11 +6,31 @@ info:
 paths:
   /api/plugins/currentOrg:
     post:
-      operationId: postApiPluginsCurrentOrg
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/getSessionForKey:
     post:
       parameters: []
-      operationId: postApiPluginsGetSessionForKey
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -23,12 +43,10 @@ paths:
                 projectId:
                   type: string
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/health:
     get:
       responses:
         '200':
-          $schema: http://json-schema.org/draft-07/schema#
           description: ''
           content:
             application/json:
@@ -39,15 +57,30 @@ paths:
                     type: boolean
                 required:
                   - ok
-      operationId: getApiPluginsHealth
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/sse-test:
     get:
-      operationId: getApiPluginsSse-test
+      x-fern-streaming:
+        format: sse
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/errorExample:
     get:
       responses:
         '200':
-          $schema: http://json-schema.org/draft-07/schema#
           description: ''
           content:
             application/json:
@@ -58,14 +91,38 @@ paths:
                     type: boolean
                 required:
                   - ok
-      operationId: getApiPluginsErrorExample
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/openapi:
     get:
-      operationId: getApiPluginsOpenapi
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/rewritePlugin/submitReview:
     post:
       parameters: []
-      operationId: postApiPluginsRewritePluginSubmitReview
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -84,11 +141,22 @@ paths:
                 - stars
                 - generationId
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/rewritePlugin/rephrase:
     post:
+      x-fern-streaming:
+        format: sse
       parameters: []
-      operationId: postApiPluginsRewritePluginRephrase
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -117,11 +185,20 @@ paths:
                 - sourceHtml
                 - url
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/rewritePlugin/discardGeneration:
     post:
       parameters: []
-      operationId: postApiPluginsRewritePluginDiscardGeneration
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -134,14 +211,33 @@ paths:
               required:
                 - id
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/rewritePlugin/getCredits:
     post:
-      operationId: postApiPluginsRewritePluginGetCredits
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/rewritePlugin/activateLicense:
     post:
       parameters: []
-      operationId: postApiPluginsRewritePluginActivateLicense
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -154,11 +250,20 @@ paths:
               required:
                 - licenseKey
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/rewritePlugin/getWebsiteHtml:
     post:
       parameters: []
-      operationId: postApiPluginsRewritePluginGetWebsiteHtml
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -171,14 +276,33 @@ paths:
               required:
                 - domain
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/markdownPlugin/health:
     get:
-      operationId: getApiPluginsMarkdownPluginHealth
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/markdownPlugin/githubRepoList:
     post:
       parameters: []
-      operationId: postApiPluginsMarkdownPluginGithubRepoList
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -192,11 +316,20 @@ paths:
               required:
                 - githubAccountLogin
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/markdownPlugin/syncsThisMonth:
     post:
       parameters: []
-      operationId: postApiPluginsMarkdownPluginSyncsThisMonth
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -209,7 +342,6 @@ paths:
                 projectName:
                   type: string
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/markdownPlugin/subscriptions:
     get:
       parameters:
@@ -218,11 +350,31 @@ paths:
           in: query
           name: projectId
           required: false
-      operationId: getApiPluginsMarkdownPluginSubscriptions
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/markdownPlugin/frontmatter:
     post:
       parameters: []
-      operationId: postApiPluginsMarkdownPluginFrontmatter
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -244,11 +396,20 @@ paths:
                 - basePath
                 - githubAccountLogin
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/markdownPlugin/syncGithub:
     post:
       parameters: []
-      operationId: postApiPluginsMarkdownPluginSyncGithub
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -285,11 +446,20 @@ paths:
                 - projectId
                 - projectName
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/markdownPlugin/checkBasePath:
     post:
       parameters: []
-      operationId: postApiPluginsMarkdownPluginCheckBasePath
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -311,13 +481,38 @@ paths:
                 - basePath
                 - githubAccountLogin
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
   /api/plugins/reactExportPlugin/health:
     get:
-      operationId: getApiPluginsReactExportPluginHealth
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/reactExportPlugin/project/{projectId}:
     get:
-      operationId: getApiPluginsReactExportPluginProjectByProjectId
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: projectId
+          required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/reactExportPlugin/subscriptions:
     get:
       parameters:
@@ -326,11 +521,31 @@ paths:
           in: query
           name: projectId
           required: true
-      operationId: getApiPluginsReactExportPluginSubscriptions
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
   /api/plugins/reactExportPlugin/upsertProject:
     post:
       parameters: []
-      operationId: postApiPluginsReactExportPluginUpsertProject
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
       requestBody:
         required: true
         content:
@@ -341,6 +556,10 @@ paths:
                 components:
                   type: array
                 pages:
+                  type: array
+                fullFramerProjectId:
+                  type: string
+                locales:
                   type: array
                 projectId:
                   type: string
@@ -357,6 +576,5 @@ paths:
                 - projectId
                 - colorStyles
               additionalProperties: false
-              $schema: http://json-schema.org/draft-07/schema#
 components:
   schemas: {}

@@ -110,7 +110,7 @@ export const reactPluginApp = new Spiceflow({
                     (x) => x.webPageId && x.path,
                 ),
                 colorStyles,
-                locales,
+                locales: locales.map(({ projectId, ...rest }) => rest),
             }
         },
         {},
