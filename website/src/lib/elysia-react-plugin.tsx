@@ -62,7 +62,7 @@ export const reactPluginApp = new Spiceflow({
             //     throw unauthorizedResponse
             // }
 
-            const [project, components, colorStyles, framerWebPages] =
+            const [project, components, colorStyles, framerWebPages, locales] =
                 await Promise.all([
                     prisma.reactExportProject.findUnique({
                         where: {
@@ -81,6 +81,11 @@ export const reactPluginApp = new Spiceflow({
                         },
                     }),
                     prisma.reactExportWebPage.findMany({
+                        where: {
+                            projectId,
+                        },
+                    }),
+                    prisma.reactExportLocale.findMany({
                         where: {
                             projectId,
                         },
@@ -105,6 +110,7 @@ export const reactPluginApp = new Spiceflow({
                     (x) => x.webPageId && x.path,
                 ),
                 colorStyles,
+                locales,
             }
         },
         {},
