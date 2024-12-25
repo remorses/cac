@@ -486,8 +486,17 @@ export interface ReactExportComponent {
   url: string;
 }
 
+export interface ReactExportLocale {
+  code: string;
+  id: string;
+  name: Generated<string>;
+  projectId: string;
+  slug: string;
+}
+
 export interface ReactExportProject {
   createdAt: Generated<Timestamp>;
+  fullFramerProjectId: string | null;
   orgId: string;
   projectId: string;
   projectName: string | null;
@@ -500,11 +509,14 @@ export interface ReactExportWebPage {
 }
 
 export interface RealtimeMessages {
+  event: string | null;
   extension: string;
-  id: Generated<Int8>;
-  inserted_at: Timestamp;
+  id: Generated<string>;
+  inserted_at: Generated<Timestamp>;
+  payload: Json | null;
+  private: Generated<boolean | null>;
   topic: string;
-  updated_at: Timestamp;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface RealtimeSchemaMigrations {
@@ -675,6 +687,7 @@ export interface DB {
   "pgsodium.valid_key": PgsodiumValidKey;
   ReactExportColorStyle: ReactExportColorStyle;
   ReactExportComponent: ReactExportComponent;
+  ReactExportLocale: ReactExportLocale;
   ReactExportProject: ReactExportProject;
   ReactExportWebPage: ReactExportWebPage;
   "realtime.messages": RealtimeMessages;

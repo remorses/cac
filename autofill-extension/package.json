@@ -23,7 +23,7 @@
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "dedent": "^1.5.3",
-        "eventsource-parser": "^1.1.2",
+        "eventsource-parser": "^3.0.0",
         "fkill": "^9.0.0",
         "framer-motion": "^11.11.17",
         "htmlrewriter": "^0.0.12",
@@ -48,7 +48,7 @@
         "vite-plugin-mkcert": "^1.17.5",
         "vite-tsconfig-paths": "^4.3.2",
         "website": "workspace:^",
-        "zod": "^3.23.8",
+        "zod": "^3.24.1",
         "zustand": "^4.5.4"
     },
     "devDependencies": {

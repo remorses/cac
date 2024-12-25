@@ -49,6 +49,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             }),
     ])
+
     const { email, orgId } = org
     let componentsData = components.map((component) => {
         const { name, id, insertURL, componentIdentifier } = component
@@ -61,17 +62,22 @@ async function loader({}: LoaderFunctionArgs) {
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
 
-    const [components, pages, styles, projectInfo] = await Promise.all([
-        framer.getNodesWithType('ComponentNode'),
-        framer.getNodesWithType('WebPageNode'),
-        framer.getColorStyles(),
-        framer.getProjectInfo(),
-        getReactPluginData(),
-    ])
+    const [components, pages, styles, projectInfo, locales] = await Promise.all(
+        [
+            framer.getNodesWithType('ComponentNode'),
+            framer.getNodesWithType('WebPageNode'),
+            framer.getColorStyles(),
+            framer.getProjectInfo(),
+            framer.unstable_getLocales?.()?.catch((err) => {
+                console.error('Error getting locales', err)
+                return []
+            }),
+        ],
+    )
 
     // throw redirect(withMode(Paths.readme))
-    const { id: projectId, name: projectName } = projectInfo
-    if (!projectId) {
+    const { id: fullFramerProjectId, name: projectName } = projectInfo
+    if (!fullFramerProjectId) {
         throw new Error('No project id found')
     }
     const selectedComponentIds = new Set(formData.keys())
@@ -86,14 +92,15 @@ async function action({ request }: LoaderFunctionArgs) {
     // console.log('styles', styles)
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
-            projectId,
+            projectId: fullFramerProjectId,
             projectName,
+            fullFramerProjectId,
             colorStyles: styles.map((x) => {
                 const { dark, light, name, id } = x
                 return {
                     name,
                     id,
-                    projectId: projectId!,
+                    projectId: fullFramerProjectId!,
                     lightColor: light,
                     darkColor: dark ?? light, // Ensure darkColor is never null
                 }
@@ -104,7 +111,7 @@ async function action({ request }: LoaderFunctionArgs) {
                     name: name ?? '',
                     id,
                     url: insertURL ?? '',
-                    projectId: projectId!,
+                    projectId: fullFramerProjectId!,
                     componentIdentifier,
                 }
             }),
@@ -113,7 +120,17 @@ async function action({ request }: LoaderFunctionArgs) {
                 return {
                     path: path ?? '', // Ensure path is never null
                     webPageId: id,
-                    projectId: projectId!,
+                    projectId: fullFramerProjectId!,
+                }
+            }),
+            locales: locales?.map((locale) => {
+                const { id, name, slug, code } = locale
+                return {
+                    id,
+                    name,
+                    slug,
+                    code,
+                    projectId: fullFramerProjectId!,
                 }
             }),
         })
@@ -234,7 +251,7 @@ function Item({ id, name, defaultIsChecked, ...rest }) {
             <div className='flex items-center justify-center'>
                 <input
                     name={id}
-                    defaultChecked={defaultIsChecked}
+                    // defaultChecked={defaultIsChecked}
                     ref={ref}
                     className='!size-[14px]'
                     type='checkbox'

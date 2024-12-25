@@ -506,14 +506,16 @@ model GitHubSync {
 }
 
 model ReactExportProject {
-  orgId       String
-  projectId   String  @id
-  projectName String?
+  orgId               String
+  projectId           String  @id
+  fullFramerProjectId String?
+  projectName         String?
 
   createdAt   DateTime                @default(now())
   components  ReactExportComponent[]
   colorStyles ReactExportColorStyle[]
   pages       ReactExportWebPage[]
+  locales     ReactExportLocale[]
 
   @@schema("public")
 }
@@ -540,6 +542,19 @@ model ReactExportWebPage {
   project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@id([webPageId, projectId])
+  @@schema("public")
+}
+
+model ReactExportLocale {
+  id        String
+  name      String @default("")
+  slug      String
+  code      String
+  projectId String
+
+  project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@id([id, projectId])
   @@schema("public")
 }
 

@@ -6,6 +6,7 @@ import {
     prisma,
     ReactExportColorStyle,
     ReactExportComponent,
+    ReactExportLocale,
     ReactExportWebPage,
 } from 'db/prisma'
 import { z } from 'zod'
@@ -92,7 +93,6 @@ export const reactPluginApp = new Spiceflow({
                 })
             }
 
-            
             return {
                 project,
                 components: components
@@ -159,7 +159,9 @@ export const reactPluginApp = new Spiceflow({
                 pages,
                 components,
                 projectId,
+                locales = [],
                 projectName = '',
+                fullFramerProjectId,
             } = body
 
             const shortId = projectId.slice(0, 4)
@@ -185,10 +187,12 @@ export const reactPluginApp = new Spiceflow({
                         orgId,
                         projectId,
                         projectName,
+                        fullFramerProjectId,
                     },
                     update: {
                         projectId,
                         projectName,
+                        fullFramerProjectId,
                     },
                 }),
                 getReactSub({ orgId, projectId }),
@@ -223,6 +227,9 @@ export const reactPluginApp = new Spiceflow({
                     tx.reactExportWebPage.deleteMany({
                         where: { projectId },
                     }),
+                    tx.reactExportLocale.deleteMany({
+                        where: { projectId },
+                    }),
                 ])
                 console.timeEnd(`[${shortId}] delete existing`)
 
@@ -236,11 +243,12 @@ export const reactPluginApp = new Spiceflow({
                         tx.reactExportColorStyle.createMany({
                             data: colorStyles.map((x) => ({ ...x, projectId })),
                         }),
-                        pages?.length > 0
-                            ? tx.reactExportWebPage.createMany({
-                                  data: pages.map((x) => ({ ...x, projectId })),
-                              })
-                            : null,
+                        tx.reactExportLocale.createMany({
+                            data: locales.map((x) => ({ ...x, projectId })),
+                        }),
+                        tx.reactExportWebPage.createMany({
+                            data: pages.map((x) => ({ ...x, projectId })),
+                        }),
                     ].filter(Boolean),
                 )
                 console.timeEnd(`[${shortId}] insert new`)
@@ -253,6 +261,8 @@ export const reactPluginApp = new Spiceflow({
             body: z.object({
                 components: z.array(z.custom<ReactExportComponent>()),
                 pages: z.array(z.custom<ReactExportWebPage>()).optional(),
+                fullFramerProjectId: z.string().optional(),
+                locales: z.array(z.custom<ReactExportLocale>()).optional(),
                 projectId: z.string(),
                 projectName: z.string().optional().nullable(),
                 colorStyles: z.array(z.custom<ReactExportColorStyle>()),
