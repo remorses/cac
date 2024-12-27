@@ -169,6 +169,19 @@ function Component() {
     })
 
     const navigate = useNavigate()
+
+    if (!componentsData?.length) {
+        return (
+            <div className='flex flex-col items-center justify-center gap-4 p-8 text-center'>
+                <h2 className='font-medium'>No Components Found</h2>
+                <p className='text-framer-secondary'>
+                    To create a component in Framer, select any layer, right
+                    click and select "Create Component".
+                </p>
+            </div>
+        )
+    }
+
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
             <div className=' flex flex-col px-4 items-center justify-center'>
