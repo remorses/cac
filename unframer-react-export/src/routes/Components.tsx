@@ -24,8 +24,6 @@ import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { useRef, useState } from 'react'
 
-
-
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
     let { id: projectId } = await framer.getProjectInfo()
