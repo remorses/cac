@@ -51,6 +51,7 @@ async function loader({}: LoaderFunctionArgs) {
     const { email, orgId } = org
     let componentsData = components.map((component) => {
         const { name, id, insertURL, componentIdentifier } = component
+
         return { name, id, insertURL, componentIdentifier, node: component }
     })
     const componentIds = reactExportProject?.components?.map((x) => x.id) || []
@@ -157,8 +158,7 @@ function Component() {
     const { componentsData, componentIds = [] } =
         useLoaderData() as LoaderReturnType<typeof loader>
 
-    // const isDocumentVisible = useIsDocumentVisibile()
-
+    const [search, setSearch] = useState('')
     const [selected, setSelected] = useState(() => {
         if (componentIds.length) {
             return componentIds
@@ -179,6 +179,10 @@ function Component() {
             </div>
         )
     }
+
+    const filteredComponents = componentsData.filter((component) =>
+        component.name?.toLowerCase().includes(search.toLowerCase()),
+    )
 
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
@@ -210,8 +214,18 @@ function Component() {
                     Deselect All
                 </Button>
             </div>
+            <div className='relative'>
+                <SearchIcon className='absolute left-2 top-1/2 -translate-y-1/2 ' />
+                <input
+                    type='text'
+                    placeholder='Search components...'
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className='!pl-7 w-full bg-framer-'
+                />
+            </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
-                {componentsData.map((component, i) => {
+                {filteredComponents.map((component, i) => {
                     return (
                         <Item
                             defaultIsChecked={selected.includes(component.id)}
@@ -250,6 +264,34 @@ function Component() {
                 </Button>
             </div>
         </Form>
+    )
+}
+
+function SearchIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            width='14'
+            height='14'
+            viewBox='0 0 16 16'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+            className={className}
+        >
+            <path
+                d='M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z'
+                stroke='currentColor'
+                strokeWidth='1.5'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+            />
+            <path
+                d='M14 14L11.1 11.1'
+                stroke='currentColor'
+                strokeWidth='1.5'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+            />
+        </svg>
     )
 }
 function Item({ id, name, defaultIsChecked, ...rest }) {
