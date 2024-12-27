@@ -208,15 +208,14 @@ export const reactPluginApp = new Spiceflow({
                 throw new Error('Project not found')
             }
 
-            // TODO enable payment for react
-            // if (components.length > freeComponents && !reactSub) {
-            //     throw new Response(
-            //         'You have reached the free limit of components',
-            //         {
-            //             status: 402,
-            //         },
-            //     )
-            // }
+            if (components.length > freeComponents && !reactSub) {
+                throw new Response(
+                    'You have reached the free limit of components',
+                    {
+                        status: 402,
+                    },
+                )
+            }
 
             return await prisma.$transaction(async (tx) => {
                 // First upsert the project

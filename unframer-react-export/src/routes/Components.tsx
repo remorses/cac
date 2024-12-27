@@ -24,7 +24,7 @@ import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { useRef, useState } from 'react'
 
-let maxSelected = 10
+
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
