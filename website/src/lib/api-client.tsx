@@ -1,7 +1,6 @@
 import { createSpiceflowClient } from 'spiceflow/client'
 
 import { RouteType } from 'website/src/lib/elysia.server'
-import { env } from 'website/src/lib/env'
 
 export function createClient({ url }: { url: string }) {
     const client = createSpiceflowClient<RouteType>(url, {
@@ -28,4 +27,4 @@ export function createClient({ url }: { url: string }) {
     return client
 }
 
-export const websiteApiClient = createClient({ url: env.PUBLIC_URL! })
+export const websiteApiClient = createClient({ url: process.env.PUBLIC_URL! })

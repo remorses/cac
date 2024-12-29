@@ -9,6 +9,7 @@
         "deployment": "doppler run -- pnpm tsx -C import scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
         "openapi": "doppler run -- pnpm tsx -C import scripts/openapi.tsx",
+        "gen-client": "export DIR=../unframer/unframer/src/generated/ && tsc --incremental && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/api-client.* $DIR",
         "cleanup": "pnpx @line/ts-remove-unused --check --skip '/routes/' --skip /\\.test/ --skip /framer/ --skip entry\\. --skip '/root\\.'",
         "copy-prisma": "cp ../db/schema.prisma ./build/",
         "prisma-gen": "pnpm copy-prisma && pnpm prisma  generate --schema ../db/schema.prisma",

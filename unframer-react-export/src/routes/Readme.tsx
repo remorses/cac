@@ -6,9 +6,11 @@ import {
     LoaderReturnType,
     Paths,
     PluginDataKeys,
+    debounce,
     pluginApiClient,
+    sleep,
 } from '@/lib/utils'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -19,10 +21,11 @@ import {
 
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
-import { framer } from 'framer-plugin'
+import { CanvasRootNode, framer } from 'framer-plugin'
 import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { Link } from 'react-router-dom'
+import { ReactExportComponent } from '../../../db/prisma'
 function markdown({ shortId }) {
     return `
 ### Your Components are Ready
@@ -39,7 +42,8 @@ To download and start using your React components, run the following command:
 `
 }
 async function loader({}: LoaderFunctionArgs) {
-    const [org, info] = await Promise.all([
+    const info = await framer.getProjectInfo()
+    const [org, reactExportProject] = await Promise.all([
         pluginApiClient.api.plugins.currentOrg
             .post({})
             .then(({ data, error }) => {
@@ -48,12 +52,27 @@ async function loader({}: LoaderFunctionArgs) {
                 }
                 return data
             }),
-        framer.getProjectInfo(),
+
+        pluginApiClient.api.plugins.reactExportPlugin
+            .project({ projectId: info?.id?.slice(0, 16) })
+            .get({})
+            .then(({ data, error }) => {
+                if (error) {
+                    return null
+                }
+                return data
+            }),
     ])
     const { id: projectId, name: projectName } = info
 
     const { email, orgId } = org
-    return { email, orgId, projectId, projectName }
+    return {
+        email,
+        orgId,
+        projectId,
+        projectName,
+        components: reactExportProject?.components || [],
+    }
 }
 
 export function Readme(): RouteObject {
@@ -64,6 +83,82 @@ export function Readme(): RouteObject {
     }
 }
 
+function useNotifier() {
+    const { components, projectId } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
+
+    const shortId = projectId.slice(0, 16)
+
+    useEffect(() => {
+        const componentIds = new Set(components.map((x) => x.id))
+        const componentUrls = new Set(components.map((x) => x.url))
+
+        const debounced = debounce(async (root: CanvasRootNode) => {
+            await sleep(400)
+            if (componentIds.has(root.id)) {
+                // root.setPluginData('test', Math.random().toString(36).slice(2))
+                await pluginApiClient.api.plugins.reactExportPlugin
+                    .project({ projectId: shortId })
+                    .publish.post({
+                        // projectId: shortId,
+                        components: [root as any],
+                    })
+                return
+            }
+            console.log(`detected change in canvas root`)
+            const nodes = await root.getNodesWithType('ComponentNode')
+            // console.log('nodes', nodes)
+            const changed = nodes
+                .filter((node) => {
+                    return (
+                        componentIds.has(node.id) &&
+                        node.insertURL &&
+                        // if insert url changed then it's updated
+                        !componentUrls.has(node.insertURL)
+                    )
+                })
+                .map((x) => {
+                    const { id, insertURL, componentIdentifier, name } = x
+                    const c: ReactExportComponent = {
+                        id,
+                        name: name || '',
+                        url: insertURL!,
+                        projectId: shortId,
+                        componentIdentifier,
+                    }
+                    return c
+                })
+            if (!changed.length) {
+                console.log('no changed components, ignoring')
+                return
+            }
+            console.log('components changed', changed)
+            // update componentUrls with new urls
+            changed.forEach((c) => {
+                // find and remove any existing url that matches before the @ symbol
+                const baseUrl = c.url.split('@')[0]
+                for (const existingUrl of componentUrls) {
+                    if (existingUrl.split('@')[0] === baseUrl) {
+                        componentUrls.delete(existingUrl)
+                    }
+                }
+                componentUrls.add(c.url)
+            })
+            await pluginApiClient.api.plugins.reactExportPlugin
+                .project({ projectId: shortId })
+                .publish.post({
+                    // projectId: shortId,
+                    components: changed,
+                })
+        }, 300)
+        const unsub = framer.subscribeToCanvasRoot(debounced)
+        return () => {
+            unsub?.()
+        }
+    }, [])
+}
+
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
@@ -72,6 +167,7 @@ function Component() {
     >
     const shortId = projectId.slice(0, 16)
     const markdownHtml = marked(markdown({ shortId }))
+    useNotifier()
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-3'>

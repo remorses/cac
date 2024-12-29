@@ -1,7 +1,7 @@
 {
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
-        "lib": ["DOM", "DOM.Iterable", "ES2022"],
+        "lib": ["DOM", "DOM.Iterable", "ES2022", "esnext"],
         "types": ["@remix-run/node", "vite"],
         "isolatedModules": true,
         "rootDir": "src",

@@ -1,4 +1,6 @@
 import fs from 'fs'
+import { on, EventEmitter } from 'events'
+import { TransformStream } from 'stream/web'
 import path from 'path'
 import { Spiceflow } from 'spiceflow'
 
@@ -14,6 +16,7 @@ import { Sema } from 'async-sema'
 import { deduplicateByKey } from 'website/src/lib/utils'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
+import { X } from 'lucide-react'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -29,6 +32,15 @@ export const freeComponents = 10
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 export type ComponentObject = z.infer<typeof componentObjectSchema>
+
+type FramerEvent = { type: 'change'; components: ReactExportComponent[] }
+
+let projectsEvents = new Map<
+    string,
+    EventEmitter<{
+        data: FramerEvent[]
+    }>
+>()
 
 export const reactPluginApp = new Spiceflow({
     basePath: '/reactExportPlugin',
@@ -57,60 +69,50 @@ export const reactPluginApp = new Spiceflow({
         '/project/:projectId',
         async ({ params, state: store }) => {
             const { projectId } = params
-            // const orgId = store.orgId
-            // if (!orgId) {
-            //     throw unauthorizedResponse
-            // }
-
-            const [project, components, colorStyles, framerWebPages, locales] =
-                await Promise.all([
-                    prisma.reactExportProject.findUnique({
-                        where: {
-                            // orgId,
-                            projectId,
-                        },
-                    }),
-                    prisma.reactExportComponent.findMany({
-                        where: {
-                            projectId,
-                        },
-                    }),
-                    prisma.reactExportColorStyle.findMany({
-                        where: {
-                            projectId,
-                        },
-                    }),
-                    prisma.reactExportWebPage.findMany({
-                        where: {
-                            projectId,
-                        },
-                    }),
-                    prisma.reactExportLocale.findMany({
-                        where: {
-                            projectId,
-                        },
-                    }),
-                ])
-
-            if (!project) {
-                throw new Response(`Project with id ${projectId} not found`, {
-                    status: 404,
-                })
+            return await getProject({ projectId })
+        },
+        {},
+    )
+    .post(
+        '/project/:projectId/publish',
+        async ({ request, params }) => {
+            const { projectId } = params
+            const { components } = await request.json()
+            if (!projectsEvents.has(projectId)) {
+                projectsEvents.set(projectId, new EventEmitter())
             }
+            const emitter = projectsEvents.get(projectId)!
+            console.log(
+                'Framer emitting event for components',
+                components.map((x) => x.url),
+            )
+            emitter.emit('data', { type: 'change', components })
 
-            return {
-                project,
-                components: components
-                    .filter((x) => x?.url && x?.id)
-                    .map((c) => ({
-                        ...c,
-                        url: c.url?.split('@')[0],
-                    })),
-                framerWebPages: framerWebPages.filter(
-                    (x) => x.webPageId && x.path,
-                ),
-                colorStyles,
-                locales: locales.map(({ projectId, ...rest }) => rest),
+            return 'ok'
+        },
+        {
+            body: z.object({
+                components: z.array(z.custom<ReactExportComponent>()),
+            }),
+        },
+    )
+    .get(
+        '/project/:projectId/subscribe',
+        async function* ({ params, state: store }) {
+            const { projectId } = params
+            const project = await getProject({ projectId })
+            yield { type: 'project' as const, ...project }
+            const emitter = projectsEvents.get(projectId)
+            if (!emitter) {
+                return
+            }
+            try {
+                for await (const event of on(emitter, 'data')) {
+                    console.log('emitting event', event)
+                    yield* event as FramerEvent[]
+                }
+            } finally {
+                projectsEvents.delete(projectId)
             }
         },
         {},
@@ -303,4 +305,55 @@ async function getReactSub({ orgId, projectId }) {
             },
         },
     })
+}
+
+async function getProject({ projectId }) {
+    const [project, components, colorStyles, framerWebPages, locales] =
+        await Promise.all([
+            prisma.reactExportProject.findUnique({
+                where: {
+                    // orgId,
+                    projectId,
+                },
+            }),
+            prisma.reactExportComponent.findMany({
+                where: {
+                    projectId,
+                },
+            }),
+            prisma.reactExportColorStyle.findMany({
+                where: {
+                    projectId,
+                },
+            }),
+            prisma.reactExportWebPage.findMany({
+                where: {
+                    projectId,
+                },
+            }),
+            prisma.reactExportLocale.findMany({
+                where: {
+                    projectId,
+                },
+            }),
+        ])
+
+    if (!project) {
+        throw new Response(`Project with id ${projectId} not found`, {
+            status: 404,
+        })
+    }
+
+    return {
+        project,
+        components: components
+            .filter((x) => x?.url && x?.id)
+            .map((c) => ({
+                ...c,
+                url: c.url,
+            })),
+        framerWebPages: framerWebPages.filter((x) => x.webPageId && x.path),
+        colorStyles,
+        locales: locales.map(({ projectId, ...rest }) => rest),
+    }
 }

@@ -80,3 +80,21 @@ export async function getReactPluginData() {
         projectId,
     }
 }
+
+
+export function debounce<T extends (...args: any[]) => any>(
+    fn: T,
+    wait: number = 300
+): (...args: Parameters<T>) => void {
+    let timeout: ReturnType<typeof setTimeout> | undefined
+
+    return (...args: Parameters<T>) => {
+        if (timeout) {
+            clearTimeout(timeout)
+        }
+        timeout = setTimeout(() => {
+            fn(...args)
+            timeout = undefined
+        }, wait)
+    }
+}
