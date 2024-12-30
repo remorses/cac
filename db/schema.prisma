@@ -511,6 +511,7 @@ model ReactExportProject {
   fullFramerProjectId String?
   projectName         String?
 
+  websiteUrl  String?
   createdAt   DateTime                @default(now())
   components  ReactExportComponent[]
   colorStyles ReactExportColorStyle[]

@@ -61,8 +61,9 @@ async function loader({}: LoaderFunctionArgs) {
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
 
-    const [components, pages, styles, projectInfo, locales] = await Promise.all(
-        [
+    const [publishInfo, components, pages, styles, projectInfo, locales] =
+        await Promise.all([
+            framer.getPublishInfo().catch((e) => null),
             framer.getNodesWithType('ComponentNode'),
             framer.getNodesWithType('WebPageNode'),
             framer.getColorStyles(),
@@ -71,8 +72,7 @@ async function action({ request }: LoaderFunctionArgs) {
                 console.error('Error getting locales', err)
                 return []
             }),
-        ],
-    )
+        ])
 
     // throw redirect(withMode(Paths.readme))
     const { id: fullFramerProjectId, name: projectName } = projectInfo
@@ -88,12 +88,19 @@ async function action({ request }: LoaderFunctionArgs) {
             selectedComponentIds.has(component.id),
     )
 
+    console.log('publishInfo', publishInfo)
+    let websiteUrl =
+        publishInfo?.staging?.currentPageUrl ||
+        publishInfo?.staging?.url ||
+        publishInfo?.production?.currentPageUrl ||
+        publishInfo?.production?.url
     // console.log('styles', styles)
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
             projectId: fullFramerProjectId,
             projectName,
             fullFramerProjectId,
+            websiteUrl,
             colorStyles: styles.map((x) => {
                 const { dark, light, name, id } = x
                 return {

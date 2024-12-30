@@ -21,7 +21,7 @@ import {
 
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
-import { CanvasRootNode, framer } from 'framer-plugin'
+import { CanvasRootNode, framer, PublishInfo } from 'framer-plugin'
 import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { Link } from 'react-router-dom'
@@ -94,18 +94,18 @@ function useNotifier() {
         const componentIds = new Set(components.map((x) => x.id))
         const componentUrls = new Set(components.map((x) => x.url))
 
-        const debounced = debounce(async (root: CanvasRootNode) => {
-            await sleep(400)
-            if (componentIds.has(root.id)) {
-                // root.setPluginData('test', Math.random().toString(36).slice(2))
-                await pluginApiClient.api.plugins.reactExportPlugin
-                    .project({ projectId: shortId })
-                    .publish.post({
-                        // projectId: shortId,
-                        components: [root as any],
-                    })
-                return
-            }
+        const debounced = debounce(async (info: PublishInfo) => {
+            const root = await framer.getCanvasRoot()
+            // if (componentIds.has(root.id)) {
+            //     // root.setPluginData('test', Math.random().toString(36).slice(2))
+            //     await pluginApiClient.api.plugins.reactExportPlugin
+            //         .project({ projectId: shortId })
+            //         .publish.post({
+            //             // projectId: shortId,
+            //             components: [root as any],
+            //         })
+            //     return
+            // }
             console.log(`detected change in canvas root`)
             const nodes = await root.getNodesWithType('ComponentNode')
             // console.log('nodes', nodes)
@@ -152,7 +152,7 @@ function useNotifier() {
                     components: changed,
                 })
         }, 300)
-        const unsub = framer.subscribeToCanvasRoot(debounced)
+        const unsub = framer.subscribeToPublishInfo(debounced)
         return () => {
             unsub?.()
         }
@@ -167,7 +167,7 @@ function Component() {
     >
     const shortId = projectId.slice(0, 16)
     const markdownHtml = marked(markdown({ shortId }))
-    useNotifier()
+    // useNotifier()
     const navigate = useNavigate()
     return (
         <div className='flex flex-col justify-start gap-3'>
@@ -175,7 +175,7 @@ function Component() {
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}
                     className={
-                        'max-w-full tracking-normal leading-normal prose prose-sm text-sm dark:prose-invert prose-pre:text-sm prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
+                        'max-w-full tracking-normal leading-normal prose prose-sm text-sm dark:prose-invert prose-pre:px-3 prose-pre:text-[14px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
                     }
                 ></div>
             </div>

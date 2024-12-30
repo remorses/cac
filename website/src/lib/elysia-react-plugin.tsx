@@ -101,12 +101,13 @@ export const reactPluginApp = new Spiceflow({
         async function* ({ params, state: store }) {
             const { projectId } = params
             const project = await getProject({ projectId })
-            yield { type: 'project' as const, ...project }
-            const emitter = projectsEvents.get(projectId)
-            if (!emitter) {
-                return
-            }
             try {
+                yield { type: 'project' as const, ...project }
+                const emitter = projectsEvents.get(projectId)
+                if (!emitter) {
+                    return
+                }
+
                 for await (const event of on(emitter, 'data')) {
                     console.log('emitting event', event)
                     yield* event as FramerEvent[]
@@ -170,6 +171,7 @@ export const reactPluginApp = new Spiceflow({
                 locales = [],
                 projectName = '',
                 fullFramerProjectId,
+                websiteUrl,
             } = body
 
             const shortId = projectId.slice(0, 4)
@@ -194,11 +196,13 @@ export const reactPluginApp = new Spiceflow({
                     create: {
                         orgId,
                         projectId,
+                        websiteUrl,
                         projectName,
                         fullFramerProjectId,
                     },
                     update: {
                         projectId,
+                        websiteUrl,
                         projectName,
                         fullFramerProjectId,
                     },
@@ -269,6 +273,7 @@ export const reactPluginApp = new Spiceflow({
                 components: z.array(z.custom<ReactExportComponent>()),
                 pages: z.array(z.custom<ReactExportWebPage>()).optional(),
                 fullFramerProjectId: z.string().optional(),
+                websiteUrl: z.string().optional(),
                 locales: z.array(z.custom<ReactExportLocale>()).optional(),
                 projectId: z.string(),
                 projectName: z.string().optional().nullable(),

@@ -500,6 +500,7 @@ export interface ReactExportProject {
   orgId: string;
   projectId: string;
   projectName: string | null;
+  websiteUrl: string | null;
 }
 
 export interface ReactExportWebPage {

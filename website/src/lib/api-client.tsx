@@ -1,8 +1,7 @@
-import { createSpiceflowClient } from 'spiceflow/client'
+import type { RouteType } from 'website/src/lib/elysia.server'
 
-import { RouteType } from 'website/src/lib/elysia.server'
-
-export function createClient({ url }: { url: string }) {
+export async function createClient({ url }: { url: string }) {
+    const { createSpiceflowClient } = await import('spiceflow/client')
     const client = createSpiceflowClient<RouteType>(url, {
         // async fetch(input, requestInit) {
         //     const res = await fetch(input, requestInit)
@@ -27,4 +26,4 @@ export function createClient({ url }: { url: string }) {
     return client
 }
 
-export const websiteApiClient = createClient({ url: process.env.PUBLIC_URL! })
+// export const websiteApiClient = createClient({ url: process.env.PUBLIC_URL! })
