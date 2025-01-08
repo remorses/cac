@@ -65,6 +65,10 @@
     </Content>
   </MainContainer>
 </HeroSection>
+
+
+---
+
 <ButtonsPrimary>
   <Primary>
     <Text nodeId="sz0TWsWnJ" fontSize="18px">
@@ -72,434 +76,6 @@
     </Text>
   </Primary>
 </ButtonsPrimary>
-<Container>
-  <ValidationSection>
-    <MainContainer>
-      <Title>
-        <Text nodeId="tX_L_ALb6" fontSize="22px">
-          Trusted by innovative companies
-        </Text>
-      </Title>
-    </MainContainer>
-  </ValidationSection>
-  <HighlightsSection>
-    <MainContainer>
-      <Title>
-        <Text nodeId="hy_JwJhGY" fontSize="36px">
-          Notion as CMS
-        </Text>
-        <Text nodeId="sAFsxQSEQ" fontSize="20px">
-          Keep your websites content in Notion
-        </Text>
-      </Title>
-      <Cards>
-        <Stack>
-          <Stack>
-            <Text nodeId="eB34y4HU5" fontSize="22px">
-              Team Collaboration
-            </Text>
-            <Text nodeId="XeGLCuAop" fontSize="18px">
-              All your team members can edit and publish new content super fast
-            </Text>
-          </Stack>
-        </Stack>
-        <Stack>
-          <Stack>
-            <Text nodeId="sBVefc7DT" fontSize="22px">
-              Content Management
-            </Text>
-            <Text nodeId="ll5vUXQpu" fontSize="18px">
-              Use Notion to manage content for docs, blog, changelog and roadmap
-            </Text>
-          </Stack>
-        </Stack>
-        <Stack>
-          <Stack>
-            <Text nodeId="MWvXB6cQF" fontSize="22px">
-              Multilingual Support
-            </Text>
-            <Text nodeId="jG6I0z0wh" fontSize="18px">
-              Enable your AI agents to communicate in multiple languages, ensuring customer support in their preferred language.
-            </Text>
-          </Stack>
-        </Stack>
-        <Stack>
-          <Stack>
-            <Text nodeId="fuNHEaT5j" fontSize="22px">
-              Custom Language Models
-            </Text>
-            <Text nodeId="ezEK7hA9Q" fontSize="18px">
-              Utilize your own language models to develop a bot tailored to your specific context and needs
-            </Text>
-          </Stack>
-        </Stack>
-        <Stack>
-          <Stack>
-            <Text nodeId="KNIRMdbTh" fontSize="22px">
-              Human transfer
-            </Text>
-            <Text nodeId="yAeVifIPd" fontSize="18px">
-              Our bots can hold the line for you and seamlessly transfer the call to a human agent when necessary.
-            </Text>
-          </Stack>
-        </Stack>
-        <Stack>
-          <Stack>
-            <Text nodeId="odCJzGgrn" fontSize="22px">
-              Knowledge Integration
-            </Text>
-            <Text nodeId="sD0y9OiAz" fontSize="18px">
-              Enhance your bot&apos;s intelligence by integrating knowledge from various sources, making it more contextually aware and smarter.
-            </Text>
-          </Stack>
-        </Stack>
-      </Cards>
-    </MainContainer>
-  </HighlightsSection>
-  <FeaturedTestimonial>
-    <Banner>
-      <Stack>
-        <Text nodeId="Iv88w4YBd" fontSize="28px">
-          &quot;We&apos;re using Notaku Docs for formcarry.com, and it&apos;s a blessing. When editing something we just change the Notion document and documentation got the changes.&quot;
-        </Text>
-      </Stack>
-      <Stack>
-        <Text nodeId="MzJhPGNQw" fontSize="18px">
-          @nusualabuga, Founder of formcarry.com
-        </Text>
-      </Stack>
-    </Banner>
-  </FeaturedTestimonial>
-  <Feature1>
-    <MainContainer>
-      <Stack>
-        <Stack>
-          <Stack>
-            <Stack>
-              <Text nodeId="Mv5VPuUut" fontSize="22px">
-                Daniel
-              </Text>
-              <Text nodeId="Qp3qpVViU" fontSize="18px">
-                Male, American voice
-              </Text>
-            </Stack>
-          </Stack>
-        </Stack>
-        <Stack>
-          <Stack>
-            <Stack>
-              <Text nodeId="GHrGNNC8P" fontSize="22px">
-                Ignacio
-              </Text>
-              <Text nodeId="SrVUiQEMc" fontSize="18px">
-                Male, Spanish voice
-              </Text>
-            </Stack>
-          </Stack>
-        </Stack>
-      </Stack>
-      <Content>
-        <Tag nodeId="rc97g95ix" controlKey="title">
-          Voice cloning
-        </Tag>
-        <Title>
-          <Text nodeId="sbfAXy0rS" fontSize="36px">
-            Call your customers with AI agents that sound human
-          </Text>
-          <Text nodeId="tUSaXqBVK" fontSize="20px">
-            ApiFlow&apos;s advanced voice cloning technology allows you to create unique, human-like voices tailored to your brand. Seamlessly integrate external APIs to inject live data into calls, enhancing the customer experience and driving business success.
-          </Text>
-        </Title>
-        <Stats>
-          <CardsStatsCard nodeId="zmhjf97kc" controlKey="title">
-            239+ voices to choose from
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="no3yve5ws" controlKey="description">
-            Our voices library features over 200 unique voices to pick from
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="wcfi0rca1" controlKey="title">
-            10+ different languages
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="m8vhtobrt" controlKey="description">
-            Our library of voices features 10+ languages &amp; it&apos;s growing
-          </CardsStatsCard>
-        </Stats>
-      </Content>
-    </MainContainer>
-  </Feature1>
-  <Feature2>
-    <MainContainer>
-      <Content>
-        <Tag nodeId="8hr96qm5k" controlKey="title">
-          Drag &amp; Drop builder
-        </Tag>
-        <Title>
-          <Text nodeId="bCkWUFKVa" fontSize="36px">
-            Deploy agents in minutes with drag &amp; drop builder
-          </Text>
-          <Text nodeId="Jh7mUSlNg" fontSize="20px">
-            Seamlessly integrate AI models, APIs, and data sources to create powerful agents that automate tasks and enhance your workflow. With our user-friendly interface, you can build and deploy agents quickly and efficiently, without requiring extensive coding knowledge.
-          </Text>
-        </Title>
-        <Stats>
-          <CardsStatsCard nodeId="lzsp1gznt" controlKey="title">
-            No-code tools
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="vc3io6dve" controlKey="description">
-            Create agents without writing a single line of code
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="yyjjskgbf" controlKey="title">
-            Conversation paths
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="4gcl8dwlt" controlKey="description">
-            Building custom conversation paths based on your use-case
-          </CardsStatsCard>
-        </Stats>
-      </Content>
-      <Visual>
-        <FormContainers>
-          <Form1>
-            <Stack>
-              <Stack>
-                <Text nodeId="lwWOoQI_A" fontSize="18px">
-                  Contact form submitted
-                </Text>
-                <Text nodeId="rEtqC7S9u" fontSize="18px">
-                  Hubspot
-                </Text>
-              </Stack>
-            </Stack>
-          </Form1>
-        </FormContainers>
-        <Form2Container>
-          <Form>
-            <Stack>
-              <Stack>
-                <Text nodeId="VPK9iseTn" fontSize="18px">
-                  Make a phone call
-                </Text>
-                <Text nodeId="aWjP4bXae" fontSize="18px">
-                  ApiFlow
-                </Text>
-              </Stack>
-            </Stack>
-          </Form>
-        </Form2Container>
-      </Visual>
-    </MainContainer>
-  </Feature2>
-  <Feature3>
-    <MainContainer>
-      <Content>
-        <Tag nodeId="27qbbrdsq" controlKey="title">
-          Integrations
-        </Tag>
-        <Title>
-          <Text nodeId="da3H2Ctw6" fontSize="36px">
-            Integrate with 6,000+ tools
-          </Text>
-          <Text nodeId="i4AkEmlkJ" fontSize="20px">
-            Take your workflow to the next level by integrating with over 6,000 tools and applications. Our platform offers a vast ecosystem of integrations, allowing you to automate tasks, streamline processes, and enhance collaboration across your entire tech stack.
-          </Text>
-        </Title>
-        <Stats>
-          <CardsStatsCard nodeId="8y5lqos5s" controlKey="title">
-            6000+ integrations
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="j8rcdcdqr" controlKey="description">
-            Integrate with over 6,000+ tools with ease
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="zy58qv8ys" controlKey="title">
-            Zapier &amp; Make integrations
-          </CardsStatsCard>
-          <CardsStatsCard nodeId="68wgtebxr" controlKey="description">
-            ApiFlow integrates with both Zapier and Make
-          </CardsStatsCard>
-        </Stats>
-      </Content>
-    </MainContainer>
-  </Feature3>
-  <CtaSection>
-    <Banner>
-      <Stack>
-        <Text nodeId="JYfxn0Glj" fontSize="44px">
-          Start building your AI agents today
-        </Text>
-        <Text nodeId="zYFwmGaAq" fontSize="20px">
-          Join 10,000+ developers building AI agents with ApiFlow
-        </Text>
-      </Stack>
-      <ButtonsPrimary nodeId="8zjdpjrgq" controlKey="buttonText">
-        Get started for free
-      </ButtonsPrimary>
-    </Banner>
-  </CtaSection>
-  <UseCasesSection>
-    <MainContainer>
-      <Header>
-        <Tag nodeId="5rgdw0wbm" controlKey="title">
-          Use cases
-        </Tag>
-        <Title>
-          <Text nodeId="mxsJPW9K7" fontSize="36px">
-            One solution, unlimited use-cases
-          </Text>
-          <Text nodeId="MLv5E2Aij" fontSize="20px">
-            Here&apos;s what sets our agents apart
-          </Text>
-        </Title>
-      </Header>
-    </MainContainer>
-  </UseCasesSection>
-  <HighlightsSection>
-    <MainContainer>
-      <Header>
-        <Tag nodeId="m3e8wqhr3" controlKey="title">
-          Implementation
-        </Tag>
-        <Title>
-          <Text nodeId="uozEn5iaz" fontSize="36px">
-            Get started with less than 10 lines of code
-          </Text>
-          <Text nodeId="s6ERP14Ke" fontSize="20px">
-            Copy the API implementation code and start your first call.
-          </Text>
-        </Title>
-      </Header>
-    </MainContainer>
-  </HighlightsSection>
-  <CtaSection>
-    <Banner>
-      <Stack>
-        <Text nodeId="WauVYAAZm" fontSize="44px">
-          Join 10,000+ developers building AI agents
-        </Text>
-        <Text nodeId="i9DvRm_0T" fontSize="20px">
-          Get started with ApiFlow for free today.
-        </Text>
-      </Stack>
-      <ButtonsPrimary nodeId="mkxxjngue" controlKey="buttonText">
-        Get started for free
-      </ButtonsPrimary>
-    </Banner>
-  </CtaSection>
-  <PricingSection>
-    <MainContainer>
-      <Header>
-        <Tag nodeId="xue30tzij" controlKey="title">
-          Pricing
-        </Tag>
-        <Title>
-          <Text nodeId="el9jTFEq5" fontSize="36px">
-            ApiFlow costs $0.10 per minute
-          </Text>
-          <Text nodeId="OyNNOkpDI" fontSize="20px">
-            Pay only for what you use. You can estimate your monthly bill using the calculator below.
-          </Text>
-        </Title>
-      </Header>
-      <Calculator nodeId="m4vckhkj3" controlKey="title">
-        ApiFlow cost estimator
-      </Calculator>
-      <ButtonsPrimary nodeId="lkhnt52l9" controlKey="buttonText">
-        Learn about Pricing
-      </ButtonsPrimary>
-    </MainContainer>
-  </PricingSection>
-  <TestimonialsSection>
-    <MainContainer>
-      <Title>
-        <Text nodeId="oNsqA9pIi" fontSize="36px">
-          Companies love building with ApiFlow
-        </Text>
-        <Text nodeId="gzfM_SKeK" fontSize="20px">
-          Here&apos;s what our customers say about us
-        </Text>
-      </Title>
-    </MainContainer>
-  </TestimonialsSection>
-  <CtaSection>
-    <Banner>
-      <Stack>
-        <Text nodeId="aGvHtpKGp" fontSize="44px">
-          Join 10,000+ developers building AI agents
-        </Text>
-        <Text nodeId="SEUZc6QZ8" fontSize="20px">
-          Get started with ApiFlow for free today.
-        </Text>
-      </Stack>
-      <ButtonsPrimary nodeId="ayvhuvh9n" controlKey="buttonText">
-        Get started for free
-      </ButtonsPrimary>
-    </Banner>
-  </CtaSection>
-  <UseCasesSection>
-    <MainContainer>
-      <Header>
-        <Tag nodeId="3340d62b8" controlKey="title">
-          Customer stories
-        </Tag>
-        <Title>
-          <Text nodeId="wNJFSQTyC" fontSize="36px">
-            How businesses are using ApiFlow
-          </Text>
-          <Text nodeId="W3jKT_lTF" fontSize="20px">
-            Learn how business from different industries are using our platform to automate processes.
-          </Text>
-        </Title>
-      </Header>
-    </MainContainer>
-  </UseCasesSection>
-  <BlogsSection>
-    <MainContainer>
-      <Header>
-        <Tag nodeId="42bya2l82" controlKey="title">
-          Blog
-        </Tag>
-        <Title>
-          <Text nodeId="gsIV7HWDV" fontSize="36px">
-            Read our latest pieces
-          </Text>
-          <Text nodeId="p7mlpzQqY" fontSize="20px">
-            Check out our latest pieces on Ai Voice agents &amp; APIs.
-          </Text>
-        </Title>
-      </Header>
-      <BlogPosts>
-        <CardsBlogCard nodeId="d1xe4w6wp" controlKey="title">
-          Making AI Voice Agent APIs Inclusive
-        </CardsBlogCard>
-        <CardsBlogCard nodeId="yus2ho3hk" controlKey="description">
-          Ensuring Voice Technology Reaches Everyone
-        </CardsBlogCard>
-      </BlogPosts>
-      <ButtonsPrimary nodeId="9ugx4gs9f" controlKey="buttonText">
-        See all blogs
-      </ButtonsPrimary>
-    </MainContainer>
-  </BlogsSection>
-  <FaqSection>
-    <MainContainer>
-      <Header>
-        <Tag nodeId="xodc133i7" controlKey="title">
-          FAQs
-        </Tag>
-        <Title>
-          <Text nodeId="nV1K98pyo" fontSize="36px">
-            Questions? We got answers
-          </Text>
-          <Text nodeId="l4i6Srxvv" fontSize="20px">
-            Check out the answers to most frequently asked questions.
-          </Text>
-        </Title>
-      </Header>
-    </MainContainer>
-  </FaqSection>
-</Container>
-
-
----
-
 <Tag>
   <Variant1>
     <Text nodeId="gHBqvdFgM" fontSize="16px">
@@ -570,6 +146,10 @@
     </InboundCallsCards>
   </FirstUseCase>
 </InteractiveUseCases>
+
+
+---
+
 <Tabs>
   <Active>
     <Text nodeId="MQlp_X_Gm" fontSize="18px">
@@ -589,10 +169,6 @@
     </Stack>
   </Variant1>
 </CardsUseCasesCards>
-
-
----
-
 <InteractiveCodeSnippets>
   <Python>
     <PythonButton nodeId="0njo2f4a6" controlKey="text">
@@ -607,6 +183,10 @@
     </Label>
   </Default>
 </ButtonsCopySnippet>
+
+
+---
+
 <CardsTestimonialCard>
   <Variant1>
     <Stack>
@@ -653,6 +233,10 @@
     </Retail>
   </First>
 </InteractiveCustomerStories>
+
+
+---
+
 <CardsCustomerStories>
   <Testimonial>
     <Stack>
@@ -697,10 +281,6 @@
     </Stack>
   </Variant1>
 </CardsBlogCard>
-
-
----
-
 <CardsFaqCard>
   <Answers>
     <Question>
@@ -713,114 +293,6 @@
     </Text>
   </Answers>
 </CardsFaqCard>
-<NavigationFooter>
-  <Variant1>
-    <FooterTop>
-      <MainContainer>
-        <TopPart>
-          <LogoAuthor>
-            <Logo>
-              <Text nodeId="inGJDsmYO" fontSize="16px">
-                Publish awesome websites with Notion
-              </Text>
-            </Logo>
-            <Author>
-              <Text nodeId="dNTXAT24e" fontSize="16px">
-                By Tommy
-              </Text>
-            </Author>
-          </LogoAuthor>
-          <SiteNavigation>
-            <Products>
-              <Text nodeId="Oe6VzyYPt" fontSize="16px">
-                Company
-              </Text>
-              <Text nodeId="qqoXrPNMS" href="/pricing" fontSize="16px">
-                Terms
-              </Text>
-              <Text nodeId="l7OQq4utu" href="/contact-sales" fontSize="16px">
-                Privacy
-              </Text>
-              <Text nodeId="bikySphEg" href="/contact-sales-2" fontSize="16px">
-                Affiliate Program
-              </Text>
-              <Text nodeId="iHjW2DIUD" href="/support" fontSize="16px">
-                Mission
-              </Text>
-            </Products>
-            <Resources>
-              <Text nodeId="f78Cl8aMt" fontSize="16px">
-                Resources
-              </Text>
-              <Text nodeId="j61eXvWu4" href="/docs" fontSize="16px">
-                Docs
-              </Text>
-              <Text nodeId="sLk4tpNBu" href="/docs/getting-started" fontSize="16px">
-                Blog
-              </Text>
-              <Text nodeId="SXH0QhPQh" href="/blog" fontSize="16px">
-                Icons Generator
-              </Text>
-              <Text nodeId="QAkShYN00" href="/blog/unleashing-the-power-of-voice-a-guide-to-ai-voice-agent-apis" fontSize="16px">
-                Showcase
-              </Text>
-            </Resources>
-            <OtherPages>
-              <Text nodeId="Ivgzd60Bz" fontSize="16px">
-                Comparisons
-              </Text>
-              <Text nodeId="LTv8KqkOs" href="/404" fontSize="16px">
-                Helpkit
-              </Text>
-              <Text nodeId="VwbqQlOzf" href="/sign-in" fontSize="16px">
-                Feather
-              </Text>
-              <Text nodeId="vAfs7XlmL" href="/sign-up" fontSize="16px">
-                GitBook
-              </Text>
-            </OtherPages>
-            <Template>
-              <Text nodeId="iIMqGQYQg" fontSize="16px">
-                Template
-              </Text>
-              <Text nodeId="I8u5j7Dyz" href="https://framer.ing/aiwingman" fontSize="16px">
-                Features
-              </Text>
-              <Text nodeId="FVHbAv5Yt" href="https://framer.ing/tutorials" fontSize="16px">
-                Tutorials
-              </Text>
-              <Text nodeId="s4fAfy6EV" href="https://shop.framer.ing/buy/6ea945c7-6d54-49b0-83cd-f16cc4dde53e" fontSize="16px">
-                Purchase
-              </Text>
-              <Text nodeId="etn7aFFvg" href="https://framer.ing/" fontSize="16px">
-                All templates
-              </Text>
-            </Template>
-          </SiteNavigation>
-        </TopPart>
-      </MainContainer>
-    </FooterTop>
-    <FooterBottom>
-      <MainContainer>
-        <Text nodeId="ATDzUR2Uh" fontSize="16px">
-          © Notaku. All rights reserved
-        </Text>
-        <Stack>
-          <Text nodeId="JEOXZnb8F" href="/terms-conditions" fontSize="16px">
-            Status
-          </Text>
-          <Text nodeId="wT3nbZ8v7" href="/privacy-policy" fontSize="16px">
-            Twitter
-          </Text>
-        </Stack>
-      </MainContainer>
-    </FooterBottom>
-  </Variant1>
-</NavigationFooter>
-
-
----
-
 <NavigationTwitterProfilePreview>
   <Closed>
     <Link>
@@ -830,6 +302,10 @@
     </Link>
   </Closed>
 </NavigationTwitterProfilePreview>
+
+
+---
+
 <RemoveButton>
   <Variant1>
     <Text nodeId="xRh2ZBpJM">
@@ -885,6 +361,10 @@
     </Content>
   </MainContainer>
 </HeroSection>
+
+
+---
+
 <Tag>
   <Variant1>
     <Text nodeId="gHBqvdFgM" fontSize="16px">
@@ -955,10 +435,6 @@
     </InboundCallsCards>
   </FirstUseCase>
 </InteractiveUseCases>
-
-
----
-
 <Tabs>
   <Active>
     <Text nodeId="MQlp_X_Gm" fontSize="18px">
@@ -966,6 +442,10 @@
     </Text>
   </Active>
 </Tabs>
+
+
+---
+
 <CardsUseCasesCards>
   <Variant1>
     <Stack>
@@ -1014,6 +494,10 @@
     </Stack>
   </Variant1>
 </CardsTestimonialCard>
+
+
+---
+
 <InteractiveCustomerStories>
   <First>
     <SectionButtons>
@@ -1038,3 +522,553 @@
     </Retail>
   </First>
 </InteractiveCustomerStories>
+<ValidationSection>
+  <MainContainer>
+    <Title>
+      <Text nodeId="tX_L_ALb6" fontSize="22px">
+        Trusted by innovative companies
+      </Text>
+    </Title>
+  </MainContainer>
+</ValidationSection>
+
+
+---
+
+<HighlightsSection>
+  <MainContainer>
+    <Title>
+      <Text nodeId="hy_JwJhGY" fontSize="36px">
+        Notion as CMS
+      </Text>
+      <Text nodeId="sAFsxQSEQ" fontSize="20px">
+        Keep your websites content in Notion
+      </Text>
+    </Title>
+    <Cards>
+      <Stack>
+        <Stack>
+          <Text nodeId="eB34y4HU5" fontSize="22px">
+            Team Collaboration
+          </Text>
+          <Text nodeId="XeGLCuAop" fontSize="18px">
+            All your team members can edit and publish new content super fast
+          </Text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <Text nodeId="sBVefc7DT" fontSize="22px">
+            Content Management
+          </Text>
+          <Text nodeId="ll5vUXQpu" fontSize="18px">
+            Use Notion to manage content for docs, blog, changelog and roadmap
+          </Text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <Text nodeId="MWvXB6cQF" fontSize="22px">
+            Multilingual Support
+          </Text>
+          <Text nodeId="jG6I0z0wh" fontSize="18px">
+            Enable your AI agents to communicate in multiple languages, ensuring customer support in their preferred language.
+          </Text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <Text nodeId="fuNHEaT5j" fontSize="22px">
+            Custom Language Models
+          </Text>
+          <Text nodeId="ezEK7hA9Q" fontSize="18px">
+            Utilize your own language models to develop a bot tailored to your specific context and needs
+          </Text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <Text nodeId="KNIRMdbTh" fontSize="22px">
+            Human transfer
+          </Text>
+          <Text nodeId="yAeVifIPd" fontSize="18px">
+            Our bots can hold the line for you and seamlessly transfer the call to a human agent when necessary.
+          </Text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <Text nodeId="odCJzGgrn" fontSize="22px">
+            Knowledge Integration
+          </Text>
+          <Text nodeId="sD0y9OiAz" fontSize="18px">
+            Enhance your bot&apos;s intelligence by integrating knowledge from various sources, making it more contextually aware and smarter.
+          </Text>
+        </Stack>
+      </Stack>
+    </Cards>
+  </MainContainer>
+</HighlightsSection>
+
+
+---
+
+<FeaturedTestimonial>
+  <Banner>
+    <Stack>
+      <Text nodeId="Iv88w4YBd" fontSize="28px">
+        &quot;We&apos;re using Notaku Docs for formcarry.com, and it&apos;s a blessing. When editing something we just change the Notion document and documentation got the changes.&quot;
+      </Text>
+    </Stack>
+    <Stack>
+      <Text nodeId="MzJhPGNQw" fontSize="18px">
+        @nusualabuga, Founder of formcarry.com
+      </Text>
+    </Stack>
+  </Banner>
+</FeaturedTestimonial>
+<Feature1>
+  <MainContainer>
+    <Stack>
+      <Stack>
+        <Stack>
+          <Stack>
+            <Text nodeId="Mv5VPuUut" fontSize="22px">
+              Daniel
+            </Text>
+            <Text nodeId="Qp3qpVViU" fontSize="18px">
+              Male, American voice
+            </Text>
+          </Stack>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <Stack>
+            <Text nodeId="GHrGNNC8P" fontSize="22px">
+              Ignacio
+            </Text>
+            <Text nodeId="SrVUiQEMc" fontSize="18px">
+              Male, Spanish voice
+            </Text>
+          </Stack>
+        </Stack>
+      </Stack>
+    </Stack>
+    <Content>
+      <Tag nodeId="rc97g95ix" controlKey="title">
+        Voice cloning
+      </Tag>
+      <Title>
+        <Text nodeId="sbfAXy0rS" fontSize="36px">
+          Call your customers with AI agents that sound human
+        </Text>
+        <Text nodeId="tUSaXqBVK" fontSize="20px">
+          ApiFlow&apos;s advanced voice cloning technology allows you to create unique, human-like voices tailored to your brand. Seamlessly integrate external APIs to inject live data into calls, enhancing the customer experience and driving business success.
+        </Text>
+      </Title>
+      <Stats>
+        <CardsStatsCard nodeId="zmhjf97kc" controlKey="title">
+          239+ voices to choose from
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="no3yve5ws" controlKey="description">
+          Our voices library features over 200 unique voices to pick from
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="wcfi0rca1" controlKey="title">
+          10+ different languages
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="m8vhtobrt" controlKey="description">
+          Our library of voices features 10+ languages &amp; it&apos;s growing
+        </CardsStatsCard>
+      </Stats>
+    </Content>
+  </MainContainer>
+</Feature1>
+
+
+---
+
+<Feature2>
+  <MainContainer>
+    <Content>
+      <Tag nodeId="8hr96qm5k" controlKey="title">
+        Drag &amp; Drop builder
+      </Tag>
+      <Title>
+        <Text nodeId="bCkWUFKVa" fontSize="36px">
+          Deploy agents in minutes with drag &amp; drop builder
+        </Text>
+        <Text nodeId="Jh7mUSlNg" fontSize="20px">
+          Seamlessly integrate AI models, APIs, and data sources to create powerful agents that automate tasks and enhance your workflow. With our user-friendly interface, you can build and deploy agents quickly and efficiently, without requiring extensive coding knowledge.
+        </Text>
+      </Title>
+      <Stats>
+        <CardsStatsCard nodeId="lzsp1gznt" controlKey="title">
+          No-code tools
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="vc3io6dve" controlKey="description">
+          Create agents without writing a single line of code
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="yyjjskgbf" controlKey="title">
+          Conversation paths
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="4gcl8dwlt" controlKey="description">
+          Building custom conversation paths based on your use-case
+        </CardsStatsCard>
+      </Stats>
+    </Content>
+    <Visual>
+      <FormContainers>
+        <Form1>
+          <Stack>
+            <Stack>
+              <Text nodeId="lwWOoQI_A" fontSize="18px">
+                Contact form submitted
+              </Text>
+              <Text nodeId="rEtqC7S9u" fontSize="18px">
+                Hubspot
+              </Text>
+            </Stack>
+          </Stack>
+        </Form1>
+      </FormContainers>
+      <Form2Container>
+        <Form>
+          <Stack>
+            <Stack>
+              <Text nodeId="VPK9iseTn" fontSize="18px">
+                Make a phone call
+              </Text>
+              <Text nodeId="aWjP4bXae" fontSize="18px">
+                ApiFlow
+              </Text>
+            </Stack>
+          </Stack>
+        </Form>
+      </Form2Container>
+    </Visual>
+  </MainContainer>
+</Feature2>
+
+
+---
+
+<Feature3>
+  <MainContainer>
+    <Content>
+      <Tag nodeId="27qbbrdsq" controlKey="title">
+        Integrations
+      </Tag>
+      <Title>
+        <Text nodeId="da3H2Ctw6" fontSize="36px">
+          Integrate with 6,000+ tools
+        </Text>
+        <Text nodeId="i4AkEmlkJ" fontSize="20px">
+          Take your workflow to the next level by integrating with over 6,000 tools and applications. Our platform offers a vast ecosystem of integrations, allowing you to automate tasks, streamline processes, and enhance collaboration across your entire tech stack.
+        </Text>
+      </Title>
+      <Stats>
+        <CardsStatsCard nodeId="8y5lqos5s" controlKey="title">
+          6000+ integrations
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="j8rcdcdqr" controlKey="description">
+          Integrate with over 6,000+ tools with ease
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="zy58qv8ys" controlKey="title">
+          Zapier &amp; Make integrations
+        </CardsStatsCard>
+        <CardsStatsCard nodeId="68wgtebxr" controlKey="description">
+          ApiFlow integrates with both Zapier and Make
+        </CardsStatsCard>
+      </Stats>
+    </Content>
+  </MainContainer>
+</Feature3>
+<CtaSection>
+  <Banner>
+    <Stack>
+      <Text nodeId="JYfxn0Glj" fontSize="44px">
+        Start building your AI agents today
+      </Text>
+      <Text nodeId="zYFwmGaAq" fontSize="20px">
+        Join 10,000+ developers building AI agents with ApiFlow
+      </Text>
+    </Stack>
+    <ButtonsPrimary nodeId="8zjdpjrgq" controlKey="buttonText">
+      Get started for free
+    </ButtonsPrimary>
+  </Banner>
+</CtaSection>
+
+
+---
+
+<UseCasesSection>
+  <MainContainer>
+    <Header>
+      <Tag nodeId="5rgdw0wbm" controlKey="title">
+        Use cases
+      </Tag>
+      <Title>
+        <Text nodeId="mxsJPW9K7" fontSize="36px">
+          One solution, unlimited use-cases
+        </Text>
+        <Text nodeId="MLv5E2Aij" fontSize="20px">
+          Here&apos;s what sets our agents apart
+        </Text>
+      </Title>
+    </Header>
+  </MainContainer>
+</UseCasesSection>
+<HighlightsSection>
+  <MainContainer>
+    <Header>
+      <Tag nodeId="m3e8wqhr3" controlKey="title">
+        Implementation
+      </Tag>
+      <Title>
+        <Text nodeId="uozEn5iaz" fontSize="36px">
+          Get started with less than 10 lines of code
+        </Text>
+        <Text nodeId="s6ERP14Ke" fontSize="20px">
+          Copy the API implementation code and start your first call.
+        </Text>
+      </Title>
+    </Header>
+  </MainContainer>
+</HighlightsSection>
+<CtaSection>
+  <Banner>
+    <Stack>
+      <Text nodeId="WauVYAAZm" fontSize="44px">
+        Join 10,000+ developers building AI agents
+      </Text>
+      <Text nodeId="i9DvRm_0T" fontSize="20px">
+        Get started with ApiFlow for free today.
+      </Text>
+    </Stack>
+    <ButtonsPrimary nodeId="mkxxjngue" controlKey="buttonText">
+      Get started for free
+    </ButtonsPrimary>
+  </Banner>
+</CtaSection>
+<PricingSection>
+  <MainContainer>
+    <Header>
+      <Tag nodeId="xue30tzij" controlKey="title">
+        Pricing
+      </Tag>
+      <Title>
+        <Text nodeId="el9jTFEq5" fontSize="36px">
+          ApiFlow costs $0.10 per minute
+        </Text>
+        <Text nodeId="OyNNOkpDI" fontSize="20px">
+          Pay only for what you use. You can estimate your monthly bill using the calculator below.
+        </Text>
+      </Title>
+    </Header>
+    <Calculator nodeId="m4vckhkj3" controlKey="title">
+      ApiFlow cost estimator
+    </Calculator>
+    <ButtonsPrimary nodeId="lkhnt52l9" controlKey="buttonText">
+      Learn about Pricing
+    </ButtonsPrimary>
+  </MainContainer>
+</PricingSection>
+
+
+---
+
+<TestimonialsSection>
+  <MainContainer>
+    <Title>
+      <Text nodeId="oNsqA9pIi" fontSize="36px">
+        Companies love building with ApiFlow
+      </Text>
+      <Text nodeId="gzfM_SKeK" fontSize="20px">
+        Here&apos;s what our customers say about us
+      </Text>
+    </Title>
+  </MainContainer>
+</TestimonialsSection>
+<CtaSection>
+  <Banner>
+    <Stack>
+      <Text nodeId="aGvHtpKGp" fontSize="44px">
+        Join 10,000+ developers building AI agents
+      </Text>
+      <Text nodeId="SEUZc6QZ8" fontSize="20px">
+        Get started with ApiFlow for free today.
+      </Text>
+    </Stack>
+    <ButtonsPrimary nodeId="ayvhuvh9n" controlKey="buttonText">
+      Get started for free
+    </ButtonsPrimary>
+  </Banner>
+</CtaSection>
+<UseCasesSection>
+  <MainContainer>
+    <Header>
+      <Tag nodeId="3340d62b8" controlKey="title">
+        Customer stories
+      </Tag>
+      <Title>
+        <Text nodeId="wNJFSQTyC" fontSize="36px">
+          How businesses are using ApiFlow
+        </Text>
+        <Text nodeId="W3jKT_lTF" fontSize="20px">
+          Learn how business from different industries are using our platform to automate processes.
+        </Text>
+      </Title>
+    </Header>
+  </MainContainer>
+</UseCasesSection>
+<BlogsSection>
+  <MainContainer>
+    <Header>
+      <Tag nodeId="42bya2l82" controlKey="title">
+        Blog
+      </Tag>
+      <Title>
+        <Text nodeId="gsIV7HWDV" fontSize="36px">
+          Read our latest pieces
+        </Text>
+        <Text nodeId="p7mlpzQqY" fontSize="20px">
+          Check out our latest pieces on Ai Voice agents &amp; APIs.
+        </Text>
+      </Title>
+    </Header>
+    <BlogPosts>
+      <CardsBlogCard nodeId="d1xe4w6wp" controlKey="title">
+        Making AI Voice Agent APIs Inclusive
+      </CardsBlogCard>
+      <CardsBlogCard nodeId="yus2ho3hk" controlKey="description">
+        Ensuring Voice Technology Reaches Everyone
+      </CardsBlogCard>
+    </BlogPosts>
+    <ButtonsPrimary nodeId="9ugx4gs9f" controlKey="buttonText">
+      See all blogs
+    </ButtonsPrimary>
+  </MainContainer>
+</BlogsSection>
+
+
+---
+
+<FaqSection>
+  <MainContainer>
+    <Header>
+      <Tag nodeId="xodc133i7" controlKey="title">
+        FAQs
+      </Tag>
+      <Title>
+        <Text nodeId="nV1K98pyo" fontSize="36px">
+          Questions? We got answers
+        </Text>
+        <Text nodeId="l4i6Srxvv" fontSize="20px">
+          Check out the answers to most frequently asked questions.
+        </Text>
+      </Title>
+    </Header>
+  </MainContainer>
+</FaqSection>
+<FooterBottom>
+  <MainContainer>
+    <Text nodeId="ATDzUR2Uh" fontSize="16px">
+      © Notaku. All rights reserved
+    </Text>
+    <Stack>
+      <Text nodeId="JEOXZnb8F" href="/terms-conditions" fontSize="16px">
+        Status
+      </Text>
+      <Text nodeId="wT3nbZ8v7" href="/privacy-policy" fontSize="16px">
+        Twitter
+      </Text>
+    </Stack>
+  </MainContainer>
+</FooterBottom>
+
+
+---
+
+<TopPart>
+  <LogoAuthor>
+    <Logo>
+      <Text nodeId="inGJDsmYO" fontSize="16px">
+        Publish awesome websites with Notion
+      </Text>
+    </Logo>
+    <Author>
+      <Text nodeId="dNTXAT24e" fontSize="16px">
+        By Tommy
+      </Text>
+    </Author>
+  </LogoAuthor>
+  <SiteNavigation>
+    <Products>
+      <Text nodeId="Oe6VzyYPt" fontSize="16px">
+        Company
+      </Text>
+      <Text nodeId="qqoXrPNMS" href="/pricing" fontSize="16px">
+        Terms
+      </Text>
+      <Text nodeId="l7OQq4utu" href="/contact-sales" fontSize="16px">
+        Privacy
+      </Text>
+      <Text nodeId="bikySphEg" href="/contact-sales-2" fontSize="16px">
+        Affiliate Program
+      </Text>
+      <Text nodeId="iHjW2DIUD" href="/support" fontSize="16px">
+        Mission
+      </Text>
+    </Products>
+    <Resources>
+      <Text nodeId="f78Cl8aMt" fontSize="16px">
+        Resources
+      </Text>
+      <Text nodeId="j61eXvWu4" href="/docs" fontSize="16px">
+        Docs
+      </Text>
+      <Text nodeId="sLk4tpNBu" href="/docs/getting-started" fontSize="16px">
+        Blog
+      </Text>
+      <Text nodeId="SXH0QhPQh" href="/blog" fontSize="16px">
+        Icons Generator
+      </Text>
+      <Text nodeId="QAkShYN00" href="/blog/unleashing-the-power-of-voice-a-guide-to-ai-voice-agent-apis" fontSize="16px">
+        Showcase
+      </Text>
+    </Resources>
+    <OtherPages>
+      <Text nodeId="Ivgzd60Bz" fontSize="16px">
+        Comparisons
+      </Text>
+      <Text nodeId="LTv8KqkOs" href="/404" fontSize="16px">
+        Helpkit
+      </Text>
+      <Text nodeId="VwbqQlOzf" href="/sign-in" fontSize="16px">
+        Feather
+      </Text>
+      <Text nodeId="vAfs7XlmL" href="/sign-up" fontSize="16px">
+        GitBook
+      </Text>
+    </OtherPages>
+    <Template>
+      <Text nodeId="iIMqGQYQg" fontSize="16px">
+        Template
+      </Text>
+      <Text nodeId="I8u5j7Dyz" href="https://framer.ing/aiwingman" fontSize="16px">
+        Features
+      </Text>
+      <Text nodeId="FVHbAv5Yt" href="https://framer.ing/tutorials" fontSize="16px">
+        Tutorials
+      </Text>
+      <Text nodeId="s4fAfy6EV" href="https://shop.framer.ing/buy/6ea945c7-6d54-49b0-83cd-f16cc4dde53e" fontSize="16px">
+        Purchase
+      </Text>
+      <Text nodeId="etn7aFFvg" href="https://framer.ing/" fontSize="16px">
+        All templates
+      </Text>
+    </Template>
+  </SiteNavigation>
+</TopPart>

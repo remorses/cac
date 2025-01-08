@@ -1,5 +1,9 @@
 import { expect, test } from 'vitest'
-import { cleanupOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
+import {
+    bfsOldTextTree,
+    cleanupOldTextTree,
+    oldTextTreeToXml,
+} from 'website/src/lib/utils'
 
 import { splitTreeInChunks } from 'website/src/lib/rewrite'
 import fs from 'fs'
@@ -17,16 +21,25 @@ import path from 'path'
 test('splitTreeInChunks long', () => {
     let folder = path.resolve(__dirname, 'evaluation/xml/')
     const xml = fs.readFileSync(path.resolve(folder, 'long.xml'), 'utf8')
+    const max = 30
     const tree = xmlToOldTextTree(xml)
     fs.writeFileSync(
         path.resolve(folder, './long-tree.json'),
         JSON.stringify(tree, null, 2),
     )
-    const res = splitTreeInChunks(tree)
+    const chunks = splitTreeInChunks(tree, max)
+
     fs.writeFileSync(
         path.resolve(folder, './long-chunked.xml'),
-        res.map((res) => oldTextTreeToXml(res)).join('\n\n---\n\n'),
+        chunks.map((res) => oldTextTreeToXml(res)).join('\n\n---\n\n'),
     )
+    for (let chunk of chunks) {
+        const nodes = bfsOldTextTree(chunk)
+        expect(nodes.length).toBeLessThanOrEqual(max + 5)
+        const withNodeId = nodes.filter((x) => x.nodeId)
+        expect(nodes.length).toBeGreaterThan(10)
+        expect(withNodeId.length).toBeGreaterThan(3)
+    }
 })
 
 test('extractObjectsFromXmlContent', ({ expect }) => {
@@ -314,41 +327,38 @@ test('splitTreeInChunks', () => {
     )
     expect(result).toMatchInlineSnapshot(`
       [
-        "<AiKitNav>
-        <Stack>
-          <AiKitNavigationNavTopItem nodeId="A3ZxD9MzX">
-            Features
-          </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
-            Developers
-          </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem nodeId="hV4y0l50l">
-            Company
-          </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
-            Blog
-          </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
-            Changelog
-          </AiKitNavigationNavTopItem>
-        </Stack>
-      </AiKitNav>
-      <NavigationTwitterProfilePreview>
-        <Closed>
-          <Link>
-            <Text nodeId="l9D2UPiVw" fontSize="16px">
-              Twitter
-            </Text>
-          </Link>
-        </Closed>
-      </NavigationTwitterProfilePreview>
-      <RemoveButton>
+        "<RemoveButton>
         <Variant1>
           <Text nodeId="xRh2ZBpJM">
             Sign Up With Google
           </Text>
         </Variant1>
       </RemoveButton>
+      ",
+        "<Closed>
+        <Link>
+          <Text nodeId="l9D2UPiVw" fontSize="16px">
+            Twitter
+          </Text>
+        </Link>
+      </Closed>
+      ",
+        "<AiKitNavigationNavTopItem nodeId="A3ZxD9MzX">
+        Features
+      </AiKitNavigationNavTopItem>
+      <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
+        Developers
+      </AiKitNavigationNavTopItem>
+      ",
+        "<AiKitNavigationNavTopItem nodeId="hV4y0l50l">
+        Company
+      </AiKitNavigationNavTopItem>
+      <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
+        Blog
+      </AiKitNavigationNavTopItem>
+      <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
+        Changelog
+      </AiKitNavigationNavTopItem>
       ",
       ]
     `)

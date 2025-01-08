@@ -26,6 +26,8 @@ import {
 import { extractObjectsFromXmlContent } from 'website/src/lib/xml'
 import { anthropic } from '@ai-sdk/anthropic'
 
+export const ITEMS_PER_ITERATION = 30
+
 export type OldTextTree = Array<{
     name?: string | null
     content?: string | null
@@ -36,6 +38,7 @@ export type OldTextTree = Array<{
         href?: string | null
     }
     children?: OldTextTree
+    count?: number
     // index: number;
 }>
 
@@ -179,9 +182,6 @@ ${description || 'No specific instructions provided'}
 
 `
 }
-
-export const ITEMS_PER_ITERATION = 30
-
 function findFirstChildrenLayer(tree: OldTextTree): {
     layer: OldTextTree
     parents: OldTextTree
@@ -193,61 +193,6 @@ function findFirstChildrenLayer(tree: OldTextTree): {
         currentLayer = currentLayer[0].children
     }
     return { layer: currentLayer, parents }
-}
-// Time Complexity: O(n)
-// - findFirstChildrenLayer: O(h) where h is height of tree, worst case O(n)
-// - Main loop: O(n) to iterate through all nodes
-// - bfsOldTextTree: O(n) to traverse nodes
-// - createChunkWithParents: O(h) where h is height of parents array
-// Overall complexity dominated by the O(n) operations
-export function splitTreeInChunks(
-    tree: OldTextTree,
-    maxChunkTreeSize: number = ITEMS_PER_ITERATION,
-): OldTextTree[] {
-    let result: OldTextTree[] = []
-    let buffer: OldTextTree = []
-    let currentNodeCount = 0 // Optimization: Keep running count
-
-    // Find the first layer with more than one child
-    const { layer: currentLayer, parents } = findFirstChildrenLayer(tree)
-
-    for (const node of currentLayer) {
-        // Count nodes with nodeId in current node
-        const nodeCount = bfsOldTextTree([node]).filter((x) => x.nodeId).length
-        currentNodeCount += nodeCount
-
-        if (currentNodeCount >= maxChunkTreeSize) {
-            const chunk = createChunkWithParents(parents, [...buffer, node])
-            result.push(chunk)
-            buffer = []
-            currentNodeCount = 0
-        } else {
-            buffer.push(node)
-        }
-    }
-
-    // Add remaining buffer as a chunk if not empty
-    if (buffer.length > 0) {
-        const chunk = createChunkWithParents(parents, buffer)
-        result.push(chunk)
-    }
-
-    return result
-}
-
-function createChunkWithParents(
-    parents: OldTextTree,
-    children: OldTextTree,
-): OldTextTree {
-    if (parents.length === 0) {
-        return children
-    }
-
-    let currentParent = { ...parents[parents.length - 1], children }
-    for (let i = parents.length - 2; i >= 0; i--) {
-        currentParent = { ...parents[i], children: [currentParent] }
-    }
-    return [currentParent]
 }
 
 type NewNode = {
@@ -363,6 +308,124 @@ export async function* rewriteTemplateChunk({
     yield { type: 'fullXml' as const, fullXml: fullText }
 
     return allObjects
+}
+
+function cloneTreeNode(node: OldTextTree[number]): OldTextTree[number] {
+    return {
+        ...node,
+        children: node.children ? node.children.map(cloneTreeNode) : undefined,
+    }
+}
+
+export function mergeCloseChunks(
+    chunks: OldTextTree[],
+    maxSize: number,
+): OldTextTree[] {
+    if (chunks.length <= 1) {
+        return chunks
+    }
+
+    let currentChunks = [...chunks]
+    let hadMerges = true
+
+    while (hadMerges) {
+        hadMerges = false
+        const result: OldTextTree[] = []
+        let i = 0
+
+        while (i < currentChunks.length) {
+            const currentChunk = currentChunks[i]
+            const currentSize = currentChunk.reduce(
+                (sum, node) => sum + (node.count || 0),
+                0,
+            )
+
+            // Look ahead to next chunk
+            if (i + 1 < currentChunks.length) {
+                const nextChunk = currentChunks[i + 1]
+                const nextSize = nextChunk.reduce(
+                    (sum, node) => sum + (node.count || 0),
+                    0,
+                )
+
+                // If we can merge these chunks
+                if (currentSize + nextSize <= maxSize) {
+                    result.push([...currentChunk, ...nextChunk])
+                    hadMerges = true
+                    i += 2 // Skip next chunk since we merged it
+                    continue
+                }
+            }
+
+            // If we couldn't merge, keep current chunk as is
+            result.push(currentChunk)
+            i++
+        }
+
+        currentChunks = result
+    }
+
+    return currentChunks
+}
+
+export function splitTreeInChunks(tree: OldTextTree, maxSize: number) {
+    const result: OldTextTree[] = []
+
+    // If the tree is empty, return empty result
+    if (tree.length === 0) return result
+
+    // First pass - count all nodes and store in count field
+    function countNodes(node: OldTextTree[number]): number {
+        let count = 1
+        if (node.children) {
+            for (const child of node.children) {
+                count += countNodes(child)
+            }
+        }
+        node.count = count
+        return count
+    }
+
+    // Count nodes for all trees in the input
+    for (const rootNode of tree) {
+        countNodes(rootNode)
+    }
+
+    // Queue for BFS
+    const queue: OldTextTree[number][] = [...tree]
+    // Set to keep track of nodes we've already processed
+    const processed = new Set<string>()
+
+    while (queue.length > 0) {
+        const currentNode = queue.shift()!
+
+        // Skip if we've already processed this node
+        if (currentNode.nodeId && processed.has(currentNode.nodeId)) {
+            continue
+        }
+
+        const size = currentNode.count!
+
+        if (size <= maxSize) {
+            // If the subtree is small enough, add it to results
+            result.push([currentNode])
+            // Mark all descendants as processed
+            const markProcessed = (node: OldTextTree[number]) => {
+                if (node.nodeId) processed.add(node.nodeId)
+                if (node.children) {
+                    node.children.forEach(markProcessed)
+                }
+            }
+            markProcessed(currentNode)
+        } else {
+            // If the subtree is too large, add its children to the queue
+            if (currentNode.children) {
+                queue.push(...currentNode.children)
+            }
+        }
+    }
+
+    return mergeCloseChunks(result, maxSize)
 }
 
 export async function* rewriteTemplateContent({
