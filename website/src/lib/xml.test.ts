@@ -5,7 +5,7 @@ import {
     oldTextTreeToXml,
 } from 'website/src/lib/utils'
 
-import { splitTreeInChunks } from 'website/src/lib/rewrite'
+import { ITEMS_PER_ITERATION, splitTreeInChunks } from 'website/src/lib/rewrite'
 import fs from 'fs'
 import dedent from 'dedent'
 import { default as domSerializer } from 'dom-serializer'
@@ -21,7 +21,7 @@ import path from 'path'
 test('splitTreeInChunks long', () => {
     let folder = path.resolve(__dirname, 'evaluation/xml/')
     const xml = fs.readFileSync(path.resolve(folder, 'long.xml'), 'utf8')
-    const max = 30
+    const max = ITEMS_PER_ITERATION
     const tree = xmlToOldTextTree(xml)
     fs.writeFileSync(
         path.resolve(folder, './long-tree.json'),
@@ -31,8 +31,16 @@ test('splitTreeInChunks long', () => {
 
     fs.writeFileSync(
         path.resolve(folder, './long-chunked.xml'),
-        chunks.map((res) => oldTextTreeToXml(res)).join('\n\n---\n\n'),
+        chunks
+            .map(
+                (res) =>
+                    `<-- ${res.reduce((acc, x) => acc + x.count!, 0)} -->\n` +
+                    oldTextTreeToXml(res),
+            )
+            .join('\n\n---\n\n'),
     )
+
+    // Additional chunk size checks
     for (let chunk of chunks) {
         const nodes = bfsOldTextTree(chunk)
         expect(nodes.length).toBeLessThanOrEqual(max + 5)
@@ -40,6 +48,20 @@ test('splitTreeInChunks long', () => {
         expect(nodes.length).toBeGreaterThan(10)
         expect(withNodeId.length).toBeGreaterThan(3)
     }
+
+    // Get all nodeIds from original tree
+    const originalNodes = bfsOldTextTree(tree)
+    const originalNodeIds = originalNodes
+        .filter((x) => x.nodeId)
+        .map((x) => x.nodeId)
+
+    // Get all nodeIds from chunked trees
+    const chunkedNodeIds = bfsOldTextTree(chunks.flat())
+        .filter((x) => x.nodeId)
+        .map((x) => x.nodeId)
+
+    // Verify nodeIds match
+    expect(originalNodeIds).toEqual(chunkedNodeIds)
 })
 
 test('extractObjectsFromXmlContent', ({ expect }) => {
@@ -327,6 +349,56 @@ test('splitTreeInChunks', () => {
     )
     expect(result).toMatchInlineSnapshot(`
       [
+        "<AiKitNav>
+        <Stack>
+          <AiKitNavigationNavTopItem nodeId="A3ZxD9MzX">
+            Features
+          </AiKitNavigationNavTopItem>
+        </Stack>
+      </AiKitNav>
+      ",
+        "<AiKitNav>
+        <Stack>
+          <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
+            Developers
+          </AiKitNavigationNavTopItem>
+        </Stack>
+      </AiKitNav>
+      ",
+        "<AiKitNav>
+        <Stack>
+          <AiKitNavigationNavTopItem nodeId="hV4y0l50l">
+            Company
+          </AiKitNavigationNavTopItem>
+        </Stack>
+      </AiKitNav>
+      ",
+        "<AiKitNav>
+        <Stack>
+          <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
+            Blog
+          </AiKitNavigationNavTopItem>
+        </Stack>
+      </AiKitNav>
+      ",
+        "<AiKitNav>
+        <Stack>
+          <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
+            Changelog
+          </AiKitNavigationNavTopItem>
+        </Stack>
+      </AiKitNav>
+      ",
+        "<NavigationTwitterProfilePreview>
+        <Closed>
+          <Link>
+            <Text nodeId="l9D2UPiVw" fontSize="16px">
+              Twitter
+            </Text>
+          </Link>
+        </Closed>
+      </NavigationTwitterProfilePreview>
+      ",
         "<RemoveButton>
         <Variant1>
           <Text nodeId="xRh2ZBpJM">
@@ -334,31 +406,6 @@ test('splitTreeInChunks', () => {
           </Text>
         </Variant1>
       </RemoveButton>
-      ",
-        "<Closed>
-        <Link>
-          <Text nodeId="l9D2UPiVw" fontSize="16px">
-            Twitter
-          </Text>
-        </Link>
-      </Closed>
-      ",
-        "<AiKitNavigationNavTopItem nodeId="A3ZxD9MzX">
-        Features
-      </AiKitNavigationNavTopItem>
-      <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
-        Developers
-      </AiKitNavigationNavTopItem>
-      ",
-        "<AiKitNavigationNavTopItem nodeId="hV4y0l50l">
-        Company
-      </AiKitNavigationNavTopItem>
-      <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
-        Blog
-      </AiKitNavigationNavTopItem>
-      <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
-        Changelog
-      </AiKitNavigationNavTopItem>
       ",
       ]
     `)

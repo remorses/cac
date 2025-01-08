@@ -1,7 +1,7 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 import camelCase from 'camelCase'
-import { OldTextTree } from 'website/src/lib/rewrite'
+import { addNodeCount, OldTextTree } from 'website/src/lib/rewrite'
 
 interface RewriteOldTextContentParams {
     xml: string
@@ -194,6 +194,7 @@ export function xmlToOldTextTree(xml: string): OldTextTree {
         }
 
         // Return all nodes, not just ones with nodeId
+
         return result
     }
 
@@ -201,7 +202,7 @@ export function xmlToOldTextTree(xml: string): OldTextTree {
         .filter((node: any) => node.type === 'tag') // Only process tag nodes
         .map(processNode)
         .filter((n): n is OldTextTree[number] => n !== null)
-    return rootNodes
+    return addNodeCount(rootNodes)
 }
 export function oldTextTreeToXml(
     tree: OldTextTree,
@@ -213,7 +214,7 @@ export function oldTextTreeToXml(
         if (!node) {
             continue
         }
-        
+
         // Skip nodes with empty name
         if (node.name === '') {
             if (node.content) {
