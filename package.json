@@ -5,7 +5,7 @@
         "test": "NODE_ENV=test vitest",
         "prepare": "pnpm --filter unframer build",
         "watch": "pnpm -r watch",
-        "check": "pnpm -r --parallel check",
+        "typecheck": "pnpm -r --parallel typecheck",
         "build": "pnpm -r build",
         "release": "pnpm build && changeset"
     },

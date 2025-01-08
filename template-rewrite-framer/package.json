@@ -6,6 +6,7 @@
         "dev": "doppler run -- vite",
         "check": "pnpm tsc --incremental",
         "start": "vite preview --port 5173",
+        "typecheck": "pnpm tsc --noEmit --incremental",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "deployment": "pnpm build && pnpm wrangler pages deploy dist",
         "preview": "vite preview"
