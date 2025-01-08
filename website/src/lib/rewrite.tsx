@@ -344,6 +344,48 @@ export function mergeCloseChunks(
 
     return result
 }
+export function mergeChunksTooSmall(
+    chunks: OldTextTree[],
+    maxSize: number,
+): OldTextTree[] {
+    // If we have 1 or fewer chunks, just return them as-is
+    if (chunks.length <= 1) {
+        return chunks
+    }
+
+    const minSize = maxSize / 3
+    let result = [...chunks]
+
+    // Find indices of chunks that are too small
+    const smallChunkIndices = result
+        .map((chunk, index) => ({ size: getChunkSize(chunk), index }))
+        .filter(({ size }) => size < minSize)
+        .map(({ index }) => index)
+
+    // For each small chunk
+    for (const index of smallChunkIndices) {
+        // Skip if this chunk was already merged
+        if (!result[index]) continue
+
+        const currentChunk = result[index]
+        const nextChunk = result[index + 1]
+
+        // Skip if there's no next chunk to merge with
+        if (!nextChunk) continue
+
+        const combinedSize =
+            getChunkSize(currentChunk) + getChunkSize(nextChunk)
+
+        // Only merge if combined size is less than maxSize * 1.4
+        if (combinedSize < maxSize * 1.3) {
+            result[index] = [...currentChunk, ...nextChunk]
+            // Remove the chunk we merged with
+            result.splice(index + 1, 1)
+        }
+    }
+
+    return result
+}
 
 // Helper function to calculate total size of a chunk
 function getChunkSize(chunk: OldTextTree): number {
@@ -386,6 +428,7 @@ export function splitTreeInChunks(
     while (currentChunks.length !== prevLength) {
         prevLength = currentChunks.length
         currentChunks = mergeCloseChunks(currentChunks, maxChunkTreeSize)
+        currentChunks = mergeChunksTooSmall(currentChunks, maxChunkTreeSize)
     }
     return currentChunks
 }

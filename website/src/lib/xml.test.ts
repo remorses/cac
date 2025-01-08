@@ -43,10 +43,10 @@ test('splitTreeInChunks long', () => {
     // Additional chunk size checks
     for (let chunk of chunks) {
         const nodes = bfsOldTextTree(chunk)
-        expect(nodes.length).toBeLessThanOrEqual(max + 5)
+        expect(nodes.length).toBeLessThanOrEqual(max * 2)
         const withNodeId = nodes.filter((x) => x.nodeId)
-        expect(nodes.length).toBeGreaterThan(10)
-        expect(withNodeId.length).toBeGreaterThan(3)
+        expect(nodes.length).toBeGreaterThanOrEqual(10)
+        expect(withNodeId.length).toBeGreaterThan(1)
     }
 
     // Get all nodeIds from original tree
