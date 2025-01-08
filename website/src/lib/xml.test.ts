@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { cleanupOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
 
 import { splitTreeInChunks } from 'website/src/lib/rewrite'
-
+import fs from 'fs'
 import dedent from 'dedent'
 import { default as domSerializer } from 'dom-serializer'
 import { DomHandler } from 'domhandler'
@@ -10,7 +10,24 @@ import { ElementType, Parser } from 'htmlparser2'
 import {
     extractObjectsFromXmlContent,
     rewriteXmlContent,
+    xmlToOldTextTree,
 } from 'website/src/lib/xml'
+import path from 'path'
+
+test('splitTreeInChunks long', () => {
+    let folder = path.resolve(__dirname, 'evaluation/xml/')
+    const xml = fs.readFileSync(path.resolve(folder, 'long.xml'), 'utf8')
+    const tree = xmlToOldTextTree(xml)
+    fs.writeFileSync(
+        path.resolve(folder, './long-tree.json'),
+        JSON.stringify(tree, null, 2),
+    )
+    const res = splitTreeInChunks(tree)
+    fs.writeFileSync(
+        path.resolve(folder, './long-chunked.xml'),
+        res.map((res) => oldTextTreeToXml(res)).join('\n\n---\n\n'),
+    )
+})
 
 test('extractObjectsFromXmlContent', ({ expect }) => {
     const xml = dedent`
@@ -316,8 +333,7 @@ test('splitTreeInChunks', () => {
           </AiKitNavigationNavTopItem>
         </Stack>
       </AiKitNav>
-      ",
-        "<NavigationTwitterProfilePreview>
+      <NavigationTwitterProfilePreview>
         <Closed>
           <Link>
             <Text nodeId="l9D2UPiVw" fontSize="16px">

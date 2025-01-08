@@ -1,7 +1,10 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
+import { DomHandler, Parser, ElementType } from 'htmlparser2'
+import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
 
 import { env } from './env'
+export { oldTextTreeToXml } from './xml'
 
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
@@ -177,83 +180,6 @@ export function bfsOldTextTree(tree: OldTextTree): OldTextTree {
     }
 
     return result
-}
-
-export function oldTextTreeToXml(
-    tree: OldTextTree,
-    indent: string = '',
-): string {
-    let xml = ''
-
-    for (const node of tree) {
-        if (!node) {
-            continue
-        }
-        let name = node.name || 'Container'
-        let nodeName =
-            camelCase(name?.replace(/[^a-zA-Z0-9\s_-]+/g, ' ') || 'None', {
-                pascalCase: true,
-            }) || 'Node'
-
-        // Truncate nodeName if it's too long (e.g., more than 50 characters)
-        let max = 60
-        if (nodeName.length > max) {
-            const lastUnderscoreIndex = nodeName.indexOf('_', max)
-            if (lastUnderscoreIndex > 0) {
-                nodeName = nodeName.substring(0, lastUnderscoreIndex)
-            } else {
-                nodeName = nodeName.substring(0, max)
-            }
-        }
-        const attributes = [] as string[]
-
-        if (!node?.children?.length && node.nodeId) {
-            attributes.push(`nodeId="${node.nodeId}"`)
-        }
-        if (node.attributes) {
-            for (const [key, value] of Object.entries(node.attributes)) {
-                if (value !== undefined && value !== null) {
-                    attributes.push(`${key}="${value}"`)
-                }
-            }
-        }
-
-        const attributesString =
-            attributes.length > 0 ? ' ' + attributes.join(' ') : ''
-
-        xml += `${indent}<${nodeName}${attributesString}>\n`
-
-        if (node.content) {
-            xml += `${indent}  ${escapeXml(node.content)}\n`
-        }
-
-        if (node.children && node.children.length > 0) {
-            xml += oldTextTreeToXml(node.children, indent + '  ')
-        }
-
-        xml += `${indent}</${nodeName}>\n`
-    }
-
-    return xml
-}
-
-function escapeXml(unsafe: string): string {
-    return unsafe.replace(/[<>&'"]/g, (c) => {
-        switch (c) {
-            case '<':
-                return '&lt;'
-            case '>':
-                return '&gt;'
-            case '&':
-                return '&amp;'
-            case "'":
-                return '&apos;'
-            case '"':
-                return '&quot;'
-            default:
-                return c
-        }
-    })
 }
 
 export function canHaveFreePlugin(email?: string) {

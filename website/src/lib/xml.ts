@@ -1,5 +1,7 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
+import camelCase from 'camelCase'
+import { OldTextTree } from 'website/src/lib/rewrite'
 
 interface RewriteOldTextContentParams {
     xml: string
@@ -136,4 +138,156 @@ export function extractObjectsFromXmlContent(xml: string) {
     parser.end()
 
     return results
+}
+
+export function xmlToOldTextTree(xml: string): OldTextTree {
+    const handler = new DomHandler()
+    const parser = new Parser(handler, { xmlMode: true }) // Add xmlMode: true
+    parser.write(xml)
+    parser.end()
+
+    function processNode(node: any): OldTextTree[number] | null {
+        // Skip text nodes and comments
+        if (node.type !== 'tag') {
+            return null
+        }
+
+        const result: OldTextTree[number] = {
+            name: node.name,
+        }
+
+        // Get attributes
+        if (node.attribs) {
+            const { nodeId, ...attrs } = node.attribs
+            if (nodeId) {
+                result.nodeId = nodeId
+            }
+            if (Object.keys(attrs).length > 0) {
+                result.attributes = attrs
+            }
+        }
+
+        // Get text content
+        if (node.children) {
+            const textNodes = node.children.filter(
+                (child: any) => child.type === 'text',
+            )
+            if (textNodes.length > 0) {
+                result.content = textNodes
+                    .map((node: any) => node.data.trim())
+                    .join('\n')
+                    .trim()
+            }
+
+            // Process child elements
+            const childElements = node.children.filter(
+                (child: any) => child.type === 'tag',
+            )
+            if (childElements.length > 0) {
+                const children = childElements
+                    .map(processNode)
+                    .filter((n: any) => n !== null)
+                if (children.length > 0) {
+                    result.children = children
+                }
+            }
+        }
+
+        // Return all nodes, not just ones with nodeId
+        return result
+    }
+
+    const rootNodes = handler.dom
+        .filter((node: any) => node.type === 'tag') // Only process tag nodes
+        .map(processNode)
+        .filter((n): n is OldTextTree[number] => n !== null)
+    return rootNodes
+}
+export function oldTextTreeToXml(
+    tree: OldTextTree,
+    indent: string = '',
+): string {
+    let xml = ''
+
+    for (const node of tree) {
+        if (!node) {
+            continue
+        }
+        
+        // Skip nodes with empty name
+        if (node.name === '') {
+            if (node.content) {
+                xml += `${indent}${escapeXml(node.content)}\n`
+            }
+            if (node.children && node.children.length > 0) {
+                xml += oldTextTreeToXml(node.children, indent)
+            }
+            continue
+        }
+
+        let name = node.name || 'Container'
+        let nodeName =
+            camelCase(name?.replace(/[^a-zA-Z0-9\s_-]+/g, ' ') || 'None', {
+                pascalCase: true,
+            }) || 'Node'
+
+        // Truncate nodeName if it's too long (e.g., more than 50 characters)
+        let max = 60
+        if (nodeName.length > max) {
+            const lastUnderscoreIndex = nodeName.indexOf('_', max)
+            if (lastUnderscoreIndex > 0) {
+                nodeName = nodeName.substring(0, lastUnderscoreIndex)
+            } else {
+                nodeName = nodeName.substring(0, max)
+            }
+        }
+        const attributes = [] as string[]
+
+        if (!node?.children?.length && node.nodeId) {
+            attributes.push(`nodeId="${node.nodeId}"`)
+        }
+        if (node.attributes) {
+            for (const [key, value] of Object.entries(node.attributes)) {
+                if (value !== undefined && value !== null) {
+                    attributes.push(`${key}="${value}"`)
+                }
+            }
+        }
+
+        const attributesString =
+            attributes.length > 0 ? ' ' + attributes.join(' ') : ''
+
+        xml += `${indent}<${nodeName}${attributesString}>\n`
+
+        if (node.content) {
+            xml += `${indent}  ${escapeXml(node.content)}\n`
+        }
+
+        if (node.children && node.children.length > 0) {
+            xml += oldTextTreeToXml(node.children, indent + '  ')
+        }
+
+        xml += `${indent}</${nodeName}>\n`
+    }
+
+    return xml
+}
+
+function escapeXml(unsafe: string): string {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<':
+                return '&lt;'
+            case '>':
+                return '&gt;'
+            case '&':
+                return '&amp;'
+            case "'":
+                return '&apos;'
+            case '"':
+                return '&quot;'
+            default:
+                return c
+        }
+    })
 }
