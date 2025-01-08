@@ -1,13 +1,30 @@
 import dedent from 'string-dedent'
+import { createFallback } from 'ai-fallback'
 import { DOMParser, XMLSerializer } from 'xmldom'
 
 import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'
-import { CoreMessage, generateObject, streamObject } from 'ai'
+import {
+    CoreMessage,
+    generateObject,
+    smoothStream,
+    streamObject,
+    streamText,
+} from 'ai'
 
-import { yieldNewArrayItems, yieldObjectStream } from 'website/src/lib/ndjson'
-import { bfsOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
+import {
+    createArrayItemsYielder,
+    yieldNewArrayItems,
+    yieldObjectStream,
+} from 'website/src/lib/ndjson'
+import {
+    bfsOldTextTree,
+    oldTextTreeToXml,
+    safeUrl,
+} from 'website/src/lib/utils'
+import { extractObjectsFromXmlContent } from 'website/src/lib/xml'
+import { anthropic } from '@ai-sdk/anthropic'
 
 export type OldTextTree = Array<{
     name?: string | null
@@ -33,8 +50,12 @@ export const RewriteSchema = z.object({
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
 
-const CONVERTED_ITEMS = 'convertedItems'
-const framerIdLen = 9
+const model = createFallback({
+    models: [
+        anthropic('claude-3-5-haiku-20241022'),
+        openai('gpt-4o'), //
+    ],
+})
 
 function renderHtmlSnippet({
     sourceHtml,
@@ -69,97 +90,49 @@ function renderHtmlSnippet({
     `
 }
 
-let schema = z.object({
-    // [STEP_BY_STEP_REASONING]: z
-    //     .array(z.string())
-    //     .describe(
-    //         'Chain of thoughts, think step by step. This field should come first.',
-    //     ),
-    outputLanguage: z.string().describe('The output language to use for the rewritten content, for example English, reuse the same language as the HTML page unless the user asked otherwise.'),
-    [CONVERTED_ITEMS]: z.array(
-        z.object({
-            nodeId: z
-                .string()
-                .describe(
-                    'The template text node id, this field should come first.',
-                ),
-            // htmlTag: z
-            //     .string()
-            //     .describe(
-            //         'The html tag of the node, helpful to understand which part of the original HTML should be used. this field should come second.',
-            //     ),
+const reasoningPrompt = `
 
-            // templateContent: z
-            //     .string()
-            //     .describe(
-            //         'The template content we are replacing. should be different from `contentFromTheHtml`, this field should come second',
-            //     ),
-            // contentFromTheHtml: z
-            //     .string()
-            //     .nullable()
-            //     .describe(
-            //         'The content that best corresponds to this template text, from the website being migrated, extracted from the HTML, without any modification. this field should come third',
-            //     ),
-            reasoning: z.string().describe(
-                dedent`
-                Think step by step to decide which should be the new content for the template text with this nodeId. 
+Before each replacement please add an XML comment (with <!-- and -->) to reason step by step how you decided to replace the content
 
-                In this field you should always respond to these questions:
-                - **section and role**: what is the text semantic meaning for this template text? ignore its subject, just consider the section and design language/role (for example main hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
-                - **existing text**: What is the best piece of text from the existing website HTML you can use here? don't return text that you returned previously or already in the template! It should have same design language and role, for example if the template text is an hero heading, you should use site main h1 heading. Don't consider text that is from different kind of elements. NEVER RETURN PREVIOUSLY RETURNED CONTENT.
-                - **length**: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.
+In this comment you should always respond to these questions:
+- **section and role**: what is the text semantic meaning for this template text? ignore its subject, just consider the section and design language/role (for example main hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
+- **existing text**: What is the best piece of text from the existing website HTML you can use here? don't return text that you returned previously or already in the template! It should have same design language and role, for example if the template text is an hero heading, you should use site main h1 heading. Don't consider text that is from different kind of elements. NEVER RETURN PREVIOUSLY RETURNED CONTENT.
+- **length**: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.
 
-                Some examples of semantic meaning for sections of the template:
-                - nav (Navigation menu or links at the top of the page)
-                - footer (Section at the bottom with links, company info, and copyright notice)
-                - hero (Large, prominent section at the top with headline and call-to-action)
-                - features (Highlights of key product/service features)
-                - testimonial (Customer reviews or quotes)
-                - pricing (Pricing plans or tables)
-                - team (Team member profiles or information)
-                - stats (Key metrics or statistical information)
-                - steps (Numbered process or instruction steps)
-                - faq (Frequently asked questions and answers)
-                - contact (Contact form or contact information)
-                - newsletter (Email signup form)
-                - content (General content sections, such as blog posts, articles, or news)
-                - breadcrumbs (Navigation aid showing the page's location in the site hierarchy)
+Some examples of semantic meaning for sections of the template:
+- nav (Navigation menu or links at the top of the page)
+- footer (Section at the bottom with links, company info, and copyright notice)
+- hero (Large, prominent section at the top with headline and call-to-action)
+- features (Highlights of key product/service features)
+- testimonial (Customer reviews or quotes)
+- pricing (Pricing plans or tables)
+- team (Team member profiles or information)
+- stats (Key metrics or statistical information)
+- steps (Numbered process or instruction steps)
+- faq (Frequently asked questions and answers)
+- contact (Contact form or contact information)
+- newsletter (Email signup form)
+- content (General content sections, such as blog posts, articles, or news)
+- breadcrumbs (Navigation aid showing the page's location in the site hierarchy)
 
-                Each text in the template and website is part of a section and it also has a more fine grained role, for example:
-                - [section]/heading (Main title or subtitle within a section)
-                - [section]/subheading (Secondary title or subtitle within a section)
-                - [section]/quote (text referencing a quote from a testimonial or customer review)
-                - [section]/paragraph (Block of text content)
-                - [section]/link (Clickable text or button leading to another page)
-                - [section]/list/item (Individual item within a bulleted or numbered list)
-                - [section]/table/row (A row of data within a table structure)
-                - [section]/image (Visual element or photograph)
-                - [section]/button (Clickable element for user actions)
-                - [section]/form/input (Text input field within a form)
-                - [section]/form/select (Dropdown selection menu within a form)
-                - [section]/form/checkbox (Checkable option within a form)
-                - [section]/form/radio (Single-select option within a form)
-                - [section]/icon (Small graphical element, often used with features or stats)
+Each text in the template and website is part of a section and it also has a more fine grained role, for example:
+- [section]/heading (Main title or subtitle within a section)
+- [section]/subheading (Secondary title or subtitle within a section)
+- [section]/quote (text referencing a quote from a testimonial or customer review)
+- [section]/paragraph (Block of text content)
+- [section]/link (Clickable text or button leading to another page)
+- [section]/list/item (Individual item within a bulleted or numbered list)
+- [section]/table/row (A row of data within a table structure)
+- [section]/image (Visual element or photograph)
+- [section]/button (Clickable element for user actions)
+- [section]/form/input (Text input field within a form)
+- [section]/form/select (Dropdown selection menu within a form)
+- [section]/form/checkbox (Checkable option within a form)
+- [section]/form/radio (Single-select option within a form)
+- [section]/icon (Small graphical element, often used with features or stats)
 
-                You should use these as a guide to decide the semantic meaning of each text.
-
-                
-                `,
-            ),
-            newContent: z
-                .string()
-                .describe(
-                    'The new content to apply, should be extracted from the existing website html if possible, only modify to match the template length',
-                ),
-            // href: z
-            //     .string()
-            //     .nullable()
-            //     .describe(
-            //         'The href from the original HTML if relevant, should always have the url protocol, such as https://. Ignore all relative links, you should return an href only if it redirects to another website like twitter.com, facebook.com, etc.',
-            //     ),
-        }),
-    ),
-})
+You should use these as a guide to decide the semantic meaning of each text.
+`
 
 function generateMigrationPrompt({
     description,
@@ -190,14 +163,19 @@ Remember:
 * Maintain the overall tone and style of the website being migrated.
 * never repeat content, always find different elements from the original HTML or generate new ones
 
-Please provide a well-structured and valid JSON object as your response, adhering to the schema defined.
+Provide a new text replacement for ALL the template text items.
 
-Provide a new text replacement for all the template text items.
 
-Website Owner's Description and Instructions:
+Please return XML with the same template structure but with the content rewritten to match the new website.
+
+${reasoningPrompt}
+
+These are the website Owner's Description and Instructions:
 <description>
 ${description || 'No specific instructions provided'}
 </description>
+
+
 
 `
 }
@@ -264,6 +242,48 @@ function createChunkWithParents(
     return [currentParent]
 }
 
+type NewNode = {
+    nodeId: string
+    newContent?: string
+}
+
+const templateText = ({ xml }) => {
+    return dedent`
+    Please migrate the following template section:
+    <template>
+    ${xml}
+    </template>
+
+    you should always try to replace the content of the template with the ones in the website HTML being migrated or create new content
+
+    Before each replacement please add a comment to reason step by step how you decided to replace the content
+
+    Do not write anything after the code snippet, if you want to reason about the migration do it before or inside xml comments.
+    `
+}
+
+const examples = ({ host }) => [
+    {
+        input: dedent`
+        <Node>
+            <Title nodeId="abc123xyz">
+            Welcome to template.com!
+            </Title>
+        </Node>
+        `,
+        output: dedent`
+        \`\`\`xml
+        <Node>
+            <!-- replaced 'template.com' with the actual website host -->
+            <Title nodeId="abc123xyz">
+            Welcome to ${host}
+            </Title>
+        </Node>
+        \`\`\`
+        `,
+    },
+]
+
 export async function* rewriteTemplateChunk({
     description,
     xml,
@@ -281,6 +301,7 @@ export async function* rewriteTemplateChunk({
     url: string
     user: string
 }) {
+    const host = safeUrl(url || 'http://example.com')?.host || url
     let messages: CoreMessage[] = [
         {
             role: 'system',
@@ -290,65 +311,50 @@ export async function* rewriteTemplateChunk({
                 url,
             }),
         },
+
+        ...examples({ host }).flatMap(({ input, output }) => {
+            return [
+                {
+                    role: 'user' as const,
+                    content: templateText({ xml: input }),
+                },
+                {
+                    role: 'assistant' as const,
+                    content: output,
+                },
+            ]
+        }),
+        {
+            role: 'user',
+            content: templateText({ xml }),
+        },
     ]
 
-    console.log(xml)
-    messages.push({
-        role: 'user',
-        content: dedent`
-        Please migrate the following template section:
-        <template>
-        ${xml}
-        </template>
-
-        you should always try to replace the content of the template with the ones in the website HTML being migrated or create new content
-        `,
-    })
-
-    const model = openai('gpt-4o-2024-08-06', { structuredOutputs: true })
-    const stream1 = await streamObject({
+    const stream1 = await streamText({
         messages,
-        schema,
         model,
         temperature: 0.5,
-
+        experimental_transform: smoothStream({
+            chunking: 'line',
+        }),
         // frequencyPenalty: 0.8,
         abortSignal: signal,
     })
 
-    let objectStream = yieldNewArrayItems({
-        arrayField: CONVERTED_ITEMS,
-        stream: yieldObjectStream({
-            stream: stream1.fullStream,
-            ms: 100,
-            onToken,
-        }),
-    })
-
-    let lastId = ''
-    for await (let { fullItem, partialItem } of objectStream) {
-        if (partialItem?.nodeId?.length === framerIdLen) {
-            yield {
-                partialItem: partialItem,
-                completeObj: undefined,
-            }
-        }
-        if (fullItem) {
-            // console.log('rewrite item', fullItem)
-            // yield {
-            //     partialItem: fullItem,
-            //     finalObject: undefined,
-            // }
-            yield {
-                completeObj: fullItem,
-                finalObject: undefined,
-            }
-        }
+    let fullText = ''
+    let allObjects: NewNode[] = []
+    const yielder = createArrayItemsYielder<NewNode>()
+    for await (let textDelta of stream1.textStream) {
+        onToken?.(textDelta)
+        fullText += textDelta
+        allObjects = extractObjectsFromXmlContent(fullText)
+        yield* yielder.yieldNewItems(allObjects)
     }
+    yield* yielder.yieldRemaining()
 
-    const iterationObject = await stream1.object
+    yield { type: 'fullXml' as const, fullXml: fullText }
 
-    return iterationObject
+    return allObjects
 }
 
 export async function* rewriteTemplateContent({
@@ -364,7 +370,7 @@ export async function* rewriteTemplateContent({
     signal: AbortSignal
     onToken?: (token: string) => void
 }) {
-    let finalObject: z.infer<typeof schema> | undefined
+    let finalObject: NewNode[] | undefined
 
     const chunkedOldText = splitTreeInChunks(oldText || [], ITEMS_PER_ITERATION)
 
@@ -387,7 +393,7 @@ export async function* rewriteTemplateContent({
         if (!finalObject) {
             finalObject = iterationObject
         } else {
-            finalObject.convertedItems.push(...iterationObject.convertedItems)
+            finalObject.push(...iterationObject)
         }
     }
 

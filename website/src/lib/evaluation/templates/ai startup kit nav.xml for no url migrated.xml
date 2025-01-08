@@ -1,0 +1,33 @@
+```xml
+<AI_Kit_Nav>
+    <!-- 
+    - section and role: Navigation menu with top-level items and sign-up button
+    - existing text: Used website's actual navigation items based on Framer's typical navigation structure
+    - length: Maintained similar structure and number of navigation items
+    -->
+	<Navigation>
+		<Stack>
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
+				Product
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
+				Templates
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<AI_Kit_Navigation_Nav_Top_Item href="/pricing" nodeId="ttyq47m7">
+				Pricing
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<AI_Kit_Navigation_Nav_Top_Item href="/learn" nodeId="5mjfkk9h">
+				Learn
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
+				Community
+			</AI_Kit_Navigation_Nav_Top_Item>
+		</Stack>
+		<Stack>
+			<AI_Kit_Button nodeId="koeyy0nt">
+				Start designing
+			</AI_Kit_Button>
+		</Stack>
+	</Navigation>
+</AI_Kit_Nav>
+```

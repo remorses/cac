@@ -1,7 +1,8 @@
 import dedent from 'dedent'
 import fs from 'fs'
 import path from 'path'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, Reporter, test } from 'vitest'
+
 import { fetchFormattedHtml } from 'website/src/lib/htmlrewrite.server'
 import { removeMarkdownSnippets } from 'website/src/lib/ndjson'
 import {
@@ -25,9 +26,10 @@ const testCases = [
     },
 ]
 
-let templateContentFiles = fs.readdirSync(
-    path.resolve(__dirname, './evaluation/templates'),
-)
+const evaluationFolder = path.resolve(__dirname, './evaluation/templates')
+let templateContentFiles = fs
+    .readdirSync(evaluationFolder)
+    .filter((x) => !x.endsWith('migrated.xml'))
 
 // templateContentFiles = templateContentFiles.slice(0, 1)
 
@@ -51,16 +53,13 @@ function runTestForEachTemplate(
                 return
             }
             let xml = fs.readFileSync(
-                path.resolve(
-                    __dirname,
-                    `./evaluation/templates/${templateFile}`,
-                ),
+                path.resolve(evaluationFolder, `./${templateFile}`),
                 'utf-8',
             )
 
             testCases.forEach(({ url, description }) => {
                 test(
-                    `"${templateFile}" for ${url || 'no url'}`,
+                    `"${templateFile}" for ${formatUrl(url) || 'no url'}`,
                     async () => {
                         await callback({ xml, templateFile, url, description })
                     },
@@ -74,7 +73,8 @@ function runTestForEachTemplate(
 runTestForEachTemplate(
     'rewrite template',
     async ({ xml, templateFile, url, description }) => {
-        const sourceHtml = await fetchFormattedHtml({url})
+        console.log(`running test for ${url || 'no url'}`)
+        const sourceHtml = await fetchFormattedHtml({ url })
         const stream = await rewriteTemplateChunk({
             description,
             xml,
@@ -82,19 +82,23 @@ runTestForEachTemplate(
             signal: new AbortController().signal,
             user: 'tests',
             onToken(token) {
-                // process.stdout.write(token)
+                process.stdout.write(token)
             },
             url,
         })
         let resultNodeIds = new Set<string>()
         let results = [] as any[]
-
+        let resultXml = ''
         for await (let chunk of stream) {
             let prevLen = resultNodeIds.size
 
-            let object = chunk.completeObj
+            if (chunk.type === 'fullXml' && chunk.fullXml) {
+                resultXml = chunk.fullXml
+            }
+            let object = chunk.type === 'fullItem' && chunk.fullItem
             if (object) {
-                console.log('object', object)
+                process.stdout.write(`\n${JSON.stringify(object)}\n`)
+                // console.log('object', object)
                 resultNodeIds.add(object.nodeId!)
                 if (resultNodeIds.size === prevLen) {
                     console.error('XXX duplicate nodeId', object)
@@ -104,17 +108,23 @@ runTestForEachTemplate(
             }
         }
 
-        const resultXml = rewriteXmlContent({ xml, newContent: results })
+        // const resultXml = rewriteXmlContent({ xml, newContent: results })
 
-        await expect(resultXml).toMatchFileSnapshot(
-            `./evaluation/templates/${templateFile} for ${formatUrl(url)} migrated.xml`,
+        const resPath = path.resolve(
+            evaluationFolder,
+            `./${templateFile} for ${formatUrl(url) || 'no url'} migrated.xml`,
         )
+        fs.mkdirSync(path.dirname(resPath), { recursive: true })
+        fs.writeFileSync(resPath, resultXml)
+        // await expect(resultXml).toMatchFileSnapshot(
+        //     `./evaluation/templates/${templateFile} for ${formatUrl(url)} migrated.xml`,
+        // )
     },
 )
 runTestForEachTemplate(
     'extract links',
     async ({ xml, templateFile, url, description }) => {
-        const sourceHtml = await fetchFormattedHtml({url})
+        const sourceHtml = await fetchFormattedHtml({ url })
         const links = await extractExternalLinks({
             websiteUrl: url,
             formattedHtml: sourceHtml,

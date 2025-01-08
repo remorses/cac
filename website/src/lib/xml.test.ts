@@ -7,7 +7,64 @@ import dedent from 'dedent'
 import { default as domSerializer } from 'dom-serializer'
 import { DomHandler } from 'domhandler'
 import { ElementType, Parser } from 'htmlparser2'
-import { rewriteXmlContent } from 'website/src/lib/xml'
+import {
+    extractObjectsFromXmlContent,
+    rewriteXmlContent,
+} from 'website/src/lib/xml'
+
+test('extractObjectsFromXmlContent', ({ expect }) => {
+    const xml = dedent`
+        Here is an Ai response with the <xml>:
+        \`\`\`xml
+        <Container>
+            <Hero>
+                <text nodeId="text1" fontSize="20px" color="blue">
+                    Hello World
+                </text>
+                <Button nodeId="btn1" variant="primary" size="large">
+                    Click me
+                </Button>
+                <div >
+                    <span nodeId="span1">
+                    Nested content
+                    with a new line
+                    </span>
+                </div>
+            </Hero>
+        </Container>
+        \`\`\`
+        
+    `
+
+    const results = extractObjectsFromXmlContent(xml)
+
+    expect(results).toMatchInlineSnapshot(`
+      [
+        {
+          "attributes": {
+            "color": "blue",
+            "fontSize": "20px",
+          },
+          "newContent": "Hello World",
+          "nodeId": "text1",
+        },
+        {
+          "attributes": {
+            "size": "large",
+            "variant": "primary",
+          },
+          "newContent": "Click me",
+          "nodeId": "btn1",
+        },
+        {
+          "attributes": {},
+          "newContent": "Nested content
+      with a new line",
+          "nodeId": "span1",
+        },
+      ]
+    `)
+})
 
 test('xml partial content, rewriteXmlContent', () => {
     const str = dedent`
@@ -122,28 +179,30 @@ test('oldTextTreeToXml', async () => {
         ]),
     )
     expect(res).toMatchInlineSnapshot(`
-      "<Stack>
-        <AI_Kit_Navigation_Nav_Top_Item nodeId="A3ZxD9MzX">
-          Features
-        </AI_Kit_Navigation_Nav_Top_Item>
-        <AI_Kit_Navigation_Nav_Top_Item nodeId="kEfI03xW5">
-          Developers
-        </AI_Kit_Navigation_Nav_Top_Item>
-        <AI_Kit_Navigation_Nav_Top_Item nodeId="hV4y0l50l">
-          Company
-        </AI_Kit_Navigation_Nav_Top_Item>
-        <AI_Kit_Navigation_Nav_Top_Item nodeId="Kn7sH0z2q">
-          Blog
-        </AI_Kit_Navigation_Nav_Top_Item>
-        <AI_Kit_Navigation_Nav_Top_Item nodeId="QjTxmhFlU">
-          Changelog
-        </AI_Kit_Navigation_Nav_Top_Item>
-      </Stack>
-      <Stack>
-        <AI_Kit_Button nodeId="LrErZw5ej">
-          Join waitlist
-        </AI_Kit_Button>
-      </Stack>
+      "<AiKitNav>
+        <Stack>
+          <AiKitNavigationNavTopItem nodeId="A3ZxD9MzX">
+            Features
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
+            Developers
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="hV4y0l50l">
+            Company
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
+            Blog
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
+            Changelog
+          </AiKitNavigationNavTopItem>
+        </Stack>
+        <Stack>
+          <AiKitButton nodeId="LrErZw5ej">
+            Join waitlist
+          </AiKitButton>
+        </Stack>
+      </AiKitNav>
       "
     `)
 })
@@ -191,6 +250,46 @@ test('splitTreeInChunks', () => {
                 },
             ],
         },
+        {
+            name: 'Navigation/twitterProfilePreview',
+            children: [
+                {
+                    name: 'Closed',
+                    children: [
+                        {
+                            name: 'Link',
+                            children: [
+                                {
+                                    name: 'Text',
+                                    nodeId: 'l9D2UPiVw',
+                                    attributes: {
+                                        fontSize: '16px',
+                                    },
+                                    content: 'Twitter',
+                                    children: [],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            name: 'RemoveButton',
+            children: [
+                {
+                    name: 'Variant1',
+                    children: [
+                        {
+                            name: 'Text',
+                            nodeId: 'xRh2ZBpJM',
+                            content: 'Sign Up With Google',
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        },
     ]
 
     const result = splitTreeInChunks(inputTree, 3).map((x) =>
@@ -198,30 +297,43 @@ test('splitTreeInChunks', () => {
     )
     expect(result).toMatchInlineSnapshot(`
       [
-        "<AI_Kit_Nav>
+        "<AiKitNav>
         <Stack>
-          <AI_Kit_Navigation_Nav_Top_Item nodeId="A3ZxD9MzX">
+          <AiKitNavigationNavTopItem nodeId="A3ZxD9MzX">
             Features
-          </AI_Kit_Navigation_Nav_Top_Item>
-          <AI_Kit_Navigation_Nav_Top_Item nodeId="kEfI03xW5">
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
             Developers
-          </AI_Kit_Navigation_Nav_Top_Item>
-          <AI_Kit_Navigation_Nav_Top_Item nodeId="hV4y0l50l">
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="hV4y0l50l">
             Company
-          </AI_Kit_Navigation_Nav_Top_Item>
-        </Stack>
-      </AI_Kit_Nav>
-      ",
-        "<AI_Kit_Nav>
-        <Stack>
-          <AI_Kit_Navigation_Nav_Top_Item nodeId="Kn7sH0z2q">
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
             Blog
-          </AI_Kit_Navigation_Nav_Top_Item>
-          <AI_Kit_Navigation_Nav_Top_Item nodeId="QjTxmhFlU">
+          </AiKitNavigationNavTopItem>
+          <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
             Changelog
-          </AI_Kit_Navigation_Nav_Top_Item>
+          </AiKitNavigationNavTopItem>
         </Stack>
-      </AI_Kit_Nav>
+      </AiKitNav>
+      ",
+        "<NavigationTwitterProfilePreview>
+        <Closed>
+          <Link>
+            <Text nodeId="l9D2UPiVw" fontSize="16px">
+              Twitter
+            </Text>
+          </Link>
+        </Closed>
+      </NavigationTwitterProfilePreview>
+      ",
+        "<RemoveButton>
+        <Variant1>
+          <Text nodeId="xRh2ZBpJM">
+            Sign Up With Google
+          </Text>
+        </Variant1>
+      </RemoveButton>
       ",
       ]
     `)

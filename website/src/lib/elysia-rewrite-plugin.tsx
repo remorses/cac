@@ -112,28 +112,24 @@ export const rewritePluginApp = new Spiceflow({
             try {
                 for await (let chunk of objectStream) {
                     // console.log('chunk', chunk)
-                    yield { type: 'chunk' as const, ...chunk }
-                    let object = chunk.completeObj
+                    yield { ...chunk, type: 'chunk' as const }
+                    let object = chunk.type === 'fullItem' && chunk.fullItem
                     if (object) {
                         chars += object?.newContent?.length || 0
                         words +=
                             splitIntoWords(object.newContent || '')?.length || 0
+                        if (object?.nodeId) {
+                            newContent.push({
+                                nodeId: object.nodeId,
+                                newContent: object.newContent || '',
+                            })
+                        }
                     }
-                    if (chunk.completeObj?.nodeId) {
-                        newContent.push({
-                            nodeId: chunk.completeObj.nodeId,
-                            newContent: chunk.completeObj.newContent || '',
-                        })
+                    if (chunk.type === 'fullXml') {
+                        resultXml += chunk.fullXml + '\n\n---\n\n'
                     }
                 }
-                try {
-                    resultXml = rewriteXmlContent({
-                        newContent: newContent,
-                        xml: xml,
-                    })
-                } catch (e) {
-                    notifyError(e, 'error rewriting xml')
-                }
+
                 console.log('saving generation on db')
             } catch (e) {
                 notifyError(e, 'error rephrasing ')

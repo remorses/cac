@@ -1,88 +1,125 @@
+```xml
 <Container>
   <Hero>
+    <!-- 
+    - section: Hero
+    - role: Hero heading and subheading
+    - existing text: Used exact h1 and paragraph text from Framer's HTML hero section
+    - length: Matches original exactly
+    -->
     <Header>
       <Stack>
         <AI_Kit_Badge nodeId="kvaze3i5">
+          NEW
         </AI_Kit_Badge>
-        <text>
-          <_ nodeId="BmPmnKu3U" fontSize="82px">
-          </_>
-          <_ nodeId="Ga6gDXZIe" fontSize="20px">
-          </_>
+        <text nodeId="BmPmnKu3U" fontSize="82px">
+          The web builder for stunning sites.
         </text>
+        <text nodeId="Ga6gDXZIe" fontSize="20px">
+          Design and publish modern sites at any scale with Framer's web builder.
+        </text>
+        <!-- 
+        - section: Hero
+        - role: Hero primary call-to-action button
+        - existing text: Matches original signup button text
+        -->
         <AI_Kit_Button nodeId="rgayf1f9">
+          Start for free
         </AI_Kit_Button>
       </Stack>
     </Header>
   </Hero>
+  
   <Companies>
+    <!-- 
+    - section: Logo strip
+    - role: Companies/clients section heading
+    - existing text: Created text matching original section intent
+    -->
     <text nodeId="y8xplxOnV" fontSize="16px">
+      Trusted by innovative companies
     </text>
     <Grid>
+      <!-- 
+      - section: Logo strip
+      - role: Company logos/names
+      - existing text: Used actual company names from Framer's logo strip
+      -->
       <Stack>
-        <_>
-          <Stack>
-            <text nodeId="vnzxmNCxb">
-            </text>
-          </Stack>
-        </_>
-        <_>
-          <Stack>
-            <text nodeId="DRefZ4FzF">
-            </text>
-          </Stack>
-        </_>
+        <Stack>
+          <text href="https://thebrowser.company" nodeId="vnzxmNCxb">
+            The Browser Company
+          </text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <text href="https://dribbble.com" nodeId="DRefZ4FzF">
+            Dribbble
+          </text>
+        </Stack>
       </Stack>
     </Grid>
   </Companies>
+  
   <Features>
+    <!-- 
+    - section: Features
+    - role: Features section heading
+    - existing text: Used exact text from Framer's features section
+    -->
     <Stack>
       <text nodeId="C9Wau5gv1" fontSize="32px">
+        Design beautiful responsive sites with an intuitive interface.
       </text>
     </Stack>
     <Grid>
+      <!-- 
+      - section: Features
+      - role: Individual feature descriptions
+      - existing text: Used exact feature titles and descriptions from Framer's HTML
+      -->
       <Card>
-        <_>
-          <Stack>
-            <text>
-              <_ nodeId="M2ZPHDqe6" fontSize="16px">
-              </_>
-              <_ nodeId="UMkipYqxL" fontSize="16px">
-              </_>
-            </text>
-          </Stack>
-        </_>
-        <_>
-          <Stack>
-            <text>
-              <_ nodeId="kKZ8P977O" fontSize="16px">
-              </_>
-              <_ nodeId="JxpYmedKj" fontSize="16px">
-              </_>
-            </text>
-          </Stack>
-        </_>
-        <_>
-          <Stack>
-            <text>
-              <_ nodeId="kxskj_v2Y" fontSize="16px">
-              </_>
-              <_ nodeId="HybKQJqce" fontSize="16px">
-              </_>
-            </text>
-          </Stack>
-        </_>
-        <_>
-          <Stack>
-            <text>
-              <_ nodeId="Lf5rDin2b" fontSize="16px">
-              </_>
-              <_ nodeId="h1vQET5E8" fontSize="16px">
-              </_>
-            </text>
-          </Stack>
-        </_>
+        <Stack>
+          <text nodeId="M2ZPHDqe6" fontSize="16px">
+            Design
+          </text>
+          <text nodeId="UMkipYqxL" fontSize="16px">
+            Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="kKZ8P977O" fontSize="16px">
+            Collaborate
+          </text>
+          <text nodeId="JxpYmedKj" fontSize="16px">
+            Collaboration in Framer is seamless. Invite your team and work together in real-time.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="kxskj_v2Y" fontSize="16px">
+            Layout &amp; Breakpoints
+          </text>
+          <text nodeId="HybKQJqce" fontSize="16px">
+            Design your site on a familiar free-form canvas. Add flexible Grids &amp; Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
+            Effects
+          </text>
+          <text nodeId="h1vQET5E8" fontSize="16px">
+            Bring your site to life without code. Add effects with a few clicks and capture your audience's attention when they land on your website.
+          </text>
+        </Stack>
       </Card>
     </Grid>
   </Features>
 </Container>
+```

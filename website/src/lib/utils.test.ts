@@ -64,17 +64,39 @@ test('yieldNewArrayItems', async () => {
             ],
         }
     }
-    let lastId = -1
+
+    const expectedFullItems = [
+        { id: 1, text: 'hello world' },
+        { id: 2, text: 'hello again' },
+        { id: 3, text: 'hi for third time' }
+    ]
+
+    let fullItems: any[] = []
+    let partialItems: any[] = []
+
     for await (let chunk of yieldNewArrayItems({
         arrayField: 'items',
         stream: stream(),
     })) {
         if (chunk.fullItem) {
-            console.log('fullItem', chunk.fullItem)
+            fullItems.push(chunk.fullItem)
         }
-        if (chunk.partialItem?.id && chunk.partialItem.id !== lastId) {
-            console.log('incoming object', chunk.partialItem?.id)
-            lastId = chunk.partialItem.id
+        if (chunk.partialItem) {
+            partialItems.push(chunk.partialItem)
         }
+    }
+
+    // Check that we got all the expected full items
+    expect(fullItems).toEqual(expectedFullItems)
+
+    // Check that partial items were streamed before full items
+    for (let i = 0; i < fullItems.length; i++) {
+        const fullItem = fullItems[i]
+        const matchingPartials = partialItems.filter(p => p.id === fullItem.id)
+        expect(matchingPartials.length).toBeGreaterThan(0)
+        
+        // Check that the last partial matches the full item
+        const lastPartial = matchingPartials[matchingPartials.length - 1]
+        expect(lastPartial).toEqual(fullItem)
     }
 })

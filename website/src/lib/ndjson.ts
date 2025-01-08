@@ -63,12 +63,75 @@ type UnwrapArray<T> = T extends Array<infer U> ? U : T
 type ArrayItemYield<T> =
     | {
           fullItem: RequiredDeep<T>
+          type: 'fullItem'
           partialItem: undefined
       }
     | {
           fullItem: undefined
+          type: 'partialItem'
           partialItem: Partial<T>
       }
+
+// this function let you yield new array items by calling each time with an updated array
+export function createArrayItemsYielder<T>() {
+    let previousLength = 0
+    let lastItem: T | null = null
+
+    function* yieldNewItems(currentArray: T[]): Generator<ArrayItemYield<T>> {
+        if (!Array.isArray(currentArray)) {
+            console.error('Input is not an array:', currentArray)
+            return
+        }
+
+        const currentLengthWithoutLast = currentArray.length - 1
+        lastItem = currentArray[currentArray.length - 1] || null
+
+        if (currentLengthWithoutLast > previousLength) {
+            for (let i = previousLength; i < currentLengthWithoutLast; i++) {
+                const item = currentArray[i] as RequiredDeep<T>
+                yield {
+                    partialItem: currentArray[i],
+                    type: 'partialItem' as const,
+                    fullItem: undefined,
+                }
+                yield {
+                    fullItem: item,
+                    type: 'fullItem' as const,
+                    partialItem: undefined,
+                }
+            }
+
+            previousLength = currentLengthWithoutLast
+        }
+        if (lastItem) {
+            yield {
+                partialItem: lastItem,
+                type: 'partialItem' as const,
+                fullItem: undefined,
+            }
+        }
+    }
+
+    function* yieldRemaining(): Generator<ArrayItemYield<T>> {
+        if (lastItem) {
+            yield {
+                partialItem: lastItem,
+                type: 'partialItem' as const,
+                fullItem: undefined,
+            }
+            yield {
+                fullItem: lastItem as RequiredDeep<T>,
+                type: 'fullItem' as const,
+                partialItem: undefined,
+            }
+        }
+    }
+
+    return {
+        yieldNewItems,
+        yieldRemaining,
+    }
+}
 
 export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
     arrayField,
@@ -77,8 +140,7 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
     arrayField: Field
     stream: AsyncIterable<T>
 }): AsyncIterable<ArrayItemYield<UnwrapArray<T[Field]>>> {
-    let previousLength = 0
-    let lastItem: UnwrapArray<T[Field]> | null = null
+    const yielder = createArrayItemsYielder<UnwrapArray<T[Field]>>()
 
     for await (const partialObject of stream) {
         const currentArray = partialObject[arrayField] || []
@@ -89,42 +151,11 @@ export async function* yieldNewArrayItems<T, Field extends keyof T & string>({
             )
             continue
         }
-        const currentLengthWithoutLast = currentArray.length - 1
-        lastItem = currentArray[currentArray.length - 1]
-        // TODO here not all  items are yielded
 
-        if (currentLengthWithoutLast > previousLength) {
-            for (let i = previousLength; i < currentLengthWithoutLast; i++) {
-                yield {
-                    partialItem: currentArray[i],
-                    fullItem: undefined,
-                }
-                yield {
-                    fullItem: currentArray[i],
-                    partialItem: undefined,
-                }
-            }
-
-            previousLength = currentLengthWithoutLast
-        }
-        if (lastItem) {
-            yield {
-                partialItem: lastItem,
-                fullItem: undefined,
-            }
-        }
+        yield* yielder.yieldNewItems(currentArray)
     }
 
-    if (lastItem != null) {
-        yield {
-            partialItem: lastItem,
-            fullItem: undefined,
-        }
-        yield {
-            fullItem: lastItem,
-            partialItem: undefined,
-        }
-    }
+    yield* yielder.yieldRemaining()
 }
 
 export function removeMarkdownSnippets(text: string) {

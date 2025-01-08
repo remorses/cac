@@ -1,4 +1,6 @@
 import { OldTextTree } from 'website/src/lib/rewrite'
+import camelCase from 'camelcase'
+
 import { env } from './env'
 
 export function loginRedirectUrl({ next = '' }) {
@@ -189,22 +191,18 @@ export function oldTextTreeToXml(
         }
         let name = node.name || 'Container'
         let nodeName =
-            name
-                .replace(/\s+/g, '_')
-                .replace(/\.+/g, '')
-                .replace(/[^a-zA-Z0-9_]/g, '_')
-                .replace(/^[^a-zA-Z_]+/, '_')
-                .replace(/[_-]+/g, '_')
-                .replace(/^_+/, '') || 'Node'
+            camelCase(name?.replace(/[^a-zA-Z0-9\s_-]+/g, ' ') || 'None', {
+                pascalCase: true,
+            }) || 'Node'
 
         // Truncate nodeName if it's too long (e.g., more than 50 characters)
-        let max = 50
+        let max = 60
         if (nodeName.length > max) {
             const lastUnderscoreIndex = nodeName.indexOf('_', max)
             if (lastUnderscoreIndex > 0) {
                 nodeName = nodeName.substring(0, lastUnderscoreIndex)
             } else {
-                nodeName = nodeName.substring(0, 50)
+                nodeName = nodeName.substring(0, max)
             }
         }
         const attributes = [] as string[]
@@ -287,4 +285,12 @@ export function deduplicateByKey<T>(
         }
     }
     return Array.from(seen.values())
+}
+
+export function safeUrl(u) {
+    try {
+        return new URL(u)
+    } catch {
+        return null
+    }
 }

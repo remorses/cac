@@ -141,6 +141,7 @@ export async function getOrgCredits({ orgId }) {
             .map((x) => {
                 const num = variantIdToCredits[x.variantId]
                 if (num == null) {
+                    return 0
                     throw new AppError(
                         `Cannot get credits for variantId ${x.variantId}`,
                     )

@@ -1,0 +1,103 @@
+```xml
+<Container>
+  <Hero>
+    <!-- hero/badge: Using a new badge text that matches the AI/tech theme -->
+    <AI_Kit_Badge nodeId="kvaze3i5">
+      AI POWERED
+    </AI_Kit_Badge>
+
+    <!-- hero/heading: Using a bold, direct statement about website creation -->
+    <text nodeId="BmPmnKu3U" fontSize="82px">
+      Design Websites in Minutes
+    </text>
+
+    <!-- hero/subheading: Emphasizing ease and speed of website creation -->
+    <text nodeId="Ga6gDXZIe" fontSize="20px">
+      Create professional, responsive websites with our intuitive drag-and-drop interface.
+    </text>
+
+    <!-- hero/button: Maintaining call-to-action style -->
+    <AI_Kit_Button nodeId="rgayf1f9">
+      Start Building Free
+    </AI_Kit_Button>
+  </Hero>
+
+  <Companies>
+    <!-- companies/heading: Keeping the social proof text -->
+    <text nodeId="y8xplxOnV" fontSize="16px">
+      Trusted by Innovative Companies
+    </text>
+
+    <!-- companies/grid: Maintaining the grid structure with company names -->
+    <Grid>
+      <Stack>
+        <Stack>
+          <text href="https://framer.com" nodeId="vnzxmNCxb">
+            Framer
+          </text>
+        </Stack>
+      </Stack>
+      <Stack>
+        <Stack>
+          <text href="https://figma.com" nodeId="DRefZ4FzF">
+            Figma
+          </text>
+        </Stack>
+      </Stack>
+    </Grid>
+  </Companies>
+
+  <Features>
+    <!-- features/heading: Maintaining the focus on design and responsiveness -->
+    <Stack>
+      <text nodeId="C9Wau5gv1" fontSize="32px">
+        Design Beautiful Responsive Sites with Ease
+      </text>
+    </Stack>
+
+    <!-- features/grid: Keeping the card-based feature presentation -->
+    <Grid>
+      <Card>
+        <Stack>
+          <text nodeId="M2ZPHDqe6" fontSize="16px">
+            Intuitive Design
+          </text>
+          <text nodeId="UMkipYqxL" fontSize="16px">
+            Experience a Figma-like interface with an infinite canvas and powerful design tools.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="kKZ8P977O" fontSize="16px">
+            Real-Time Collaboration
+          </text>
+          <text nodeId="JxpYmedKj" fontSize="16px">
+            Invite team members and work together seamlessly in a shared design environment.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text nodeId="kxskj_v2Y" fontSize="16px">
+            Responsive Layouts
+          </text>
+          <text nodeId="HybKQJqce" fontSize="16px">
+            Create flexible designs with Grids & Stacks, and customize breakpoints for perfect responsiveness.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
+            Interactive Effects
+          </text>
+          <text nodeId="h1vQET5E8" fontSize="16px">
+            Add engaging animations and interactions without writing a single line of code.
+          </text>
+        </Stack>
+      </Card>
+    </Grid>
+  </Features>
+</Container>
+```
