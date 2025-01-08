@@ -194,26 +194,34 @@ function findFirstChildrenLayer(tree: OldTextTree): {
     }
     return { layer: currentLayer, parents }
 }
-
+// Time Complexity: O(n)
+// - findFirstChildrenLayer: O(h) where h is height of tree, worst case O(n)
+// - Main loop: O(n) to iterate through all nodes
+// - bfsOldTextTree: O(n) to traverse nodes
+// - createChunkWithParents: O(h) where h is height of parents array
+// Overall complexity dominated by the O(n) operations
 export function splitTreeInChunks(
     tree: OldTextTree,
     maxChunkTreeSize: number = ITEMS_PER_ITERATION,
 ): OldTextTree[] {
     let result: OldTextTree[] = []
     let buffer: OldTextTree = []
+    let currentNodeCount = 0 // Optimization: Keep running count
 
     // Find the first layer with more than one child
     const { layer: currentLayer, parents } = findFirstChildrenLayer(tree)
 
     for (const node of currentLayer) {
-        const nodes = bfsOldTextTree([...buffer, node])
+        // Count nodes with nodeId in current node
+        const nodeCount = bfsOldTextTree([node]).filter((x) => x.nodeId).length
+        currentNodeCount += nodeCount
 
-        if (nodes.length >= maxChunkTreeSize) {
+        if (currentNodeCount >= maxChunkTreeSize) {
             const chunk = createChunkWithParents(parents, [...buffer, node])
             result.push(chunk)
             buffer = []
+            currentNodeCount = 0
         } else {
-            // Add to buffer
             buffer.push(node)
         }
     }

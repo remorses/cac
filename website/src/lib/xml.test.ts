@@ -326,8 +326,7 @@ test('splitTreeInChunks', () => {
           </Link>
         </Closed>
       </NavigationTwitterProfilePreview>
-      ",
-        "<RemoveButton>
+      <RemoveButton>
         <Variant1>
           <Text nodeId="xRh2ZBpJM">
             Sign Up With Google
