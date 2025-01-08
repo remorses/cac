@@ -171,7 +171,7 @@ export async function* NDJSONStream<T = any>({
     minTime = 0,
     onToken,
 }: {
-    stream: StreamTextResult<any>
+    stream: StreamTextResult<any, any>
     minTime?: number
     onToken?: (token: string) => void
 }): AsyncGenerator<T, void, unknown> {
