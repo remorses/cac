@@ -112,7 +112,16 @@ export const rewritePluginApp = new Spiceflow({
             try {
                 for await (let chunk of objectStream) {
                     // console.log('chunk', chunk)
-                    yield { ...chunk, type: 'chunk' as const }
+                    yield {
+                        ...chunk,
+                        type: 'chunk' as const,
+                        partialItem:
+                            chunk.type === 'partialItem'
+                                ? chunk.partialItem
+                                : null,
+                        completeObj:
+                            chunk.type === 'fullItem' ? chunk.fullItem : null,
+                    }
                     let object = chunk.type === 'fullItem' && chunk.fullItem
                     if (object) {
                         chars += object?.newContent?.length || 0
