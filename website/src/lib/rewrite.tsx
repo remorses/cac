@@ -263,6 +263,13 @@ export async function* rewriteTemplateChunk({
                 sourceHtml,
                 url,
             }),
+            experimental_providerMetadata: {
+                anthropic: {
+                    cache_control: {
+                        type: 'ephemeral',
+                    },
+                },
+            },
         },
 
         ...examples({ host }).flatMap(({ input, output }) => {
