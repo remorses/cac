@@ -311,7 +311,7 @@ function SimplePromptComponent({}) {
 
         let prevBackground = null as string | ColorStyle | null
         let lastTimeZoomed = Date.now()
-        let minTimeOnNode = credits.free ? 1000 : 200
+        let minTimeOnNode = credits.free ? 200 : 200
         const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
 
         let currentNodeId = undefined as string | undefined
