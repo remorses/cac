@@ -1,4 +1,4 @@
-<-- 30 -->
+<-- 35 -->
 <NavigationLogo>
   <Variant1>
     <Text nodeId="CZDt6l2Ov">
@@ -73,11 +73,6 @@
     </Text>
   </Primary>
 </ButtonsPrimary>
-
-
----
-
-<-- 36 -->
 <Container>
   <ValidationSection>
     <MainContainer>
@@ -89,6 +84,11 @@
     </MainContainer>
   </ValidationSection>
 </Container>
+
+
+---
+
+<-- 31 -->
 <Container>
   <HighlightsSection>
     <MainContainer>
@@ -725,7 +725,7 @@
 
 ---
 
-<-- 23 -->
+<-- 33 -->
 <CardsCustomerStories>
   <Testimonial>
     <Stack>
@@ -782,11 +782,6 @@
     </Text>
   </Answers>
 </CardsFaqCard>
-
-
----
-
-<-- 10 -->
 <NavigationFooter>
   <Variant1>
     <FooterTop>

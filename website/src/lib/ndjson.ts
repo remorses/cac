@@ -64,12 +64,12 @@ type ArrayItemYield<T> =
     | {
           fullItem: RequiredDeep<T>
           type: 'fullItem'
-          partialItem: undefined
+          partialObject: undefined
       }
     | {
           fullItem: undefined
           type: 'partialItem'
-          partialItem: Partial<T>
+          partialObject: Partial<T>
       }
 
 // this function let you yield new array items by calling each time with an updated array
@@ -90,14 +90,14 @@ export function createArrayItemsYielder<T>() {
             for (let i = previousLength; i < currentLengthWithoutLast; i++) {
                 const item = currentArray[i] as RequiredDeep<T>
                 yield {
-                    partialItem: currentArray[i],
+                    partialObject: currentArray[i],
                     type: 'partialItem' as const,
                     fullItem: undefined,
                 }
                 yield {
                     fullItem: item,
                     type: 'fullItem' as const,
-                    partialItem: undefined,
+                    partialObject: undefined,
                 }
             }
 
@@ -105,7 +105,7 @@ export function createArrayItemsYielder<T>() {
         }
         if (lastItem) {
             yield {
-                partialItem: lastItem,
+                partialObject: lastItem,
                 type: 'partialItem' as const,
                 fullItem: undefined,
             }
@@ -115,14 +115,14 @@ export function createArrayItemsYielder<T>() {
     function* yieldRemaining(): Generator<ArrayItemYield<T>> {
         if (lastItem) {
             yield {
-                partialItem: lastItem,
+                partialObject: lastItem,
                 type: 'partialItem' as const,
                 fullItem: undefined,
             }
             yield {
                 fullItem: lastItem as RequiredDeep<T>,
                 type: 'fullItem' as const,
-                partialItem: undefined,
+                partialObject: undefined,
             }
         }
     }

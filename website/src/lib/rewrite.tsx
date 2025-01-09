@@ -360,34 +360,47 @@ export function mergeChunksTooSmall(
         return chunks
     }
 
-    const minSize = maxSize / 3
+    const minSize = maxSize / 2
     let result = [...chunks]
 
-    // Find indices of chunks that are too small
-    const smallChunkIndices = result
-        .map((chunk, index) => ({ size: getChunkSize(chunk), index }))
-        .filter(({ size }) => size < minSize)
-        .map(({ index }) => index)
+    // Keep merging small chunks until no more merges are possible
+    let madeChanges = true
+    while (madeChanges) {
+        madeChanges = false
 
-    // For each small chunk
-    for (const index of smallChunkIndices) {
-        // Skip if this chunk was already merged
-        if (!result[index]) continue
+        // Find first small chunk that can be merged
+        for (let i = 0; i < result.length; i++) {
+            const currentSize = getChunkSize(result[i])
 
-        const currentChunk = result[index]
-        const nextChunk = result[index + 1]
+            if (currentSize < minSize) {
+                // Get sizes of previous and next chunks if they exist
+                const prevSize = i > 0 ? getChunkSize(result[i - 1]) : Infinity
+                const nextSize =
+                    i < result.length - 1
+                        ? getChunkSize(result[i + 1])
+                        : Infinity
 
-        // Skip if there's no next chunk to merge with
-        if (!nextChunk) continue
-
-        const combinedSize =
-            getChunkSize(currentChunk) + getChunkSize(nextChunk)
-
-        // Only merge if combined size is less than maxSize * 1.4
-        if (combinedSize < maxSize * 1.3) {
-            result[index] = [...currentChunk, ...nextChunk]
-            // Remove the chunk we merged with
-            result.splice(index + 1, 1)
+                // Determine which neighbor is smaller
+                if (prevSize <= nextSize && i > 0) {
+                    // Merge with previous chunk
+                    const combinedSize = currentSize + prevSize
+                    if (combinedSize < maxSize) {
+                        result[i - 1] = [...result[i - 1], ...result[i]]
+                        result.splice(i, 1)
+                        madeChanges = true
+                        break
+                    }
+                } else if (i < result.length - 1) {
+                    // Merge with next chunk
+                    const combinedSize = currentSize + nextSize
+                    if (combinedSize < maxSize) {
+                        result[i] = [...result[i], ...result[i + 1]]
+                        result.splice(i + 1, 1)
+                        madeChanges = true
+                        break
+                    }
+                }
+            }
         }
     }
 
@@ -435,8 +448,8 @@ export function splitTreeInChunks(
     while (currentChunks.length !== prevLength) {
         prevLength = currentChunks.length
         currentChunks = mergeCloseChunks(currentChunks, maxChunkTreeSize)
-        currentChunks = mergeChunksTooSmall(currentChunks, maxChunkTreeSize)
     }
+    currentChunks = mergeChunksTooSmall(currentChunks, maxChunkTreeSize * 1.2)
     return currentChunks
 }
 
