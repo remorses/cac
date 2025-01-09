@@ -254,7 +254,7 @@ export async function* rewriteTemplateChunk({
     url: string
     user: string
 }) {
-    const host = safeUrl(url || 'http://example.com')?.host || url
+    const host = safeUrl(url || 'http://nourlgivenbyuser.com')?.host || url
     let messages: CoreMessage[] = [
         {
             role: 'system',
