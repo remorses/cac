@@ -1,4 +1,6 @@
 import fs from 'fs'
+import { Evt } from 'evt'
+
 import { on, EventEmitter } from 'events'
 import { TransformStream } from 'stream/web'
 import path from 'path'
@@ -35,12 +37,7 @@ export type ComponentObject = z.infer<typeof componentObjectSchema>
 
 type FramerEvent = { type: 'change'; components: ReactExportComponent[] }
 
-let projectsEvents = new Map<
-    string,
-    EventEmitter<{
-        data: FramerEvent[]
-    }>
->()
+let projectsEvents = new Map<string, Evt<FramerEvent>>()
 
 export const reactPluginApp = new Spiceflow({
     basePath: '/reactExportPlugin',
@@ -79,14 +76,14 @@ export const reactPluginApp = new Spiceflow({
             const { projectId } = params
             const { components } = await request.json()
             if (!projectsEvents.has(projectId)) {
-                projectsEvents.set(projectId, new EventEmitter())
+                projectsEvents.set(projectId, new Evt())
             }
             const emitter = projectsEvents.get(projectId)!
             console.log(
                 'Framer emitting event for components',
                 components.map((x) => x.url),
             )
-            emitter.emit('data', { type: 'change', components })
+            emitter.post({ type: 'change', components })
 
             return 'ok'
         },
@@ -108,11 +105,14 @@ export const reactPluginApp = new Spiceflow({
                     return
                 }
 
-                for await (const event of on(emitter, 'data')) {
+                // https://docs.evt.land/api/evt/async-iterator
+                for await (const event of emitter.iter()) {
                     console.log('emitting event', event)
-                    yield* event as FramerEvent[]
+                    yield event
                 }
             } finally {
+                const emitter = projectsEvents.get(projectId)
+                emitter?.detach()
                 projectsEvents.delete(projectId)
             }
         },

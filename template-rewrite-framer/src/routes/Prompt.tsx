@@ -341,6 +341,7 @@ function SimplePromptComponent({}) {
             }
             lastTimeZoomed = Date.now()
             await node.zoomIntoView({ maxZoom: 0.9 })
+
             if (isTextNode(node)) {
                 // await node.setText('')
             }
