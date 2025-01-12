@@ -260,8 +260,6 @@ function SimplePromptComponent({}) {
                 console.error('Failed to copy old text to clipboard:', error)
             }
         }
-        // return
-        // console.log('oldText', JSON.stringify(oldText, null, 2))
 
         if (!oldText.length) {
             setError('No text found to replace')
@@ -269,10 +267,6 @@ function SimplePromptComponent({}) {
         }
         setPreviousOldText([...oldText])
 
-        // Copy old text to clipboard if in dev mode
-
-        // console.log('oldText', JSON.stringify(oldText, null, 2))
-        // return
         const { name: projectName } = await framer.getProjectInfo()
         let pagePath = ''
         const root = await framer.getCanvasRoot()
@@ -572,15 +566,6 @@ function SimplePromptComponent({}) {
 
     return (
         <form
-            // exit={{
-            //     opacity: 0,
-            // }}
-            // initial={{
-            //     opacity: 0,
-            // }}
-            // animate={{
-            //     opacity: 1,
-            // }}
             onSubmit={(e) => {
                 e.preventDefault()
                 onSubmit()
@@ -671,13 +656,6 @@ function SimplePromptComponent({}) {
                     {isLoading ? 'Cancel' : 'Discard Replacement'}
                 </Button>
             )}
-
-            {/* <div className='text-[11px] opacity-70'>
-                <span className='font-mono tracking-wider font-semibold'>
-                    {formatLargeNumber(remainingCredits)}
-                </span>{' '}
-                credits remaining
-            </div> */}
         </form>
     )
 }
