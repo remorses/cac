@@ -41,7 +41,7 @@ function LoginComponent() {
     const data = useLoaderData() as LoaderReturnType<typeof loader>
     const url = framerLoginUrl({
         key,
-        pluginName: PluginNames.react,
+        pluginName: PluginNames.llm,
         code,
         projectId: data?.projectId,
         projectName: data?.projectName,
@@ -143,7 +143,7 @@ async function loader({}: LoaderFunctionArgs) {
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
-        throw redirect(withMode(Paths.components))
+        throw redirect(withMode(Paths.prompt))
     } else {
         console.log(data)
     }

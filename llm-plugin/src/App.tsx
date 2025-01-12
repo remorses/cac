@@ -19,7 +19,7 @@ import {
 } from '@/lib/utils'
 import { LoginPage } from '@/routes/Login'
 
-import { Components } from '@/routes/Rewrite'
+import { SimplePrompt } from '@/routes/Rewrite'
 import { Settings } from '@/routes/Settings'
 
 import {
@@ -56,7 +56,7 @@ const router = createBrowserRouter(
                     typeof loader
                 >
                 const location = useLocation()
-                let width = location.pathname === Paths.login ? 260 : 320
+                let width = 260
 
                 useFocusOnMount()
 
@@ -129,7 +129,7 @@ const router = createBrowserRouter(
                 },
                 LoginPage(),
 
-                Components(),
+                SimplePrompt(),
                 Settings(),
 
                 BuyMore(),
@@ -151,7 +151,7 @@ async function rootLoader({ request }) {
 
     // return redirect(withMode(Paths.login))
 
-    return redirect(withMode(Paths.components))
+    return redirect(withMode(Paths.prompt))
 }
 
 export default function Page() {

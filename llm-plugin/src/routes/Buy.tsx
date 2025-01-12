@@ -44,7 +44,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             })
     if (activeSub) {
-        throw redirect(withMode(Paths.components))
+        throw redirect(withMode(Paths.prompt))
     }
     const { email, orgId } = org
     return { ...pluginData, freeComponents, email, orgId }

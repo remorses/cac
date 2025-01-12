@@ -6,33 +6,26 @@ import {
 } from 'template-rewrite-framer/src/lib/hooks'
 
 import {
-    LoaderReturnType,
-    Paths,
-    PluginDataKeys,
-    collectGenerator,
     createBuyLink,
     getDesktop,
-    getParentNodes,
     globalState,
     isTruthy,
+    LoaderReturnType,
+    Paths,
     pluginApiClient,
-    withMode,
+    PluginDataKeys,
+    withMode
 } from 'template-rewrite-framer/src/lib/utils'
 
 import {
     AnyNode,
     ColorStyle,
-    ComponentInstanceNode,
     framer,
     isComponentInstanceNode,
     isComponentNode,
-    isFrameNode,
     isTextNode,
     isWebPageNode,
-    supportsBackgroundColor,
-    supportsLink,
-    supportsName,
-    supportsVisible,
+    supportsBackgroundColor
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -47,17 +40,16 @@ import { OldTextTree } from 'website/src/lib/rewrite'
 
 import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
-    bfsOldTextTree,
-    cleanupOldTextTree,
-    oldTextTreeToXml,
-    sleep,
-} from 'website/src/lib/utils'
-import {
     discardFramerChanges,
     getFramerTree,
     isNodeZoomable,
     NodeWithControl,
 } from 'template-rewrite-framer/src/lib/framer'
+import {
+    bfsOldTextTree,
+    oldTextTreeToXml,
+    sleep
+} from 'website/src/lib/utils'
 
 let abortController = new AbortController()
 

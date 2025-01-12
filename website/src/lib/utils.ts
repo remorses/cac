@@ -31,6 +31,7 @@ export enum PluginNames {
     github = 'github',
     migrate = 'migrate',
     react = 'react',
+    llm = 'llm',
 }
 
 export function framerLoginUrl({

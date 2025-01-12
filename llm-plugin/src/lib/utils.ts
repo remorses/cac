@@ -52,7 +52,7 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
 
 export enum Paths {
     login = '/login',
-    components = '/components',
+    prompt = '/prompt',
     readme = '/readme',
     settings = '/settings',
     buy = '/buy',

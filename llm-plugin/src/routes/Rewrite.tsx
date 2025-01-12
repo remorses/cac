@@ -1,34 +1,551 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
+import { notifyError } from 'template-rewrite-framer/src/lib/errors'
+import {
+    useLatestFunction,
+    useRefreshOnVisible,
+} from 'template-rewrite-framer/src/lib/hooks'
 
 import {
+    getDesktop,
+    isTruthy,
     LoaderReturnType,
-    Paths,
-    getLLMPluginData,
-    pluginApiClient,
     withMode,
-} from '@/lib/utils'
+} from 'template-rewrite-framer/src/lib/utils'
+
+import {
+    AnyNode,
+    ColorStyle,
+    framer,
+    isComponentInstanceNode,
+    isComponentNode,
+    isTextNode,
+    isWebPageNode,
+    supportsBackgroundColor,
+} from 'framer-plugin'
+import { useEffect, useRef, useState } from 'react'
 import {
     LoaderFunctionArgs,
-    redirect,
     RouteObject,
-    useActionData,
     useLoaderData,
     useNavigate,
-    useNavigation,
+    useRevalidator,
 } from 'react-router'
 
-import { notifyError } from '@/lib/errors'
-import { framer } from 'framer-plugin'
-import {} from 'react-router'
-import { Form, Link } from 'react-router-dom'
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { useRef, useState } from 'react'
+import { OldTextTree } from 'website/src/lib/rewrite'
+
+import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
+import {
+    discardFramerChanges,
+    getFramerTree,
+    isNodeZoomable,
+    NodeWithControl,
+} from 'template-rewrite-framer/src/lib/framer'
+import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
+import { Paths, pluginApiClient, PluginDataKeys } from '@/lib/utils'
+import { getBuyLLMPluginUrl } from 'website/src/lib/env'
+
+let abortController = new AbortController()
+
+let instanceNodes = new Map<string, NodeWithControl>()
+
+function SimplePromptComponent({}) {
+    const { buyMoreCreditsUrl, credits } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
+
+    const [isLoading, setIsLoading] = useState(false)
+    const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
+
+    useEffect(() => {
+        // abort when leaving the page
+        return () => {
+            console.log('leaving the page, aborting')
+            abortController.abort()
+        }
+    }, [])
+
+    const revalidator = useRevalidator()
+    const buyCreditsInstead = !credits.remaining
+    // console.log('credits', credits)
+    async function onSubmit() {
+        if (buyCreditsInstead) {
+            // setIsLoading(true)
+            window.open(buyMoreCreditsUrl, '_blank')
+            return
+        }
+
+        if (isLoading) {
+            return
+        }
+
+        if (abortController) {
+            abortController.abort()
+        }
+        abortController = new AbortController()
+        setIsLoading(true)
+
+        try {
+            await Promise.all([
+                // replaceImagesClient(), //
+                replaceTextClient(),
+            ])
+        } catch (e) {
+            notifyError(e, 'submitting rewrite prompt')
+        } finally {
+            revalidator.revalidate()
+            setShouldShowStars(true)
+            setIsLoading(false)
+        }
+    }
+    let [error, setError] = useState('')
+
+    const [generationId, setGenerationId] = useState(0)
+    const [selectedNodes, setSelectedNodes] = useState<AnyNode[]>([])
+
+    useEffect(() => {
+        return framer.subscribeToSelection((selection) => {
+            setSelectedNodes(selection.filter((x) => x))
+        })
+    }, [])
+
+    function reset() {
+        setPreviousOldText([])
+        instanceNodes.clear()
+        setGenerationId(0)
+        setError('')
+        setShouldShowStars(false)
+        setStars(0)
+    }
+
+    async function replaceTextClient() {
+        reset()
+        // const root = await framer.getCanvasRoot()
+
+        let desktop = await getDesktop()
+        if (selectedNodes.length) {
+            console.log(`using selected nodes`, selectedNodes)
+        } else {
+            console.log(`using desktop page`, desktop)
+        }
+        let rootNodes = selectedNodes.length
+            ? selectedNodes.filter(isTruthy)
+            : [desktop].filter(isTruthy)
+
+        if (!rootNodes.length) {
+            setError('No root nodes found')
+            return
+        }
+
+        if (!rootNodes?.length) {
+            setError('No desktop found')
+            return
+        }
+
+        let oldText = await getFramerTree({ rootNodes, instanceNodes })
+        // @ts-ignore
+        if (import.meta.env?.DEV) {
+            try {
+                const xml = oldTextTreeToXml(oldText)
+
+                await navigator.clipboard.writeText(
+                    JSON.stringify(oldText, null, 2),
+                )
+                await sleep(400)
+                await navigator.clipboard.writeText(xml)
+                console.log('Old text copied to clipboard as JSON')
+            } catch (error) {
+                console.error('Failed to copy old text to clipboard:', error)
+            }
+        }
+
+        if (!oldText.length) {
+            setError('No text found to replace')
+            return
+        }
+        setPreviousOldText([...oldText])
+
+        const { name: projectName } = await framer.getProjectInfo()
+        let pagePath = ''
+        const root = await framer.getCanvasRoot()
+        if (isWebPageNode(root)) {
+            pagePath = root.path || ''
+        } else if (isComponentNode(root)) {
+            pagePath = '/__component/' + root.componentName || ''
+        }
+
+        const { data: eventSource, error } =
+            await pluginApiClient.api.plugins.rewritePlugin.rephrase.post(
+                {
+                    description,
+                    oldText: oldText,
+                    // exampleTextToMigrate: globalState.exampleTextToMigrate,
+                    sourceHtml: globalState.sourceHtml,
+                    url: globalState.sourceUrl,
+                    pagePath,
+                    projectName,
+                },
+                {
+                    fetch: {
+                        signal: abortController.signal,
+                    },
+                },
+            )
+        if (error) {
+            notifyError(error, 'error getting prompt')
+            setError(String(error))
+            return
+        }
+
+        // a red background showing we are changing this text, with 0.7 opacity
+        const backgroundColor = 'rgba(1, 153, 255, 0.3)'
+        let prevNode: AnyNode | undefined
+
+        let prevBackground = null as string | ColorStyle | null
+        let lastTimeZoomed = Date.now()
+        let minTimeOnNode = credits.free ? 200 : 200
+        const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
+
+        let currentNodeId = undefined as string | undefined
+
+        async function highlightNextNode(nextItemId) {
+            let node =
+                instanceNodes.get(nextItemId)?.node ||
+                (await framer.getNode(nextItemId))
+
+            if (!node) {
+                console.log('no node to zoom found for id', nextItemId)
+
+                return
+            }
+            // console.log(`nextItemId is ${nextItemId} ${node?.name}`)
+
+            await prevNode?.setAttributes({
+                backgroundColor: prevBackground,
+            })
+            // prevNode = undefined
+            // prevBackground = null
+            let currentParent = (await node.getParent()) || undefined
+            const isZoomable = await isNodeZoomable(node)
+            if (!isZoomable) {
+                console.log('node not visible, skipping zoom')
+                return
+            }
+            lastTimeZoomed = Date.now()
+            await node.zoomIntoView({ maxZoom: 0.9 })
+
+            if (isTextNode(node)) {
+                // await node.setText('')
+            }
+
+            if (!currentParent || !supportsBackgroundColor(currentParent)) {
+                return
+            }
+
+            prevBackground = currentParent?.backgroundColor || null
+            await currentParent?.setAttributes({ backgroundColor })
+
+            prevNode = currentParent
+        }
+
+        try {
+            for await (let streamPart of eventSource!) {
+                // console.log('partialItem', streamPart)
+
+                if (streamPart.type === 'generation') {
+                    setGenerationId(streamPart.generationId)
+                    continue
+                }
+                if (streamPart.type !== 'chunk') {
+                    continue
+                }
+                const { completeObj, partialItem } = streamPart
+
+                if (partialItem && currentNodeId !== partialItem.nodeId) {
+                    await highlightNextNode(partialItem.nodeId)
+                }
+                currentNodeId = partialItem?.nodeId
+                if (completeObj?.newContent) {
+                    // let words = completeObj.newContent.split(/\s+/).length
+                    console.log(
+                        'new text',
+                        JSON.stringify(completeObj, null, 2),
+                    )
+                }
+
+                if (!partialItem) {
+                    continue
+                }
+
+                // Process each chunk (value)
+
+                if (partialItem.nodeId == null) {
+                    console.log(
+                        `no nodeId found: ${JSON.stringify(partialItem)}`,
+                    )
+                    continue
+                }
+
+                const node =
+                    instanceNodes.get(partialItem.nodeId)?.node ||
+                    (await framer.getNode(partialItem.nodeId))
+
+                if (!node) {
+                    console.log(`no node found for id ${partialItem.nodeId}`)
+                    continue
+                }
+                const old = allOldNodes.find(
+                    (x) => x.nodeId === partialItem.nodeId,
+                )?.content
+                if (!old) {
+                    console.log(
+                        `no old text found for node ${partialItem.nodeId}`,
+                    )
+                    continue
+                }
+                // console.log(
+                //     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
+                // )
+
+                if (Date.now() - lastTimeZoomed < minTimeOnNode) {
+                    let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
+                    // console.log('waiting before zooming', time)
+                    await sleep(time)
+                }
+
+                if (!partialItem.newContent) {
+                    // console.log('no text found in chunk', chunk)
+                    continue
+                }
+                if (isTextNode(node)) {
+                    await node.setText(partialItem.newContent)
+                } else if (isComponentInstanceNode(node)) {
+                    const instance = instanceNodes.get(partialItem.nodeId)
+                    if (!instance) {
+                        console.log(
+                            'no instance found for node',
+                            partialItem.nodeId,
+                        )
+                        continue
+                    }
+
+                    let controls = {
+                        // ...node.controls,
+                        [instance.controlKey]: partialItem.newContent,
+                    }
+
+                    console.log('setting node control', instance.controlKey)
+                    await node.setAttributes({ controls })
+                } else {
+                    console.log(
+                        `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
+                    )
+                }
+
+                // TODO add links
+                // if (supportsLink(node) && chunk.href) {
+                //     console.log('setting link', chunk.href)
+                //     await node.setAttributes({ link: chunk.href })
+                // }
+            }
+            await sleep(200)
+            await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
+        } finally {
+            await prevNode?.setAttributes({ backgroundColor: prevBackground })
+        }
+    }
+    useRefreshOnVisible({ enabled: !isLoading })
+
+    const discard = useLatestFunction(async () => {
+        if (isLoading) {
+            console.log('aborting')
+            abortController.abort()
+            return
+        }
+        if (!previousOldText.length) {
+            console.log('no old nodes to discard')
+            return
+        }
+        setIsDiscarding(true)
+        try {
+            await Promise.all([
+                discardFramerChanges({ previousOldText, instanceNodes }),
+                pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
+                    {
+                        id: generationId,
+                    },
+                ),
+            ])
+            reset()
+        } finally {
+            setIsDiscarding(false)
+        }
+    })
+
+    const buttonText = (() => {
+        if (!credits.remaining) {
+            return 'Buy More Credits'
+        }
+        if (selectedNodes.length) {
+            return 'Replace Selection'
+        }
+        return 'Replace'
+    })()
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+    useEffect(() => {
+        if (textareaRef.current) {
+            adjustHeight(textareaRef.current)
+        }
+    }, [])
+    const navigate = useNavigate()
+
+    const adjustHeight = (element) => {
+        element.style.height = 'auto'
+        element.style.height = `${element.scrollHeight}px`
+    }
+    const [stars, setStars] = useState(0)
+
+    useEffect(() => {
+        if (!generationId) {
+            return
+        }
+        const debounceTimeout = setTimeout(() => {
+            if (stars > 0) {
+                pluginApiClient.api.plugins.rewritePlugin.submitReview
+                    .post({
+                        stars,
+                        generationId,
+                    })
+                    .catch((error) => {
+                        console.error('Failed to submit review:', error)
+                    })
+            }
+        }, 700)
+
+        return () => {
+            clearTimeout(debounceTimeout)
+        }
+    }, [stars, generationId])
+
+    const [isDiscarding, setIsDiscarding] = useState(false)
+    const [shouldShowStars, setShouldShowStars] = useState(
+        !!previousOldText.length && !isLoading,
+    )
+
+    return (
+        <form
+            onSubmit={(e) => {
+                e.preventDefault()
+                onSubmit()
+            }}
+            className='flex grow flex-col items-start w-full justify-start gap-3'
+        >
+            <div className='flex flex-col w-full min-h-[160px]'>
+                {!shouldShowStars && (
+                    <div className='flex flex-col items-center w-full py-[50px] shrink-0 justify-center grow gap-3 text-center text-balance'>
+                        <div className='font-semibold'>Add a description</div>
+                        <div className='opacity-70'>
+                            The plugin will use this description to replace
+                            content on your page.
+                        </div>
+                    </div>
+                )}
+                {shouldShowStars && (
+                    <div className='flex grow justify-center w-full gap-3 flex-col items-center'>
+                        <div className='opacity-70'>
+                            How good was the result?
+                        </div>
+                        <StarReview
+                            value={stars}
+                            onChange={(value) => {
+                                setStars(value)
+                                setTimeout(() => {
+                                    setShouldShowStars(false)
+                                }, 1000)
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+            <div className='w-full'>
+                <textarea
+                    ref={textareaRef}
+                    disabled={buyCreditsInstead}
+                    required
+                    onChange={(e) => {
+                        adjustHeight(e.target)
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault()
+                            onSubmit()
+                        }
+                    }}
+                    className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
+                    autoFocus
+                    placeholder='Framer is a web design tool...'
+                />
+            </div>
+
+            {error && (
+                <div className='text-red-300 text-[11px] font-mono'>
+                    {error}
+                </div>
+            )}
+            <div className='flex justify-stretch w-full gap-3'>
+                <Button
+                    className='w-auto block grow'
+                    onClick={() => {
+                        navigate(withMode(Paths.settings))
+                    }}
+                    type='button'
+                >
+                    Settings
+                </Button>
+                <Button
+                    isLoading={isLoading}
+                    // disabled={disabled}
+                    type='submit'
+                    variant='primary'
+                    className='w-auto block grow'
+                >
+                    {buttonText}
+                </Button>
+            </div>
+            {Boolean(isLoading || previousOldText.length) && (
+                <Button
+                    // className='bg-transparent'
+                    onClick={discard}
+                    isLoading={isDiscarding}
+                    type='button'
+                >
+                    {isLoading ? 'Cancel' : 'Discard Replacement'}
+                </Button>
+            )}
+        </form>
+    )
+}
+
+export function SimplePrompt(): RouteObject {
+    return {
+        Component: SimplePromptComponent,
+        handle: 'Describe what your new website is about',
+        path: Paths.prompt,
+        loader,
+        shouldRevalidate: () => true,
+    }
+}
 
 async function loader({}: LoaderFunctionArgs) {
-    const components = await framer.getNodesWithType('ComponentNode')
-    let { id: projectId } = await framer.getProjectInfo()
-    let shortId = projectId.slice(0, 16)
-    const [org, reactExportProject] = await Promise.all([
+    let [credits, { email, orgId }, info] = await Promise.all([
+        pluginApiClient.api.plugins.rewritePlugin.getCredits
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
         pluginApiClient.api.plugins.currentOrg
             .post({})
             .then(({ data, error }) => {
@@ -37,318 +554,18 @@ async function loader({}: LoaderFunctionArgs) {
                 }
                 return data
             }),
-        pluginApiClient.api.plugins.reactExportPlugin
-            .project({ projectId: shortId })
-            .get({})
-            .then(({ data, error }) => {
-                if (error) {
-                    return null
-                }
-                return data
-            }),
+        framer.getProjectInfo(),
     ])
+    const { id: projectId } = info
 
-    const { email, orgId } = org
-    let componentsData = components.map((component) => {
-        const { name, id, insertURL, componentIdentifier } = component
-
-        return { name, id, insertURL, componentIdentifier, node: component }
+    const buyMoreCreditsUrl = getBuyLLMPluginUrl({
+        email,
+        orgId,
+        projectId,
     })
-    const componentIds = reactExportProject?.components?.map((x) => x.id) || []
-    return { componentIds, email, orgId, componentsData }
-}
 
-async function action({ request }: LoaderFunctionArgs) {
-    const formData = await request.formData()
-
-    const [publishInfo, components, pages, styles, projectInfo, locales] =
-        await Promise.all([
-            framer.getPublishInfo().catch((e) => null),
-            framer.getNodesWithType('ComponentNode'),
-            framer.getNodesWithType('WebPageNode'),
-            framer.getColorStyles(),
-            framer.getProjectInfo(),
-            framer.unstable_getLocales?.()?.catch((err) => {
-                console.error('Error getting locales', err)
-                return []
-            }),
-        ])
-
-    // throw redirect(withMode(Paths.readme))
-    const { id: fullFramerProjectId, name: projectName } = projectInfo
-    if (!fullFramerProjectId) {
-        throw new Error('No project id found')
-    }
-    const selectedComponentIds = new Set(formData.keys())
-    // console.log('selectedComponentIds', [...selectedComponentIds])
-    const filteredComponents = components.filter(
-        (component) =>
-            component.id &&
-            component.insertURL &&
-            selectedComponentIds.has(component.id),
-    )
-
-    console.log('publishInfo', publishInfo)
-    let websiteUrl =
-        publishInfo?.staging?.currentPageUrl ||
-        publishInfo?.staging?.url ||
-        publishInfo?.production?.currentPageUrl ||
-        publishInfo?.production?.url
-    // console.log('styles', styles)
-    const { error, data } =
-        await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
-            projectId: fullFramerProjectId,
-            projectName,
-            fullFramerProjectId,
-            websiteUrl,
-            colorStyles: styles.map((x) => {
-                const { dark, light, name, id } = x
-                return {
-                    name,
-                    id,
-                    projectId: fullFramerProjectId!,
-                    lightColor: light,
-                    darkColor: dark ?? light, // Ensure darkColor is never null
-                }
-            }),
-            components: filteredComponents.map((component) => {
-                const { name, id, insertURL, componentIdentifier } = component
-                return {
-                    name: name ?? '',
-                    id,
-                    url: insertURL ?? '',
-                    projectId: fullFramerProjectId!,
-                    componentIdentifier,
-                }
-            }),
-            pages: pages.map((page) => {
-                const { id, collectionId, path } = page
-                return {
-                    path: path ?? '', // Ensure path is never null
-                    webPageId: id,
-                    projectId: fullFramerProjectId!,
-                }
-            }),
-            locales: locales?.map((locale) => {
-                const { id, name, slug, code } = locale
-                return {
-                    id,
-                    name,
-                    slug,
-                    code,
-                    projectId: fullFramerProjectId!,
-                }
-            }),
-        })
-    if (error) {
-        throw error
-    }
-    console.log(data)
-    throw redirect(withMode(Paths.readme))
-}
-
-export function Components(): RouteObject {
     return {
-        path: Paths.components,
-        loader,
-        action,
-        Component,
+        credits,
+        buyMoreCreditsUrl,
     }
-}
-
-function Component() {
-    const navigation = useNavigation()
-    const isLoading = navigation.state !== 'idle'
-    useRefreshOnVisible({ enabled: !isLoading })
-    const { email } = useLoaderData() as LoaderReturnType<typeof loader>
-    const actionData = useActionData() as LoaderReturnType<typeof action>
-    const { componentsData, componentIds = [] } =
-        useLoaderData() as LoaderReturnType<typeof loader>
-
-    const [search, setSearch] = useState('')
-    const [selected, setSelected] = useState(() => {
-        if (componentIds.length) {
-            return componentIds
-        }
-        return componentsData.slice(0, 10).map((x) => x.id)
-    })
-
-    const navigate = useNavigate()
-
-    if (!componentsData?.length) {
-        return (
-            <div className='flex flex-col items-center justify-center gap-4 p-8 text-center'>
-                <h2 className='font-medium'>No Components Found</h2>
-                <p className='text-framer-secondary'>
-                    To create a component in Framer, select any layer, right
-                    click and select "Create Component".
-                </p>
-            </div>
-        )
-    }
-
-    const filteredComponents = componentsData.filter((component) =>
-        component.name?.toLowerCase().includes(search.toLowerCase()),
-    )
-
-    return (
-        <Form method='POST' className='flex-1 flex flex-col gap-4'>
-            <div className=' flex flex-col px-4 items-center justify-center'>
-                <h1 className='text-balance text-center text-md '>
-                    Select which components you want to export from your{' '}
-                    {componentsData.length} available components
-                </h1>
-            </div>
-            <div className='flex gap-2 '>
-                <Button
-                    variant='normal'
-                    onClick={() => {
-                        setSelected(componentsData.map((x) => x.id))
-                    }}
-                    className='w-auto grow bg-transparent disabled:opacity-50'
-                    disabled={selected.length === componentsData.length}
-                >
-                    Select All
-                </Button>
-                <Button
-                    variant='normal'
-                    onClick={() => {
-                        setSelected([])
-                    }}
-                    className='w-auto grow bg-transparent'
-                    disabled={selected.length === 0}
-                >
-                    Deselect All
-                </Button>
-            </div>
-            <div className='relative'>
-                <SearchIcon className='absolute left-2 top-1/2 -translate-y-1/2 ' />
-                <input
-                    type='text'
-                    placeholder='Search components...'
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className='!pl-7 w-full bg-framer-'
-                />
-            </div>
-            <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
-                {filteredComponents.map((component, i) => {
-                    return (
-                        <Item
-                            defaultIsChecked={selected.includes(component.id)}
-                            onChange={(e) => {
-                                const checked = e.target.checked
-                                setSelected((prev) => {
-                                    if (checked) {
-                                        return [...prev, component.id]
-                                    }
-                                    return prev.filter(
-                                        (id) => id !== component.id,
-                                    )
-                                })
-                            }}
-                            checked={selected.includes(component.id)}
-                            key={component.id}
-                            {...component}
-                        />
-                    )
-                })}
-            </div>
-            <div className='flex gap-3 '>
-                <Link to={withMode(Paths.settings)}>
-                    <Button className='w-auto grow' type='submit'>
-                        Settings
-                    </Button>
-                </Link>
-                <Button
-                    isLoading={isLoading}
-                    className='w-auto grow'
-                    variant='primary'
-                    type='submit'
-                >
-                    Export <span className='font-mono'>{selected.length}</span>{' '}
-                    Components
-                </Button>
-            </div>
-        </Form>
-    )
-}
-
-function SearchIcon({ className }: { className?: string }) {
-    return (
-        <svg
-            width='14'
-            height='14'
-            viewBox='0 0 16 16'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-            className={className}
-        >
-            <path
-                d='M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z'
-                stroke='currentColor'
-                strokeWidth='1.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-            />
-            <path
-                d='M14 14L11.1 11.1'
-                stroke='currentColor'
-                strokeWidth='1.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-            />
-        </svg>
-    )
-}
-function Item({ id, name, defaultIsChecked, ...rest }) {
-    const ref = useRef<any>()
-    return (
-        <div
-            className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full'
-            key={id}
-        >
-            <div className='flex items-center justify-center'>
-                <input
-                    name={id}
-                    // defaultChecked={defaultIsChecked}
-                    ref={ref}
-                    className='!size-[14px]'
-                    type='checkbox'
-                    {...rest}
-                    // onChange={onChange}
-                />
-            </div>
-            <div
-                onClick={() => {
-                    ref.current?.click()
-                }}
-                className=''
-            >
-                <h3>{name}</h3>
-            </div>
-            {/* <div
-            className={classNames(
-                'flex items-center justify-center',
-                isDisabled && 'opacity-50',
-            )}
-        >
-            <IconChevron />
-        </div> */}
-        </div>
-    )
-}
-
-function IconChevron() {
-    return (
-        <svg xmlns='http://www.w3.org/2000/svg' width='5' height='8'>
-            <path
-                d='M 1 1 L 4 4 L 1 7'
-                fill='transparent'
-                strokeWidth='1.5'
-                stroke='currentColor'
-                strokeLinecap='round'
-            ></path>
-        </svg>
-    )
 }
