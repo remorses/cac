@@ -11,9 +11,7 @@ import {
     PluginDataKeys,
     collectGenerator,
     createBuyLink,
-    formatLargeNumber,
     getDesktop,
-    getNodePath,
     getParentNodes,
     globalState,
     isTruthy,
@@ -21,12 +19,10 @@ import {
     withMode,
 } from 'template-rewrite-framer/src/lib/utils'
 
-import { motion } from 'framer-motion'
 import {
     AnyNode,
     ColorStyle,
     ComponentInstanceNode,
-    ComponentNode,
     framer,
     isComponentInstanceNode,
     isComponentNode,
@@ -47,15 +43,15 @@ import {
     useRevalidator,
 } from 'react-router'
 
-import { OldTextTree, RewriteSchema } from 'website/src/lib/rewrite'
+import { OldTextTree } from 'website/src/lib/rewrite'
 
+import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
     bfsOldTextTree,
     cleanupOldTextTree,
     oldTextTreeToXml,
     sleep,
 } from 'website/src/lib/utils'
-import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 
 let abortController = new AbortController()
 
@@ -161,90 +157,8 @@ function SimplePromptComponent({}) {
             setError('No desktop found')
             return
         }
-        let oldText = [] as OldTextTree
 
-        let componentInstanceChildrenSeen = new Set<string>()
-        async function handleNode(node: AnyNode) {
-            // console.log('node', node.constructor.name)
-
-            if (isTextNode(node)) {
-                const isVisible = await isNodeVisible(node)
-                if (!isVisible) {
-                    console.log('node not visible', node.id)
-                    return
-                }
-                const text = await node.getText()
-
-                if (!text) {
-                    console.log('no text found for node', node.id, node.name)
-                    return
-                }
-                if (text) {
-                    oldText = await push({
-                        node,
-                        tree: oldText,
-                        text,
-                        nodeId: node.id,
-                    })
-                }
-            }
-            if (isComponentInstanceNode(node)) {
-                const isVisible = await isNodeVisible(node)
-                if (!isVisible) {
-                    console.log('node not visible', node.id)
-                    return
-                }
-                // const _component = await getInstanceComponent(node)
-                // if (!_component) {
-                //     return
-                // }
-                const controls = Object.entries(node.controls)
-
-                for (let [key, value] of controls) {
-                    if (
-                        typeof value === 'string' &&
-                        // TODO check type when framer supports it
-                        possibleInstanceTextFields.includes(
-                            key.toLocaleLowerCase(),
-                        )
-                    ) {
-                        let nodeId = nineCharsRandomString()
-                        instanceNodes.set(nodeId, {
-                            node,
-                            controlKey: key,
-                        })
-
-                        oldText = await push({
-                            // parent: node,
-                            controlKey: key,
-                            node,
-                            nodeId,
-                            tree: oldText,
-                            text: value,
-                        })
-                    }
-                }
-            }
-        }
-
-        for (let rootNode of rootNodes) {
-            if (!rootNode) {
-                continue
-            }
-
-            for await (let node of rootNode.walk()) {
-                await handleNode(node)
-                for await (let child of recurseIntoComponent(
-                    node,
-                    componentInstanceChildrenSeen,
-                )) {
-                    await handleNode(child)
-                }
-            }
-        }
-
-        oldText = cleanupOldTextTree(oldText)
-
+        let oldText = await getFramerTree(rootNodes)
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
@@ -470,37 +384,8 @@ function SimplePromptComponent({}) {
         }
         setIsDiscarding(true)
         try {
-            const allNodes = bfsOldTextTree(previousOldText).filter(
-                (x) => x?.nodeId,
-            )
-            const promises = allNodes.map(async (oldNodeObj) => {
-                const { nodeId, content: oldContent } = oldNodeObj
-                if (!oldContent || !nodeId) {
-                    console.log('no old content or node id found')
-                    return Promise.resolve()
-                }
-
-                let node =
-                    instanceNodes.get(nodeId)?.node ||
-                    (await framer.getNode(nodeId))
-
-                if (isTextNode(node)) {
-                    // console.log('setting text', oldContent)
-                    return await node.setText(oldContent)
-                }
-                let instance = instanceNodes.get(nodeId)
-                if (instance) {
-                    const { node, controlKey } = instance
-                    let controls = { ...node.controls }
-                    controls[controlKey] = oldContent
-                    return await node.setAttributes({
-                        controls,
-                    })
-                }
-            })
-
             await Promise.all([
-                ...promises,
+                discardFramerChanges(previousOldText),
                 pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
                     {
                         id: generationId,
@@ -671,8 +556,7 @@ export function SimplePrompt(): RouteObject {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    let [shouldShowProgress, credits, { email, orgId }] = await Promise.all([
-        framer.getPluginData(PluginDataKeys.usedThePlugin).then(Boolean),
+    let [credits, { email, orgId }] = await Promise.all([
         pluginApiClient.api.plugins.rewritePlugin.getCredits
             .post({})
             .then(({ data, error }) => {
@@ -696,14 +580,7 @@ async function loader({}: LoaderFunctionArgs) {
         orgId,
     })
 
-    // credits = {
-    //     remaining: 0,
-    //     total: 100,
-    //     used: 100,
-    //     free: true,
-    // }
     return {
-        shouldShowProgress,
         credits,
         buyMoreCreditsUrl,
     }
@@ -892,4 +769,118 @@ async function push({
         children: [],
     })
     return tree
+}
+
+async function getFramerTree(rootNodes: AnyNode[]) {
+    let oldText = [] as OldTextTree
+
+    let componentInstanceChildrenSeen = new Set<string>()
+    async function handleNode(node: AnyNode) {
+        // console.log('node', node.constructor.name)
+
+        if (isTextNode(node)) {
+            const isVisible = await isNodeVisible(node)
+            if (!isVisible) {
+                console.log('node not visible', node.id)
+                return
+            }
+            const text = await node.getText()
+
+            if (!text) {
+                console.log('no text found for node', node.id, node.name)
+                return
+            }
+            if (text) {
+                oldText = await push({
+                    node,
+                    tree: oldText,
+                    text,
+                    nodeId: node.id,
+                })
+            }
+        }
+        if (isComponentInstanceNode(node)) {
+            const isVisible = await isNodeVisible(node)
+            if (!isVisible) {
+                console.log('node not visible', node.id)
+                return
+            }
+            // const _component = await getInstanceComponent(node)
+            // if (!_component) {
+            //     return
+            // }
+            const controls = Object.entries(node.controls)
+
+            for (let [key, value] of controls) {
+                if (
+                    typeof value === 'string' &&
+                    // TODO check type when framer supports it
+                    possibleInstanceTextFields.includes(key.toLocaleLowerCase())
+                ) {
+                    let nodeId = nineCharsRandomString()
+                    instanceNodes.set(nodeId, {
+                        node,
+                        controlKey: key,
+                    })
+
+                    oldText = await push({
+                        // parent: node,
+                        controlKey: key,
+                        node,
+                        nodeId,
+                        tree: oldText,
+                        text: value,
+                    })
+                }
+            }
+        }
+    }
+
+    for (let rootNode of rootNodes) {
+        if (!rootNode) {
+            continue
+        }
+
+        for await (let node of rootNode.walk()) {
+            await handleNode(node)
+            for await (let child of recurseIntoComponent(
+                node,
+                componentInstanceChildrenSeen,
+            )) {
+                await handleNode(child)
+            }
+        }
+    }
+
+    oldText = cleanupOldTextTree(oldText)
+    return oldText
+}
+
+async function discardFramerChanges(previousOldText: OldTextTree) {
+    const allNodes = bfsOldTextTree(previousOldText).filter((x) => x?.nodeId)
+    const promises = allNodes.map(async (oldNodeObj) => {
+        const { nodeId, content: oldContent } = oldNodeObj
+        if (!oldContent || !nodeId) {
+            console.log('no old content or node id found')
+            return Promise.resolve()
+        }
+
+        let node =
+            instanceNodes.get(nodeId)?.node || (await framer.getNode(nodeId))
+
+        if (isTextNode(node)) {
+            // console.log('setting text', oldContent)
+            return await node.setText(oldContent)
+        }
+        let instance = instanceNodes.get(nodeId)
+        if (instance) {
+            const { node, controlKey } = instance
+            let controls = { ...node.controls }
+            controls[controlKey] = oldContent
+            return await node.setAttributes({
+                controls,
+            })
+        }
+    })
+    return await Promise.all(promises)
 }
