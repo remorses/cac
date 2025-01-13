@@ -31,7 +31,6 @@ import {
 } from 'react-router'
 import { createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
-import { BuyMore } from '@/routes/Buy'
 
 globalThis.framer = framer
 
@@ -131,8 +130,6 @@ const router = createBrowserRouter(
 
                 SimplePrompt(),
                 Settings(),
-
-                BuyMore(),
             ],
         },
     ],

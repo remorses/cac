@@ -300,7 +300,6 @@ function SimplePromptComponent({}) {
                             throw new Error('No new node cloned found')
                         }
                         await framer.setParent(cloned.id, parent?.id)
-                        await sleep(400)
                     }
                 } finally {
                     console.log(`publishing tree change`)

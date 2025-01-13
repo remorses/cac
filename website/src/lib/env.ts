@@ -121,7 +121,7 @@ export function getBuyReactExportPluginUrl({ orgId, email, projectId }) {
     return url.toString()
 }
 export function getBuyLLMPluginUrl({ orgId, email, projectId }) {
-    const url = new URL('/api/xxxx/buy', env.PUBLIC_URL)
+    const url = new URL('/api/llm-plugin/buy', env.PUBLIC_URL)
     url.searchParams.append('orgId', orgId)
     url.searchParams.append('email', email)
     url.searchParams.append('pluginName', 'reactExport' satisfies PluginName)

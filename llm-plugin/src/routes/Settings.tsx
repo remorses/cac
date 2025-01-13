@@ -1,13 +1,16 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import { reload } from 'template-rewrite-framer/src/lib/utils'
 
 import {
     LoaderReturnType,
     Paths,
     PluginDataKeys,
-    getLLMPluginData,
+    basePath,
+    createBuyLink,
+    formatLargeNumber,
     pluginApiClient,
-} from '@/lib/utils'
+    reload,
+    withMode,
+} from 'template-rewrite-framer/src/lib/utils'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
@@ -16,42 +19,42 @@ import {
     useLoaderData,
     useNavigate,
 } from 'react-router'
+import { Link } from 'react-router-dom'
 
-import classNames from 'classnames'
-import { framer } from 'framer-plugin'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { feedbackUrl, getBuyReactExportPluginUrl } from 'website/src/lib/env'
+import classNames from 'classnames'
+import { motion } from 'framer-motion'
+import {} from 'react-router'
+import { framer } from 'framer-plugin'
+import { feedbackUrl, getBuyLLMPluginUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
-    const { projectId } = await getLLMPluginData()
-    const [org, { activeSub, freeComponents, manageSubUrl }] =
-        await Promise.all([
-            pluginApiClient.api.plugins.currentOrg
-                .post({})
-                .then(({ data, error }) => {
-                    if (error) {
-                        throw error
-                    }
-                    return data
-                }),
-            pluginApiClient.api.plugins.reactExportPlugin.subscriptions
-                .get({ query: { projectId } })
-                .then(({ data, error }) => {
-                    if (error) {
-                        throw error
-                    }
-                    return data
-                }),
-        ])
-    const { email, orgId } = org
-    return {
-        projectId,
+    const [{ email, orgId }, credits, info] = await Promise.all([
+        pluginApiClient.api.plugins.currentOrg
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
+        pluginApiClient.api.plugins.llm.getCredits
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
+        framer.getProjectInfo(),
+    ])
+    const { id: projectId } = info
+    let buyMoreCreditsUrl = getBuyLLMPluginUrl({
         email,
+        projectId,
         orgId,
-        manageSubUrl,
-        freeComponents,
-        sub: activeSub,
-    }
+    })
+    return { credits, email, buyMoreCreditsUrl }
 }
 
 export function Settings(): RouteObject {
@@ -66,22 +69,32 @@ export function Settings(): RouteObject {
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
-    const { email, sub, orgId, projectId, manageSubUrl, freeComponents } =
-        useLoaderData() as LoaderReturnType<typeof loader>
+    const { buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
     const actionData = useActionData() as any
+
+    const { credits, email } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
+    // const isDocumentVisible = useIsDocumentVisibile()
 
     const navigate = useNavigate()
     return (
-        <div className='flex flex-col justify-start gap-4'>
-            <div className='flex items-center'>
-                <div className=''>
+        <div className='flex flex-col grow justify-between pt-1 gap-4'>
+            <div className='flex gap-1 items-center '>
+                <div className='truncate'>
                     Currently logged in as{' '}
-                    <span className='font-semibold inline'>{email}</span>
+                    <span className='font-semibold truncate max-w-full block'>
+                        {email}
+                    </span>
                 </div>
-
                 <div className='grow'></div>
                 <Button
                     onClick={async () => {
+                        // if (isLoading) {
+                        //     return
+                        // }
                         setIsLoading(true)
                         try {
                             await framer.setPluginData(
@@ -100,68 +113,46 @@ function Component() {
                 </Button>
             </div>
             <hr className='' />
-
-            {manageSubUrl && (
-                <>
-                    <div className='flex items-center'>
-                        <div>Subscription active</div>
-                        <div className='grow'></div>
-                        <a
-                            href={manageSubUrl}
-                            target='_blank'
-                            style={{ textDecoration: 'none', color: 'inherit' }}
-                            rel='noopener noreferrer'
-                        >
-                            <Button className='font-semibold'>
-                                Manage Subscription
-                            </Button>
-                        </a>
-                    </div>
-                    <hr className='' />
-                </>
-            )}
-
+            <div className='flex gap-2 items-center'>
+                <div className=''>
+                    <span className='font-semibold inline'>
+                        {credits.remaining}
+                        {credits.free ? ' free' : ''}
+                    </span>{' '}
+                    credits available
+                </div>
+                <div className='grow'></div>
+                <a target='_blank' href={buyMoreCreditsUrl}>
+                    <Button className='w-auto'>Buy More Credits</Button>
+                </a>
+            </div>
+            <hr className='' />
+            {/* <div className='flex gap-2 items-center'>
+                <div className=''>Redeem third party credits</div>
+                <div className='grow'></div>
+                <Link to={withMode(Paths.licenseKey)}>
+                    <Button className='w-auto'>Redeem License</Button>
+                </Link>
+            </div>
+            <hr className='' /> */}
             <div className='flex gap-2 items-center'>
                 <div className=''>Questions or requests?</div>
                 <div className='grow'></div>
-                <a target='_blank' href={feedbackUrl('React Export')}>
+                <a target='_blank' href={feedbackUrl('Migrate')}>
                     <Button className='w-auto'>Share Feedback</Button>
                 </a>
             </div>
             <hr className='' />
-
-            {!sub && (
-                <>
-                    <div className='flex items-center'>
-                        <div>
-                            Get unlimited component exports.
-                            <br />
-                            {sub ? (
-                                'Unlimited exports available'
-                            ) : (
-                                <>Limit now is {freeComponents} components</>
-                            )}
-                        </div>
-                        <div className='grow'></div>
-                        <a
-                            href={getBuyReactExportPluginUrl({
-                                orgId,
-                                email,
-                                projectId,
-                            })}
-                            target='_blank'
-                            style={{ textDecoration: 'none', color: 'inherit' }}
-                            rel='noopener noreferrer'
-                        >
-                            <Button className='font-semibold'>
-                                Buy Plugin Subscription
-                            </Button>
-                        </a>
-                    </div>
-                    <hr className='' />
-                </>
-            )}
-
+            <div className='flex group self-stretch gap-4 flex-row-reverse items-center'>
+                <ProgressBar
+                    className='grow'
+                    progress={credits.used / credits.total || 0}
+                />
+                <div className='whitespace-pre'>
+                    {credits.used} / {formatLargeNumber(credits.total)}
+                </div>
+            </div>
+            {/* <div className='grow'></div> */}
             <Button
                 onClick={() => {
                     navigate(-1)
@@ -188,22 +179,26 @@ function ProgressBar({ progress, className = '' }) {
     if (progress < 0.03) {
         progress = 0.03
     }
+    // progress= 0.5
     return (
         <div
+            // style={{ backgroundColor }}
             className={classNames(
                 'relative rounded-md overflow-hidden w-full bg-gray-700 flex h-[8px]',
                 className,
             )}
         >
-            <div
-                style={{
+            <motion.div
+                // layout
+                transition={{ duration: 0.4 }}
+                animate={{
                     width: Number(Math.min(progress, 1) * 100).toFixed(1) + '%',
                 }}
                 className={classNames(
                     'h-full bg-gray-200 rounded overflow-hidden',
                     backgroundColor,
                 )}
-            ></div>
+            ></motion.div>
         </div>
     )
 }

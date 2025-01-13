@@ -16,6 +16,7 @@ import { createFallback } from 'ai-fallback'
 import { oldTextTreeToXml } from 'website/src/lib/xml'
 import { sleep } from 'website/src/lib/utils'
 import { db } from 'db/kysely'
+import { getOrgCredits } from 'website/src/lib/credits'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -119,6 +120,28 @@ export const llmPluginApp = new Spiceflow({
         },
     )
     .post(
+        '/getCredits',
+        async ({ state: store, request }) => {
+            // console.log('cookies', cookie)
+            // const { userId } = await getSupabaseSession({ request })
+            // if (!userId) {
+            //     throw new AppError('No user id')
+            // }
+            const userId = store.userId
+            if (!userId) {
+                throw unauthorizedResponse
+            }
+            const credits = await getOrgCredits({ orgId: userId })
+
+            return credits
+        },
+        {
+            // response: {
+            //     200: t.AsyncIterator(t.String()),
+            // },
+        },
+    )
+    .post(
         '/generate',
         async function* ({ params, request, state: store }) {
             request.signal.addEventListener('abort', () => {
@@ -140,6 +163,7 @@ export const llmPluginApp = new Spiceflow({
                 // toolChoice: 'required',
                 abortSignal: request.signal,
                 maxSteps: 40,
+                
                 tools: {
                     edit: tool({
                         parameters: z.object({

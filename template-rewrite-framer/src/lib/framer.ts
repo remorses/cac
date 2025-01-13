@@ -334,7 +334,6 @@ async function push({
     })
     return tree
 }
-
 export async function getFramerTree({
     rootNodes,
 
@@ -343,6 +342,8 @@ export async function getFramerTree({
     rootNodes: AnyNode[]
     recursive?: boolean
 }) {
+    const timeId = `getFramerTree-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    console.time(timeId)
     let oldText = [] as OldTextTree
 
     let componentInstanceChildrenSeen = new Set<string>()
@@ -409,6 +410,7 @@ export async function getFramerTree({
     }
 
     oldText = cleanupOldTextTree(oldText)
+    console.timeEnd(timeId)
     return oldText
 }
 
