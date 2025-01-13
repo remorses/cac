@@ -94,7 +94,9 @@ export const llmPluginApp = new Spiceflow({
             console.log('body', body)
             const { randomId, description, tree, projectId } = body
 
-            const initialXml = oldTextTreeToXml(tree, true)
+            const initialXml = oldTextTreeToXml(tree, {
+                shouldAddNodeIdAlways: true,
+            })
             let fullAnswer = ''
 
             projectsEvents.set(randomId, new Evt())
@@ -158,7 +160,9 @@ export const llmPluginApp = new Spiceflow({
                                 }
                                 console.log(`generating diff for ${kind}`)
                                 const { tree } = result
-                                const xml = oldTextTreeToXml(tree, true)
+                                const xml = oldTextTreeToXml(tree, {
+                                    shouldAddNodeIdAlways: true,
+                                })
                                 const diff = diffJson(initialXml, xml)
                                 const diffText = diff
                                     .map((part) => {

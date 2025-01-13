@@ -17,10 +17,8 @@ import {
     ColorStyle,
     framer,
     isComponentInstanceNode,
-    isComponentNode,
     isTextNode,
-    isWebPageNode,
-    supportsBackgroundColor,
+    supportsBackgroundColor
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -33,16 +31,15 @@ import {
 
 import { OldTextTree } from 'website/src/lib/rewrite'
 
+import { Paths, pluginApiClient } from '@/lib/utils'
 import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
     discardFramerChanges,
     getFramerTree,
-    isNodeZoomable,
-    NodeWithControl,
+    isNodeZoomable
 } from 'template-rewrite-framer/src/lib/framer'
-import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
-import { Paths, pluginApiClient, PluginDataKeys } from '@/lib/utils'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
+import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { decodeControlAttributes } from 'website/src/lib/xml'
 
 let abortController = new AbortController()
@@ -150,12 +147,13 @@ function SimplePromptComponent({}) {
             rootNodes,
 
             recursive: false,
-            addControlsAsAttrs: true,
         })
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
-                const xml = oldTextTreeToXml(oldText, true)
+                const xml = oldTextTreeToXml(oldText, {
+                    shouldAddNodeIdAlways: true,
+                })
 
                 await navigator.clipboard.writeText(
                     JSON.stringify(oldText, null, 2),
@@ -310,7 +308,6 @@ function SimplePromptComponent({}) {
                         rootNodes,
 
                         recursive: false,
-                        addControlsAsAttrs: true,
                     })
                     const { error } =
                         await pluginApiClient.api.plugins.llm.publish.post({

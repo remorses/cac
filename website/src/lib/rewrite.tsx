@@ -23,6 +23,7 @@ export type OldTextTree = Array<{
         href?: string | null
         [key: string]: any
     }
+    attrControlsComments?: Record<string, string>
     children?: OldTextTree
     count?: number
     // index: number;

@@ -10,6 +10,7 @@ import {
     isTextNode,
     WithControlAttributesTrait,
 } from 'framer-plugin'
+import type { PropertyControls, ControlDescription } from 'unframer'
 import {
     collectGenerator,
     getParentNodes,
@@ -21,11 +22,123 @@ import {
     encodeControlAttributes,
 } from 'website/src/lib/xml'
 
-export async function getComponentSchema(url) {
-    const res = await import(url)
-    return res.default?.propertyControls
+export async function getComponentAttributesComments(url?: string) {
+    if (!url) return
+    try {
+        const res = await import(url)
+        return getAttributeComments(res.default?.propertyControls)
+    } catch (e) {
+        console.log('failed to import component schema', e)
+        return
+    }
 }
-Object.assign(globalThis, { getComponentSchema })
+
+export enum ControlType {
+    Boolean = 'boolean',
+    Number = 'number',
+    String = 'string',
+    RichText = 'richtext',
+    FusedNumber = 'fusednumber',
+    Enum = 'enum',
+    SegmentedEnum = 'segmentedenum',
+    Color = 'color',
+    Image = 'image',
+    ResponsiveImage = 'responsiveimage',
+    File = 'file',
+    ComponentInstance = 'componentinstance',
+    Array = 'array',
+    EventHandler = 'eventhandler',
+    Transition = 'transition',
+    BoxShadow = 'boxshadow',
+    Link = 'link',
+    Date = 'date',
+    Object = 'object',
+    Font = 'font',
+    PageScope = 'pagescope',
+    ScrollSectionRef = 'scrollsectionref',
+    CustomCursor = 'customcursor',
+    Border = 'border',
+    Cursor = 'cursor',
+    Padding = 'padding',
+    BorderRadius = 'borderradius',
+    CollectionReference = 'collectionreference',
+    MultiCollectionReference = 'multicollectionreference',
+}
+
+export function getAttributeComments(controls?: PropertyControls) {
+    if (!controls) {
+        return {}
+    }
+
+    const result: Record<string, string> = {}
+    Object.entries(controls || ({} as PropertyControls)).forEach(
+        ([key, value]) => {
+            if (!value) {
+                return
+            }
+
+            const typescriptType = (value: ControlDescription<any>): string => {
+                switch (value.type) {
+                    case ControlType.Color:
+                        return 'string'
+                    case ControlType.Boolean:
+                        return 'boolean'
+                    case ControlType.Number:
+                        return 'number'
+                    case ControlType.String:
+                        return 'string'
+                    case ControlType.Enum: {
+                        // @ts-expect-error
+                        const options = value.optionTitles || value.options
+                        return options.map((x) => `'${x}'`).join(' | ')
+                    }
+                    case ControlType.File:
+                        return 'string'
+                    case ControlType.Image:
+                        return 'string'
+                    case ControlType.ComponentInstance:
+                        return ''
+                        return 'React.ReactNode'
+                    case ControlType.Array:
+                        // @ts-expect-error
+                        return `${typescriptType(value.control)}[]`
+                    case ControlType.Object:
+                        // @ts-expect-error
+                        return `{${Object.entries(value.controls)
+                            .map(([k, v]) => {
+                                // @ts-expect-error
+                                return `${k}: ${typescriptType(v)}`
+                            })
+                            .join(', ')}}`
+                    case ControlType.Date:
+                        return 'DateString'
+                    case ControlType.Link:
+                        return 'LinkString'
+                    case ControlType.ResponsiveImage:
+                        return ''
+                        return `{src: string, srcSet?: string, alt?: string}`
+                    case ControlType.FusedNumber:
+                        return 'number'
+                    case ControlType.Transition:
+                        return ''
+                        return 'any'
+                    case ControlType.EventHandler:
+                        return ''
+                        return 'Function'
+                    default:
+                        return 'any'
+                }
+            }
+
+            result[key] = typescriptType(value)
+        },
+    )
+    return result
+}
+
+Object.assign(globalThis, {
+    getComponentSchema: getComponentAttributesComments,
+})
 async function getInstanceComponent(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
         return
@@ -151,13 +264,11 @@ async function push({
     tree,
     text,
     nodeId,
-    controlKey,
 }: {
     tree: OldTextTree
     node: AnyNode
     text?: string
     nodeId: string
-    controlKey?: string
 }) {
     // console.trace('push')
     // console.log(`adding node ${node?.['name']}`)
@@ -200,9 +311,12 @@ async function push({
     let attributes = {
         href,
         fontSize,
-        controlKey,
     }
+    let attrControlsComments
     if (isComponentInstanceNode(node)) {
+        attrControlsComments = await getComponentAttributesComments(
+            node.insertURL || undefined,
+        )
         attributes = {
             ...attributes,
             ...encodeControlAttributes(node.controls),
@@ -215,12 +329,11 @@ async function push({
         nodeId,
         name: 'name' in node ? node.name : '',
         attributes,
+        attrControlsComments,
         children: [],
     })
     return tree
 }
-
-export type NodeWithControl = { node: AnyNode; controlKey: string }
 
 export async function getFramerTree({
     rootNodes,
@@ -264,10 +377,11 @@ export async function getFramerTree({
                 return
             }
 
-            const _component = await getInstanceComponent(node)
-            if (!_component) {
-                return
-            }
+            // TODO what is this?
+            // const _component = await getInstanceComponent(node)
+            // if (!_component) {
+            //     return
+            // }
             oldText = await push({
                 node,
                 tree: oldText,

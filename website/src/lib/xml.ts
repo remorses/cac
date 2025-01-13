@@ -204,12 +204,19 @@ export function xmlToOldTextTree(xml: string): OldTextTree {
         .filter((n): n is OldTextTree[number] => n !== null)
     return addNodeCount(rootNodes)
 }
-
 export function oldTextTreeToXml(
     tree: OldTextTree,
-    shouldAddNodeIdAlways = false,
-    indent: string = '',
+    options: {
+        shouldAddNodeIdAlways?: boolean
+
+        indent?: string
+    } = {},
 ): string {
+    const {
+        shouldAddNodeIdAlways = false,
+
+        indent = '',
+    } = options
     let xml = ''
 
     for (const node of tree) {
@@ -223,11 +230,11 @@ export function oldTextTreeToXml(
                 xml += `${indent}${escapeXml(node.content)}\n`
             }
             if (node.children && node.children.length > 0) {
-                xml += oldTextTreeToXml(
-                    node.children,
+                xml += oldTextTreeToXml(node.children, {
                     shouldAddNodeIdAlways,
+
                     indent,
-                )
+                })
             }
             continue
         }
@@ -254,16 +261,38 @@ export function oldTextTreeToXml(
         if (shouldAddNodeId && node.nodeId) {
             attributes.push(`nodeId="${node.nodeId}"`)
         }
+
+        let hasComments = false
         if (node.attributes) {
             for (const [key, value] of Object.entries(node.attributes)) {
                 if (value !== undefined && value !== null) {
-                    attributes.push(`${key}="${value}"`)
+                    const comment = node.attrControlsComments?.[key]
+                    if (comment != null) {
+                        if (!comment) {
+                            continue
+                        }
+                        hasComments = true
+                        attributes.push(
+                            `<!-- ${key} is of type ${comment} -->\n${indent}    ${key}="${value}"`,
+                        )
+                    } else {
+                        attributes.push(`${key}="${value}"`)
+                    }
                 }
             }
         }
 
         const attributesString =
-            attributes.length > 0 ? ' ' + attributes.join(' ') : ''
+            attributes.length > 0
+                ? hasComments
+                    ? '\n' +
+                      indent +
+                      '    ' +
+                      attributes.join('\n' + indent + '    ') +
+                      '\n' +
+                      indent
+                    : ' ' + attributes.join(' ')
+                : ''
 
         xml += `${indent}<${nodeName}${attributesString}>\n`
 
@@ -272,11 +301,11 @@ export function oldTextTreeToXml(
         }
 
         if (node.children && node.children.length > 0) {
-            xml += oldTextTreeToXml(
-                node.children,
+            xml += oldTextTreeToXml(node.children, {
                 shouldAddNodeIdAlways,
-                indent + '  ',
-            )
+
+                indent: indent + '  ',
+            })
         }
 
         xml += `${indent}</${nodeName}>\n`

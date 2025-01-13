@@ -198,13 +198,35 @@ test('oldTextTreeToXml', async () => {
                                 content: 'Company',
                                 nodeId: 'hV4y0l50l',
                                 name: 'AI Kit/Navigation/Nav Top Item',
+                                attributes: {
+                                    anObject: JSON.stringify({ a: 1, b: 2 }),
+                                    anArray: JSON.stringify([1, 2, 3]),
+                                },
+                                attrControlsComments: {
+                                    anObject: 'An object',
+                                    anArray: 'An array',
+                                },
                                 children: [],
                             },
                             {
                                 content: 'Blog',
                                 nodeId: 'Kn7sH0z2q',
                                 name: 'AI Kit/Navigation/Nav Top Item',
-                                children: [],
+                                attributes: {
+                                    bool: 'true',
+                                    shouldBeHidden: 'false',
+                                },
+                                attrControlsComments: {
+                                  shouldBeHidden: ''
+                                },
+                                children: [
+                                    {
+                                        content: 'Nested content',
+                                        nodeId: 'a1b2c3',
+                                        name: 'AI Kit/Navigation/Nav Top Item/Nested',
+                                        children: [],
+                                    },
+                                ],
                             },
                             {
                                 content: 'Changelog',
@@ -239,11 +261,20 @@ test('oldTextTreeToXml', async () => {
           <AiKitNavigationNavTopItem nodeId="kEfI03xW5">
             Developers
           </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem nodeId="hV4y0l50l">
+          <AiKitNavigationNavTopItem
+              nodeId="hV4y0l50l"
+              <!-- anObject is of type An object -->
+              anObject="{"a":1,"b":2}"
+              <!-- anArray is of type An array -->
+              anArray="[1,2,3]"
+          >
             Company
           </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem nodeId="Kn7sH0z2q">
+          <AiKitNavigationNavTopItem bool="true">
             Blog
+            <AiKitNavigationNavTopItemNested nodeId="a1b2c3">
+              Nested content
+            </AiKitNavigationNavTopItemNested>
           </AiKitNavigationNavTopItem>
           <AiKitNavigationNavTopItem nodeId="QjTxmhFlU">
             Changelog
