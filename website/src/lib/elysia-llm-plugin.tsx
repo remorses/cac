@@ -15,6 +15,7 @@ import { openai } from '@ai-sdk/openai'
 import { createFallback } from 'ai-fallback'
 import { oldTextTreeToXml } from 'website/src/lib/xml'
 import { sleep } from 'website/src/lib/utils'
+import { db } from 'db/kysely'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -32,8 +33,8 @@ let projectsEvents = new Map<string, Evt<FramerEventLLM>>()
 
 let model = createFallback({
     models: [
-        anthropic('claude-3-5-sonnet-latest'),
-        openai('gpt-4o'), //
+        anthropic('claude-3-5-haiku-latest'),
+        openai('gpt-4o-mini'), //
     ],
 })
 
@@ -60,7 +61,40 @@ export const llmPluginApp = new Spiceflow({
     .get('/health', () => {
         return 'ok'
     })
+    .post(
+        '/submitReview',
+        async ({ state: store, request }) => {
+            const body = await request.json()
 
+            const { stars, generationId } = body
+            const userId = store.userId
+            const orgId = store.orgId
+
+            if (!userId || !orgId) {
+                throw unauthorizedResponse
+            }
+
+            try {
+                await db
+                    .updateTable('Generation')
+                    .set({ starsReview: stars })
+                    .where('id', '=', generationId)
+                    .where('orgId', '=', orgId)
+                    .execute()
+
+                return { success: true }
+            } catch (error) {
+                console.error('Failed to submit review:', error)
+                return { success: false, error: 'Failed to submit review' }
+            }
+        },
+        {
+            body: z.object({
+                stars: z.number().int().min(1).max(5),
+                generationId: z.number().int().positive(),
+            }),
+        },
+    )
     .post(
         '/publish',
         async ({ request, params }) => {
@@ -102,7 +136,7 @@ export const llmPluginApp = new Spiceflow({
             projectsEvents.set(randomId, new Evt())
             const emitter = projectsEvents.get(randomId)!
             const result = streamText({
-                model: anthropic('claude-3-5-sonnet-latest'),
+                model,
                 // toolChoice: 'required',
                 abortSignal: request.signal,
                 maxSteps: 40,

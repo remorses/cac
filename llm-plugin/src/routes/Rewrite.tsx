@@ -18,7 +18,7 @@ import {
     framer,
     isComponentInstanceNode,
     isTextNode,
-    supportsBackgroundColor
+    supportsBackgroundColor,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -36,7 +36,7 @@ import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
     discardFramerChanges,
     getFramerTree,
-    isNodeZoomable
+    isNodeZoomable,
 } from 'template-rewrite-framer/src/lib/framer'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
@@ -243,7 +243,7 @@ function SimplePromptComponent({}) {
 
         try {
             for await (let item of eventSource!) {
-                console.log('item', item.kind, item)
+                console.log(item.kind, JSON.stringify(item, null, 2))
                 try {
                     if (!item) {
                         console.log('no item found')
@@ -315,9 +315,9 @@ function SimplePromptComponent({}) {
                             callId: item.callId,
                             tree,
                         })
-                    // if (error) {
-                    //     throw error
-                    // }
+                    if (error) {
+                        throw error
+                    }
                 }
             }
             console.log('done')
@@ -329,40 +329,14 @@ function SimplePromptComponent({}) {
     }
     useRefreshOnVisible({ enabled: !isLoading })
 
-    const discard = useLatestFunction(async () => {
-        if (isLoading) {
-            console.log('aborting')
-            abortController.abort()
-            return
-        }
-        if (!previousOldText.length) {
-            console.log('no old nodes to discard')
-            return
-        }
-        setIsDiscarding(true)
-        try {
-            await Promise.all([
-                discardFramerChanges({ previousOldText }),
-                // pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
-                //     {
-                //         id: generationId,
-                //     },
-                // ),
-            ])
-            reset()
-        } finally {
-            setIsDiscarding(false)
-        }
-    })
-
     const buttonText = (() => {
         if (!credits.remaining) {
             return 'Buy More Credits'
         }
-        if (selectedNodes.length) {
-            return 'Edit Selection'
+        if (!selectedNodes.length) {
+            return 'Select to Edit'
         }
-        return 'Edit with AI'
+        return 'Edit Selection'
     })()
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -385,7 +359,7 @@ function SimplePromptComponent({}) {
         }
         const debounceTimeout = setTimeout(() => {
             if (stars > 0) {
-                pluginApiClient.api.plugins.rewritePlugin.submitReview
+                pluginApiClient.api.plugins.llm.submitReview
                     .post({
                         stars,
                         generationId,
@@ -401,7 +375,6 @@ function SimplePromptComponent({}) {
         }
     }, [stars, generationId])
 
-    const [isDiscarding, setIsDiscarding] = useState(false)
     const [shouldShowStars, setShouldShowStars] = useState(
         !!previousOldText.length && !isLoading,
     )
@@ -480,7 +453,7 @@ function SimplePromptComponent({}) {
                 </Button>
                 <Button
                     isLoading={isLoading}
-                    // disabled={disabled}
+                    disabled={!selectedNodes.length || buyCreditsInstead}
                     type='submit'
                     variant='primary'
                     className='w-auto block grow'
@@ -488,16 +461,6 @@ function SimplePromptComponent({}) {
                     {buttonText}
                 </Button>
             </div>
-            {Boolean(isLoading || previousOldText.length) && (
-                <Button
-                    // className='bg-transparent'
-                    onClick={discard}
-                    isLoading={isDiscarding}
-                    type='button'
-                >
-                    {isLoading ? 'Cancel' : 'Discard Replacement'}
-                </Button>
-            )}
         </form>
     )
 }
