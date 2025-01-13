@@ -91,7 +91,7 @@ export function extractObjectsFromXmlContent(xml: string) {
 
     const handler = new DomHandler((error, dom) => {
         if (error) {
-            console.error(error)
+            console.error('error', error)
         } else {
             const dfs = (node) => {
                 if (
@@ -204,8 +204,10 @@ export function xmlToOldTextTree(xml: string): OldTextTree {
         .filter((n): n is OldTextTree[number] => n !== null)
     return addNodeCount(rootNodes)
 }
+
 export function oldTextTreeToXml(
     tree: OldTextTree,
+    shouldAddNodeIdAlways = false,
     indent: string = '',
 ): string {
     let xml = ''
@@ -221,7 +223,11 @@ export function oldTextTreeToXml(
                 xml += `${indent}${escapeXml(node.content)}\n`
             }
             if (node.children && node.children.length > 0) {
-                xml += oldTextTreeToXml(node.children, indent)
+                xml += oldTextTreeToXml(
+                    node.children,
+                    shouldAddNodeIdAlways,
+                    indent,
+                )
             }
             continue
         }
@@ -244,7 +250,8 @@ export function oldTextTreeToXml(
         }
         const attributes = [] as string[]
 
-        if (!node?.children?.length && node.nodeId) {
+        let shouldAddNodeId = shouldAddNodeIdAlways || !node?.children?.length
+        if (shouldAddNodeId && node.nodeId) {
             attributes.push(`nodeId="${node.nodeId}"`)
         }
         if (node.attributes) {
@@ -265,7 +272,11 @@ export function oldTextTreeToXml(
         }
 
         if (node.children && node.children.length > 0) {
-            xml += oldTextTreeToXml(node.children, indent + '  ')
+            xml += oldTextTreeToXml(
+                node.children,
+                shouldAddNodeIdAlways,
+                indent + '  ',
+            )
         }
 
         xml += `${indent}</${nodeName}>\n`

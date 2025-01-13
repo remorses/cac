@@ -48,10 +48,15 @@ let abortController = new AbortController()
 
 let instanceNodes = new Map<string, NodeWithControl>()
 
+const randomId = makeRandomId()
+
+function makeRandomId() {
+    return Math.random().toString(36).substring(2, 15)
+}
+
 function SimplePromptComponent({}) {
-    const { buyMoreCreditsUrl, credits } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { buyMoreCreditsUrl, projectId, credits } =
+        useLoaderData() as LoaderReturnType<typeof loader>
 
     const [isLoading, setIsLoading] = useState(false)
     const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
@@ -98,7 +103,7 @@ function SimplePromptComponent({}) {
         }
     }
     let [error, setError] = useState('')
-
+    const [description, setDescription] = useState('')
     const [generationId, setGenerationId] = useState(0)
     const [selectedNodes, setSelectedNodes] = useState<AnyNode[]>([])
 
@@ -112,6 +117,7 @@ function SimplePromptComponent({}) {
         setPreviousOldText([])
         instanceNodes.clear()
         setGenerationId(0)
+        // setDescription('')
         setError('')
         setShouldShowStars(false)
         setStars(0)
@@ -141,11 +147,16 @@ function SimplePromptComponent({}) {
             return
         }
 
-        let oldText = await getFramerTree({ rootNodes, instanceNodes })
+        let oldText = await getFramerTree({
+            rootNodes,
+            instanceNodes,
+            recursive: false,
+            addControlsAsAttrs: true,
+        })
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
-                const xml = oldTextTreeToXml(oldText)
+                const xml = oldTextTreeToXml(oldText, true)
 
                 await navigator.clipboard.writeText(
                     JSON.stringify(oldText, null, 2),
@@ -157,32 +168,20 @@ function SimplePromptComponent({}) {
                 console.error('Failed to copy old text to clipboard:', error)
             }
         }
-
+        // return
         if (!oldText.length) {
             setError('No text found to replace')
             return
         }
         setPreviousOldText([...oldText])
 
-        const { name: projectName } = await framer.getProjectInfo()
-        let pagePath = ''
-        const root = await framer.getCanvasRoot()
-        if (isWebPageNode(root)) {
-            pagePath = root.path || ''
-        } else if (isComponentNode(root)) {
-            pagePath = '/__component/' + root.componentName || ''
-        }
-
         const { data: eventSource, error } =
-            await pluginApiClient.api.plugins.rewritePlugin.rephrase.post(
+            await pluginApiClient.api.plugins.llm.generate.post(
                 {
                     description,
-                    oldText: oldText,
-                    // exampleTextToMigrate: globalState.exampleTextToMigrate,
-                    sourceHtml: globalState.sourceHtml,
-                    url: globalState.sourceUrl,
-                    pagePath,
-                    projectName,
+                    tree: oldText,
+                    projectId,
+                    randomId,
                 },
                 {
                     fetch: {
@@ -248,105 +247,86 @@ function SimplePromptComponent({}) {
         }
 
         try {
-            for await (let streamPart of eventSource!) {
-                // console.log('partialItem', streamPart)
-
-                if (streamPart.type === 'generation') {
-                    setGenerationId(streamPart.generationId)
-                    continue
-                }
-                if (streamPart.type !== 'chunk') {
-                    continue
-                }
-                const { completeObj, partialItem } = streamPart
-
-                if (partialItem && currentNodeId !== partialItem.nodeId) {
-                    await highlightNextNode(partialItem.nodeId)
-                }
-                currentNodeId = partialItem?.nodeId
-                if (completeObj?.newContent) {
-                    // let words = completeObj.newContent.split(/\s+/).length
-                    console.log(
-                        'new text',
-                        JSON.stringify(completeObj, null, 2),
-                    )
-                }
-
-                if (!partialItem) {
-                    continue
-                }
-
-                // Process each chunk (value)
-
-                if (partialItem.nodeId == null) {
-                    console.log(
-                        `no nodeId found: ${JSON.stringify(partialItem)}`,
-                    )
-                    continue
-                }
-
-                const node =
-                    instanceNodes.get(partialItem.nodeId)?.node ||
-                    (await framer.getNode(partialItem.nodeId))
-
-                if (!node) {
-                    console.log(`no node found for id ${partialItem.nodeId}`)
-                    continue
-                }
-                const old = allOldNodes.find(
-                    (x) => x.nodeId === partialItem.nodeId,
-                )?.content
-                if (!old) {
-                    console.log(
-                        `no old text found for node ${partialItem.nodeId}`,
-                    )
-                    continue
-                }
-                // console.log(
-                //     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
-                // )
-
-                if (Date.now() - lastTimeZoomed < minTimeOnNode) {
-                    let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
-                    // console.log('waiting before zooming', time)
-                    await sleep(time)
-                }
-
-                if (!partialItem.newContent) {
-                    // console.log('no text found in chunk', chunk)
-                    continue
-                }
-                if (isTextNode(node)) {
-                    await node.setText(partialItem.newContent)
-                } else if (isComponentInstanceNode(node)) {
-                    const instance = instanceNodes.get(partialItem.nodeId)
-                    if (!instance) {
-                        console.log(
-                            'no instance found for node',
-                            partialItem.nodeId,
-                        )
+            for await (let item of eventSource!) {
+                console.log('item', item.kind, item)
+                try {
+                    if (!item) {
+                        console.log('no item found')
                         continue
                     }
-
-                    let controls = {
-                        // ...node.controls,
-                        [instance.controlKey]: partialItem.newContent,
+                    if (item.nodeId == null) {
+                        console.log(`no nodeId found: ${JSON.stringify(item)}`)
+                        continue
                     }
+                    const node =
+                        instanceNodes.get(item.nodeId)?.node ||
+                        (await framer.getNode(item.nodeId))
 
-                    console.log('setting node control', instance.controlKey)
-                    await node.setAttributes({ controls })
-                } else {
-                    console.log(
-                        `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
-                    )
+                    if (!node) {
+                        console.log(`no node found for id ${item.nodeId}`)
+                        continue
+                    }
+                    // if (item && currentNodeId !== item.nodeId) {
+                    //     await highlightNextNode(item.nodeId)
+                    // }
+                    currentNodeId = item?.nodeId
+
+                    if (item.kind === 'rewrite') {
+                        if (isTextNode(node)) {
+                            if (!item.newContent) {
+                                console.log('no text found in chunk', item)
+                                continue
+                            }
+                            await node.setText(item.newContent)
+                        } else if (isComponentInstanceNode(node)) {
+                            const controls = item.newAttributes || {}
+                            if (!controls) {
+                                console.log(
+                                    'no component controls to set found in item',
+                                    item,
+                                )
+                                continue
+                            }
+                            await node.setAttributes({ controls })
+                        } else {
+                            console.log(
+                                `node type for id ${item.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
+                            )
+                        }
+                    } else if (item.kind === 'delete') {
+                        await framer.removeNode(item.nodeId)
+                    } else if (item.kind === 'duplicate') {
+                        const parent = await node.getParent()
+                        if (!parent) {
+                            throw new Error('No parent found for node')
+                        }
+                        let cloned = await node.clone()
+                        if (!cloned) {
+                            throw new Error('No new node cloned found')
+                        }
+                        await framer.setParent(cloned.id, parent?.id)
+                        await sleep(400)
+                    }
+                } finally {
+                    console.log(`publishing tree change`)
+                    const tree = await getFramerTree({
+                        rootNodes,
+                        instanceNodes,
+                        recursive: false,
+                        addControlsAsAttrs: true,
+                    })
+                    const { error } =
+                        await pluginApiClient.api.plugins.llm.publish.post({
+                            randomId,
+                            callId: item.callId,
+                            tree,
+                        })
+                    // if (error) {
+                    //     throw error
+                    // }
                 }
-
-                // TODO add links
-                // if (supportsLink(node) && chunk.href) {
-                //     console.log('setting link', chunk.href)
-                //     await node.setAttributes({ link: chunk.href })
-                // }
             }
+            console.log('done')
             await sleep(200)
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
         } finally {
@@ -369,11 +349,11 @@ function SimplePromptComponent({}) {
         try {
             await Promise.all([
                 discardFramerChanges({ previousOldText, instanceNodes }),
-                pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
-                    {
-                        id: generationId,
-                    },
-                ),
+                // pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
+                //     {
+                //         id: generationId,
+                //     },
+                // ),
             ])
             reset()
         } finally {
@@ -386,9 +366,9 @@ function SimplePromptComponent({}) {
             return 'Buy More Credits'
         }
         if (selectedNodes.length) {
-            return 'Replace Selection'
+            return 'Edit Selection'
         }
-        return 'Replace'
+        return 'Edit with AI'
     })()
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -472,7 +452,9 @@ function SimplePromptComponent({}) {
                     ref={textareaRef}
                     disabled={buyCreditsInstead}
                     required
+                    value={description}
                     onChange={(e) => {
+                        setDescription(e.target.value)
                         adjustHeight(e.target)
                     }}
                     onKeyDown={(e) => {
@@ -566,6 +548,7 @@ async function loader({}: LoaderFunctionArgs) {
 
     return {
         credits,
+        projectId,
         buyMoreCreditsUrl,
     }
 }

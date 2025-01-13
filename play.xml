@@ -1,0 +1,26 @@
+<TopBody nodeId="KsVR9HTp_">
+  <Body nodeId="HXo90Y8Tz">
+    <Experiences nodeId="fRf458z2s">
+      <PaddingGlobal nodeId="RnmiUkZpZ">
+        <ContainerMedium nodeId="sWztfdWkv">
+          <HelperSectionHeader nodeId="onAN2kFlN" variant="Nn9I1l44M" icon="[object Object]" textBadge="Experiences" heading="My Skills that Shine,  Expertise You Can Trust" subHeading="<p>Explore my expertise and see how I can leverage my skills to drive your projects forward.</p>">
+          </HelperSectionHeader>
+          <Grid nodeId="bGLqVtp3w">
+            <CardIntegrationCard nodeId="TXbbZQ8AH" title="Web Design & Development" content="With over 4 years of experience, our web design and development services are highly appreciated by many." icons="[object Object]">
+            </CardIntegrationCard>
+            <CardIntegrationCard nodeId="neoPGk7p0" title="Graphic Designer" content="with more than 4 years of experience in this field, more than many people like our services" icons="[object Object]">
+            </CardIntegrationCard>
+            <CardIntegrationCard nodeId="b33cIq6l0" title="UI Design" content="with more than 2 years of experience in this field, more than many people like our services" icons="[object Object]">
+            </CardIntegrationCard>
+            <CardIntegrationCard nodeId="jOdLVX0o7" title="Logo Designer" content="with more than 4 years of experience in this field, more than many people like our services" icons="[object Object]">
+            </CardIntegrationCard>
+            <CardIntegrationCard nodeId="oeEziYxoA" title="Web Developer" content="with more than 4 years of experience in this field, more than many people like our services" icons="[object Object]">
+            </CardIntegrationCard>
+            <CardIntegrationCard nodeId="FtCBnOkUz" title="Motion Designer" content="with more than 4 years of experience in this field, more than many people like our services" icons="[object Object]">
+            </CardIntegrationCard>
+          </Grid>
+        </ContainerMedium>
+      </PaddingGlobal>
+    </Experiences>
+  </Body>
+</TopBody>

@@ -9,6 +9,7 @@ import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
 import { z } from 'zod'
 import { cors } from 'spiceflow/cors'
 import { reactPluginApp } from 'website/src/lib/elysia-react-plugin'
+import { llmPluginApp } from 'website/src/lib/elysia-llm-plugin'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
@@ -19,6 +20,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
     .use(rewritePluginApp)
     .use(markdownPluginApp)
     .use(reactPluginApp)
+    .use(llmPluginApp)
     // .use(
     //     cors({
     //         // credentials: true,

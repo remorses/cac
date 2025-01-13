@@ -148,7 +148,10 @@ export function cleanupOldTextTree(tree: OldTextTree): OldTextTree {
 
         // Remove nodeId if the node has children
         if (node.children?.length) {
-            const { nodeId, ...rest } = node
+            const {
+                // nodeId, //
+                ...rest 
+            } = node
             return {
                 ...rest,
                 children: node.children.flatMap(processNode).filter(isTruthy),

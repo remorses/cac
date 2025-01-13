@@ -136,18 +136,21 @@ const possibleInstanceTextFields = [
 function nineCharsRandomString() {
     return Math.random().toString(36).substring(2, 11)
 }
+
 async function push({
     node,
     tree,
     text,
     nodeId,
     controlKey,
+    addControlsAsAttrs: addControls = false,
 }: {
     tree: OldTextTree
     node: AnyNode
     text?: string
     nodeId: string
     controlKey?: string
+    addControlsAsAttrs: boolean
 }) {
     // console.trace('push')
     // console.log(`adding node ${node?.['name']}`)
@@ -187,16 +190,24 @@ async function push({
     if (isTextNode(node)) {
         fontSize = node.inlineTextStyle?.fontSize || undefined
     }
+    let attributes = {
+        href,
+        fontSize,
+        controlKey,
+    }
+    if (addControls && isComponentInstanceNode(node)) {
+        attributes = {
+            ...attributes,
+            ...node.controls,
+        }
+    }
+
     // Add the actual node
     currentLevel.push({
         content: text,
         nodeId,
         name: 'name' in node ? node.name : '',
-        attributes: {
-            href,
-            fontSize,
-            controlKey,
-        },
+        attributes,
         children: [],
     })
     return tree
@@ -207,9 +218,13 @@ export type NodeWithControl = { node: AnyNode; controlKey: string }
 export async function getFramerTree({
     rootNodes,
     instanceNodes,
+    recursive = true,
+    addControlsAsAttrs = false,
 }: {
     rootNodes: AnyNode[]
+    recursive?: boolean
     instanceNodes: Map<string, NodeWithControl>
+    addControlsAsAttrs?: boolean
 }) {
     let oldText = [] as OldTextTree
 
@@ -235,6 +250,7 @@ export async function getFramerTree({
                     tree: oldText,
                     text,
                     nodeId: node.id,
+                    addControlsAsAttrs,
                 })
             }
         }
@@ -244,32 +260,45 @@ export async function getFramerTree({
                 console.log('node not visible', node.id)
                 return
             }
-            // const _component = await getInstanceComponent(node)
-            // if (!_component) {
-            //     return
-            // }
-            const controls = Object.entries(node.controls)
 
-            for (let [key, value] of controls) {
-                if (
-                    typeof value === 'string' &&
-                    // TODO check type when framer supports it
-                    possibleInstanceTextFields.includes(key.toLocaleLowerCase())
-                ) {
-                    let nodeId = nineCharsRandomString()
-                    instanceNodes.set(nodeId, {
-                        node,
-                        controlKey: key,
-                    })
+            if (addControlsAsAttrs) {
+                const _component = await getInstanceComponent(node)
+                if (!_component) {
+                    return
+                }
+                oldText = await push({
+                    node,
+                    tree: oldText,
+                    nodeId: node.id,
+                    addControlsAsAttrs,
+                })
+            } else {
+                const controls = Object.entries(node.controls)
 
-                    oldText = await push({
-                        // parent: node,
-                        controlKey: key,
-                        node,
-                        nodeId,
-                        tree: oldText,
-                        text: value,
-                    })
+                for (let [key, value] of controls) {
+                    if (
+                        typeof value === 'string' &&
+                        // TODO check type when framer supports it
+                        possibleInstanceTextFields.includes(
+                            key.toLocaleLowerCase(),
+                        )
+                    ) {
+                        let nodeId = nineCharsRandomString()
+                        instanceNodes.set(nodeId, {
+                            node,
+                            controlKey: key,
+                        })
+
+                        oldText = await push({
+                            // parent: node,
+                            controlKey: key,
+                            node,
+                            nodeId,
+                            tree: oldText,
+                            text: value,
+                            addControlsAsAttrs,
+                        })
+                    }
                 }
             }
         }
@@ -282,11 +311,13 @@ export async function getFramerTree({
 
         for await (let node of rootNode.walk()) {
             await handleNode(node)
-            for await (let child of recurseIntoComponent(
-                node,
-                componentInstanceChildrenSeen,
-            )) {
-                await handleNode(child)
+            if (recursive) {
+                for await (let child of recurseIntoComponent(
+                    node,
+                    componentInstanceChildrenSeen,
+                )) {
+                    await handleNode(child)
+                }
             }
         }
     }

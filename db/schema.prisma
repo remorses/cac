@@ -645,6 +645,7 @@ enum PluginName {
   migrate
   githubSync
   reactExport
+  llm
 
   @@schema("public")
 }
