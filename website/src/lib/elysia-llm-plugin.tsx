@@ -158,35 +158,36 @@ export const llmPluginApp = new Spiceflow({
 
             projectsEvents.set(randomId, new Evt())
             const emitter = projectsEvents.get(randomId)!
-            const result = streamText({
-                model,
-                // toolChoice: 'required',
-                abortSignal: request.signal,
-                maxSteps: 40,
-                
-                tools: {
-                    edit: tool({
-                        parameters: z.object({
-                            kind: z
-                                .enum(['rewrite', 'delete', 'duplicate'])
-                                .describe(
-                                    'The kind of edit to make to the Framer xml document',
-                                ),
-                            nodeId: z.string(),
-                            newContent: z
-                                .string()
-                                .optional()
-                                .describe(
-                                    'This field is only useful when kind is "rewrite", put here the new text content for the node if any. Should only be used with leaf tags.',
-                                ),
-                            newAttributes: z
-                                .record(z.string(), z.string())
-                                .optional()
-                                .describe(
-                                    'This field is only useful when kind is "rewrite", put here the new text content for the node attributes, can be partially updated with only the attributes to update.',
-                                ),
-                        }),
-                        description: dedent`
+            try {
+                const result = streamText({
+                    model,
+                    // toolChoice: 'required',
+                    abortSignal: request.signal,
+                    maxSteps: 40,
+
+                    tools: {
+                        edit: tool({
+                            parameters: z.object({
+                                kind: z
+                                    .enum(['rewrite', 'delete', 'duplicate'])
+                                    .describe(
+                                        'The kind of edit to make to the Framer xml document',
+                                    ),
+                                nodeId: z.string(),
+                                newContent: z
+                                    .string()
+                                    .optional()
+                                    .describe(
+                                        'This field is only useful when kind is "rewrite", put here the new text content for the node if any. Should only be used with leaf tags.',
+                                    ),
+                                newAttributes: z
+                                    .record(z.string(), z.string())
+                                    .optional()
+                                    .describe(
+                                        'This field is only useful when kind is "rewrite", put here the new text content for the node attributes, can be partially updated with only the attributes to update.',
+                                    ),
+                            }),
+                            description: dedent`
                         Edit a tag in the Framer xml tree, you can make 3 kinds of edits:
                         - rewrite: change the text of a leaf tag
                         - delete: delete a whole subtree or leaf
@@ -197,67 +198,67 @@ export const llmPluginApp = new Spiceflow({
                         For example when using duplicate you can then act on the new nodeIds returned by the tool call.
                         `,
 
-                        async execute(
-                            { nodeId, kind, newContent },
-                            { toolCallId },
-                        ) {
-                            try {
-                                console.log(`calling tool ${kind}`)
+                            async execute(
+                                { nodeId, kind, newContent },
+                                { toolCallId },
+                            ) {
+                                try {
+                                    console.log(`calling tool ${kind}`)
 
-                                console.log(
-                                    `waiting for tool result ${toolCallId}: ${kind}`,
-                                )
-                                const result = await emitter.waitFor(
-                                    (x) => x.callId === toolCallId,
-                                    1000 * 5,
-                                )
-                                if (!result) {
-                                    throw new Error(
-                                        'No result found for project',
+                                    console.log(
+                                        `waiting for tool result ${toolCallId}: ${kind}`,
                                     )
-                                }
-                                console.log(`generating diff for ${kind}`)
-                                const { tree } = result
-                                const xml = oldTextTreeToXml(tree, {
-                                    shouldAddNodeIdAlways: true,
-                                })
-                                const diff = diffJson(initialXml, xml)
-                                const diffText = diff
-                                    .map((part) => {
-                                        const prefix = part.added
-                                            ? '+'
-                                            : part.removed
-                                              ? '-'
-                                              : ' '
-                                        return part.value
-                                            .split('\n')
-                                            .map((line) =>
-                                                line.trim()
-                                                    ? prefix + ' ' + line
-                                                    : line,
-                                            )
-                                            .join('\n')
+                                    const result = await emitter.waitFor(
+                                        (x) => x.callId === toolCallId,
+                                        1000 * 5,
+                                    )
+                                    if (!result) {
+                                        throw new Error(
+                                            'No result found for project',
+                                        )
+                                    }
+                                    console.log(`generating diff for ${kind}`)
+                                    const { tree } = result
+                                    const xml = oldTextTreeToXml(tree, {
+                                        shouldAddNodeIdAlways: true,
                                     })
-                                    .join('')
+                                    const diff = diffJson(initialXml, xml)
+                                    const diffText = diff
+                                        .map((part) => {
+                                            const prefix = part.added
+                                                ? '+'
+                                                : part.removed
+                                                  ? '-'
+                                                  : ' '
+                                            return part.value
+                                                .split('\n')
+                                                .map((line) =>
+                                                    line.trim()
+                                                        ? prefix + ' ' + line
+                                                        : line,
+                                                )
+                                                .join('\n')
+                                        })
+                                        .join('')
 
-                                return dedent`
+                                    return dedent`
                                 Here is the diff of the change to the xml document:
                                 
                                 ${diffText}
 
                                 Now please call the "edit" tool again if the user task is not complete.
                                 `
-                            } catch (error) {
-                                console.error('Error calling tool', error)
-                                return ''
-                            }
-                        },
-                    }),
-                },
-                messages: [
-                    {
-                        role: 'system',
-                        content: `
+                                } catch (error) {
+                                    console.error('Error calling tool', error)
+                                    return ''
+                                }
+                            },
+                        }),
+                    },
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `
                             You are an expert copywriter tasked with updating a Framer website content by mutating the website xml tree by using the "edit" tool.
 
                             Do not output the xml in the message. Instead, use the function "edit" and use the returned xml diff to understand the updates to the website content.
@@ -275,10 +276,10 @@ export const llmPluginApp = new Spiceflow({
 
                             Ensure all necessary tool calls are made to complete the user's task.
                             `,
-                    },
-                    {
-                        role: 'user',
-                        content: dedent`
+                        },
+                        {
+                            role: 'user',
+                            content: dedent`
                         Here is the current Framer website xml tree, it is a subsection of a website, each node in the xml corresponds to a Framer element. 
 
                         The tags with a nodeId attribute are the ones you can rewrite, delete or duplicate.
@@ -294,38 +295,42 @@ export const llmPluginApp = new Spiceflow({
 
                         call edit function many times to accomplish your task
                         `,
-                    },
-                ],
-            })
+                        },
+                    ],
+                })
 
-            for await (const part of result.fullStream) {
-                if (part.type === 'text-delta') {
-                    fullAnswer += part.textDelta
-                }
-                if (part.type === 'tool-call') {
-                    fullAnswer += '\n---\n'
-
-                    fullAnswer += `Tool call: ${part.toolName}\n`
-                    fullAnswer += `Args: ${JSON.stringify(part.args)}\n`
-                    fullAnswer += '\n'
-
-                    fullAnswer += '---\n'
-                    yield {
-                        type: 'tool-call' as const,
-                        id: randomId,
-                        toolName: part.toolName,
-                        callId: part.toolCallId,
-                        ...part.args,
+                for await (const part of result.fullStream) {
+                    if (part.type === 'text-delta') {
+                        fullAnswer += part.textDelta
                     }
+                    if (part.type === 'tool-call') {
+                        fullAnswer += '\n---\n'
+
+                        fullAnswer += `Tool call: ${part.toolName}\n`
+                        fullAnswer += `Args: ${JSON.stringify(part.args)}\n`
+                        fullAnswer += '\n'
+
+                        fullAnswer += '---\n'
+                        yield {
+                            type: 'tool-call' as const,
+                            id: randomId,
+                            toolName: part.toolName,
+                            callId: part.toolCallId,
+                            ...part.args,
+                        }
+                    }
+                    if (part.type === 'tool-result') {
+                        fullAnswer += '\nresult ---\n'
+                        fullAnswer += part.result
+                        fullAnswer += '\n---\n'
+                    }
+                    // process.stdout.write('\x1Bc')
                 }
-                if (part.type === 'tool-result') {
-                    fullAnswer += '\nresult ---\n'
-                    fullAnswer += part.result
-                    fullAnswer += '\n---\n'
-                }
-                // process.stdout.write('\x1Bc')
+            } finally {
+                console.log(fullAnswer)
+                emitter.detach()
+                projectsEvents.delete(randomId)
             }
-            console.log(fullAnswer)
         },
         {
             body: z.object({
