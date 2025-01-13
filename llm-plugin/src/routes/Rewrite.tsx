@@ -94,7 +94,7 @@ function SimplePromptComponent({}) {
             notifyError(e, 'submitting rewrite prompt')
         } finally {
             revalidator.revalidate()
-            setShouldShowStars(true)
+            // setShouldShowStars(true)
             setIsLoading(false)
         }
     }
@@ -259,6 +259,10 @@ function SimplePromptComponent({}) {
                         console.log(`no node found for id ${item.nodeId}`)
                         continue
                     }
+                    let p
+                    if (currentNodeId !== item.nodeId) {
+                        p = highlightNextNode(item.nodeId)
+                    }
                     // if (item && currentNodeId !== item.nodeId) {
                     //     await highlightNextNode(item.nodeId)
                     // }
@@ -301,6 +305,7 @@ function SimplePromptComponent({}) {
                         }
                         await framer.setParent(cloned.id, parent?.id)
                     }
+                    await p
                 } finally {
                     console.log(`publishing tree change`)
                     const tree = await getFramerTree({

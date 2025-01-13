@@ -50,6 +50,10 @@ export const llmPluginApp = new Spiceflow({
         if (!pathname.includes('/llm')) {
             return
         }
+        // make publish faster
+        if (pathname.includes('/publish')) {
+            return
+        }
         const orgId = store.orgId
         if (!orgId) {
             return
@@ -164,7 +168,7 @@ export const llmPluginApp = new Spiceflow({
                     // toolChoice: 'required',
                     abortSignal: request.signal,
                     maxSteps: 40,
-
+                    // experimental_toolCallStreaming: true,
                     tools: {
                         edit: tool({
                             parameters: z.object({
@@ -184,7 +188,10 @@ export const llmPluginApp = new Spiceflow({
                                     .record(z.string(), z.string())
                                     .optional()
                                     .describe(
-                                        'This field is only useful when kind is "rewrite", put here the new text content for the node attributes, can be partially updated with only the attributes to update.',
+                                        dedent`
+                                        This field is only useful when kind is "rewrite", put here the new text content for the node attributes, can be partially updated with only the attributes to update. 
+                                        It's better if you do one attribute at a time instead of grouping many attributes at the same time, so the user does not need to wait too much time to see the tag changes.
+                                        `,
                                     ),
                             }),
                             description: dedent`
