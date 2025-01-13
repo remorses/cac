@@ -12,7 +12,7 @@ import {
     rewriteTemplateContent,
 } from 'website/src/lib/rewrite'
 import { bfsOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
-import { rewriteXmlContent } from 'website/src/lib/xml'
+import { rewriteXmlContentForTests } from 'website/src/lib/xml'
 
 const testCases = [
     {
@@ -136,7 +136,7 @@ runTestForEachTemplate(
             return
         }
 
-        const resultXml = rewriteXmlContent({ xml, newContent: links })
+        const resultXml = rewriteXmlContentForTests({ xml, newContent: links })
 
         await expect(resultXml).toMatchSnapshot()
     },

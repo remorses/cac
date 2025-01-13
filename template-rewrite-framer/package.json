@@ -21,6 +21,7 @@
         "ai": "^4.0.33",
         "classnames": "^2.5.1",
         "db": "workspace:^",
+        "es-module-shims": "^2.0.3",
         "eventsource-parser": "^3.0.0",
         "framer-motion": "^11.11.17",
         "framer-plugin": "2.1.0-beta.1",

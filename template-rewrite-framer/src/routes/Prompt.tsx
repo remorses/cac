@@ -14,7 +14,7 @@ import {
     Paths,
     pluginApiClient,
     PluginDataKeys,
-    withMode
+    withMode,
 } from 'template-rewrite-framer/src/lib/utils'
 
 import {
@@ -25,7 +25,7 @@ import {
     isComponentNode,
     isTextNode,
     isWebPageNode,
-    supportsBackgroundColor
+    supportsBackgroundColor,
 } from 'framer-plugin'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -45,15 +45,10 @@ import {
     isNodeZoomable,
     NodeWithControl,
 } from 'template-rewrite-framer/src/lib/framer'
-import {
-    bfsOldTextTree,
-    oldTextTreeToXml,
-    sleep
-} from 'website/src/lib/utils'
+import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
+import { decodeControlAttributes } from 'website/src/lib/xml'
 
 let abortController = new AbortController()
-
-let instanceNodes = new Map<string, NodeWithControl>()
 
 function SimplePromptComponent({}) {
     const { buyMoreCreditsUrl, credits } = useLoaderData() as LoaderReturnType<
@@ -122,7 +117,7 @@ function SimplePromptComponent({}) {
 
     function reset() {
         setPreviousOldText([])
-        instanceNodes.clear()
+
         setGenerationId(0)
         setError('')
         setShouldShowStars(false)
@@ -153,7 +148,7 @@ function SimplePromptComponent({}) {
             return
         }
 
-        let oldText = await getFramerTree({ rootNodes, instanceNodes })
+        let oldText = await getFramerTree({ rootNodes })
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
@@ -220,9 +215,7 @@ function SimplePromptComponent({}) {
         let currentNodeId = undefined as string | undefined
 
         async function highlightNextNode(nextItemId) {
-            let node =
-                instanceNodes.get(nextItemId)?.node ||
-                (await framer.getNode(nextItemId))
+            let node = await framer.getNode(nextItemId)
 
             if (!node) {
                 console.log('no node to zoom found for id', nextItemId)
@@ -297,9 +290,7 @@ function SimplePromptComponent({}) {
                     continue
                 }
 
-                const node =
-                    instanceNodes.get(partialItem.nodeId)?.node ||
-                    (await framer.getNode(partialItem.nodeId))
+                const node = await framer.getNode(partialItem.nodeId)
 
                 if (!node) {
                     console.log(`no node found for id ${partialItem.nodeId}`)
@@ -331,22 +322,10 @@ function SimplePromptComponent({}) {
                 if (isTextNode(node)) {
                     await node.setText(partialItem.newContent)
                 } else if (isComponentInstanceNode(node)) {
-                    const instance = instanceNodes.get(partialItem.nodeId)
-                    if (!instance) {
-                        console.log(
-                            'no instance found for node',
-                            partialItem.nodeId,
-                        )
-                        continue
-                    }
-
-                    let controls = {
-                        // ...node.controls,
-                        [instance.controlKey]: partialItem.newContent,
-                    }
-
-                    console.log('setting node control', instance.controlKey)
-                    await node.setAttributes({ controls })
+                    let controls = {}
+                    await node.setAttributes({
+                        controls: decodeControlAttributes(controls),
+                    })
                 } else {
                     console.log(
                         `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
@@ -380,7 +359,7 @@ function SimplePromptComponent({}) {
         setIsDiscarding(true)
         try {
             await Promise.all([
-                discardFramerChanges({ previousOldText, instanceNodes }),
+                discardFramerChanges({ previousOldText }),
                 pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
                     {
                         id: generationId,

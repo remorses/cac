@@ -1,30 +1,16 @@
-import dedent from 'string-dedent'
 import { createFallback } from 'ai-fallback'
+import dedent from 'string-dedent'
 import { DOMParser, XMLSerializer } from 'xmldom'
 
 import { z } from 'zod'
 
 import { openai } from '@ai-sdk/openai'
-import {
-    CoreMessage,
-    generateObject,
-    smoothStream,
-    streamObject,
-    streamText,
-} from 'ai'
+import { CoreMessage, generateObject, smoothStream, streamText } from 'ai'
 
-import {
-    createArrayItemsYielder,
-    yieldNewArrayItems,
-    yieldObjectStream,
-} from 'website/src/lib/ndjson'
-import {
-    bfsOldTextTree,
-    oldTextTreeToXml,
-    safeUrl,
-} from 'website/src/lib/utils'
-import { extractObjectsFromXmlContent } from 'website/src/lib/xml'
 import { anthropic } from '@ai-sdk/anthropic'
+import { createArrayItemsYielder } from 'website/src/lib/ndjson'
+import { oldTextTreeToXml, safeUrl } from 'website/src/lib/utils'
+import { addNodeCount, extractObjectsFromXmlContent } from 'website/src/lib/xml'
 
 export const ITEMS_PER_ITERATION = 30
 
@@ -34,8 +20,8 @@ export type OldTextTree = Array<{
     nodeId?: string | null
     attributes?: {
         fontSize?: string
-        controlKey?: string
         href?: string | null
+        [key: string]: any
     }
     children?: OldTextTree
     count?: number
@@ -410,31 +396,6 @@ export function mergeChunksTooSmall(
 // Helper function to calculate total size of a chunk
 function getChunkSize(chunk: OldTextTree): number {
     return chunk.reduce((sum, node) => sum + (node.count || 0), 0)
-}
-
-export function addNodeCount(tree: OldTextTree) {
-    const result: OldTextTree = []
-
-    // If the tree is empty, return empty result
-    if (tree?.length === 0) return result
-
-    // First pass - count all nodes and store in count field
-    function countNodes(node: OldTextTree[number]): number {
-        let count = 1
-        if (node.children) {
-            for (const child of node.children) {
-                count += countNodes(child)
-            }
-        }
-        node.count = count
-        return count
-    }
-
-    // Count nodes for all trees in the input
-    for (const rootNode of tree) {
-        countNodes(rootNode)
-    }
-    return tree
 }
 
 export function splitTreeInChunks(

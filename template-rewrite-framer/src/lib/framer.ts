@@ -16,7 +16,16 @@ import {
 } from 'template-rewrite-framer/src/lib/utils'
 import { OldTextTree } from 'website/src/lib/rewrite'
 import { cleanupOldTextTree, bfsOldTextTree } from 'website/src/lib/utils'
+import {
+    decodeControlAttributes,
+    encodeControlAttributes,
+} from 'website/src/lib/xml'
 
+export async function getComponentSchema(url) {
+    const res = await import(url)
+    return res.default?.propertyControls
+}
+Object.assign(globalThis, { getComponentSchema })
 async function getInstanceComponent(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
         return
@@ -143,14 +152,12 @@ async function push({
     text,
     nodeId,
     controlKey,
-    addControlsAsAttrs: addControls = false,
 }: {
     tree: OldTextTree
     node: AnyNode
     text?: string
     nodeId: string
     controlKey?: string
-    addControlsAsAttrs: boolean
 }) {
     // console.trace('push')
     // console.log(`adding node ${node?.['name']}`)
@@ -195,10 +202,10 @@ async function push({
         fontSize,
         controlKey,
     }
-    if (addControls && isComponentInstanceNode(node)) {
+    if (isComponentInstanceNode(node)) {
         attributes = {
             ...attributes,
-            ...node.controls,
+            ...encodeControlAttributes(node.controls),
         }
     }
 
@@ -217,14 +224,11 @@ export type NodeWithControl = { node: AnyNode; controlKey: string }
 
 export async function getFramerTree({
     rootNodes,
-    instanceNodes,
+
     recursive = true,
-    addControlsAsAttrs = false,
 }: {
     rootNodes: AnyNode[]
     recursive?: boolean
-    instanceNodes: Map<string, NodeWithControl>
-    addControlsAsAttrs?: boolean
 }) {
     let oldText = [] as OldTextTree
 
@@ -250,7 +254,6 @@ export async function getFramerTree({
                     tree: oldText,
                     text,
                     nodeId: node.id,
-                    addControlsAsAttrs,
                 })
             }
         }
@@ -261,46 +264,15 @@ export async function getFramerTree({
                 return
             }
 
-            if (addControlsAsAttrs) {
-                const _component = await getInstanceComponent(node)
-                if (!_component) {
-                    return
-                }
-                oldText = await push({
-                    node,
-                    tree: oldText,
-                    nodeId: node.id,
-                    addControlsAsAttrs,
-                })
-            } else {
-                const controls = Object.entries(node.controls)
-
-                for (let [key, value] of controls) {
-                    if (
-                        typeof value === 'string' &&
-                        // TODO check type when framer supports it
-                        possibleInstanceTextFields.includes(
-                            key.toLocaleLowerCase(),
-                        )
-                    ) {
-                        let nodeId = nineCharsRandomString()
-                        instanceNodes.set(nodeId, {
-                            node,
-                            controlKey: key,
-                        })
-
-                        oldText = await push({
-                            // parent: node,
-                            controlKey: key,
-                            node,
-                            nodeId,
-                            tree: oldText,
-                            text: value,
-                            addControlsAsAttrs,
-                        })
-                    }
-                }
+            const _component = await getInstanceComponent(node)
+            if (!_component) {
+                return
             }
+            oldText = await push({
+                node,
+                tree: oldText,
+                nodeId: node.id,
+            })
         }
     }
 
@@ -328,33 +300,28 @@ export async function getFramerTree({
 
 export async function discardFramerChanges({
     previousOldText,
-    instanceNodes,
 }: {
     previousOldText: OldTextTree
-    instanceNodes: Map<string, NodeWithControl>
 }) {
     const allNodes = bfsOldTextTree(previousOldText).filter((x) => x?.nodeId)
     const promises = allNodes.map(async (oldNodeObj) => {
-        const { nodeId, content: oldContent } = oldNodeObj
+        const { nodeId, content: oldContent, attributes } = oldNodeObj
         if (!oldContent || !nodeId) {
             console.log('no old content or node id found')
             return Promise.resolve()
         }
 
-        let node =
-            instanceNodes.get(nodeId)?.node || (await framer.getNode(nodeId))
+        let node = await framer.getNode(nodeId)
 
         if (isTextNode(node)) {
             // console.log('setting text', oldContent)
             return await node.setText(oldContent)
         }
-        let instance = instanceNodes.get(nodeId)
-        if (instance && isComponentInstanceNode(instance.node)) {
-            const { node, controlKey } = instance
-            let controls = { ...node.controls }
-            controls[controlKey] = oldContent
-            return await node.setAttributes({
-                controls,
+
+        if (isComponentInstanceNode(node)) {
+            node.controls
+            await node.setAttributes({
+                controls: { ...decodeControlAttributes(attributes) },
             })
         }
     })

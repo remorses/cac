@@ -13,7 +13,7 @@ import { DomHandler } from 'domhandler'
 import { ElementType, Parser } from 'htmlparser2'
 import {
     extractObjectsFromXmlContent,
-    rewriteXmlContent,
+    rewriteXmlContentForTests,
     xmlToOldTextTree,
 } from 'website/src/lib/xml'
 import path from 'path'
@@ -151,7 +151,7 @@ test('xml partial content, rewriteXmlContent', () => {
         { nodeId: 'rgayf1f9', newContent: 'cta replaced' },
     ]
 
-    const result = rewriteXmlContent({ xml: str, newContent })
+    const result = rewriteXmlContentForTests({ xml: str, newContent })
     expect(result).toMatchInlineSnapshot(`
       "<Container>
         <Hero>

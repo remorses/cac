@@ -1,3 +1,3 @@
--- AlterTable
-ALTER TABLE "public"."ReactExportProject" ADD COLUMN     "websiteUrl" TEXT;
+-- AlterEnum
+ALTER TYPE "public"."PluginName" ADD VALUE 'llm';
 

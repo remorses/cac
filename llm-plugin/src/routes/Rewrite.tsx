@@ -43,10 +43,9 @@ import {
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { Paths, pluginApiClient, PluginDataKeys } from '@/lib/utils'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
+import { decodeControlAttributes } from 'website/src/lib/xml'
 
 let abortController = new AbortController()
-
-let instanceNodes = new Map<string, NodeWithControl>()
 
 const randomId = makeRandomId()
 
@@ -115,7 +114,7 @@ function SimplePromptComponent({}) {
 
     function reset() {
         setPreviousOldText([])
-        instanceNodes.clear()
+
         setGenerationId(0)
         // setDescription('')
         setError('')
@@ -149,7 +148,7 @@ function SimplePromptComponent({}) {
 
         let oldText = await getFramerTree({
             rootNodes,
-            instanceNodes,
+
             recursive: false,
             addControlsAsAttrs: true,
         })
@@ -207,9 +206,7 @@ function SimplePromptComponent({}) {
         let currentNodeId = undefined as string | undefined
 
         async function highlightNextNode(nextItemId) {
-            let node =
-                instanceNodes.get(nextItemId)?.node ||
-                (await framer.getNode(nextItemId))
+            let node = await framer.getNode(nextItemId)
 
             if (!node) {
                 console.log('no node to zoom found for id', nextItemId)
@@ -258,9 +255,7 @@ function SimplePromptComponent({}) {
                         console.log(`no nodeId found: ${JSON.stringify(item)}`)
                         continue
                     }
-                    const node =
-                        instanceNodes.get(item.nodeId)?.node ||
-                        (await framer.getNode(item.nodeId))
+                    const node = await framer.getNode(item.nodeId)
 
                     if (!node) {
                         console.log(`no node found for id ${item.nodeId}`)
@@ -287,7 +282,9 @@ function SimplePromptComponent({}) {
                                 )
                                 continue
                             }
-                            await node.setAttributes({ controls })
+                            await node.setAttributes({
+                                controls: decodeControlAttributes(controls),
+                            })
                         } else {
                             console.log(
                                 `node type for id ${item.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
@@ -311,7 +308,7 @@ function SimplePromptComponent({}) {
                     console.log(`publishing tree change`)
                     const tree = await getFramerTree({
                         rootNodes,
-                        instanceNodes,
+
                         recursive: false,
                         addControlsAsAttrs: true,
                     })
@@ -348,7 +345,7 @@ function SimplePromptComponent({}) {
         setIsDiscarding(true)
         try {
             await Promise.all([
-                discardFramerChanges({ previousOldText, instanceNodes }),
+                discardFramerChanges({ previousOldText }),
                 // pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
                 //     {
                 //         id: generationId,
