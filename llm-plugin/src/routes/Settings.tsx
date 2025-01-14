@@ -101,6 +101,10 @@ function Component() {
                                 PluginDataKeys.sessionKey,
                                 null,
                             )
+                            await localStorage.setItem(
+                                PluginDataKeys.sessionKey,
+                                '',
+                            )
                             reload()
                         } finally {
                             // setIsLoading(false)

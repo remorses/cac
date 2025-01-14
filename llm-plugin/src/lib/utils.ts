@@ -22,6 +22,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
             if (response.status === 401) {
                 console.log('clearing session because api returned 401')
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
+                await localStorage.setItem(PluginDataKeys.sessionKey, '')
                 throw redirect(withMode(Paths.login))
             }
             if (response?.status === 402) {
@@ -69,6 +70,7 @@ export enum PluginDataKeys {
 }
 
 export async function getLLMPluginData() {
+    const sessionKeyShared = localStorage.getItem(PluginDataKeys.sessionKey)
     const [sessionKey, info] = await Promise.all([
         framer.getPluginData(PluginDataKeys.sessionKey) || '',
         framer.getProjectInfo(),
@@ -76,15 +78,14 @@ export async function getLLMPluginData() {
     const projectId = info.id.slice(0, 16)
 
     return {
-        sessionKey: sessionKey || '',
+        sessionKey: sessionKeyShared || sessionKey || '',
         projectId,
     }
 }
 
-
 export function debounce<T extends (...args: any[]) => any>(
     fn: T,
-    wait: number = 300
+    wait: number = 300,
 ): (...args: Parameters<T>) => void {
     let timeout: ReturnType<typeof setTimeout> | undefined
 

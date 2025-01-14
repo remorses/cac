@@ -91,7 +91,6 @@ function LoginComponent() {
                         src={hero}
                         className='grow object-contain overflow-hidden w-full h-[138px] rounded-md shadow'
                     />
-
                 </div>
                 <div className='text-center mx-auto my-12 grow gap-2 flex flex-col max-w-xs'>
                     <div className='font-semibold'>Connect to Google</div>
@@ -140,6 +139,7 @@ async function loader({}: LoaderFunctionArgs) {
     if (data.key) {
         console.log('login was completed, got session', data)
 
+        await localStorage.setItem(PluginDataKeys.sessionKey, data.key)
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true

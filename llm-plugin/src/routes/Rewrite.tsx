@@ -1,4 +1,5 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
+import { flushSync } from 'react-dom'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import {
     useLatestFunction,
@@ -56,6 +57,8 @@ function SimplePromptComponent({}) {
 
     const [isLoading, setIsLoading] = useState(false)
     const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
+    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([])
+    const [historyPosition, setHistoryPosition] = useState(-1)
 
     useEffect(() => {
         // abort when leaving the page
@@ -70,13 +73,26 @@ function SimplePromptComponent({}) {
     // console.log('credits', credits)
     async function onSubmit() {
         if (buyCreditsInstead) {
-            // setIsLoading(true)
             window.open(buyMoreCreditsUrl, '_blank')
             return
         }
 
         if (isLoading) {
             return
+        }
+
+        // Add description to history if it's not empty and different from the last entry
+        if (
+            description.trim() &&
+            (descriptionHistory.length === 0 ||
+                descriptionHistory[descriptionHistory.length - 1] !==
+                    description)
+        ) {
+            setDescriptionHistory((prev) => {
+                let arr = [...prev, description]
+                setHistoryPosition(arr.length)
+                return arr
+            })
         }
 
         if (abortController) {
@@ -261,7 +277,7 @@ function SimplePromptComponent({}) {
                     }
                     let p
                     if (currentNodeId !== item.nodeId) {
-                        p = highlightNextNode(item.nodeId)
+                        // p = highlightNextNode(item.nodeId)
                     }
                     // if (item && currentNodeId !== item.nodeId) {
                     //     await highlightNextNode(item.nodeId)
@@ -426,12 +442,77 @@ function SimplePromptComponent({}) {
                     value={description}
                     onChange={(e) => {
                         setDescription(e.target.value)
+                        // Reset history position when typing
+                        setHistoryPosition(descriptionHistory.length)
                         adjustHeight(e.target)
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                             e.preventDefault()
                             onSubmit()
+                        } else if (
+                            e.key === 'ArrowUp' &&
+                            !e.metaKey &&
+                            !e.ctrlKey &&
+                            !e.shiftKey &&
+                            !e.altKey
+                        ) {
+                            e.preventDefault()
+
+                            // If we're at the start of history, do nothing
+                            if (historyPosition <= 0) return
+
+                            // If current description differs from last in history and isn't empty
+                            // Check if current description is not empty and not already in history
+                            if (
+                                description.trim() &&
+                                !descriptionHistory.includes(description)
+                            ) {
+                                // Add current description to history
+                                flushSync(() => {
+                                    setDescriptionHistory((prev) => [
+                                        ...prev,
+                                        description,
+                                    ])
+                                    setHistoryPosition((prev) => prev + 1)
+                                })
+                            }
+
+                            // Move up in history
+                            const newPosition = historyPosition - 1
+                            flushSync(() => {
+                                setHistoryPosition(newPosition)
+                                setDescription(descriptionHistory[newPosition])
+                            })
+
+                            if (textareaRef.current) {
+                                adjustHeight(textareaRef.current)
+                            }
+                        } else if (
+                            e.key === 'ArrowDown' &&
+                            !e.metaKey &&
+                            !e.ctrlKey &&
+                            !e.shiftKey &&
+                            !e.altKey
+                        ) {
+                            e.preventDefault()
+
+                            // If we're not at the end of history
+                            if (
+                                historyPosition <
+                                descriptionHistory.length - 1
+                            ) {
+                                const newPosition = historyPosition + 1
+                                flushSync(() => {
+                                    setHistoryPosition(newPosition)
+                                    setDescription(
+                                        descriptionHistory[newPosition],
+                                    )
+                                })
+                                if (textareaRef.current) {
+                                    adjustHeight(textareaRef.current)
+                                }
+                            }
                         }
                     }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
@@ -465,6 +546,21 @@ function SimplePromptComponent({}) {
                     {buttonText}
                 </Button>
             </div>
+            {Boolean(isLoading) && (
+                <Button
+                    // className='bg-transparent'
+                    onClick={() => {
+                        if (isLoading) {
+                            console.log('aborting')
+                            abortController.abort()
+                            return
+                        }
+                    }}
+                    type='button'
+                >
+                    Cancel
+                </Button>
+            )}
         </form>
     )
 }
