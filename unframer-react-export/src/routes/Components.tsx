@@ -45,7 +45,8 @@ async function loader({}: LoaderFunctionArgs) {
                     return null
                 }
                 return data
-            }),
+            })
+            .catch((x) => null),
     ])
 
     const { email, orgId } = org
@@ -193,49 +194,46 @@ function Component() {
 
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
-            <div className=' flex flex-col px-4 items-center justify-center'>
+            {/* <div className=' flex flex-col px-4 items-center justify-center'>
                 <h1 className='text-balance text-center text-md '>
                     Select which components you want to export from your{' '}
                     {componentsData.length} available components
                 </h1>
-            </div>
-            <div className='flex gap-2 '>
+            </div> */}
+
+            <div className='flex gap-3 items-center '>
+                <div className='relative grow'>
+                    <SearchIcon className='absolute left-2 top-1/2 -translate-y-1/2 ' />
+                    <input
+                        type='text'
+                        autoFocus
+                        placeholder='Search components...'
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className='!pl-7 w-full bg-framer-'
+                    />
+                </div>
                 <Button
                     variant='normal'
                     onClick={() => {
-                        setSelected(componentsData.map((x) => x.id))
+                        if (selected.length === componentsData.length) {
+                            setSelected([])
+                        } else {
+                            setSelected(componentsData.map((x) => x.id))
+                        }
                     }}
-                    className='w-auto grow bg-transparent disabled:opacity-50'
-                    disabled={selected.length === componentsData.length}
+                    className='!w-auto bg-transparent !text-[12px] !px-2  '
                 >
-                    Select All
+                    {selected.length === componentsData.length
+                        ? 'Deselect All'
+                        : 'Select All'}
                 </Button>
-                <Button
-                    variant='normal'
-                    onClick={() => {
-                        setSelected([])
-                    }}
-                    className='w-auto grow bg-transparent'
-                    disabled={selected.length === 0}
-                >
-                    Deselect All
-                </Button>
-            </div>
-            <div className='relative'>
-                <SearchIcon className='absolute left-2 top-1/2 -translate-y-1/2 ' />
-                <input
-                    type='text'
-                    placeholder='Search components...'
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className='!pl-7 w-full bg-framer-'
-                />
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
                 {filteredComponents.map((component, i) => {
                     return (
                         <Item
-                            defaultIsChecked={selected.includes(component.id)}
+                            // defaultIsChecked={selected.includes(component.id)}
                             onChange={(e) => {
                                 const checked = e.target.checked
                                 setSelected((prev) => {
@@ -301,30 +299,28 @@ function SearchIcon({ className }: { className?: string }) {
         </svg>
     )
 }
-function Item({ id, name, defaultIsChecked, ...rest }) {
+function Item({ id, name, onChange, checked }) {
     const ref = useRef<any>()
     return (
         <div
             className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full'
             key={id}
+            onClick={() => {
+                ref.current?.click()
+            }}
         >
             <div className='flex items-center justify-center'>
                 <input
                     name={id}
                     // defaultChecked={defaultIsChecked}
+                    checked={checked}
                     ref={ref}
                     className='!size-[14px]'
                     type='checkbox'
-                    {...rest}
-                    // onChange={onChange}
+                    onChange={onChange}
                 />
             </div>
-            <div
-                onClick={() => {
-                    ref.current?.click()
-                }}
-                className=''
-            >
+            <div className=''>
                 <h3>{name}</h3>
             </div>
             {/* <div

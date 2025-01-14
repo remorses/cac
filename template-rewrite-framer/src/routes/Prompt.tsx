@@ -42,8 +42,7 @@ import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
     discardFramerChanges,
     getFramerTree,
-    isNodeZoomable,
-    NodeWithControl,
+    isNodeZoomable
 } from 'template-rewrite-framer/src/lib/framer'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { decodeControlAttributes } from 'website/src/lib/xml'

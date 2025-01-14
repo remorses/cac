@@ -28,6 +28,7 @@ import {
     PluginNames,
     sleep,
 } from 'website/src/lib/utils'
+import { feedbackUrl } from 'website/src/lib/env'
 
 const key = generateSecurePassword()
 let code = generateShortOtpCode()
@@ -91,12 +92,26 @@ function LoginComponent() {
                         src={hero}
                         className='grow object-contain overflow-hidden w-full h-[138px] rounded-md shadow'
                     />
-
                 </div>
-                <div className='text-center mx-auto my-12 grow gap-2 flex flex-col max-w-xs'>
-                    <div className='font-semibold'>Connect to Google</div>
-                    <div className='opacity-70 max-w-[200px] text-center text-balance'>
-                        Login to download and use your components with the CLI
+                <div className='text-center mx-auto my-8 mt-10 grow gap-2 flex flex-col max-w-xs'>
+                    <div className='font-semibold text-balance text-center'>
+                        This plugin requires a $250
+                        monthly subscription to use.
+                    </div>
+                    <div className='opacity-70 text-center text-balance'></div>
+                    <div className='opacity-70 text-center text-balance'>
+                        If you are a solo developer, open source project or
+                        non-profit you can ask for a discount{' '}
+                        <a
+                            target='_blank'
+                            href={feedbackUrl(
+                                'React Export',
+                                'discount for open source, non-profits and solo developers',
+                            )}
+                        >
+                            here
+                        </a>
+                        .
                     </div>
                 </div>
             </div>

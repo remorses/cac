@@ -39,6 +39,7 @@ To download and start using your React components, run the following command:
 - Framer variables will be available as **React props**. Breakpoints too.
 
 - These files are **generated**, do not edit them manually. Instead run the command again after changes in Framer.
+- For more info or issues please visit [Unframer GitHub](https://github.com/remorses/unframer).
 `
 }
 async function loader({}: LoaderFunctionArgs) {
@@ -181,16 +182,16 @@ function Component() {
             </div>
             {/* <hr className='' /> */}
             <div className='flex gap-3 grow'>
-                <Link className='grow' to={withMode(Paths.settings)}>
-                    <Button className=''>Settings</Button>
+                <Link className='grow' to={withMode(Paths.components)}>
+                    <Button className=''>Go Back</Button>
                 </Link>
-                <a
+                {/* <a
                     className='grow'
                     target='_blank'
                     href='https://github.com/remorses/unframer'
                 >
                     <Button className=''>Read More on GitHub</Button>
-                </a>
+                </a> */}
             </div>
         </div>
     )

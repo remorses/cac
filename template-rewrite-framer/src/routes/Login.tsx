@@ -105,7 +105,7 @@ function LoginComponent() {
 
                         while (!loginCompleted) {
                             // slow because i already check when the iframe becomes visible
-                            await sleep(7_000)
+                            await sleep(3000)
                             console.log('checking if login was completed')
                             revalidator.revalidate()
                         }

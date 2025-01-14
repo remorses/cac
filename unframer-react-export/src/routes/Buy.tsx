@@ -66,7 +66,7 @@ function Component() {
     useEffect(() => {
         const interval = setInterval(() => {
             revalidator.revalidate()
-        }, 5000)
+        }, 3000)
         return () => clearInterval(interval)
     }, [])
     const navigate = useNavigate()
@@ -75,35 +75,36 @@ function Component() {
             <div className='flex flex-col gap-3 my-4'>
                 <div className='flex items-center'>
                     <div className=' text-sm text-balance'>
-                        Buy the plugin subscription to export more than{' '}
-                        {freeComponents} components.
+                        React Export requires a $250 monthly subscription.
                     </div>
                 </div>
 
                 <div className='flex items-center'>
                     <div className='text-framer-secondary text-balance'>
+                        If you are a solo developer, non-profit or open source
+                        project you can get a discount{' '}
                         <a
                             href={discountCodeUrl('React Export')}
                             className='font-semibold text-black dark:text-white'
                             target='_blank'
                             rel='noopener noreferrer'
                         >
-                            Contact us
-                        </a>{' '}
-                        for non commercial or open source discount.
+                            here
+                        </a>
+                        .
                     </div>
                 </div>
             </div>
             <hr className='' />
 
             <div className='flex gap-3 items-center'>
-                <Button
+                {/* <Button
                     variant='normal'
                     onClick={() => navigate(-1)}
                     className='grow w-auto'
                 >
                     Go Back
-                </Button>
+                </Button> */}
 
                 <Button
                     variant='primary'
