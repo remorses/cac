@@ -98,8 +98,8 @@ export const variantIdToCredits = Object.assign(
     ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
 )
 
-export const feedbackUrl = (pluginName) =>
-    `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' Plugin Feedback')}`
+export const feedbackUrl = (pluginName, title = 'Plugin Feedback') =>
+    `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' ' + title)}`
 export const discountCodeUrl = (pluginName) =>
     `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' plugin discount for open source & non commercial use')}`
 
@@ -128,3 +128,5 @@ export function getBuyLLMPluginUrl({ orgId, email, projectId }) {
     url.searchParams.append('projectId', projectId)
     return url.toString()
 }
+
+export const REACT_PLUGIN_PRICING_CHANGE = new Date('2025-01-15')

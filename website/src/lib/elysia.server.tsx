@@ -132,12 +132,16 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                     .executeTakeFirst(),
             ])
             if (!framerSession) {
-                console.log('no framer session found')
-                return { error: 'No valid framer request found' }
+                console.log('no framer session found for key', body.key)
+                return { error: 'No valid framer request found - session not found' }
             }
             // TODO remove this check after plugin is updated
             if (body.projectId && framerSession.projectId !== body.projectId) {
-                return { error: 'No valid framer request found' }
+                console.log('project id mismatch', {
+                    requestProjectId: body.projectId,
+                    sessionProjectId: framerSession.projectId
+                })
+                return { error: 'No valid framer request found - project ID mismatch' }
             }
             const user = await db
                 .selectFrom('auth.users')

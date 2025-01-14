@@ -1,37 +1,16 @@
+import { Button } from '@nextui-org/react'
 import { LoaderFunctionArgs } from '@remix-run/node'
-import { db } from 'db/kysely'
-import { generatePassword } from 'website/src/lib/ssr.server'
-import { getSupabaseSession } from '../lib/supabase.server'
-import { safeJsonParse } from 'website/src/lib/utils'
 import {
     Form,
     useActionData,
     useNavigation,
     useSearchParams,
 } from '@remix-run/react'
-import { Button } from '@nextui-org/react'
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSeparator,
-    InputOTPSlot,
-} from 'website/src/components/otp'
-import { env } from 'website/src/lib/env'
+import { db } from 'db/kysely'
+import { safeJsonParse } from 'website/src/lib/utils'
+import { getSupabaseSession } from '../lib/supabase.server'
+import { PluginName } from '@prisma/client'
 
-export function PhFramerLogoFill(props) {
-    return (
-        <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 256 256'
-            {...props}
-        >
-            <path
-                fill='currentColor'
-                d='M200 112h-51l56.27 50a8 8 0 0 1-5.27 14h-64v64a8 8 0 0 1-13.66 5.66l-72-72A8 8 0 0 1 48 168v-64a8 8 0 0 1 8-8h51L50.69 46A8 8 0 0 1 56 32h144a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8'
-            ></path>
-        </svg>
-    )
-}
 export default function Page({}) {
     const actionData = useActionData<typeof action>()
     const [searchParams] = useSearchParams()
@@ -109,32 +88,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const { headers, userId, user, redirectTo } = await getSupabaseSession({
         request,
     })
-
+    const url = new URL(request.url)
+    const pluginName: PluginName | '' =
+        (url.searchParams.get('pluginName') as any) || ''
     if (redirectTo) {
         return redirectTo
     }
+
     return {}
 }
 
-export async function action({ request }: LoaderFunctionArgs) {
-    const { headers, userId, supabase, user, redirectTo } =
-        await getSupabaseSession({
-            request,
-        })
-    if (redirectTo) {
-        console.log('redirecting to login')
-        return redirectTo
-    }
-    if (!user || !user.email) {
-        throw new Error('user not logged in')
-    }
-    const url = new URL(request.url)
-
-    const key = url.searchParams.get('key') || ''
-    const projectName = url.searchParams.get('projectName') || ''
-    const projectId = url.searchParams.get('projectId') || ''
-    let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
-    // console.log({ requestData })
+async function confirmLogin({
+    key,
+    projectName,
+    projectId,
+    requestData,
+    userId,
+}: {
+    key: string
+    projectName: string
+    projectId: string
+    requestData: any
+    userId: string
+}) {
     if (!key) {
         throw new Error('No key provided')
     }
@@ -155,7 +131,7 @@ export async function action({ request }: LoaderFunctionArgs) {
             .values({
                 key,
                 createdAt: new Date(),
-                usedByUserId: user.id,
+                usedByUserId: userId,
                 data: requestData,
                 projectId,
                 projectName,
@@ -167,20 +143,55 @@ export async function action({ request }: LoaderFunctionArgs) {
             .execute(),
         db
             .selectFrom('auth.users')
-            .where('id', '=', user.id)
+            .where('id', '=', userId)
             .selectAll()
             .executeTakeFirst(),
-
-        // db
-        //     .updateTable('auth.users')
-        //     .where('id', '=', user.id)
-        //     .set({ raw_user_meta_data: JSON.stringify({}) }) // make session smaller
-        //     .executeTakeFirst(),
     ])
     if (!authUser) {
         throw new Error('No auth user found for user')
     }
     return { confirmed: true }
+}
 
-    return {}
+export async function action({ request }: LoaderFunctionArgs) {
+    const { headers, userId, supabase, user, redirectTo } =
+        await getSupabaseSession({
+            request,
+        })
+    if (redirectTo) {
+        console.log('redirecting to login')
+        return redirectTo
+    }
+    if (!user || !user.email) {
+        throw new Error('user not logged in')
+    }
+    const url = new URL(request.url)
+
+    const key = url.searchParams.get('key') || ''
+    const projectName = url.searchParams.get('projectName') || ''
+    const projectId = url.searchParams.get('projectId') || ''
+    let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
+
+    return await confirmLogin({
+        key,
+        projectName,
+        projectId,
+        requestData,
+        userId,
+    })
+}
+
+export function PhFramerLogoFill(props) {
+    return (
+        <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 256 256'
+            {...props}
+        >
+            <path
+                fill='currentColor'
+                d='M200 112h-51l56.27 50a8 8 0 0 1-5.27 14h-64v64a8 8 0 0 1-13.66 5.66l-72-72A8 8 0 0 1 48 168v-64a8 8 0 0 1 8-8h51L50.69 46A8 8 0 0 1 56 32h144a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8'
+            ></path>
+        </svg>
+    )
 }

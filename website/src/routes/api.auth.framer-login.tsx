@@ -8,6 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const key = url.searchParams.get('key') || ''
     const code = url.searchParams.get('code') || ''
     const projectId = url.searchParams.get('projectId') || ''
+    const pluginName = url.searchParams.get('pluginName') || ''
     const projectName = url.searchParams.get('projectName') || ''
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
@@ -22,7 +23,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         options: {
             skipBrowserRedirect: true,
             redirectTo: loginRedirectUrl({
-                next: afterFramerLogin({ key, code, projectId, projectName }),
+                next: afterFramerLogin({
+                    key,
+                    code,
+                    projectId,
+                    projectName,
+                    pluginName,
+                }),
             }),
         },
     })

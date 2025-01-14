@@ -37,7 +37,7 @@ export enum PluginNames {
 export function framerLoginUrl({
     key,
     code,
-    pluginName = PluginNames.migrate,
+    pluginName,
     projectId,
     projectName,
 }) {
@@ -50,6 +50,9 @@ export function framerLoginUrl({
     url.searchParams.set('key', key)
     if (projectId) {
         url.searchParams.set('projectId', projectId)
+    }
+    if (pluginName) {
+        url.searchParams.set('pluginName', projectId)
     }
     if (projectName) {
         url.searchParams.set('projectName', projectName)
@@ -97,11 +100,20 @@ export function isTruthy<T>(val: T | undefined | null | false): val is T {
     return Boolean(val)
 }
 
-export function afterFramerLogin({ key, projectId, projectName, code }) {
+export function afterFramerLogin({
+    key,
+    projectId,
+    pluginName,
+    projectName,
+    code,
+}) {
     const url = new URL('/after-framer-login', env.PUBLIC_URL)
     url.searchParams.set('key', key)
     if (projectId) {
         url.searchParams.set('projectId', projectId)
+    }
+    if (pluginName) {
+        url.searchParams.set('pluginName', projectId)
     }
     if (projectName) {
         url.searchParams.set('projectName', projectName)
@@ -150,7 +162,7 @@ export function cleanupOldTextTree(tree: OldTextTree): OldTextTree {
         if (node.children?.length) {
             const {
                 // nodeId, //
-                ...rest 
+                ...rest
             } = node
             return {
                 ...rest,

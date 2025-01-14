@@ -3,6 +3,7 @@ import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 import { env } from '../lib/env'
+import { PluginName } from '@prisma/client'
 
 export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
@@ -21,7 +22,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     next.searchParams.set(
         'next',
-        afterFramerLogin({ key, code, projectId, projectName }),
+        afterFramerLogin({
+            key,
+            code,
+            projectId,
+            projectName,
+            pluginName: PluginName.githubSync,
+        }),
     )
 
     const { data, error } = await supabase.auth.signInWithOAuth({

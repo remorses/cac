@@ -17,7 +17,7 @@ import { z } from 'zod'
 import { Sema } from 'async-sema'
 import { deduplicateByKey } from 'website/src/lib/utils'
 import Stripe from 'stripe'
-import { env } from 'website/src/lib/env'
+import { env, REACT_PLUGIN_PRICING_CHANGE } from 'website/src/lib/env'
 import { X } from 'lucide-react'
 
 const unauthorizedResponse = new Response('Unauthorized', {
@@ -213,14 +213,20 @@ export const reactPluginApp = new Spiceflow({
             if (!project) {
                 throw new Error('Project not found')
             }
+            let needsToBuy = (() => {
+                if (
+                    project.createdAt.getTime() <=
+                    REACT_PLUGIN_PRICING_CHANGE.getTime()
+                ) {
+                    return components.length > freeComponents && !reactSub
+                }
+                return !reactSub
+            })()
 
-            if (components.length > freeComponents && !reactSub) {
-                throw new Response(
-                    'You have reached the free limit of components',
-                    {
-                        status: 402,
-                    },
-                )
+            if (needsToBuy) {
+                throw new Response('Need subscription', {
+                    status: 402,
+                })
             }
 
             return await prisma.$transaction(async (tx) => {
@@ -304,10 +310,10 @@ async function getReactSub({ orgId, projectId }) {
                 in: ['active', 'trialing'],
             },
             pluginName: 'reactExport',
-            metadata: {
-                path: ['projectId'],
-                equals: projectId,
-            },
+            // metadata: {
+            //     path: ['projectId'],
+            //     equals: projectId,
+            // },
         },
     })
 }
