@@ -82,12 +82,13 @@ function deIndent(str: string) {
     return lines.map((line) => line.slice(minIndent)).join('\n')
 }
 
+export type NewExtractedNode = {
+    nodeId: string
+    newContent: string
+    attributes: Record<string, string>
+}
 export function extractObjectsFromXmlContent(xml: string) {
-    const results: {
-        nodeId: string
-        newContent: string
-        attributes: Record<string, string>
-    }[] = []
+    const results: NewExtractedNode[] = []
 
     const handler = new DomHandler((error, dom) => {
         if (error) {

@@ -1,7 +1,7 @@
 import { Evt } from 'evt'
-import { diffJson } from 'diff'
+import { createTwoFilesPatch, diffJson, structuredPatch } from 'diff'
 import dedent from 'string-dedent'
-import { streamText, tool } from 'ai'
+import { smoothStream, streamText, tool } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 
 import { Spiceflow } from 'spiceflow'
@@ -13,10 +13,15 @@ import { z } from 'zod'
 import { OldTextTree } from 'website/src/lib/rewrite'
 import { openai } from '@ai-sdk/openai'
 import { createFallback } from 'ai-fallback'
-import { oldTextTreeToXml } from 'website/src/lib/xml'
+import {
+    extractObjectsFromXmlContent,
+    NewExtractedNode,
+    oldTextTreeToXml,
+} from 'website/src/lib/xml'
 import { sleep } from 'website/src/lib/utils'
 import { db } from 'db/kysely'
 import { getOrgCredits } from 'website/src/lib/credits'
+import { createArrayItemsYielder } from 'website/src/lib/ndjson'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -35,7 +40,8 @@ let projectsEvents = new Map<string, Evt<FramerEventLLM>>()
 let model = createFallback({
     models: [
         anthropic('claude-3-5-haiku-latest'),
-        openai('gpt-4o-mini'), //
+        // anthropic('claude-3-5-sonnet-latest'),
+        openai('gpt-4o'), //
     ],
 })
 
@@ -158,103 +164,99 @@ export const llmPluginApp = new Spiceflow({
             const initialXml = oldTextTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
             })
+            console.log(initialXml)
             let fullAnswer = ''
 
             projectsEvents.set(randomId, new Evt())
             const emitter = projectsEvents.get(randomId)!
+
             try {
+                let lastXmlBeforeCall = initialXml
+                const generateDiffText = async (toolCallId: string) => {
+                    console.log(`waiting for tool result ${toolCallId}`)
+                    const result = await emitter.waitFor(
+                        (x) => x.callId === toolCallId,
+                        1000 * 5,
+                    )
+                    if (!result) {
+                        throw new Error('No result found for project')
+                    }
+                    console.log('generating diff')
+                    const { tree } = result
+                    const xml = oldTextTreeToXml(tree, {
+                        shouldAddNodeIdAlways: true,
+                    })
+                    const patch = createTwoFilesPatch(
+                        'original',
+                        'modified',
+                        lastXmlBeforeCall,
+                        xml,
+                        '',
+                        '',
+                        { ignoreWhitespace: true },
+                    )
+                    lastXmlBeforeCall = xml
+                    // console.log(patch)
+                    return patch
+                }
+
                 const result = streamText({
                     model,
                     // toolChoice: 'required',
                     abortSignal: request.signal,
                     maxSteps: 40,
-                    // experimental_toolCallStreaming: true,
+                    experimental_transform: smoothStream({
+                        chunking: 'line',
+                    }),
                     tools: {
-                        edit: tool({
+                        duplicate: tool({
                             parameters: z.object({
-                                kind: z
-                                    .enum(['rewrite', 'delete', 'duplicate'])
-                                    .describe(
-                                        'The kind of edit to make to the Framer xml document',
-                                    ),
-                                nodeId: z.string(),
-                                newContent: z
-                                    .string()
-                                    .optional()
-                                    .describe(
-                                        'This field is only useful when kind is "rewrite", put here the new text content for the node if any. Should only be used with leaf tags.',
-                                    ),
-                                newAttributes: z
-                                    .record(z.string(), z.string())
-                                    .optional()
-                                    .describe(
-                                        dedent`
-                                        This field is only useful when kind is "rewrite", put here the new text content for the node attributes, can be partially updated with only the attributes to update. 
-                                        It's better if you do one attribute at a time instead of grouping many attributes at the same time, so the user does not need to wait too much time to see the tag changes.
-                                        `,
-                                    ),
+                                nodeIds: z.array(z.string()),
                             }),
                             description: dedent`
-                        Edit a tag in the Framer xml tree, you can make 3 kinds of edits:
-                        - rewrite: change the text of a leaf tag
-                        - delete: delete a whole subtree or leaf
-                        - duplicate: clone a whole subtree or leaf whose you can later edit again with this tool
-
-                        Notice that this tool will return the diff of the updated xml tree so you can then act on the result nodeIds
-
-                        For example when using duplicate you can then act on the new nodeIds returned by the tool call.
-                        `,
-
-                            async execute(
-                                { nodeId, kind, newContent },
-                                { toolCallId },
-                            ) {
+                            Clone multiple subtrees or leaves whose you can later edit.
+                            Returns the diff of the updated xml tree so you can then act on the new nodeIds.
+                            Notice that you can pass multiple nodeIds at the same time to save time.
+                            `,
+                            async execute({ nodeIds }, { toolCallId }) {
                                 try {
-                                    console.log(`calling tool ${kind}`)
-
-                                    console.log(
-                                        `waiting for tool result ${toolCallId}: ${kind}`,
-                                    )
-                                    const result = await emitter.waitFor(
-                                        (x) => x.callId === toolCallId,
-                                        1000 * 5,
-                                    )
-                                    if (!result) {
-                                        throw new Error(
-                                            'No result found for project',
-                                        )
-                                    }
-                                    console.log(`generating diff for ${kind}`)
-                                    const { tree } = result
-                                    const xml = oldTextTreeToXml(tree, {
-                                        shouldAddNodeIdAlways: true,
-                                    })
-                                    const diff = diffJson(initialXml, xml)
-                                    const diffText = diff
-                                        .map((part) => {
-                                            const prefix = part.added
-                                                ? '+'
-                                                : part.removed
-                                                  ? '-'
-                                                  : ' '
-                                            return part.value
-                                                .split('\n')
-                                                .map((line) =>
-                                                    line.trim()
-                                                        ? prefix + ' ' + line
-                                                        : line,
-                                                )
-                                                .join('\n')
-                                        })
-                                        .join('')
-
+                                    console.log('calling duplicate tool')
+                                    const diffText =
+                                        await generateDiffText(toolCallId)
                                     return dedent`
-                                Here is the diff of the change to the xml document:
-                                
-                                ${diffText}
+                                    Here is the diff of the duplication:
+                                    
+                                    ${diffText}
 
-                                Now please call the "edit" tool again if the user task is not complete.
-                                `
+                                    Now you can proceed with more duplications if needed, or deletions, or output the final xml with the content changes.
+                                    `
+                                } catch (error) {
+                                    console.error('Error calling tool', error)
+                                    return ''
+                                }
+                            },
+                        }),
+                        delete: tool({
+                            parameters: z.object({
+                                nodeIds: z.array(z.string()),
+                            }),
+                            description: dedent`
+                            Delete multiple subtrees or leaves from the xml tree.
+                            Returns the diff of the updated xml tree.
+                            Notice that you can pass multiple nodeIds at the same time to save time.
+                            `,
+                            async execute({ nodeIds }, { toolCallId }) {
+                                try {
+                                    console.log('calling delete tool')
+                                    const diffText =
+                                        await generateDiffText(toolCallId)
+                                    return dedent`
+                                    Here is the diff of the deletion:
+                                    
+                                    ${diffText}
+
+                                    Now you can proceed with more deletions if needed, or duplications, or output the final xml with the content changes.
+                                    `
                                 } catch (error) {
                                     console.error('Error calling tool', error)
                                     return ''
@@ -266,58 +268,106 @@ export const llmPluginApp = new Spiceflow({
                         {
                             role: 'system',
                             content: `
-                            You are an expert copywriter tasked with updating a Framer website content by mutating the website xml tree by using the "edit" tool.
+                            You are an expert copywriter tasked with updating a Framer website content by mutating the website xml tree.
 
-                            Do not output the xml in the message. Instead, use the function "edit" and use the returned xml diff to understand the updates to the website content.
+                            You have access to two tools:
+                            - "duplicate" - Creates a copy of some specified xml nodes and returns the new nodeIds in the diff
+                            - "delete" - Removes some specified xml nodes
 
-                            Before each tool call to edit reason step by step on the new changes to make.
+                            First, analyze if any duplications or deletions are needed for the requested changes:
+                            1. Plan out quickly the needed structural changes first
+                            2. Execute the needed "duplicate" call, noting the new nodeIds from the diffs. Group many nodeIds into one call.
+                            3. Execute the needed "delete" call. Group many nodeIds into one call.
+                            4. Only after completing structural changes, output the final xml with content and attributes changes
 
-                            After each function call, reason step by step on the changes and plan the next steps. Try to understand the changes to the xml document, what the new node ids are and what the next steps should be.
+                            Important rules for the final xml output:
+                            - Do not include any xml tags for deleted nodes
+                            - The output xml should be partial, no need to include the full xml from the input. Only show the parts you want to rewrite content or attributes for and add comments for skipped sections, like this:
+                                \`\`\`xml
+                                <!-- skipped nodes -->
+                                <text nodeId="Xy01EPyOT" updatedTag="updated">Updated heading text</text>
+                                <!-- skipped nodes -->
+                                \`\`\`
 
-                            **Important:** You must call "edit" multiple times to accomplish complex tasks. For example:
-                            - To create a node 3 times you will have to call edit with kind "duplicate" 3 times
-                            - To delete a node 3 times you will have to call edit with kind "delete" 3 times  
-                            - Then you will have to call edit with kind "rewrite" at least 3 times to make the cloned content unique
-                            - To duplicate the last card 3 times, call "edit" with kind "duplicate" three times
-                            - To rewrite content, call "edit" with kind "rewrite" as needed
-
-                            Ensure all necessary tool calls are made to complete the user's task.
+                            You should skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
+                            
                             `,
                         },
+
                         {
                             role: 'user',
+                            content: formatUserMessage({
+                                initialXml: formatExampleXml({}),
+                                description: `add a new faq section for the pricing information, the faq content should tell that pricing is shown in the /pricing page`,
+                            }),
+                        },
+
+                        {
+                            role: 'assistant',
                             content: dedent`
-                        Here is the current Framer website xml tree, it is a subsection of a website, each node in the xml corresponds to a Framer element. 
+                            Given that the user asked to add a new faq section I will need to duplicate an existing tag and then rewrite it.
 
-                        The tags with a nodeId attribute are the ones you can rewrite, delete or duplicate.
+                            After calling the duplicate tool I found the node to modify with the nodeId ${addedFaqNodeId}
 
-                        
-                        ${initialXml}
-                        
+                            I will rewrite the xml to align with what the user asked:
 
-                        Here is the task the user asked you to perform:
-                        \`\`\`
-                        ${description}
-                        \`\`\`
+                            \`\`\`xml
+                            <-- previous tags -->
+                            ${exampleAddedFaqSection}
+                            <-- other tags -->    
+                            \`\`\`
+                            `,
+                            toolInvocations: [
+                                {
+                                    toolCallId: 'exampleFunctionCallId',
+                                    toolName: 'duplicate',
+                                    args: {
+                                        nodeIds: ['UyBbEMyfT'],
+                                    },
+                                    state: 'result',
+                                    result: createTwoFilesPatch(
+                                        'original',
+                                        'modified',
+                                        formatExampleXml({}), // Handle potential undefined
+                                        formatExampleXml({
+                                            duplicateLatest: true,
+                                        }), // Handle potential undefined
+                                        '',
+                                        '',
+                                    ),
+                                },
+                            ],
+                        },
 
-                        call edit function many times to accomplish your task
-                        `,
+                        {
+                            role: 'user',
+                            content: formatUserMessage({
+                                initialXml,
+                                description,
+                            }),
                         },
                     ],
                 })
 
+                let fullText = ''
+                let allObjects: NewExtractedNode[] = []
+                const yielder = createArrayItemsYielder<NewExtractedNode>()
                 for await (const part of result.fullStream) {
                     if (part.type === 'text-delta') {
                         fullAnswer += part.textDelta
+                        fullText += part.textDelta
+                        allObjects = extractObjectsFromXmlContent(fullText)
+                        for (const obj of yielder.yieldNewItems(allObjects)) {
+                            yield {
+                                nodeId:
+                                    obj.partialItem?.nodeId ||
+                                    obj.fullItem?.nodeId ||
+                                    '',
+                                ...obj,
+                            }
+                        }
                     }
                     if (part.type === 'tool-call') {
-                        fullAnswer += '\n---\n'
-
-                        fullAnswer += `Tool call: ${part.toolName}\n`
-                        fullAnswer += `Args: ${JSON.stringify(part.args)}\n`
-                        fullAnswer += '\n'
-
-                        fullAnswer += '---\n'
                         yield {
                             type: 'tool-call' as const,
                             id: randomId,
@@ -325,14 +375,30 @@ export const llmPluginApp = new Spiceflow({
                             callId: part.toolCallId,
                             ...part.args,
                         }
+                        fullAnswer += '\n---\n'
+                        fullAnswer += `Tool call: ${part.toolName}\n`
+                        fullAnswer += `Args: ${JSON.stringify(part.args)}\n`
+                        fullAnswer += '\n'
+                        fullAnswer += '---\n'
                     }
                     if (part.type === 'tool-result') {
                         fullAnswer += '\nresult ---\n'
                         fullAnswer += part.result
                         fullAnswer += '\n---\n'
                     }
-                    // process.stdout.write('\x1Bc')
                 }
+                for (const obj of yielder.yieldRemaining()) {
+                    yield {
+                        nodeId:
+                            obj.partialItem?.nodeId ||
+                            obj.fullItem?.nodeId ||
+                            '',
+                        ...obj,
+                    }
+                }
+
+                return { fullXml: fullText }
+                // yield { type: 'fullXml' as const, fullXml: fullText }
             } finally {
                 console.log(fullAnswer)
                 emitter.detach()
@@ -405,4 +471,89 @@ async function getLlmSub({ orgId, projectId }) {
             },
         },
     })
+}
+
+export function nineCharsRandomString() {
+    return Math.random().toString(36).substring(2, 11)
+}
+
+function formatUserMessage({ initialXml, description }) {
+    return dedent`
+    Here is the current Framer website xml tree, it is a subsection of a website, each node in the xml corresponds to a Framer element. 
+
+    The tags with a nodeId attribute are the ones you can modify.
+    
+    ${initialXml}
+    
+
+    Here is the task the user asked you to perform:
+    \`\`\`
+    ${description}
+    \`\`\`
+
+    First analyze and list any needed duplications or deletions.
+    Then make all necessary "duplicate" and "delete" tool calls, keeping track of new nodeIds.
+    Only after completing ALL structural changes, output the final xml with the updated tags.
+    `
+}
+
+const addedFaqNodeId = 'Uy00EPyfT'
+
+const exampleAddedFaqSection = `
+<Faq
+    nodeId="${addedFaqNodeId}"
+    question="What is the pricing?"
+    answer="To see the full pricing you can go to the /pricing page."
+    <-- other attributes are the same, skip them -->
+>
+</Faq>
+`
+
+function formatExampleXml({ duplicateLatest = false }) {
+    return dedent`
+    <FaqDay nodeId="lBeDFDDMZ">
+        <Stack nodeId="BFwoQf9Cp">
+            <Faq
+                nodeId="xnkzgcSiY"
+                <!-- variant is of type 'Open' | 'Closed' -->
+                variant="T5CrfWy_o"
+                color="rgb(0, 0, 0)"
+                question="What payment methods do you accept?"
+                answer="We accept all major credit cards, PayPal, and various other payment methods depending on your location. Please contact our support team for more information on accepted payment methods in your region."
+            >
+            </Faq>
+            <Faq
+                nodeId="lHXf24eBJ"
+                <!-- variant is of type 'Open' | 'Closed' -->
+                variant="yPX8xspWY"
+                color="rgb(0, 0, 0)"
+                question="How does the pricing work for teams?"
+                answer="Our pricing is per user, per month. This means you only pay for the number of team members you have on your account. Discounts are available for larger teams and annual subscriptions."
+            >
+            </Faq>
+            <Faq
+                nodeId="S10j0vkLp"
+                <!-- variant is of type 'Open' | 'Closed' -->
+                variant="yPX8xspWY"
+                color="rgb(0, 0, 0)"
+                question="Can I change my plan later?"
+                answer="Yes, you can upgrade or downgrade your plan at any time. Changes to your plan will be prorated and reflected in your next billing cycle."
+            >
+            </Faq>
+            ${dedent`
+            <Faq
+                nodeId="UyBbEMyfT"
+                <!-- variant is of type 'Open' | 'Closed' -->
+                variant="yPX8xspWY"
+                color="rgb(0, 0, 0)"
+                question="Is my data secure?"
+                answer="Security is our top priority. We use state-of-the-art encryption and comply with the best industry practices to ensure that your data is stored securely and accessed only by authorized users."
+            >
+            </Faq>
+            `
+                .repeat(duplicateLatest ? 2 : 1)
+                .replace('UyBbEMyfT', addedFaqNodeId)}
+        </Stack>
+    </FaqDay>
+    `
 }

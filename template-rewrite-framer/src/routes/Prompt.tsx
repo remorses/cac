@@ -42,7 +42,7 @@ import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
     discardFramerChanges,
     getFramerTree,
-    isNodeZoomable
+    isNodeZoomable,
 } from 'template-rewrite-framer/src/lib/framer'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { decodeControlAttributes } from 'website/src/lib/xml'
@@ -295,33 +295,22 @@ function SimplePromptComponent({}) {
                     console.log(`no node found for id ${partialItem.nodeId}`)
                     continue
                 }
-                const old = allOldNodes.find(
-                    (x) => x.nodeId === partialItem.nodeId,
-                )?.content
-                if (!old) {
-                    console.log(
-                        `no old text found for node ${partialItem.nodeId}`,
-                    )
-                    continue
-                }
-                // console.log(
-                //     `replacing text from\nbefore: ${JSON.stringify(old)}\nafter:${JSON.stringify(chunk.content)}`,
-                // )
 
-                if (Date.now() - lastTimeZoomed < minTimeOnNode) {
-                    let time = minTimeOnNode - (Date.now() - lastTimeZoomed)
-                    // console.log('waiting before zooming', time)
-                    await sleep(time)
-                }
-
-                if (!partialItem.newContent) {
-                    // console.log('no text found in chunk', chunk)
-                    continue
-                }
                 if (isTextNode(node)) {
+                    if (!partialItem.newContent) {
+                        console.log('no text found in chunk', partialItem)
+                        continue
+                    }
                     await node.setText(partialItem.newContent)
                 } else if (isComponentInstanceNode(node)) {
-                    let controls = {}
+                    const controls = partialItem.attributes
+                    if (!controls) {
+                        console.log(
+                            'no component controls to set found in item',
+                            partialItem,
+                        )
+                        continue
+                    }
                     await node.setAttributes({
                         controls: decodeControlAttributes(controls),
                     })

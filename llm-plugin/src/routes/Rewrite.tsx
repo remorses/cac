@@ -259,84 +259,88 @@ function SimplePromptComponent({}) {
 
         try {
             for await (let item of eventSource!) {
-                console.log(item.kind, JSON.stringify(item, null, 2))
-                try {
-                    if (!item) {
-                        console.log('no item found')
-                        continue
-                    }
-                    if (item.nodeId == null) {
-                        console.log(`no nodeId found: ${JSON.stringify(item)}`)
-                        continue
-                    }
-                    const node = await framer.getNode(item.nodeId)
+                console.log(item.type, JSON.stringify(item, null, 2))
 
-                    if (!node) {
-                        console.log(`no node found for id ${item.nodeId}`)
-                        continue
-                    }
-                    let p
-                    if (currentNodeId !== item.nodeId) {
-                        // p = highlightNextNode(item.nodeId)
-                    }
-                    // if (item && currentNodeId !== item.nodeId) {
-                    //     await highlightNextNode(item.nodeId)
-                    // }
-                    currentNodeId = item?.nodeId
+                if (!item) {
+                    console.log('no item found')
+                    continue
+                }
 
-                    if (item.kind === 'rewrite') {
-                        if (isTextNode(node)) {
-                            if (!item.newContent) {
-                                console.log('no text found in chunk', item)
-                                continue
+                if (item.type === 'tool-call') {
+                    try {
+                        if (item.toolName === 'delete') {
+                            for (let nodeId of item.nodeIds) {
+                                await framer.removeNode(nodeId)
                             }
-                            await node.setText(item.newContent)
-                        } else if (isComponentInstanceNode(node)) {
-                            const controls = item.newAttributes || {}
-                            if (!controls) {
-                                console.log(
-                                    'no component controls to set found in item',
-                                    item,
-                                )
-                                continue
+                        } else if (item.toolName === 'duplicate') {
+                            for (let nodeId of item.nodeIds) {
+                                const node = await framer.getNode(nodeId)
+                                if (!node) {
+                                    console.warn(
+                                        `no node found for tool call ${item.toolName}`,
+                                    )
+                                    continue
+                                }
+                                const parent = await node.getParent()
+                                if (!parent) {
+                                    throw new Error('No parent found for node')
+                                }
+                                let cloned = await node.clone()
+                                if (!cloned) {
+                                    throw new Error('No new node cloned found')
+                                }
+                                await framer.setParent(cloned.id, parent?.id)
                             }
-                            await node.setAttributes({
-                                controls: decodeControlAttributes(controls),
-                            })
-                        } else {
-                            console.log(
-                                `node type for id ${item.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
-                            )
                         }
-                    } else if (item.kind === 'delete') {
-                        await framer.removeNode(item.nodeId)
-                    } else if (item.kind === 'duplicate') {
-                        const parent = await node.getParent()
-                        if (!parent) {
-                            throw new Error('No parent found for node')
-                        }
-                        let cloned = await node.clone()
-                        if (!cloned) {
-                            throw new Error('No new node cloned found')
-                        }
-                        await framer.setParent(cloned.id, parent?.id)
-                    }
-                    await p
-                } finally {
-                    console.log(`publishing tree change`)
-                    const tree = await getFramerTree({
-                        rootNodes,
-
-                        recursive: false,
-                    })
-                    const { error } =
-                        await pluginApiClient.api.plugins.llm.publish.post({
-                            randomId,
-                            callId: item.callId,
-                            tree,
+                    } finally {
+                        console.log(`publishing tree change`)
+                        const tree = await getFramerTree({
+                            rootNodes,
+                            recursive: false,
                         })
-                    if (error) {
-                        throw error
+                        const { error } =
+                            await pluginApiClient.api.plugins.llm.publish.post({
+                                randomId,
+                                callId: item.callId,
+                                tree,
+                            })
+                        if (error) {
+                            throw error
+                        }
+                        continue
+                    }
+                }
+                const node = await framer.getNode(item.nodeId)
+
+                if (!node) {
+                    console.log(`no node found for id ${item.nodeId}`)
+                    continue
+                }
+                if (item.type === 'fullItem') {
+                    let partialItem = item.fullItem
+
+                    if (isTextNode(node)) {
+                        if (!partialItem.newContent) {
+                            console.log('no text found in chunk', partialItem)
+                            continue
+                        }
+                        await node.setText(partialItem.newContent)
+                    } else if (isComponentInstanceNode(node)) {
+                        const controls = partialItem.attributes
+                        if (!controls) {
+                            console.log(
+                                'no component controls to set found in item',
+                                item,
+                            )
+                            continue
+                        }
+                        await node.setAttributes({
+                            controls: decodeControlAttributes(controls),
+                        })
+                    } else {
+                        console.log(
+                            `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
+                        )
                     }
                 }
             }

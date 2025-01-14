@@ -255,9 +255,7 @@ const possibleInstanceTextFields = [
     'content',
 ]
 
-function nineCharsRandomString() {
-    return Math.random().toString(36).substring(2, 11)
-}
+
 
 async function push({
     node,

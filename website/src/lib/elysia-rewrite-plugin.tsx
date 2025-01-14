@@ -11,7 +11,6 @@ import {
 import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { oldTextTreeToXml } from 'website/src/lib/utils'
-import { rewriteXmlContentForTests } from 'website/src/lib/xml'
 import { z } from 'zod'
 
 export const rewritePluginApp = new Spiceflow({

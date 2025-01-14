@@ -10,7 +10,11 @@ import { CoreMessage, generateObject, smoothStream, streamText } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
 import { oldTextTreeToXml, safeUrl } from 'website/src/lib/utils'
-import { addNodeCount, extractObjectsFromXmlContent } from 'website/src/lib/xml'
+import {
+    addNodeCount,
+    extractObjectsFromXmlContent,
+    NewExtractedNode,
+} from 'website/src/lib/xml'
 
 export const ITEMS_PER_ITERATION = 30
 
@@ -182,11 +186,6 @@ function findFirstChildrenLayer(tree: OldTextTree): {
     return { layer: currentLayer, parents }
 }
 
-type NewNode = {
-    nodeId: string
-    newContent?: string
-}
-
 const templateText = ({ xml }) => {
     return dedent`
     Please migrate the following template section:
@@ -241,7 +240,8 @@ export async function* rewriteTemplateChunk({
     url: string
     user: string
 }) {
-    const host = safeUrl(url || 'http://nourlgivenbyuser.com')?.host || url
+    const host =
+        safeUrl(url || 'http://IgnoreMeNoUrlGivenByUser.com')?.host || url
     let messages: CoreMessage[] = [
         {
             role: 'system',
@@ -289,8 +289,8 @@ export async function* rewriteTemplateChunk({
     })
 
     let fullText = ''
-    let allObjects: NewNode[] = []
-    const yielder = createArrayItemsYielder<NewNode>()
+    let allObjects: NewExtractedNode[] = []
+    const yielder = createArrayItemsYielder<NewExtractedNode>()
     for await (let textDelta of stream1.textStream) {
         onToken?.(textDelta)
         fullText += textDelta
@@ -471,7 +471,7 @@ export async function* rewriteTemplateContent({
     signal: AbortSignal
     onToken?: (token: string) => void
 }) {
-    let finalObject: NewNode[] | undefined
+    let finalObject: NewExtractedNode[] | undefined
 
     const chunkedOldText = splitTreeInChunks(oldText || [], ITEMS_PER_ITERATION)
 

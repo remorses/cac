@@ -630,5 +630,146 @@ paths:
                 - projectId
                 - colorStyles
               additionalProperties: false
+  /api/plugins/llm/health:
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+  /api/plugins/llm/submitReview:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stars:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                generationId:
+                  type: integer
+                  exclusiveMinimum: 0
+              required:
+                - stars
+                - generationId
+              additionalProperties: false
+  /api/plugins/llm/publish:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                randomId:
+                  type: string
+                callId:
+                  type: string
+                tree: {}
+              required:
+                - randomId
+                - callId
+              additionalProperties: false
+  /api/plugins/llm/getCredits:
+    post:
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+  /api/plugins/llm/generate:
+    post:
+      x-fern-streaming:
+        format: sse
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                projectId:
+                  type: string
+                randomId:
+                  type: string
+                description:
+                  type: string
+                tree: {}
+              required:
+                - randomId
+                - description
+              additionalProperties: false
+  /api/plugins/llm/subscriptions:
+    get:
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: projectId
+          required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
 components:
   schemas: {}

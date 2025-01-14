@@ -28,7 +28,6 @@ import { Link } from 'react-router-dom'
 import { ReactExportComponent } from 'db/prisma'
 function markdown({ shortId }) {
     return `
-### Your Components are Ready
 
 To download and start using your React components, run the following command:
 
