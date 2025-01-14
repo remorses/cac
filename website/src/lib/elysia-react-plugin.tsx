@@ -29,7 +29,7 @@ export const componentObjectSchema = z.object({
     url: z.string(),
 })
 
-export const freeComponents = 10
+export const freeComponents = 30
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
@@ -187,7 +187,7 @@ export const reactPluginApp = new Spiceflow({
             }
             projectId = projectId.slice(0, 16)
             console.time(`[${shortId}] initial upsert`)
-            const [project, reactSub] = await Promise.all([
+            const [project, reactSub, org] = await Promise.all([
                 prisma.reactExportProject.upsert({
                     where: {
                         orgId,
@@ -208,17 +208,25 @@ export const reactPluginApp = new Spiceflow({
                     },
                 }),
                 getReactSub({ orgId, projectId }),
+                prisma.org.findUnique({
+                    where: {
+                        orgId,
+                    },
+                }),
             ])
             console.timeEnd(`[${shortId}] initial upsert`)
             if (!project) {
-                throw new Error('Project not found')
+                throw new Error('Project not created')
+            }
+            if (!org) {
+                throw new Error('Org not found')
             }
             let needsToBuy = (() => {
                 if (
-                    project.createdAt.getTime() <=
+                    org.createdAt.getTime() <=
                     REACT_PLUGIN_PRICING_CHANGE.getTime()
                 ) {
-                    return components.length > freeComponents && !reactSub
+                    return !reactSub && components.length > freeComponents
                 }
                 return !reactSub
             })()
