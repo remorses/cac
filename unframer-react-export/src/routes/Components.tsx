@@ -188,10 +188,6 @@ function Component() {
         )
     }
 
-    const filteredComponents = componentsData.filter((component) =>
-        component.name?.toLowerCase().includes(search.toLowerCase()),
-    )
-
     return (
         <Form method='POST' className='flex-1 flex flex-col gap-4'>
             {/* <div className=' flex flex-col px-4 items-center justify-center'>
@@ -230,10 +226,13 @@ function Component() {
                 </Button>
             </div>
             <div className='grid border border-[--framer-color-bg-tertiary] divide-y rounded-lg  overflow-y-auto max-h-[360px] grid-cols-1 grow w-full items-center justify-center'>
-                {filteredComponents.map((component, i) => {
+                {componentsData.map((component, i) => {
+                    const isVisible = component.name
+                        ?.toLowerCase()
+                        .includes(search.toLowerCase())
                     return (
                         <Item
-                            // defaultIsChecked={selected.includes(component.id)}
+                            style={{ display: isVisible ? 'flex' : 'none' }}
                             onChange={(e) => {
                                 const checked = e.target.checked
                                 setSelected((prev) => {
@@ -299,10 +298,11 @@ function SearchIcon({ className }: { className?: string }) {
         </svg>
     )
 }
-function Item({ id, name, onChange, checked }) {
+function Item({ id, name, onChange, checked, style }) {
     const ref = useRef<any>()
     return (
         <div
+            style={style}
             className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full'
             key={id}
             onClick={() => {
