@@ -15,6 +15,7 @@ import {
     useLoaderData,
     useNavigate,
     useNavigation,
+    useRevalidator,
 } from 'react-router'
 
 import { notifyError } from '@/lib/errors'
@@ -22,7 +23,7 @@ import { framer } from 'framer-plugin'
 import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
@@ -156,7 +157,6 @@ export function Components(): RouteObject {
         Component,
     }
 }
-
 function Component() {
     const navigation = useNavigation()
     const isLoading = navigation.state !== 'idle'
@@ -165,6 +165,24 @@ function Component() {
     const actionData = useActionData() as LoaderReturnType<typeof action>
     const { componentsData, componentIds = [] } =
         useLoaderData() as LoaderReturnType<typeof loader>
+    const revalidate = useRevalidator()
+
+    // Subscribe to canvas changes to detect new components
+    useEffect(() => {
+        let componentsCount = framer
+            .getNodesWithType('ComponentNode')
+            .then((x) => x.length)
+        const unsubscribe = framer.subscribeToCanvasRoot(async (event) => {
+            let newComponentCount = await framer
+                .getNodesWithType('ComponentNode')
+                .then((x) => x.length)
+            if (newComponentCount !== (await componentsCount)) {
+                componentsCount = Promise.resolve(newComponentCount)
+                revalidate.revalidate()
+            }
+        })
+        return () => unsubscribe()
+    }, [])
 
     const [search, setSearch] = useState('')
     const [selected, setSelected] = useState(() => {
@@ -173,8 +191,6 @@ function Component() {
         }
         return componentsData.slice(0, 10).map((x) => x.id)
     })
-
-    const navigate = useNavigate()
 
     if (!componentsData?.length) {
         return (
