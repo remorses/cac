@@ -413,11 +413,11 @@ function SimplePromptComponent({}) {
         >
             <div className='flex flex-col w-full min-h-[160px]'>
                 {!shouldShowStars && (
-                    <div className='flex flex-col items-center w-full py-[50px] shrink-0 justify-center grow gap-3 text-center text-balance'>
-                        <div className='font-semibold'>Add a description</div>
+                    <div className='flex flex-col items-center w-full py-[70px] shrink-0 justify-center grow gap-3 text-center text-balance'>
+                        <div className='font-semibold'>Add a prompt</div>
                         <div className='opacity-70'>
-                            The plugin will use this description to replace
-                            content on your page.
+                            The plugin can duplicate, delete and rewrite elements
+                            on the page
                         </div>
                     </div>
                 )}
@@ -521,7 +521,7 @@ function SimplePromptComponent({}) {
                     }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
-                    placeholder='Framer is a web design tool...'
+                    placeholder='Add a new pricing plan with a higher price...'
                 />
             </div>
 

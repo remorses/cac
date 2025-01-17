@@ -87,15 +87,15 @@ function LoginComponent() {
             className='flex flex-col justify-end grow gap-3'
         >
             <div className='flex flex-col '>
-                <div className='flex flex-col grow -mt-2 -m-[40px]'>
+                <div className='flex flex-col grow -mt-2 -m-[48px]'>
                     <img
                         src={image}
-                        className='grow  h-[260px] brightness-150 object-contain mix-blend-screen saturate-150 overflow-hidden w-full rounded-md shadow'
+                        className='grow select-none pointer-events-none invert dark:invert-0 h-[260px] brightness-150 object-contain dark:mix-blend-screen mix-blend-multiply grayscale dark:grayscale-0 saturate-150 overflow-hidden w-full rounded-md shadow'
                     />
                 </div>
                 <div className='text-center mx-auto my-4 grow gap-2 flex flex-col max-w-xs'>
                     {/* <div className='font-semibold'>Connect to Google</div> */}
-                    <div className=' text-purple-50 text-sm max-w-[200px] leading-relaxed text-center text-balance'>
+                    <div className=' dark:text-purple-50 text-sm max-w-[200px] leading-relaxed text-center text-balance'>
                         login with Google to track your progress
                     </div>
                 </div>
