@@ -28,6 +28,7 @@ import {
     PluginNames,
     sleep,
 } from 'website/src/lib/utils'
+import image from '../ai_rewrite_image@4x.png'
 
 const key = generateSecurePassword()
 let code = generateShortOtpCode()
@@ -85,17 +86,17 @@ function LoginComponent() {
             style={containerStyle}
             className='flex flex-col justify-end grow gap-3'
         >
-            <div className='flex flex-col min-h-[180px]'>
-                <div className='flex flex-col grow'>
+            <div className='flex flex-col '>
+                <div className='flex flex-col grow -mt-2 -m-[40px]'>
                     <img
-                        src={hero}
-                        className='grow object-contain overflow-hidden w-full h-[138px] rounded-md shadow'
+                        src={image}
+                        className='grow  h-[260px] brightness-150 object-contain mix-blend-screen saturate-150 overflow-hidden w-full rounded-md shadow'
                     />
                 </div>
-                <div className='text-center mx-auto my-12 grow gap-2 flex flex-col max-w-xs'>
-                    <div className='font-semibold'>Connect to Google</div>
-                    <div className='opacity-70 max-w-[200px] text-center text-balance'>
-                        Login to download and use your components with the CLI
+                <div className='text-center mx-auto my-4 grow gap-2 flex flex-col max-w-xs'>
+                    {/* <div className='font-semibold'>Connect to Google</div> */}
+                    <div className=' text-purple-50 text-sm max-w-[200px] leading-relaxed text-center text-balance'>
+                        login with Google to track your progress
                     </div>
                 </div>
             </div>
