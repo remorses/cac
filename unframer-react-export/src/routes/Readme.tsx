@@ -34,10 +34,13 @@ To download and start using your React components, run the following command:
     npx unframer@latest ${shortId}
 
 - This command will download the React components in a \`framer\` folder.
-- Import them and use them with full **TypeScript** support.
-- Framer variables will be available as **React props**. Breakpoints too.
 
-- These files are **generated**, do not edit them manually. Instead run the command again after changes in Framer.
+- Import them and use them with full **TypeScript** support.
+
+- Framer variables and breakpoints will be available as **React props**.
+
+- These files are **generated**, do not edit them manually. Instead run the command again after making changes in Framer.
+
 - For more info or issues please visit <a href="https://github.com/remorses/unframer" target="_blank" rel="noopener noreferrer">unframer GitHub</a>.
 `
 }
