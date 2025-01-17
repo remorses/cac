@@ -51,7 +51,7 @@ export const llmPluginApp = new Spiceflow({
     .state('orgId', '')
     .state('userId', '')
 
-    .use(async function addGithubUserLogin({ request, state: store }) {
+    .use(async function addGithubUserLogin({ request, state: store }, next) {
         const pathname = new URL(request.url).pathname
         if (!pathname.includes('/llm')) {
             return
@@ -68,6 +68,14 @@ export const llmPluginApp = new Spiceflow({
         if (!userId) {
             return
         }
+        const res = await next()
+
+        res.headers.set(
+            'fly-force-instance-id',
+            process.env.FLY_MACHINE_ID || '',
+        )
+
+        return res
     })
     .get('/health', () => {
         return 'ok'
@@ -153,7 +161,7 @@ export const llmPluginApp = new Spiceflow({
     )
     .post(
         '/generate',
-        async function* ({ params, request, state: store }) {
+        async function* ({ params, response, request, state: store }) {
             request.signal.addEventListener('abort', () => {
                 console.log('aborting')
             })

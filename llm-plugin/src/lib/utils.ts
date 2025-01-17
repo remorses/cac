@@ -16,6 +16,8 @@ export {
 } from 'template-rewrite-framer/src/lib/utils'
 export type { LoaderReturnType } from 'template-rewrite-framer/src/lib/utils'
 
+export let flyMachineId = ''
+
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
@@ -28,13 +30,20 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
             if (response?.status === 402) {
                 throw redirect(withMode(Paths.buy))
             }
+            if (response.headers.get('fly-force-instance-id')) {
+                flyMachineId = response.headers.get('fly-force-instance-id')!
+            }
         },
-        async onRequest() {
+        async onRequest(p) {
             const { sessionKey } = await getLLMPluginData()
+            const headers = {
+                sessionKey,
+            }
+            if (flyMachineId && p?.includes('/publish')) {
+                headers['fly-force-instance-id'] = flyMachineId
+            }
             return {
-                headers: {
-                    sessionKey,
-                },
+                headers,
             }
         },
     })
