@@ -369,7 +369,7 @@ async function getProject({ projectId }) {
             .filter((x) => x?.url && x?.id)
             .map((c) => ({
                 ...c,
-                url: c.url,
+                url: c.url?.split('@')[0],
             })),
         framerWebPages: framerWebPages.filter((x) => x.webPageId && x.path),
         colorStyles,
