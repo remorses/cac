@@ -33,8 +33,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
+
         options: {
             skipBrowserRedirect: true,
+
             queryParams: {
                 // prompt: 'select_account', // can also be 'consent'
             },

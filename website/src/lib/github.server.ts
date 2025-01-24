@@ -192,7 +192,9 @@ export async function getGithubUserLogin({ userId }) {
         .selectAll()
         .executeTakeFirst()
     if (!githubAccount) {
-        throw new Error('Github account not found for user')
+        throw new Error(
+            'Github account not found for user ' + JSON.stringify(userId),
+        )
     }
     const githubLogin = (githubAccount?.identity_data as any)?.user_name
     if (!githubLogin) {
