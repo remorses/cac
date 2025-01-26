@@ -20,6 +20,7 @@ import { deduplicateByKey } from 'website/src/lib/utils'
 import Stripe from 'stripe'
 import { env, REACT_PLUGIN_PRICING_CHANGE } from 'website/src/lib/env'
 import { X } from 'lucide-react'
+import type { url } from 'inspector'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -338,35 +339,46 @@ async function getReactSub({ orgId, projectId }) {
 }
 
 async function getProject({ projectId }) {
-    const [project, components, colorStyles, framerWebPages, locales] =
-        await Promise.all([
-            prisma.reactExportProject.findUnique({
-                where: {
-                    // orgId,
-                    projectId,
-                },
-            }),
-            prisma.reactExportComponent.findMany({
-                where: {
-                    projectId,
-                },
-            }),
-            prisma.reactExportColorStyle.findMany({
-                where: {
-                    projectId,
-                },
-            }),
-            prisma.reactExportWebPage.findMany({
-                where: {
-                    projectId,
-                },
-            }),
-            prisma.reactExportLocale.findMany({
-                where: {
-                    projectId,
-                },
-            }),
-        ])
+    const [
+        project,
+        components,
+        colorStyles,
+        framerWebPages,
+        locales,
+        breakpoints,
+    ] = await Promise.all([
+        prisma.reactExportProject.findUnique({
+            where: {
+                // orgId,
+                projectId,
+            },
+        }),
+        prisma.reactExportComponent.findMany({
+            where: {
+                projectId,
+            },
+        }),
+        prisma.reactExportColorStyle.findMany({
+            where: {
+                projectId,
+            },
+        }),
+        prisma.reactExportWebPage.findMany({
+            where: {
+                projectId,
+            },
+        }),
+        prisma.reactExportLocale.findMany({
+            where: {
+                projectId,
+            },
+        }),
+        prisma.reactExportComponentBreakpoint.findMany({
+            where: {
+                projectId,
+            },
+        }),
+    ])
 
     if (!project) {
         throw new Response(`Project with id ${projectId} not found`, {
@@ -385,5 +397,6 @@ async function getProject({ projectId }) {
         framerWebPages: framerWebPages.filter((x) => x.webPageId && x.path),
         colorStyles,
         locales: locales.map(({ projectId, ...rest }) => rest),
+        breakpoints: breakpoints.map(({ projectId, ...rest }) => rest),
     }
 }

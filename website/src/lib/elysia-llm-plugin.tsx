@@ -161,7 +161,7 @@ export const llmPluginApp = new Spiceflow({
     )
     .post(
         '/generate',
-        async function* ({ params, response, request, state: store }) {
+        async function* ({ params, request, state: store }) {
             request.signal.addEventListener('abort', () => {
                 console.log('aborting')
             })
