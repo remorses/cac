@@ -629,7 +629,6 @@ paths:
                   type: array
               required:
                 - components
-                - breakpoints
                 - projectId
                 - colorStyles
               additionalProperties: false
