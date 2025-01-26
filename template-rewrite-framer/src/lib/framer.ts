@@ -139,11 +139,10 @@ export function getAttributeComments(controls?: PropertyControls) {
 Object.assign(globalThis, {
     getComponentSchema: getComponentAttributesComments,
 })
-async function getInstanceComponent(componentInstance: AnyNode) {
+export function getInstanceComponentId(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
         return
     }
-    // console.log('controls', componentInstance.controls)
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
         console.log(`component ${componentInstance.name} is not a local module`)
         return
@@ -156,8 +155,14 @@ async function getInstanceComponent(componentInstance: AnyNode) {
         )
         return
     }
+    return match[1]
+}
 
-    const componentId = match[1]
+async function getInstanceComponent(componentInstance: AnyNode) {
+    const componentId = getInstanceComponentId(componentInstance)
+    if (!componentId) {
+        return
+    }
     const componentNode = await framer.getNode(componentId)
     if (!componentNode || !isComponentNode(componentNode)) {
         console.log(`could not find component node for ${componentId}`)

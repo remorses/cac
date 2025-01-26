@@ -1,4 +1,5 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
+import { getInstanceComponentId } from 'template-rewrite-framer/src/lib/framer'
 
 import {
     LoaderReturnType,
@@ -19,11 +20,13 @@ import {
 } from 'react-router'
 
 import { notifyError } from '@/lib/errors'
-import { framer } from 'framer-plugin'
+import { framer, isFrameNode } from 'framer-plugin'
 import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { useEffect, useRef, useState } from 'react'
+import { getParentNodes } from 'template-rewrite-framer/src/lib/utils'
+import { deduplicateByKey } from 'website/src/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {
     const components = await framer.getNodesWithType('ComponentNode')
@@ -90,7 +93,63 @@ async function action({ request }: LoaderFunctionArgs) {
             selectedComponentIds.has(component.id),
     )
 
-    console.log('publishInfo', publishInfo)
+    // Get instances and controls for each component
+    const componentsWithInstances = await Promise.all(
+        filteredComponents.map(async (component) => {
+            try {
+                const allInstances = await framer.getNodesWithType(
+                    'ComponentInstanceNode',
+                )
+                const instances = allInstances.filter((instance) => {
+                    const id = getInstanceComponentId(instance)
+                    return id === component.id
+                })
+                let breakpoints = await Promise.all(
+                    instances.map(async (instance) => {
+                        const variantId = String(
+                            instance.controls?.variant || '',
+                        )
+                        if (!variantId) {
+                            return
+                        }
+                        const parents = await Array.fromAsync(
+                            getParentNodes(instance),
+                        )
+                        const [root, breakpointNode] = parents.reverse()
+                        if (!isFrameNode(breakpointNode)) {
+                            console.log(
+                                'breakpoint is not a frame node for',
+                                breakpointNode,
+                            )
+                            return
+                        }
+                        const breakpointName = breakpointNode?.name
+
+                        // console.log(component.name, variantId, breakpointName)
+                        let rect = await breakpointNode?.getRect()
+                        return {
+                            variantId,
+                            width: rect?.width,
+                            breakpointName,
+                        }
+                    }),
+                )
+                breakpoints = breakpoints.filter(
+                    (x) => x?.breakpointName && x?.width && x?.variantId,
+                )
+                breakpoints = deduplicateByKey(
+                    breakpoints,
+                    (x) => x?.variantId || '',
+                )
+                return { component, breakpoints }
+            } catch (err) {
+                notifyError(err, 'error getting component breakpoints')
+                return { component }
+            }
+        }),
+    )
+
+    // console.log('publishInfo', publishInfo)
     let websiteUrl =
         publishInfo?.staging?.currentPageUrl ||
         publishInfo?.staging?.url ||
@@ -113,8 +172,9 @@ async function action({ request }: LoaderFunctionArgs) {
                     darkColor: dark ?? light, // Ensure darkColor is never null
                 }
             }),
-            components: filteredComponents.map((component) => {
+            components: componentsWithInstances.map(({ component }) => {
                 const { name, id, insertURL, componentIdentifier } = component
+
                 return {
                     name: name ?? '',
                     id,
@@ -123,6 +183,23 @@ async function action({ request }: LoaderFunctionArgs) {
                     componentIdentifier,
                 }
             }),
+            breakpoints: componentsWithInstances.flatMap(
+                ({ breakpoints, component }) => {
+                    return (
+                        breakpoints?.map((breakpoint) => {
+                            const { variantId, width, breakpointName } =
+                                breakpoint!
+                            return {
+                                variantId: variantId!,
+                                width: width || 0,
+                                breakpointName: breakpointName || '',
+                                componentId: component.id!,
+                                projectId: fullFramerProjectId!,
+                            }
+                        }) || []
+                    )
+                },
+            ),
             pages: pages.map((page) => {
                 const { id, collectionId, path } = page
                 return {

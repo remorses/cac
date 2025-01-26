@@ -528,9 +528,23 @@ model ReactExportComponent {
   projectId           String
   componentIdentifier String?
 
-  project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  project     ReactExportProject    @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  breakpoints ReactExportComponentBreakpoint[]
 
   @@id([id, projectId])
+  @@schema("public")
+}
+
+model ReactExportComponentBreakpoint {
+  componentId    String
+  projectId      String
+  variantId      String
+  width          Int
+  breakpointName String
+
+  component ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
+
+  @@id([componentId, projectId, variantId])
   @@schema("public")
 }
 

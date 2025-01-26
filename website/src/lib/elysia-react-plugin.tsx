@@ -12,6 +12,7 @@ import {
     ReactExportComponent,
     ReactExportLocale,
     ReactExportWebPage,
+    type ReactExportComponentBreakpoint,
 } from 'db/prisma'
 import { z } from 'zod'
 import { Sema } from 'async-sema'
@@ -172,6 +173,7 @@ export const reactPluginApp = new Spiceflow({
                 projectName = '',
                 fullFramerProjectId,
                 websiteUrl,
+                breakpoints,
             } = body
 
             const shortId = projectId.slice(0, 4)
@@ -255,6 +257,9 @@ export const reactPluginApp = new Spiceflow({
                     tx.reactExportLocale.deleteMany({
                         where: { projectId },
                     }),
+                    tx.reactExportComponentBreakpoint.deleteMany({
+                        where: { projectId },
+                    }),
                 ])
                 console.timeEnd(`[${shortId}] delete existing`)
 
@@ -274,6 +279,9 @@ export const reactPluginApp = new Spiceflow({
                         tx.reactExportWebPage.createMany({
                             data: pages.map((x) => ({ ...x, projectId })),
                         }),
+                        tx.reactExportComponentBreakpoint.createMany({
+                            data: breakpoints.map((x) => ({ ...x, projectId })),
+                        }),
                     ].filter(Boolean),
                 )
                 console.timeEnd(`[${shortId}] insert new`)
@@ -285,6 +293,9 @@ export const reactPluginApp = new Spiceflow({
         {
             body: z.object({
                 components: z.array(z.custom<ReactExportComponent>()),
+                breakpoints: z.array(
+                    z.custom<ReactExportComponentBreakpoint>(),
+                ),
                 pages: z.array(z.custom<ReactExportWebPage>()).optional(),
                 fullFramerProjectId: z.string().optional(),
                 websiteUrl: z.string().optional(),

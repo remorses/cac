@@ -9,6 +9,8 @@ import {
     isFrameNode,
     isTextNode,
     isWebPageNode,
+    type ComponentNode,
+    type WebPageNode,
 } from 'framer-plugin'
 import type { RouteType } from 'website/src/lib/elysia.server'
 import { RewriteSchema } from 'website/src/lib/rewrite'
@@ -149,7 +151,7 @@ export async function getRootParentNode(node: AnyNode | string | null) {
     for await (const parent of getParentNodes(node)) {
         rootParent = parent
     }
-    return rootParent
+    return rootParent as ComponentNode | WebPageNode | null
 }
 
 export async function* getParentNodes(node: AnyNode | string | null) {
@@ -270,5 +272,3 @@ export function simpleHash(input: string) {
     }
     return Math.abs(hash).toString(36).substring(0, 8)
 }
-
-

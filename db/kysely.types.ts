@@ -486,6 +486,14 @@ export interface ReactExportComponent {
   url: string;
 }
 
+export interface ReactExportComponentBreakpoint {
+  breakpointName: string;
+  componentId: string;
+  projectId: string;
+  variantId: string;
+  width: number;
+}
+
 export interface ReactExportLocale {
   code: string;
   id: string;
@@ -688,6 +696,7 @@ export interface DB {
   "pgsodium.valid_key": PgsodiumValidKey;
   ReactExportColorStyle: ReactExportColorStyle;
   ReactExportComponent: ReactExportComponent;
+  ReactExportComponentBreakpoint: ReactExportComponentBreakpoint;
   ReactExportLocale: ReactExportLocale;
   ReactExportProject: ReactExportProject;
   ReactExportWebPage: ReactExportWebPage;
