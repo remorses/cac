@@ -234,6 +234,11 @@ function Component() {
                             setSelected(componentsData.map((x) => x.id))
                         }
                     }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.currentTarget.click()
+                        }
+                    }}
                     className='!w-auto bg-transparent !text-[12px] !px-2  '
                 >
                     {selected.length === componentsData.length
@@ -314,6 +319,7 @@ function SearchIcon({ className }: { className?: string }) {
         </svg>
     )
 }
+
 function Item({ id, name, onChange, checked, style }) {
     const ref = useRef<any>()
     return (
@@ -324,6 +330,12 @@ function Item({ id, name, onChange, checked, style }) {
             onClick={(e) => {
                 // Only handle click if not on the checkbox itself
                 if (e.target !== ref.current) {
+                    ref.current?.click()
+                }
+            }}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault()
                     ref.current?.click()
                 }
             }}
