@@ -316,7 +316,7 @@ function Component() {
                             e.currentTarget.click()
                         }
                     }}
-                    className='!w-auto bg-transparent !text-[12px] !px-2  '
+                    className='!w-auto bg-transparent !text-[12px] !px-2 min-w-[11ch]'
                 >
                     {selected.length === componentsData.length
                         ? 'Deselect All'
@@ -402,7 +402,7 @@ function Item({ id, name, onChange, checked, style }) {
     return (
         <div
             style={style}
-            className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full cursor-pointer'
+            className='flex  items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full cursor-pointer'
             key={id}
             onClick={(e) => {
                 // Only handle click if not on the checkbox itself
@@ -423,7 +423,7 @@ function Item({ id, name, onChange, checked, style }) {
                     // defaultChecked={defaultIsChecked}
                     checked={checked}
                     ref={ref}
-                    className='!size-[14px]'
+                    className='!size-[14px] focus:ring-2 ring-framer-tint'
                     type='checkbox'
                     onChange={onChange}
                 />
