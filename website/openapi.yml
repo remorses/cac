@@ -607,6 +607,8 @@ paths:
               properties:
                 components:
                   type: array
+                breakpoints:
+                  type: array
                 pages:
                   type: array
                 fullFramerProjectId:
@@ -627,6 +629,7 @@ paths:
                   type: array
               required:
                 - components
+                - breakpoints
                 - projectId
                 - colorStyles
               additionalProperties: false

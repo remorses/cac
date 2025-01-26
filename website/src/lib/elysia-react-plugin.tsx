@@ -281,7 +281,16 @@ export const reactPluginApp = new Spiceflow({
                             data: pages.map((x) => ({ ...x, projectId })),
                         }),
                         tx.reactExportComponentBreakpoint.createMany({
-                            data: breakpoints.map((x) => ({ ...x, projectId })),
+                            data:
+                                breakpoints
+                                    ?.filter(
+                                        (x) =>
+                                            x.breakpointName &&
+                                            x.width &&
+                                            x.componentId &&
+                                            x.variantId,
+                                    )
+                                    .map((x) => ({ ...x, projectId })) || [],
                         }),
                     ].filter(Boolean),
                 )
@@ -294,9 +303,9 @@ export const reactPluginApp = new Spiceflow({
         {
             body: z.object({
                 components: z.array(z.custom<ReactExportComponent>()),
-                breakpoints: z.array(
-                    z.custom<ReactExportComponentBreakpoint>(),
-                ),
+                breakpoints: z
+                    .array(z.custom<ReactExportComponentBreakpoint>())
+                    .optional(),
                 pages: z.array(z.custom<ReactExportWebPage>()).optional(),
                 fullFramerProjectId: z.string().optional(),
                 websiteUrl: z.string().optional(),
