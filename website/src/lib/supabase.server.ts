@@ -68,6 +68,7 @@ export function getSupabaseWithHeaders({
             },
             auth: {
                 detectSessionInUrl: true,
+
                 flowType: 'pkce',
             },
         },

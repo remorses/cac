@@ -319,10 +319,13 @@ function Item({ id, name, onChange, checked, style }) {
     return (
         <div
             style={style}
-            className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full'
+            className='flex items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full cursor-pointer'
             key={id}
-            onClick={() => {
-                ref.current?.click()
+            onClick={(e) => {
+                // Only handle click if not on the checkbox itself
+                if (e.target !== ref.current) {
+                    ref.current?.click()
+                }
             }}
         >
             <div className='flex items-center justify-center'>
