@@ -25,7 +25,7 @@
         "esbuild": "^0.24.2",
         "htmlrewriter": "^0.0.12",
         "p-ratelimit": "^1.0.1",
-        "parse-domain": "^8.2.1",
-        "playwright": "^1.45.2"
+        "parse-domain": "^8.2.2",
+        "playwright": "^1.50.0"
     }
 }

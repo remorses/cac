@@ -198,12 +198,11 @@ export async function getHtmlScripts({
 }
 
 let redirectCache = new Map<string, Promise<string>>()
+const codeCache = new Map()
 export function esbuildPluginBundleDependencies({
     signal = undefined as AbortSignal | undefined,
     externalizeNpm = false,
 }) {
-    const codeCache = new Map()
-
     const plugin: Plugin = {
         name: 'esbuild-plugin',
         setup(build) {

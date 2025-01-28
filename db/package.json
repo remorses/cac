@@ -24,17 +24,17 @@
     "author": "remorses <beats.by.morse@gmail.com>",
     "license": "ISC",
     "dependencies": {
-        "@prisma/client": "^5.22.0",
-        "@supabase/supabase-js": "^2.45.2",
-        "@types/pg": "^8.11.10",
-        "kysely": "^0.27.4",
-        "pg": "^8.12.0"
+        "@prisma/client": "^6.2.1",
+        "@supabase/supabase-js": "^2.48.1",
+        "@types/pg": "^8.11.11",
+        "kysely": "^0.27.5",
+        "pg": "^8.13.1"
     },
     "devDependencies": {
-        "@types/node": "^22.7.4",
-        "concurrently": "^7.6.0",
-        "kysely-codegen": "^0.15.0",
-        "prisma": "^5.22.0",
-        "supabase": "^1.191.3"
+        "@types/node": "^22.12.0",
+        "concurrently": "^9.1.2",
+        "kysely-codegen": "^0.17.0",
+        "prisma": "^6.2.1",
+        "supabase": "^2.9.6"
     }
 }

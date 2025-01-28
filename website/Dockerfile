@@ -3,7 +3,7 @@ FROM --platform=linux/amd64 node:22-slim
 WORKDIR /app
 
 ARG PRISMA_FILE=./build/schema.prisma
-ARG PRISMA_VERSION=5.13.0
+ARG PRISMA_VERSION=6.2.1
 
 COPY $PRISMA_FILE ./schema.prisma
 
