@@ -42,7 +42,7 @@ paths:
                   type: string
                 projectId:
                   type: string
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/health:
     get:
       responses:
@@ -140,7 +140,7 @@ paths:
               required:
                 - stars
                 - generationId
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/rewritePlugin/rephrase:
     post:
       x-fern-streaming:
@@ -184,7 +184,7 @@ paths:
               required:
                 - sourceHtml
                 - url
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/rewritePlugin/discardGeneration:
     post:
       parameters: []
@@ -210,7 +210,7 @@ paths:
                   type: number
               required:
                 - id
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/rewritePlugin/getCredits:
     post:
       responses:
@@ -249,7 +249,7 @@ paths:
                   type: string
               required:
                 - licenseKey
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/rewritePlugin/getWebsiteHtml:
     post:
       parameters: []
@@ -275,7 +275,7 @@ paths:
                   type: string
               required:
                 - domain
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/markdownPlugin/health:
     get:
       responses:
@@ -315,7 +315,7 @@ paths:
                   minLength: 1
               required:
                 - githubAccountLogin
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/markdownPlugin/syncsThisMonth:
     post:
       parameters: []
@@ -341,7 +341,7 @@ paths:
                   type: string
                 projectName:
                   type: string
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/markdownPlugin/subscriptions:
     get:
       parameters:
@@ -395,7 +395,7 @@ paths:
                 - repo
                 - basePath
                 - githubAccountLogin
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/markdownPlugin/syncGithub:
     post:
       parameters: []
@@ -445,7 +445,7 @@ paths:
                 - githubAccountLogin
                 - projectId
                 - projectName
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/markdownPlugin/checkBasePath:
     post:
       parameters: []
@@ -480,7 +480,7 @@ paths:
                 - repo
                 - basePath
                 - githubAccountLogin
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/reactExportPlugin/health:
     get:
       responses:
@@ -543,7 +543,7 @@ paths:
                   type: array
               required:
                 - components
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/reactExportPlugin/project/{projectId}/subscribe:
     get:
       x-fern-streaming:
@@ -631,7 +631,7 @@ paths:
                 - components
                 - projectId
                 - colorStyles
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/llm/health:
     get:
       responses:
@@ -676,7 +676,7 @@ paths:
               required:
                 - stars
                 - generationId
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/llm/publish:
     post:
       parameters: []
@@ -706,7 +706,7 @@ paths:
               required:
                 - randomId
                 - callId
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/llm/getCredits:
     post:
       responses:
@@ -753,7 +753,7 @@ paths:
               required:
                 - randomId
                 - description
-              additionalProperties: false
+              additionalProperties: true
   /api/plugins/llm/subscriptions:
     get:
       parameters:
