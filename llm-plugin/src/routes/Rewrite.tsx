@@ -51,36 +51,63 @@ function makeRandomId() {
     return Math.random().toString(36).substring(2, 15)
 }
 
-function SimplePromptComponent({}) {
-    const { buyMoreCreditsUrl, projectId, credits } =
-        useLoaderData() as LoaderReturnType<typeof loader>
-
-    const [isLoading, setIsLoading] = useState(false)
-    const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
-    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([])
+function useHistoryNavigation({ description, setDescription }) {
     const [historyPosition, setHistoryPosition] = useState(-1)
+    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([])
 
-    useEffect(() => {
-        // abort when leaving the page
-        return () => {
-            console.log('leaving the page, aborting')
-            abortController.abort()
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (
+            e.key === 'ArrowUp' &&
+            !e.metaKey &&
+            !e.ctrlKey &&
+            !e.shiftKey &&
+            !e.altKey
+        ) {
+            e.preventDefault()
+
+            // If we're at the start of history, do nothing
+            if (historyPosition <= 0) return
+
+            // If current description differs from last in history and isn't empty
+            // Check if current description is not empty and not already in history
+            if (
+                description.trim() &&
+                !descriptionHistory.includes(description)
+            ) {
+                // Add current description to history
+                flushSync(() => {
+                    setDescriptionHistory((prev) => [...prev, description])
+                    setHistoryPosition((prev) => prev + 1)
+                })
+            }
+
+            // Move up in history
+            const newPosition = historyPosition - 1
+            flushSync(() => {
+                setHistoryPosition(newPosition)
+                setDescription(descriptionHistory[newPosition])
+            })
+        } else if (
+            e.key === 'ArrowDown' &&
+            !e.metaKey &&
+            !e.ctrlKey &&
+            !e.shiftKey &&
+            !e.altKey
+        ) {
+            e.preventDefault()
+
+            // If we're not at the end of history
+            if (historyPosition < descriptionHistory.length - 1) {
+                const newPosition = historyPosition + 1
+                flushSync(() => {
+                    setHistoryPosition(newPosition)
+                    setDescription(descriptionHistory[newPosition])
+                })
+            }
         }
-    }, [])
+    }
 
-    const revalidator = useRevalidator()
-    const buyCreditsInstead = !credits.remaining
-    // console.log('credits', credits)
-    async function onSubmit() {
-        if (buyCreditsInstead) {
-            window.open(buyMoreCreditsUrl, '_blank')
-            return
-        }
-
-        if (isLoading) {
-            return
-        }
-
+    const onSubmit = () => {
         // Add description to history if it's not empty and different from the last entry
         if (
             description.trim() &&
@@ -94,6 +121,55 @@ function SimplePromptComponent({}) {
                 return arr
             })
         }
+    }
+
+    return {
+        onKeyDown,
+        onSubmit,
+        setHistoryPosition,
+    }
+}
+
+function SimplePromptComponent({}) {
+    const { buyMoreCreditsUrl, projectId, credits } =
+        useLoaderData() as LoaderReturnType<typeof loader>
+
+    const [isLoading, setIsLoading] = useState(false)
+    const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
+
+    useEffect(() => {
+        // abort when leaving the page
+        return () => {
+            console.log('leaving the page, aborting')
+            abortController.abort()
+        }
+    }, [])
+
+    const revalidator = useRevalidator()
+    const buyCreditsInstead = !credits.remaining
+    // console.log('credits', credits)
+    const [description, setDescription] = useState('')
+    const [generationId, setGenerationId] = useState(0)
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const { onKeyDown, onSubmit: historyOnSubmit } = useHistoryNavigation({
+        description,
+        setDescription,
+    })
+
+    async function onSubmit() {
+        if (buyCreditsInstead) {
+            window.open(buyMoreCreditsUrl, '_blank')
+            return
+        }
+
+        if (isLoading) {
+            return
+        }
+
+        historyOnSubmit()
+        return
 
         if (abortController) {
             abortController.abort()
@@ -115,8 +191,6 @@ function SimplePromptComponent({}) {
         }
     }
     let [error, setError] = useState('')
-    const [description, setDescription] = useState('')
-    const [generationId, setGenerationId] = useState(0)
     const [selectedNodes, setSelectedNodes] = useState<AnyNode[]>([])
 
     useEffect(() => {
@@ -363,18 +437,8 @@ function SimplePromptComponent({}) {
         return 'Edit Selection'
     })()
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null)
-    useEffect(() => {
-        if (textareaRef.current) {
-            adjustHeight(textareaRef.current)
-        }
-    }, [])
     const navigate = useNavigate()
 
-    const adjustHeight = (element) => {
-        element.style.height = 'auto'
-        element.style.height = `${element.scrollHeight}px`
-    }
     const [stars, setStars] = useState(0)
 
     useEffect(() => {
@@ -416,8 +480,8 @@ function SimplePromptComponent({}) {
                     <div className='flex flex-col items-center w-full shrink-0 justify-center grow gap-3 text-center text-balance'>
                         <div className='font-semibold'>Add a prompt</div>
                         <div className='opacity-70'>
-                            The plugin can duplicate, delete and rewrite elements
-                            on the page
+                            The plugin can duplicate, delete and rewrite
+                            elements on the page
                         </div>
                     </div>
                 )}
@@ -446,78 +510,18 @@ function SimplePromptComponent({}) {
                     value={description}
                     onChange={(e) => {
                         setDescription(e.target.value)
-                        // Reset history position when typing
-                        setHistoryPosition(descriptionHistory.length)
-                        adjustHeight(e.target)
+                    }}
+                    onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement
+                        target.style.height = 'auto'
+                        target.style.height = `${target.scrollHeight}px`
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                             e.preventDefault()
                             onSubmit()
-                        } else if (
-                            e.key === 'ArrowUp' &&
-                            !e.metaKey &&
-                            !e.ctrlKey &&
-                            !e.shiftKey &&
-                            !e.altKey
-                        ) {
-                            e.preventDefault()
-
-                            // If we're at the start of history, do nothing
-                            if (historyPosition <= 0) return
-
-                            // If current description differs from last in history and isn't empty
-                            // Check if current description is not empty and not already in history
-                            if (
-                                description.trim() &&
-                                !descriptionHistory.includes(description)
-                            ) {
-                                // Add current description to history
-                                flushSync(() => {
-                                    setDescriptionHistory((prev) => [
-                                        ...prev,
-                                        description,
-                                    ])
-                                    setHistoryPosition((prev) => prev + 1)
-                                })
-                            }
-
-                            // Move up in history
-                            const newPosition = historyPosition - 1
-                            flushSync(() => {
-                                setHistoryPosition(newPosition)
-                                setDescription(descriptionHistory[newPosition])
-                            })
-
-                            if (textareaRef.current) {
-                                adjustHeight(textareaRef.current)
-                            }
-                        } else if (
-                            e.key === 'ArrowDown' &&
-                            !e.metaKey &&
-                            !e.ctrlKey &&
-                            !e.shiftKey &&
-                            !e.altKey
-                        ) {
-                            e.preventDefault()
-
-                            // If we're not at the end of history
-                            if (
-                                historyPosition <
-                                descriptionHistory.length - 1
-                            ) {
-                                const newPosition = historyPosition + 1
-                                flushSync(() => {
-                                    setHistoryPosition(newPosition)
-                                    setDescription(
-                                        descriptionHistory[newPosition],
-                                    )
-                                })
-                                if (textareaRef.current) {
-                                    adjustHeight(textareaRef.current)
-                                }
-                            }
                         }
+                        onKeyDown(e)
                     }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
