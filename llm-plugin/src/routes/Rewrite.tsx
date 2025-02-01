@@ -52,8 +52,14 @@ function makeRandomId() {
 }
 
 function useHistoryNavigation({ description, setDescription }) {
-    const [historyPosition, setHistoryPosition] = useState(-1)
-    const [descriptionHistory, setDescriptionHistory] = useState<string[]>(['x', 'y', 'z'])
+    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([
+        'x',
+        'y',
+        'z',
+    ])
+    const [historyPosition, setHistoryPosition] = useState(
+        descriptionHistory.length,
+    )
 
     const deduplicate = (arr: string[]) => {
         const seen = new Set()
@@ -72,7 +78,9 @@ function useHistoryNavigation({ description, setDescription }) {
             const textarea = e.target
             const lines = textarea.value.split('\n')
             const currentPosition = textarea.selectionStart
-            const currentLine = textarea.value.substring(0, currentPosition).split('\n').length - 1
+            const currentLine =
+                textarea.value.substring(0, currentPosition).split('\n')
+                    .length - 1
 
             if (
                 (e.key === 'ArrowUp' && currentLine > 0) ||
@@ -94,20 +102,18 @@ function useHistoryNavigation({ description, setDescription }) {
             // If we're at the start of history, do nothing
             if (historyPosition <= 0) return
 
-            // If current description differs from last in history and isn't empty
-            // Check if current description is not empty and not already in history
-            if (
-                description.trim() &&
-                !descriptionHistory.includes(description)
-            ) {
-                // Add current description to history
-                flushSync(() => {
-                    setDescriptionHistory((prev) =>
-                        deduplicate([...prev, description]),
-                    )
-                    setHistoryPosition((prev) => prev + 1)
-                })
-            }
+            // if (
+            //     description.trim() &&
+            //     !descriptionHistory.includes(description)
+            // ) {
+            //     // Add current description to history
+            //     flushSync(() => {
+            //         setDescriptionHistory((prev) =>
+            //             deduplicate([...prev, description]),
+            //         )
+            //         setHistoryPosition((prev) => prev + 1)
+            //     })
+            // }
 
             // Move up in history
             const newPosition = historyPosition - 1
@@ -125,30 +131,32 @@ function useHistoryNavigation({ description, setDescription }) {
             e.preventDefault()
 
             // If we're not at the end of history
-            if (historyPosition < descriptionHistory.length - 1) {
+            if (historyPosition < descriptionHistory.length) {
                 const newPosition = historyPosition + 1
                 flushSync(() => {
                     setHistoryPosition(newPosition)
-                    setDescription(descriptionHistory[newPosition])
+                    setDescription(descriptionHistory[newPosition] || '')
                 })
             }
         }
     }
 
     const onSubmit = () => {
-        // Add description to history if it's not empty and different from the last entry
-        if (
-            description.trim() &&
-            (descriptionHistory.length === 0 ||
-                descriptionHistory[descriptionHistory.length - 1] !==
-                    description)
-        ) {
-            setDescriptionHistory((prev) => {
-                let arr = deduplicate([...prev, description])
-                setHistoryPosition(arr.length)
-                return arr
-            })
+        if (!description.trim()) {
+            return
         }
+
+        setDescriptionHistory((prev) => {
+            // Replace empty last entry, otherwise append
+            const newArr = [...prev]
+            if (newArr.length && !newArr[newArr.length - 1]) {
+                newArr[newArr.length - 1] = description
+            } else {
+                newArr.push(description)
+            }
+            setHistoryPosition(newArr.length)
+            return deduplicate(newArr)
+        })
     }
 
     return {
@@ -533,7 +541,7 @@ function SimplePromptComponent({}) {
             <div className='w-full'>
                 <textarea
                     ref={textareaRef}
-                    disabled={buyCreditsInstead}
+                    disabled={buyCreditsInstead || !description}
                     required
                     value={description}
                     onChange={(e) => {
