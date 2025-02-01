@@ -76,8 +76,8 @@ function SimplePromptComponent({}) {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const { onKeyDown, onSubmit: historyOnSubmit } = useHistoryNavigation({
-        description,
-        setDescription,
+        value: description,
+        setValue: setDescription,
     })
 
     async function onSubmit() {

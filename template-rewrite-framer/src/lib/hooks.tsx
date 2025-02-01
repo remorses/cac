@@ -126,7 +126,7 @@ const safeParse = (str: string | null, fallback: any = []) => {
     }
 }
 
-export function useHistoryNavigation({ description, setDescription }) {
+export function useHistoryNavigation({ value, setValue }) {
     const STORAGE_KEY = 'description-history'
 
     const [descriptionHistory, setDescriptionHistory] = useState<string[]>(
@@ -187,7 +187,7 @@ export function useHistoryNavigation({ description, setDescription }) {
             const newPosition = historyPosition - 1
             flushSync(() => {
                 setHistoryPosition(newPosition)
-                setDescription(descriptionHistory[newPosition])
+                setValue(descriptionHistory[newPosition])
             })
         } else if (
             e.key === 'ArrowDown' &&
@@ -203,14 +203,14 @@ export function useHistoryNavigation({ description, setDescription }) {
                 const newPosition = historyPosition + 1
                 flushSync(() => {
                     setHistoryPosition(newPosition)
-                    setDescription(descriptionHistory[newPosition] || '')
+                    setValue(descriptionHistory[newPosition] || '')
                 })
             }
         }
     }
 
     const onSubmit = () => {
-        if (!description.trim()) {
+        if (!value.trim()) {
             return
         }
 
@@ -218,9 +218,9 @@ export function useHistoryNavigation({ description, setDescription }) {
             // Replace empty last entry, otherwise append
             const newArr = [...prev]
             if (newArr.length && !newArr[newArr.length - 1]) {
-                newArr[newArr.length - 1] = description
+                newArr[newArr.length - 1] = value
             } else {
-                newArr.push(description)
+                newArr.push(value)
             }
             const deduped = deduplicate(newArr)
             localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped))
