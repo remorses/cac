@@ -14,4 +14,7 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
+    server: {
+        cors: true,
+    },
 })

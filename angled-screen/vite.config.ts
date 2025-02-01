@@ -23,6 +23,9 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         tsconfigPaths(),
     ],
+    server: {
+        cors: true,
+    },
     base: building ? basePath : undefined,
     build: {
         target: 'esnext',

@@ -23,6 +23,9 @@ export default defineConfig({
     define: {
         'process.env.NODE_ENV': NODE_ENV,
     },
+    server: {
+        cors: true,
+    },
     test: {
         pool: 'threads',
         exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],

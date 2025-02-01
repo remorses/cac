@@ -63,6 +63,9 @@ export default defineConfig({
     build: {
         assetsInlineLimit: 30720,
     },
+    server: {
+        cors: true,
+    },
     define: {
         'process.env.NODE_ENV': JSON.stringify(
             process.env.NODE_ENV || 'production',

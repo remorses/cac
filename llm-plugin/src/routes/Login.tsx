@@ -90,7 +90,7 @@ function LoginComponent() {
                 <div className='flex flex-col grow -mt-2 -m-[48px]'>
                     <img
                         src={image}
-                        className='grow select-none pointer-events-none invert dark:invert-0 h-[260px] brightness-150 object-contain dark:mix-blend-screen mix-blend-multiply grayscale dark:grayscale-0 saturate-150 overflow-hidden w-full rounded-md shadow'
+                        className='grow select-none pointer-events-none invert dark:invert-0 h-[260px] object-contain overflow-hidden w-full rounded-md'
                     />
                 </div>
                 <div className='text-center mx-auto my-4 grow gap-2 flex flex-col max-w-xs'>

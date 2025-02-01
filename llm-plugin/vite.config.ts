@@ -39,6 +39,9 @@ export default defineConfig({
             process.env.NODE_ENV || 'production',
         ),
     },
+    server: {
+        cors: true,
+    },
     build: {
         assetsInlineLimit: 307200,
     },
