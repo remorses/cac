@@ -417,11 +417,11 @@ function SimplePromptComponent({}) {
                 e.preventDefault()
                 onSubmit()
             }}
-            className='flex grow flex-col items-start w-full justify-start gap-3'
+            className='flex grow flex-col min-h-[320px] items-start w-full justify-start gap-3'
         >
-            <div className='flex flex-col w-full min-h-[160px]'>
+            <div className='flex flex-col w-full grow justify-center py-2'>
                 {!shouldShowStars && (
-                    <div className='flex flex-col items-center w-full py-[50px] shrink-0 justify-center grow gap-3 text-center text-balance'>
+                    <div className='flex flex-col items-center w-full shrink-0 justify-center grow gap-3 text-center text-balance'>
                         <div className='font-semibold'>Add a description</div>
                         <div className='opacity-70'>
                             The plugin will use this description to replace
