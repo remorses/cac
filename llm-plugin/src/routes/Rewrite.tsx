@@ -91,7 +91,6 @@ function SimplePromptComponent({}) {
         }
 
         historyOnSubmit()
-        return
 
         if (abortController) {
             abortController.abort()

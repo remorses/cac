@@ -1,6 +1,7 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import {
+    useHistoryNavigation,
     useLatestFunction,
     useRefreshOnVisible,
 } from 'template-rewrite-framer/src/lib/hooks'
@@ -59,6 +60,10 @@ function SimplePromptComponent({}) {
 
     const [isLoading, setIsLoading] = useState(false)
     const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
+    const { onKeyDown, onSubmit: historyOnSubmit } = useHistoryNavigation({
+        value: description,
+        setValue: setDescription,
+    })
 
     useEffect(() => {
         // abort when leaving the page
@@ -83,6 +88,7 @@ function SimplePromptComponent({}) {
         if (isLoading) {
             return
         }
+        historyOnSubmit()
 
         if (abortController) {
             abortController.abort()
@@ -454,6 +460,8 @@ function SimplePromptComponent({}) {
                     required
                     onChange={(e) => {
                         setDescription(e.target.value)
+                    }}
+                    onInput={(e) => {
                         adjustHeight(e.target)
                     }}
                     onKeyDown={(e) => {
@@ -461,6 +469,7 @@ function SimplePromptComponent({}) {
                             e.preventDefault()
                             onSubmit()
                         }
+                        onKeyDown(e)
                     }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
