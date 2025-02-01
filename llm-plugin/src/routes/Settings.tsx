@@ -7,7 +7,7 @@ import {
     basePath,
     createBuyLink,
     formatLargeNumber,
-    pluginApiClient,
+    
     reload,
     withMode,
 } from 'template-rewrite-framer/src/lib/utils'
@@ -27,6 +27,7 @@ import { motion } from 'framer-motion'
 import {} from 'react-router'
 import { framer } from 'framer-plugin'
 import { feedbackUrl, getBuyLLMPluginUrl } from 'website/src/lib/env'
+import { pluginApiClient } from '@/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {
     const [{ email, orgId }, credits, info] = await Promise.all([

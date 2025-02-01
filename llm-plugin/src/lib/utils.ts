@@ -44,7 +44,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
             }
             return {
                 headers,
-                credentials: 'same-origin',
+                credentials: 'omit',
             }
         },
     })

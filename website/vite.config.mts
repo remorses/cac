@@ -26,6 +26,7 @@ export default defineConfig({
     },
     server: {
         proxy: {},
+
         cors: true,
         allowedHosts: true,
     },
