@@ -64,7 +64,8 @@ export default defineConfig({
         assetsInlineLimit: 30720,
     },
     server: {
-        cors: true,
+        proxy: {},
+cors: true,
     },
     define: {
         'process.env.NODE_ENV': JSON.stringify(

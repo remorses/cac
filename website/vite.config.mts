@@ -1,4 +1,5 @@
 import { remarkCodeHike } from '@code-hike/mdx'
+import mkcert from 'vite-plugin-mkcert'
 import withSlugs from 'rehype-slug'
 import withToc from '@stefanprobst/rehype-extract-toc'
 
@@ -24,7 +25,9 @@ export default defineConfig({
         'process.env.NODE_ENV': NODE_ENV,
     },
     server: {
+        proxy: {},
         cors: true,
+        allowedHosts: true,
     },
     test: {
         pool: 'threads',
@@ -36,9 +39,11 @@ export default defineConfig({
         },
     },
     plugins: [
+        mkcert(),
+
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
-        Inspect(),
+        // Inspect(),
         mdx({
             remarkPlugins: [
                 remarkFrontmatter,
@@ -77,6 +82,7 @@ export default defineConfig({
             ...visualizer({ filename: 'build/trace.html' }),
         },
     ],
+
     optimizeDeps: {},
     build: {
         sourcemap: true,

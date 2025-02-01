@@ -24,7 +24,8 @@ export default defineConfig({
         tsconfigPaths(),
     ],
     server: {
-        cors: true,
+        proxy: {},
+cors: true,
     },
     base: building ? basePath : undefined,
     build: {
