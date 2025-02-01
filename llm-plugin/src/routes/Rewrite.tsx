@@ -2,6 +2,7 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import { flushSync } from 'react-dom'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import {
+    useHistoryNavigation,
     useLatestFunction,
     useRefreshOnVisible,
 } from 'template-rewrite-framer/src/lib/hooks'
@@ -49,121 +50,6 @@ const randomId = makeRandomId()
 
 function makeRandomId() {
     return Math.random().toString(36).substring(2, 15)
-}
-
-function useHistoryNavigation({ description, setDescription }) {
-    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([
-        'x',
-        'y',
-        'z',
-    ])
-    const [historyPosition, setHistoryPosition] = useState(
-        descriptionHistory.length,
-    )
-
-    const deduplicate = (arr: string[]) => {
-        const seen = new Set()
-        return arr.filter((item) => {
-            if (seen.has(item)) {
-                return false
-            }
-            seen.add(item)
-            return true
-        })
-    }
-
-    const onKeyDown = (e: React.KeyboardEvent) => {
-        // Only handle history navigation if not navigating within textarea
-        if (e.target instanceof HTMLTextAreaElement) {
-            const textarea = e.target
-            const lines = textarea.value.split('\n')
-            const currentPosition = textarea.selectionStart
-            const currentLine =
-                textarea.value.substring(0, currentPosition).split('\n')
-                    .length - 1
-
-            if (
-                (e.key === 'ArrowUp' && currentLine > 0) ||
-                (e.key === 'ArrowDown' && currentLine < lines.length - 1)
-            ) {
-                return
-            }
-        }
-
-        if (
-            e.key === 'ArrowUp' &&
-            !e.metaKey &&
-            !e.ctrlKey &&
-            !e.shiftKey &&
-            !e.altKey
-        ) {
-            e.preventDefault()
-
-            // If we're at the start of history, do nothing
-            if (historyPosition <= 0) return
-
-            // if (
-            //     description.trim() &&
-            //     !descriptionHistory.includes(description)
-            // ) {
-            //     // Add current description to history
-            //     flushSync(() => {
-            //         setDescriptionHistory((prev) =>
-            //             deduplicate([...prev, description]),
-            //         )
-            //         setHistoryPosition((prev) => prev + 1)
-            //     })
-            // }
-
-            // Move up in history
-            const newPosition = historyPosition - 1
-            flushSync(() => {
-                setHistoryPosition(newPosition)
-                setDescription(descriptionHistory[newPosition])
-            })
-        } else if (
-            e.key === 'ArrowDown' &&
-            !e.metaKey &&
-            !e.ctrlKey &&
-            !e.shiftKey &&
-            !e.altKey
-        ) {
-            e.preventDefault()
-
-            // If we're not at the end of history
-            if (historyPosition < descriptionHistory.length) {
-                const newPosition = historyPosition + 1
-                flushSync(() => {
-                    setHistoryPosition(newPosition)
-                    setDescription(descriptionHistory[newPosition] || '')
-                })
-            }
-        }
-    }
-
-    const onSubmit = () => {
-        if (!description.trim()) {
-            return
-        }
-
-        setDescriptionHistory((prev) => {
-            // Replace empty last entry, otherwise append
-            const newArr = [...prev]
-            if (newArr.length && !newArr[newArr.length - 1]) {
-                newArr[newArr.length - 1] = description
-            } else {
-                newArr.push(description)
-            }
-            setHistoryPosition(newArr.length)
-            return deduplicate(newArr)
-        })
-    }
-
-    return {
-        onKeyDown,
-        onSubmit,
-        setHistoryPosition,
-    }
 }
 
 function SimplePromptComponent({}) {
@@ -541,7 +427,7 @@ function SimplePromptComponent({}) {
             <div className='w-full'>
                 <textarea
                     ref={textareaRef}
-                    disabled={buyCreditsInstead || !description}
+                    disabled={buyCreditsInstead}
                     required
                     value={description}
                     onChange={(e) => {
@@ -582,7 +468,11 @@ function SimplePromptComponent({}) {
                 </Button>
                 <Button
                     isLoading={isLoading}
-                    disabled={!selectedNodes.length || buyCreditsInstead}
+                    disabled={
+                        !description ||
+                        !selectedNodes.length ||
+                        buyCreditsInstead
+                    }
                     type='submit'
                     variant='primary'
                     className='w-auto block grow'
