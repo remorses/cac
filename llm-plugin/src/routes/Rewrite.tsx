@@ -53,9 +53,35 @@ function makeRandomId() {
 
 function useHistoryNavigation({ description, setDescription }) {
     const [historyPosition, setHistoryPosition] = useState(-1)
-    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([])
+    const [descriptionHistory, setDescriptionHistory] = useState<string[]>(['x', 'y', 'z'])
+
+    const deduplicate = (arr: string[]) => {
+        const seen = new Set()
+        return arr.filter((item) => {
+            if (seen.has(item)) {
+                return false
+            }
+            seen.add(item)
+            return true
+        })
+    }
 
     const onKeyDown = (e: React.KeyboardEvent) => {
+        // Only handle history navigation if not navigating within textarea
+        if (e.target instanceof HTMLTextAreaElement) {
+            const textarea = e.target
+            const lines = textarea.value.split('\n')
+            const currentPosition = textarea.selectionStart
+            const currentLine = textarea.value.substring(0, currentPosition).split('\n').length - 1
+
+            if (
+                (e.key === 'ArrowUp' && currentLine > 0) ||
+                (e.key === 'ArrowDown' && currentLine < lines.length - 1)
+            ) {
+                return
+            }
+        }
+
         if (
             e.key === 'ArrowUp' &&
             !e.metaKey &&
@@ -76,7 +102,9 @@ function useHistoryNavigation({ description, setDescription }) {
             ) {
                 // Add current description to history
                 flushSync(() => {
-                    setDescriptionHistory((prev) => [...prev, description])
+                    setDescriptionHistory((prev) =>
+                        deduplicate([...prev, description]),
+                    )
                     setHistoryPosition((prev) => prev + 1)
                 })
             }
@@ -116,7 +144,7 @@ function useHistoryNavigation({ description, setDescription }) {
                     description)
         ) {
             setDescriptionHistory((prev) => {
-                let arr = [...prev, description]
+                let arr = deduplicate([...prev, description])
                 setHistoryPosition(arr.length)
                 return arr
             })
