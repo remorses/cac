@@ -116,9 +116,28 @@ export function useLatestFunction(fn) {
         return ref.current(...args)
     }, [])
 }
+const safeParse = (str: string | null, fallback: any = []) => {
+    if (!str) return fallback
+    try {
+        return JSON.parse(str)
+    } catch (e) {
+        console.error('Failed to parse stored data:', e)
+        return fallback
+    }
+}
 
 export function useHistoryNavigation({ description, setDescription }) {
-    const [descriptionHistory, setDescriptionHistory] = useState<string[]>([])
+    const STORAGE_KEY = 'description-history'
+
+    const [descriptionHistory, setDescriptionHistory] = useState<string[]>(
+        () => {
+            if (typeof localStorage === 'undefined' || !localStorage) {
+                return []
+            }
+            const saved = localStorage.getItem(STORAGE_KEY)
+            return safeParse(saved, [])
+        },
+    )
     const [historyPosition, setHistoryPosition] = useState(
         descriptionHistory.length,
     )
@@ -164,19 +183,6 @@ export function useHistoryNavigation({ description, setDescription }) {
             // If we're at the start of history, do nothing
             if (historyPosition <= 0) return
 
-            // if (
-            //     description.trim() &&
-            //     !descriptionHistory.includes(description)
-            // ) {
-            //     // Add current description to history
-            //     flushSync(() => {
-            //         setDescriptionHistory((prev) =>
-            //             deduplicate([...prev, description]),
-            //         )
-            //         setHistoryPosition((prev) => prev + 1)
-            //     })
-            // }
-
             // Move up in history
             const newPosition = historyPosition - 1
             flushSync(() => {
@@ -216,8 +222,10 @@ export function useHistoryNavigation({ description, setDescription }) {
             } else {
                 newArr.push(description)
             }
-            setHistoryPosition(newArr.length)
-            return deduplicate(newArr)
+            const deduped = deduplicate(newArr)
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped))
+            setHistoryPosition(deduped.length)
+            return deduped
         })
     }
 
