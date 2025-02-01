@@ -224,7 +224,7 @@ export function useHistoryNavigation({ value, setValue }) {
             }
             const deduped = deduplicate(newArr)
             localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped))
-            setHistoryPosition(deduped.length)
+            setHistoryPosition(deduped.length - 1)
             return deduped
         })
     }
