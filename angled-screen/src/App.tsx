@@ -215,7 +215,7 @@ function RotationsImage() {
     const [color, setColor] = useState('#000000')
     const [shadowIntensity, setIntensity] = useState(1)
     // const [focus, setFocus] = useState(0.6)
-    const [aperture, setAperture] = useState(0.6)
+    const [aperture, setAperture] = useState(0.1)
     const [isLoading, setIsLoading] = useState(true)
     const [aspectRatio, setAspectRatio] = useState(() => {
         if (!initialImageSize) {
@@ -358,8 +358,8 @@ function RotationsImage() {
                     />
                 ))}
             </div> */}
-            <div className='text-center'>
-                Drag to rotate, press shift to pan
+            <div className='text-center text-balance text-[11px] my-1'>
+                Drag to rotate, press shift and drag to pan, double click to focus
             </div>
 
             {/* <SliderAndNumber
