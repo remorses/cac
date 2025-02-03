@@ -16,16 +16,20 @@ export default defineConfig({
         react(),
         mkcert(),
         framer(),
-        CopyOnEnd({
-            basePath,
-            out: '../website/public',
-        }),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
+        EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
+
         tsconfigPaths(),
     ],
     server: {
         proxy: {},
-cors: true,
+        cors: true,
+        allowedHosts: true,
+    },
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(
+            process.env.NODE_ENV || 'production',
+        ),
     },
     base: building ? basePath : undefined,
     build: {

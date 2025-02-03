@@ -7,20 +7,13 @@ import framer from 'vite-plugin-framer'
 import { CopyOnEnd } from '../template-rewrite-framer/vite.config'
 import { visualizer } from 'rollup-plugin-visualizer'
 
-const building = process.env.NODE_ENV === 'production'
-
-const basePath = process.env.BASE_PATH
-
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
         react(),
         mkcert(),
         framer(),
-        CopyOnEnd({
-            basePath,
-            out: '../website/public',
-        }),
+
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
@@ -40,9 +33,8 @@ export default defineConfig({
         ),
     },
     server: {
-        
         proxy: {},
-cors: true,
+        cors: true,
         allowedHosts: true,
     },
     build: {

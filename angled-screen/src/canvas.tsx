@@ -3,6 +3,7 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 const deg = Math.PI / 180
 
 export class ThreeCanvas {
@@ -12,6 +13,10 @@ export class ThreeCanvas {
     texture: THREE.Texture
     camera: THREE.PerspectiveCamera
     plane: THREE.Mesh
+    bokehPass: BokehPass
+    private composer: EffectComposer
+    private filmGrainPass: ShaderPass
+    private controls: OrbitControls
 
     constructor(
         initialImageSize: { width: number; height: number } | undefined,
@@ -56,6 +61,35 @@ export class ThreeCanvas {
 
         this.scene.add(this.plane)
         this.camera.position.z = 0.6
+
+        // Setup EffectComposer and passes
+        this.composer = new EffectComposer(this.renderer)
+        this.composer.addPass(new RenderPass(this.scene, this.camera))
+
+        const size = new THREE.Vector2(1920, 1080)
+        this.renderer.getSize(size)
+        const aspectRatio = size.width / size.height
+        const bokehPass = new BokehPass(this.scene, this.camera, {
+            focus: 1,
+            aspect: aspectRatio,
+            aperture: 0.5,
+            maxblur: 0.12,
+        })
+        this.bokehPass = bokehPass
+        this.composer.addPass(this.bokehPass)
+
+        this.filmGrainPass = new ShaderPass(filmGrainShader)
+        this.composer.addPass(this.filmGrainPass)
+
+        // Add OrbitControls after camera setup
+        this.controls = new OrbitControls(this.camera, this.canvas)
+        this.controls.enableDamping = false
+        this.controls.dampingFactor = 0.05
+        this.controls.maxDistance = 2
+        this.controls.minDistance = 0.3
+        this.controls.enablePan = true
+        this.controls.maxPolarAngle = Math.PI / 2
+        this.controls.minPolarAngle = 0
     }
 
     changeImage(bitmap: ImageBitmap) {
@@ -74,7 +108,7 @@ export class ThreeCanvas {
     async updateCanvas({
         rotations,
         color,
-        intensity,
+        shadowIntensity,
         focus,
         isPreview = false,
     }) {
@@ -82,6 +116,10 @@ export class ThreeCanvas {
         const threeColor = new THREE.Color(color)
         const img: HTMLImageElement | null = this.texture.image
         this.scene.background = threeColor
+        this.scene.fog = new THREE.Fog(threeColor, 0, 2)
+        this.bokehPass.uniforms['focus'].value = focus
+        this.bokehPass.needsSwap = true
+
         let aspectRatio = 1
         if (img) {
             aspectRatio = img.width / img.height
@@ -111,26 +149,11 @@ export class ThreeCanvas {
             this.plane.position.y + offset(rotationX),
             this.plane.position.z,
         )
-        const composer = new EffectComposer(this.renderer)
-        composer.addPass(new RenderPass(this.scene, this.camera))
-        const bokehPass = new BokehPass(this.scene, this.camera, {
-            focus: focus,
-            aspect: aspectRatio,
-            aperture: 0.16,
-            maxblur: 0.2,
-        })
-        composer.addPass(bokehPass)
-        const vignettePass = new ShaderPass(vignetteShader)
+        this.texture.needsUpdate = true
 
-        let vignetteRotation = Math.atan2(-rotationX*0.5, rotationY)
-
-        vignettePass.uniforms.rotation.value = vignetteRotation
-        vignettePass.uniforms.color.value = threeColor
-        vignettePass.uniforms.intensity.value = intensity
-        composer.addPass(vignettePass)
-
-        composer.addPass(new ShaderPass(filmGrainShader))
-        composer.render()
+        // Update controls in the render loop
+        this.controls.update()
+        this.composer.render()
     }
 }
 
@@ -178,7 +201,7 @@ const filmGrainShader = {
     uniforms: {
         tDiffuse: { value: null },
         time: { value: 1.0 },
-        grainIntensity: { value: 0.06 },
+        grainIntensity: { value: 0.02 },
     },
     vertexShader: `
       varying vec2 vUv;

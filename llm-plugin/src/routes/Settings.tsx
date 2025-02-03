@@ -1,16 +1,5 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 
-import {
-    LoaderReturnType,
-    Paths,
-    PluginDataKeys,
-    basePath,
-    createBuyLink,
-    formatLargeNumber,
-    
-    reload,
-    withMode,
-} from 'template-rewrite-framer/src/lib/utils'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
@@ -19,15 +8,21 @@ import {
     useLoaderData,
     useNavigate,
 } from 'react-router'
-import { Link } from 'react-router-dom'
+import {
+    LoaderReturnType,
+    Paths,
+    PluginDataKeys,
+    formatLargeNumber,
+} from '@/lib/utils'
 
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import { pluginApiClient } from '@/lib/utils'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
-import {} from 'react-router'
 import { framer } from 'framer-plugin'
+import {} from 'react-router'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { feedbackUrl, getBuyLLMPluginUrl } from 'website/src/lib/env'
-import { pluginApiClient } from '@/lib/utils'
+import { reload } from 'template-rewrite-framer/src/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {
     const [{ email, orgId }, credits, info] = await Promise.all([

@@ -213,7 +213,7 @@ function RotationsImage() {
     const image = useSelectedImage()
     const [rotations, setRotations] = useState({ x: 0, y: 10 })
     const [color, setColor] = useState('#000000')
-    const [intensity, setIntensity] = useState(1)
+    const [shadowIntensity, setIntensity] = useState(1)
     const [focus, setFocus] = useState(0.6)
     const [isLoading, setIsLoading] = useState(true)
     const [aspectRatio, setAspectRatio] = useState(() => {
@@ -222,16 +222,57 @@ function RotationsImage() {
         }
         return initialImageSize?.width / initialImageSize?.height
     })
+
+    // Add RAF state and ref
+    const [isAnimating, setIsAnimating] = useState(false)
+    const frameRef = useRef<number>(null)
+    const paramsRef = useRef({ rotations, color, shadowIntensity, focus })
+
+    // Update params ref when values change
+    useEffect(() => {
+        paramsRef.current = {
+            rotations,
+            color,
+            shadowIntensity,
+            focus,
+        }
+    }, [rotations, color, shadowIntensity, focus])
+
+    // Setup animation loop
+    useEffect(() => {
+        if (!image || isLoading) return
+
+        const updateFrame = async () => {
+            await threeCanvas.updateCanvas({
+                ...paramsRef.current,
+                isPreview: true,
+            })
+            frameRef.current = requestAnimationFrame(updateFrame)
+        }
+
+        // Start animation
+        frameRef.current = requestAnimationFrame(updateFrame)
+        setIsAnimating(true)
+
+        // Cleanup
+        return () => {
+            if (frameRef.current) {
+                cancelAnimationFrame(frameRef.current)
+            }
+            setIsAnimating(false)
+        }
+    }, [image, isLoading])
+
     const handleSaveImage = async () => {
         if (!image) {
             return
         }
         setIsLoading(true)
-        await sleep(20)
+
         await threeCanvas.updateCanvas({
             rotations,
             color,
-            intensity,
+            shadowIntensity,
             focus,
             isPreview: false,
         })
@@ -267,10 +308,8 @@ function RotationsImage() {
             ),
         ])
 
-        void framer.closePlugin('Image saved...')
-
         setIsLoading(false)
-        framer.hideUI()
+
         console.log('total duration', performance.now() - start)
     }
 
@@ -287,13 +326,6 @@ function RotationsImage() {
         const img = threeCanvas.texture.image
         const aspectRatio = img.width / img.height
         setAspectRatio(aspectRatio)
-        await threeCanvas.updateCanvas({
-            rotations,
-            color,
-            intensity,
-            focus,
-            isPreview: true,
-        })
         setIsLoading(false)
     }, [image])
 
@@ -304,27 +336,6 @@ function RotationsImage() {
             })
         },
         [rotations],
-    )
-
-    useAsyncEffect(
-        async (controller) => {
-            await sleep(50)
-            if (controller.signal.aborted) {
-                return
-            }
-            if (!image) {
-                return
-            }
-            await threeCanvas.updateCanvas({
-                rotations,
-                color,
-                intensity,
-                focus,
-                isPreview: true,
-            })
-            setIsLoading(false)
-        },
-        [rotations, color, intensity, focus],
     )
 
     if (!image) {
@@ -345,7 +356,7 @@ function RotationsImage() {
                     className='flex flex-col items-center max-w-full max-h-full justify-center rounded-md'
                 />
             </div>
-            <div className='shrink-0 flex flex-col w-full gap-3'>
+            {/* <div className='shrink-0 flex flex-col w-full gap-3'>
                 {(['x', 'y'] as const).map((axis) => (
                     <SliderAndNumber
                         key={axis}
@@ -360,7 +371,7 @@ function RotationsImage() {
                         }}
                     />
                 ))}
-            </div>
+            </div> */}
 
             <SliderAndNumber
                 label='Focus'
@@ -374,18 +385,18 @@ function RotationsImage() {
                     step: '0.01',
                 }}
             />
-            <SliderAndNumber
+            {/* <SliderAndNumber
                 label='Shadow'
-                value={intensity}
+                value={shadowIntensity}
                 onChange={(v) => {
                     setIntensity(Number(v))
                 }}
                 rangeProps={{
                     min: '0',
-                    max: '2',
+                    max: '1',
                     step: '0.01',
                 }}
-            />
+            /> */}
             <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
                 <div>Background</div>
 
