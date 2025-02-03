@@ -419,13 +419,13 @@ export async function discardFramerChanges({
 export const inlineTextStyleAttributes = [
     'fontSize',
     'color',
-    'transform',
+    // 'transform',
     'alignment',
-    'decoration',
-    'balance',
+    // 'decoration',
+    // 'balance',
     'letterSpacing',
     'lineHeight',
-    'paragraphSpacing',
+    // 'paragraphSpacing',
 ] as const
 
 async function getNodeAttributesForXml(node: AnyNode) {
