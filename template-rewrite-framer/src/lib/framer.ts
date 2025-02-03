@@ -541,6 +541,19 @@ function decodeAttributeValueAsJson(value: string) {
         return value
     }
 }
+function onlyChangedKeys(
+    oldObj: Record<string, any>,
+    newObj: Record<string, any>,
+): Record<string, any> {
+    const changes: Record<string, any> = {}
+    for (const [key, newValue] of Object.entries(newObj)) {
+        const oldValue = oldObj[key]
+        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+            changes[key] = newValue
+        }
+    }
+    return changes
+}
 
 export async function applyAttributes(
     node?: AnyNode | null,
@@ -557,7 +570,8 @@ export async function applyAttributes(
 
     if (isTextNode(node)) {
         // Apply text-specific attributes
-        await node.setAttributes(decodedAttrs)
+        await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
+
         const inlineTextStyleObj: Record<string, any> = {}
         for (let attrName of inlineTextStyleAttributes) {
             if (decodedAttrs[attrName] !== undefined) {
@@ -565,13 +579,17 @@ export async function applyAttributes(
             }
         }
 
-        await node.inlineTextStyle?.setAttributes(inlineTextStyleObj)
+        await node.inlineTextStyle?.setAttributes(
+            onlyChangedKeys(node.inlineTextStyle || {}, inlineTextStyleObj),
+        )
     } else if (isComponentInstanceNode(node)) {
         // Apply component instance specific attributes
-        await node.setAttributes(decodedAttrs)
-        await node.setAttributes({ controls: { ...decodedAttrs } })
+        await node.setAttributes(onlyChangedKeys(node || {}, decodedAttrs))
+        await node.setAttributes({
+            controls: onlyChangedKeys(node.controls || {}, decodedAttrs),
+        })
     } else {
         // Apply general attributes
-        await node.setAttributes(decodedAttrs)
+        await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
     }
 }

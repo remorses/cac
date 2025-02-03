@@ -42,6 +42,9 @@ let model = createFallback({
         // anthropic('claude-3-5-sonnet-latest'),
         openai('gpt-4o'), //
     ],
+    onError(error, modelId) {
+        console.error(error)
+    },
 })
 
 export const llmPluginApp = new Spiceflow({
@@ -281,7 +284,7 @@ export const llmPluginApp = new Spiceflow({
                             - "duplicate" - Creates a copy of some specified xml nodes and returns the new nodeIds in the diff
                             - "delete" - Removes some specified xml nodes
 
-                            First, analyze if any duplications or deletions are needed for the requested changes:
+                            First, analyze if any duplications or deletions are needed for the requested changes, do this in XML comments above the elements:
                             1. Plan out quickly the needed structural changes first
                             2. Execute the needed "duplicate" call, noting the new nodeIds from the diffs. Group many nodeIds into one call.
                             3. Execute the needed "delete" call. Group many nodeIds into one call.
@@ -296,7 +299,7 @@ export const llmPluginApp = new Spiceflow({
                                 <!-- skipped nodes -->
                                 \`\`\`
 
-                            You should skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
+                            You MUST skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
                             
                             `,
                         },
@@ -312,14 +315,10 @@ export const llmPluginApp = new Spiceflow({
                         {
                             role: 'assistant',
                             content: dedent`
-                            Given that the user asked to add a new faq section I will need to duplicate an existing tag and then rewrite it.
-
-                            After calling the duplicate tool I found the node to modify with the nodeId ${addedFaqNodeId}
-
-                            I will rewrite the xml to align with what the user asked:
+                            
 
                             \`\`\`xml
-                            <-- previous tags -->
+                            <!-- Duplicating existing FAQ tag and modifying node ${addedFaqNodeId} to add pricing FAQ section -->
                             ${exampleAddedFaqSection}
                             <-- other tags -->    
                             \`\`\`
