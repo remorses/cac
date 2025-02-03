@@ -1,16 +1,5 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
 
-import {
-    LoaderReturnType,
-    Paths,
-    PluginDataKeys,
-    basePath,
-    createBuyLink,
-    formatLargeNumber,
-    pluginApiClient,
-    reload,
-    withMode,
-} from 'template-rewrite-framer/src/lib/utils'
 import { useState } from 'react'
 import {
     LoaderFunctionArgs,
@@ -19,17 +8,24 @@ import {
     useLoaderData,
     useNavigate,
 } from 'react-router'
-import { Link } from 'react-router-dom'
+import {
+    LoaderReturnType,
+    Paths,
+    PluginDataKeys,
+    formatLargeNumber,
+    pluginApiClient,
+    reload,
+} from 'template-rewrite-framer/src/lib/utils'
 
-import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
-import {} from 'react-router'
 import { framer } from 'framer-plugin'
-import { feedbackUrl } from 'website/src/lib/env'
+import {} from 'react-router'
+import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
+import { createBuyMigrateUrl, feedbackUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [{ email, orgId }, credits] = await Promise.all([
+    const [{ email, orgId }, credits, { id: projectId }] = await Promise.all([
         pluginApiClient.api.plugins.currentOrg
             .post({})
             .then(({ data, error }) => {
@@ -46,11 +42,14 @@ async function loader({}: LoaderFunctionArgs) {
                 }
                 return data
             }),
+        framer.getProjectInfo(),
     ])
-    let buyMoreCreditsUrl = createBuyLink({
+    const buyMoreCreditsUrl = createBuyMigrateUrl({
         email,
+        projectId,
         orgId,
     })
+
     return { credits, email, buyMoreCreditsUrl }
 }
 

@@ -7,7 +7,6 @@ import {
 } from 'template-rewrite-framer/src/lib/hooks'
 
 import {
-    createBuyLink,
     getDesktop,
     globalState,
     isTruthy,
@@ -47,6 +46,7 @@ import {
     isNodeZoomable,
 } from 'template-rewrite-framer/src/lib/framer'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
+import { createBuyMigrateUrl } from 'website/src/lib/env'
 
 let abortController = new AbortController()
 
@@ -517,7 +517,7 @@ export function SimplePrompt(): RouteObject {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    let [credits, { email, orgId }] = await Promise.all([
+    let [credits, { email, orgId }, { id: projectId }] = await Promise.all([
         pluginApiClient.api.plugins.rewritePlugin.getCredits
             .post({})
             .then(({ data, error }) => {
@@ -534,10 +534,12 @@ async function loader({}: LoaderFunctionArgs) {
                 }
                 return data
             }),
+        framer.getProjectInfo(),
     ])
 
-    const buyMoreCreditsUrl = createBuyLink({
+    const buyMoreCreditsUrl = createBuyMigrateUrl({
         email,
+        projectId,
         orgId,
     })
 

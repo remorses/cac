@@ -121,11 +121,60 @@ export function getBuyReactExportPluginUrl({ orgId, email, projectId }) {
     return url.toString()
 }
 export function getBuyLLMPluginUrl({ orgId, email, projectId }) {
-    const url = new URL('/api/llm-plugin/buy', env.PUBLIC_URL)
-    url.searchParams.append('orgId', orgId)
-    url.searchParams.append('email', email)
-    url.searchParams.append('pluginName', 'reactExport' satisfies PluginName)
-    url.searchParams.append('projectId', projectId)
+    if (!email) {
+        throw new Error('No email for buy link')
+    }
+    if (!orgId) {
+        throw new Error('No orgId for buy link')
+    }
+
+    let productId = env.PUBLIC_LEMON_PRODUCT_MIGRATE!
+
+    let url = new URL(
+        `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
+    )
+    if (orgId) {
+        url.searchParams.set('checkout[custom][orgId]', orgId)
+    }
+    if (projectId) {
+        url.searchParams.set('checkout[custom][projectId]', orgId)
+    }
+    if (email) {
+        url.searchParams.set('checkout[email]', email)
+    }
+    url.searchParams.set('embed', '0')
+    url.searchParams.set('logo', '0')
+    url.searchParams.set('dark', '1')
+
+    return url.toString()
+}
+
+export function createBuyMigrateUrl({ email, orgId, projectId }) {
+    if (!email) {
+        throw new Error('No email for buy link')
+    }
+    if (!orgId) {
+        throw new Error('No orgId for buy link')
+    }
+
+    let productId = env.PUBLIC_LEMON_PRODUCT_MIGRATE!
+
+    let url = new URL(
+        `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
+    )
+    if (orgId) {
+        url.searchParams.set('checkout[custom][orgId]', orgId)
+    }
+    if (projectId) {
+        url.searchParams.set('checkout[custom][projectId]', orgId)
+    }
+    if (email) {
+        url.searchParams.set('checkout[email]', email)
+    }
+    url.searchParams.set('embed', '0')
+    url.searchParams.set('logo', '0')
+    url.searchParams.set('dark', '1')
+
     return url.toString()
 }
 
