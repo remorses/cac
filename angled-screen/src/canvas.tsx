@@ -107,10 +107,24 @@ export class ThreeCanvas {
     }
 
     private handleDoubleClick(event: MouseEvent) {
-        // Use camera distance to plane for focus
-        const distance = this.camera.position.distanceTo(this.plane.position)
-        console.log('setting focus distance', distance)
-        this.bokehPass.uniforms['focus'].value = distance
+        // Calculate mouse position in normalized device coordinates (-1 to +1)
+        const rect = this.canvas.getBoundingClientRect()
+        const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+        const y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+        // Setup the raycaster
+        const raycaster = new THREE.Raycaster()
+        raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera)
+
+        // Check for intersections with the plane
+        const intersects = raycaster.intersectObject(this.plane)
+        
+        if (intersects.length > 0) {
+            // Use the distance to the intersection point for focus
+            const distance = intersects[0].distance
+            console.log('setting focus distance', distance)
+            this.bokehPass.uniforms['focus'].value = distance
+        }
     }
 
     changeImage(bitmap: ImageBitmap) {

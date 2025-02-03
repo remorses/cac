@@ -358,7 +358,7 @@ function RotationsImage() {
                     />
                 ))}
             </div> */}
-            <div className='text-center text-balance text-[11px] my-1'>
+            <div className='text-center select-none text-balance text-[11px] my-1'>
                 Drag to rotate, press shift and drag to pan, double click to focus
             </div>
 
@@ -433,7 +433,7 @@ const Container = ({ children, ...rest }) => {
         })
     }, [height])
     return (
-        <div ref={ref} className='shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
+        <div ref={ref} className='select-none shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
             {children}
         </div>
     )
