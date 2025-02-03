@@ -96,7 +96,7 @@ function LoginComponent() {
                 </div>
                 <div className='text-center mx-auto my-4 grow gap-2 flex flex-col max-w-xs'>
                     {/* <div className='font-semibold'>Connect to Google</div> */}
-                    <div className=' dark:text-purple-50 text-sm max-w-[200px] leading-relaxed text-center text-balance'>
+                    <div className=' dark:text-gray-300 max-w-[200px] leading-relaxed text-center text-balance'>
                         login with Google to track your progress
                     </div>
                 </div>
