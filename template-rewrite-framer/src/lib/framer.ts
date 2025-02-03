@@ -522,6 +522,13 @@ export function serializeAttributesForXml(
         if (value?.url) {
             continue
         }
+        if (value == null) {
+            continue
+        }
+        if (typeof value === 'object') {
+            console.log('skipping object value for attribute', key, value)
+            continue
+        }
         result[key] = encodeAttributeValue(value)
     }
     return result
@@ -537,14 +544,14 @@ function decodeAttributeValueAsJson(value: string) {
 
 export async function applyAttributes(
     node?: AnyNode | null,
-    attributes?: Record<string, any>,
+    _attributes?: Record<string, any>,
 ): Promise<void> {
-    if (!node || !attributes || !Object.keys(attributes).length) {
+    if (!node || !_attributes || !Object.keys(_attributes).length) {
         return
     }
 
     const decodedAttrs: Record<string, any> = {}
-    for (const [key, value] of Object.entries(attributes)) {
+    for (const [key, value] of Object.entries(_attributes)) {
         decodedAttrs[key] = decodeAttributeValueAsJson(value)
     }
 
@@ -562,6 +569,7 @@ export async function applyAttributes(
     } else if (isComponentInstanceNode(node)) {
         // Apply component instance specific attributes
         await node.setAttributes(decodedAttrs)
+        await node.setAttributes({ controls: { ...decodedAttrs } })
     } else {
         // Apply general attributes
         await node.setAttributes(decodedAttrs)
