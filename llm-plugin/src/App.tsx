@@ -47,15 +47,11 @@ const router = createBrowserRouter(
             shouldRevalidate: () => {
                 return true
             },
-            loader,
 
             Component({}) {
                 const [ref, { height }] = useMeasure()
-                const { sessionKey } = useLoaderData() as LoaderReturnType<
-                    typeof loader
-                >
-                const location = useLocation()
-                let width = 260
+
+                let width = 250
 
                 useFocusOnMount()
 

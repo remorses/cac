@@ -20,7 +20,7 @@ import {
     isTextNode,
     supportsBackgroundColor,
 } from 'framer-plugin'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -50,8 +50,7 @@ function makeRandomId() {
 }
 
 function SimplePromptComponent({}) {
-    const { buyMoreCreditsUrl, projectId, credits } =
-        useLoaderData() as LoaderReturnType<typeof loader>
+    const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
 
     const [isLoading, setIsLoading] = useState(false)
     const [previousOldText, setPreviousOldText] = useState<FramerLayersTree>([])
@@ -65,7 +64,7 @@ function SimplePromptComponent({}) {
     }, [])
 
     const revalidator = useRevalidator()
-    const buyCreditsInstead = !credits.remaining
+
     // console.log('credits', credits)
     const [description, setDescription] = useState('')
     const [generationId, setGenerationId] = useState(0)
@@ -78,7 +77,8 @@ function SimplePromptComponent({}) {
     })
 
     async function onSubmit() {
-        if (buyCreditsInstead) {
+        const { buyMoreCreditsUrl, credits } = await deferred
+        if (!credits.remaining) {
             window.open(buyMoreCreditsUrl, '_blank')
             return
         }
@@ -129,6 +129,7 @@ function SimplePromptComponent({}) {
 
     async function replaceTextClient() {
         reset()
+        const { buyMoreCreditsUrl, credits, projectId } = await deferred
         // const root = await framer.getCanvasRoot()
 
         let desktop = await getDesktop()
@@ -205,11 +206,6 @@ function SimplePromptComponent({}) {
         let prevNode: AnyNode | undefined
 
         let prevBackground = null as string | ColorStyle | null
-        let lastTimeZoomed = Date.now()
-        let minTimeOnNode = credits.free ? 200 : 200
-        const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
-
-        let currentNodeId = undefined as string | undefined
 
         async function highlightNextNode(nextItemId) {
             let node = await framer.getNode(nextItemId)
@@ -232,7 +228,7 @@ function SimplePromptComponent({}) {
                 console.log('node not visible, skipping zoom')
                 return
             }
-            lastTimeZoomed = Date.now()
+
             await node.zoomIntoView({ maxZoom: 0.9 })
 
             if (isTextNode(node)) {
@@ -336,16 +332,6 @@ function SimplePromptComponent({}) {
     }
     useRefreshOnVisible({ enabled: !isLoading })
 
-    const buttonText = (() => {
-        if (!credits.remaining) {
-            return 'Buy More Credits'
-        }
-        if (!selectedNodes.length) {
-            return 'Select to Edit'
-        }
-        return 'Edit Selection'
-    })()
-
     const navigate = useNavigate()
 
     const [stars, setStars] = useState(0)
@@ -414,7 +400,7 @@ function SimplePromptComponent({}) {
             <div className='w-full'>
                 <textarea
                     ref={textareaRef}
-                    disabled={buyCreditsInstead}
+                    // disabled={buyCreditsInstead}
                     required
                     value={description}
                     onChange={(e) => {
@@ -453,20 +439,13 @@ function SimplePromptComponent({}) {
                 >
                     Settings
                 </Button>
-                <Button
+                <SubmitButton
+                    selectedNodes={selectedNodes}
                     isLoading={isLoading}
-                    disabled={
-                        !description ||
-                        !selectedNodes.length ||
-                        buyCreditsInstead
-                    }
-                    type='submit'
-                    variant='primary'
-                    className='w-auto block grow'
-                >
-                    {buttonText}
-                </Button>
+                    disabled={!description || !selectedNodes.length}
+                />
             </div>
+
             {Boolean(isLoading) && (
                 <Button
                     // className='bg-transparent'
@@ -486,6 +465,33 @@ function SimplePromptComponent({}) {
     )
 }
 
+function SubmitButton({ selectedNodes, isLoading, disabled }) {
+    const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { credits } = use(deferred)
+    const buttonText = (() => {
+        if (!credits.remaining) {
+            return 'Buy More Credits'
+        }
+        if (!selectedNodes.length) {
+            return 'Select to Edit'
+        }
+        return 'Edit Selection'
+    })()
+    return (
+        <Button
+            isLoading={isLoading}
+            disabled={disabled}
+            type='submit'
+            variant='primary'
+            className='w-auto block grow'
+        >
+            <Suspense fallback={<div>Edit Selection</div>}>
+                {buttonText}
+            </Suspense>
+        </Button>
+    )
+}
+
 export function SimplePrompt(): RouteObject {
     return {
         Component: SimplePromptComponent,
@@ -497,36 +503,42 @@ export function SimplePrompt(): RouteObject {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    let [credits, { email, orgId }, info] = await Promise.all([
-        pluginApiClient.api.plugins.rewritePlugin.getCredits
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        pluginApiClient.api.plugins.currentOrg
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        framer.getProjectInfo(),
-    ])
-    const { id: projectId } = info
+    const deferred = async () => {
+        let [credits, { email, orgId }, info] = await Promise.all([
+            pluginApiClient.api.plugins.rewritePlugin.getCredits
+                .post({})
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            pluginApiClient.api.plugins.currentOrg
+                .post({})
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            framer.getProjectInfo(),
+        ])
+        const { id: projectId } = info
 
-    const buyMoreCreditsUrl = getBuyLLMPluginUrl({
-        email,
-        orgId,
-        projectId,
-    })
+        const buyMoreCreditsUrl = getBuyLLMPluginUrl({
+            email,
+            orgId,
+            projectId,
+        })
+
+        return {
+            credits,
+            projectId,
+            buyMoreCreditsUrl,
+        }
+    }
 
     return {
-        credits,
-        projectId,
-        buyMoreCreditsUrl,
+        deferred: deferred(),
     }
 }

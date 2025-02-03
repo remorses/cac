@@ -27,7 +27,7 @@ import {
     isWebPageNode,
     supportsBackgroundColor,
 } from 'framer-plugin'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, use, useEffect, useRef, useState } from 'react'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -51,9 +51,8 @@ import { createBuyMigrateUrl } from 'website/src/lib/env'
 let abortController = new AbortController()
 
 function SimplePromptComponent({}) {
-    const { buyMoreCreditsUrl, credits } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
+
     const [description, setDescription] = useState(
         globalState.extractedDescription || '',
     )
@@ -74,10 +73,12 @@ function SimplePromptComponent({}) {
     }, [])
 
     const revalidator = useRevalidator()
-    const buyCreditsInstead = !credits.remaining
+
     // console.log('credits', credits)
     async function onSubmit() {
-        if (buyCreditsInstead) {
+        const { buyMoreCreditsUrl, credits } = await deferred
+
+        if (!credits.remaining) {
             // setIsLoading(true)
             window.open(buyMoreCreditsUrl, '_blank')
             return
@@ -213,9 +214,6 @@ function SimplePromptComponent({}) {
         let prevNode: AnyNode | undefined
 
         let prevBackground = null as string | ColorStyle | null
-        let lastTimeZoomed = Date.now()
-        let minTimeOnNode = credits.free ? 200 : 200
-        const allOldNodes = bfsOldTextTree(oldText).filter((x) => x?.nodeId)
 
         let currentNodeId = undefined as string | undefined
 
@@ -240,7 +238,7 @@ function SimplePromptComponent({}) {
                 console.log('node not visible, skipping zoom')
                 return
             }
-            lastTimeZoomed = Date.now()
+
             await node.zoomIntoView({ maxZoom: 0.9 })
 
             if (isTextNode(node)) {
@@ -356,16 +354,6 @@ function SimplePromptComponent({}) {
         }
     })
 
-    const buttonText = (() => {
-        if (!credits.remaining) {
-            return 'Buy More Credits'
-        }
-        if (selectedNodes.length) {
-            return 'Replace Selection'
-        }
-        return 'Replace'
-    })()
-
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     useEffect(() => {
         if (textareaRef.current) {
@@ -446,7 +434,7 @@ function SimplePromptComponent({}) {
                 <textarea
                     ref={textareaRef}
                     value={description}
-                    disabled={buyCreditsInstead}
+                    // disabled={buyCreditsInstead}
                     required
                     onChange={(e) => {
                         setDescription(e.target.value)
@@ -482,15 +470,11 @@ function SimplePromptComponent({}) {
                 >
                     Settings
                 </Button>
-                <Button
+                <SubmitButton
+                    disabled={!description}
+                    selectedNodes={selectedNodes}
                     isLoading={isLoading}
-                    // disabled={disabled}
-                    type='submit'
-                    variant='primary'
-                    className='w-auto block grow'
-                >
-                    {buttonText}
-                </Button>
+                />
             </div>
             {Boolean(isLoading || previousOldText.length) && (
                 <Button
@@ -506,6 +490,31 @@ function SimplePromptComponent({}) {
     )
 }
 
+function SubmitButton({ selectedNodes, isLoading, disabled }) {
+    const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
+    const { credits } = use(deferred)
+    const buttonText = (() => {
+        if (!credits.remaining) {
+            return 'Buy More Credits'
+        }
+        if (selectedNodes.length) {
+            return 'Replace Selection'
+        }
+        return 'Replace'
+    })()
+    return (
+        <Button
+            isLoading={isLoading}
+            disabled={disabled}
+            type='submit'
+            variant='primary'
+            className='w-auto block grow'
+        >
+            <Suspense fallback={<div>Replace</div>}>{buttonText}</Suspense>
+        </Button>
+    )
+}
+
 export function SimplePrompt(): RouteObject {
     return {
         Component: SimplePromptComponent,
@@ -515,36 +524,39 @@ export function SimplePrompt(): RouteObject {
         shouldRevalidate: () => true,
     }
 }
-
 async function loader({}: LoaderFunctionArgs) {
-    let [credits, { email, orgId }, { id: projectId }] = await Promise.all([
-        pluginApiClient.api.plugins.rewritePlugin.getCredits
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        pluginApiClient.api.plugins.currentOrg
-            .post({})
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            }),
-        framer.getProjectInfo(),
-    ])
+    const deferred = async () => {
+        let [credits, { email, orgId }, { id: projectId }] = await Promise.all([
+            pluginApiClient.api.plugins.rewritePlugin.getCredits
+                .post({})
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            pluginApiClient.api.plugins.currentOrg
+                .post({})
+                .then(({ data, error }) => {
+                    if (error) {
+                        throw error
+                    }
+                    return data
+                }),
+            framer.getProjectInfo(),
+        ])
 
-    const buyMoreCreditsUrl = createBuyMigrateUrl({
-        email,
-        projectId,
-        orgId,
-    })
+        const buyMoreCreditsUrl = createBuyMigrateUrl({
+            email,
+            projectId,
+            orgId,
+        })
 
-    return {
-        credits,
-        buyMoreCreditsUrl,
+        return {
+            credits,
+            buyMoreCreditsUrl,
+        }
     }
+
+    return { deferred: deferred() }
 }
