@@ -85,23 +85,22 @@ function LoginComponent() {
     return (
         <div
             style={containerStyle}
-            className='flex flex-col justify-end grow gap-3'
+            className='flex flex-col justify-end grow min-h-[360px] gap-3'
         >
-            <div className='flex flex-col '>
-                <div className='flex flex-col grow -mt-2 -m-[48px]'>
-                    <img
-                        src={image}
-                        className='grow select-none pointer-events-none invert dark:invert-0 px-12 h-[260px] object-contain overflow-hidden w-full rounded-md'
-                    />
-                </div>
-                <div className='text-center mx-auto my-4 grow gap-2 flex flex-col max-w-xs'>
-                    {/* <div className='font-semibold'>Connect to Google</div> */}
-                    <div className=' dark:text-gray-300 max-w-[200px] leading-relaxed text-center text-balance'>
-                        login with Google to track your progress
-                    </div>
+            <div className='flex flex-col gap-8 items-center justify-center grow -m-[48px]'>
+                <img
+                    src={image}
+                    className='select-none pointer-events-none invert dark:invert-0 px-12 object-contain overflow-hidden w-full rounded-md'
+                />
+            </div>
+
+            <div className='text-center mx-auto my-4 gap-2 flex flex-col max-w-xs'>
+                {/* <div className='font-semibold'>Connect to Google</div> */}
+                <div className=' dark:text-gray-300 max-w-[200px] leading-relaxed text-center text-balance'>
+                    login with Google to track your progress
                 </div>
             </div>
-            {/* <hr className='' /> */}
+
             <Button
                 onClick={async () => {
                     setIsLoading(true)
