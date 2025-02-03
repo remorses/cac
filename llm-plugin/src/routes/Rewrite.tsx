@@ -1,9 +1,7 @@
 import { Button } from 'template-rewrite-framer/src/components/Button'
-import { flushSync } from 'react-dom'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import {
     useHistoryNavigation,
-    useLatestFunction,
     useRefreshOnVisible,
 } from 'template-rewrite-framer/src/lib/hooks'
 
@@ -31,18 +29,17 @@ import {
     useRevalidator,
 } from 'react-router'
 
-import { OldTextTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'website/src/lib/rewrite'
 
 import { Paths, pluginApiClient } from '@/lib/utils'
 import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
-    discardFramerChanges,
+    applyAttributes,
     getFramerTree,
     isNodeZoomable,
 } from 'template-rewrite-framer/src/lib/framer'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
-import { decodeControlAttributes } from 'website/src/lib/xml'
 
 let abortController = new AbortController()
 
@@ -57,7 +54,7 @@ function SimplePromptComponent({}) {
         useLoaderData() as LoaderReturnType<typeof loader>
 
     const [isLoading, setIsLoading] = useState(false)
-    const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
+    const [previousOldText, setPreviousOldText] = useState<FramerLayersTree>([])
 
     useEffect(() => {
         // abort when leaving the page
@@ -321,22 +318,13 @@ function SimplePromptComponent({}) {
                         }
                         await node.setText(partialItem.newContent)
                     } else if (isComponentInstanceNode(node)) {
-                        const controls = partialItem.attributes
-                        if (!controls) {
-                            console.log(
-                                'no component controls to set found in item',
-                                item,
-                            )
-                            continue
-                        }
-                        await node.setAttributes({
-                            controls: decodeControlAttributes(controls),
-                        })
                     } else {
                         console.log(
                             `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
                         )
                     }
+
+                    await applyAttributes(node, partialItem.attributes)
                 }
             }
             console.log('done')

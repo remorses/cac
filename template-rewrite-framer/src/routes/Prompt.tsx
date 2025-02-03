@@ -37,16 +37,16 @@ import {
     useRevalidator,
 } from 'react-router'
 
-import { OldTextTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'website/src/lib/rewrite'
 
 import { StarReview } from 'template-rewrite-framer/src/components/StarReview'
 import {
+    applyAttributes,
     discardFramerChanges,
     getFramerTree,
     isNodeZoomable,
 } from 'template-rewrite-framer/src/lib/framer'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
-import { decodeControlAttributes } from 'website/src/lib/xml'
 
 let abortController = new AbortController()
 
@@ -59,7 +59,7 @@ function SimplePromptComponent({}) {
     )
 
     const [isLoading, setIsLoading] = useState(false)
-    const [previousOldText, setPreviousOldText] = useState<OldTextTree>([])
+    const [previousOldText, setPreviousOldText] = useState<FramerLayersTree>([])
     const { onKeyDown, onSubmit: historyOnSubmit } = useHistoryNavigation({
         value: description,
         setValue: setDescription,
@@ -309,22 +309,12 @@ function SimplePromptComponent({}) {
                     }
                     await node.setText(partialItem.newContent)
                 } else if (isComponentInstanceNode(node)) {
-                    const controls = partialItem.attributes
-                    if (!controls) {
-                        console.log(
-                            'no component controls to set found in item',
-                            partialItem,
-                        )
-                        continue
-                    }
-                    await node.setAttributes({
-                        controls: decodeControlAttributes(controls),
-                    })
                 } else {
                     console.log(
                         `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
                     )
                 }
+                await applyAttributes(node, partialItem.attributes)
 
                 // TODO add links
                 // if (supportsLink(node) && chunk.href) {

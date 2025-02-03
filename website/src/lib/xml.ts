@@ -1,7 +1,7 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 import camelCase from 'camelCase'
-import type { OldTextTree } from 'website/src/lib/rewrite'
+import type { FramerLayersTree } from 'website/src/lib/rewrite'
 
 interface RewriteOldTextContentParams {
     xml: string
@@ -141,19 +141,19 @@ export function extractObjectsFromXmlContent(xml: string) {
     return results
 }
 
-export function xmlToOldTextTree(xml: string): OldTextTree {
+export function xmlToOldTextTree(xml: string): FramerLayersTree {
     const handler = new DomHandler()
     const parser = new Parser(handler, { xmlMode: true }) // Add xmlMode: true
     parser.write(xml)
     parser.end()
 
-    function processNode(node: any): OldTextTree[number] | null {
+    function processNode(node: any): FramerLayersTree[number] | null {
         // Skip text nodes and comments
         if (node.type !== 'tag') {
             return null
         }
 
-        const result: OldTextTree[number] = {
+        const result: FramerLayersTree[number] = {
             name: node.name,
         }
 
@@ -202,11 +202,11 @@ export function xmlToOldTextTree(xml: string): OldTextTree {
     const rootNodes = handler.dom
         .filter((node: any) => node.type === 'tag') // Only process tag nodes
         .map(processNode)
-        .filter((n): n is OldTextTree[number] => n !== null)
+        .filter((n): n is FramerLayersTree[number] => n !== null)
     return addNodeCount(rootNodes)
 }
 export function oldTextTreeToXml(
-    tree: OldTextTree,
+    tree: FramerLayersTree,
     options: {
         shouldAddNodeIdAlways?: boolean
 
@@ -334,14 +334,14 @@ function escapeXml(unsafe: string): string {
     })
 }
 
-export function addNodeCount(tree: OldTextTree) {
-    const result: OldTextTree = []
+export function addNodeCount(tree: FramerLayersTree) {
+    const result: FramerLayersTree = []
 
     // If the tree is empty, return empty result
     if (tree?.length === 0) return result
 
     // First pass - count all nodes and store in count field
-    function countNodes(node: OldTextTree[number]): number {
+    function countNodes(node: FramerLayersTree[number]): number {
         let count = 1
         if (node.children) {
             for (const child of node.children) {
@@ -357,52 +357,4 @@ export function addNodeCount(tree: OldTextTree) {
         countNodes(rootNode)
     }
     return tree
-}
-
-function encodeAttributeValue(value) {
-    if (value === undefined) {
-        return 'null'
-    }
-    if (typeof value === 'string') {
-        return value
-    }
-    return JSON.stringify(value)
-}
-
-function decodeAttributeValue(value: string) {
-    try {
-        return JSON.parse(value)
-    } catch {
-        return value
-    }
-}
-
-export function encodeControlAttributes(
-    attributes?: Record<string, any>,
-): Record<string, string> {
-    if (!attributes) {
-        return {}
-    }
-    const result: Record<string, string> = {}
-    for (const [key, value] of Object.entries(attributes)) {
-        // skip image attributes, too complex
-        if (value?.url) {
-            continue
-        }
-        result[key] = encodeAttributeValue(value)
-    }
-    return result
-}
-
-export function decodeControlAttributes(
-    attributes?: Record<string, any>,
-): Record<string, any> {
-    if (!attributes) {
-        return {}
-    }
-    const result: Record<string, any> = {}
-    for (const [key, value] of Object.entries(attributes)) {
-        result[key] = decodeAttributeValue(value)
-    }
-    return result
 }

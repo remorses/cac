@@ -15,12 +15,9 @@ import {
     collectGenerator,
     getParentNodes,
 } from 'template-rewrite-framer/src/lib/utils'
-import { OldTextTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'website/src/lib/rewrite'
 import { cleanupOldTextTree, bfsOldTextTree } from 'website/src/lib/utils'
-import {
-    decodeControlAttributes,
-    encodeControlAttributes,
-} from 'website/src/lib/xml'
+import {} from 'website/src/lib/xml'
 
 export async function getComponentAttributesComments(url?: string) {
     if (!url) return
@@ -260,15 +257,13 @@ const possibleInstanceTextFields = [
     'content',
 ]
 
-
-
 async function push({
     node,
     tree,
     text,
     nodeId,
 }: {
-    tree: OldTextTree
+    tree: FramerLayersTree
     node: AnyNode
     text?: string
     nodeId: string
@@ -303,30 +298,9 @@ async function push({
         currentLevel = existingNode.children
     }
 
-    let href = undefined as string | undefined
-    if (supportsLink(node)) {
-        href = node.link || undefined
-    }
-    let fontSize
-    if (isTextNode(node)) {
-        fontSize = node.inlineTextStyle?.fontSize || undefined
-    }
-    let attributes = {
-        href,
-        fontSize,
-    }
-    let attrControlsComments
-    if (isComponentInstanceNode(node)) {
-        attrControlsComments = await getComponentAttributesComments(
-            node.insertURL || undefined,
-        )
-        attributes = {
-            ...attributes,
-            ...encodeControlAttributes(node.controls),
-        }
-    }
+    const { attributes, attrControlsComments } =
+        await getNodeAttributesForXml(node)
 
-    // Add the actual node
     currentLevel.push({
         content: text,
         nodeId,
@@ -347,7 +321,7 @@ export async function getFramerTree({
 }) {
     const timeId = `getFramerTree-${Date.now()}-${Math.random().toString(36).slice(2)}`
     console.time(timeId)
-    let oldText = [] as OldTextTree
+    let oldText = [] as FramerLayersTree
 
     let componentInstanceChildrenSeen = new Set<string>()
     async function handleNode(node: AnyNode) {
@@ -420,7 +394,7 @@ export async function getFramerTree({
 export async function discardFramerChanges({
     previousOldText,
 }: {
-    previousOldText: OldTextTree
+    previousOldText: FramerLayersTree
 }) {
     const allNodes = bfsOldTextTree(previousOldText).filter((x) => x?.nodeId)
     const promises = allNodes.map(async (oldNodeObj) => {
@@ -437,12 +411,159 @@ export async function discardFramerChanges({
             return await node.setText(oldContent)
         }
 
-        if (isComponentInstanceNode(node)) {
-            node.controls
-            await node.setAttributes({
-                controls: { ...decodeControlAttributes(attributes) },
-            })
-        }
+        await applyAttributes(node, attributes)
     })
     return await Promise.all(promises)
+}
+
+export const inlineTextStyleAttributes = [
+    'fontSize',
+    'color',
+    'transform',
+    'alignment',
+    'decoration',
+    'balance',
+    'letterSpacing',
+    'lineHeight',
+    'paragraphSpacing',
+] as const
+
+async function getNodeAttributesForXml(node: AnyNode) {
+    let attributes = {} as Record<string, any>
+
+    if (supportsLink(node)) {
+        attributes.href = node.link || undefined
+    }
+    if (isTextNode(node)) {
+        for (const attr of inlineTextStyleAttributes) {
+            attributes[attr] = node.inlineTextStyle?.[attr] ?? undefined
+        }
+        // attributes.font = node.font ?? undefined
+        // attributes.rotation = node.rotation ?? undefined
+        attributes.opacity = node.opacity ?? undefined
+
+        // attributes.position = node.position ?? undefined
+        // attributes.top = node.top ?? undefined
+        // attributes.right = node.right ?? undefined
+        // attributes.bottom = node.bottom ?? undefined
+        // attributes.left = node.left ?? undefined
+        // attributes.centerX = node.centerX ?? undefined
+        // attributes.centerY = node.centerY ?? undefined
+        // attributes.width = node.width ?? undefined
+        // attributes.height = node.height ?? undefined
+        // attributes.maxWidth = node.maxWidth ?? undefined
+        // attributes.minWidth = node.minWidth ?? undefined
+        // attributes.maxHeight = node.maxHeight ?? undefined
+        // attributes.minHeight = node.minHeight ?? undefined
+    }
+    if (isFrameNode(node)) {
+        if (typeof node.backgroundColor === 'string') {
+            attributes.backgroundColor = node.backgroundColor
+        }
+        // attributes.backgroundImage = node.backgroundImage ?? undefined
+        // attributes.backgroundGradient = node.backgroundGradient ?? undefined
+        attributes.borderRadius = node.borderRadius ?? undefined
+
+        // attributes.rotation = node.rotation ?? undefined
+        // attributes.opacity = node.opacity ?? undefined
+        // attributes.borderRadius = node.borderRadius ?? undefined
+        // attributes.position = node.position ?? undefined
+        // attributes.top = node.top ?? undefined
+        // attributes.right = node.right ?? undefined
+        // attributes.bottom = node.bottom ?? undefined
+        // attributes.left = node.left ?? undefined
+        // attributes.centerX = node.centerX ?? undefined
+        // attributes.centerY = node.centerY ?? undefined
+        // attributes.width = node.width ?? undefined
+        // attributes.height = node.height ?? undefined
+        // attributes.maxWidth = node.maxWidth ?? undefined
+        // attributes.minWidth = node.minWidth ?? undefined
+        // attributes.maxHeight = node.maxHeight ?? undefined
+        // attributes.minHeight = node.minHeight ?? undefined
+        // attributes.aspectRatio = node.aspectRatio ?? undefined
+    }
+
+    let attrControlsComments
+    if (isComponentInstanceNode(node)) {
+        attrControlsComments = await getComponentAttributesComments(
+            node.insertURL || undefined,
+        )
+        attributes = {
+            ...attributes,
+            ...node.controls,
+        }
+    }
+    attributes = serializeAttributesForXml(attributes)
+    return {
+        attributes,
+        attrControlsComments,
+    }
+}
+
+function encodeAttributeValue(value) {
+    if (value === undefined) {
+        return 'null'
+    }
+    if (typeof value === 'string') {
+        return value
+    }
+    return JSON.stringify(value)
+}
+
+export function serializeAttributesForXml(
+    attributes?: Record<string, any>,
+): Record<string, string> {
+    if (!attributes) {
+        return {}
+    }
+    const result: Record<string, string> = {}
+    for (const [key, value] of Object.entries(attributes)) {
+        // skip image attributes, too complex
+        if (value?.url) {
+            continue
+        }
+        result[key] = encodeAttributeValue(value)
+    }
+    return result
+}
+
+function decodeAttributeValueAsJson(value: string) {
+    try {
+        return JSON.parse(value)
+    } catch {
+        return value
+    }
+}
+
+export async function applyAttributes(
+    node?: AnyNode | null,
+    attributes?: Record<string, any>,
+): Promise<void> {
+    if (!node || !attributes || !Object.keys(attributes).length) {
+        return
+    }
+
+    const decodedAttrs: Record<string, any> = {}
+    for (const [key, value] of Object.entries(attributes)) {
+        decodedAttrs[key] = decodeAttributeValueAsJson(value)
+    }
+
+    if (isTextNode(node)) {
+        // Apply text-specific attributes
+        await node.setAttributes(decodedAttrs)
+        const inlineTextStyleObj: Record<string, any> = {}
+        for (let attrName of inlineTextStyleAttributes) {
+            if (decodedAttrs[attrName] !== undefined) {
+                inlineTextStyleObj[attrName] = decodedAttrs[attrName]
+            }
+        }
+
+        await node.inlineTextStyle?.setAttributes(inlineTextStyleObj)
+    } else if (isComponentInstanceNode(node)) {
+        // Apply component instance specific attributes
+        await node.setAttributes(decodedAttrs)
+    } else {
+        // Apply general attributes
+        await node.setAttributes(decodedAttrs)
+    }
 }

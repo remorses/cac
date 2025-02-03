@@ -64,7 +64,7 @@ export function useIsDocumentVisibile() {
 }
 
 export function usePrevious(value) {
-    const ref = useRef()
+    const ref = useRef(null)
     useEffect(() => {
         ref.current = value
     })

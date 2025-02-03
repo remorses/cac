@@ -398,7 +398,7 @@ function SearchIcon({ className }: { className?: string }) {
 }
 
 function Item({ id, name, onChange, checked, style }) {
-    const ref = useRef<any>()
+    const ref = useRef<any>(null)
     return (
         <div
             style={style}

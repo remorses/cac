@@ -18,7 +18,7 @@
         "@supabase/supabase-js": "^2.48.1",
         "@tailwindcss/forms": "^0.5.10",
         "@types/nprogress": "^0.2.3",
-        "ai": "^4.1.9",
+        "ai": "^4.1.17",
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "es-module-shims": "^2.0.9",

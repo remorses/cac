@@ -18,7 +18,7 @@ import {
 
 export const ITEMS_PER_ITERATION = 30
 
-export type OldTextTree = Array<{
+export type FramerLayersTree = Array<{
     name?: string | null
     content?: string | null
     nodeId?: string | null
@@ -28,14 +28,14 @@ export type OldTextTree = Array<{
         [key: string]: any
     }
     attrControlsComments?: Record<string, string>
-    children?: OldTextTree
+    children?: FramerLayersTree
     count?: number
     // index: number;
 }>
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
-    oldText: z.custom<OldTextTree>(),
+    oldText: z.custom<FramerLayersTree>(),
     sourceHtml: z.string().nullable(),
     url: z.string(),
     projectName: z.string().optional(),
@@ -169,16 +169,18 @@ These are the website Owner's Description and Instructions:
 ${description || 'No specific instructions provided'}
 </description>
 
+You should skip XML attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
 
+Skip nodes for which you don't plant to update the content and attributes.
 
 `
 }
-function findFirstChildrenLayer(tree: OldTextTree): {
-    layer: OldTextTree
-    parents: OldTextTree
+function findFirstChildrenLayer(tree: FramerLayersTree): {
+    layer: FramerLayersTree
+    parents: FramerLayersTree
 } {
     let currentLayer = tree
-    let parents: OldTextTree = []
+    let parents: FramerLayersTree = []
     while (currentLayer.length === 1 && currentLayer[0].children?.length) {
         parents.push({ ...currentLayer[0], children: [] })
         currentLayer = currentLayer[0].children
@@ -305,15 +307,15 @@ export async function* rewriteTemplateChunk({
 }
 
 export function mergeCloseChunks(
-    chunks: OldTextTree[],
+    chunks: FramerLayersTree[],
     maxSize: number,
-): OldTextTree[] {
+): FramerLayersTree[] {
     // If we have 1 or fewer chunks, just return them as-is
     if (chunks.length <= 1) {
         return chunks
     }
 
-    const result: OldTextTree[] = []
+    const result: FramerLayersTree[] = []
     let currentChunk = chunks[0]
 
     // Iterate through chunks starting from the second one
@@ -339,9 +341,9 @@ export function mergeCloseChunks(
     return result
 }
 export function mergeChunksTooSmall(
-    chunks: OldTextTree[],
+    chunks: FramerLayersTree[],
     maxSize: number,
-): OldTextTree[] {
+): FramerLayersTree[] {
     // If we have 1 or fewer chunks, just return them as-is
     if (chunks.length <= 1) {
         return chunks
@@ -395,14 +397,14 @@ export function mergeChunksTooSmall(
 }
 
 // Helper function to calculate total size of a chunk
-function getChunkSize(chunk: OldTextTree): number {
+function getChunkSize(chunk: FramerLayersTree): number {
     return chunk.reduce((sum, node) => sum + (node.count || 0), 0)
 }
 
 export function splitTreeInChunks(
-    tree: OldTextTree,
+    tree: FramerLayersTree,
     maxChunkTreeSize: number = ITEMS_PER_ITERATION,
-): OldTextTree[] {
+): FramerLayersTree[] {
     addNodeCount(tree)
     const chunks = splitTreeInChunksRecursive(tree, maxChunkTreeSize, [])
     let prevLength = -1
@@ -416,11 +418,11 @@ export function splitTreeInChunks(
 }
 
 function splitTreeInChunksRecursive(
-    tree: OldTextTree,
+    tree: FramerLayersTree,
     maxChunkTreeSize: number,
-    initialParents: OldTextTree,
-): OldTextTree[] {
-    let result: OldTextTree[] = []
+    initialParents: FramerLayersTree,
+): FramerLayersTree[] {
+    let result: FramerLayersTree[] = []
 
     // Find the first layer with more than one child
     const { layer: currentLayer, parents } = findFirstChildrenLayer(tree)
@@ -445,9 +447,9 @@ function splitTreeInChunksRecursive(
 }
 
 function createChunkWithParents(
-    parents: OldTextTree,
-    children: OldTextTree,
-): OldTextTree {
+    parents: FramerLayersTree,
+    children: FramerLayersTree,
+): FramerLayersTree {
     if (parents.length === 0) {
         return children
     }

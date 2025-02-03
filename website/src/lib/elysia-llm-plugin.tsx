@@ -1,27 +1,26 @@
-import { Evt } from 'evt'
-import { createTwoFilesPatch, diffJson, structuredPatch } from 'diff'
-import dedent from 'string-dedent'
-import { smoothStream, streamText, tool } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { smoothStream, streamText, tool } from 'ai'
+import { createTwoFilesPatch } from 'diff'
+import { Evt } from 'evt'
+import dedent from 'string-dedent'
 
 import { Spiceflow } from 'spiceflow'
 
-import { prisma, ReactExportComponent } from 'db/prisma'
-import Stripe from 'stripe'
-import { env } from 'website/src/lib/env'
-import { z } from 'zod'
-import { OldTextTree } from 'website/src/lib/rewrite'
 import { openai } from '@ai-sdk/openai'
 import { createFallback } from 'ai-fallback'
+import { db } from 'db/kysely'
+import { prisma } from 'db/prisma'
+import Stripe from 'stripe'
+import { getOrgCredits } from 'website/src/lib/credits'
+import { env } from 'website/src/lib/env'
+import { createArrayItemsYielder } from 'website/src/lib/ndjson'
+import { FramerLayersTree } from 'website/src/lib/rewrite'
 import {
     extractObjectsFromXmlContent,
     NewExtractedNode,
     oldTextTreeToXml,
 } from 'website/src/lib/xml'
-import { sleep } from 'website/src/lib/utils'
-import { db } from 'db/kysely'
-import { getOrgCredits } from 'website/src/lib/credits'
-import { createArrayItemsYielder } from 'website/src/lib/ndjson'
+import { z } from 'zod'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -31,7 +30,7 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 type FramerEventLLM = {
     type: 'framer-update'
-    tree: OldTextTree
+    tree: FramerLayersTree
     callId: string
 } //
 
@@ -133,7 +132,7 @@ export const llmPluginApp = new Spiceflow({
             body: z.object({
                 randomId: z.string(),
                 callId: z.string(),
-                tree: z.custom<OldTextTree>(),
+                tree: z.custom<FramerLayersTree>(),
             }),
         },
     )
@@ -418,7 +417,7 @@ export const llmPluginApp = new Spiceflow({
                 projectId: z.string().optional(),
                 randomId: z.string(),
                 description: z.string(),
-                tree: z.custom<OldTextTree>(),
+                tree: z.custom<FramerLayersTree>(),
             }),
         },
     )

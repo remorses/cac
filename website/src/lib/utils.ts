@@ -1,4 +1,4 @@
-import { OldTextTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'website/src/lib/rewrite'
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
@@ -139,11 +139,11 @@ export function sortByKey<T>(arr: T[], key: (x: T) => string) {
 }
 
 const namesToRemove = ['Desktop', 'Mobile', 'Tablet']
-export function cleanupOldTextTree(tree: OldTextTree): OldTextTree {
+export function cleanupOldTextTree(tree: FramerLayersTree): FramerLayersTree {
     // Helper function to process a single node
     function processNode(
-        node: OldTextTree[number],
-    ): OldTextTree[number] | OldTextTree | null {
+        node: FramerLayersTree[number],
+    ): FramerLayersTree[number] | FramerLayersTree | null {
         // Remove node if its name is in namesToRemove, but keep its children
         if (node.name && namesToRemove.includes(node.name)) {
             return node.children?.flatMap(processNode).filter(isTruthy) || []
@@ -175,14 +175,14 @@ export function cleanupOldTextTree(tree: OldTextTree): OldTextTree {
     // Process each node in the tree
     let cleanedTree = tree
         .flatMap(processNode)
-        .filter((node): node is OldTextTree[number] => node !== null)
+        .filter((node): node is FramerLayersTree[number] => node !== null)
 
     return cleanedTree
 }
 
-export function bfsOldTextTree(tree: OldTextTree): OldTextTree {
-    const queue: OldTextTree = [...tree]
-    const result: OldTextTree = []
+export function bfsOldTextTree(tree: FramerLayersTree): FramerLayersTree {
+    const queue: FramerLayersTree = [...tree]
+    const result: FramerLayersTree = []
 
     while (queue.length > 0) {
         const node = queue.shift()
