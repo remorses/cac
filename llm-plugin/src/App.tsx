@@ -34,11 +34,6 @@ import { basePath, reload } from 'template-rewrite-framer/src/lib/utils'
 
 globalThis.framer = framer
 
-async function loader({ request }) {
-    const { sessionKey } = await getLLMPluginData()
-
-    return { sessionKey }
-}
 const router = createBrowserRouter(
     [
         {

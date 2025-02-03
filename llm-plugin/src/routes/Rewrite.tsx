@@ -430,15 +430,28 @@ function SimplePromptComponent({}) {
                 </div>
             )}
             <div className='flex justify-stretch w-full gap-3'>
-                <Button
-                    className='w-auto block grow'
-                    onClick={() => {
-                        navigate(withMode(Paths.settings))
-                    }}
-                    type='button'
-                >
-                    Settings
-                </Button>
+                {isLoading ? (
+                    <Button
+                        className='w-auto block grow'
+                        onClick={() => {
+                            console.log('aborting')
+                            abortController.abort()
+                        }}
+                        type='button'
+                    >
+                        Cancel
+                    </Button>
+                ) : (
+                    <Button
+                        className='w-auto block grow'
+                        onClick={() => {
+                            navigate(withMode(Paths.settings))
+                        }}
+                        type='button'
+                    >
+                        Settings
+                    </Button>
+                )}
                 <SubmitButton
                     selectedNodes={selectedNodes}
                     isLoading={isLoading}
@@ -446,21 +459,7 @@ function SimplePromptComponent({}) {
                 />
             </div>
 
-            {Boolean(isLoading) && (
-                <Button
-                    // className='bg-transparent'
-                    onClick={() => {
-                        if (isLoading) {
-                            console.log('aborting')
-                            abortController.abort()
-                            return
-                        }
-                    }}
-                    type='button'
-                >
-                    Cancel
-                </Button>
-            )}
+           
         </form>
     )
 }
