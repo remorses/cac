@@ -1,4 +1,5 @@
 import { createFallback } from 'ai-fallback'
+import { google } from '@ai-sdk/google'
 import dedent from 'string-dedent'
 import { DOMParser, XMLSerializer } from 'xmldom'
 
@@ -46,6 +47,7 @@ export type RewriteSchema = z.infer<typeof RewriteSchema>
 
 const model = createFallback({
     models: [
+        google('gemini-2.0-flash-exp'),
         anthropic('claude-3-5-haiku-20241022'),
         openai('gpt-4o'), //
     ],
@@ -137,6 +139,8 @@ function generateMigrationPrompt({
     return `
 You are an expert copywriter tasked with migrating content from one website to a new template. Your goal is to preserve the structure and feel of the template while incorporating relevant content from the website being migrated.
 
+
+Notice that the XML language used in these prompt supports adding comments with <-- --> in between the attributes, just like HTML. Also between tags. Use these comments to do reasoning if required.
 
 ${renderHtmlSnippet({ sourceHtml, url })}
 

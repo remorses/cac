@@ -291,7 +291,7 @@ export const llmPluginApp = new Spiceflow({
                             4. Only after completing structural changes, output the final xml with content and attributes changes
 
                             Important rules for the final xml output:
-                            - Do not include any xml tags for deleted nodes
+                            - Do not include any xml tags for deleted nodes or unchanged nodes
                             - The output xml should be partial, no need to include the full xml from the input. Only show the parts you want to rewrite content or attributes for and add comments for skipped sections, like this:
                                 \`\`\`xml
                                 <!-- skipped nodes -->
@@ -301,6 +301,7 @@ export const llmPluginApp = new Spiceflow({
 
                             You MUST skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
                             
+                            Do not say anything after returning the code snippet, no need to make a summary.
                             `,
                         },
 

@@ -324,7 +324,7 @@ function SimplePromptComponent({}) {
                 }
             }
             console.log('done')
-            await sleep(200)
+
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
         } finally {
             await prevNode?.setAttributes({ backgroundColor: prevBackground })
@@ -458,8 +458,6 @@ function SimplePromptComponent({}) {
                     disabled={!description || !selectedNodes.length}
                 />
             </div>
-
-           
         </form>
     )
 }

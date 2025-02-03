@@ -584,6 +584,7 @@ export async function applyAttributes(
         )
     } else if (isComponentInstanceNode(node)) {
         // Apply component instance specific attributes
+
         await node.setAttributes(onlyChangedKeys(node || {}, decodedAttrs))
         await node.setAttributes({
             controls: onlyChangedKeys(node.controls || {}, decodedAttrs),

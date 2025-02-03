@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^1.1.6",
+        "@ai-sdk/google": "^1.1.8",
         "@ai-sdk/openai": "^1.1.9",
         "@code-hike/mdx": "^0.9.0",
         "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
