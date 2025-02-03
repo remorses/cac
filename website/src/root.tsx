@@ -59,30 +59,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </html>
     )
 }
+function ErrorWrapper({ children }: { children: React.ReactNode }) {
+    return (
+        <div className='min-h-screen flex items-center justify-center p-4'>
+            <div className='p-8 max-w-lg text-center w-full'>{children}</div>
+        </div>
+    )
+}
 
 export function ErrorBoundary() {
     const error = useRouteError()
-    return (
-        <html>
-            <head>
-                <title>Oops!</title>
-                <Meta />
-                <Links />
-            </head>
-            <body className='flex items-center justify-center min-h-[200px] '>
-                <div className='text-center'>
-                    <h1 className='text-2xl font-bold mb-4'>
-                        {isRouteErrorResponse(error)
-                            ? `${error.status} ${error.statusText}`
-                            : error instanceof Error
-                              ? error.message
-                              : 'Unknown Error'}
-                    </h1>
-                    <Scripts />
-                </div>
-            </body>
-        </html>
-    )
+
+    if (isRouteErrorResponse(error)) {
+        return (
+            <ErrorWrapper>
+                <h1 className='text-4xl font-bold mb-4'>
+                    {error.status} {error.statusText}
+                </h1>
+                <p>{error.data}</p>
+            </ErrorWrapper>
+        )
+    } else if (error instanceof Error) {
+        return (
+            <ErrorWrapper>
+                <h1 className='text-4xl font-bold mb-4'>Error</h1>
+                <p className='mb-4'>{error.message}</p>
+                <p className='text-sm mb-2'>The stack trace is:</p>
+                <pre className='p-4 rounded text-sm font-mono overflow-auto max-h-[400px]'>
+                    {error.stack}
+                </pre>
+            </ErrorWrapper>
+        )
+    } else {
+        return (
+            <ErrorWrapper>
+                <h1 className='text-4xl font-bold'>Unknown Error</h1>
+            </ErrorWrapper>
+        )
+    }
 }
 
 export default function App() {
