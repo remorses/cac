@@ -211,10 +211,11 @@ function CanvasComponent({ ...rest }) {
 
 function RotationsImage() {
     const image = useSelectedImage()
-    const [rotations, setRotations] = useState({ x: 0, y: 10 })
+
     const [color, setColor] = useState('#000000')
     const [shadowIntensity, setIntensity] = useState(1)
-    const [focus, setFocus] = useState(0.6)
+    // const [focus, setFocus] = useState(0.6)
+    const [aperture, setAperture] = useState(0.6)
     const [isLoading, setIsLoading] = useState(true)
     const [aspectRatio, setAspectRatio] = useState(() => {
         if (!initialImageSize) {
@@ -226,17 +227,10 @@ function RotationsImage() {
     // Add RAF state and ref
     const [isAnimating, setIsAnimating] = useState(false)
     const frameRef = useRef<number>(null)
-    const paramsRef = useRef({ rotations, color, shadowIntensity, focus })
-
-    // Update params ref when values change
+    const paramsRef = useRef({ aperture, color, shadowIntensity, focus })
     useEffect(() => {
-        paramsRef.current = {
-            rotations,
-            color,
-            shadowIntensity,
-            focus,
-        }
-    }, [rotations, color, shadowIntensity, focus])
+        paramsRef.current = { aperture, color, shadowIntensity, focus }
+    }, [aperture, color, shadowIntensity, focus])
 
     // Setup animation loop
     useEffect(() => {
@@ -245,7 +239,7 @@ function RotationsImage() {
         const updateFrame = async () => {
             await threeCanvas.updateCanvas({
                 ...paramsRef.current,
-                isPreview: true,
+                isPreview: false,
             })
             frameRef.current = requestAnimationFrame(updateFrame)
         }
@@ -270,9 +264,9 @@ function RotationsImage() {
         setIsLoading(true)
 
         await threeCanvas.updateCanvas({
-            rotations,
             color,
-            shadowIntensity,
+            // shadowIntensity,
+            aperture,
             focus,
             isPreview: false,
         })
@@ -299,6 +293,7 @@ function RotationsImage() {
             framer.setImage({
                 image: {
                     bytes: nextBytes,
+
                     mimeType: originalImage.mimeType,
                 },
             }),
@@ -328,15 +323,6 @@ function RotationsImage() {
         setAspectRatio(aspectRatio)
         setIsLoading(false)
     }, [image])
-
-    const handleRotationChange = useCallback(
-        (axis: 'x' | 'y', nextValue: number) => {
-            startTransition(() => {
-                setRotations((prev) => ({ ...prev, [axis]: nextValue }))
-            })
-        },
-        [rotations],
-    )
 
     if (!image) {
         return (
@@ -372,17 +358,32 @@ function RotationsImage() {
                     />
                 ))}
             </div> */}
+            <div className='text-center'>
+                Drag to rotate, press shift to pan
+            </div>
 
-            <SliderAndNumber
+            {/* <SliderAndNumber
                 label='Focus'
                 value={focus}
                 onChange={(v) => {
                     setFocus(Number(v))
                 }}
                 rangeProps={{
-                    min: '0.4',
-                    max: '0.8',
+                    min: '0.0',
+                    max: '2',
                     step: '0.01',
+                }}
+            /> */}
+            <SliderAndNumber
+                label='Aperture'
+                value={aperture}
+                onChange={(v) => {
+                    setAperture(Number(v))
+                }}
+                rangeProps={{
+                    min: '0.01',
+                    max: '0.2',
+                    step: '0.001',
                 }}
             />
             {/* <SliderAndNumber

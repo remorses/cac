@@ -17,6 +17,7 @@ export class ThreeCanvas {
     private composer: EffectComposer
     private filmGrainPass: ShaderPass
     private controls: OrbitControls
+    private clickStartTime: number | null = null
 
     constructor(
         initialImageSize: { width: number; height: number } | undefined,
@@ -50,13 +51,20 @@ export class ThreeCanvas {
 
         this.texture = new THREE.Texture()
         this.texture.colorSpace = THREE.LinearSRGBColorSpace
+        
         this.texture.flipY = false
 
         this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+        this.camera.position.x = 0.2 // Add slight x offset
+        this.camera.position.y = 0.1 // Add slight y offset 
+        this.camera.position.x = -0.1 // Pan slightly left
         this.camera.updateProjectionMatrix()
 
         const geometry = new THREE.PlaneGeometry(1, 1)
+
         const material = new THREE.MeshBasicMaterial({ map: this.texture })
+        material.side = THREE.DoubleSide
+        
         this.plane = new THREE.Mesh(geometry, material)
 
         this.scene.add(this.plane)
@@ -69,6 +77,7 @@ export class ThreeCanvas {
         const size = new THREE.Vector2(1920, 1080)
         this.renderer.getSize(size)
         const aspectRatio = size.width / size.height
+        // https://github.com/mrdoob/three.js/blob/79497a2c9b86036cfcc0c7ed448574f2d62de64d/examples/jsm/postprocessing/BokehPass.js#L53
         const bokehPass = new BokehPass(this.scene, this.camera, {
             focus: 1,
             aspect: aspectRatio,
@@ -90,6 +99,29 @@ export class ThreeCanvas {
         this.controls.enablePan = true
         this.controls.maxPolarAngle = Math.PI / 2
         this.controls.minPolarAngle = 0
+
+        // Add click handlers
+        this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this))
+        this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this))
+    }
+
+    private handleMouseDown(event: MouseEvent) {
+        this.clickStartTime = Date.now()
+    }
+
+    private handleMouseUp(event: MouseEvent) {
+        if (!this.clickStartTime) return
+        
+        const clickDuration = Date.now() - this.clickStartTime
+        this.clickStartTime = null
+        
+        // Only process quick clicks (less than 200ms)
+        if (clickDuration > 200) return
+
+        // Use camera distance to plane for focus
+        const distance = this.camera.position.distanceTo(this.plane.position)
+        console.log('setting focus distance', distance)
+        this.bokehPass.uniforms['focus'].value = distance
     }
 
     changeImage(bitmap: ImageBitmap) {
@@ -106,18 +138,18 @@ export class ThreeCanvas {
     }
 
     async updateCanvas({
-        rotations,
         color,
-        shadowIntensity,
         focus,
+        aperture,
         isPreview = false,
     }) {
-        const { x: rotationX, y: rotationY } = rotations
         const threeColor = new THREE.Color(color)
         const img: HTMLImageElement | null = this.texture.image
         this.scene.background = threeColor
-        this.scene.fog = new THREE.Fog(threeColor, 0, 2)
-        this.bokehPass.uniforms['focus'].value = focus
+        this.scene.fog = new THREE.Fog(threeColor, 0, this.camera.position.z * 4)
+        // https://github.com/mrdoob/three.js/blob/79497a2c9b86036cfcc0c7ed448574f2d62de64d/examples/jsm/postprocessing/BokehPass.js#L53
+        // this.bokehPass.uniforms['focus'].value = focus
+        this.bokehPass.uniforms['aperture'].value = aperture
         this.bokehPass.needsSwap = true
 
         let aspectRatio = 1
@@ -131,7 +163,6 @@ export class ThreeCanvas {
                 const perfectPixels = 600 * 600
                 const imagePixels = img.width * img.height
                 const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
-                console.log('scale down factor', scaleDownFactor)
                 if (scaleDownFactor < 1) {
                     this.renderer.setPixelRatio(scaleDownFactor)
                 }
@@ -140,13 +171,11 @@ export class ThreeCanvas {
             this.renderer.setPixelRatio(1)
         }
 
-        this.plane.rotation.set(rotationX * deg, rotationY * deg, 0)
+        this.plane.rotation.set(0, 0, 0)
 
-        const offset = (angle: number) =>
-            -0.2 * (angle / (45 + Math.abs(angle)))
         this.camera.lookAt(
-            this.plane.position.x + offset(rotationY),
-            this.plane.position.y + offset(rotationX),
+            this.plane.position.x,
+            this.plane.position.y,
             this.plane.position.z,
         )
         this.texture.needsUpdate = true
