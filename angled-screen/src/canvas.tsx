@@ -56,7 +56,7 @@ export class ThreeCanvas {
         this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
         this.camera.position.x = 0.2 // Add slight x offset
         this.camera.position.y = 0.1 // Add slight y offset
-        this.camera.position.x = -0.1 // Pan slightly left
+
         this.camera.updateProjectionMatrix()
 
         const geometry = new THREE.PlaneGeometry(1, 1)
