@@ -16,9 +16,9 @@ import { redirect } from '@remix-run/react'
 import { framer } from 'framer-plugin'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
-    .state('userId', '')
-    .state('orgId', '')
-    .state('userEmail', '')
+    .state('userId', Promise.resolve(''))
+    .state('orgId', Promise.resolve(''))
+    .state('userEmail', Promise.resolve(''))
     .use(openapi({ path: '/openapi' }))
     .use(cors())
     .use(rewritePluginApp)
@@ -57,36 +57,42 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             // headers: { 'Content-Type': 'text/plain' },
         })
     })
-    .use(async function checkSession({ request, state: store }) {
+    .use(async function checkSession({ request, state }) {
         const searchParams = new URL(request.url).searchParams
         const sessionKey =
             request.headers.get('sessionKey') || searchParams.get('sessionKey')
         const projectId = request.headers.get('projectId')
-
-        // console.log(`checking session key`)
-        const session = await db
-            .selectFrom('FramerLoginSession')
-            .where('key', '=', sessionKey)
-            .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
-            .leftJoin(
-                'auth.users',
-                'FramerLoginSession.usedByUserId',
-                'auth.users.id',
-            )
-            .selectAll()
-            .executeTakeFirst()
-        if (!session) {
-            return
+        const orgId = Promise.withResolvers<string>()
+        const userId = Promise.withResolvers<string>()
+        const userEmail = Promise.withResolvers<string>()
+        state.orgId = orgId.promise
+        state.userId = userId.promise
+        state.userEmail = userEmail.promise
+        async function addState() {
+            // console.log(`checking session key`)
+            const session = await db
+                .selectFrom('FramerLoginSession')
+                .where('key', '=', sessionKey)
+                .innerJoin('Org', 'FramerLoginSession.orgId', 'Org.orgId')
+                .leftJoin(
+                    'auth.users',
+                    'FramerLoginSession.usedByUserId',
+                    'auth.users.id',
+                )
+                .selectAll()
+                .executeTakeFirst()
+            if (!session) {
+                return
+            }
+            // TODO remove this projectId check after plugin is updated
+            // if (projectId && session.projectId && session.projectId !== projectId) {
+            //     return
+            // }
+            userId.resolve(session.usedByUserId)
+            orgId.resolve(session.orgId)
+            userEmail.resolve(session.email || '')
         }
-        // TODO remove this projectId check after plugin is updated
-        // if (projectId && session.projectId && session.projectId !== projectId) {
-        //     return
-        // }
-        const userId = session.usedByUserId
-        const orgId = session.orgId
-        store.orgId = orgId || ''
-        store.userId = userId || ''
-        store.userEmail = session.email || ''
+        addState()
     })
     .get(
         '/angledScreen/generationsForUser',
@@ -179,7 +185,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
     )
 
     .post('/currentOrg', async ({ state: store }) => {
-        const orgId = store.orgId
+        const orgId = await store.orgId
         if (!orgId) {
             throw unauthorizedResponse
         }

@@ -36,10 +36,10 @@ const unauthorizedResponse = new Response('Unauthorized', {
 
 export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     // .state('sessionKey', '')
-    .state('githubUserLogin', '')
-    .state('orgId', '')
-    .state('userEmail', '')
-    .state('userId', '')
+    .state('githubUserLogin', Promise.resolve(''))
+    .state('orgId', Promise.resolve(''))
+    .state('userEmail', Promise.resolve(''))
+    .state('userId', Promise.resolve(''))
     // .state('session', {} as Session)
 
     .use(async function addGithubUserLogin({ request, state: store }) {
@@ -47,11 +47,11 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         if (!pathname.includes('/markdownPlugin')) {
             return
         }
-        const orgId = store.orgId
+        const orgId = await store.orgId
         if (!orgId) {
             return
         }
-        const userId = store.userId
+        const userId = await store.userId
         if (!userId) {
             return
         }
@@ -70,7 +70,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         '/githubRepoList',
         async function getRepos({ request, state: store }) {
             const { githubAccountLogin } = await request.json()
-            const orgId = store.orgId
+            const orgId = await store.orgId
 
             if (!orgId) {
                 throw unauthorizedResponse
@@ -79,7 +79,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 where: {
                     status: 'active',
                     memberLogins: {
-                        has: store.githubUserLogin,
+                        has: await store.githubUserLogin,
                     },
                     appId: env.GITHUB_APP_ID,
 
@@ -260,7 +260,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             if (!basePath) {
                 basePath = ''
             }
-            const orgId = store.orgId
+            const orgId = await store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
@@ -291,7 +291,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         where: {
                             status: 'active',
                             memberLogins: {
-                                has: store.githubUserLogin,
+                                has: await store.githubUserLogin,
                             },
                             appId: env.GITHUB_APP_ID,
                             accountLogin: githubAccountLogin,
@@ -313,7 +313,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
 
             if (
                 !sub &&
-                !canHaveFreePlugin(store.userEmail) &&
+                !canHaveFreePlugin(await store.userEmail) &&
                 syncsThisMonth >= freeSyncs
             ) {
                 throw new Response(
@@ -612,7 +612,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         data: {
                             repoUrl: `https://github.com/${owner}/${repo}`,
                             filesSynced: withMarkdown.length,
-                            orgId: store.orgId,
+                            orgId: orgId,
                             projectName,
                             projectId,
                             durationInSeconds: timeInSeconds,
@@ -670,7 +670,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             const body = await request.json()
             let { owner, githubAccountLogin, basePath, repo } = body
 
-            const orgId = store.orgId
+            const orgId = await store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
@@ -686,7 +686,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     where: {
                         status: 'active',
                         memberLogins: {
-                            has: store.githubUserLogin,
+                            has: await store.githubUserLogin,
                         },
                         appId: env.GITHUB_APP_ID,
                         accountLogin: githubAccountLogin,

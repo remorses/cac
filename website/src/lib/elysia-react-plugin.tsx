@@ -44,19 +44,19 @@ let projectsEvents = new Map<string, Evt<FramerEvent>>()
 export const reactPluginApp = new Spiceflow({
     basePath: '/reactExportPlugin',
 })
-    .state('orgId', '')
-    .state('userId', '')
+    .state('orgId', Promise.resolve(''))
+    .state('userId', Promise.resolve(''))
 
     .use(async function addGithubUserLogin({ request, state: store }) {
         const pathname = new URL(request.url).pathname
         if (!pathname.includes('/reactExportPlugin')) {
             return
         }
-        const orgId = store.orgId
+        const orgId = await store.orgId
         if (!orgId) {
             return
         }
-        const userId = store.userId
+        const userId = await store.userId
         if (!userId) {
             return
         }
@@ -184,7 +184,7 @@ export const reactPluginApp = new Spiceflow({
             components = deduplicateByKey(components, (c) => c.id)
             colorStyles = deduplicateByKey(colorStyles, (s) => s.id)
 
-            const orgId = store.orgId
+            const orgId = await store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }

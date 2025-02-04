@@ -50,8 +50,8 @@ let model = createFallback({
 export const llmPluginApp = new Spiceflow({
     basePath: '/llm',
 })
-    .state('orgId', '')
-    .state('userId', '')
+    .state('orgId', Promise.resolve(''))
+    .state('userId', Promise.resolve(''))
 
     .use(async function addGithubUserLogin({ request, state: store }, next) {
         const pathname = new URL(request.url).pathname
@@ -62,11 +62,11 @@ export const llmPluginApp = new Spiceflow({
         if (pathname.includes('/publish')) {
             return
         }
-        const orgId = store.orgId
+        const orgId = await store.orgId
         if (!orgId) {
             return
         }
-        const userId = store.userId
+        const userId = await store.userId
         if (!userId) {
             return
         }
@@ -88,8 +88,8 @@ export const llmPluginApp = new Spiceflow({
             const body = await request.json()
 
             const { stars, generationId } = body
-            const userId = store.userId
-            const orgId = store.orgId
+            const userId = await store.userId
+            const orgId = await store.orgId
 
             if (!userId || !orgId) {
                 throw unauthorizedResponse
@@ -147,7 +147,7 @@ export const llmPluginApp = new Spiceflow({
             // if (!userId) {
             //     throw new AppError('No user id')
             // }
-            const userId = store.userId
+            const userId = await store.userId
             if (!userId) {
                 throw unauthorizedResponse
             }

@@ -41,20 +41,20 @@ export const reactPluginApp = new Spiceflow({
     basePath: '/reactExportPlugin',
 })
 
-    .state('githubUserLogin', '')
-    .state('orgId', '')
-    .state('userId', '')
+    .state('githubUserLogin', Promise.resolve(''))
+    .state('orgId', Promise.resolve(''))
+    .state('userId', Promise.resolve(''))
 
     .use(async function addGithubUserLogin({ request, state: store }) {
         const pathname = new URL(request.url).pathname
         if (!pathname.includes('/reactExportPlugin')) {
             return
         }
-        const orgId = store.orgId
+        const orgId = await store.orgId
         if (!orgId) {
             return
         }
-        const userId = store.userId
+        const userId = await store.userId
         if (!userId) {
             return
         }
@@ -79,7 +79,7 @@ export const reactPluginApp = new Spiceflow({
                 projectId,
                 projectName = '',
             } = body
-            const orgId = store.orgId
+            const orgId = await store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
@@ -144,7 +144,7 @@ export const reactPluginApp = new Spiceflow({
         '/githubRepoList',
         async ({ request, state: store }) => {
             const { githubAccountLogin } = await request.json()
-            const orgId = store.orgId
+            const orgId = await store.orgId
 
             if (!orgId) {
                 throw unauthorizedResponse
@@ -233,7 +233,7 @@ export const reactPluginApp = new Spiceflow({
             if (!basePath) {
                 basePath = ''
             }
-            const orgId = store.orgId
+            const orgId = await store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }
@@ -621,7 +621,7 @@ export const reactPluginApp = new Spiceflow({
             const body = await request.json()
             let { owner, githubAccountLogin, basePath, repo } = body
 
-            const orgId = store.orgId
+            const orgId = await store.orgId
             if (!orgId) {
                 throw unauthorizedResponse
             }

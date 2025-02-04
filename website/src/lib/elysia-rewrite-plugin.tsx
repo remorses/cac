@@ -16,17 +16,17 @@ import { z } from 'zod'
 export const rewritePluginApp = new Spiceflow({
     basePath: '/rewritePlugin',
 })
-    .state('userId', '')
-    .state('userEmail', '')
-    .state('orgId', '')
+    .state('userId', Promise.resolve(''))
+    .state('userEmail', Promise.resolve(''))
+    .state('orgId', Promise.resolve(''))
     .post(
         '/submitReview',
         async ({ state: store, request }) => {
             const body = await request.json()
 
             const { stars, generationId } = body
-            const userId = store.userId
-            const orgId = store.orgId
+            const userId = await store.userId
+            const orgId = await store.orgId
 
             if (!userId || !orgId) {
                 throw unauthorizedResponse
@@ -58,8 +58,8 @@ export const rewritePluginApp = new Spiceflow({
         '/rephrase',
         async function* ({ state: store, request }) {
             let body = await request.json()
-            const userId = store.userId
-            const userEmail = store.userEmail
+            const userId = await store.userId
+            const userEmail = await store.userEmail
 
             if (!userId) {
                 // console.log(request.headers.get('cookie'))
@@ -182,7 +182,7 @@ export const rewritePluginApp = new Spiceflow({
         '/discardGeneration',
         async ({ state: store, request }) => {
             let body = await request.json()
-            const userId = store.userId
+            const userId = await store.userId
             if (!userId) {
                 throw new Error('Unauthorized')
             }
@@ -214,7 +214,7 @@ export const rewritePluginApp = new Spiceflow({
             // if (!userId) {
             //     throw new AppError('No user id')
             // }
-            const userId = store.userId
+            const userId = await store.userId
             if (!userId) {
                 throw unauthorizedResponse
             }
@@ -237,7 +237,7 @@ export const rewritePluginApp = new Spiceflow({
             // if (!userId) {
             //     throw new AppError('No user id')
             // }
-            const userId = store.userId
+            const userId = await store.userId
             if (!userId) {
                 throw unauthorizedResponse
             }
@@ -265,7 +265,7 @@ export const rewritePluginApp = new Spiceflow({
     //         let body = await request.json()
     //         let { domain } = body
 
-    //         const userId = store.userId
+    //         const userId = await store.userId
     //         if (!userId) {
     //             throw unauthorizedResponse
     //         }
@@ -423,10 +423,10 @@ export const rewritePluginApp = new Spiceflow({
         '/getWebsiteHtml',
         async function scrape({ request, state: store }) {
             let body = await request.json()
-            const userEmail = store.userEmail
+            const userEmail = await store.userEmail
             let { domain } = body
 
-            const userId = store.userId
+            const userId = await store.userId
             if (!userId) {
                 throw unauthorizedResponse
             }
