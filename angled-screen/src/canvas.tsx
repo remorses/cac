@@ -25,12 +25,13 @@ export class ThreeCanvas {
         this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
         this.scene = new THREE.Scene()
-        this.scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
+        // this.scene.scale.y = -1 // TODO not sure why this is needed. the scene is flipped
 
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             canvas: this.canvas,
             preserveDrawingBuffer: true,
+            
             alpha: true,
         })
         if (initialImageSize) {
@@ -51,7 +52,7 @@ export class ThreeCanvas {
         this.texture = new THREE.Texture()
         this.texture.colorSpace = THREE.LinearSRGBColorSpace
 
-        this.texture.flipY = false
+        // this.texture.flipY = false
 
         this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
         this.camera.position.x = 0.2 // Add slight x offset

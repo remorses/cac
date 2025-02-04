@@ -25,6 +25,7 @@ import {
 
 import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
 import { ThreeCanvas } from './canvas'
+import { flushSync } from 'react-dom'
 enum PluginDataKeys {
     licenseKey = 'licenseKey',
     imagesGenerated = 'imagesGenerated',
@@ -41,7 +42,7 @@ const lemonProductId = 348518
 
 const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
 
-const width = 300
+const width = 340
 const initialImage = await framer.getImage()
 
 await framer.showUI({ position: 'top left', width, height: 0 })
@@ -215,7 +216,7 @@ function RotationsImage() {
     const [color, setColor] = useState('#000000')
     const [shadowIntensity, setIntensity] = useState(1)
     // const [focus, setFocus] = useState(0.6)
-    const [aperture, setAperture] = useState(0.1)
+    const [aperture, setAperture] = useState(0.07)
     const [isLoading, setIsLoading] = useState(true)
     const [aspectRatio, setAspectRatio] = useState(() => {
         if (!initialImageSize) {
@@ -261,7 +262,7 @@ function RotationsImage() {
         if (!image) {
             return
         }
-        setIsLoading(true)
+        flushSync(() => setIsLoading(true))
 
         await threeCanvas.updateCanvas({
             color,
@@ -313,7 +314,10 @@ function RotationsImage() {
             return
         }
         console.log('loading image into canvas')
-        const bitmap = await image.loadBitmap()
+        const imgEl = await image.loadImage()
+        const bitmap = await createImageBitmap(imgEl, {
+            imageOrientation: 'flipY',
+        })
         if (!bitmap) {
             return
         }
@@ -359,7 +363,8 @@ function RotationsImage() {
                 ))}
             </div> */}
             <div className='text-center select-none text-balance text-[11px] my-1'>
-                Drag to rotate, press shift and drag to pan, double click to focus
+                Drag to rotate, press shift and drag to pan, double click to
+                focus
             </div>
 
             {/* <SliderAndNumber
@@ -382,7 +387,7 @@ function RotationsImage() {
                 }}
                 rangeProps={{
                     min: '0.01',
-                    max: '0.5',
+                    max: '0.4',
                     step: '0.001',
                 }}
             />
@@ -433,7 +438,10 @@ const Container = ({ children, ...rest }) => {
         })
     }, [height])
     return (
-        <div ref={ref} className='select-none shrink-0 w-full flex flex-col gap-4 pt-0 p-3'>
+        <div
+            ref={ref}
+            className='select-none shrink-0 w-full flex flex-col gap-4 pt-0 p-3'
+        >
             {children}
         </div>
     )
