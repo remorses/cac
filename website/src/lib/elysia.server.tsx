@@ -1,4 +1,5 @@
 import { Spiceflow } from 'spiceflow'
+import { validateLicense } from '@lemonsqueezy/lemonsqueezy.js'
 import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 import { openapi } from 'spiceflow/dist/openapi'
 
@@ -10,6 +11,9 @@ import { z } from 'zod'
 import { cors } from 'spiceflow/cors'
 import { reactPluginApp } from 'website/src/lib/elysia-react-plugin'
 import { llmPluginApp } from 'website/src/lib/elysia-llm-plugin'
+import { prisma } from 'db/prisma'
+import { redirect } from '@remix-run/react'
+import { framer } from 'framer-plugin'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', '')
@@ -84,6 +88,95 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         store.userId = userId || ''
         store.userEmail = session.email || ''
     })
+    .get(
+        '/angledScreen/generationsForUser',
+        async ({ request, query }) => {
+            const { framerUserId } = await query
+            const row = await prisma.angledScreenImagesGenerated.findUnique({
+                where: {
+                    framerUserId,
+                },
+            })
+            let maxFreeGenerations = 3
+            const { generations = 0, licenseKey } = row || {}
+            const shouldBuyLicense =
+                !licenseKey && generations > maxFreeGenerations
+            return {
+                generations,
+                hasLicenseKey: !!licenseKey,
+                maxFreeGenerations,
+                shouldBuyLicense,
+            }
+        },
+        {
+            query: z.object({
+                framerUserId: z.string(),
+            }),
+        },
+    )
+    .post(
+        '/angledScreen/incrementGenerations',
+        async ({ request }) => {
+            const { framerUserId } = await request.json()
+            await prisma.angledScreenImagesGenerated.upsert({
+                where: {
+                    framerUserId,
+                },
+                create: { generations: 0, framerUserId },
+                update: {
+                    generations: { increment: 1 },
+                },
+            })
+            return {}
+        },
+        {
+            body: z.object({
+                framerUserId: z.string(),
+                userName: z.string().optional(),
+            }),
+        },
+    )
+    .post(
+        '/angledScreen/activate',
+        async ({ request }) => {
+            const lemonProductId = 348518
+            const { framerUserId, userName, licenseKey } = await request.json()
+            const { data, error } = await validateLicense(licenseKey || '')
+            if (error) {
+                return { error: error.message || 'Invalid license key' }
+            }
+            if (!data.valid) {
+                return {
+                    error: 'Unknown error validating license',
+                }
+            }
+
+            if (data.meta?.product_id !== lemonProductId) {
+                return {
+                    error: 'License is for another product, contact support at tommy@unframer.co',
+                }
+            }
+
+            await prisma.angledScreenImagesGenerated.upsert({
+                where: {
+                    framerUserId,
+                },
+                create: { userName, framerUserId, licenseKey },
+                update: {
+                    licenseKey,
+                    userName,
+                },
+            })
+            return { error: null }
+        },
+        {
+            body: z.object({
+                framerUserId: z.string(),
+                userName: z.string().optional(),
+                licenseKey: z.string(),
+            }),
+        },
+    )
 
     .post('/currentOrg', async ({ state: store }) => {
         const orgId = store.orgId
@@ -133,15 +226,19 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             ])
             if (!framerSession) {
                 console.log('no framer session found for key', body.key)
-                return { error: 'No valid framer request found - session not found' }
+                return {
+                    error: 'No valid framer request found - session not found',
+                }
             }
             // TODO remove this check after plugin is updated
             if (body.projectId && framerSession.projectId !== body.projectId) {
                 console.log('project id mismatch', {
                     requestProjectId: body.projectId,
-                    sessionProjectId: framerSession.projectId
+                    sessionProjectId: framerSession.projectId,
                 })
-                return { error: 'No valid framer request found - project ID mismatch' }
+                return {
+                    error: 'No valid framer request found - project ID mismatch',
+                }
             }
             const user = await db
                 .selectFrom('auth.users')

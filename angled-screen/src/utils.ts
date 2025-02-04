@@ -1,5 +1,19 @@
 import { useEffect, useRef } from 'react'
+import type { RouteType } from 'website/src/lib/elysia.server'
+import { env } from 'website/src/lib/env'
 import * as THREE from 'three'
+import { framer } from 'framer-plugin'
+import { redirect } from 'react-router'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
+import {
+    PluginDataKeys,
+    withMode,
+    Paths,
+} from 'template-rewrite-framer/src/lib/utils'
+
+
+export const pluginApiClient: SpiceflowClient.Create<RouteType> =
+    createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {})
 
 /**
  * Convenience method to load an image from a canvas.

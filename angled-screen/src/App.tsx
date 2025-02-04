@@ -1,4 +1,4 @@
-import { validateLicense } from '@lemonsqueezy/lemonsqueezy.js'
+import { Suspense } from 'react'
 import heroImage from './angled screen hero image@4x.png'
 
 import { ImageAsset, framer } from 'framer-plugin'
@@ -16,31 +16,24 @@ import { Button } from 'template-rewrite-framer/src/components/Button'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
 import { basePath, withMode } from 'template-rewrite-framer/src/lib/utils'
 
-import {
-    startTransition,
-    useCallback,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from 'react'
+import { use, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { assert, bytesFromCanvas, sleep, useAsyncEffect } from './utils'
-import { ThreeCanvas } from './canvas'
 import { flushSync } from 'react-dom'
-enum PluginDataKeys {
-    licenseKey = 'licenseKey',
-    imagesGenerated = 'imagesGenerated',
-}
+import { useRouteLoaderData } from 'react-router'
+import { ThreeCanvas } from './canvas'
+import {
+    assert,
+    bytesFromCanvas,
+    pluginApiClient,
+    sleep,
+    useAsyncEffect,
+} from './utils'
+enum PluginDataKeys {}
 
 enum Paths {
     root = '/',
     license = '/license',
 }
-
-const freeImageGenerations = 10
-
-const lemonProductId = 348518
 
 const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
 
@@ -59,71 +52,54 @@ function useSelectedImage() {
 
     return image
 }
-
 const router = createBrowserRouter(
     [
         {
             path: '/',
-            element: <RotationsImage />,
-            loader: async () => {
-                const [license, imagesGenerated] = await Promise.all([
-                    framer.getPluginData(PluginDataKeys.licenseKey),
-                    framer
-                        .getPluginData(PluginDataKeys.imagesGenerated)
-                        .then((data) => Number(data) || 0),
-                ])
-                if (!license && imagesGenerated >= freeImageGenerations) {
-                    console.log('redirecting to license')
-                    return redirect(withMode(Paths.license))
-                }
-                // return redirect(withMode(Paths.license))
-                console.log('not redirecting to license')
-                return {}
+            loader,
+            id: 'root',
+            shouldRevalidate: () => {
+                return true
             },
-        },
-        {
-            path: Paths.license,
-            element: <LicenseComponent />,
-            action: async ({ request }) => {
-                const formData = await request.formData()
-                const licenseKey = formData.get('licenseKey')?.toString()
-
-                if (!licenseKey) {
-                    return { error: 'License key is required' }
-                }
-
-                try {
-                    const { data, error } = await validateLicense(
-                        licenseKey || '',
-                    )
-                    if (error) {
-                        return { error: error.message || 'Invalid license key' }
-                    }
-                    if (data.valid) {
-                        if (data.meta?.product_id !== lemonProductId) {
-                            return {
-                                error: 'License is for another product, contact support at tommy@unframer.co',
-                            }
+            children: [
+                {
+                    path: '',
+                    element: <RotationsImage />,
+                },
+                {
+                    path: Paths.license,
+                    element: <LicenseComponent />,
+                    action: async ({ request }) => {
+                        const formData = await request.formData()
+                        const licenseKey = formData
+                            .get('licenseKey')
+                            ?.toString()
+                        const { id: framerUserId, name: userName } =
+                            await framer.getCurrentUser()
+                        if (!licenseKey) {
+                            return { error: 'License key is required' }
                         }
-                        await framer.setPluginData(
-                            PluginDataKeys.licenseKey,
-                            licenseKey,
-                        )
+
+                        const { data, error } =
+                            await pluginApiClient.api.plugins.angledScreen.activate.post(
+                                {
+                                    framerUserId,
+                                    userName,
+                                    licenseKey,
+                                },
+                            )
+
+                        if (error) {
+                            notifyError(error, 'Error validating license')
+                            return { error: error.message }
+                        }
+                        if (data.error) {
+                            return data
+                        }
                         return redirect(withMode(Paths.root))
-                    }
-                    if (!data.valid) {
-                        return {
-                            error: data.error || 'License is invalid',
-                        }
-                    }
-                    return {
-                        error: 'Unknown error validating license',
-                    }
-                } catch (error) {
-                    notifyError(error, 'Error validating license')
-                    return { error: error.message }
-                }
-            },
+                    },
+                },
+            ],
         },
     ],
     { basename: basePath },
@@ -136,6 +112,7 @@ function LicenseComponent() {
     const isLoading =
         navigation.state !== 'idle' && Boolean(navigation.formData)
     const navigate = useNavigate()
+    const { deferred } = useRouteLoaderData<typeof loader>('root')!
     return (
         <Container width={260}>
             <Form
@@ -147,8 +124,9 @@ function LicenseComponent() {
                         Get a License Key
                     </a>
                     <div className='opacity-60'>
-                        to create more than {freeImageGenerations} images, you
-                        need a license key.{' '}
+                        to create more than{' '}
+                        <Suspense>{use(deferred)?.maxFreeGenerations}</Suspense>{' '}
+                        images, you need a license key.{' '}
                         <a className='underline' href={buyUrl} target='_blank'>
                             Buy one here
                         </a>
@@ -213,9 +191,29 @@ function CanvasComponent({ ...rest }) {
     return <div {...rest} ref={containerRef}></div>
 }
 
+async function loader() {
+    const deferred = async () => {
+        const { id: framerUserId } = await framer.getCurrentUser()
+        const { data, error } =
+            await pluginApiClient.api.plugins.angledScreen.generationsForUser.get(
+                {
+                    query: { framerUserId },
+                },
+            )
+        if (error) {
+            notifyError(error, 'get angled screen user generations')
+            return {} as never
+        }
+        return data
+    }
+    return {
+        deferred: deferred(),
+    }
+}
+
 function RotationsImage() {
     const image = useSelectedImage()
-
+    const { deferred } = useRouteLoaderData<typeof loader>('root')!
     const [color, setColor] = useState('#000000')
     const [shadowIntensity, setIntensity] = useState(1)
     // const [focus, setFocus] = useState(0.6)
@@ -236,6 +234,7 @@ function RotationsImage() {
         paramsRef.current = { aperture, color, shadowIntensity, focus }
     }, [aperture, color, shadowIntensity, focus])
 
+    const navigate = useNavigate()
     // Setup animation loop
     useEffect(() => {
         if (!image || isLoading) return
@@ -275,10 +274,18 @@ function RotationsImage() {
             isPreview: false,
         })
         await sleep(20)
-
-        const { bytes: nextBytes, mimeType } = await bytesFromCanvas(
-            threeCanvas.canvas,
-        )
+        const { shouldBuyLicense } = (await deferred) || {}
+        if (shouldBuyLicense) {
+            console.log('redirecting to license')
+            return await navigate(withMode(Paths.license))
+        }
+        const [
+            { bytes: nextBytes, mimeType },
+            { id: framerUserId, name: userName },
+        ] = await Promise.all([
+            bytesFromCanvas(threeCanvas.canvas),
+            framer.getCurrentUser(),
+        ])
 
         // const img = document.createElement('img')
         // img.src = URL.createObjectURL(new Blob([nextBytes!]))
@@ -287,9 +294,6 @@ function RotationsImage() {
 
         console.log('saving image with type', mimeType, nextBytes.length)
         const start = performance.now()
-        const imagesGenerated = await framer
-            .getPluginData(PluginDataKeys.imagesGenerated)
-            .then((data) => Number(data) || 0)
         await Promise.all([
             framer.setImage({
                 image: {
@@ -297,10 +301,10 @@ function RotationsImage() {
                     mimeType,
                 },
             }),
-            framer.setPluginData(
-                PluginDataKeys.imagesGenerated,
-                String(imagesGenerated + 1),
-            ),
+            pluginApiClient.api.plugins.angledScreen.incrementGenerations.post({
+                framerUserId,
+                userName,
+            }),
         ])
 
         setIsLoading(false)

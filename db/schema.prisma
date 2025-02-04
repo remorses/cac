@@ -528,7 +528,7 @@ model ReactExportComponent {
   projectId           String
   componentIdentifier String?
 
-  project     ReactExportProject    @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  project     ReactExportProject               @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   breakpoints ReactExportComponentBreakpoint[]
 
   @@id([id, projectId])
@@ -660,6 +660,15 @@ enum PluginName {
   githubSync
   reactExport
   llm
+
+  @@schema("public")
+}
+
+model AngledScreenImagesGenerated {
+  framerUserId String  @id
+  generations  Int     @default(0)
+  userName     String?
+  licenseKey   String?
 
   @@schema("public")
 }
