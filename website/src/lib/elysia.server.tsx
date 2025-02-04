@@ -112,6 +112,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                 hasLicenseKey: !!licenseKey,
                 maxFreeGenerations,
                 shouldBuyLicense,
+                framerUserId,
             }
         },
         {

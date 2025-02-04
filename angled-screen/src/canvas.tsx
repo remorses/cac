@@ -132,6 +132,9 @@ export class ThreeCanvas {
 
     updateRendererSize() {
         const img = this.texture.image
+        if (!img) {
+            return
+        }
         const minPixels = 1920 * 1080
 
         let targetWidth = img.width

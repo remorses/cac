@@ -19,7 +19,7 @@ import { basePath, withMode } from 'template-rewrite-framer/src/lib/utils'
 import { use, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { flushSync } from 'react-dom'
-import { useRouteLoaderData } from 'react-router'
+import { useRevalidator, useRouteLoaderData } from 'react-router'
 import { ThreeCanvas } from './canvas'
 import {
     assert,
@@ -259,6 +259,7 @@ function RotationsImage() {
             setIsAnimating(false)
         }
     }, [image, isLoading])
+    const revalidator = useRevalidator()
 
     const handleSaveImage = async () => {
         if (!image) {
@@ -274,6 +275,10 @@ function RotationsImage() {
             isPreview: false,
         })
         await sleep(20)
+        if (!deferred) {
+            console.log('no deferred')
+        }
+        console.log(await deferred)
         const { shouldBuyLicense } = (await deferred) || {}
         if (shouldBuyLicense) {
             console.log('redirecting to license')
@@ -306,7 +311,7 @@ function RotationsImage() {
                 userName,
             }),
         ])
-
+        revalidator.revalidate()
         setIsLoading(false)
 
         console.log('total duration', performance.now() - start)
