@@ -1,4 +1,4 @@
-import './globals.css'
+import 'template-rewrite-framer/src/styles/reset.css'
 import './slider.css'
 import './styles.css'
 import 'tailwindcss/tailwind.css'

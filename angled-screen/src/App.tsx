@@ -1,4 +1,6 @@
 import { validateLicense } from '@lemonsqueezy/lemonsqueezy.js'
+import heroImage from './angled screen hero image@4x.png'
+
 import { ImageAsset, framer } from 'framer-plugin'
 import {
     Form,
@@ -326,9 +328,18 @@ function RotationsImage() {
 
     if (!image) {
         return (
-            <Container width={200}>
-                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[100px] items-center justify-center'>
-                    <p>Select an Image First</p>
+            <Container width={220}>
+                <div className='flex flex-col grow items-center gap-4'>
+                    <hr className='w-full shrink-0 h-px mt-1' />
+                    <div className='flex flex-col items-center justify-center grow '>
+                        <img
+                            src={heroImage}
+                            className='opacity-90 select-none pointer-events-none invert dark:invert-0 object-contain overflow-hidden w-full rounded-md'
+                        />
+                    </div>
+                    <div className='flex flex-col gap-3 p-3 pt-0 items-center justify-center'>
+                        <h1>Select an Image to Start</h1>
+                    </div>
                 </div>
             </Container>
         )
