@@ -42,10 +42,10 @@ const lemonProductId = 348518
 
 const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
 
-const width = 340
+const defaultWith = 340
 const initialImage = await framer.getImage()
 
-await framer.showUI({ position: 'top left', width, height: 0 })
+await framer.showUI({ position: 'top left', width: defaultWith, height: 0 })
 const initialImageSize = await initialImage?.measure()
 
 function useSelectedImage() {
@@ -326,8 +326,8 @@ function RotationsImage() {
 
     if (!image) {
         return (
-            <Container>
-                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[280px] items-center justify-center'>
+            <Container width={200}>
+                <div className='flex flex-col gap-3 p-3 pt-0 min-h-[100px] items-center justify-center'>
                     <p>Select an Image First</p>
                 </div>
             </Container>
@@ -422,7 +422,7 @@ function RotationsImage() {
     )
 }
 
-const Container = ({ children, ...rest }) => {
+const Container = ({ children, width = defaultWith, ...rest }) => {
     const [ref, { height }] = useMeasure()
     useLayoutEffect(() => {
         console.log('opening framer ui')
