@@ -81,16 +81,14 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                 )
                 .selectAll()
                 .executeTakeFirst()
-            if (!session) {
-                return
-            }
+
             // TODO remove this projectId check after plugin is updated
             // if (projectId && session.projectId && session.projectId !== projectId) {
             //     return
             // }
-            userId.resolve(session.usedByUserId)
-            orgId.resolve(session.orgId)
-            userEmail.resolve(session.email || '')
+            userId.resolve(session?.usedByUserId || '')
+            orgId.resolve(session?.orgId || '')
+            userEmail.resolve(session?.email || '')
         }
         addState()
     })

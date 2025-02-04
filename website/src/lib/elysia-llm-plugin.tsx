@@ -62,14 +62,7 @@ export const llmPluginApp = new Spiceflow({
         if (pathname.includes('/publish')) {
             return
         }
-        const orgId = await store.orgId
-        if (!orgId) {
-            return
-        }
-        const userId = await store.userId
-        if (!userId) {
-            return
-        }
+
         const res = await next()
 
         res.headers.set(

@@ -47,19 +47,19 @@ export const reactPluginApp = new Spiceflow({
     .state('orgId', Promise.resolve(''))
     .state('userId', Promise.resolve(''))
 
-    .use(async function addGithubUserLogin({ request, state: store }) {
+    .use(async function uselessThing({ request, state: store }) {
         const pathname = new URL(request.url).pathname
         if (!pathname.includes('/reactExportPlugin')) {
             return
         }
-        const orgId = await store.orgId
-        if (!orgId) {
-            return
-        }
-        const userId = await store.userId
-        if (!userId) {
-            return
-        }
+        // const orgId = await store.orgId
+        // if (!orgId) {
+        //     return
+        // }
+        // const userId = await store.userId
+        // if (!userId) {
+        //     return
+        // }
     })
     .get('/health', () => {
         return 'ok'
