@@ -456,7 +456,7 @@ const SliderAndNumber = ({
 }) => {
     return (
         <div className='grid shrink-0 w-full grid-cols-[1fr_80px_80px] gap-4 items-center'>
-            <div>{label}</div>
+            <div className=''>{label}</div>
             <input
                 type='number'
                 value={value}

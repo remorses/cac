@@ -92,6 +92,8 @@ export class ThreeCanvas {
 
         // Add OrbitControls after camera setup
         this.controls = new OrbitControls(this.camera, this.canvas)
+        this.controls.rotateSpeed = 0.1 // Lower rotation sensitivity
+        this.controls.zoomSpeed = 0.5
         this.controls.enableDamping = false
         this.controls.dampingFactor = 0.05
         this.controls.maxDistance = 2
