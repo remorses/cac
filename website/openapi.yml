@@ -4,6 +4,84 @@ info:
   description: Development documentation
   version: 0.0.0
 paths:
+  /api/plugins/angledScreen/generationsForUser:
+    get:
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: framerUserId
+          required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+  /api/plugins/angledScreen/incrementGenerations:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                framerUserId:
+                  type: string
+                userName:
+                  type: string
+              required:
+                - framerUserId
+              additionalProperties: true
+  /api/plugins/angledScreen/activate:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                framerUserId:
+                  type: string
+                userName:
+                  type: string
+                licenseKey:
+                  type: string
+              required:
+                - framerUserId
+                - licenseKey
+              additionalProperties: true
   /api/plugins/currentOrg:
     post:
       responses:

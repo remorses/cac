@@ -4,7 +4,7 @@
     "sideEffects": false,
     "scripts": {
         "typecheck": "pnpm tsc --noEmit --incremental",
-        "build": "NODE_ENV=production doppler run -c production -- pnpm concurrently 'pnpm remix vite:build' 'pnpm tsc' && pnpm copy-prisma",
+        "build": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' doppler run -c production -- pnpm concurrently 'pnpm remix vite:build' 'pnpm tsc' && pnpm copy-prisma",
         "prebuild": "pnpm --filter spiceflow build",
         "fly": "fly --app unframer-website-prod",
         "deployment": "doppler run -- pnpm tsx -C import scripts/deployment.ts",
