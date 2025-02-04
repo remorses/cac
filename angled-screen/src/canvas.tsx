@@ -31,7 +31,7 @@ export class ThreeCanvas {
             antialias: true,
             canvas: this.canvas,
             preserveDrawingBuffer: true,
-            
+
             alpha: true,
         })
         if (initialImageSize) {
@@ -121,13 +121,30 @@ export class ThreeCanvas {
 
         // Check for intersections with the plane
         const intersects = raycaster.intersectObject(this.plane)
-        
+
         if (intersects.length > 0) {
             // Use the distance to the intersection point for focus
             const distance = intersects[0].distance
             console.log('setting focus distance', distance)
             this.bokehPass.uniforms['focus'].value = distance
         }
+    }
+
+    updateRendererSize() {
+        const img = this.texture.image
+        const minPixels = 1920 * 1080
+
+        let targetWidth = img.width
+        let targetHeight = img.height
+
+        if (targetWidth * targetHeight < minPixels) {
+            const scale = Math.sqrt(minPixels / (targetWidth * targetHeight))
+            targetWidth = Math.ceil(targetWidth * scale)
+            targetHeight = Math.ceil(targetHeight * scale)
+        }
+
+        this.renderer.setSize(targetWidth, targetHeight)
+        this.renderer.setViewport(0, 0, targetWidth, targetHeight)
     }
 
     changeImage(bitmap: ImageBitmap) {
@@ -139,20 +156,8 @@ export class ThreeCanvas {
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
         this.plane.scale.set(aspectRatio, 1, 1)
-        
-        // Make sure total pixels is at least 1920*1080
-        const minPixels = 1920 * 1080
-        let targetWidth = img.width
-        let targetHeight = img.height
-        
-        if (targetWidth * targetHeight < minPixels) {
-            const scale = Math.sqrt(minPixels / (targetWidth * targetHeight))
-            targetWidth = Math.ceil(targetWidth * scale)
-            targetHeight = Math.ceil(targetHeight * scale)
-        }
-        
-        this.renderer.setSize(targetWidth, targetHeight)
-        this.renderer.setViewport(0, 0, targetWidth, targetHeight)
+
+        this.updateRendererSize()
     }
 
     async updateCanvas({ color, focus, aperture, isPreview = false }) {
@@ -187,6 +192,7 @@ export class ThreeCanvas {
         } else {
             this.renderer.setPixelRatio(1)
         }
+        this.updateRendererSize()
 
         this.plane.rotation.set(0, 0, 0)
 
