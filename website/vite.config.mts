@@ -86,7 +86,7 @@ export default defineConfig({
 
     optimizeDeps: {},
     build: {
-        sourcemap: true,
+        // sourcemap: true,
         commonjsOptions: {
             transformMixedEsModules: true,
         },
