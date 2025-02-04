@@ -7,19 +7,23 @@ import * as THREE from 'three'
  */
 export function bytesFromCanvas(
     canvas: HTMLCanvasElement,
-): Promise<Uint8Array | null> {
-    return new Promise<Uint8Array>((resolve, reject) => {
+): Promise<{ bytes: Uint8Array; mimeType: string }> {
+    return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => {
             if (!blob) throw new Error('Blob does not exist')
 
             const reader = new FileReader()
+            const mimeType = blob.type
 
             reader.onload = () => {
                 if (!reader.result) {
                     throw new Error('Reader result does not exist')
                 }
 
-                resolve(new Uint8Array(reader.result as ArrayBuffer))
+                resolve({
+                    bytes: new Uint8Array(reader.result as ArrayBuffer),
+                    mimeType,
+                })
             }
             reader.onerror = () => reject(new Error('Could not read from blob'))
             reader.readAsArrayBuffer(blob)

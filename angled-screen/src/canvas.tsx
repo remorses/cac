@@ -137,8 +137,20 @@ export class ThreeCanvas {
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
         this.plane.scale.set(aspectRatio, 1, 1)
-        this.renderer.setSize(img?.width, img?.height)
-        this.renderer.setViewport(0, 0, img.width, img.height)
+        
+        // Make sure total pixels is at least 1920*1080
+        const minPixels = 1920 * 1080
+        let targetWidth = img.width
+        let targetHeight = img.height
+        
+        if (targetWidth * targetHeight < minPixels) {
+            const scale = Math.sqrt(minPixels / (targetWidth * targetHeight))
+            targetWidth = Math.ceil(targetWidth * scale)
+            targetHeight = Math.ceil(targetHeight * scale)
+        }
+        
+        this.renderer.setSize(targetWidth, targetHeight)
+        this.renderer.setViewport(0, 0, targetWidth, targetHeight)
     }
 
     async updateCanvas({ color, focus, aperture, isPreview = false }) {

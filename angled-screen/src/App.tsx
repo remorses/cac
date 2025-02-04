@@ -240,7 +240,7 @@ function RotationsImage() {
         const updateFrame = async () => {
             await threeCanvas.updateCanvas({
                 ...paramsRef.current,
-                isPreview: false,
+                isPreview: true,
             })
             frameRef.current = requestAnimationFrame(updateFrame)
         }
@@ -263,7 +263,7 @@ function RotationsImage() {
             return
         }
         flushSync(() => setIsLoading(true))
-
+        await sleep(20)
         await threeCanvas.updateCanvas({
             color,
             // shadowIntensity,
@@ -272,20 +272,17 @@ function RotationsImage() {
             isPreview: false,
         })
         await sleep(20)
-        const originalImage = await image.getData()
 
-        const nextBytes = await bytesFromCanvas(threeCanvas.canvas)
+        const { bytes: nextBytes, mimeType } = await bytesFromCanvas(
+            threeCanvas.canvas,
+        )
 
         // const img = document.createElement('img')
         // img.src = URL.createObjectURL(new Blob([nextBytes!]))
         // document.body.appendChild(img)
         assert(nextBytes)
 
-        console.log(
-            'saving image with type',
-            originalImage.mimeType,
-            nextBytes.length,
-        )
+        console.log('saving image with type', mimeType, nextBytes.length)
         const start = performance.now()
         const imagesGenerated = await framer
             .getPluginData(PluginDataKeys.imagesGenerated)
@@ -294,8 +291,7 @@ function RotationsImage() {
             framer.setImage({
                 image: {
                     bytes: nextBytes,
-
-                    mimeType: originalImage.mimeType,
+                    mimeType,
                 },
             }),
             framer.setPluginData(
