@@ -76,6 +76,7 @@ const router = createBrowserRouter(
                     console.log('redirecting to license')
                     return redirect(withMode(Paths.license))
                 }
+                // return redirect(withMode(Paths.license))
                 console.log('not redirecting to license')
                 return {}
             },
@@ -136,7 +137,7 @@ function LicenseComponent() {
         navigation.state !== 'idle' && Boolean(navigation.formData)
     const navigate = useNavigate()
     return (
-        <Container>
+        <Container width={260}>
             <Form
                 method='POST'
                 className='flex shrink-0 w-full items-start flex-col justify-between gap-4'
@@ -146,7 +147,7 @@ function LicenseComponent() {
                         Get a License Key
                     </a>
                     <div className='opacity-60'>
-                        To create more than {freeImageGenerations} images, you
+                        to create more than {freeImageGenerations} images, you
                         need a license key.{' '}
                         <a className='underline' href={buyUrl} target='_blank'>
                             Buy one here
