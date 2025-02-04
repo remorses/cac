@@ -404,7 +404,7 @@ function RotationsImage() {
                 }}
                 rangeProps={{
                     min: '0.01',
-                    max: '0.4',
+                    max: '0.2',
                     step: '0.001',
                 }}
             />
