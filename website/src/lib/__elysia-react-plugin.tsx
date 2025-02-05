@@ -153,7 +153,7 @@ export const reactPluginApp = new Spiceflow({
                 where: {
                     status: 'active',
                     memberLogins: {
-                        has: store.githubUserLogin,
+                        has: await store.githubUserLogin,
                     },
                     appId: env.GITHUB_APP_ID,
 
@@ -242,7 +242,7 @@ export const reactPluginApp = new Spiceflow({
                     where: {
                         status: 'active',
                         memberLogins: {
-                            has: store.githubUserLogin,
+                            has: await store.githubUserLogin,
                         },
                         appId: env.GITHUB_APP_ID,
                         accountLogin: githubAccountLogin,
@@ -637,7 +637,7 @@ export const reactPluginApp = new Spiceflow({
                     where: {
                         status: 'active',
                         memberLogins: {
-                            has: store.githubUserLogin,
+                            has: await store.githubUserLogin,
                         },
                         appId: env.GITHUB_APP_ID,
                         accountLogin: githubAccountLogin,

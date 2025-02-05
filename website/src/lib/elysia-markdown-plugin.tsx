@@ -214,7 +214,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 basePath,
                 repo,
                 orgId: await store.orgId,
-                githubUserLogin: store.githubUserLogin,
+                githubUserLogin: await store.githubUserLogin,
                 signal: request.signal,
             })
         },
@@ -253,7 +253,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     basePath,
                     repo,
                     orgId: await store.orgId,
-                    githubUserLogin: store.githubUserLogin,
+                    githubUserLogin: await store.githubUserLogin,
                     signal,
                 })) as never
             }
