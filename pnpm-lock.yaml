@@ -1512,7 +1512,7 @@ importers:
     dependencies:
       '@builder.io/react-hydration-overlay':
         specifier: ^0.3.0
-        version: 0.3.0(@spotlightjs/spotlight@2.4.2)(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15)))
+        version: 0.3.0(@spotlightjs/spotlight@2.4.2)(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6))
       '@remix-run/node':
         specifier: ^2.15.2
         version: 2.15.2(typescript@5.7.3)
@@ -1571,9 +1571,6 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      dprint-node:
-        specifier: ^1.0.8
-        version: 1.0.8
       esbuild:
         specifier: ^0.24.2
         version: 0.24.2
@@ -1650,6 +1647,9 @@ importers:
       concurrently:
         specifier: ^9.1.2
         version: 9.1.2
+      dprint-node:
+        specifier: ^1.0.8
+        version: 1.0.8
       openai:
         specifier: ^4.80.1
         version: 4.80.1(ws@8.18.0)(zod@3.24.1)
@@ -13292,13 +13292,13 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@builder.io/react-hydration-overlay@0.3.0(@spotlightjs/spotlight@2.4.2)(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15)))':
+  '@builder.io/react-hydration-overlay@0.3.0(@spotlightjs/spotlight@2.4.2)(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6))':
     dependencies:
       beautify: 0.0.8
       react: 19.0.0
       react-diff-viewer-continued: 4.0.4(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-dom: 19.0.0(react@19.0.0)
-      webpack: 5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))
+      webpack: 5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6)
     optionalDependencies:
       '@spotlightjs/spotlight': 2.4.2
     transitivePeerDependencies:
@@ -25386,16 +25386,17 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  terser-webpack-plugin@5.3.11(@swc/core@1.10.11(@swc/helpers@0.5.15))(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))):
+  terser-webpack-plugin@5.3.11(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6)(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 4.3.0
       serialize-javascript: 6.0.2
       terser: 5.37.0
-      webpack: 5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))
+      webpack: 5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6)
     optionalDependencies:
       '@swc/core': 1.10.11(@swc/helpers@0.5.15)
+      esbuild: 0.17.6
 
   terser@5.37.0:
     dependencies:
@@ -26282,7 +26283,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15)):
+  webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6):
     dependencies:
       '@types/estree': 1.0.6
       '@webassemblyjs/ast': 1.14.1
@@ -26304,7 +26305,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.11(@swc/core@1.10.11(@swc/helpers@0.5.15))(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15)))
+      terser-webpack-plugin: 5.3.11(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6)(webpack@5.95.0(@swc/core@1.10.11(@swc/helpers@0.5.15))(esbuild@0.17.6))
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:

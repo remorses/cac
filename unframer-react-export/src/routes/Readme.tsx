@@ -26,6 +26,7 @@ import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { Link } from 'react-router-dom'
 import { ReactExportComponent } from 'db/prisma'
+import { generateStackblitzProject } from 'website/src/lib/utils'
 function markdown({ shortId }) {
     return `
 
@@ -184,9 +185,22 @@ function Component() {
             </div>
             {/* <hr className='' /> */}
             <div className='flex gap-3 grow'>
-                <Link className='grow' to={withMode(Paths.components)}>
-                    <Button className=''>Go Back</Button>
-                </Link>
+                <Button
+                    variant='primary'
+                    onClick={() => {
+                        generateStackblitzProject({
+                            projectId: shortId,
+                            title: projectName,
+                        })
+                    }}
+                    className=''
+                >
+                    Open Demo in Stackblitz
+                </Button>
+
+                {/* <Link className='grow' to={withMode(Paths.components)}>
+                    <Button className=''>back</Button>
+                </Link> */}
                 {/* <a
                     className='grow'
                     target='_blank'

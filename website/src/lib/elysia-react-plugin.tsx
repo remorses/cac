@@ -46,6 +46,7 @@ export const reactPluginApp = new Spiceflow({
 })
     .state('orgId', Promise.resolve(''))
     .state('userId', Promise.resolve(''))
+    .state('userEmail', Promise.resolve(''))
 
     .use(async function uselessThing({ request, state: store }) {
         const pathname = new URL(request.url).pathname
@@ -123,7 +124,7 @@ export const reactPluginApp = new Spiceflow({
     .get(
         '/subscriptions',
         async ({ request, state: store, query }) => {
-            if (!await store.orgId) {
+            if (!(await store.orgId)) {
                 throw unauthorizedResponse
             }
             const { projectId } = query
@@ -190,6 +191,21 @@ export const reactPluginApp = new Spiceflow({
             }
             projectId = projectId.slice(0, 16)
             console.time(`[${shortId}] initial upsert`)
+            console.log(`[${shortId}] upserting project for org ${orgId}`)
+            // Check if project belongs to this org
+            const existingProject = await prisma.reactExportProject.findUnique({
+                where: {
+                    projectId,
+                },
+            })
+            if (existingProject && existingProject.orgId !== orgId) {
+                throw new Response(
+                    `Project belongs to another user, current email is (${await store.userEmail})`,
+                    {
+                        status: 403,
+                    },
+                )
+            }
             const [project, reactSub, org] = await Promise.all([
                 prisma.reactExportProject.upsert({
                     where: {
@@ -329,9 +345,9 @@ export async function recursiveReaddir(dir: string) {
 }
 
 async function getReactSub({ orgId, projectId }) {
-    if (!projectId) {
-        throw new Error('projectId missing, cannot get subscription')
-    }
+    // if (!projectId) {
+    //     throw new Error('projectId missing, cannot get subscription')
+    // }
     return await prisma.subscription.findFirst({
         where: {
             orgId: orgId,

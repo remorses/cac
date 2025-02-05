@@ -317,6 +317,7 @@ model Org {
   payments         PaymentForCredits[]
   scrapedUrls      ScrapedWebsitePage[]
   subscriptions    Subscription[]
+  reactProjects    ReactExportProject[]
 
   @@schema("public")
 }
@@ -517,6 +518,8 @@ model ReactExportProject {
   colorStyles ReactExportColorStyle[]
   pages       ReactExportWebPage[]
   locales     ReactExportLocale[]
+
+  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")
 }
