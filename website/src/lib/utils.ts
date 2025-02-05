@@ -4,6 +4,7 @@ import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
 
 import { env } from './env'
+import dedent from 'dedent'
 export { oldTextTreeToXml } from './xml'
 
 export function loginRedirectUrl({ next = '' }) {
@@ -235,4 +236,116 @@ export function safeUrl(u) {
     } catch {
         return null
     }
+}
+export async function generateStackblitzProject({ projectId, title = '' }) {
+    const sdk = await import('@stackblitz/sdk').then((x) => x.default)
+
+    const packageJson = {
+        name: 'unframer-vite-react-typescript-starter',
+        private: true,
+        version: '0.0.0',
+        type: 'module',
+        stackblitz: {
+            startCommand: `STACKBLITZ_DEMO_EXAMPLE=src/App.tsx npm run framer && npm run dev`,
+        },
+        scripts: {
+            dev: 'vite',
+            build: 'vite build',
+            framer: `unframer ${projectId} --outDir src/framer`,
+        },
+        dependencies: {
+            react: 'latest',
+            unframer: 'latest',
+            'react-dom': 'latest',
+        },
+        devDependencies: {
+            '@types/react': 'latest',
+            '@types/react-dom': 'latest',
+            '@vitejs/plugin-react': 'latest',
+            typescript: 'latest',
+            vite: 'latest',
+        },
+    }
+
+    const tsconfig = {
+        compilerOptions: {
+            target: 'ES2020',
+            useDefineForClassFields: true,
+            lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+            module: 'ESNext',
+            skipLibCheck: true,
+            moduleResolution: 'bundler',
+            allowImportingTsExtensions: true,
+            resolveJsonModule: true,
+            isolatedModules: true,
+            noEmit: true,
+            jsx: 'react-jsx',
+            noUnusedLocals: true,
+            noUnusedParameters: true,
+            noFallthroughCasesInSwitch: true,
+        },
+        include: ['src'],
+    }
+
+    const viteConfig = dedent`
+        import { defineConfig } from 'vite'
+        import react from '@vitejs/plugin-react'
+        
+        // https://vitejs.dev/config/
+        export default defineConfig({
+            plugins: [react()],
+        })`
+
+    const indexHtml = dedent`
+        <!doctype html>
+        <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Unframer + Vite + React + TS</title>
+            </head>
+            <body>
+                <div id="root"></div>
+                <script type="module" src="/src/main.tsx"></script>
+            </body>
+        </html>`
+
+    const app = dedent`
+        // This file will be replaced with your Framer example soon
+        export default function App() {
+            return (
+                <div>Hello World</div>
+            )
+        }`
+
+    const main = dedent`
+        import React from 'react'
+        import ReactDOM from 'react-dom/client'
+        import App from './App'
+        
+        ReactDOM.createRoot(document.getElementById('root')!).render(
+            <App />
+        )`
+
+    return sdk.openProject(
+        {
+            title: `Unframer - ${title}`,
+            description: `${title} demo for Unframer`,
+            template: 'node',
+            files: {
+                'tsconfig.json': JSON.stringify(tsconfig, null, 2),
+                'package.json': JSON.stringify(packageJson, null, 2),
+                'vite.config.ts': viteConfig,
+                'index.html': indexHtml,
+                'src/App.tsx': app,
+                // 'src/index.css': '',
+                'src/main.tsx': main,
+            },
+        },
+        {
+            openFile: 'src/App.tsx',
+            showSidebar: false,
+            
+        },
+    )
 }
