@@ -123,7 +123,7 @@ export const reactPluginApp = new Spiceflow({
     .get(
         '/subscriptions',
         async ({ request, state: store, query }) => {
-            if (!store.orgId) {
+            if (!await store.orgId) {
                 throw unauthorizedResponse
             }
             const { projectId } = query

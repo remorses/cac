@@ -151,7 +151,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
         async ({ request, state: store }) => {
             const body = await request.json()
             const { projectId, projectName } = body
-            if (!store.orgId) {
+            if (!await store.orgId) {
                 throw unauthorizedResponse
             }
 
@@ -171,7 +171,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
     .get(
         '/subscriptions',
         async ({ request, state: store, query }) => {
-            if (!store.orgId) {
+            if (!await store.orgId) {
                 throw unauthorizedResponse
             }
             const { projectId } = query

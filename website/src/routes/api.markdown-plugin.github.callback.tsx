@@ -120,7 +120,7 @@ export async function loader({ request, }:LoaderFunctionArgs) {
         // state.siteId &&
         //     prisma.site.update({
         //         where: {
-        //             siteId: state.siteId,
+        //             siteId: await state.siteId,
         //         },
         //         data: {
         //             installationId,
