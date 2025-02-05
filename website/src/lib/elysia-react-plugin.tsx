@@ -128,7 +128,7 @@ export const reactPluginApp = new Spiceflow({
             }
             const { projectId } = query
             const activeSub = await getReactSub({
-                orgId: store.orgId,
+                orgId: await store.orgId,
                 projectId,
             })
 

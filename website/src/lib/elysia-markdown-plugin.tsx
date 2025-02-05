@@ -156,7 +156,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
 
             return getSyncsThisMonth({
-                orgId: store.orgId,
+                orgId: await store.orgId,
                 projectId,
                 projectName,
             })
@@ -176,7 +176,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
             }
             const { projectId } = query
             const activeSub = await getGithubSub({
-                orgId: store.orgId,
+                orgId: await store.orgId,
                 projectId,
             })
 
@@ -213,7 +213,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 githubAccountLogin,
                 basePath,
                 repo,
-                orgId: store.orgId,
+                orgId: await store.orgId,
                 githubUserLogin: store.githubUserLogin,
                 signal: request.signal,
             })
@@ -252,7 +252,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                     githubAccountLogin,
                     basePath,
                     repo,
-                    orgId: store.orgId,
+                    orgId: await store.orgId,
                     githubUserLogin: store.githubUserLogin,
                     signal,
                 })) as never
@@ -298,7 +298,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         },
                     }),
                     getSyncsThisMonth({
-                        orgId: store.orgId,
+                        orgId: await store.orgId,
                         projectId,
                         projectName,
                     }),

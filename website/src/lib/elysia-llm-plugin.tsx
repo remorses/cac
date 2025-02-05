@@ -422,7 +422,7 @@ export const llmPluginApp = new Spiceflow({
             }
             const { projectId } = query
             const activeSub = await getLlmSub({
-                orgId: store.orgId,
+                orgId: await store.orgId,
                 projectId,
             })
 
