@@ -311,10 +311,37 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         </html>`
 
     const app = dedent`
-        // This file will be replaced with your Framer example soon
+        const docs = \`
+        # Unframer Demo Project
+        
+        This is a demo project showing how to use Unframer to export Framer components to React.
+        
+        ## What's happening now:
+        If you're seeing this file, the unframer CLI is currently running in the terminal below.
+        Just wait until it finishes downloading and bundling your Framer components.
+        Once complete, you'll see your components rendered in the browser preview on the right and this file will be replaced with an example.
+        
+        Try making changes to your components in Framer, then run the unframer command again
+        to see the updates reflected here.
+        
+        ## How it works:
+        1. The Framer React Export plugin saves your components to the Unframer database
+        2. The unframer CLI downloads and bundles those components into regular React components
+        3. You can then import and use them in your React app just like any other component
+        
+        \`
+
         export default function App() {
             return (
-                <div>Hello World</div>
+                <div style={{
+                    padding: 40,
+                    maxWidth: 800,
+                    margin: '0 auto',
+                    fontFamily: 'system-ui, sans-serif',
+                    whiteSpace: 'pre-wrap'
+                }}>
+                    {docs}
+                </div>
             )
         }`
 
