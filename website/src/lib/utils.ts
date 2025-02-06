@@ -356,19 +356,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         
         \`
 
-        export default function App() {
-            return (
-                <div style={{
-                    padding: 40,
-                    maxWidth: 800,
-                    margin: '0 auto',
-                    fontFamily: 'system-ui, sans-serif',
-                    whiteSpace: 'pre-wrap'
-                }}>
-                    {docs}
-                </div>
-            )
-        }`
+        `
 
     const main = dedent`
         import './index.css'
