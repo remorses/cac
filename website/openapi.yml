@@ -302,32 +302,6 @@ paths:
           content:
             '*/*':
               schema: {}
-  /api/plugins/rewritePlugin/activateLicense:
-    post:
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            '*/*':
-              schema: {}
-        default:
-          description: ''
-          content:
-            '*/*':
-              schema: {}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                licenseKey:
-                  type: string
-              required:
-                - licenseKey
-              additionalProperties: true
   /api/plugins/rewritePlugin/getWebsiteHtml:
     post:
       parameters: []
@@ -822,6 +796,8 @@ paths:
               type: object
               properties:
                 projectId:
+                  type: string
+                projectName:
                   type: string
                 randomId:
                   type: string
