@@ -8,7 +8,7 @@
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "format": "prettier . --write",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "preview": "vite preview",
+        "start": "vite preview --port 5173",
         "typecheck": "pnpm tsc --noEmit --incremental"
     },
     "dependencies": {

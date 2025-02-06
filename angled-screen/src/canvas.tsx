@@ -18,9 +18,7 @@ export class ThreeCanvas {
     private filmGrainPass: ShaderPass
     private controls: OrbitControls
 
-    constructor(
-        initialImageSize: { width: number; height: number } | undefined,
-    ) {
+    constructor() {
         this.canvas = document.createElement('canvas')
         this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
 
@@ -34,18 +32,6 @@ export class ThreeCanvas {
 
             alpha: true,
         })
-        if (initialImageSize) {
-            this.renderer.setSize(
-                initialImageSize.width,
-                initialImageSize.height,
-            )
-            this.renderer.setViewport(
-                0,
-                0,
-                initialImageSize.width,
-                initialImageSize.height,
-            )
-        }
 
         this.renderer.outputColorSpace = THREE.SRGBColorSpace
 
@@ -76,6 +62,7 @@ export class ThreeCanvas {
 
         const size = new THREE.Vector2(1920, 1080)
         this.renderer.getSize(size)
+
         const aspectRatio = size.width / size.height
         // https://github.com/mrdoob/three.js/blob/79497a2c9b86036cfcc0c7ed448574f2d62de64d/examples/jsm/postprocessing/BokehPass.js#L53
         const bokehPass = new BokehPass(this.scene, this.camera, {
@@ -130,7 +117,7 @@ export class ThreeCanvas {
         }
     }
 
-    updateRendererSize() {
+    updateRendererSize({ isPreview = false }: { isPreview?: boolean } = {}) {
         const img = this.texture.image
         if (!img) {
             return
@@ -146,6 +133,17 @@ export class ThreeCanvas {
             targetHeight = Math.ceil(targetHeight * scale)
         }
 
+        if (isPreview && targetWidth * targetHeight > 1280 * 720) {
+            const scale = Math.sqrt((1280 * 720) / (targetWidth * targetHeight))
+            targetWidth = Math.ceil(targetWidth * scale)
+            targetHeight = Math.ceil(targetHeight * scale)
+        }
+
+        console.log(`setting size to ${targetWidth}x${targetHeight}`)
+        this.bokehPass.needsSwap = true
+        this.composer.setSize(targetWidth, targetHeight)
+        this.bokehPass.setSize(targetWidth, targetHeight)
+        this.filmGrainPass.setSize(targetWidth, targetHeight)
         this.renderer.setSize(targetWidth, targetHeight)
         this.renderer.setViewport(0, 0, targetWidth, targetHeight)
     }
@@ -158,12 +156,13 @@ export class ThreeCanvas {
         const aspectRatio = img.width / img.height
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
+        this.bokehPass.uniforms['aspect'].value = aspectRatio
         this.plane.scale.set(aspectRatio, 1, 1)
-
-        this.updateRendererSize()
+        
+        this.updateRendererSize({ isPreview: true })
     }
 
-    async updateCanvas({ color, focus, aperture, isPreview = false }) {
+    async updateCanvas({ color, aperture }) {
         const threeColor = new THREE.Color(color)
         const img: HTMLImageElement | null = this.texture.image
         this.scene.background = threeColor
@@ -172,39 +171,20 @@ export class ThreeCanvas {
             0,
             this.camera.position.z * 4,
         )
+
         // https://github.com/mrdoob/three.js/blob/79497a2c9b86036cfcc0c7ed448574f2d62de64d/examples/jsm/postprocessing/BokehPass.js#L53
         // this.bokehPass.uniforms['focus'].value = focus
         this.bokehPass.uniforms['aperture'].value = aperture
-        this.bokehPass.needsSwap = true
+        // this.bokehPass.needsSwap = true
 
-        let aspectRatio = 1
-        if (img) {
-            aspectRatio = img.width / img.height
-        } else {
-            console.log('no image found in texture!')
-        }
-        if (isPreview) {
-            if (img) {
-                const perfectPixels = 600 * 600
-                const imagePixels = img.width * img.height
-                const scaleDownFactor = Math.sqrt(perfectPixels / imagePixels)
-                if (scaleDownFactor < 1) {
-                    this.renderer.setPixelRatio(scaleDownFactor)
-                }
-            }
-        } else {
-            this.renderer.setPixelRatio(1)
-        }
-        this.updateRendererSize()
-
-        this.plane.rotation.set(0, 0, 0)
+        // this.plane.rotation.set(0, 0, 0)
 
         this.camera.lookAt(
             this.plane.position.x,
             this.plane.position.y,
             this.plane.position.z,
         )
-        this.texture.needsUpdate = true
+        // this.texture.needsUpdate = true
 
         // Update controls in the render loop
         this.controls.update()

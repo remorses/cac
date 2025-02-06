@@ -171,7 +171,7 @@ export function App() {
     return <RouterProvider router={router} />
 }
 
-const threeCanvas = new ThreeCanvas(initialImageSize)
+const threeCanvas = new ThreeCanvas()
 
 function CanvasComponent({ ...rest }) {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -244,7 +244,6 @@ function RotationsImage() {
         const updateFrame = async () => {
             await threeCanvas.updateCanvas({
                 ...paramsRef.current,
-                isPreview: true,
             })
             frameRef.current = requestAnimationFrame(updateFrame)
         }
@@ -268,13 +267,12 @@ function RotationsImage() {
             return
         }
         flushSync(() => setIsLoading(true))
-        await sleep(20)
+        await threeCanvas.updateRendererSize({ isPreview: false })
+        await sleep(100)
         await threeCanvas.updateCanvas({
             color,
             // shadowIntensity,
             aperture,
-            focus,
-            isPreview: false,
         })
         await sleep(20)
         if (!deferred) {
@@ -314,6 +312,7 @@ function RotationsImage() {
             }),
         ])
         revalidator.revalidate()
+        await threeCanvas.updateRendererSize({ isPreview: true })
         setIsLoading(false)
 
         console.log('total duration', performance.now() - start)
@@ -332,6 +331,7 @@ function RotationsImage() {
             return
         }
         threeCanvas.changeImage(bitmap)
+        
         const img = threeCanvas.texture.image
         const aspectRatio = img.width / img.height
         setAspectRatio(aspectRatio)
@@ -382,8 +382,9 @@ function RotationsImage() {
                 ))}
             </div> */}
             <div className='text-center select-none text-balance text-[11px] my-1'>
-                Drag to rotate, press shift and drag to pan, double click to
-                focus
+                Drag to rotate, press shift and drag to pan,
+                <br />
+                double click to focus
             </div>
 
             {/* <SliderAndNumber
