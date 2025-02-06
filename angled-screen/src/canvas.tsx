@@ -110,8 +110,18 @@ export class ThreeCanvas {
         const intersects = raycaster.intersectObject(this.plane)
 
         if (intersects.length > 0) {
-            // Use the distance to the intersection point for focus
-            const distance = intersects[0].distance
+            // Get the intersection point in world coordinates
+            const point = intersects[0].point
+            
+            // Calculate vector from camera to intersection point
+            const cameraToPoint = new THREE.Vector3()
+            cameraToPoint.subVectors(point, this.camera.position)
+            
+            // Get the distance along camera's view direction
+            const viewDirection = new THREE.Vector3(0, 0, -1)
+            viewDirection.applyQuaternion(this.camera.quaternion)
+            const distance = cameraToPoint.dot(viewDirection)
+
             console.log('setting focus distance', distance)
             this.bokehPass.uniforms['focus'].value = distance
         }
@@ -158,7 +168,7 @@ export class ThreeCanvas {
         this.camera.updateProjectionMatrix()
         this.bokehPass.uniforms['aspect'].value = aspectRatio
         this.plane.scale.set(aspectRatio, 1, 1)
-        
+
         this.updateRendererSize({ isPreview: true })
     }
 
