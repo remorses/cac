@@ -18,6 +18,27 @@ export class ThreeCanvas {
     private filmGrainPass: ShaderPass
     private controls: OrbitControls
 
+    private animationFrameId: number | null = null
+
+    startRenderLoop() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId)
+        }
+
+        const animate = () => {
+            this.updateCanvas()
+            this.animationFrameId = requestAnimationFrame(animate)
+        }
+
+        this.animationFrameId = requestAnimationFrame(animate)
+    }
+
+    stopRender() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId)
+            this.animationFrameId = null
+        }
+    }
     constructor() {
         this.canvas = document.createElement('canvas')
         this.canvas.className = 'rounded-md !max-w-full !max-h-full !h-auto'
@@ -29,10 +50,14 @@ export class ThreeCanvas {
             antialias: true,
             canvas: this.canvas,
             preserveDrawingBuffer: true,
-
             alpha: true,
+            precision: 'highp',
+            
+            powerPreference: 'high-performance',
         })
 
+        this.renderer.setPixelRatio(window.devicePixelRatio)
+        this.renderer.setSize(1920, 1080)
         this.renderer.outputColorSpace = THREE.SRGBColorSpace
 
         this.texture = new THREE.Texture()
@@ -40,7 +65,7 @@ export class ThreeCanvas {
 
         // this.texture.flipY = false
 
-        this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
+        this.camera = new THREE.PerspectiveCamera(75, 1920/1080, 0.1, 1000)
         this.camera.position.x = 0.2 // Add slight x offset
         this.camera.position.y = 0.1 // Add slight y offset
 
@@ -112,11 +137,11 @@ export class ThreeCanvas {
         if (intersects.length > 0) {
             // Get the intersection point in world coordinates
             const point = intersects[0].point
-            
+
             // Calculate vector from camera to intersection point
             const cameraToPoint = new THREE.Vector3()
             cameraToPoint.subVectors(point, this.camera.position)
-            
+
             // Get the distance along camera's view direction
             const viewDirection = new THREE.Vector3(0, 0, -1)
             viewDirection.applyQuaternion(this.camera.quaternion)
@@ -143,18 +168,19 @@ export class ThreeCanvas {
             targetHeight = Math.ceil(targetHeight * scale)
         }
 
-        if (isPreview && targetWidth * targetHeight > 1280 * 720) {
-            const scale = Math.sqrt((1280 * 720) / (targetWidth * targetHeight))
-            targetWidth = Math.ceil(targetWidth * scale)
-            targetHeight = Math.ceil(targetHeight * scale)
-        }
+        // if (isPreview && targetWidth * targetHeight > 1280 * 720) {
+        //     const scale = Math.sqrt((1280 * 720) / (targetWidth * targetHeight))
+        //     targetWidth = Math.ceil(targetWidth * scale)
+        //     targetHeight = Math.ceil(targetHeight * scale)
+        // }
 
         console.log(`setting size to ${targetWidth}x${targetHeight}`)
         this.bokehPass.needsSwap = true
         this.composer.setSize(targetWidth, targetHeight)
         this.bokehPass.setSize(targetWidth, targetHeight)
         this.filmGrainPass.setSize(targetWidth, targetHeight)
-        this.renderer.setSize(targetWidth, targetHeight)
+        this.renderer.setSize(targetWidth, targetHeight, false)
+        this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setViewport(0, 0, targetWidth, targetHeight)
     }
 
@@ -166,14 +192,19 @@ export class ThreeCanvas {
         const aspectRatio = img.width / img.height
         this.camera.aspect = aspectRatio
         this.camera.updateProjectionMatrix()
+
         this.bokehPass.uniforms['aspect'].value = aspectRatio
         this.plane.scale.set(aspectRatio, 1, 1)
 
         this.updateRendererSize({ isPreview: true })
+        this.startRenderLoop()
     }
 
-    async updateCanvas({ color, aperture }) {
-        const threeColor = new THREE.Color(color)
+    shadowColor = '#000000'
+    aperture = 0.07
+
+    async updateCanvas() {
+        const threeColor = new THREE.Color(this.shadowColor)
         const img: HTMLImageElement | null = this.texture.image
         this.scene.background = threeColor
         this.scene.fog = new THREE.Fog(
@@ -184,7 +215,7 @@ export class ThreeCanvas {
 
         // https://github.com/mrdoob/three.js/blob/79497a2c9b86036cfcc0c7ed448574f2d62de64d/examples/jsm/postprocessing/BokehPass.js#L53
         // this.bokehPass.uniforms['focus'].value = focus
-        this.bokehPass.uniforms['aperture'].value = aperture
+        this.bokehPass.uniforms['aperture'].value = this.aperture
         // this.bokehPass.needsSwap = true
 
         // this.plane.rotation.set(0, 0, 0)

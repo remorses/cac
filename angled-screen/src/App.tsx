@@ -217,8 +217,7 @@ function RotationsImage() {
     const image = useSelectedImage()
     const { deferred } = useRouteLoaderData<typeof loader>('root')!
     const [color, setColor] = useState('#000000')
-    const [shadowIntensity, setIntensity] = useState(1)
-    // const [focus, setFocus] = useState(0.6)
+
     const [aperture, setAperture] = useState(0.07)
     const [isLoading, setIsLoading] = useState(true)
     const [aspectRatio, setAspectRatio] = useState(() => {
@@ -228,38 +227,14 @@ function RotationsImage() {
         return initialImageSize?.width / initialImageSize?.height
     })
 
-    // Add RAF state and ref
-    const [isAnimating, setIsAnimating] = useState(false)
-    const frameRef = useRef<number>(null)
-    const paramsRef = useRef({ aperture, color, shadowIntensity, focus })
     useEffect(() => {
-        paramsRef.current = { aperture, color, shadowIntensity, focus }
-    }, [aperture, color, shadowIntensity, focus])
+        threeCanvas.shadowColor = color
+        threeCanvas.aperture = aperture
+    }, [aperture, color])
 
     const navigate = useNavigate()
     // Setup animation loop
-    useEffect(() => {
-        if (!image || isLoading) return
 
-        const updateFrame = async () => {
-            await threeCanvas.updateCanvas({
-                ...paramsRef.current,
-            })
-            frameRef.current = requestAnimationFrame(updateFrame)
-        }
-
-        // Start animation
-        frameRef.current = requestAnimationFrame(updateFrame)
-        setIsAnimating(true)
-
-        // Cleanup
-        return () => {
-            if (frameRef.current) {
-                cancelAnimationFrame(frameRef.current)
-            }
-            setIsAnimating(false)
-        }
-    }, [image, isLoading])
     const revalidator = useRevalidator()
 
     const handleSaveImage = async () => {
@@ -267,13 +242,10 @@ function RotationsImage() {
             return
         }
         flushSync(() => setIsLoading(true))
+        threeCanvas.stopRender()
         await threeCanvas.updateRendererSize({ isPreview: false })
         await sleep(100)
-        await threeCanvas.updateCanvas({
-            color,
-            // shadowIntensity,
-            aperture,
-        })
+        await threeCanvas.updateCanvas()
         await sleep(20)
         if (!deferred) {
             console.log('no deferred')
@@ -314,6 +286,7 @@ function RotationsImage() {
         revalidator.revalidate()
         await threeCanvas.updateRendererSize({ isPreview: true })
         setIsLoading(false)
+        threeCanvas.startRenderLoop()
 
         console.log('total duration', performance.now() - start)
     }
@@ -331,7 +304,7 @@ function RotationsImage() {
             return
         }
         threeCanvas.changeImage(bitmap)
-        
+
         const img = threeCanvas.texture.image
         const aspectRatio = img.width / img.height
         setAspectRatio(aspectRatio)
