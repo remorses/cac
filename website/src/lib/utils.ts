@@ -1,4 +1,5 @@
 import { FramerLayersTree } from 'website/src/lib/rewrite'
+
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
@@ -237,6 +238,8 @@ export function safeUrl(u) {
         return null
     }
 }
+
+
 export async function generateStackblitzProject({ projectId, title = '' }) {
     const sdk = await import('@stackblitz/sdk').then((x) => x.default)
 
@@ -372,7 +375,6 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         {
             openFile: 'src/App.tsx',
             showSidebar: false,
-            
         },
     )
 }
