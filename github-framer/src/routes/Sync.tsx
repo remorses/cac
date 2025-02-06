@@ -220,7 +220,9 @@ function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
     }
     if (field.type === 'date') {
         try {
-            return value || null
+            if (!value) return null
+            const date = new Date(value)
+            return date.toISOString()
         } catch (e) {
             return null
         }
