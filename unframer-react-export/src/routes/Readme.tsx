@@ -185,6 +185,7 @@ function Component() {
                 ></div>
             </div>
             {/* <hr className='' /> */}
+
             <div className='flex gap-3 grow'>
                 <Button
                     variant='primary'
@@ -198,7 +199,7 @@ function Component() {
                 >
                     <div className='flex items-center text-xs justify-center gap-2'>
                         {/* <MaterialSymbolsBolt className="size-[14px] shrink-0" /> */}
-                        Open Demo in Stackblitz
+                        Open Demo Project in Stackblitz
                     </div>
                 </Button>
 
