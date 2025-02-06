@@ -181,20 +181,26 @@ function Component() {
                         </div>
                     )}
                     <ul className='list-disc shrink-0 list-inside mt-2 w-full'>
-                        {errorList.map((error, index) => (
-                            <li
-                                key={index}
-                                className={classNames(
-                                    'flex items-start mb-2 px-3 py-2 rounded',
-                                    error.kind === 'warning'
-                                        ? 'bg-orange-100 border-orange-400 text-orange-800'
-                                        : 'bg-red-100 border-red-400 text-red-800',
-                                )}
-                            >
-                                <ErrorIcon kind={error.kind} />
-                                {error.message} (File: {error.path})
-                            </li>
-                        ))}
+                        {errorList.map((error, index) => {
+                            if (!error?.message) {
+                                return null
+                            }
+                            return (
+                                <li
+                                    key={index}
+                                    className={classNames(
+                                        'flex items-start mb-2 px-3 py-2 rounded',
+                                        error.kind === 'warning'
+                                            ? 'bg-orange-100 border-orange-400 text-orange-800'
+                                            : 'bg-red-100 border-red-400 text-red-800',
+                                    )}
+                                >
+                                    <ErrorIcon kind={error.kind} />
+                                    {error.message} (File: {error.path})
+                                </li>
+                            )
+                        })}
+                        
                     </ul>
                 </>
             )}
