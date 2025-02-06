@@ -129,7 +129,8 @@ function SimplePromptComponent({}) {
 
     async function replaceTextClient() {
         reset()
-        const { buyMoreCreditsUrl, credits, projectId } = await deferred
+        const { buyMoreCreditsUrl, credits, projectId, projectName } =
+            await deferred
         // const root = await framer.getCanvasRoot()
 
         let desktop = await getDesktop()
@@ -188,6 +189,7 @@ function SimplePromptComponent({}) {
                     tree: oldText,
                     projectId,
                     randomId,
+                    projectName,
                 },
                 {
                     fetch: {
@@ -520,7 +522,7 @@ async function loader({}: LoaderFunctionArgs) {
                 }),
             framer.getProjectInfo(),
         ])
-        const { id: projectId } = info
+        const { id: projectId, name: projectName } = info
 
         const buyMoreCreditsUrl = getBuyLLMPluginUrl({
             email,
@@ -531,6 +533,7 @@ async function loader({}: LoaderFunctionArgs) {
         return {
             credits,
             projectId,
+            projectName,
             buyMoreCreditsUrl,
         }
     }

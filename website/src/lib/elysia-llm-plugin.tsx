@@ -21,6 +21,8 @@ import {
     oldTextTreeToXml,
 } from 'website/src/lib/xml'
 import { z } from 'zod'
+import { splitIntoWords } from 'website/src/lib/ssr.server'
+
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -144,7 +146,10 @@ export const llmPluginApp = new Spiceflow({
             if (!userId) {
                 throw unauthorizedResponse
             }
-            const credits = await getOrgPluginCredits({ orgId: userId, pluginName: 'llm' })
+            const credits = await getOrgPluginCredits({
+                orgId: userId,
+                pluginName: 'llm',
+            })
 
             return credits
         },
@@ -157,12 +162,13 @@ export const llmPluginApp = new Spiceflow({
     .post(
         '/generate',
         async function* ({ params, request, state: store }) {
+            const orgId = await store.orgId
             request.signal.addEventListener('abort', () => {
                 console.log('aborting')
             })
             const body = await request.json()
             console.log('body', body)
-            const { randomId, description, tree, projectId } = body
+            const { projectName, randomId, description, tree, projectId } = body
 
             const initialXml = oldTextTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
@@ -172,7 +178,8 @@ export const llmPluginApp = new Spiceflow({
 
             projectsEvents.set(randomId, new Evt())
             const emitter = projectsEvents.get(randomId)!
-
+            let words = 0
+            let chars = 0
             try {
                 let lastXmlBeforeCall = initialXml
                 const generateDiffText = async (toolCallId: string) => {
@@ -356,8 +363,14 @@ export const llmPluginApp = new Spiceflow({
                     if (part.type === 'text-delta') {
                         fullAnswer += part.textDelta
                         fullText += part.textDelta
+
                         allObjects = extractObjectsFromXmlContent(fullText)
                         for (const obj of yielder.yieldNewItems(allObjects)) {
+                            let fullText = obj.fullItem?.newContent
+                            if (fullText) {
+                                words += splitIntoWords(fullText).length
+                                chars += fullText.length
+                            }
                             yield {
                                 nodeId:
                                     obj.partialItem?.nodeId ||
@@ -397,6 +410,23 @@ export const llmPluginApp = new Spiceflow({
                     }
                 }
 
+                const [gen] = await Promise.all([
+                    prisma.generation.create({
+                        data: {
+                            words,
+                            orgId,
+                            description,
+                            status: request.signal.aborted
+                                ? 'cancelled'
+                                : 'accepted',
+                            chars,
+                            projectName,
+                            pluginName: 'llm',
+                            createdAt: new Date(),
+                        },
+                    }),
+                ])
+
                 return { fullXml: fullText }
                 // yield { type: 'fullXml' as const, fullXml: fullText }
             } finally {
@@ -408,6 +438,7 @@ export const llmPluginApp = new Spiceflow({
         {
             body: z.object({
                 projectId: z.string().optional(),
+                projectName: z.string().optional(),
                 randomId: z.string(),
                 description: z.string(),
                 tree: z.custom<FramerLayersTree>(),
@@ -417,7 +448,7 @@ export const llmPluginApp = new Spiceflow({
     .get(
         '/subscriptions',
         async ({ request, state: store, query }) => {
-            if (!await store.orgId) {
+            if (!(await store.orgId)) {
                 throw unauthorizedResponse
             }
             const { projectId } = query

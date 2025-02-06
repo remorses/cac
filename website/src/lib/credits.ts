@@ -4,47 +4,7 @@ import { AppError } from 'website/src/lib/errors'
 
 const FREE_CREDITS = 200
 
-import { validateLicense, activateLicense } from '@lemonsqueezy/lemonsqueezy.js'
-import { db } from 'db/kysely'
 
-export async function validateLicenseKey({ orgId, licenseKey }) {
-    const [{ data, error }, alreadyUsed] = await Promise.all([
-        validateLicense(licenseKey), //
-        db
-            .selectFrom('LemonSqueezyLicense')
-            .where('licenseKey', '=', licenseKey)
-            .executeTakeFirst(),
-    ])
-    if (error) {
-        throw new AppError(`Cannot validate license key: ${error.message}`)
-    }
-    if (alreadyUsed) {
-        throw new AppError('License key already used')
-    }
-    if (!data.valid) {
-        throw new AppError('Invalid license key')
-    }
-    // throw new AppError('Invalid license key')
-    return { valid: false, credits: 0 }
-
-    // TODO add logic to associate third party products to license keys
-    // allow other payment providers, by using a different license key made of my own
-    // let credits = 10_000
-    // await db
-    //     .insertInto('LemonSqueezyLicense')
-    //     .values({
-    //         licenseKey,
-    //         orgId,
-    //         credits,
-    //         meta: data.meta,
-    //     })
-    //     .onConflict((oc) => {
-    //         return oc.column('licenseKey').doNothing()
-    //     })
-    //     .execute()
-
-    // return { valid: data.valid, credits }
-}
 
 // export async function getOrgSubscriptions({ orgId }) {
 //     const subs = await prisma.subscription.findMany({
@@ -84,11 +44,14 @@ export async function validateLicenseKey({ orgId, licenseKey }) {
 //     return { subs, limits, hasFreeTrial: false }
 // }
 
-export async function getOrgPluginCredits({ orgId, pluginName }: {
+export async function getOrgPluginCredits({
+    orgId,
+    pluginName,
+}: {
     orgId: string
     pluginName?: PluginName
 }) {
-    const [payments, allWords, licenseCredits] = await Promise.all([
+    const [payments, allWords] = await Promise.all([
         prisma.paymentForCredits.findMany({
             where: {
                 orgId,
@@ -102,6 +65,7 @@ export async function getOrgPluginCredits({ orgId, pluginName }: {
             where: {
                 orgId,
                 status: 'accepted',
+                pluginName,
                 // createdAt: {
                 //     gt: oneMonthAgo
                 // }
@@ -110,17 +74,7 @@ export async function getOrgPluginCredits({ orgId, pluginName }: {
                 words: true,
             },
         }),
-        prisma.lemonSqueezyLicense.aggregate({
-            where: {
-                orgId,
-                // createdAt: {
-                //     gt: oneMonthAgo
-                // }
-            },
-            _sum: {
-                credits: true,
-            },
-        }),
+
         // prisma.org.findUnique({
         //     where: {
         //         orgId: orgId,
@@ -138,24 +92,22 @@ export async function getOrgPluginCredits({ orgId, pluginName }: {
     // const createdAt = org?.createdAt?.getTime() || Date.now()
     // const monthsCredits =
     //     Math.floor((Date.now() - createdAt) / (1000 * 60 * 60 * 24 * 30)) + 1
-    const licenseCreditsValue = licenseCredits._sum?.credits || 0
-    let totalCredits =
-        licenseCreditsValue +
-        payments
-            .map((x) => {
-                const num = variantIdToCredits[x.variantId]
-                if (num == null) {
-                    return 0
-                    throw new AppError(
-                        `Cannot get credits for variantId ${x.variantId}`,
-                    )
-                }
-                return num
-            })
-            .reduce((a, b) => a + b, 0)
+
+    let totalCredits = payments
+        .map((x) => {
+            const num = variantIdToCredits[x.variantId]
+            if (num == null) {
+                return 0
+                throw new AppError(
+                    `Cannot get credits for variantId ${x.variantId}`,
+                )
+            }
+            return num
+        })
+        .reduce((a, b) => a + b, 0)
 
     const used = allWords?._sum?.words || 0
-    let free = !payments?.length && !licenseCreditsValue
+    let free = !payments?.length
     if (free) {
         totalCredits = FREE_CREDITS
     }

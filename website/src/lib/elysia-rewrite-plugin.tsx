@@ -3,9 +3,9 @@ import { Spiceflow } from 'spiceflow'
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
+import { prisma } from 'db/prisma'
 import {
-    getOrgPluginCredits,
-    validateLicenseKey,
+    getOrgPluginCredits
 } from 'website/src/lib/credits'
 import {
     fetchFormattedHtml,
@@ -147,9 +147,8 @@ export const rewritePluginApp = new Spiceflow({
                 throw e
             } finally {
                 const [gen] = await Promise.all([
-                    db
-                        .insertInto('Generation')
-                        .values({
+                    prisma.generation.create({
+                        data: {
                             words,
                             orgId: userId,
                             description,
@@ -161,12 +160,11 @@ export const rewritePluginApp = new Spiceflow({
                                 : 'accepted',
                             chars,
                             pagePath,
+                            pluginName: 'migrate',
                             projectName,
-                            // arguments: body,
                             createdAt: new Date(),
-                        })
-                        .returningAll()
-                        .execute(),
+                        },
+                    }),
                 ])
                 yield {
                     type: 'generation' as const,
@@ -229,36 +227,6 @@ export const rewritePluginApp = new Spiceflow({
             return credits
         },
         {
-            // response: {
-            //     200: t.AsyncIterator(t.String()),
-            // },
-        },
-    )
-    .post(
-        '/activateLicense',
-        async ({ state: store, request }) => {
-            let body = await request.json()
-            // console.log('cookies', cookie)
-            // const { userId } = await getSupabaseSession({ request })
-            // if (!userId) {
-            //     throw new AppError('No user id')
-            // }
-            const userId = await store.userId
-            if (!userId) {
-                throw unauthorizedResponse
-            }
-
-            const { licenseKey } = body
-            const { valid, credits } = await validateLicenseKey({
-                orgId: userId,
-                licenseKey,
-            })
-            return { valid, credits }
-        },
-        {
-            body: z.object({
-                licenseKey: z.string(),
-            }),
             // response: {
             //     200: t.AsyncIterator(t.String()),
             // },
