@@ -3,7 +3,10 @@ import { Spiceflow } from 'spiceflow'
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
-import { getOrgCredits, validateLicenseKey } from 'website/src/lib/credits'
+import {
+    getOrgPluginCredits,
+    validateLicenseKey,
+} from 'website/src/lib/credits'
 import {
     fetchFormattedHtml,
     getWebsiteDescription,
@@ -218,7 +221,10 @@ export const rewritePluginApp = new Spiceflow({
             if (!userId) {
                 throw unauthorizedResponse
             }
-            const credits = await getOrgCredits({ orgId: userId })
+            const credits = await getOrgPluginCredits({
+                orgId: userId,
+                pluginName: 'migrate',
+            })
 
             return credits
         },

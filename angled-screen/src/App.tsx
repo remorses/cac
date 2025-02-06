@@ -28,14 +28,13 @@ import {
     sleep,
     useAsyncEffect,
 } from './utils'
+import { createBuyAngledScreenUrl } from 'website/src/lib/env'
 enum PluginDataKeys {}
 
 enum Paths {
     root = '/',
     license = '/license',
 }
-
-const buyUrl = `https://unframer.lemonsqueezy.com/checkout/buy/86b8fa59-f649-4250-aa24-6bfcd3c64f13`
 
 const defaultWith = 340
 const initialImage = await framer.getImage()
@@ -113,6 +112,9 @@ function LicenseComponent() {
         navigation.state !== 'idle' && Boolean(navigation.formData)
     const navigate = useNavigate()
     const { deferred } = useRouteLoaderData<typeof loader>('root')!
+    const buyUrl = createBuyAngledScreenUrl({
+        // framerUserId: deferred.framerUserId,
+    })
     return (
         <Container width={260}>
             <Form

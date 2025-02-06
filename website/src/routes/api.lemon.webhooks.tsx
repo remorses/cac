@@ -39,6 +39,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
             console.log(JSON.stringify(payload))
             let customData = payload.meta.custom_data
             let orgId = customData?.orgId
+            let pluginName = customData?.pluginName
             if (!orgId) {
                 notifyError(
                     new AppError(
@@ -92,6 +93,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
                     orderId: String(data.id),
                     orgId,
                     productId: String(item.product_id),
+                    pluginName,
                     variantId: String(item.variant_id),
                 }
                 console.log(
@@ -125,6 +127,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
                     status: data.attributes.status || undefined,
                     variantName: data.attributes.variant_name || undefined,
                     createdAt: new Date(data.attributes.created_at),
+                    pluginName,
                 }
                 console.log(
                     `adding subscription for credits ${JSON.stringify(plansConfig.find((x) => x.variantId === variantId))} after order ${data.id}`,
@@ -162,6 +165,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
                     subscriptionId: String(sub.subscriptionId),
                     variantId: sub.variantId,
                     variantName: sub.variantName,
+                    pluginName,
                 }
                 const yesterday = new Date()
                 yesterday.setDate(yesterday.getDate() - 1)

@@ -123,7 +123,7 @@ function LoginComponent() {
                         window.open(url, '_blank')
 
                         while (!loginCompleted) {
-                            await sleep(7_000)
+                            await sleep(2_000)
                             console.log('checking if login was completed')
                             revalidator.revalidate()
                         }

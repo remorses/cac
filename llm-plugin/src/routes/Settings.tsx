@@ -138,7 +138,7 @@ function Component() {
             <div className='flex gap-2 items-center'>
                 <div className=''>Questions or requests?</div>
                 <div className='grow'></div>
-                <a target='_blank' href={feedbackUrl('Migrate')}>
+                <a target='_blank' href={feedbackUrl('Ai Rewrite')}>
                     <Button className='w-auto'>Share Feedback</Button>
                 </a>
             </div>

@@ -26,6 +26,7 @@ export const env = {
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
     STRIPE_PRICE_ID_REACT_EXPORT: process.env.STRIPE_PRICE_ID_REACT_EXPORT,
+    PUBLIC_LEMON_PRODUCT_LLM: process.env.PUBLIC_LEMON_PRODUCT_LLM,
 }
 
 // console.log(env)
@@ -81,6 +82,22 @@ export const plansConfig = [
 
         limits: { words: 15_000 },
     },
+    // ai rewrite llm plugin
+    {
+        variantId: 685228,
+
+        limits: { words: 20_000 },
+    },
+    {
+        variantId: 681640,
+
+        limits: { words: 50_000 },
+    },
+    {
+        variantId: 685230,
+
+        limits: { words: 100_000 },
+    },
 ]
 
 const pricingDescription = `
@@ -128,7 +145,7 @@ export function getBuyLLMPluginUrl({ orgId, email, projectId }) {
         throw new Error('No orgId for buy link')
     }
 
-    let productId = env.PUBLIC_LEMON_PRODUCT_MIGRATE!
+    let productId = env.PUBLIC_LEMON_PRODUCT_LLM!
 
     let url = new URL(
         `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
@@ -136,6 +153,10 @@ export function getBuyLLMPluginUrl({ orgId, email, projectId }) {
     if (orgId) {
         url.searchParams.set('checkout[custom][orgId]', orgId)
     }
+    url.searchParams.set(
+        'checkout[custom][pluginName]',
+        'llm' satisfies PluginName,
+    )
     if (projectId) {
         url.searchParams.set('checkout[custom][projectId]', orgId)
     }
@@ -171,6 +192,31 @@ export function createBuyMigrateUrl({ email, orgId, projectId }) {
     if (email) {
         url.searchParams.set('checkout[email]', email)
     }
+    url.searchParams.set(
+        'checkout[custom][pluginName]',
+        'migrate' satisfies PluginName,
+    )
+    url.searchParams.set('embed', '0')
+    url.searchParams.set('logo', '0')
+    url.searchParams.set('dark', '1')
+
+    return url.toString()
+}
+
+export function createBuyAngledScreenUrl({ framerUserId = '' }) {
+    let productId = env.PUBLIC_LEMON_PRODUCT_MIGRATE!
+
+    let url = new URL(
+        `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
+    )
+    if (framerUserId) {
+        url.searchParams.set('checkout[custom][framerUserId]', framerUserId)
+    }
+
+    url.searchParams.set(
+        'checkout[custom][pluginName]',
+        'angledScreen' satisfies PluginName,
+    )
     url.searchParams.set('embed', '0')
     url.searchParams.set('logo', '0')
     url.searchParams.set('dark', '1')

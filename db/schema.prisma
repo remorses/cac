@@ -302,22 +302,23 @@ model OrgInviteLink {
 }
 
 model Org {
-  orgId            String                @id @default(cuid())
-  name             String                @default("")
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @default(now()) @updatedAt
+  orgId            String                 @id @default(cuid())
+  name             String                 @default("")
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @default(now()) @updatedAt
   stripeCustomerId String?
-  ssoProviderId    String?               @unique @db.Uuid
+  ssoProviderId    String?                @unique @db.Uuid
   framerSessions   FramerLoginSession[]
   generations      Generation[]
   licenses         LemonSqueezyLicense[]
-  ssoProvider      sso_providers?        @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
+  ssoProvider      sso_providers?         @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
   invitationLinks  OrgInviteLink[]
   users            OrgsUsers[]
   payments         PaymentForCredits[]
   scrapedUrls      ScrapedWebsitePage[]
   subscriptions    Subscription[]
   reactProjects    ReactExportProject[]
+  llmGenerations   LLMRewriteGeneration[]
 
   @@schema("public")
 }
@@ -387,7 +388,7 @@ model PaymentForCredits {
   orgId          String
   subscriptionId String?
   org            Org             @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-  pluginName     PluginName      @default(migrate)
+  pluginName     PluginName?
   metadata       Json?
   provider       PaymentProvider @default(lemonsqueezy)
   customerId     String?
@@ -417,6 +418,21 @@ model Generation {
   @@schema("public")
 }
 
+model GenerationForLLMRewrite {
+  id          Int              @id @default(autoincrement())
+  createdAt   DateTime         @default(now())
+  orgId       String
+  words       Int
+  chars       Int
+  description String?
+  status      GenerationStatus @default(accepted)
+  projectName String?
+  org         Org              @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+
+  @@index([orgId])
+  @@schema("public")
+}
+
 model Subscription {
   subscriptionId String
   orderId        String?
@@ -433,7 +449,7 @@ model Subscription {
   metadata       Json?
   provider       PaymentProvider    @default(lemonsqueezy)
   org            Org                @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-  pluginName     PluginName         @default(migrate)
+  pluginName     PluginName?
   customerId     String?
 
   @@id([subscriptionId, variantId])
@@ -663,6 +679,7 @@ enum PluginName {
   githubSync
   reactExport
   llm
+  angledScreen
 
   @@schema("public")
 }

@@ -1,4 +1,4 @@
-import { prisma } from 'db/prisma'
+import { PluginName, prisma } from 'db/prisma'
 import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 
@@ -84,11 +84,15 @@ export async function validateLicenseKey({ orgId, licenseKey }) {
 //     return { subs, limits, hasFreeTrial: false }
 // }
 
-export async function getOrgCredits({ orgId }) {
+export async function getOrgPluginCredits({ orgId, pluginName }: {
+    orgId: string
+    pluginName?: PluginName
+}) {
     const [payments, allWords, licenseCredits] = await Promise.all([
         prisma.paymentForCredits.findMany({
             where: {
                 orgId,
+                pluginName,
             },
             select: {
                 variantId: true,

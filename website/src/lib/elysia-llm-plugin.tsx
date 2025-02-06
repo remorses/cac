@@ -11,7 +11,7 @@ import { createFallback } from 'ai-fallback'
 import { db } from 'db/kysely'
 import { prisma } from 'db/prisma'
 import Stripe from 'stripe'
-import { getOrgCredits } from 'website/src/lib/credits'
+import { getOrgPluginCredits } from 'website/src/lib/credits'
 import { env } from 'website/src/lib/env'
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
 import { FramerLayersTree } from 'website/src/lib/rewrite'
@@ -144,7 +144,7 @@ export const llmPluginApp = new Spiceflow({
             if (!userId) {
                 throw unauthorizedResponse
             }
-            const credits = await getOrgCredits({ orgId: userId })
+            const credits = await getOrgPluginCredits({ orgId: userId, pluginName: 'llm' })
 
             return credits
         },
