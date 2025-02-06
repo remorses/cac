@@ -30,8 +30,9 @@ import { generateStackblitzProject } from 'website/src/lib/utils'
 
 function markdown({ shortId }) {
     return `
+Click the button at the bottom to open a demo project in Stackblitz.
 
-To download and start using your React components, run the following command:
+To download the components in your own codebase, run the following command:
 
     npx unframer@latest ${shortId}
 
@@ -175,12 +176,12 @@ function Component() {
     // useNotifier()
     const navigate = useNavigate()
     return (
-        <div className='flex flex-col justify-start gap-3'>
+        <div className='flex flex-col justify-start gap-2 px-1'>
             <div className='flex grow max-w-full'>
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}
                     className={
-                        'max-w-full tracking-normal leading-normal prose prose-sm text-sm dark:prose-invert prose-pre:px-3 prose-pre:text-[14px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
+                        'max-w-full tracking-wide leading-normal prose text-[13px] dark:prose-invert prose-pre:px-3 prose-pre:text-[14px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
                     }
                 ></div>
             </div>
