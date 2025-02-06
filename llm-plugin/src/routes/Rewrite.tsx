@@ -400,6 +400,7 @@ function SimplePromptComponent({}) {
                 )}
             </div>
             <div className='w-full'>
+                {/* <div className="text-[12px] opacity-70">Press arrow keys to go get previous prompts</div> */}
                 <textarea
                     ref={textareaRef}
                     // disabled={buyCreditsInstead}
