@@ -239,7 +239,6 @@ export function safeUrl(u) {
     }
 }
 
-
 export async function generateStackblitzProject({ projectId, title = '' }) {
     const sdk = await import('@stackblitz/sdk').then((x) => x.default)
 
@@ -265,9 +264,12 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
             '@types/react': 'latest',
             '@types/react-dom': 'latest',
             '@vitejs/plugin-react': 'latest',
+            tailwindcss: 'latest',
+            '@tailwindcss/vite': 'latest',
             typescript: 'latest',
             vite: 'latest',
         },
+        packageManager: 'pnpm',
     }
 
     const tsconfig = {
@@ -293,10 +295,11 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
     const viteConfig = dedent`
         import { defineConfig } from 'vite'
         import react from '@vitejs/plugin-react'
+        import tailwindcss from '@tailwindcss/vite'
         
         // https://vitejs.dev/config/
         export default defineConfig({
-            plugins: [react()],
+            plugins: [react(), tailwindcss()],
         })`
 
     const indexHtml = dedent`
@@ -349,6 +352,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         }`
 
     const main = dedent`
+        import 'tailwindcss/index.css';
         import React from 'react'
         import ReactDOM from 'react-dom/client'
         import App from './App'
