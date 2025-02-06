@@ -1,15 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/elysia.server'
 import { env } from 'website/src/lib/env'
-import * as THREE from 'three'
-import { framer } from 'framer-plugin'
-import { redirect } from 'react-router'
-import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
-import {
-    PluginDataKeys,
-    withMode,
-    Paths,
-} from 'template-rewrite-framer/src/lib/utils'
 
 
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
@@ -78,7 +70,7 @@ export function useAsyncEffect(
 ) {
     const isProcessing = useRef<boolean>(false)
 
-    const abortController = useRef<AbortController>()
+    const abortController = useRef<AbortController>(null)
     useEffect(() => {
         if (!isProcessing.current) {
             abortController.current?.abort()
