@@ -346,7 +346,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         Just wait until it finishes downloading and bundling your Framer components.
         Once complete, you'll see your components rendered in the browser preview on the right and this file will be replaced with an example.
         
-        Try making changes to your components in Framer, then run the unframer command again
+        Try making changes to your components in Framer, then run the \`npm run framer\` command again
         to see the updates reflected here.
         
         ## How it works:
