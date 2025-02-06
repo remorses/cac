@@ -238,7 +238,6 @@ export function safeUrl(u) {
         return null
     }
 }
-
 export async function generateStackblitzProject({ projectId, title = '' }) {
     const sdk = await import('@stackblitz/sdk').then((x) => x.default)
 
@@ -264,12 +263,12 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
             '@types/react': 'latest',
             '@types/react-dom': 'latest',
             '@vitejs/plugin-react': 'latest',
-            tailwindcss: 'latest',
-            '@tailwindcss/vite': 'latest',
+            'tailwindcss': '^3.4.0',
+            'postcss': '^8.4.0',
+            'autoprefixer': '^10.4.0',
             typescript: 'latest',
             vite: 'latest',
         },
-        packageManager: 'pnpm',
     }
 
     const tsconfig = {
@@ -295,12 +294,32 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
     const viteConfig = dedent`
         import { defineConfig } from 'vite'
         import react from '@vitejs/plugin-react'
-        import tailwindcss from '@tailwindcss/vite'
         
         // https://vitejs.dev/config/
         export default defineConfig({
-            plugins: [react(), tailwindcss()],
+            plugins: [react()],
         })`
+
+    const postcssConfig = dedent`
+        export default {
+            plugins: {
+                tailwindcss: {},
+                autoprefixer: {},
+            }
+        }`
+
+    const tailwindConfig = dedent`
+        /** @type {import('tailwindcss').Config} */
+        export default {
+            content: [
+                "./index.html",
+                "./src/**/*.{js,ts,jsx,tsx}",
+            ],
+            theme: {
+                extend: {},
+            },
+            plugins: [],
+        }`
 
     const indexHtml = dedent`
         <!doctype html>
@@ -352,7 +371,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         }`
 
     const main = dedent`
-        import 'tailwindcss/index.css';
+        import './index.css'
         import React from 'react'
         import ReactDOM from 'react-dom/client'
         import App from './App'
@@ -360,6 +379,11 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         ReactDOM.createRoot(document.getElementById('root')!).render(
             <App />
         )`
+
+    const css = dedent`
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`
 
     return sdk.openProject(
         {
@@ -370,9 +394,12 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
                 'tsconfig.json': JSON.stringify(tsconfig, null, 2),
                 'package.json': JSON.stringify(packageJson, null, 2),
                 'vite.config.ts': viteConfig,
+                'postcss.config.js': postcssConfig,
+                'tailwind.config.js': tailwindConfig,
                 'index.html': indexHtml,
                 'src/App.tsx': app,
-                // 'src/index.css': '',
+                'src/index.css': css,
+                'pnpm-lock.yaml': '\n',
                 'src/main.tsx': main,
             },
         },

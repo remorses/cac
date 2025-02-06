@@ -27,6 +27,7 @@ import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { Link } from 'react-router-dom'
 import { ReactExportComponent } from 'db/prisma'
 import { generateStackblitzProject } from 'website/src/lib/utils'
+
 function markdown({ shortId }) {
     return `
 
@@ -195,7 +196,10 @@ function Component() {
                     }}
                     className=''
                 >
-                    Open Demo in Stackblitz
+                    <div className='flex items-center text-xs justify-center gap-2'>
+                        {/* <MaterialSymbolsBolt className="size-[14px] shrink-0" /> */}
+                        Open Demo in Stackblitz
+                    </div>
                 </Button>
 
                 {/* <Link className='grow' to={withMode(Paths.components)}>
@@ -210,5 +214,22 @@ function Component() {
                 </a> */}
             </div>
         </div>
+    )
+}
+
+function MaterialSymbolsBolt(props) {
+    return (
+        <svg
+            xmlns='http://www.w3.org/2000/svg'
+            width='1em'
+            height='1em'
+            viewBox='0 0 24 24'
+            {...props}
+        >
+            <path
+                fill='currentColor'
+                d='m8 22l1-7H4l9-13h2l-1 8h6L10 22z'
+            ></path>
+        </svg>
     )
 }
