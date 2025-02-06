@@ -55,7 +55,7 @@ function ScrapeWebsiteComponent() {
         fetchData()
         // abort when leaving the page
         return () => {
-            NProgress.done()
+            NProgress?.done?.()
             abortController.abort()
         }
     }, [])

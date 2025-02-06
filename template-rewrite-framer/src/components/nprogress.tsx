@@ -13,7 +13,7 @@ export function NProgressComponent() {
         if (navigation.state !== 'idle' || revalidator.state !== 'idle') {
             NProgress.start() // so you start it
         } else {
-            NProgress.done() // when it's idle again complete it
+            NProgress?.done?.() // when it's idle again complete it
         }
     }, [navigation.state, revalidator.state])
 

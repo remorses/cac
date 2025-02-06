@@ -197,7 +197,7 @@ export function ErrorBoundary() {
     const error = useRouteError() as any
     useEffect(() => {
         notifyError(error, 'ErrorBoundary')
-        NProgress.done()
+        NProgress?.done?.()
     }, [error])
     return (
         <div className='flex flex-col w-full h-full gap-2 items-center justify-center'>

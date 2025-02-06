@@ -111,7 +111,7 @@ const router = createMemoryRouter(
 
             ErrorBoundary() {
                 const error = useRouteError() as any
-                NProgress.done()
+                NProgress?.done?.()
                 useEffect(() => {
                     notifyError(error, 'ErrorBoundary')
                 }, [error])

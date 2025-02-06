@@ -82,7 +82,7 @@ const router = createBrowserRouter(
 
                 useEffect(() => {
                     notifyError(error, 'ErrorBoundary')
-                    NProgress.done()
+                    NProgress?.done?.()
                 }, [error])
                 return (
                     <div className='flex max-w-full flex-col w-full h-full gap-2 items-center '>
