@@ -351,7 +351,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         
         ## How it works:
         1. The Framer React Export plugin saves your components to the Unframer database
-        2. The unframer CLI downloads and bundles those components into regular React components
+        2. The unframer CLI downloads and bundles those components into regular React components inside the \`src/framer\` folder
         3. You can then import and use them in your React app just like any other component
         
         \`
