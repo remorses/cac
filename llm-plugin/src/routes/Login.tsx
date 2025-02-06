@@ -85,7 +85,7 @@ function LoginComponent() {
     return (
         <div
             style={containerStyle}
-            className='flex flex-col justify-end grow min-h-[360px] gap-3'
+            className='flex flex-col justify-end grow min-h-[340px] gap-3'
         >
             <div className='flex flex-col gap-8 items-center justify-center grow -m-[48px]'>
                 <img
@@ -97,7 +97,7 @@ function LoginComponent() {
             <div className='text-center mx-auto my-4 gap-2 flex flex-col max-w-xs'>
                 {/* <div className='font-semibold'>Connect to Google</div> */}
                 <div className=' dark:text-gray-300 max-w-[200px] leading-relaxed text-center text-balance'>
-                    login with Google to track your progress
+                    Login with Google to track your progress
                 </div>
             </div>
 
