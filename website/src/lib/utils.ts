@@ -1,4 +1,5 @@
 import { FramerLayersTree } from 'website/src/lib/rewrite'
+import sdk from '@stackblitz/sdk'
 
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
@@ -239,8 +240,6 @@ export function safeUrl(u) {
     }
 }
 export async function generateStackblitzProject({ projectId, title = '' }) {
-    const sdk = await import('@stackblitz/sdk').then((x) => x.default)
-
     const packageJson = {
         name: 'unframer-vite-react-typescript-starter',
         private: true,
@@ -263,9 +262,9 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
             '@types/react': 'latest',
             '@types/react-dom': 'latest',
             '@vitejs/plugin-react': 'latest',
-            'tailwindcss': '^3.4.0',
-            'postcss': '^8.4.0',
-            'autoprefixer': '^10.4.0',
+            tailwindcss: '^3.4.0',
+            postcss: '^8.4.0',
+            autoprefixer: '^10.4.0',
             typescript: 'latest',
             vite: 'latest',
         },
