@@ -181,7 +181,7 @@ function Component() {
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}
                     className={
-                        'max-w-full tracking-wide leading-normal prose text-[13px] dark:prose-invert prose-pre:px-3 prose-pre:text-[14px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
+                        'max-w-full tracking-wide leading-normal prose-sm text-[13px] dark:prose-invert prose-pre:px-3 prose-pre:text-[14px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
                     }
                 ></div>
             </div>
