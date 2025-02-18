@@ -458,14 +458,14 @@ function SimplePromptComponent({}) {
                 <SubmitButton
                     selectedNodes={selectedNodes}
                     isLoading={isLoading}
-                    canEdit={description && selectedNodes.length}
+                    description={description}
                 />
             </div>
         </form>
     )
 }
 
-function SubmitButton({ selectedNodes, isLoading, canEdit }) {
+function SubmitButton({ isLoading, description, selectedNodes }) {
     const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
     const { credits } = use(deferred)
     const [buttonText, disabled] = (() => {
@@ -475,7 +475,10 @@ function SubmitButton({ selectedNodes, isLoading, canEdit }) {
         if (!selectedNodes.length) {
             return ['Select to Edit', true]
         }
-        return ['Edit Selection', !canEdit]
+        if (!description) {
+            return ['Add a Prompt', true]
+        }
+        return ['Edit Selection', false]
     })()
     return (
         <Button
