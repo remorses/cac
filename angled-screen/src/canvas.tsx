@@ -168,11 +168,11 @@ export class ThreeCanvas {
             targetHeight = Math.ceil(targetHeight * scale)
         }
 
-        // if (isPreview && targetWidth * targetHeight > 1280 * 720) {
-        //     const scale = Math.sqrt((1280 * 720) / (targetWidth * targetHeight))
-        //     targetWidth = Math.ceil(targetWidth * scale)
-        //     targetHeight = Math.ceil(targetHeight * scale)
-        // }
+        if (isPreview && targetWidth * targetHeight > 1280 * 720) {
+            const scale = Math.sqrt((1280 * 720) / (targetWidth * targetHeight))
+            targetWidth = Math.ceil(targetWidth * scale)
+            targetHeight = Math.ceil(targetHeight * scale)
+        }
 
         console.log(`setting size to ${targetWidth}x${targetHeight}`)
         this.bokehPass.needsSwap = true
