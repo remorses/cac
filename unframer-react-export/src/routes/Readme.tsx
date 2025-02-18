@@ -176,6 +176,10 @@ function Component() {
     const markdownHtml = marked(markdown({ shortId }))
     // useNotifier()
     const navigate = useNavigate()
+    const stackblitzUrl = new URL('/unframer-open-stackblitz', env.PUBLIC_URL)
+    stackblitzUrl.searchParams.set('projectId', shortId)
+    stackblitzUrl.searchParams.set('title', projectName)
+
     return (
         <div className='flex flex-col justify-start gap-2 px-1'>
             <div className='flex grow max-w-full'>
@@ -189,13 +193,7 @@ function Component() {
             {/* <hr className='' /> */}
 
             <div className='flex gap-3 grow'>
-                <a
-                    href={
-                        new URL('/unframer-open-stackblitz', env.PUBLIC_URL)
-                            .href
-                    }
-                    target='_blank'
-                >
+                <a href={stackblitzUrl.href} className='grow' target='_blank'>
                     <Button variant='primary' className=''>
                         <div className='flex items-center text-xs justify-center gap-2'>
                             {/* <MaterialSymbolsBolt className="size-[14px] shrink-0" /> */}
