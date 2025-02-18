@@ -31,7 +31,7 @@
         "pg": "^8.13.1"
     },
     "devDependencies": {
-        "@types/node": "^22.12.0",
+        "@types/node": "^22.13.4",
         "concurrently": "^9.1.2",
         "kysely-codegen": "^0.17.0",
         "prisma": "^6.2.1",
