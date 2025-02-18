@@ -458,24 +458,24 @@ function SimplePromptComponent({}) {
                 <SubmitButton
                     selectedNodes={selectedNodes}
                     isLoading={isLoading}
-                    disabled={!description || !selectedNodes.length}
+                    canEdit={description && selectedNodes.length}
                 />
             </div>
         </form>
     )
 }
 
-function SubmitButton({ selectedNodes, isLoading, disabled }) {
+function SubmitButton({ selectedNodes, isLoading, canEdit }) {
     const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
     const { credits } = use(deferred)
-    const buttonText = (() => {
+    const [buttonText, disabled] = (() => {
         if (!credits.remaining) {
-            return 'Buy More Credits'
+            return ['Buy More Credits', true]
         }
         if (!selectedNodes.length) {
-            return 'Select to Edit'
+            return ['Select to Edit', true]
         }
-        return 'Edit Selection'
+        return ['Edit Selection', !canEdit]
     })()
     return (
         <Button
@@ -505,7 +505,7 @@ export function SimplePrompt(): RouteObject {
 async function loader({}: LoaderFunctionArgs) {
     const deferred = async () => {
         let [credits, { email, orgId }, info] = await Promise.all([
-            pluginApiClient.api.plugins.rewritePlugin.getCredits
+            pluginApiClient.api.plugins.llm.getCredits
                 .post({})
                 .then(({ data, error }) => {
                     if (error) {

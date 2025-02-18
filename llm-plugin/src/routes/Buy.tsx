@@ -30,20 +30,19 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             }),
     ])
-    const { activeSub, freeSyncs } =
-        await pluginApiClient.api.plugins.markdownPlugin.subscriptions
-            .get({ query: { projectId: pluginData.projectId } })
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error
-                }
-                return data
-            })
+    const { activeSub } = await pluginApiClient.api.plugins.llm.subscriptions
+        .get({ query: { projectId: pluginData.projectId } })
+        .then(({ data, error }) => {
+            if (error) {
+                throw error
+            }
+            return data
+        })
     if (activeSub) {
         throw redirect(withMode(Paths.prompt))
     }
     const { email, orgId } = org
-    return { ...pluginData, email, freeSyncs, orgId }
+    return { ...pluginData, email, orgId }
 }
 
 export function BuyMoreSyncs(): RouteObject {
@@ -56,8 +55,9 @@ export function BuyMoreSyncs(): RouteObject {
 }
 
 function Component() {
-    const { orgId, projectId, freeSyncs, email } =
-        useLoaderData() as LoaderReturnType<typeof loader>
+    const { orgId, projectId, email } = useLoaderData() as LoaderReturnType<
+        typeof loader
+    >
     useRefreshOnVisible({ enabled: true })
     const revalidator = useRevalidator()
     useEffect(() => {

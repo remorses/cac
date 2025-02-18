@@ -22,7 +22,7 @@ import {
 } from 'website/src/lib/xml'
 import { z } from 'zod'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
-
+import { google } from '@ai-sdk/google'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -40,6 +40,7 @@ let projectsEvents = new Map<string, Evt<FramerEventLLM>>()
 
 let model = createFallback({
     models: [
+        google('gemini-2.0-flash-001'),
         anthropic('claude-3-5-haiku-latest'),
         // anthropic('claude-3-5-sonnet-latest'),
         openai('gpt-4o'), //
@@ -151,6 +152,7 @@ export const llmPluginApp = new Spiceflow({
                 pluginName: 'llm',
             })
 
+            // console.log('credits', credits)
             return credits
         },
         {
@@ -224,7 +226,7 @@ export const llmPluginApp = new Spiceflow({
                                 nodeIds: z.array(z.string()),
                             }),
                             description: dedent`
-                            Clone multiple subtrees or leaves whose you can later edit.
+                            Clone multiple subtrees you can later edit. Only call if the user requested change requires adding new nodes.
                             Returns the diff of the updated xml tree so you can then act on the new nodeIds.
                             Notice that you can pass multiple nodeIds at the same time to save time.
                             `,
