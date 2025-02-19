@@ -94,7 +94,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
     })
     .get(
         '/angledScreen/generationsForUser',
-        async ({ request, query }) => {
+        async ({ request, state, query }) => {
             const { framerUserId } = await query
             const row = await prisma.angledScreenImagesGenerated.findUnique({
                 where: {
@@ -102,6 +102,9 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                 },
             })
             let maxFreeGenerations = 3
+            if ((await state.userEmail)?.endsWith('@framer.com')) {
+                maxFreeGenerations = 100
+            }
             const { generations = 0, licenseKey } = row || {}
             const shouldBuyLicense =
                 !licenseKey && generations > maxFreeGenerations

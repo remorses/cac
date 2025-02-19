@@ -425,7 +425,6 @@ function RotationsImage() {
 const Container = ({ children, width = defaultWith, ...rest }) => {
     const [ref, { height }] = useMeasure()
     useLayoutEffect(() => {
-        console.log('opening framer ui')
         framer.showUI({
             // title: (handle?.handle as any) || '',
             position: 'top left',
