@@ -50,9 +50,9 @@ export class ThreeCanvas {
             antialias: true,
             canvas: this.canvas,
             preserveDrawingBuffer: true,
-            alpha: true,
+            // alpha: true,
             precision: 'highp',
-            
+            // logarithmicDepthBuffer: true,
             powerPreference: 'high-performance',
         })
 
@@ -65,7 +65,7 @@ export class ThreeCanvas {
 
         // this.texture.flipY = false
 
-        this.camera = new THREE.PerspectiveCamera(75, 1920/1080, 0.1, 1000)
+        this.camera = new THREE.PerspectiveCamera(75, 1920 / 1080, 0.1, 1000)
         this.camera.position.x = 0.2 // Add slight x offset
         this.camera.position.y = 0.1 // Add slight y offset
 
@@ -168,20 +168,29 @@ export class ThreeCanvas {
             targetHeight = Math.ceil(targetHeight * scale)
         }
 
-        if (isPreview && targetWidth * targetHeight > 1280 * 720) {
-            const scale = Math.sqrt((1280 * 720) / (targetWidth * targetHeight))
+        let maxPixels = 3840 * 2160 * 2 // 4K resolution
+        if (isPreview) {
+            maxPixels = 1280 * 720
+        }
+
+        if (targetWidth * targetHeight > maxPixels) {
+            const scale = Math.sqrt(maxPixels / (targetWidth * targetHeight))
             targetWidth = Math.ceil(targetWidth * scale)
             targetHeight = Math.ceil(targetHeight * scale)
         }
 
         console.log(`setting size to ${targetWidth}x${targetHeight}`)
-        this.bokehPass.needsSwap = true
-        this.composer.setSize(targetWidth, targetHeight)
-        this.bokehPass.setSize(targetWidth, targetHeight)
-        this.filmGrainPass.setSize(targetWidth, targetHeight)
         this.renderer.setSize(targetWidth, targetHeight, false)
         this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setViewport(0, 0, targetWidth, targetHeight)
+        
+        this.camera.aspect = targetWidth / targetHeight
+        this.camera.updateProjectionMatrix()
+        
+        this.bokehPass.needsSwap = true
+        this.bokehPass.setSize(targetWidth, targetHeight)
+        this.filmGrainPass.setSize(targetWidth, targetHeight)
+        this.composer.setSize(targetWidth, targetHeight)
     }
 
     changeImage(bitmap: ImageBitmap) {

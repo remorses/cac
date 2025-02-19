@@ -248,9 +248,8 @@ function RotationsImage() {
         await threeCanvas.updateCanvas()
         await sleep(20)
         if (!deferred) {
-            console.log('no deferred')
+            console.warn('no deferred')
         }
-        console.log(await deferred)
         const { shouldBuyLicense } = (await deferred) || {}
         if (shouldBuyLicense) {
             console.log('redirecting to license')
@@ -269,7 +268,11 @@ function RotationsImage() {
         // document.body.appendChild(img)
         assert(nextBytes)
 
-        console.log('saving image with type', mimeType, nextBytes.length)
+        console.log(
+            'saving image with type',
+            mimeType,
+            formatBytes(nextBytes.length || 0),
+        )
         const start = performance.now()
         await Promise.all([
             framer.setImage({
@@ -491,4 +494,14 @@ function setRangeProgress(el?: HTMLInputElement | null) {
 
     const progress = ((value - min) / (max - min)) * 100
     range.style.setProperty('--progress', `${progress}%`)
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes'
+
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
 }
