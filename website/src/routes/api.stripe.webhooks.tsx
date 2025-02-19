@@ -65,14 +65,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     return new Response('Received', { status: 200 })
 }
-
 async function handleCheckoutSessionCompleted(
     session: Stripe.Checkout.Session,
 ) {
-    const customerEmail = session.customer_details?.email
+    // Fetch latest session data
+    const latestSession = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ['line_items']
+    });
 
-    const orgId = session.metadata?.orgId
-    const pluginName = session.metadata?.pluginName as any
+    const customerEmail = latestSession.customer_details?.email
+
+    const orgId = latestSession.metadata?.orgId
+    const pluginName = latestSession.metadata?.pluginName as any
     if (!orgId) {
         notifyError(
             new AppError('No orgId in Stripe metadata'),
@@ -81,7 +85,7 @@ async function handleCheckoutSessionCompleted(
         return
     }
 
-    const item = session.line_items?.data[0] // Assuming single item checkout
+    const item = latestSession.line_items?.data[0] // Assuming single item checkout
     console.log('item', item)
     if (!item || !item.price?.id) {
         return
@@ -89,20 +93,21 @@ async function handleCheckoutSessionCompleted(
     }
 
     const create: Prisma.PaymentForCreditsCreateManyInput = {
-        id: session.id,
+        id: latestSession.id,
         email: customerEmail || '',
         variantName: item.description || '',
-        orderId: session.id,
+        orderId: latestSession.id,
         productId: item.price?.product.toString(),
         variantId: item.price?.id,
         provider: 'stripe',
         orgId,
         pluginName,
-        metadata: session.metadata || {},
+        metadata: latestSession.metadata || {},
+        // status: latestSession.payment_status,
     }
 
     await prisma.paymentForCredits.upsert({
-        where: { id: session.id },
+        where: { id: latestSession.id },
         create,
         update: create,
     })
