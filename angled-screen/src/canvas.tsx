@@ -100,6 +100,7 @@ export class ThreeCanvas {
         this.composer.addPass(this.bokehPass)
 
         this.filmGrainPass = new ShaderPass(filmGrainShader)
+        
         this.composer.addPass(this.filmGrainPass)
 
         // Add OrbitControls after camera setup
@@ -186,9 +187,8 @@ export class ThreeCanvas {
         
         this.camera.aspect = targetWidth / targetHeight
         this.camera.updateProjectionMatrix()
-        
-        this.bokehPass.needsSwap = true
         this.bokehPass.setSize(targetWidth, targetHeight)
+
         this.filmGrainPass.setSize(targetWidth, targetHeight)
         this.composer.setSize(targetWidth, targetHeight)
     }

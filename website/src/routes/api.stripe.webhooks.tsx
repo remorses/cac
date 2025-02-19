@@ -44,9 +44,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             case 'customer.subscription.created':
             case 'customer.subscription.updated':
             case 'customer.subscription.deleted':
-                
-                const subscription = event.data.object as Stripe.Subscription
-                
+                const subscription = event.data.object
+
                 await handleSubscriptionChange(subscription, event.type)
                 break
             case 'invoice.payment_succeeded':
@@ -113,7 +112,12 @@ async function handleSubscriptionChange(
     subscription: Stripe.Subscription,
     eventType: string,
 ) {
-    const orgId = subscription.metadata?.orgId
+    // Fetch the latest subscription data from Stripe
+    const latestSubscription = await stripe.subscriptions.retrieve(
+        subscription.id,
+    )
+
+    const orgId = latestSubscription.metadata?.orgId
 
     if (!orgId) {
         notifyError(
@@ -122,26 +126,28 @@ async function handleSubscriptionChange(
         )
         return
     }
-    const pluginName = subscription.metadata?.pluginName as any
+    const pluginName = latestSubscription.metadata?.pluginName as any
 
     const create: Prisma.SubscriptionCreateManyInput = {
         orgId: orgId,
-        orderId: subscription.id,
-        productId: subscription.items.data[0]?.price.product.toString(),
-        variantId: subscription.items.data[0]?.price.id,
-        subscriptionId: subscription.id,
+        orderId: latestSubscription.id,
+        productId: latestSubscription.items.data[0]?.price.product.toString(),
+        variantId: latestSubscription.items.data[0]?.price.id,
+        subscriptionId: latestSubscription.id,
         email: orgId || undefined,
-        endsAt: subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000)
+        endsAt: latestSubscription.current_period_end
+            ? new Date(latestSubscription.current_period_end * 1000)
             : undefined,
-        status: subscription.status,
-        variantName: subscription.items.data[0]?.price.nickname || undefined,
-        createdAt: new Date(subscription.created * 1000),
+        status: latestSubscription.status,
+        variantName:
+            latestSubscription.items.data[0]?.price.nickname || undefined,
+        createdAt: new Date(latestSubscription.created * 1000),
         pluginName,
-        metadata: subscription.metadata || {},
+        metadata: latestSubscription.metadata || {},
         provider: 'stripe',
-        customerId: subscription.customer.toString(),
+        customerId: latestSubscription.customer.toString(),
     }
+    console.log(`updating subscription with data:`, create)
 
     await prisma.subscription.upsert({
         where: {
