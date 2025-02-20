@@ -352,7 +352,7 @@ async function getReactSub({ orgId, projectId }) {
         where: {
             orgId: orgId,
             status: {
-                in: ['active', 'trialing'],
+                in: ['active', 'trialing', 'on_trial'],
             },
             pluginName: 'reactExport',
             // metadata: {

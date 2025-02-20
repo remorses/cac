@@ -37,8 +37,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 pluginName,
                 orgId: orgId,
             },
+            trial_period_days: 7,
+            // trial_settings: {
+            //     end_behavior: 'cancel',
+            // },
         },
-
+        // payment_method_collection: 'always',
         allow_promotion_codes: true, // Enable coupon/promotion code input
     })
     if (!session.url?.toString()) {

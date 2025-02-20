@@ -72,7 +72,7 @@ function Component() {
             <div className='flex items-center'>
                 <div className='font-semibold text-balance'>
                     Please buy the plugin subscription to continue using GitHub
-                    Sync.
+                    Sync. There is a 7 days free trial.
                 </div>
             </div>
             <div className='flex items-center'>

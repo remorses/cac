@@ -37,6 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 pluginName,
                 orgId: orgId,
             },
+            // trial_period_days: 7,
         },
 
         allow_promotion_codes: true, // Enable coupon/promotion code input
