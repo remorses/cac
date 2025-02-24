@@ -31,7 +31,7 @@ export const componentObjectSchema = z.object({
     url: z.string(),
 })
 
-export const freeComponents = 30
+export const freeComponents = 10
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
