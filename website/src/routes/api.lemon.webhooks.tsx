@@ -2,7 +2,7 @@ import {
     DiscriminatedWebhookPayload,
     whatwgWebhooksHandler,
 } from 'lemonsqueezy-webhooks'
-import { prisma, Prisma } from 'db/prisma'
+import { PluginName, prisma, Prisma } from 'db/prisma'
 import { env, plansConfig } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
 import { ActionFunctionArgs } from '@remix-run/node'
@@ -39,7 +39,8 @@ export const action = ({ request }: ActionFunctionArgs) => {
             console.log(JSON.stringify(payload))
             let customData = payload.meta.custom_data
             let orgId = customData?.orgId
-            let pluginName = customData?.pluginName
+            let pluginName: PluginName = customData?.pluginName
+
             if (!orgId) {
                 notifyError(
                     new AppError(
@@ -85,6 +86,13 @@ export const action = ({ request }: ActionFunctionArgs) => {
                 let data = payload.data
                 let item = data.attributes.first_order_item
 
+                const productId = String(item.product_id)
+                if (
+                    productId === env.PUBLIC_LEMON_PRODUCT_MIGRATE &&
+                    !pluginName
+                ) {
+                    pluginName = 'migrate'
+                }
                 let create: Prisma.PaymentForCreditsCreateManyInput = {
                     id: String(data.id),
                     // price: 0,
