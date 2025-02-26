@@ -187,6 +187,8 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
         variantId: subscription.items.data[0]?.price.id,
         variantName: subscription.items.data[0]?.price.nickname || undefined,
         customerId: subscription.customer.toString(),
+        provider: 'stripe',
+
         orgId,
     }
 
