@@ -42,6 +42,10 @@ export const action = ({ request }: ActionFunctionArgs) => {
             let pluginName: PluginName = customData?.pluginName
 
             if (!orgId) {
+                if (customData?.framerUserId) {
+                    // angled screen does not track orgId, ignore
+                    return
+                }
                 notifyError(
                     new AppError(
                         'No orgId in lemon squeezy custom_data, ignoring ' +
