@@ -31,7 +31,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
             ...params,
             orgId: orgId,
         },
+        
         subscription_data: {
+            
             metadata: {
                 ...params,
                 pluginName,

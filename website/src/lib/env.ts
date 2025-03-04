@@ -27,6 +27,7 @@ export const env = {
     STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
     STRIPE_PRICE_ID_REACT_EXPORT: process.env.STRIPE_PRICE_ID_REACT_EXPORT,
     PUBLIC_LEMON_PRODUCT_LLM: process.env.PUBLIC_LEMON_PRODUCT_LLM,
+    PUBLIC_LEMON_PRODUCT_ANGLED: process.env.PUBLIC_LEMON_PRODUCT_ANGLED,
 }
 
 // console.log(env)
@@ -204,7 +205,7 @@ export function createBuyMigrateUrl({ email, orgId, projectId }) {
 }
 
 export function createBuyAngledScreenUrl({ framerUserId = '' }) {
-    let productId = env.PUBLIC_LEMON_PRODUCT_MIGRATE!
+    let productId = env.PUBLIC_LEMON_PRODUCT_ANGLED!
 
     let url = new URL(
         `https://unframer.lemonsqueezy.com/checkout/buy/${productId}`,
