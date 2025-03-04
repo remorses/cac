@@ -19,7 +19,11 @@ import { basePath, withMode } from 'template-rewrite-framer/src/lib/utils'
 import { use, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { flushSync } from 'react-dom'
-import { useRevalidator, useRouteLoaderData } from 'react-router'
+import {
+    LoaderFunctionArgs,
+    useRevalidator,
+    useRouteLoaderData,
+} from 'react-router'
 import { ThreeCanvas } from './canvas'
 import {
     assert,
@@ -112,9 +116,13 @@ function LicenseComponent() {
         navigation.state !== 'idle' && Boolean(navigation.formData)
     const navigate = useNavigate()
     const { deferred } = useRouteLoaderData<typeof loader>('root')!
+
+    const data = use(deferred)
+
     const buyUrl = createBuyAngledScreenUrl({
-        // framerUserId: deferred.framerUserId,
+        framerUserId: data.framerUserId,
     })
+
     return (
         <Container width={260}>
             <Form
@@ -193,7 +201,11 @@ function CanvasComponent({ ...rest }) {
     return <div {...rest} ref={containerRef}></div>
 }
 
-async function loader() {
+async function loader({ request }: LoaderFunctionArgs) {
+    // if (new URL(request.url).pathname === '/') {
+    //     throw redirect(withMode(Paths.license))
+    // }
+
     const deferred = async () => {
         const { id: framerUserId } = await framer.getCurrentUser()
         const { data, error } =
