@@ -102,7 +102,7 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                 },
             })
             // TODO decrease free generations when angled screen fix is deployed
-            let maxFreeGenerations = 100
+            let maxFreeGenerations = 5
             if ((await state.userEmail)?.endsWith('@framer.com')) {
                 maxFreeGenerations = 100
             }
