@@ -2,7 +2,10 @@ import { env } from 'website/src/lib/env'
 
 import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
-import { CollectionField, framer } from 'framer-plugin'
+import {
+    ManagedCollectionField as CollectionField,
+    framer,
+} from 'framer-plugin'
 import type { RouteType } from 'website/src/lib/elysia.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'

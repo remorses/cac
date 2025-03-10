@@ -1,5 +1,5 @@
-import domSerializer from 'dom-serializer'
 import crypto from 'crypto'
+import domSerializer from 'dom-serializer'
 import * as domutils from 'domutils'
 
 import { Spiceflow } from 'spiceflow'
@@ -8,10 +8,9 @@ import { notifyError } from 'website/src/lib/errors'
 
 import { prisma } from 'db/prisma'
 import DomHandler from 'domhandler'
-import { CollectionField } from 'framer-plugin'
 import { Parser } from 'htmlparser2'
-import { Octokit } from 'octokit'
 import path from 'path'
+import { Sema } from 'sema4'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
 import {
@@ -25,7 +24,7 @@ import {
 import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
 import { canHaveFreePlugin, isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
-import { Sema } from 'sema4'
+import { ManagedCollection, ManagedCollectionField } from 'framer-plugin'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 const freeSyncs = 5
@@ -657,7 +656,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 githubAccountLogin: z.string(),
                 projectId: z.string(),
                 projectName: z.string(),
-                mapFieldsConfig: z.custom<CollectionField[]>().optional(),
+                mapFieldsConfig: z.custom<ManagedCollectionField[]>().optional(),
                 onlyGetFrontmatter: z.boolean().optional(), // TODO remove this
                 enablePartialUpdate: z.boolean().optional(),
             }),

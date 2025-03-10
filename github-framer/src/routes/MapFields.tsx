@@ -1,4 +1,4 @@
-import { CollectionField } from 'framer-plugin'
+import { ManagedCollectionField as CollectionField } from 'framer-plugin'
 
 import { Button } from 'template-rewrite-framer/src/components/Button'
 import { getMarkdownPluginData } from '@/lib/utils'
@@ -173,6 +173,7 @@ function getFieldConfigForProp(
                 })),
             id: property.id,
             name: property.name,
+            userEditable: true,
         }
         if (x.cases.length <= 1) {
             return getFieldConfigForProp(property, 'string')
@@ -186,6 +187,7 @@ function getFieldConfigForProp(
             allowedFileTypes: ALLOWED_FILE_TYPES,
             id: property.id,
             name: property.name,
+            userEditable: true,
         }
         return x
     }

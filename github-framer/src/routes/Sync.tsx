@@ -94,31 +94,25 @@ async function loader({}: LoaderFunctionArgs) {
                 mapFieldsConfig,
             )
 
-            const collectionItem: CollectionItemData = {
-                id,
-                slug: item.slug,
-
-                fieldData: {
-                    // title: item.title,
-                    [CollectionFieldIds.content]: item.html,
-                    ...frontMatterFields,
-                },
-            }
-
             await semaphore.acquire()
             try {
-                await collection.addItems([collectionItem])
+                await collection.addItems([
+                    {
+                        id,
+                        slug: item.slug,
+
+                        fieldData: {
+                            // title: item.title,
+                            [CollectionFieldIds.content]: item.html,
+                            ...frontMatterFields,
+                        },
+                    },
+                ])
             } catch (error) {
                 notImported++
-                console.log('error adding item', collectionItem)
-                console.error(
-                    `Error adding item with id ${collectionItem.id}:`,
-                    error,
-                )
-                console.log(
-                    'content of the item with the error',
-                    collectionItem.fieldData[CollectionFieldIds.content],
-                )
+                console.log('error adding item', item)
+                console.error(`Error adding item with id ${item.id}:`, error)
+                console.log('content of the item with the error', item.html)
                 errorList.push({
                     kind: 'error',
                     message: error.message,
@@ -200,7 +194,6 @@ function Component() {
                                 </li>
                             )
                         })}
-                        
                     </ul>
                 </>
             )}

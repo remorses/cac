@@ -72,7 +72,7 @@
         "event-iterator": "^2.0.0",
         "evt": "^2.5.9",
         "fast-glob": "^3.3.3",
-        "framer-plugin": "2.1.0",
+        "framer-plugin": "3.0.0",
         "github-slugger": "^2.0.0",
         "gray-matter": "^4.0.3",
         "htmlparser2": "^10.0.0",
