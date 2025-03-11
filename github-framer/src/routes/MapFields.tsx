@@ -173,7 +173,8 @@ function getFieldConfigForProp(
                 })),
             id: property.id,
             name: property.name,
-            userEditable: true,
+            // https://www.framer.com/developers/cms#user-editable-fields
+            userEditable: false,
         }
         if (x.cases.length <= 1) {
             return getFieldConfigForProp(property, 'string')
@@ -187,7 +188,7 @@ function getFieldConfigForProp(
             allowedFileTypes: ALLOWED_FILE_TYPES,
             id: property.id,
             name: property.name,
-            userEditable: true,
+            userEditable: false,
         }
         return x
     }
