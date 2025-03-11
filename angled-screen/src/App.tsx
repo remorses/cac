@@ -301,9 +301,13 @@ function RotationsImage() {
         revalidator.revalidate()
         await threeCanvas.updateRendererSize({ isPreview: true })
         setIsLoading(false)
-        threeCanvas.startRenderLoop()
-
         console.log('total duration', performance.now() - start)
+        if (framer.mode !== 'canvas') {
+            await framer.closePlugin()
+            return
+        }
+
+        threeCanvas.startRenderLoop()
     }
 
     useAsyncEffect(async () => {

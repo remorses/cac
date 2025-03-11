@@ -1,6 +1,6 @@
 {
     "id": "793d3x",
     "name": "Angled Screen",
-    "modes": ["canvas", "editImage", "image"],
+    "modes": ["canvas", "editImage"],
     "icon": "/icon.png"
 }
