@@ -271,9 +271,11 @@ export const reactPluginApp = new Spiceflow({
                     tx.reactExportWebPage.deleteMany({
                         where: { projectId },
                     }),
-                    tx.reactExportLocale.deleteMany({
-                        where: { projectId },
-                    }),
+                    // only delete locales if there are some, so users can use locales created in my database manually
+                    locales?.length &&
+                        tx.reactExportLocale.deleteMany({
+                            where: { projectId },
+                        }),
                     tx.reactExportComponentBreakpoint.deleteMany({
                         where: { projectId },
                     }),

@@ -5,7 +5,17 @@ async function main() {
     // const stage = getCurrentStage()
     const env = await getDopplerEnv({ stage: 'production', project: 'website' })
     env.FORCE_COLOR = '1'
-    await shell(`pnpm --filter spiceflow build`, {
+    await Promise.all([
+        shell(`pnpm --filter spiceflow build`, {
+            env,
+        }),
+
+        // shell(`pnpm --filter unframer build`, {
+        //     env,
+        // }),
+    ])
+
+    await shell(`pnpm tsc --incremental`, {
         env,
     })
 
