@@ -10,3 +10,4 @@ coverage
 __pycache__
 plugin.zip
 prisma-dist
+prisma-generated
