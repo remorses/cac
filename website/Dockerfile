@@ -16,6 +16,8 @@ RUN apt update && apt install openssl ca-certificates -y \
 
 COPY docker.package.json ./package.json
 
+RUN npm install
+
 COPY ./build /app/build
 COPY ./public /app/public
 
