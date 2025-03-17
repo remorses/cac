@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from '@remix-run/node'
+import { ActionFunctionArgs } from 'react-router';
 import { app } from 'website/src/lib/elysia.server'
 
 export function action({ request }: ActionFunctionArgs) {

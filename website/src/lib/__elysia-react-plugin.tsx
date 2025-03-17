@@ -8,7 +8,7 @@ import { Sema } from 'sema4'
 import { Spiceflow } from 'spiceflow'
 import { bundle } from 'unframer-workspace/dist/exporter'
 
-import { prisma, ReactExportColorStyle, ReactExportComponent } from 'db/prisma'
+import { prisma, ReactExportColorStyle, ReactExportComponent } from 'db'
 import dedent from 'dedent'
 import { Octokit } from 'octokit'
 import { env } from 'website/src/lib/env'

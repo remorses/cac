@@ -1,6 +1,4 @@
-import { Button } from '@nextui-org/react'
-import { useLoaderData } from '@remix-run/react'
-import { defer, LoaderFunctionArgs, redirect } from '@remix-run/node'
+import { LoaderFunctionArgs, redirect, useLoaderData } from 'react-router';
 
 export async function loader({}: LoaderFunctionArgs) {
     return {

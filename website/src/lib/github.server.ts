@@ -2,7 +2,7 @@ import { App, OAuthApp, Octokit } from 'octokit'
 import { env } from './env'
 import { isTruthy } from 'website/src/lib/utils'
 import { Sema } from 'async-sema'
-import { GithubInstallation, prisma } from 'db/prisma'
+import { GithubInstallation, prisma } from 'db'
 import { db } from 'db/kysely'
 import { AppError, notifyError } from 'website/src/lib/errors'
 

@@ -1,13 +1,8 @@
 import { Button } from '@nextui-org/react'
-import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
-import {
-    Form,
-    useLoaderData,
-    useNavigation,
-    useSearchParams,
-} from '@remix-run/react'
+import { redirect, type LoaderFunctionArgs } from 'react-router';
+import { Form, useLoaderData, useNavigation, useSearchParams } from 'react-router';
 import { db } from 'db/kysely'
-import { prisma } from 'db/prisma'
+import { prisma } from 'db'
 import { PageContainer } from 'website/src/components/Container'
 import {
     checkGitHubIsInstalled,

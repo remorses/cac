@@ -1,15 +1,10 @@
 import { Button } from '@nextui-org/react'
-import { LoaderFunctionArgs } from '@remix-run/node'
-import {
-    Form,
-    useActionData,
-    useNavigation,
-    useSearchParams,
-} from '@remix-run/react'
+import { LoaderFunctionArgs } from 'react-router';
+import { Form, useActionData, useNavigation, useSearchParams } from 'react-router';
 import { db } from 'db/kysely'
 import { safeJsonParse } from 'website/src/lib/utils'
 import { getSupabaseSession } from '../lib/supabase.server'
-import { PluginName } from '@prisma/client'
+import { PluginName } from 'db'
 
 export default function Page({}) {
     const actionData = useActionData<typeof action>()

@@ -1,4 +1,4 @@
-import type { MetaFunction } from '@remix-run/node'
+import type { MetaFunction } from 'react-router';
 import FeatureListFramerComponent from '../framer/feature-list'
 import FooterFramerComponent from '../framer/footer'
 import HeroFramerComponent from '../framer/hero'

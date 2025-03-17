@@ -1,4 +1,4 @@
-import { Outlet } from '@remix-run/react'
+import { Outlet } from 'react-router';
 import { PageContainer } from '../components/Container'
 
 export default function Layout() {

@@ -1,6 +1,6 @@
-import { PrismaClient, Prisma } from './prisma-generated'
-import { ITXClientDenyList } from './prisma-generated/runtime/library'
-export * from './prisma-generated'
+import { PrismaClient, Prisma } from '@prisma/client/index.js'
+import { ITXClientDenyList } from '@prisma/client/runtime/library.js'
+export * from '@prisma/client/index.js'
 
 const debugQueries = false
 

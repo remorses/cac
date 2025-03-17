@@ -1,8 +1,8 @@
 {
-  "type": "commonjs",
+  "type": "module",
   "scripts": {},
   "dependencies": {
-    "@prisma/client": "^6.2.1",
+    "@prisma/client": "^6.5.0",
     "@sentry/node": "^8.51.0",
     "htmlrewriter": "^0.0.12",
     "sharp": "^0.33.5"

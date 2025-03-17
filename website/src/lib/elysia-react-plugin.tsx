@@ -13,7 +13,7 @@ import {
     ReactExportLocale,
     ReactExportWebPage,
     type ReactExportComponentBreakpoint,
-} from 'db/prisma'
+} from 'db'
 import { z } from 'zod'
 import { Sema } from 'async-sema'
 import { deduplicateByKey } from 'website/src/lib/utils'

@@ -1,4 +1,4 @@
-import { PluginName, prisma } from 'db/prisma'
+import { PluginName, prisma } from 'db'
 import { variantIdToCredits } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
 

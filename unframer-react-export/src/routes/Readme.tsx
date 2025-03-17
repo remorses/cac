@@ -25,7 +25,7 @@ import { CanvasRootNode, framer, PublishInfo } from 'framer-plugin'
 import {} from 'react-router'
 import { useRefreshOnVisible } from 'template-rewrite-framer/src/lib/hooks'
 import { Link } from 'react-router-dom'
-import { ReactExportComponent } from 'db/prisma'
+import { ReactExportComponent } from 'db'
 import { generateStackblitzProject } from 'website/src/lib/utils'
 import { env } from 'website/src/lib/env'
 

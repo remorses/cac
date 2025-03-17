@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
+import { LoaderFunctionArgs } from 'react-router';
 import { sleep } from 'website/src/lib/utils'
 
 export async function loader({ request }: LoaderFunctionArgs) {

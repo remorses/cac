@@ -8,12 +8,12 @@ import {
     Scripts,
     ScrollRestoration,
     useRouteError,
-} from '@remix-run/react'
+} from 'react-router';
 import './framer/styles.css'
 
 import { NextUIProvider } from '@nextui-org/react'
 import { PageContainer } from './components/Container'
-import { LoaderFunctionArgs } from '@remix-run/node'
+import { LoaderFunctionArgs } from 'react-router';
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
 import { Suspense } from 'react'
 

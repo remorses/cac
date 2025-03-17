@@ -7,6 +7,7 @@ import camelCase from 'camelcase'
 
 import { env } from './env'
 import dedent from 'dedent'
+import { PluginName } from 'db'
 export { oldTextTreeToXml } from './xml'
 
 export function loginRedirectUrl({ next = '' }) {
@@ -109,6 +110,12 @@ export function afterFramerLogin({
     pluginName,
     projectName,
     code,
+}: {
+    key: string
+    projectId?: string
+    pluginName?: PluginName
+    projectName?: string
+    code: string
 }) {
     const url = new URL('/after-framer-login', env.PUBLIC_URL)
     url.searchParams.set('key', key)
@@ -116,7 +123,7 @@ export function afterFramerLogin({
         url.searchParams.set('projectId', projectId)
     }
     if (pluginName) {
-        url.searchParams.set('pluginName', projectId)
+        url.searchParams.set('pluginName', pluginName)
     }
     if (projectName) {
         url.searchParams.set('projectName', projectName)

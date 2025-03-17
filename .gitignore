@@ -11,3 +11,4 @@ __pycache__
 plugin.zip
 prisma-dist
 prisma-generated
+.react-router

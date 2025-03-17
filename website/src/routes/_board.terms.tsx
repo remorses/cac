@@ -1,6 +1,6 @@
 import { marked, use } from 'marked'
 import { companyName, domain } from '../lib/env'
-import { useLoaderData } from '@remix-run/react'
+import { useLoaderData } from 'react-router';
 
 export default function Page({}) {
     const { html } = useLoaderData<typeof loader>()

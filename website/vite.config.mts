@@ -2,8 +2,8 @@ import { remarkCodeHike } from '@code-hike/mdx'
 import mkcert from 'vite-plugin-mkcert'
 import withSlugs from 'rehype-slug'
 import withToc from '@stefanprobst/rehype-extract-toc'
-
-import { vitePlugin as remix } from '@remix-run/dev'
+import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { reactRouter } from '@react-router/dev/vite'
 import mdx from '@mdx-js/rollup'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import remarkFrontmatter from 'remark-frontmatter'
@@ -41,7 +41,7 @@ export default defineConfig({
     },
     plugins: [
         mkcert(),
-
+        reactRouterHonoServer(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         // Inspect(),
@@ -55,20 +55,7 @@ export default defineConfig({
             mdxExtensions: ['.md', '.mdx'],
             mdExtensions: [],
         }),
-        remix({
-            appDirectory: 'src',
-            serverModuleFormat: 'cjs',
-            future: {
-                v3_fetcherPersist: true,
-                v3_singleFetch: true,
-
-                unstable_optimizeDeps: true,
-                v3_relativeSplatPath: true,
-                // v3_lazyRouteDiscovery: true,
-                // v3_routeConfig: true,
-                v3_throwAbortReason: true,
-            },
-        }),
+        reactRouter(),
         tsconfigPaths(),
         viteExternalsPlugin({
             externals: ['dprint-node', 'playwright', 'htmlrewriter'],
@@ -84,7 +71,6 @@ export default defineConfig({
         },
     ],
 
-    optimizeDeps: {},
     build: {
         // sourcemap: true,
         commonjsOptions: {

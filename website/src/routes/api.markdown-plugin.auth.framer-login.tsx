@@ -1,9 +1,9 @@
-import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
 import { env } from '../lib/env'
-import { PluginName } from '@prisma/client'
+import { PluginName } from 'db'
 
 export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
@@ -27,7 +27,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             code,
             projectId,
             projectName,
-            pluginName: PluginName.githubSync,
+            pluginName: 'githubSync',
         }),
     )
 

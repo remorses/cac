@@ -1,5 +1,5 @@
 // import "@code-hike/mdx/styles"
-import { MetaFunction, Outlet } from '@remix-run/react'
+import { MetaFunction, Outlet } from 'react-router';
 import { MDXProvider } from '@mdx-js/react'
 import { MDXComponents } from 'mdx/types'
 

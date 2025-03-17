@@ -1,8 +1,7 @@
 import { zfd } from 'zod-form-data'
 import { z } from 'zod'
-import { ActionFunctionArgs } from '@remix-run/node'
+import { ActionFunctionArgs } from 'react-router'
 import {
-    json,
     useSubmit,
     useLoaderData,
     useSearchParams,
@@ -10,7 +9,8 @@ import {
     useNavigation,
     useActionData,
     Form,
-} from '@remix-run/react'
+    data as json,
+} from 'react-router'
 import { useState } from 'react'
 import {
     InputOTP,
@@ -30,11 +30,10 @@ const otpSchema = zfd.formData({
     next: z.string(),
 })
 
-export async function action({ request, }:ActionFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
     try {
         const { headers, supabase, userId } = await getSupabaseSession({
             request,
-           
         })
 
         const form = await request.formData()

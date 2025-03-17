@@ -1,6 +1,6 @@
 // http://localhost:8045/spiceblow/after-payment
-import { ActionFunctionArgs, json } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { ActionFunctionArgs, data as json } from 'react-router'
+import { useLoaderData } from 'react-router'
 
 export const loader = async () => {
     return json({ message: 'You can go back to Framer now' })

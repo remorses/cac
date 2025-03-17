@@ -1,12 +1,11 @@
-import { LoaderFunctionArgs, redirect, json } from '@remix-run/node'
+import { LoaderFunctionArgs, redirect, data as json } from 'react-router'
 
 import { getSupabaseSession } from '../lib/supabase.server'
 import Home from './home'
 
-export let loader = async ({ request, }:LoaderFunctionArgs) => {
+export let loader = async ({ request }: LoaderFunctionArgs) => {
     const { headers, session } = await getSupabaseSession({
         request,
-       
     })
 
     // if (session) {
@@ -17,4 +16,3 @@ export let loader = async ({ request, }:LoaderFunctionArgs) => {
 }
 
 export default Home
-

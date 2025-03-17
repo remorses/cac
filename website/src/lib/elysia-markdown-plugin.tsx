@@ -6,7 +6,7 @@ import { Spiceflow } from 'spiceflow'
 
 import { notifyError } from 'website/src/lib/errors'
 
-import { prisma } from 'db/prisma'
+import { prisma } from 'db'
 import DomHandler from 'domhandler'
 import { Parser } from 'htmlparser2'
 import path from 'path'

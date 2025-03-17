@@ -4,7 +4,7 @@ import {
     checkGitHubIsInstalled,
     getOctokit,
 } from 'website/src/lib/github.server'
-import { prisma } from 'db/prisma'
+import { prisma } from 'db'
 import { env } from 'website/src/lib/env'
 import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
 

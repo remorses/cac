@@ -11,8 +11,8 @@ import { z } from 'zod'
 import { cors } from 'spiceflow/cors'
 import { reactPluginApp } from 'website/src/lib/elysia-react-plugin'
 import { llmPluginApp } from 'website/src/lib/elysia-llm-plugin'
-import { prisma } from 'db/prisma'
-import { redirect } from '@remix-run/react'
+import { prisma } from 'db'
+import { redirect } from 'react-router';
 import { framer } from 'framer-plugin'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })

@@ -1,4 +1,4 @@
-import { PluginName } from '@prisma/client'
+import { PluginName } from 'db'
 
 export const env = {
     //

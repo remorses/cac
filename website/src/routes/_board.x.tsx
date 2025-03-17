@@ -1,18 +1,17 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
 
 import { Link } from '@nextui-org/react'
-import { json } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { data as json } from 'react-router'
+import { useLoaderData } from 'react-router'
 import { db } from 'db/kysely'
 import { generatePassword } from 'website/src/lib/ssr.server'
 import { BlockWithStep } from '../components/BlockWithStep'
 import { framerUrl, installFramerPluginUrl } from '../lib/env'
 import { createSupabaseAnon, getSupabaseSession } from '../lib/supabase.server'
 
-export let loader = async ({ request, }:LoaderFunctionArgs) => {
+export let loader = async ({ request }: LoaderFunctionArgs) => {
     const { headers, supabase, user, redirectTo } = await getSupabaseSession({
         request,
-       
     })
     if (redirectTo) {
         console.log('redirecting to login')

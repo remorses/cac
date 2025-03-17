@@ -2,10 +2,10 @@ import {
     DiscriminatedWebhookPayload,
     whatwgWebhooksHandler,
 } from 'lemonsqueezy-webhooks'
-import { PluginName, prisma, Prisma } from 'db/prisma'
+import { PluginName, prisma, Prisma } from 'db'
 import { env, plansConfig } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
-import { ActionFunctionArgs } from '@remix-run/node'
+import { ActionFunctionArgs } from 'react-router';
 
 const secret = process.env.SECRET
 

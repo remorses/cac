@@ -3,7 +3,7 @@ import { Spiceflow } from 'spiceflow'
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
-import { prisma } from 'db/prisma'
+import { prisma } from 'db'
 import {
     getOrgPluginCredits
 } from 'website/src/lib/credits'

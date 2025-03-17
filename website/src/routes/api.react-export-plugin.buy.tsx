@@ -1,8 +1,8 @@
 // http://localhost:8040/api/react-export-plugin/buy?email=tommy@example.com&orgId=12345678
 // free with 2J5ZQHW3
 
-import { PluginName } from '@prisma/client'
-import { LoaderFunctionArgs, redirect } from '@remix-run/node'
+import { PluginName } from 'db'
+import { LoaderFunctionArgs, redirect } from 'react-router';
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
 

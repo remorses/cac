@@ -1,8 +1,8 @@
 import { Button, Input } from '@nextui-org/react'
 import posthtml from 'posthtml'
 
-import { ActionFunctionArgs } from '@remix-run/node'
-import { Form, json, useActionData, useNavigation } from '@remix-run/react'
+import { ActionFunctionArgs } from 'react-router'
+import { Form, data as json, useActionData, useNavigation } from 'react-router'
 
 export default function Page({}) {
     // const { credits } = useLoaderData<typeof loader>()
@@ -54,7 +54,7 @@ export default function Page({}) {
     )
 }
 
-export async function action({ request, }:ActionFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
     const data = await request.formData()
     const url = data.get('url')?.toString()
     if (!url) {

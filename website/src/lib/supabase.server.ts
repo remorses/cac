@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-import { redirect } from '@remix-run/node'
+import { redirect } from 'react-router';
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 
 import { env } from './env'

@@ -1,5 +1,5 @@
 import { Button, Spinner } from '@nextui-org/react'
-import { useSearchParams } from '@remix-run/react'
+import { useSearchParams } from 'react-router';
 import { useEffect } from 'react'
 import { generateStackblitzProject } from 'website/src/lib/utils'
 

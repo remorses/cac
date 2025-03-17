@@ -1,4 +1,4 @@
-import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from 'react-router'
 import {
     getGithubApp,
     getOctokit,
@@ -9,17 +9,16 @@ import { App, OAuthApp } from 'octokit'
 import { env } from 'website/src/lib/env'
 import { safeJsonParse } from 'website/src/lib/utils'
 import { getSupabaseSession } from '../lib/supabase.server'
-import { GithubAccountType, Prisma, prisma } from 'db/prisma'
+import { GithubAccountType, Prisma, prisma } from 'db'
 
 export type GithubState = {
     next?: string
 }
 
-export async function loader({ request, }:LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const { userId, redirectTo } = await getSupabaseSession({
         request,
-       
     })
     if (!userId) {
         throw new Response('Unauthorized', { status: 401 })
@@ -79,13 +78,13 @@ export async function loader({ request, }:LoaderFunctionArgs) {
             ? account.login
             : account!.slug.replace(/\//g, '-')
 
-    let accountType =
+    let accountType: GithubAccountType =
         account && 'type' in account && account.type === 'User'
-            ? GithubAccountType.USER
-            : GithubAccountType.ORGANIZATION
+            ? 'USER'
+            : 'ORGANIZATION'
 
     let members = [] as string[]
-    if (accountType === GithubAccountType.ORGANIZATION) {
+    if (accountType === 'ORGANIZATION') {
         const { data: githubMembers } = await octokit.rest.orgs.listMembers({
             org: accountLogin,
         })

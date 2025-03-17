@@ -1,7 +1,7 @@
-import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
-import { prisma } from 'db/prisma'
+import { prisma } from 'db'
 
 export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
