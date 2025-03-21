@@ -29,7 +29,7 @@ import {
     sleep,
 } from 'website/src/lib/utils'
 
-import image from '../ai_rewrite_image@4x.png'
+import image from '../rewrite hero image@4x.png'
 
 const key = generateSecurePassword()
 let code = generateShortOtpCode()
