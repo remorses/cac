@@ -1,9 +1,15 @@
 import { Button } from '@nextui-org/react'
-import { redirect, type LoaderFunctionArgs } from 'react-router';
-import { Form, useLoaderData, useNavigation, useSearchParams } from 'react-router';
-import { db } from 'db/kysely'
 import { prisma } from 'db'
-import { PageContainer } from 'website/src/components/Container'
+import { db } from 'db/kysely'
+import { useState } from 'react'
+import {
+    Form,
+    redirect,
+    useLoaderData,
+    useNavigation,
+    useSearchParams,
+    type LoaderFunctionArgs,
+} from 'react-router'
 import {
     checkGitHubIsInstalled,
     getGithubUserLogin,
@@ -13,7 +19,6 @@ import { isTruthy } from 'website/src/lib/utils'
 import { GithubState } from 'website/src/routes/api.markdown-plugin.github.callback'
 import { env } from '../lib/env'
 import { getSupabaseSession } from '../lib/supabase.server'
-import { useRef, useState } from 'react'
 
 enum FormNames {
     chooseAnother = '_chooseAnother',
@@ -123,7 +128,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const chosenOrg =
         url.searchParams.get(FormNames.chosenOrg)?.toString() || ''
 
-    const { supabase, session, userId, headers } = await getSupabaseSession({
+    const { userId, headers } = await getSupabaseSession({
         request,
     })
     if (!afterFramerLoginUrl) {
@@ -135,7 +140,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         throw new Error('Unauthorized')
     }
     const githubLogin = await getGithubUserLogin({ userId })
-    // if it is already installed, redirect to after now, needs database here
+
     const [githubInstallations] = await Promise.all([
         prisma.githubInstallation.findMany({
             where: {
