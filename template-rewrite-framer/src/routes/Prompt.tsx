@@ -463,7 +463,7 @@ function SimplePromptComponent({}) {
             <div className='flex justify-stretch w-full gap-3'>
                 {Boolean(isLoading || previousOldText.length) ? (
                     <Button
-                        // className='bg-transparent'
+                        className='w-auto'
                         onClick={discard}
                         isLoading={isDiscarding}
                         type='button'

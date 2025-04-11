@@ -689,7 +689,7 @@
         "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
         "@mdx-js/react": "^3.1.0",
         "@mdx-js/rollup": "^3.1.0",
-        "@nextui-org/react": "2.6.11",
+        "@nextui-org/react": "^2.6.11",
         "@nextui-org/theme": "^2.4.5",
         "@octokit/webhooks": "^13.4.2",
         "@prisma/client": "^6.6.0",
