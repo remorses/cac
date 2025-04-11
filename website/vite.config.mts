@@ -2,7 +2,7 @@ import { remarkCodeHike } from '@code-hike/mdx'
 import mkcert from 'vite-plugin-mkcert'
 import withSlugs from 'rehype-slug'
 import withToc from '@stefanprobst/rehype-extract-toc'
-import { reactRouterHonoServer } from "react-router-hono-server/dev";
+import { reactRouterHonoServer } from 'react-router-hono-server/dev'
 import { reactRouter } from '@react-router/dev/vite'
 import mdx from '@mdx-js/rollup'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'

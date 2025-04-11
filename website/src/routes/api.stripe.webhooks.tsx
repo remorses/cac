@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from 'react-router';
+import { ActionFunctionArgs } from 'react-router'
 import { prisma, Prisma } from 'db'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
@@ -48,10 +48,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
                 await handleSubscriptionChange(subscription, event.type)
                 break
-            case 'invoice.payment_succeeded':
-                const invoice = event.data.object as Stripe.Invoice
-                await handleInvoicePaymentSucceeded(invoice)
-                break
+            // case 'invoice.payment_succeeded':
+            //     const invoice = event.data.object as Stripe.Invoice
+            //     await handleInvoicePaymentSucceeded(invoice)
+            //     break
             default:
                 console.log(`Unhandled event type ${event.type}`)
         }
@@ -70,8 +70,8 @@ async function handleCheckoutSessionCompleted(
 ) {
     // Fetch latest session data
     const latestSession = await stripe.checkout.sessions.retrieve(session.id, {
-        expand: ['line_items']
-    });
+        expand: ['line_items'],
+    })
 
     const customerEmail = latestSession.customer_details?.email
 
@@ -140,9 +140,9 @@ async function handleSubscriptionChange(
         variantId: latestSubscription.items.data[0]?.price.id,
         subscriptionId: latestSubscription.id,
         email: orgId || undefined,
-        endsAt: latestSubscription.current_period_end
-            ? new Date(latestSubscription.current_period_end * 1000)
-            : undefined,
+        // endsAt: latestSubscription.current_period_end
+        //     ? new Date(latestSubscription.current_period_end * 1000)
+        //     : undefined,
         status: latestSubscription.status,
         variantName:
             latestSubscription.items.data[0]?.price.nickname || undefined,
@@ -161,39 +161,6 @@ async function handleSubscriptionChange(
                 variantId: subscription.items.data[0]?.price.id || '',
             },
         },
-        create,
-        update: create,
-    })
-}
-
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-    if (!invoice.subscription) return
-
-    const subscription = await stripe.subscriptions.retrieve(
-        invoice.subscription as string,
-    )
-    const orgId = subscription.metadata?.orgId
-
-    if (!orgId) {
-        throw new AppError('No orgId in subscription metadata')
-    }
-
-    const create: Prisma.PaymentForCreditsCreateManyInput = {
-        id: invoice.id,
-        productId: subscription.items.data[0]?.price.product as string,
-        email: invoice.customer_email || '',
-        orderId: invoice.id,
-        subscriptionId: subscription.id,
-        variantId: subscription.items.data[0]?.price.id,
-        variantName: subscription.items.data[0]?.price.nickname || undefined,
-        customerId: subscription.customer.toString(),
-        provider: 'stripe',
-
-        orgId,
-    }
-
-    await prisma.paymentForCredits.upsert({
-        where: { id: invoice.id },
         create,
         update: create,
     })
