@@ -33,12 +33,12 @@
         "nprogress": "^0.2.0",
         "openai": "^4.80.1",
         "posthtml": "^0.16.6",
-        "preact": "^10.25.4",
+        "preact": "^10.26.5",
         "react": "19.0.0",
         "react-dom": "19.0.0",
         "react-router": "^7.5.0",
         "react-router-dom": "^7.5.0",
-        "react-use-measure": "^2.1.1",
+        "react-use-measure": "^2.1.7",
         "spiceflow": "workspace:*",
         "string-dedent": "^3.0.1",
         "stringify-object": "^5.0.0",
@@ -53,10 +53,10 @@
     },
     "devDependencies": {
         "@types/chrome": "^0.0.299",
-        "@types/react": "^19.0.10",
-        "@types/react-dom": "^19.0.4",
+        "@types/react": "^19.1.1",
+        "@types/react-dom": "^19.1.2",
         "@vitejs/plugin-react": "^4.3.4",
-        "@vitejs/plugin-react-swc": "^3.7.2",
+        "@vitejs/plugin-react-swc": "^3.8.1",
         "vite": "^6.2.2",
         "vite-plugin-framer": "^1.0.3"
     }
