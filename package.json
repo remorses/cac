@@ -11,6 +11,11 @@
     "pnpm": {
         "overrides": {}
     },
+    "workspaces": [
+        "./*",
+        "./unframer/*",
+        "./spiceflow/*"
+    ],
     "devDependencies": {
         "@changesets/cli": "^2.27.12",
         "prettier": "^3.4.2",

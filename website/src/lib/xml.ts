@@ -1,6 +1,6 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
-import camelCase from 'camelCase'
+import camelCase from 'camelcase'
 import type { FramerLayersTree } from 'website/src/lib/rewrite'
 
 interface RewriteOldTextContentParams {
