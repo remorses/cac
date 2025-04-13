@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client/index.js'
-export * from '@prisma/client'
+import { PrismaClient } from './.prisma'
+export * from './.prisma'
 
 
 const debugQueries = false
