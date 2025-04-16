@@ -8,9 +8,7 @@
         "build": "pnpm -r build",
         "release": "pnpm build && changeset"
     },
-    "pnpm": {
-        "overrides": {}
-    },
+    "pnpm": {},
     "workspaces": [
         "./*",
         "./unframer/*",
