@@ -15,7 +15,7 @@ async function main() {
         throw error
     }
 
-    const outputPath = path.resolve(__dirname, '../openapi.yml')
+    const outputPath = path.resolve('./openapi.yml')
     console.log('Writing OpenAPI spec to', outputPath)
     fs.writeFileSync(
         outputPath,

@@ -4,6 +4,7 @@
     "private": true,
     "description": "",
     "sideEffects": false,
+    "type": "module",
     "main": "./prisma.server.ts",
     "scripts": {
         "studio": "doppler run -- prisma studio",

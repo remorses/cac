@@ -2,6 +2,7 @@ generator client {
   provider        = "prisma-client"
   output          = ".prisma"
   binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  moduleFormat    = "esm"
   previewFeatures = ["multiSchema", "postgresqlExtensions"]
 }
 
