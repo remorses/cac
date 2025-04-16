@@ -199,8 +199,17 @@ export const reactPluginApp = new Spiceflow({
                 },
             })
             if (existingProject && existingProject.orgId !== orgId) {
+                const org = await prisma.org.findFirst({
+                    where: {
+                        orgId: existingProject.orgId,
+                    },
+                    include: {
+                        users: { include: { user: true } },
+                    },
+                })
+                const email = org?.users?.[0]?.user?.email || ''
                 throw new Response(
-                    `Project belongs to another user, current email is (${await store.userEmail})`,
+                    `Project belongs to another user, login with the project account ${email} first`,
                     {
                         status: 403,
                     },

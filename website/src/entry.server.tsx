@@ -9,7 +9,7 @@ import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { notifyError } from './lib/errors'
 
-const ABORT_DELAY = 5_000
+export const streamTimeout = 60 * 10 * 1_000
 
 process.title = 'unframer-website-server'
 
@@ -46,6 +46,7 @@ function handleBotRequest(
 ) {
     return new Promise((resolve, reject) => {
         let shellRendered = false
+        let timeoutId: NodeJS.Timeout
         const { pipe, abort } = renderToPipeableStream(
             <ServerRouter
                 context={reactRouterContext}
@@ -59,7 +60,8 @@ function handleBotRequest(
                     const stream = createReadableStreamFromReadable(body)
 
                     responseHeaders.set('Content-Type', 'text/html')
-
+                    
+                    clearTimeout(timeoutId)
                     resolve(
                         new Response(stream, {
                             headers: responseHeaders,
@@ -70,6 +72,7 @@ function handleBotRequest(
                     pipe(body)
                 },
                 onShellError(error: unknown) {
+                    clearTimeout(timeoutId)
                     reject(error)
                 },
                 onError(error: unknown) {
@@ -84,7 +87,7 @@ function handleBotRequest(
             },
         )
 
-        setTimeout(abort, ABORT_DELAY)
+        timeoutId = setTimeout(abort, streamTimeout)
     });
 }
 
@@ -96,6 +99,7 @@ function handleBrowserRequest(
 ) {
     return new Promise((resolve, reject) => {
         let shellRendered = false
+        let timeoutId: NodeJS.Timeout
         const { pipe, abort } = renderToPipeableStream(
             <ServerRouter
                 context={reactRouterContext}
@@ -110,6 +114,7 @@ function handleBrowserRequest(
 
                     responseHeaders.set('Content-Type', 'text/html')
 
+                    clearTimeout(timeoutId)
                     resolve(
                         new Response(stream, {
                             headers: responseHeaders,
@@ -120,6 +125,7 @@ function handleBrowserRequest(
                     pipe(body)
                 },
                 onShellError(error: unknown) {
+                    clearTimeout(timeoutId)
                     reject(error)
                 },
                 onError(error: unknown) {
@@ -134,7 +140,7 @@ function handleBrowserRequest(
             },
         )
 
-        setTimeout(abort, ABORT_DELAY)
+        timeoutId = setTimeout(abort, streamTimeout)
     });
 }
 

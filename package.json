@@ -8,7 +8,19 @@
         "build": "pnpm -r build",
         "release": "pnpm build && changeset"
     },
-    "pnpm": {},
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@prisma/client",
+            "@prisma/engines",
+            "@swc/core",
+            "canvas",
+            "esbuild",
+            "prisma",
+            "sharp",
+            "supabase",
+            "workerd"
+        ]
+    },
     "workspaces": [
         "./*",
         "./unframer/*",
