@@ -1,9 +1,10 @@
 import { prisma } from 'db'
-
 async function checkDatabaseConnection() {
+    console.time('database-health-check');
     try {
         // Perform a lightweight query instead of just connecting
         await prisma.$queryRaw`SELECT 1;`
+        console.timeEnd('database-health-check');
         return new Response('OK', {
             status: 200,
             headers: {
@@ -11,6 +12,7 @@ async function checkDatabaseConnection() {
             },
         })
     } catch (error) {
+        console.timeEnd('database-health-check');
         return new Response('Database health check failed', {
             status: 503,
             headers: {
