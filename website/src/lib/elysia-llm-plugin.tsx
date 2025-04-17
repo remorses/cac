@@ -40,7 +40,7 @@ let projectsEvents = new Map<string, Evt<FramerEventLLM>>()
 
 let model = createFallback({
     models: [
-        google('gemini-2.0-flash-001'),
+        google('gemini-2.5-flash-preview-04-17'),
         anthropic('claude-3-5-haiku-latest'),
         // anthropic('claude-3-5-sonnet-latest'),
         openai('gpt-4o'), //
