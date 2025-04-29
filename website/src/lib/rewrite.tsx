@@ -47,8 +47,8 @@ export type RewriteSchema = z.infer<typeof RewriteSchema>
 
 const model = createFallback({
     models: [
-        google('gemini-2.5-flash-preview-04-17'),
-        anthropic('claude-3-5-haiku-20241022'),
+        anthropic('claude-3-5-haiku-latest'),
+        google('gemini-2.0-flash-001'),
         openai('gpt-4o'), //
     ],
 })
