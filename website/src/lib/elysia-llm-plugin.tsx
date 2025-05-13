@@ -23,6 +23,7 @@ import {
 import { z } from 'zod'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { google } from '@ai-sdk/google'
+import { fetchFormattedHtml } from './htmlrewrite.server'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -40,9 +41,9 @@ let projectsEvents = new Map<string, Evt<FramerEventLLM>>()
 
 let model = createFallback({
     models: [
-        anthropic('claude-3-5-haiku-latest'),
+        google('gemini-2.0-flash-thinking-exp-01-21'),
         google('gemini-2.0-flash-001'),
-
+        anthropic('claude-3-5-haiku-latest'),
         openai('gpt-4o'), //
     ],
     onError(error, modelId) {
@@ -220,13 +221,37 @@ export const llmPluginApp = new Spiceflow({
                     experimental_transform: smoothStream({
                         chunking: 'line',
                     }),
+
                     tools: {
+                        fetch: tool({
+                            parameters: z.object({
+                                url: z.string(),
+                            }),
+                            description: dedent`
+                            fetch an url provdied by the user to get the content of that website page and help get context on how to modify the current elements on the page.
+                            `,
+                            async execute({ url }, { toolCallId }) {
+                                try {
+                                    const html = await fetchFormattedHtml({
+                                        url,
+                                        signal: request.signal,
+                                    })
+                                    return html
+                                } catch (e) {
+                                    return {
+                                        status: 'error',
+                                        message: `Could not fetch that url: ${e.message}`,
+                                    }
+                                }
+                            },
+                        }),
                         duplicate: tool({
                             parameters: z.object({
                                 nodeIds: z.array(z.string()),
                             }),
                             description: dedent`
-                            Clone multiple subtrees you can later edit. Only call if the user requested change requires adding new nodes.
+                            Clone a subtree you can later edit. Only call if the user requested change requires adding new nodes.
+                            Updating the tree directly is preferred, only call this tool if the elements in the tree are not enough to accomplish the user task.
                             Returns the diff of the updated xml tree so you can then act on the new nodeIds.
                             Notice that you can pass multiple nodeIds at the same time to save time.
                             `,
@@ -237,7 +262,7 @@ export const llmPluginApp = new Spiceflow({
                                         await generateDiffText(toolCallId)
                                     return dedent`
                                     Here is the diff of the duplication:
-                                    
+
                                     ${diffText}
 
                                     Now you can proceed with more duplications if needed, or deletions, or output the final xml with the content changes.
@@ -253,9 +278,9 @@ export const llmPluginApp = new Spiceflow({
                                 nodeIds: z.array(z.string()),
                             }),
                             description: dedent`
-                            Delete multiple subtrees or leaves from the xml tree.
-                            Returns the diff of the updated xml tree.
-                            Notice that you can pass multiple nodeIds at the same time to save time.
+                            Delete subtrees from the xml tree. This tool MUST NOT ever be called on the root xml element.
+                            DO NOT delete elements that you later want to update.
+                            It's only useful to delete elements in the tree that are no longer needed. After you delete a node you cannot use its nodeId any longer.
                             `,
                             async execute({ nodeIds }, { toolCallId }) {
                                 try {
@@ -264,7 +289,7 @@ export const llmPluginApp = new Spiceflow({
                                         await generateDiffText(toolCallId)
                                     return dedent`
                                     Here is the diff of the deletion:
-                                    
+
                                     ${diffText}
 
                                     Now you can proceed with more deletions if needed, or duplications, or output the final xml with the content changes.
@@ -302,7 +327,7 @@ export const llmPluginApp = new Spiceflow({
                                 \`\`\`
 
                             You MUST skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
-                            
+
                             Do not say anything after returning the code snippet, no need to make a summary.
                             `,
                         },
@@ -318,12 +343,12 @@ export const llmPluginApp = new Spiceflow({
                         {
                             role: 'assistant',
                             content: dedent`
-                            
+
 
                             \`\`\`xml
                             <!-- Duplicating existing FAQ tag and modifying node ${addedFaqNodeId} to add pricing FAQ section -->
                             ${exampleAddedFaqSection}
-                            <-- other tags -->    
+                            <-- other tags -->
                             \`\`\`
                             `,
                             toolInvocations: [
@@ -388,6 +413,7 @@ export const llmPluginApp = new Spiceflow({
                             id: randomId,
                             toolName: part.toolName,
                             callId: part.toolCallId,
+                            nodeIds: [],
                             ...part.args,
                         }
                         fullAnswer += '\n---\n'
@@ -512,12 +538,12 @@ export function nineCharsRandomString() {
 
 function formatUserMessage({ initialXml, description }) {
     return dedent`
-    Here is the current Framer website xml tree, it is a subsection of a website, each node in the xml corresponds to a Framer element. 
+    Here is the current Framer website xml tree, it is a subsection of a website, each node in the xml corresponds to a Framer element.
 
     The tags with a nodeId attribute are the ones you can modify.
-    
+
     ${initialXml}
-    
+
 
     Here is the task the user asked you to perform:
     \`\`\`

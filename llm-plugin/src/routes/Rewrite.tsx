@@ -53,6 +53,7 @@ function SimplePromptComponent({}) {
     const { deferred } = useLoaderData() as LoaderReturnType<typeof loader>
 
     const [isLoading, setIsLoading] = useState(false)
+    const [currentTool, setCurrentTool] = useState('')
     const [previousOldText, setPreviousOldText] = useState<FramerLayersTree>([])
 
     useEffect(() => {
@@ -257,6 +258,12 @@ function SimplePromptComponent({}) {
                 }
 
                 if (item.type === 'tool-call') {
+                    setCurrentTool(`calling tool ${item.toolName}`)
+                } else {
+                    setCurrentTool('rewriting layers...')
+                }
+
+                if (item.type === 'tool-call') {
                     try {
                         if (item.toolName === 'delete') {
                             for (let nodeId of item.nodeIds) {
@@ -399,8 +406,13 @@ function SimplePromptComponent({}) {
                     </div>
                 )}
             </div>
-            <div className='w-full'>
+            <div className='w-full '>
                 {/* <div className="text-[12px] opacity-70">Press arrow keys to go get previous prompts</div> */}
+                {isLoading && currentTool && (
+                    <div className='text-[10px] opacity-80 text-center'>
+                        {currentTool}
+                    </div>
+                )}
                 <textarea
                     ref={textareaRef}
                     // disabled={buyCreditsInstead}
@@ -423,7 +435,7 @@ function SimplePromptComponent({}) {
                     }}
                     className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
                     autoFocus
-                    placeholder='Add a new pricing plan with a higher price...'
+                    placeholder='describe your changes, mention urls to reuse content from the web...'
                 />
             </div>
 

@@ -110,7 +110,7 @@ const router = createBrowserRouter(
                                 // }}
                                 // exit={{ opacity: 0 }}
 
-                                className='overflow-hidden '
+                                className='h-full'
                             >
                                 <div className='px-4 w-full'>
                                     <hr className='loading-bar relative' />
@@ -118,7 +118,7 @@ const router = createBrowserRouter(
 
                                 <div
                                     ref={ref}
-                                    className='min-h-[320px] flex shrink-0 h-full pt-3 grow justify-stretch flex-col p-4 w-full '
+                                    className='min-h-[320px] no-scrollbar shrink-0 max-h-[500px] overflow-y-auto flex h-full pt-3 grow justify-stretch flex-col p-4 w-full '
                                 >
                                     <NProgressComponent />
                                     <Outlet />

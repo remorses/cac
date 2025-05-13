@@ -67,10 +67,9 @@ const router = createBrowserRouter(
                         </div>
                         <div
                             ref={ref}
-                            className='shrink-0 grow pt-3 gap-3 flex-col p-3 w-full justify-start '
+                            className='no-scrollbar shrink-0 max-h-[500px] overflow-y-auto  pt-3 gap-3 flex-col p-3 w-full justify-start '
                         >
                             <NProgressComponent />
-
                             <Outlet />
                         </div>
                     </>

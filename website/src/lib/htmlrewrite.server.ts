@@ -96,6 +96,10 @@ export async function fetchFormattedHtml({
     if (!url) {
         return ''
     }
+    // if there is no https:// or http:// prefix, add it
+    if (!url.startsWith('https://') && !url.startsWith('http://')) {
+        url = 'https://' + url
+    }
     console.time(`fetchFormattedHtml: ${url}`)
 
     const controller = new AbortController()
@@ -116,9 +120,9 @@ export async function fetchFormattedHtml({
                 'Accept-Language': 'en-US,en;q=0.5',
                 Connection: 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
-                Referer: 'https://www.google.com/',
+                // Referer: 'https://www.google.com/',
                 'User-Agent':
-                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
             },
             signal: controller.signal,
         })

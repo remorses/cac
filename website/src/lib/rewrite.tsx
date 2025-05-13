@@ -47,8 +47,9 @@ export type RewriteSchema = z.infer<typeof RewriteSchema>
 
 const model = createFallback({
     models: [
+        google('gemini-2.0-flash-thinking-exp-01-21'),
+        google('gemini-2.5-pro-exp-03-25'),
         anthropic('claude-3-5-haiku-latest'),
-        google('gemini-2.0-flash-001'),
         openai('gpt-4o'), //
     ],
 })
@@ -67,9 +68,9 @@ function renderHtmlSnippet({
 
     return dedent`
     Original HTML Content from existing website being migrated, with url "${url}":
-    
+
     ${sourceHtml}
-    
+
 
     if the html has duplicate elements because of hidden variants you can ignore those parts, it isn't actually duplicated content, the user never wants duplicated content.
 
@@ -91,7 +92,7 @@ const reasoningPrompt = `
 Before each replacement please add an XML comment (with <!-- and -->) to reason step by step how you decided to replace the content
 
 In this comment you should always respond to these questions:
-- **section and role**: what is the text semantic meaning for this template text? ignore its subject, just consider the section and design language/role (for example main hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template) 
+- **section and role**: what is the text semantic meaning for this template text? ignore its subject, just consider the section and design language/role (for example main hero heading, hero subheading, feature list item, footer link, etc. ignore the subject of the text, you should only consider its semantic position in the template)
 - **existing text**: What is the best piece of text from the existing website HTML you can use here? don't return text that you returned previously or already in the template! It should have same design language and role, for example if the template text is an hero heading, you should use site main h1 heading. Don't consider text that is from different kind of elements. NEVER RETURN PREVIOUSLY RETURNED CONTENT.
 - **length**: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.
 
@@ -148,7 +149,7 @@ Instructions:
 * Replace the content of each item in the template with text from the original HTML that aligns with the website owner's description and the migrated website.
 * Maintain similar content length and structure as the original template where appropriate, for example understand when an item is an heading, subheading, paragraph, bullet point, etc.
 * Preserve UI-specific text (e.g., "Accept Cookies", "Privacy Policy").
-* Use content from the website HTML being migrated 
+* Use content from the website HTML being migrated
 * as a last resort, If the migrated content doesn't fit, create new content that matches the style and intent of the website being migrated.
 * never use anything related to templates or lorem ipsum, such as "Get This Template", those are default text that should be always replaced.
 * never add asterisks * at the end of the text, these would be used to add a note at the bottom of the page, but you can't add notes.
@@ -614,7 +615,7 @@ This is the HTML document for the url ${websiteUrl}:
 
 ${formattedHtml}
 
-This is the template content in xml format, you need to return new links for these templates that have links, using their nodeId 
+This is the template content in xml format, you need to return new links for these templates that have links, using their nodeId
 
 <template>
 ${xml}

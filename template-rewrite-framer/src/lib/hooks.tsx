@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useRevalidator, useNavigation } from 'react-router'
 import { notifyError } from 'template-rewrite-framer/src/lib/errors'
+import getCaretCoordinates from 'textarea-caret'
 
 // you can skip showing the toast on failure putting a field skipToast: true in the error
 export function useThrowingFn({
@@ -155,22 +156,49 @@ export function useHistoryNavigation({ value, setValue }) {
 
     const onKeyDown = (e: React.KeyboardEvent) => {
         // Only handle history navigation if not navigating within textarea
-        if (e.target instanceof HTMLTextAreaElement) {
+        if (
+            e.target instanceof HTMLTextAreaElement &&
+            (e.key === 'ArrowUp' || e.key === 'ArrowDown')
+        ) {
             const textarea = e.target
-            const lines = textarea.value.split('\n')
-            const currentPosition = textarea.selectionStart
-            const currentLine =
-                textarea.value.substring(0, currentPosition).split('\n')
-                    .length - 1
 
-            if (
-                (e.key === 'ArrowUp' && currentLine > 0) ||
-                (e.key === 'ArrowDown' && currentLine < lines.length - 1)
-            ) {
-                return
+            // Get caret coordinates
+            const caretCoords = getCaretCoordinates(
+                textarea,
+                textarea.selectionStart,
+            )
+
+            // Get line height in pixels
+            const lineHeight =
+                parseFloat(getComputedStyle(textarea).lineHeight) ||
+                parseFloat(getComputedStyle(textarea).fontSize) * 1.2
+
+            // Calculate visual line (0-based)
+            const visualLine = Math.floor(
+                (caretCoords.top + textarea.scrollTop) / lineHeight,
+            )
+
+            if (e.key === 'ArrowUp') {
+                // Only proceed with history navigation if we're on the first visual line
+                if (visualLine > 0) {
+                    return // Let the default textarea navigation handle this
+                }
+            } else if (e.key === 'ArrowDown') {
+                const totalVisualLines = Math.ceil(
+                    caretCoords.height / lineHeight,
+                )
+
+                // Only proceed with history navigation if we're on the last visual line
+                if (visualLine < totalVisualLines - 1) {
+                    console.log(
+                        `not going down because ${visualLine} is lower than ${totalVisualLines}`,
+                    )
+                    return // Let the default textarea navigation handle this
+                }
             }
         }
 
+        // Handle history navigation with arrow keys
         if (
             e.key === 'ArrowUp' &&
             !e.metaKey &&
