@@ -35,23 +35,6 @@ export function LicenseKey(): RouteObject {
                     error: 'No license key provided',
                 }
             }
-            const { data, error } =
-                await pluginApiClient.api.plugins.rewritePlugin.activateLicense.post(
-                    {
-                        licenseKey,
-                    },
-                )
-            if (error) {
-                return {
-                    error: error.value,
-                }
-            }
-            const { credits, valid } = data
-            return {
-                credits,
-                valid,
-                message: `License key activated, ${formatLargeNumber(credits)} credits added`,
-            }
         },
     }
 }

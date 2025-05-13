@@ -73,7 +73,7 @@ async function action({ request }: LoaderFunctionArgs) {
             framer.getNodesWithType('WebPageNode'),
             framer.getColorStyles(),
             framer.getProjectInfo(),
-            framer.unstable_getLocales?.()?.catch((err) => {
+            framer.getLocales?.()?.catch((err) => {
                 console.error('Error getting locales', err)
                 return []
             }),
