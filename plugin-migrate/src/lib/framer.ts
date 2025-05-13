@@ -112,11 +112,11 @@ export function getAttributeComments(
                             .join(', ')
                     }
                     case ControlType.File:
-                        return 'string'
+                        return 'file'
                     case ControlType.Image:
-                        return 'string'
+                        return 'image'
                     case ControlType.ComponentInstance:
-                        return ''
+                        return 'component instance'
                         return 'React.ReactNode'
                     case ControlType.Array:
                         // @ts-expect-error
@@ -132,22 +132,28 @@ export function getAttributeComments(
                     case ControlType.Date:
                         return 'DateString'
                     case ControlType.Link:
-                        return `url or a path among ${JSON.stringify(availablePagePaths)}`
+                        return `url or a path amongst ${JSON.stringify(availablePagePaths)}`
                     case ControlType.ResponsiveImage:
-                        return ''
+                        return 'responsive image'
                         return `{src: string, srcSet?: string, alt?: string}`
                     case ControlType.FusedNumber:
                         return 'number'
                     case ControlType.Transition:
-                        return ''
+                        return 'transition'
                         return 'any'
                     case ControlType.EventHandler:
-                        return ''
+                        return 'event handler'
                         return 'Function'
                     case ControlType.RichText:
                         return 'rich text'
                     case ControlType.Font:
                         return 'font'
+                    case ControlType.BoxShadow:
+                        return 'box shadow'
+                    case ControlType.Padding:
+                        return 'padding'
+                    case ControlType.Border:
+                        return 'border'
                     case ControlType.BorderRadius:
                         return 'border radius, four px values delimited by space'
 
@@ -462,16 +468,19 @@ export const inlineTextStyleAttributes = [
 async function getNodeAttributesForXml(node: AnyNode) {
     let attributes = {} as Record<string, any>
 
-    if (supportsLink(node)) {
+    if (supportsLink(node) && node.link) {
         attributes.href = node.link || undefined
     }
     if (isTextNode(node)) {
         for (const attr of inlineTextStyleAttributes) {
-            attributes[attr] = node.inlineTextStyle?.[attr] ?? undefined
+            const value = node.inlineTextStyle?.[attr] ?? undefined
+            if (value) attributes[attr] = value
         }
         // attributes.font = node.font ?? undefined
         // attributes.rotation = node.rotation ?? undefined
-        attributes.opacity = node.opacity ?? undefined
+        if (node.opacity !== 1) {
+            attributes.opacity = node.opacity ?? undefined
+        }
 
         // attributes.position = node.position ?? undefined
         // attributes.top = node.top ?? undefined
@@ -493,7 +502,9 @@ async function getNodeAttributesForXml(node: AnyNode) {
         }
         // attributes.backgroundImage = node.backgroundImage ?? undefined
         // attributes.backgroundGradient = node.backgroundGradient ?? undefined
-        attributes.borderRadius = node.borderRadius ?? undefined
+        if (node.borderRadius) {
+            attributes.borderRadius = node.borderRadius ?? undefined
+        }
 
         // attributes.rotation = node.rotation ?? undefined
         // attributes.opacity = node.opacity ?? undefined
@@ -527,7 +538,7 @@ async function getNodeAttributesForXml(node: AnyNode) {
             ...node.controls,
         }
     }
-    attributes = serializeAttributesForXml(attributes)
+    attributes = serializeAttributesForXml(attributes, attrControlsComments)
     return {
         attributes,
         attrControlsComments,
@@ -546,6 +557,7 @@ function encodeAttributeValue(value) {
 
 export function serializeAttributesForXml(
     attributes?: Record<string, any>,
+    attrControlsComments?: Record<string, string>,
 ): Record<string, string> {
     if (!attributes) {
         return {}
@@ -557,7 +569,13 @@ export function serializeAttributesForXml(
         // }
         // // TODO to support images i would need to add a lot of work
         if (typeof value === 'object') {
-            console.log('skipping object value for attribute', key, value)
+            console.log(
+                'skipping object value for attribute',
+                key,
+                attrControlsComments?.[key],
+                value,
+            )
+
             continue
         }
         result[key] = encodeAttributeValue(value)
