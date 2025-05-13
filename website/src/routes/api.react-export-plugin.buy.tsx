@@ -45,6 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             // },
         },
         // payment_method_collection: 'always',
+
         allow_promotion_codes: true, // Enable coupon/promotion code input
     })
     if (!session.url?.toString()) {
