@@ -128,6 +128,62 @@ function SimplePromptComponent({}) {
         setStars(0)
     }
 
+    async function copyXml() {
+        let desktop = await getDesktop()
+        if (selectedNodes.length) {
+            console.log(`using selected nodes`, selectedNodes)
+        } else {
+            console.log(`using desktop page`, desktop)
+        }
+        let rootNodes = selectedNodes.length
+            ? selectedNodes.filter(isTruthy)
+            : [desktop].filter(isTruthy)
+
+        if (!rootNodes.length) {
+            setError('No root nodes found')
+            return
+        }
+
+        if (!rootNodes?.length) {
+            setError('No desktop found')
+            return
+        }
+
+        let oldText = await getFramerTree({
+            rootNodes,
+
+            recursive: false,
+        })
+
+        try {
+            const xml = oldTextTreeToXml(oldText, {
+                shouldAddNodeIdAlways: true,
+            })
+
+            await navigator.clipboard.writeText(
+                JSON.stringify(oldText, null, 2),
+            )
+            await sleep(400)
+            await navigator.clipboard.writeText(xml)
+            console.log('Old text copied to clipboard as JSON')
+        } catch (error) {
+            console.error('Failed to copy old text to clipboard:', error)
+        }
+    }
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'x') {
+                copyXml()
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyDown)
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [selectedNodes])
     async function replaceTextClient() {
         reset()
         const { buyMoreCreditsUrl, credits, projectId, projectName } =
@@ -159,23 +215,7 @@ function SimplePromptComponent({}) {
 
             recursive: false,
         })
-        // @ts-ignore
-        if (import.meta.env?.DEV) {
-            try {
-                const xml = oldTextTreeToXml(oldText, {
-                    shouldAddNodeIdAlways: true,
-                })
 
-                await navigator.clipboard.writeText(
-                    JSON.stringify(oldText, null, 2),
-                )
-                await sleep(400)
-                await navigator.clipboard.writeText(xml)
-                console.log('Old text copied to clipboard as JSON')
-            } catch (error) {
-                console.error('Failed to copy old text to clipboard:', error)
-            }
-        }
         // return
         if (!oldText.length) {
             setError('No text found to replace')
