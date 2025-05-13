@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import yaml from 'js-yaml'
-import { app } from '../src/lib/elysia.server'
+import { app } from '../src/lib/spiceflow-plugins.server'
 import { createSpiceflowClient } from 'spiceflow/client'
 
 async function main() {

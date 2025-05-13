@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest'
-import { processHtml } from './elysia-markdown-plugin'
+import { processHtml } from './spiceflow-github-sync-plugin'
 import {
     checkGitHubIsInstalled,
     getOctokit,

@@ -1,14 +1,10 @@
 import { openai } from '@ai-sdk/openai'
 
-import { generateText, streamObject } from 'ai'
-import dedent from 'dedent'
-import {} from 'website/src/lib/elysia.server'
+import { generateText } from 'ai'
 import {
-    removeMarkdownSnippets,
-    yieldNewArrayItems,
-    yieldObjectStream,
+    removeMarkdownSnippets
 } from 'website/src/lib/ndjson'
-import { z } from 'zod'
+import { } from 'website/src/lib/spiceflow-plugins.server'
 
 export async function formatHtmlForPrompt(
     input: Response,

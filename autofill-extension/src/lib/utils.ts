@@ -2,7 +2,7 @@ import { env } from 'website/src/lib/env'
 
 import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
-import type { RouteType } from 'website/src/lib/elysia.server'
+
 
 import { z } from 'zod'
 import { extractedFormInputSchema } from '@/background/background'

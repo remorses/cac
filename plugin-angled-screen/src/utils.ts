@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
-import type { RouteType } from 'website/src/lib/elysia.server'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 import { env } from 'website/src/lib/env'
 
 

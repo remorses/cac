@@ -1,16 +1,16 @@
 import { Spiceflow } from 'spiceflow'
 import { validateLicense } from '@lemonsqueezy/lemonsqueezy.js'
-import { markdownPluginApp } from 'website/src/lib/elysia-markdown-plugin'
 import { openapi } from 'spiceflow/dist/openapi'
 
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
-import { rewritePluginApp } from 'website/src/lib/elysia-rewrite-plugin'
+import { markdownPluginApp } from 'website/src/lib/spiceflow-github-sync-plugin'
+import { rewritePluginApp } from 'website/src/lib/spiceflow-migrate-plugin'
 import { z } from 'zod'
 import { cors } from 'spiceflow/cors'
-import { reactPluginApp } from 'website/src/lib/elysia-react-plugin'
-import { llmPluginApp } from 'website/src/lib/elysia-llm-plugin'
+import { reactPluginApp } from 'website/src/lib/spiceflow-react-export-plugin'
+import { llmPluginApp } from 'website/src/lib/spiceflow-ai-rewrite-plugin'
 import { prisma } from 'db'
 import { redirect } from 'react-router';
 import { framer } from 'framer-plugin'

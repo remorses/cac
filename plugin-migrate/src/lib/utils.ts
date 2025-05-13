@@ -12,7 +12,7 @@ import {
     type ComponentNode,
     type WebPageNode,
 } from 'framer-plugin'
-import type { RouteType } from 'website/src/lib/elysia.server'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 import { RewriteSchema } from 'website/src/lib/rewrite'
 import { redirect } from 'react-router'
 

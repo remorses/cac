@@ -1,4 +1,4 @@
-import type { RouteType } from 'website/src/lib/elysia.server'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 export async function createClient({ url }: { url: string }) {
     const { createSpiceflowClient } = await import('spiceflow/client')

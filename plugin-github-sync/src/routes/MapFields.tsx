@@ -25,7 +25,7 @@ import { Link, useSubmit } from 'react-router-dom'
 import {
     MarkdownPluginFrontMatter,
     MarkdownPluginFrontMatterProperty,
-} from 'website/src/lib/elysia-markdown-plugin'
+} from 'website/src/lib/spiceflow-github-sync-plugin'
 
 async function loader({ request }: LoaderFunctionArgs) {
     const {

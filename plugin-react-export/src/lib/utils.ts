@@ -3,7 +3,7 @@ import { env } from 'website/src/lib/env'
 import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
 import { framer } from 'framer-plugin'
-import type { RouteType } from 'website/src/lib/elysia.server'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 import { redirect } from 'react-router'
 import { withMode } from 'plugin-github-sync/src/lib/utils'

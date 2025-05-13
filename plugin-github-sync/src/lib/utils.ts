@@ -6,7 +6,7 @@ import {
     ManagedCollectionField as CollectionField,
     framer,
 } from 'framer-plugin'
-import type { RouteType } from 'website/src/lib/elysia.server'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
 import { redirect } from 'react-router'
