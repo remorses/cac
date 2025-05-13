@@ -1,5 +1,5 @@
 import getCaretCoordinates from "textarea-caret";
-import { defaultTriggers } from "./list.ts";
+import { defaultTriggers } from "./list";
 
 export function getTriggerOffset(
   element: HTMLTextAreaElement,

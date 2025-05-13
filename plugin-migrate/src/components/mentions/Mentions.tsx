@@ -1,8 +1,8 @@
 import * as Ariakit from '@ariakit/react'
+import classNames from 'classnames'
 import { matchSorter } from 'match-sorter'
 import * as React from 'react'
 import { getList, getValue } from './list'
-import './style.css'
 import {
     getAnchorRect,
     getSearchValue,
@@ -86,38 +86,36 @@ export function MentionsTextArea() {
     }
 
     return (
-        <div className='wrapper'>
-            <label className='label'>
-                Comment
-                <Ariakit.Combobox
-                    store={combobox}
-                    autoSelect
-                    value={value}
-                    // We'll overwrite how the combobox popover is shown, so we disable
-                    // the default behaviors.
-                    showOnClick={false}
-                    showOnChange={false}
-                    showOnKeyPress={false}
-                    // To the combobox state, we'll only set the value after the trigger
-                    // character (the search value), so we disable the default behavior.
-                    setValueOnChange={false}
-                    className='combobox'
-                    render={
-                        <textarea
-                            ref={ref}
-                            rows={5}
-                            placeholder='Type @, # or :'
-                            // We need to re-calculate the position of the combobox popover
-                            // when the textarea contents are scrolled.
-                            onScroll={combobox.render}
-                            // Hide the combobox popover whenever the selection changes.
-                            onPointerDown={combobox.hide}
-                            onChange={onChange}
-                            onKeyDown={onKeyDown}
-                        />
-                    }
-                />
-            </label>
+        <div className='flex flex-col gap-2'>
+            <Ariakit.Combobox
+                store={combobox}
+                autoSelect
+                value={value}
+                // We'll overwrite how the combobox popover is shown, so we disable
+                // the default behaviors.
+                showOnClick={false}
+                showOnChange={false}
+                showOnKeyPress={false}
+                // To the combobox state, we'll only set the value after the trigger
+                // character (the search value), so we disable the default behavior.
+                setValueOnChange={false}
+                className='p-2 py-2 shrink-0 leading-relaxed mt-1 w-full min-h-[80px]'
+                render={
+                    <textarea
+                        ref={ref}
+                        rows={5}
+                        placeholder='Type @, # or :'
+                        // We need to re-calculate the position of the combobox popover
+                        // when the textarea contents are scrolled.
+                        onScroll={combobox.render}
+                        // Hide the combobox popover whenever the selection changes.
+                        onPointerDown={combobox.hide}
+                        onChange={onChange}
+                        onKeyDown={onKeyDown}
+                    />
+                }
+            />
+
             <Ariakit.ComboboxPopover
                 store={combobox}
                 hidden={!hasMatches}
@@ -128,7 +126,18 @@ export function MentionsTextArea() {
                     if (!textarea) return null
                     return getAnchorRect(textarea)
                 }}
-                className='popover'
+                className={classNames(
+                    // Position and layout
+                    'relative z-50 flex flex-col no-scrollbar text-xs',
+                    // Size constraints
+                    'min-w-[140px] max-w-[280px] max-h-[min(var(--popover-available-height,186px),186px)]',
+                    // Scrolling behavior
+                    'overflow-auto overscroll-contain',
+                    // Appearance
+                    'rounded-md p-1 bg-framer-secondary',
+                    'outline-2 outline-transparent outline-offset-2',
+                    'shadow-lg',
+                )}
             >
                 {matches.map((value) => (
                     <Ariakit.ComboboxItem
@@ -136,9 +145,23 @@ export function MentionsTextArea() {
                         value={value}
                         focusOnHover
                         onClick={onItemClick(value)}
-                        className='combobox-item'
+                        className={classNames(
+                            // Layout
+                            'flex items-center gap-2',
+                            // Size and spacing
+                            'rounded py-1 px-2 scroll-m-1',
+                            // Interaction
+                            'cursor-default outline-none',
+                            // States
+                            'hover:bg-framer-secondary',
+                            'data-[active-item]:bg-framer-tint ',
+                            'active:pt-[9px] active:pb-[7px]',
+                            'data-[active]:pt-[9px] data-[active]:pb-[7px]',
+                        )}
                     >
-                        <span>{value}</span>
+                        <span className='overflow-hidden text-ellipsis whitespace-nowrap'>
+                            {value}
+                        </span>
                     </Ariakit.ComboboxItem>
                 ))}
             </Ariakit.ComboboxPopover>

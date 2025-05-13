@@ -47,6 +47,7 @@ import {
 } from 'plugin-github-sync/src/lib/framer'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { createBuyMigrateUrl } from 'website/src/lib/env'
+import { MentionsTextArea } from '../components/mentions/Mentions'
 
 let abortController = new AbortController()
 
@@ -431,6 +432,7 @@ function SimplePromptComponent({}) {
                 )}
             </div>
             <div className='w-full'>
+                {/* <MentionsTextArea /> */}
                 <textarea
                     ref={textareaRef}
                     value={description}
