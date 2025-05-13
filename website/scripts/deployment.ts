@@ -20,7 +20,7 @@ async function main() {
     })
 
     await Promise.all([
-        // shell(`pnpm --filter template-rewrite-framer build`, {
+        // shell(`pnpm --filter plugin-github-sync build`, {
         //     env,
         // }),
         // shell(`pnpm --filter github-framer build`, {

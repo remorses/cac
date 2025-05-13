@@ -1,0 +1,27 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "lib": ["DOM", "DOM.Iterable", "ES2022", "esnext"],
+        "outDir": "esm",
+        "isolatedModules": true,
+        "rootDir": "src",
+        "esModuleInterop": true,
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "resolveJsonModule": true,
+        "target": "ES2022",
+        "strict": true,
+        "allowJs": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "baseUrl": ".",
+        "useUnknownInCatchVariables": false,
+        "noImplicitAny": false,
+        "paths": {
+            "plugin-github-sync/*": ["./*"]
+        },
+        "noEmit": false
+    },
+    "include": ["src"]
+}
