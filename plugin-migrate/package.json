@@ -42,7 +42,7 @@
         "tailwindcss": "^3.4.6",
         "textarea-caret": "^3.1.0",
         "textarea-caret-position": "^0.1.1",
-        "unframer": "^2.24.5",
+        "unframer": "workspace:*",
         "vite-plugin-environment": "^1.1.3",
         "vite-plugin-mkcert": "^1.17.6",
         "vite-tsconfig-paths": "^5.1.4",

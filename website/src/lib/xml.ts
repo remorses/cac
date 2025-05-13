@@ -274,7 +274,7 @@ export function oldTextTreeToXml(
                         }
                         hasComments = true
                         attributes.push(
-                            `<!-- ${key} is of type ${comment} -->\n${indent}    ${key}="${value}"`,
+                            `<!-- ${comment} -->\n${indent}    ${key}="${value}"`,
                         )
                     } else {
                         attributes.push(`${key}="${value}"`)

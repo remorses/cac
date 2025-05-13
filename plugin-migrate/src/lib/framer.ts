@@ -1,29 +1,43 @@
 import {
     AnyNode,
-    isComponentInstanceNode,
     framer,
+    isComponentInstanceNode,
     isComponentNode,
     isFrameNode,
-    supportsVisible,
-    supportsName,
-    supportsLink,
     isTextNode,
-    WithControlAttributesTrait,
+    supportsLink,
+    supportsName,
+    supportsVisible,
 } from 'framer-plugin'
-import type { PropertyControls, ControlDescription } from 'unframer'
 import {
     collectGenerator,
     getParentNodes,
+    isTruthy,
 } from 'plugin-migrate/src/lib/utils'
+import type { ControlDescription, PropertyControls } from 'unframer/src/index'
+import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
 import { FramerLayersTree } from 'website/src/lib/rewrite'
-import { cleanupOldTextTree, bfsOldTextTree } from 'website/src/lib/utils'
+import { bfsOldTextTree, cleanupOldTextTree } from 'website/src/lib/utils'
 import {} from 'website/src/lib/xml'
+
+let cachedPagePaths: string[] = []
+
+async function getPagePaths() {
+    if (cachedPagePaths?.length) return cachedPagePaths
+    const pages = await framer.getNodesWithType('WebPageNode')
+    cachedPagePaths = pages
+        .map((x) => x.path)
+        .filter((val) => isTruthy(val))
+        .filter((val) => !val?.includes(':'))
+    console.log({ cachedPagePaths })
+    return cachedPagePaths
+}
 
 export async function getComponentAttributesComments(url?: string) {
     if (!url) return
     try {
-        const res = await import(url)
-        return getAttributeComments(res.default?.propertyControls)
+        const [res, paths] = await Promise.all([import(url), getPagePaths()])
+        return getAttributeComments(res.default?.propertyControls, paths)
     } catch (e) {
         console.log('failed to import component schema', e)
         return
@@ -62,10 +76,14 @@ export enum ControlType {
     MultiCollectionReference = 'multicollectionreference',
 }
 
-export function getAttributeComments(controls?: PropertyControls) {
+export function getAttributeComments(
+    controls?: PropertyControls,
+    availablePagePaths: string[] = ['/'],
+) {
     if (!controls) {
         return {}
     }
+    console.log(controls)
 
     const result: Record<string, string> = {}
     Object.entries(controls || ({} as PropertyControls)).forEach(
@@ -77,17 +95,21 @@ export function getAttributeComments(controls?: PropertyControls) {
             const typescriptType = (value: ControlDescription<any>): string => {
                 switch (value.type) {
                     case ControlType.Color:
-                        return 'string'
+                        return 'color value'
                     case ControlType.Boolean:
                         return 'boolean'
                     case ControlType.Number:
                         return 'number'
                     case ControlType.String:
-                        return 'string'
+                        return ''
                     case ControlType.Enum: {
-                        // @ts-expect-error
+                        if (!('optionTitles' in value)) {
+                            return ''
+                        }
                         const options = value.optionTitles || value.options
-                        return options.map((x) => `'${x}'`).join(' | ')
+                        return options
+                            .map((x, i) => `'${x}' is ${value.options[i]}`)
+                            .join(', ')
                     }
                     case ControlType.File:
                         return 'string'
@@ -110,7 +132,7 @@ export function getAttributeComments(controls?: PropertyControls) {
                     case ControlType.Date:
                         return 'DateString'
                     case ControlType.Link:
-                        return 'LinkString'
+                        return `url or a path among ${JSON.stringify(availablePagePaths)}`
                     case ControlType.ResponsiveImage:
                         return ''
                         return `{src: string, srcSet?: string, alt?: string}`
@@ -122,12 +144,19 @@ export function getAttributeComments(controls?: PropertyControls) {
                     case ControlType.EventHandler:
                         return ''
                         return 'Function'
+                    case ControlType.RichText:
+                        return 'rich text'
+                    case ControlType.Font:
+                        return 'font'
+
                     default:
                         return 'any'
                 }
             }
 
             result[key] = typescriptType(value)
+            const propName = propCamelCaseJustLikeFramer(value.title)
+            if (propName) result[propName] = typescriptType(value)
         },
     )
     return result
@@ -485,6 +514,9 @@ async function getNodeAttributesForXml(node: AnyNode) {
 
     let attrControlsComments
     if (isComponentInstanceNode(node)) {
+        if (!node.insertURL) {
+            console.log(`no node.insertURL for compnoent instance ${node.name}`)
+        }
         attrControlsComments = await getComponentAttributesComments(
             node.insertURL || undefined,
         )
