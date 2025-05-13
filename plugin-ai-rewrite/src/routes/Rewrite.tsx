@@ -40,6 +40,7 @@ import {
 } from 'plugin-migrate/src/lib/framer'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
+import { flushSync } from 'react-dom'
 
 let abortController = new AbortController()
 
@@ -74,7 +75,12 @@ function SimplePromptComponent({}) {
 
     const { onKeyDown, onSubmit: historyOnSubmit } = useHistoryNavigation({
         value: description,
-        setValue: setDescription,
+        setValue: (x) => {
+            flushSync(() => {
+                setDescription(x)
+            })
+            fixTexareaSize()
+        },
     })
 
     async function onSubmit() {
@@ -411,6 +417,13 @@ function SimplePromptComponent({}) {
         !!previousOldText.length && !isLoading,
     )
 
+    function fixTexareaSize() {
+        const target = textareaRef.current
+        if (!target) return
+        target.style.height = 'auto'
+        target.style.height = `${target.scrollHeight}px`
+    }
+
     return (
         <form
             onSubmit={(e) => {
@@ -462,9 +475,7 @@ function SimplePromptComponent({}) {
                         setDescription(e.target.value)
                     }}
                     onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement
-                        target.style.height = 'auto'
-                        target.style.height = `${target.scrollHeight}px`
+                        fixTexareaSize()
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
