@@ -29,7 +29,7 @@ async function getPagePaths() {
         .map((x) => x.path)
         .filter((val) => isTruthy(val))
         .filter((val) => !val?.includes(':'))
-    console.log({ cachedPagePaths })
+    // console.log({ cachedPagePaths })
     return cachedPagePaths
 }
 
@@ -83,7 +83,7 @@ export function getAttributeComments(
     if (!controls) {
         return {}
     }
-    console.log(controls)
+    // console.log(controls)
 
     const result: Record<string, string> = {}
     Object.entries(controls || ({} as PropertyControls)).forEach(
