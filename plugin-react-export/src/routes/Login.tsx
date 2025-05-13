@@ -1,4 +1,4 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 // @ts-ignore
 import hero from '../../public/code-tailwind.jpeg'
 
@@ -20,7 +20,7 @@ import {
     useNavigation,
     useRevalidator,
 } from 'react-router'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
     framerLoginUrl,
     generateSecurePassword,

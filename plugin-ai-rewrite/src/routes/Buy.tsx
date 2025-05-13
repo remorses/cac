@@ -13,8 +13,8 @@ import {
     useLoaderData,
     useRevalidator,
 } from 'react-router'
-import { Button } from 'plugin-github-sync/src/components/Button'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { Button } from 'plugin-migrate/src/components/Button'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 

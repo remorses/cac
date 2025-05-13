@@ -6,7 +6,7 @@ import {
     useParams,
 } from 'react-router-dom'
 import * as indexDb from 'idb-keyval'
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 import {
     bezierControlBinding,
     bfs,

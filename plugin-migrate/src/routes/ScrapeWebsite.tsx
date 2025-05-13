@@ -1,16 +1,16 @@
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
 import NProgress from 'nprogress'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
     pluginApiClient,
     withMode,
     Paths,
     globalState,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 import { useState, useRef, useEffect, Component } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate, useLocation, RouteObject } from 'react-router'
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 
 let abortController = new AbortController()
 

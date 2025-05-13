@@ -1,9 +1,9 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 import {
     Paths,
     formatLargeNumber,
     pluginApiClient,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 import {
     LoaderFunctionArgs,
     RouteObject,
@@ -13,7 +13,7 @@ import {
 } from 'react-router'
 import { Form } from 'react-router-dom'
 
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {} from 'react-router'
 
 async function loader({}: LoaderFunctionArgs) {

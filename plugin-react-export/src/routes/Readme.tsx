@@ -1,6 +1,6 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 import { marked } from 'marked'
-import { reload, withMode } from 'plugin-github-sync/src/lib/utils'
+import { reload, withMode } from 'plugin-migrate/src/lib/utils'
 
 import {
     LoaderReturnType,
@@ -23,7 +23,7 @@ import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { CanvasRootNode, framer, PublishInfo } from 'framer-plugin'
 import {} from 'react-router'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import { Link } from 'react-router-dom'
 import { ReactExportComponent } from 'db'
 import { generateStackblitzProject } from 'website/src/lib/utils'

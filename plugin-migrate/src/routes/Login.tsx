@@ -1,15 +1,15 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 // @ts-ignore
-import logo from 'plugin-github-sync/public/gradient-icon@2x.png'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import logo from 'plugin-migrate/public/gradient-icon@2x.png'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
     LoaderReturnType,
     Paths,
     pluginApiClient,
     PluginDataKeys,
     withMode,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState } from 'react'
 import {

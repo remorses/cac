@@ -1,5 +1,5 @@
 {
-    "name": "plugin-github-sync",
+    "name": "plugin-migrate",
     "private": true,
     "type": "module",
     "scripts": {
@@ -32,7 +32,7 @@
         "nextjs-progressbar": "^0.0.16",
         "nprogress": "^0.2.0",
         "openai": "^4.80.1",
-        "plugin-github-sync": "workspace:^",
+        "plugin-migrate": "workspace:^",
         "react": "19.0.0",
         "react-dom": "19.0.0",
         "react-router": "^7.6.0",

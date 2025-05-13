@@ -1,4 +1,4 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 
 import { useState } from 'react'
 import {
@@ -20,9 +20,9 @@ import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
 import {} from 'react-router'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import { feedbackUrl, getBuyLLMPluginUrl } from 'website/src/lib/env'
-import { reload } from 'plugin-github-sync/src/lib/utils'
+import { reload } from 'plugin-migrate/src/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {
     const [{ email, orgId }, credits, info] = await Promise.all([

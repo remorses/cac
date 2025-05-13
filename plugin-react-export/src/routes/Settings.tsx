@@ -1,5 +1,5 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
-import { reload } from 'plugin-github-sync/src/lib/utils'
+import { Button } from 'plugin-migrate/src/components/Button'
+import { reload } from 'plugin-migrate/src/lib/utils'
 
 import {
     LoaderReturnType,
@@ -19,7 +19,7 @@ import {
 
 import classNames from 'classnames'
 import { framer } from 'framer-plugin'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import { feedbackUrl, getBuyReactExportPluginUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {

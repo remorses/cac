@@ -1,4 +1,4 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 import { useNavigate } from 'react-router'
 import { Form } from 'react-router-dom'
 

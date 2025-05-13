@@ -1,4 +1,4 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 
 import { useState } from 'react'
 import {
@@ -15,13 +15,13 @@ import {
     formatLargeNumber,
     pluginApiClient,
     reload,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 
 import classNames from 'classnames'
 import { motion } from 'framer-motion'
 import { framer } from 'framer-plugin'
 import {} from 'react-router'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import { createBuyMigrateUrl, feedbackUrl } from 'website/src/lib/env'
 
 async function loader({}: LoaderFunctionArgs) {

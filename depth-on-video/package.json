@@ -31,7 +31,7 @@
         "react-router-dom": "^7.6.0",
         "react-use-measure": "^2.1.7",
         "tailwindcss": "^3.4.6",
-        "plugin-github-sync": "workspace:^",
+        "plugin-migrate": "workspace:^",
         "three": "^0.172.0",
         "three-soft-depth-of-field": "workspace:^",
         "tweakpane": "^4.0.5",

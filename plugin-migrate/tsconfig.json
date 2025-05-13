@@ -19,7 +19,7 @@
         "useUnknownInCatchVariables": false,
         "noImplicitAny": false,
         "paths": {
-            "plugin-github-sync/*": ["./*"]
+            "plugin-migrate/*": ["./*"]
         },
         "noEmit": false
     },

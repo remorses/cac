@@ -12,9 +12,9 @@ import {
     useNavigation,
 } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
-import { Button } from 'plugin-github-sync/src/components/Button'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
-import { basePath, withMode } from 'plugin-github-sync/src/lib/utils'
+import { Button } from 'plugin-migrate/src/components/Button'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
+import { basePath, withMode } from 'plugin-migrate/src/lib/utils'
 
 import { use, useEffect, useLayoutEffect, useRef, useState } from 'react'
 

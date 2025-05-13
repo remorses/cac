@@ -1,5 +1,5 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
-import { getInstanceComponentId } from 'plugin-github-sync/src/lib/framer'
+import { Button } from 'plugin-migrate/src/components/Button'
+import { getInstanceComponentId } from 'plugin-migrate/src/lib/framer'
 
 import {
     LoaderReturnType,
@@ -23,9 +23,9 @@ import { notifyError } from '@/lib/errors'
 import { framer, isFrameNode } from 'framer-plugin'
 import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import { useEffect, useRef, useState } from 'react'
-import { getParentNodes } from 'plugin-github-sync/src/lib/utils'
+import { getParentNodes } from 'plugin-migrate/src/lib/utils'
 import { deduplicateByKey } from 'website/src/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {

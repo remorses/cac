@@ -20,7 +20,7 @@ async function main() {
     })
 
     await Promise.all([
-        // shell(`pnpm --filter plugin-github-sync build`, {
+        // shell(`pnpm --filter plugin-migrate build`, {
         //     env,
         // }),
         // shell(`pnpm --filter github-framer build`, {

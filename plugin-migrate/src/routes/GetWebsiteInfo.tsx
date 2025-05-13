@@ -1,11 +1,11 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 import {
     globalState,
     Paths,
     pluginApiClient,
     withMode,
     LoaderReturnType,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 
 import {
     Form,
@@ -14,7 +14,7 @@ import {
     useNavigation,
     useActionData,
 } from 'react-router-dom'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
 
 export function WebsiteInfo() {
     return {

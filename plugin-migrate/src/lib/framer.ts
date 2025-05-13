@@ -14,7 +14,7 @@ import type { PropertyControls, ControlDescription } from 'unframer'
 import {
     collectGenerator,
     getParentNodes,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 import { FramerLayersTree } from 'website/src/lib/rewrite'
 import { cleanupOldTextTree, bfsOldTextTree } from 'website/src/lib/utils'
 import {} from 'website/src/lib/xml'

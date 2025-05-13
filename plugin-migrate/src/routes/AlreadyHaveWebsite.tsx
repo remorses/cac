@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Paths, withMode } from 'plugin-github-sync/src/lib/utils'
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Paths, withMode } from 'plugin-migrate/src/lib/utils'
+import { Button } from 'plugin-migrate/src/components/Button'
 import { useEffect, useRef } from 'react'
 
 export function AlreadyHaveWebsite() {

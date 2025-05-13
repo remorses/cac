@@ -1,10 +1,10 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
+import { Button } from 'plugin-migrate/src/components/Button'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
 import {
     useHistoryNavigation,
     useLatestFunction,
     useRefreshOnVisible,
-} from 'plugin-github-sync/src/lib/hooks'
+} from 'plugin-migrate/src/lib/hooks'
 
 import {
     getDesktop,
@@ -15,7 +15,7 @@ import {
     pluginApiClient,
     PluginDataKeys,
     withMode,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 
 import {
     AnyNode,
@@ -38,13 +38,13 @@ import {
 
 import { FramerLayersTree } from 'website/src/lib/rewrite'
 
-import { StarReview } from 'plugin-github-sync/src/components/StarReview'
+import { StarReview } from 'plugin-migrate/src/components/StarReview'
 import {
     applyAttributes,
     discardFramerChanges,
     getFramerTree,
     isNodeZoomable,
-} from 'plugin-github-sync/src/lib/framer'
+} from 'plugin-migrate/src/lib/framer'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { createBuyMigrateUrl } from 'website/src/lib/env'
 import { MentionsTextArea } from '../components/mentions/Mentions'

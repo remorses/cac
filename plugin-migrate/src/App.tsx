@@ -4,8 +4,8 @@ import useMeasure from 'react-use-measure'
 import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
-import { NProgressComponent } from 'plugin-github-sync/src/components/nprogress'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
+import { NProgressComponent } from 'plugin-migrate/src/components/nprogress'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
 
 import {
     LoaderReturnType,
@@ -15,14 +15,14 @@ import {
     getPluginData,
     reload,
     withMode,
-} from 'plugin-github-sync/src/lib/utils'
-import { AlreadyHaveWebsite } from 'plugin-github-sync/src/routes/AlreadyHaveWebsite'
-import { WebsiteInfo } from 'plugin-github-sync/src/routes/GetWebsiteInfo'
-import { LicenseKey } from 'plugin-github-sync/src/routes/LicenseKey'
-import { LoginPage } from 'plugin-github-sync/src/routes/Login'
-import { SimplePrompt } from 'plugin-github-sync/src/routes/Prompt'
-import { ScrapeWebsite } from 'plugin-github-sync/src/routes/ScrapeWebsite'
-import { Settings } from 'plugin-github-sync/src/routes/Settings'
+} from 'plugin-migrate/src/lib/utils'
+import { AlreadyHaveWebsite } from 'plugin-migrate/src/routes/AlreadyHaveWebsite'
+import { WebsiteInfo } from 'plugin-migrate/src/routes/GetWebsiteInfo'
+import { LicenseKey } from 'plugin-migrate/src/routes/LicenseKey'
+import { LoginPage } from 'plugin-migrate/src/routes/Login'
+import { SimplePrompt } from 'plugin-migrate/src/routes/Prompt'
+import { ScrapeWebsite } from 'plugin-migrate/src/routes/ScrapeWebsite'
+import { Settings } from 'plugin-migrate/src/routes/Settings'
 
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import {
@@ -38,7 +38,7 @@ import {
     useRouteError,
 } from 'react-router'
 import { createBrowserRouter } from 'react-router-dom'
-import { useFocusOnMount } from 'plugin-github-sync/src/lib/hooks'
+import { useFocusOnMount } from 'plugin-migrate/src/lib/hooks'
 
 globalThis.framer = framer
 async function loader({ request }) {

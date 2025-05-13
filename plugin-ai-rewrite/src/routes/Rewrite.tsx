@@ -1,16 +1,16 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
+import { Button } from 'plugin-migrate/src/components/Button'
+import { notifyError } from 'plugin-migrate/src/lib/errors'
 import {
     useHistoryNavigation,
     useRefreshOnVisible,
-} from 'plugin-github-sync/src/lib/hooks'
+} from 'plugin-migrate/src/lib/hooks'
 
 import {
     getDesktop,
     isTruthy,
     LoaderReturnType,
     withMode,
-} from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
 
 import {
     AnyNode,
@@ -32,12 +32,12 @@ import {
 import { FramerLayersTree } from 'website/src/lib/rewrite'
 
 import { Paths, pluginApiClient } from '@/lib/utils'
-import { StarReview } from 'plugin-github-sync/src/components/StarReview'
+import { StarReview } from 'plugin-migrate/src/components/StarReview'
 import {
     applyAttributes,
     getFramerTree,
     isNodeZoomable,
-} from 'plugin-github-sync/src/lib/framer'
+} from 'plugin-migrate/src/lib/framer'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 

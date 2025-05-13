@@ -1,5 +1,5 @@
-import 'plugin-github-sync/src/styles/globals.css'
-import 'plugin-github-sync/src/styles/reset.css'
+import 'plugin-migrate/src/styles/globals.css'
+import 'plugin-migrate/src/styles/reset.css'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
