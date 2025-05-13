@@ -26,7 +26,7 @@
     "author": "remorses <beats.by.morse@gmail.com>",
     "license": "ISC",
     "dependencies": {
-        "@prisma/client": "6.6.0",
+        "@prisma/client": "6.7.0",
         "@supabase/supabase-js": "^2.48.1",
         "@types/pg": "^8.11.11",
         "kysely": "^0.27.5",
@@ -36,7 +36,7 @@
         "@types/node": "^22.13.4",
         "concurrently": "^9.1.2",
         "kysely-codegen": "^0.17.0",
-        "prisma": "^6.6.0",
+        "prisma": "^6.7.0",
         "supabase": "^2.9.6"
     }
 }
