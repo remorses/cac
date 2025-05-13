@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useRevalidator, useNavigation } from 'react-router'
-import { notifyError } from 'plugin-github-sync/src/lib/errors'
+import { notifyError } from './errors'
 import getCaretCoordinates from 'textarea-caret'
 
 // you can skip showing the toast on failure putting a field skipToast: true in the error
