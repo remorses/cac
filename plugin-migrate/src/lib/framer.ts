@@ -148,6 +148,8 @@ export function getAttributeComments(
                         return 'rich text'
                     case ControlType.Font:
                         return 'font'
+                    case ControlType.BorderRadius:
+                        return 'border radius, four px values delimited by space'
 
                     default:
                         return 'any'
@@ -550,13 +552,10 @@ export function serializeAttributesForXml(
     }
     const result: Record<string, string> = {}
     for (const [key, value] of Object.entries(attributes)) {
-        // skip image attributes, too complex
-        if (value?.url) {
-            continue
-        }
-        if (value == null) {
-            continue
-        }
+        // if (value == null) {
+        //     continue
+        // }
+        // // TODO to support images i would need to add a lot of work
         if (typeof value === 'object') {
             console.log('skipping object value for attribute', key, value)
             continue

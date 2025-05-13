@@ -268,10 +268,7 @@ export function oldTextTreeToXml(
             for (const [key, value] of Object.entries(node.attributes)) {
                 if (value !== undefined && value !== null) {
                     const comment = node.attrControlsComments?.[key]
-                    if (comment != null) {
-                        if (!comment) {
-                            continue
-                        }
+                    if (comment != null && comment) {
                         hasComments = true
                         attributes.push(
                             `<!-- ${comment} -->\n${indent}    ${key}="${value}"`,

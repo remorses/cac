@@ -16,95 +16,23 @@
                                 name: 'Container',
                                 children: [
                                     {
-                                        nodeId: 'TOgca_2ea',
-                                        name: 'Section Header',
-                                        attributes: {
-                                            variant: 'qJY3mRqO7',
-                                            tagText: 'Pricing',
-                                            sectionTitle:
-                                                'Flexible Plans for Every Stage',
-                                            showTag: 'true',
-                                        },
-                                        children: [],
-                                    },
-                                    {
                                         nodeId: 'FaOttYF_E',
                                         name: 'Cards',
                                         children: [
                                             {
-                                                nodeId: 'EhffB7UmQ',
+                                                nodeId: 'qph2TNK7s',
                                                 name: 'Pricing Card',
                                                 attributes: {
-                                                    variant: 'jcl9Lwa5n',
-                                                    icon: 'cube',
-                                                    iconColor: 'rgb(0, 0, 0)',
-                                                    iconBGColor:
-                                                        'rgb(244, 244, 244)',
-                                                    title: 'Starter',
-                                                    price: '$0',
-                                                    description:
-                                                        'Perfect for solo founders and early-stage projects.',
-                                                    button: 'xIlCTuTZ1',
-                                                    buttonText: 'Get Started',
-                                                    buttonLink:
-                                                        'https://framer.link/yBGPRYq',
-                                                    detail1:
-                                                        '1 connected account',
-                                                    detail2:
-                                                        'Real-time dashboard access',
-                                                    detail3: 'Basic reporting',
-                                                    detail4: 'Email support',
-                                                    detail5:
-                                                        'Up to 2 team members',
-                                                },
-                                                children: [],
-                                            },
-                                            {
-                                                nodeId: 'WgPQmt4i4',
-                                                name: 'Pricing Card',
-                                                attributes: {
-                                                    variant: 'f2GSEnjO8',
-                                                    icon: 'star',
-                                                    iconColor:
-                                                        'rgb(101, 155, 255)',
-                                                    iconBGColor:
-                                                        'rgba(101, 155, 255, 0.1)',
-                                                    title: 'Growth',
-                                                    price: '$25',
-                                                    description:
-                                                        'Ideal for growing teams who need deeper insights.',
-                                                    button: 'EsSj4TVnM',
-                                                    buttonText: 'Get Started',
-                                                    buttonLink:
-                                                        'https://framer.link/yBGPRYq',
-                                                    detail1:
-                                                        'Up to 5 connected accounts',
-                                                    detail2:
-                                                        'Advanced analytics',
-                                                    detail3:
-                                                        'Automated reports',
-                                                    detail4:
-                                                        'Priority email support',
-                                                    detail5:
-                                                        'Up to 10 team members',
-                                                },
-                                                children: [],
-                                            },
-                                            {
-                                                nodeId: 'Z9aDkvN5Y',
-                                                name: 'Pricing Card',
-                                                attributes: {
-                                                    variant: 'jcl9Lwa5n',
+                                                    variant: 'XkS2k0HDs',
                                                     icon: 'lightning',
                                                     iconColor: 'rgb(0, 0, 0)',
                                                     iconBGColor:
-                                                        'rgb(244, 244, 244)',
+                                                        'rgb(255, 255, 255)',
                                                     title: 'Scale',
                                                     price: '$75',
                                                     description:
                                                         'For established teams ready to maximize performance.',
-                                                    button: 'xIlCTuTZ1',
-                                                    buttonText: 'Contact Us',
+                                                    buttonText: 'Contact Us ',
                                                     buttonLink: '/',
                                                     detail1:
                                                         'Unlimited connected accounts',
@@ -116,6 +44,38 @@
                                                         'Dedicated support',
                                                     detail5:
                                                         'Unlimited team members',
+                                                },
+                                                attrControlsComments: {
+                                                    variant:
+                                                        "'Layout 1' is XkS2k0HDs, 'Layout 1 - Highlight' is k92V6qROL, 'Layout 2' is sn5bHokew, 'Layout 2 - Highlight' is HB2MfbycA",
+                                                    BicFY1cAK: '',
+                                                    icon: '',
+                                                    PKvbGpC6Z: 'color value',
+                                                    iconColor: 'color value',
+                                                    rbBgZcr56: 'color value',
+                                                    iconBGColor: 'color value',
+                                                    gX8pQ68w7: '',
+                                                    title: '',
+                                                    Xsme3irH8: '',
+                                                    price: '',
+                                                    NQPMPOkjg: '',
+                                                    description: '',
+                                                    qJuyi46Cl: '',
+                                                    buttonText: '',
+                                                    QfsELveDO:
+                                                        'url or a path among ["/","/404","/pricing-test"]',
+                                                    buttonLink:
+                                                        'url or a path among ["/","/404","/pricing-test"]',
+                                                    NG3s8TAJW: '',
+                                                    detail1: '',
+                                                    c1Lp8xAXb: '',
+                                                    detail2: '',
+                                                    Oh3LO1qGv: '',
+                                                    detail3: '',
+                                                    cUs4OXmiy: '',
+                                                    detail4: '',
+                                                    JrMhBFzGv: '',
+                                                    detail5: '',
                                                 },
                                                 children: [],
                                             },
