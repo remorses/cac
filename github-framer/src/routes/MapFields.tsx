@@ -160,7 +160,7 @@ function getFieldConfigForProp(
         }
     }
     if (type === 'enum') {
-        const x = {
+        const x: CollectionFieldConfig = {
             type: 'enum' as const,
             cases: [...new Set(property.values)]
                 .map((option) =>
@@ -169,6 +169,7 @@ function getFieldConfigForProp(
                 .filter((option) => option)
                 .map((option) => ({
                     id: option,
+                    nameByLocale: {},
                     name: option,
                 })),
             id: property.id,
@@ -183,8 +184,9 @@ function getFieldConfigForProp(
         return x
     }
     if (type === 'file') {
-        const x = {
+        const x: CollectionFieldConfig = {
             type: 'file' as const,
+            required: false,
             allowedFileTypes: ALLOWED_FILE_TYPES,
             id: property.id,
             name: property.name,
