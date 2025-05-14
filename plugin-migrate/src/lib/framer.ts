@@ -617,6 +617,10 @@ export async function applyAttributes(
         decodedAttrs[key] = decodeAttributeValueAsJson(value)
     }
 
+    if (supportsLink(node) && decodedAttrs.href) {
+        await node.setAttributes({ link: decodedAttrs.href })
+    }
+
     if (isTextNode(node)) {
         // Apply text-specific attributes
         await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
