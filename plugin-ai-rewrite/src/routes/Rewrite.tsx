@@ -134,6 +134,16 @@ function SimplePromptComponent({}) {
         setStars(0)
     }
 
+    async function copyToClipboard(text: string) {
+        try {
+            await navigator.clipboard.writeText(text)
+            return true
+        } catch (error) {
+            console.error('Failed to copy to clipboard:', error)
+            return false
+        }
+    }
+
     async function copyXml() {
         let desktop = await getDesktop()
         if (selectedNodes.length) {
@@ -166,11 +176,9 @@ function SimplePromptComponent({}) {
                 shouldAddNodeIdAlways: true,
             })
 
-            await navigator.clipboard.writeText(
-                JSON.stringify(oldText, null, 2),
-            )
+            await copyToClipboard(JSON.stringify(oldText, null, 2))
             await sleep(400)
-            await navigator.clipboard.writeText(xml)
+            await copyToClipboard(xml)
             console.log('Old text copied to clipboard as JSON')
         } catch (error) {
             console.error('Failed to copy old text to clipboard:', error)

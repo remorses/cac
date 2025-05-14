@@ -251,7 +251,7 @@ function SimplePromptComponent({}) {
             }
 
             prevBackground = currentParent?.backgroundColor || null
-            await currentParent?.setAttributes({ backgroundColor })
+            // await currentParent?.setAttributes({ backgroundColor })
 
             prevNode = currentParent
         }
@@ -324,7 +324,7 @@ function SimplePromptComponent({}) {
             await sleep(200)
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
         } finally {
-            await prevNode?.setAttributes({ backgroundColor: prevBackground })
+            // await prevNode?.setAttributes({ backgroundColor: prevBackground })
         }
     }
     useRefreshOnVisible({ enabled: !isLoading })

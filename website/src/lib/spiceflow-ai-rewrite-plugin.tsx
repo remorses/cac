@@ -448,6 +448,8 @@ export const llmPluginApp = new Spiceflow({
                                 ? 'cancelled'
                                 : 'accepted',
                             chars,
+                            initialXml,
+                            resultXml: fullAnswer,
                             projectName,
                             pluginName: 'llm',
                             createdAt: new Date(),
