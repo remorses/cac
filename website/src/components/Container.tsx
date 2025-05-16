@@ -1,4 +1,4 @@
-import NavFramerComponent from '../framer/nav'
+import NavFramerComponent from '../framer-old/nav'
 import { installFramerPluginUrl } from '../lib/env'
 import { Footer } from '../routes/home'
 
@@ -9,7 +9,6 @@ export function PageContainer({ children }) {
                 framerPlugin={installFramerPluginUrl}
                 ctaVariant=' Login button'
                 className='!w-full'
-                
                 variants={{ base: 'Mobile', lg: 'Desktop' }}
             />
             <div className='flex gap-12 pt-[100px] grow flex-col items-center text-gray-100 justify-center'>
@@ -20,4 +19,3 @@ export function PageContainer({ children }) {
         </div>
     )
 }
-

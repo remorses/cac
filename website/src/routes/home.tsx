@@ -1,20 +1,18 @@
-import type { MetaFunction } from 'react-router';
-import FeatureListFramerComponent from '../framer/feature-list'
-import FooterFramerComponent from '../framer/footer'
-import HeroFramerComponent from '../framer/hero'
-import NavFramerComponent from '../framer/nav'
-import PricingBannerFramerComponent from '../framer/pricing-banner'
-import { installFramerPluginUrl, framerUrl, env } from '../lib/env'
+import type { MetaFunction } from 'react-router'
+import FooterFramerComponent from '../framer-old/footer'
+import { env } from '../lib/env'
 // @ts-ignore
 import orgImg from 'website/public/migrate-plugin-assets/ogimage.jpeg'
+import TabsContentFramerComponent from '../framer/tabs-content'
+import TopContentFramerComponent from '../framer/top-content'
 
 export const meta: MetaFunction = () => {
     return [
-        { title: 'Migrate Template - Framer Plugin' },
+        { title: 'The best Framer plugins' },
         {
             name: 'description',
             content:
-                'Framer Plugin to migrate content from your existing website to a new Framer template, or start from scratch with a description of your new website. Save hours of work',
+                'Export Framer to React, sync Framer with GitHub, rewrite Framer content with AI, automatically migrate website content to Framer',
         },
         {
             property: 'og:image',
@@ -25,30 +23,12 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
     return (
-        <div className='flex flex-col -hue-rotate-30 grow min-h-full h-full gap-[100px] items-stretch'>
-            <NavFramerComponent.Responsive
-                variants={{ base: 'Mobile', md: 'Tablet', lg: 'Desktop' }}
-                framerPlugin={installFramerPluginUrl}
-                className='!w-full'
-            />
-            <HeroFramerComponent.Responsive
-                variants={{ base: 'mobile', md: 'desktop' }}
-                style={{ width: '100%' }}
-                // secondButton={framerUrl}
-                cta={installFramerPluginUrl}
-            />
-            <div className='grow'></div>
-            <FeatureListFramerComponent.Responsive
-                variants={{ base: 'mobile', md: 'desktop' }}
-                className='!w-full'
-            />
-            <PricingBannerFramerComponent.Responsive
-                framerUrl={installFramerPluginUrl}
-                variants={{ base: 'Mobile', md: 'Tablet', lg: 'Desktop' }}
-                className='!w-full'
-            />
-            <div className='grow ' />
-            <Footer />
+        <div className='flex w-full absolute left-0 flex-col bg-gray-50 grow  gap-[100px] items-stretch'>
+            <div className='flex flex-col max-w-[800px] p-16 mx-auto gap-16'>
+                <TopContentFramerComponent.Responsive className='' />
+                <TabsContentFramerComponent.Responsive />
+                {/* <Footer /> */}
+            </div>
         </div>
     )
 }
@@ -57,7 +37,7 @@ export function Footer() {
     return (
         <FooterFramerComponent.Responsive
             variants={{ base: 'Mobile', md: 'Tablet', lg: 'Desktop' }}
-            className='!w-full '
+            className='!w-full bg-black'
             terms={new URL('/terms', env.PUBLIC_URL).toString()}
             login={new URL('/login', env.PUBLIC_URL).toString()}
             policy={new URL('/privacy', env.PUBLIC_URL).toString()}

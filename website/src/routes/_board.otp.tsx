@@ -22,7 +22,7 @@ import { getSupabaseSession } from '../lib/supabase.server'
 import { Button } from '@nextui-org/react'
 import { notifyError } from '../lib/errors'
 import { fromZodError } from 'zod-validation-error'
-import NavFramerComponent from '../framer/nav'
+import NavFramerComponent from '../framer-old/nav'
 
 const otpSchema = zfd.formData({
     code: z.string().length(6),
