@@ -23,7 +23,7 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
     return (
-        <div className='flex w-full absolute left-0 flex-col bg-gray-50 grow  gap-[100px] items-stretch'>
+        <div className='flex w-full absolute left-0 flex-col bg-gray-50 grow min-h-[100vh] gap-[100px] items-stretch'>
             <div className='flex flex-col max-w-[800px] p-16 mx-auto gap-16'>
                 <TopContentFramerComponent.Responsive className='' />
                 <TabsContentFramerComponent.Responsive />
