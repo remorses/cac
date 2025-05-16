@@ -13,7 +13,7 @@ export interface Props {
     width?: any
     height?: any
     layoutId?: string
-
+    "defaultMessageValue"?: string
 }
 
 const ContactFramerComponent = (props: Props) => any
