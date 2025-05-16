@@ -37,7 +37,7 @@ export function Footer() {
     return (
         <FooterFramerComponent.Responsive
             variants={{ base: 'Mobile', md: 'Tablet', lg: 'Desktop' }}
-            className='!w-full bg-black'
+            className='!w-full '
             terms={new URL('/terms', env.PUBLIC_URL).toString()}
             login={new URL('/login', env.PUBLIC_URL).toString()}
             policy={new URL('/privacy', env.PUBLIC_URL).toString()}
