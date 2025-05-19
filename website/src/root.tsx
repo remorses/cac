@@ -11,7 +11,7 @@ import {
 } from 'react-router';
 import './framer/styles.css'
 
-import { NextUIProvider } from '@nextui-org/react'
+import { HeroUIProvider } from "@heroui/react"
 import { PageContainer } from './components/Container'
 import { LoaderFunctionArgs } from 'react-router';
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
@@ -23,9 +23,9 @@ function Providers({ children }) {
             <div className='h-full grow w-full items-center justify-start flex flex-col bg-[#080807] text-gray-100'>
                 <div className='flex w-full flex-col grow max-w-[1200px]'>
                     <Toaster />
-                    <NextUIProvider className='grow w-full flex flex-col '>
+                    <HeroUIProvider className='grow w-full flex flex-col '>
                         {children}
-                    </NextUIProvider>
+                    </HeroUIProvider>
                 </div>
             </div>
         </Suspense>

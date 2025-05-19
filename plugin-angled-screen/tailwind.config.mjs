@@ -6,7 +6,7 @@ export default {
     content: [
         './src/**/*.{js,ts,jsx,tsx}', //
         '../plugin-migrate/src/**/*.{js,ts,jsx,tsx}', //
-        // '../website/node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
+        // '../website/node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}',
         // '../beskar/src/**/*.{js,ts,jsx,tsx}', //
     ],
 }

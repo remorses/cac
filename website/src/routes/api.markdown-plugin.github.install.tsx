@@ -1,4 +1,4 @@
-import { Button } from '@nextui-org/react'
+import { Button } from "@heroui/react"
 import { prisma } from 'db'
 import { db } from 'db/kysely'
 import { useState } from 'react'

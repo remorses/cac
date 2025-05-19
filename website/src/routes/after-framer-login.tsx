@@ -1,4 +1,4 @@
-import { Button } from '@nextui-org/react'
+import { Button } from "@heroui/react"
 import { LoaderFunctionArgs } from 'react-router';
 import { Form, useActionData, useNavigation, useSearchParams } from 'react-router';
 import { db } from 'db/kysely'

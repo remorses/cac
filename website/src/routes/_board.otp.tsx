@@ -19,7 +19,7 @@ import {
     InputOTPSeparator,
 } from '../components/otp'
 import { getSupabaseSession } from '../lib/supabase.server'
-import { Button } from '@nextui-org/react'
+import { Button } from "@heroui/react"
 import { notifyError } from '../lib/errors'
 import { fromZodError } from 'zod-validation-error'
 import NavFramerComponent from '../framer-old/nav'
