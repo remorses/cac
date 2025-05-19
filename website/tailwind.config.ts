@@ -37,16 +37,16 @@ export default {
         typography, //
         forms,
         heroui({
-            themes: {
-                dark: {
-                    colors: {
-                        primary: {
-                            // DEFAULT: colors?.blue[300],
-                            // foreground: '#000000',
-                        },
-                    },
-                },
-            },
+            // themes: {
+            //     dark: {
+            //         colors: {
+            //             primary: {
+            //                 // DEFAULT: colors?.blue[300],
+            //                 // foreground: '#000000',
+            //             },
+            //         },
+            //     },
+            // },
         }),
     ],
 }
