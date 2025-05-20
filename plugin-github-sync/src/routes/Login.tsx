@@ -1,9 +1,9 @@
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 // @ts-ignore
 import githubHero from '../../public/github-hero.jpeg'
 
 import { notifyError } from '@/lib/errors'
-import { useRefreshOnVisible } from 'plugin-github-sync/src/lib/hooks'
+import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
     LoaderReturnType,
     Paths,

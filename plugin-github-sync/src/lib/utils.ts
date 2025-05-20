@@ -10,14 +10,14 @@ import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 import { safeJsonParse } from 'website/src/lib/utils'
 import { redirect } from 'react-router'
-import { withMode } from 'plugin-github-sync/src/lib/utils'
+import { withMode } from 'plugin-migrate/src/lib/utils'
 
 export {
     withMode,
     formatLargeNumber,
     getDesktop,
-} from 'plugin-github-sync/src/lib/utils'
-export type { LoaderReturnType } from 'plugin-github-sync/src/lib/utils'
+} from 'plugin-migrate/src/lib/utils'
+export type { LoaderReturnType } from 'plugin-migrate/src/lib/utils'
 
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {

@@ -1,6 +1,6 @@
 import { ManagedCollectionField as CollectionField } from 'framer-plugin'
 
-import { Button } from 'plugin-github-sync/src/components/Button'
+import { Button } from 'plugin-migrate/src/components/Button'
 import { getMarkdownPluginData } from '@/lib/utils'
 import classNames from 'classnames'
 import { ComponentProps, Fragment, useState } from 'react'

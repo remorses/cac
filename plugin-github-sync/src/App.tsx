@@ -1,6 +1,6 @@
 import NProgress from 'nprogress'
-import { NProgressComponent } from 'plugin-github-sync/src/components/nprogress'
-import { useFocusOnMount } from 'plugin-github-sync/src/lib/hooks'
+import { NProgressComponent } from 'plugin-migrate/src/components/nprogress'
+import { useFocusOnMount } from 'plugin-migrate/src/lib/hooks'
 
 import useMeasure from 'react-use-measure'
 
@@ -35,7 +35,7 @@ import {
     useRouteError,
 } from 'react-router'
 import { createBrowserRouter } from 'react-router-dom'
-import { basePath, reload } from 'plugin-github-sync/src/lib/utils'
+import { basePath, reload } from 'plugin-migrate/src/lib/utils'
 
 globalThis.framer = framer
 

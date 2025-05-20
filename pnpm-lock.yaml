@@ -577,6 +577,9 @@ importers:
       plugin-github-sync:
         specifier: workspace:^
         version: 'link:'
+      plugin-migrate:
+        specifier: workspace:^
+        version: link:../plugin-migrate
       react:
         specifier: 19.0.0
         version: 19.0.0
