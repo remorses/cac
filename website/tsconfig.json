@@ -27,6 +27,8 @@
         "paths": {
             "website/*": ["./*"]
         },
+        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": true,
         "noEmit": false
     },
     "include": ["src", ".react-router/types/**/*"]

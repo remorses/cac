@@ -1804,8 +1804,8 @@ importers:
         specifier: ^0.33.5
         version: 0.33.5
       spiceflow:
-        specifier: ^1.9.1
-        version: 1.9.1(@modelcontextprotocol/sdk@1.11.4)
+        specifier: workspace:*
+        version: link:../spiceflow/spiceflow
       string-dedent:
         specifier: ^3.0.1
         version: 3.0.1

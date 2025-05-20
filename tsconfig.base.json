@@ -23,6 +23,8 @@
         "sourceMap": true,
         "jsx": "react-jsx",
         "useUnknownInCatchVariables": false,
+        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": true,
         "skipLibCheck": true
     },
     "exclude": ["**/node_modules", "**/.*/"]
