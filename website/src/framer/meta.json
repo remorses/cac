@@ -654,7 +654,7 @@
       "format": "esm"
     },
     "virtual:footer": {
-      "bytes": 2527,
+      "bytes": 2571,
       "imports": [
         {
           "path": "react",
@@ -1287,7 +1287,7 @@
       "entryPoint": "virtual:footer",
       "inputs": {
         "virtual:footer": {
-          "bytesInOutput": 1352
+          "bytesInOutput": 1396
         },
         "/:https://framerusercontent.com/modules/4hSUonWzpSrtZd1BhZvI/1BTIPB54bc5iUhowW6vi/JHOLsHwUh.js": {
           "bytesInOutput": 27989
@@ -1296,7 +1296,7 @@
           "bytesInOutput": 13114
         }
       },
-      "bytes": 42954
+      "bytes": 42998
     },
     "chunks/chunk-K6UQ5WSB.js": {
       "imports": [

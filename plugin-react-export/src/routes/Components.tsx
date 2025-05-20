@@ -45,7 +45,6 @@ async function loader({}: LoaderFunctionArgs) {
             .project({ projectId: shortId })
             .get({})
             .then(({ data, error }) => {
-
                 if (error) {
                     return null
                 }
@@ -345,6 +344,7 @@ function Component() {
                             }}
                             checked={selected.includes(component.id)}
                             key={component.id}
+                            
                             {...component}
                         />
                     )
@@ -397,13 +397,38 @@ function SearchIcon({ className }: { className?: string }) {
         </svg>
     )
 }
+function EyeIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            viewBox='0 0 16 16'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+            className={'size-3'}
+        >
+            <path
+                d='M8 3.33333C4.66667 3.33333 1.82 5.55333 0.666667 8.66667C1.82 11.78 4.66667 14 8 14C11.3333 14 14.18 11.78 15.3333 8.66667C14.18 5.55333 11.3333 3.33333 8 3.33333Z'
+                stroke='currentColor'
+                strokeWidth='1.5'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+            />
+            <path
+                d='M8 10.6667C9.10457 10.6667 10 9.77124 10 8.66667C10 7.5621 9.10457 6.66667 8 6.66667C6.89543 6.66667 6 7.5621 6 8.66667C6 9.77124 6.89543 10.6667 8 10.6667Z'
+                stroke='currentColor'
+                strokeWidth='1.5'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+            />
+        </svg>
+    )
+}
 
-function Item({ id, name, onChange, checked, style }) {
+function Item({ id, name, onChange, checked, style, node }) {
     const ref = useRef<any>(null)
     return (
         <div
             style={style}
-            className='flex  items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full cursor-pointer'
+            className='flex group items-center px-3 gap-3 py-3 border-[--framer-color-bg-tertiary] h-full cursor-pointer'
             key={id}
             onClick={(e) => {
                 // Only handle click if not on the checkbox itself
@@ -429,9 +454,21 @@ function Item({ id, name, onChange, checked, style }) {
                     onChange={onChange}
                 />
             </div>
-            <div className=''>
+            <div className='flex-1'>
                 <h3>{name}</h3>
             </div>
+            <button
+                type='button'
+                tabIndex={-1}
+                className='group-hover:opacity-100 opacity-0 flex h-auto w-auto items-center justify-center !m-0 !p-1 bg-transparent hover:bg-framer-tertiary rounded-md'
+                onClick={(e) => {
+                    e.stopPropagation()
+                    framer.zoomIntoView(id, { maxZoom: 1 })
+                }}
+                title='Zoom to component'
+            >
+                <EyeIcon />
+            </button>
             {/* <div
             className={classNames(
                 'flex items-center justify-center',

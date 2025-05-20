@@ -121,7 +121,10 @@ addFonts2(FramerJHOLsHwUh, [{ explicitInter: true, fonts: [{ family: "Space Grot
 import { WithFramerBreakpoints } from "unframer";
 import { jsx } from "react/jsx-runtime";
 var locales = [];
-var defaultResponsiveVariants = {};
+var defaultResponsiveVariants = {
+  "base": "jwF72UoRb",
+  "xl": "GDQSlkfkE"
+};
 stdin_default3.Responsive = ({ locale, ...rest }) => {
   return /* @__PURE__ */ jsx(
     ContextProviders,

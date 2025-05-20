@@ -6,7 +6,3 @@
     border-color: theme('colors.gray.600');
 }
 
-body, input, textarea, select, button {
-    font-size: 12px;
-    font-family: sans-serif;
-}

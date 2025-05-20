@@ -505,7 +505,7 @@ model ReactExportProject {
   projectId           String  @id
   fullFramerProjectId String?
   projectName         String?
-
+  framerUserId        String?
   websiteUrl  String?
   createdAt   DateTime                @default(now())
   components  ReactExportComponent[]

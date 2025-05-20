@@ -117,7 +117,12 @@ export const variantIdToCredits = Object.assign(
 )
 
 export const feedbackUrl = (pluginName, title = 'Plugin Feedback') =>
-    `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' ' + title)}`
+    new URL(
+        `/contact?initialMessage=${encodeURIComponent(pluginName + ' ' + title)}`,
+        env.PUBLIC_URL,
+    ).toString()
+
+    
 export const discountCodeUrl = (pluginName) =>
     new URL(
         `/contact?initialMessage=${encodeURIComponent(pluginName + ' plugin discount for open source & non commercial use')}`,
