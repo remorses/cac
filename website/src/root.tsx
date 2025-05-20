@@ -8,16 +8,18 @@ import {
     Scripts,
     ScrollRestoration,
     useRouteError,
-} from 'react-router';
+} from 'react-router'
 import './framer/styles.css'
 
-import { HeroUIProvider } from "@heroui/react"
+import { HeroUIProvider } from '@heroui/react'
 import { PageContainer } from './components/Container'
-import { LoaderFunctionArgs } from 'react-router';
+import { LoaderFunctionArgs } from 'react-router'
 import { getSupabaseSession } from 'website/src/lib/supabase.server'
 import { Suspense } from 'react'
+import { useNProgress } from 'website/src/components/nprogress'
 
 function Providers({ children }) {
+    useNProgress()
     return (
         <Suspense>
             <div className='h-full grow w-full items-center justify-start flex flex-col bg-[#080807] text-gray-100'>

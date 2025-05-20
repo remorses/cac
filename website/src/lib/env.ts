@@ -226,3 +226,14 @@ export function createBuyAngledScreenUrl({ framerUserId = '' }) {
 }
 
 export const REACT_PLUGIN_PRICING_CHANGE = new Date('2025-01-15')
+
+export const reactExportVariants = {
+    personal: {
+        monthly: 'price_1QUWdFLpvqzrp4t9mitxNrkt',
+        yearly: 'price_1RQVt2Lpvqzrp4t9fNsGIs40',
+    },
+    business: {
+        monthly: 'price_1QhCBiLpvqzrp4t9cIJMlIOB',
+        yearly: 'price_1RQVsMLpvqzrp4t9MfkJ2Jqh',
+    },
+}

@@ -2,9 +2,9 @@
 // free with 2J5ZQHW3
 
 import { PluginName } from 'db'
-import { LoaderFunctionArgs, redirect } from 'react-router';
+import { LoaderFunctionArgs, redirect } from 'react-router'
 import Stripe from 'stripe'
-import { env } from 'website/src/lib/env'
+import { env, reactExportVariants } from 'website/src/lib/env'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {})
 
@@ -18,10 +18,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!orgId) {
         throw new Error('orgId not found')
     }
-
     let pluginName: PluginName = 'reactExport'
+
+    const price =
+        u.searchParams.get('priceId') || reactExportVariants.business.monthly
+
     const session = await stripe.checkout.sessions.create({
-        line_items: [{ quantity: 1, price: env.STRIPE_PRICE_ID_REACT_EXPORT }],
+        line_items: [{ quantity: 1, price }],
         mode: 'subscription',
         customer_email: params.email || undefined,
         client_reference_id: orgId,
@@ -31,9 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             ...params,
             orgId: orgId,
         },
-        
         subscription_data: {
-            
             metadata: {
                 ...params,
                 pluginName,
