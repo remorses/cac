@@ -51,7 +51,7 @@ const tiers: Array<Tier> = [
         mostPopular: false,
         price: {
             yearly: '$450',
-            monthly: '$50',
+            monthly: '$49',
         },
         featured: false,
         features: [
@@ -181,13 +181,13 @@ export function ReactExportPricing({}) {
             <div className='grid grid-cols-1 gap-4 md:gap-12 sm:grid-cols-2 '>
                 {tiers.map((tier) => {
                     const p = href('/api/react-export-plugin/buy')
-                    console.log({ p })
+                    
                     const u = new URL(p, env.PUBLIC_URL!)
                     const priceId =
                         reactExportVariants[tier.key]?.[selectedFrequency.key]
 
                     u.searchParams.set('priceId', priceId)
-                    u.searchParams.set('priceId', email)
+                    u.searchParams.set('email', email)
                     u.searchParams.set('orgId', orgId)
 
                     return (
