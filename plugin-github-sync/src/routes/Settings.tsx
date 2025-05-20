@@ -172,7 +172,10 @@ function Component() {
             <div className='flex gap-2 items-center'>
                 <div className=''>Questions or requests?</div>
                 <div className='grow'></div>
-                <a target='_blank' href={feedbackUrl('Github Sync')}>
+                <a
+                    target='_blank'
+                    href={feedbackUrl({ pluginName: 'Github Sync', email })}
+                >
                     <Button className='w-auto'>Share Feedback</Button>
                 </a>
             </div>

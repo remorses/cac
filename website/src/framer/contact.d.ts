@@ -14,6 +14,7 @@ export interface Props {
     height?: any
     layoutId?: string
     "defaultMessageValue"?: string
+    "defaultEmailValue"?: string
 }
 
 const ContactFramerComponent = (props: Props) => any

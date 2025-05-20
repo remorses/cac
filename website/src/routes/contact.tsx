@@ -24,20 +24,24 @@ export const meta: MetaFunction = () => {
 
 type LoaderData = {
     initialMessage?: string;
+    email?: string;
 };
 
 export const loader = ({ request }: LoaderFunctionArgs) => {
     const url = new URL(request.url);
     const initialMessage = url.searchParams.get('initialMessage') || undefined;
-    return { initialMessage };
+    const email = url.searchParams.get('email') || undefined;
+    return { initialMessage, email };
 };
 
 export default function Index() {
-    const { initialMessage } = useLoaderData() as LoaderData;
+    const { initialMessage, email } = useLoaderData() as LoaderData;
     return (
         <PageContainer>
             <div className='flex flex-col grow w-full items-center p-16 mx-auto gap-16'>
                 <ContactFramerComponent.Responsive
+                    defaultMessageValue={initialMessage}
+                    defaultEmailValue={email}
                     // @ts-ignore
                     onKeyPress={(e) => {
                         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -48,7 +52,7 @@ export default function Index() {
                             }
                         }
                     }}
-                    defaultMessageValue={initialMessage}
+                    
                     className=''
                 />
                 <div className='grow'></div>

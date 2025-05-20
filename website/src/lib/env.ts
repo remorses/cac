@@ -115,19 +115,36 @@ export const variantIdToCredits = Object.assign(
     {},
     ...plansConfig.map((x) => ({ [x.variantId]: x.limits.words })),
 )
+export const feedbackUrl = ({
+    pluginName,
+    title = 'Plugin Feedback',
+    email,
+}: {
+    pluginName: string
+    title?: string
+    email?: string | null
+}) => {
+    const url = new URL('/contact', env.PUBLIC_URL)
+    url.searchParams.set('initialMessage', `${pluginName} ${title}`)
+    if (email) url.searchParams.set('email', email)
+    return url.toString()
+}
 
-export const feedbackUrl = (pluginName, title = 'Plugin Feedback') =>
-    new URL(
-        `/contact?initialMessage=${encodeURIComponent(pluginName + ' ' + title)}`,
-        env.PUBLIC_URL,
-    ).toString()
-
-    
-export const discountCodeUrl = (pluginName) =>
-    new URL(
-        `/contact?initialMessage=${encodeURIComponent(pluginName + ' plugin discount for open source & non commercial use')}`,
-        env.PUBLIC_URL,
-    ).toString()
+export const discountCodeUrl = ({
+    pluginName,
+    email,
+}: {
+    pluginName: string
+    email?: string | null
+}) => {
+    const url = new URL('/contact', env.PUBLIC_URL)
+    url.searchParams.set(
+        'initialMessage',
+        `${pluginName} plugin discount for open source & non commercial use`,
+    )
+    if (email) url.searchParams.set('email', email)
+    return url.toString()
+}
 
 export function getBuyGithubPluginUrl({ orgId, email, projectId }) {
     const url = new URL('/api/markdown-plugin/buy', env.PUBLIC_URL)

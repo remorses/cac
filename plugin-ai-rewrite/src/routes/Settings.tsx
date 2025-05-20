@@ -65,14 +65,10 @@ export function Settings(): RouteObject {
 function Component() {
     const [isLoading, setIsLoading] = useState(false)
     useRefreshOnVisible({ enabled: !isLoading })
-    const { buyMoreCreditsUrl } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
+    const { buyMoreCreditsUrl, credits, email } =
+        useLoaderData() as LoaderReturnType<typeof loader>
     const actionData = useActionData() as any
 
-    const { credits, email } = useLoaderData() as LoaderReturnType<
-        typeof loader
-    >
     // const isDocumentVisible = useIsDocumentVisibile()
 
     const navigate = useNavigate()
@@ -138,7 +134,10 @@ function Component() {
             <div className='flex gap-2 items-center'>
                 <div className=''>Questions or requests?</div>
                 <div className='grow'></div>
-                <a target='_blank' href={feedbackUrl('Ai Rewrite')}>
+                <a
+                    target='_blank'
+                    href={feedbackUrl({ pluginName: 'Ai Rewrite', email })}
+                >
                     <Button className='w-auto'>Share Feedback</Button>
                 </a>
             </div>
