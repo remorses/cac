@@ -75,23 +75,7 @@ function Component() {
             <div className='flex flex-col gap-3 my-4'>
                 <div className='flex items-center'>
                     <div className=' text-sm text-balance'>
-                        React Export requires a $250 monthly subscription.
-                    </div>
-                </div>
-
-                <div className='flex items-center'>
-                    <div className='text-framer-secondary text-balance'>
-                        If you are a solo developer, non-profit or open source
-                        project you can get a discount{' '}
-                        <a
-                            href={discountCodeUrl('React Export')}
-                            className='font-semibold text-black dark:text-white'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                        >
-                            here
-                        </a>
-                        .
+                        React Export requires a monthly subscription.
                     </div>
                 </div>
             </div>
@@ -121,7 +105,7 @@ function Component() {
                     }
                     className='font-semibold grow w-auto '
                 >
-                    Buy Plugin Subscription
+                    Start Free Trial
                 </Button>
             </div>
         </div>

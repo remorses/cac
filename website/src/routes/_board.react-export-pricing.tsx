@@ -85,7 +85,7 @@ const tiers: Array<Tier> = [
         ],
         buttonText: 'Start 7 days trial',
         buttonColor: 'primary',
-        buttonVariant: 'flat',
+        buttonVariant: 'solid',
     },
 ]
 
@@ -118,17 +118,19 @@ type Tier = {
 export function loader({ request }: Route.LoaderArgs) {
     const u = new URL(request.url)
     const searchParams = u.searchParams
-    const orgId = searchParams.get('orgId') as string
+    const orgId = (searchParams.get('orgId') as string) || ''
+    const email = (searchParams.get('email') as string) || ''
     if (!orgId) {
         throw new Error('No orgId found in search params')
     }
     return {
         orgId,
+        email,
     }
 }
 
 export function ReactExportPricing({}) {
-    const { orgId } = useLoaderData<Info['loaderData']>()
+    const { orgId, email } = useLoaderData<Info['loaderData']>()
     const [selectedFrequency, setSelectedFrequency] = React.useState(
         frequencies[0],
     )
@@ -142,7 +144,7 @@ export function ReactExportPricing({}) {
     }
 
     return (
-        <div className='flex max-w-2xl mx-auto flex-col items-center py-24'>
+        <div className='flex max-w-2xl mx-auto flex-col items-center py-12'>
             <div className='flex max-w-xl flex-col text-center'>
                 <h2 className='font-medium text-primary'>Pricing</h2>
                 <h1 className='text-4xl font-medium tracking-tight'>
@@ -185,6 +187,7 @@ export function ReactExportPricing({}) {
                         reactExportVariants[tier.key]?.[selectedFrequency.key]
 
                     u.searchParams.set('priceId', priceId)
+                    u.searchParams.set('priceId', email)
                     u.searchParams.set('orgId', orgId)
 
                     return (

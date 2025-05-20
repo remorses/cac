@@ -119,7 +119,10 @@ export const variantIdToCredits = Object.assign(
 export const feedbackUrl = (pluginName, title = 'Plugin Feedback') =>
     `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' ' + title)}`
 export const discountCodeUrl = (pluginName) =>
-    `mailto:tommy@unframer.co?subject=${encodeURIComponent(pluginName + ' plugin discount for open source & non commercial use')}`
+    new URL(
+        `/contact?initialMessage=${encodeURIComponent(pluginName + ' plugin discount for open source & non commercial use')}`,
+        env.PUBLIC_URL,
+    ).toString()
 
 export function getBuyGithubPluginUrl({ orgId, email, projectId }) {
     const url = new URL('/api/markdown-plugin/buy', env.PUBLIC_URL)
@@ -131,7 +134,7 @@ export function getBuyGithubPluginUrl({ orgId, email, projectId }) {
 }
 
 export function getBuyReactExportPluginUrl({ orgId, email, projectId }) {
-    const url = new URL('/api/react-export-plugin/buy', env.PUBLIC_URL)
+    const url = new URL('/react-export-pricing', env.PUBLIC_URL)
     url.searchParams.append('orgId', orgId)
     url.searchParams.append('email', email)
     url.searchParams.append('pluginName', 'reactExport' satisfies PluginName)
