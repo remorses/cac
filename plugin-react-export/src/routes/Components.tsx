@@ -45,12 +45,13 @@ async function loader({}: LoaderFunctionArgs) {
             .project({ projectId: shortId })
             .get({})
             .then(({ data, error }) => {
+
                 if (error) {
                     return null
                 }
                 return data
             })
-            .catch((x) => null),
+            .catch((e) => null),
     ])
 
     const { email, orgId } = org

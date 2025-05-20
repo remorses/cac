@@ -30,7 +30,7 @@ import {
 } from 'website/src/lib/utils'
 import { feedbackUrl } from 'website/src/lib/env'
 
-const key = generateSecurePassword()
+let key = generateSecurePassword()
 let code = generateShortOtpCode()
 
 let loginCompleted = false
@@ -99,7 +99,8 @@ function LoginComponent() {
                     </div>
                     <div className='opacity-70 text-center text-balance'></div>
                     <div className='opacity-70 text-center text-balance'>
-                        Login is necessary to track your components and manage the plugin subscription
+                        Login is necessary to track your components and manage
+                        the plugin subscription
                     </div>
                 </div>
             </div>
@@ -107,6 +108,7 @@ function LoginComponent() {
             <Button
                 onClick={async () => {
                     setIsLoading(true)
+                    loginCompleted = false
                     try {
                         window.open(url, '_blank')
 
@@ -146,6 +148,7 @@ async function loader({}: LoaderFunctionArgs) {
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
+        key = generateSecurePassword()
         throw redirect(withMode(Paths.components))
     } else {
         console.log(data)

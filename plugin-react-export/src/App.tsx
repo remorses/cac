@@ -33,6 +33,7 @@ import {
 import { createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'plugin-migrate/src/lib/utils'
 import { BuyMore } from '@/routes/Buy'
+import { BelongToAnotherUser } from '@/routes/BelongToAnotherUser'
 
 globalThis.framer = framer
 
@@ -138,6 +139,7 @@ const router = createBrowserRouter(
                 Settings(),
                 Readme(),
                 BuyMore(),
+                BelongToAnotherUser(),
             ],
         },
     ],
@@ -156,7 +158,7 @@ async function rootLoader({ request }) {
 
     // return redirect(withMode(Paths.login))
 
-    return redirect(withMode(Paths.components))
+    return redirect(withMode(Paths.belongToAnotherUser))
 }
 
 export default function Page() {

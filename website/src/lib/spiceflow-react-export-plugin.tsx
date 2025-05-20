@@ -68,7 +68,8 @@ export const reactPluginApp = new Spiceflow({
     .get(
         '/project/:projectId',
         async ({ params, state: store }) => {
-            const { projectId } = params
+            let { projectId } = params
+            projectId = projectId.slice(0, 16)
             return await getProject({ projectId })
         },
         {},
@@ -193,31 +194,7 @@ export const reactPluginApp = new Spiceflow({
             console.time(`[${shortId}] initial upsert`)
             console.log(`[${shortId}] upserting project for org ${orgId}`)
             // Check if project belongs to this org
-            const existingProject = await prisma.reactExportProject.findUnique({
-                where: {
-                    projectId,
-                },
-            })
-            if (existingProject && existingProject.orgId !== orgId) {
-                const org = await prisma.org.findFirst({
-                    where: {
-                        orgId: existingProject.orgId,
-                        // subscriptions: {
-                        //     some: {},
-                        // },
-                    },
-                    include: {
-                        users: { include: { user: true } },
-                    },
-                })
-                const email = org?.users?.[0]?.user?.email || ''
-                throw new Response(
-                    `Project belongs to another user, login with the project account ${email} first`,
-                    {
-                        status: 403,
-                    },
-                )
-            }
+            await checkBelongsToUser({ orgId, projectId })
             const [project, reactSub, org] = await Promise.all([
                 prisma.reactExportProject.upsert({
                     where: {
@@ -436,5 +413,46 @@ async function getProject({ projectId }) {
         colorStyles,
         locales: locales.map(({ projectId, ...rest }) => rest),
         breakpoints: breakpoints.map(({ projectId, ...rest }) => rest),
+    }
+}
+
+async function checkBelongsToUser({ orgId, projectId }) {
+    const existingProject = await prisma.reactExportProject.findUnique({
+        where: {
+            projectId,
+        },
+    })
+    if (existingProject && existingProject.orgId !== orgId) {
+        const [org, user] = await Promise.all([
+            prisma.org.findFirst({
+                where: {
+                    orgId: existingProject.orgId,
+                    // subscriptions: {
+                    //     some: {},
+                    // },
+                },
+                include: {
+                    users: { include: { user: true } },
+                },
+            }),
+            prisma.users.findFirst({
+                where: {
+                    id: existingProject.orgId,
+                    // subscriptions: {
+                    //     some: {},
+                    // },
+                },
+            }),
+        ])
+
+        const email = org?.users?.[0]?.user?.email || user?.email || ''
+        const message = `Project belongs to another user, login with the project account ${email} first`
+        console.log(message)
+        throw Response.json(
+            { message, email },
+            {
+                status: 403,
+            },
+        )
     }
 }

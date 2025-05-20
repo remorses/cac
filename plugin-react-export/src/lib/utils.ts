@@ -7,21 +7,30 @@ import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 import { redirect } from 'react-router'
 import { withMode } from 'plugin-migrate/src/lib/utils'
+import { safeJsonParse } from 'website/src/lib/utils'
 
 export {
     formatLargeNumber,
-    getDesktop, withMode
+    getDesktop,
+    withMode,
 } from 'plugin-migrate/src/lib/utils'
 export type { LoaderReturnType } from 'plugin-migrate/src/lib/utils'
 
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
-            
             if (response.status === 401) {
                 console.log('clearing session because api returned 401')
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
                 throw redirect(withMode(Paths.login))
+            }
+            if (response.status === 403) {
+                console.log(
+                    'clearing session because api returned 403, redirecting to page',
+                )
+                const email = safeJsonParse(await response.text())?.email
+                
+                throw redirect(withMode(Paths.belongToAnotherUser, { email }))
             }
             if (response?.status === 402) {
                 console.log('redirecting to buy because api returned 402')
@@ -56,6 +65,7 @@ export enum Paths {
     readme = '/readme',
     settings = '/settings',
     buy = '/buy',
+    belongToAnotherUser = '/belongToAnotherUser',
 }
 
 export enum RouteIds {
@@ -81,10 +91,9 @@ export async function getReactPluginData() {
     }
 }
 
-
 export function debounce<T extends (...args: any[]) => any>(
     fn: T,
-    wait: number = 300
+    wait: number = 300,
 ): (...args: Parameters<T>) => void {
     let timeout: ReturnType<typeof setTimeout> | undefined
 
@@ -98,3 +107,5 @@ export function debounce<T extends (...args: any[]) => any>(
         }, wait)
     }
 }
+
+
