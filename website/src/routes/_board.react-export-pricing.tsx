@@ -21,8 +21,9 @@ import { cn } from '@heroui/react'
 import type { ButtonProps } from '@heroui/react'
 import { className } from 'website/src/framer-old/chunks/chunk-3N5VBLZQ'
 import { discountCodeUrl, env, reactExportVariants } from 'website/src/lib/env'
-import { href } from 'react-router'
-import { Route } from './+types/_board.react-export-pricing'
+import { href, useLoaderData } from 'react-router'
+import { Info, Route } from './+types/_board.react-export-pricing'
+import { ReactExportFaq } from 'website/src/components/react-export-faq'
 
 enum FrequencyEnum {
     Yearly = 'yearly',
@@ -127,9 +128,8 @@ export function loader({ request }: Route.LoaderArgs) {
     }
 }
 
-export function ReactExportPricing({
-    loaderData: { orgId },
-}: Route.ComponentProps) {
+export function ReactExportPricing({}) {
+    const { orgId } = useLoaderData<Info['loaderData']>()
     const [selectedFrequency, setSelectedFrequency] = React.useState(
         frequencies[0],
     )
@@ -290,4 +290,11 @@ export function ReactExportPricing({
     )
 }
 
-export default ReactExportPricing
+export default function Page() {
+    return (
+        <div className=''>
+            <ReactExportPricing />
+            <ReactExportFaq />
+        </div>
+    )
+}

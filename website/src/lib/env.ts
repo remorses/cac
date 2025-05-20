@@ -48,7 +48,7 @@ export const framerUrl = 'https://framer.com?via=xmorse'
 
 // TODO use the framer marketplace url
 export const installFramerPluginUrl =
-    'https://www.framer.com/marketplace/plugins/migrate--atog5qz8imo0pji1b10z8alr7/'
+    'https://www.framer.com/marketplace/plugins/react-export/'
 
 export const companyName = 'Unframer'
 export const domain = env.PUBLIC_URL!.replace('https://', '').replace('/', '')
