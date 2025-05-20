@@ -94,24 +94,12 @@ function LoginComponent() {
                     />
                 </div>
                 <div className='text-center mx-auto my-8 mt-10 grow gap-2 flex flex-col max-w-xs'>
-                    <div className='font-semibold text-balance text-center'>
-                        This plugin requires a $250
-                        monthly subscription to use.
+                    <div className='font-semibold text-balance max-w-[300px] self-center text-center'>
+                        Export Framer components to React code
                     </div>
                     <div className='opacity-70 text-center text-balance'></div>
                     <div className='opacity-70 text-center text-balance'>
-                        If you are a solo developer, open source project or
-                        non-profit you can ask for a discount{' '}
-                        <a
-                            target='_blank'
-                            href={feedbackUrl(
-                                'React Export',
-                                'discount for open source, non-profits and solo developers',
-                            )}
-                        >
-                            here
-                        </a>
-                        .
+                        Login is necessary to track your components and manage the plugin subscription
                     </div>
                 </div>
             </div>

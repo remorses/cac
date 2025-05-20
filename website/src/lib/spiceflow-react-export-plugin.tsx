@@ -250,11 +250,8 @@ export const reactPluginApp = new Spiceflow({
                 throw new Error('Org not found')
             }
             let needsToBuy = (() => {
-                if (
-                    org.createdAt.getTime() <=
-                    REACT_PLUGIN_PRICING_CHANGE.getTime()
-                ) {
-                    return !reactSub && components.length > freeComponents
+                if (reactSub) {
+                    console.log(`exporting components for user with sub ${JSON.stringify(reactSub)}`)
                 }
                 return !reactSub
             })()
