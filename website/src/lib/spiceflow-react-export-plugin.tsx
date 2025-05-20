@@ -202,6 +202,9 @@ export const reactPluginApp = new Spiceflow({
                 const org = await prisma.org.findFirst({
                     where: {
                         orgId: existingProject.orgId,
+                        // subscriptions: {
+                        //     some: {},
+                        // },
                     },
                     include: {
                         users: { include: { user: true } },
@@ -251,7 +254,9 @@ export const reactPluginApp = new Spiceflow({
             }
             let needsToBuy = (() => {
                 if (reactSub) {
-                    console.log(`exporting components for user with sub ${JSON.stringify(reactSub)}`)
+                    console.log(
+                        `exporting components for user with sub ${JSON.stringify(reactSub)}`,
+                    )
                 }
                 return !reactSub
             })()

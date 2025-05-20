@@ -73,9 +73,12 @@ function Component() {
     return (
         <div className='flex flex-col justify-start gap-3 text-center'>
             <div className='flex flex-col gap-3 my-4'>
-                <div className='flex items-center'>
+                <div className='flex flex-col gap-3 items-center'>
                     <div className=' text-sm text-balance'>
-                        React Export requires a monthly subscription.
+                        Your React components are ready
+                    </div>
+                    <div className=' opacity-70 text-balance'>
+                        to access your React components you will need a subscription
                     </div>
                 </div>
             </div>
@@ -105,7 +108,7 @@ function Component() {
                     }
                     className='font-semibold grow w-auto '
                 >
-                    Start Free Trial
+                    Start 7 Days Free Trial
                 </Button>
             </div>
         </div>

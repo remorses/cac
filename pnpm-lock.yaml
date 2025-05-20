@@ -1825,8 +1825,8 @@ importers:
         specifier: ^4.33.0
         version: 4.39.1
       unframer:
-        specifier: 2.25.0
-        version: 2.25.0(@modelcontextprotocol/sdk@1.11.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: 2.25.2
+        version: 2.25.2(@modelcontextprotocol/sdk@1.11.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       unframer-workspace:
         specifier: link:../unframer/unframer
         version: link:../unframer/unframer
@@ -11213,8 +11213,8 @@ packages:
   unfetch@4.2.0:
     resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
 
-  unframer@2.25.0:
-    resolution: {integrity: sha512-+GiVbWs/KHPhD60ZwtJ4zx3cdqgtSOC+tt/9ya7i4GfWGs67NvjICdi0FGhicJFlFGScGAWHBR6iTknJrIDfZw==}
+  unframer@2.25.2:
+    resolution: {integrity: sha512-rk5WBNPtb9qTMV/s2SoKit4k0pTx4JTpAyU9W2FGXq/iNCTm3KNQxz2T7gw4kSoMqPTULtXCt4TTOWIFl4LJ/Q==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -23774,7 +23774,7 @@ snapshots:
 
   unfetch@4.2.0: {}
 
-  unframer@2.25.0(@modelcontextprotocol/sdk@1.11.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  unframer@2.25.2(@modelcontextprotocol/sdk@1.11.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@sentry/node': 9.21.0
       async-sema: 3.1.1

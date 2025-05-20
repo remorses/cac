@@ -17,12 +17,14 @@ export type { LoaderReturnType } from 'plugin-migrate/src/lib/utils'
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
+            
             if (response.status === 401) {
                 console.log('clearing session because api returned 401')
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
                 throw redirect(withMode(Paths.login))
             }
             if (response?.status === 402) {
+                console.log('redirecting to buy because api returned 402')
                 throw redirect(withMode(Paths.buy))
             }
         },
