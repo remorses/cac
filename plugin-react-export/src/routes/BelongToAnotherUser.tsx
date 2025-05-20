@@ -54,18 +54,18 @@ function Component() {
             method='POST'
             className='flex flex-col justify-start gap-3 text-center items-center'
         >
-            <div className='flex flex-col max-w-[220px] gap-3 items-center my-4'>
+            <div className='flex flex-col max-w-[280px] gap-3 items-center my-4'>
                 <div className='flex grow w-full flex-col gap-3 items-center'>
                     {errorIcon}
                     <div className=' text-sm text-balance'>
                         This Framer project belongs to another user
                     </div>
                     <div className=' opacity-70 text-balance'>
-                        Please login again with the email {email}
+                        Login again with {email}. After login all users will be able to access the project.
                     </div>
                 </div>
             </div>
-            <hr className='' />
+            {/* <hr className='' /> */}
 
             <div className='flex gap-3 items-center'>
                 {/* <Button
