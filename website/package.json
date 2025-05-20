@@ -119,7 +119,7 @@
         "screenshotone-api-sdk": "^1.1.18",
         "sema4": "^0.1.3",
         "sharp": "^0.33.5",
-        "spiceflow": "workspace:*",
+        "spiceflow": "^1.9.1",
         "string-dedent": "^3.0.1",
         "strip-json-comments": "^5.0.1",
         "stripe": "^18.0.0",

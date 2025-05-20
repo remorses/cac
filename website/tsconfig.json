@@ -6,7 +6,7 @@
 
         "isolatedModules": true,
         // "rootDir": "src",
-        "rootDirs": [".", "./.react-router/types"],
+        "rootDirs": ["./", "./.react-router/types"],
 
         "outDir": "dist",
         "esModuleInterop": true,
@@ -17,6 +17,7 @@
         "target": "ES2022",
         "strict": true,
         "allowJs": true,
+        "checkJs": false,
         "skipLibCheck": true,
         "useUnknownInCatchVariables": false,
         "forceConsistentCasingInFileNames": true,

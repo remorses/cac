@@ -13,15 +13,15 @@ export interface Props {
     width?: any
     height?: any
     layoutId?: string
-    "variant"?: 'desktop' | 'mobile'
-    "cta"?: string
+    "variant"?: 'Desktop' | 'Laptop' | 'Tablet' | 'Mobile' | 'Tablet Open' | 'Mobile Open'
+    "framerPlugin"?: string
 }
 
-const HeroFramerComponent = (props: Props) => any
+const NavigationFramerComponent = (props: Props) => any
 
 type VariantsMap = Partial<Record<UnframerBreakpoint, Props['variant']>> & { base: Props['variant'] }
 
-HeroFramerComponent.Responsive = (props: Omit<Props, 'variant'> & {variants?: VariantsMap}) => any
+NavigationFramerComponent.Responsive = (props: Omit<Props, 'variant'> & {variants?: VariantsMap}) => any
 
-export default HeroFramerComponent
+export default NavigationFramerComponent
 

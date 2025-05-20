@@ -1,8 +1,6 @@
 'use client'
 import NProgress from 'nprogress'
 
-import React from 'react'
-import { Icon } from '@iconify/react'
 import {
     Button,
     Card,
@@ -10,20 +8,21 @@ import {
     CardFooter,
     CardHeader,
     Chip,
+    cn,
     Divider,
     Link,
     Spacer,
     Tab,
     Tabs,
 } from '@heroui/react'
-import { cn } from '@heroui/react'
+import { Icon } from '@iconify/react'
+import React from 'react'
 
 import type { ButtonProps } from '@heroui/react'
-import { className } from 'website/src/framer-old/chunks/chunk-3N5VBLZQ'
-import { discountCodeUrl, env, reactExportVariants } from 'website/src/lib/env'
 import { href, useLoaderData } from 'react-router'
-import { Info, Route } from './+types/_board.react-export-pricing'
 import { ReactExportFaq } from 'website/src/components/react-export-faq'
+import { discountCodeUrl, env, reactExportVariants } from 'website/src/lib/env'
+import { Info, Route } from './+types/_board.react-export-pricing'
 
 enum FrequencyEnum {
     Yearly = 'yearly',

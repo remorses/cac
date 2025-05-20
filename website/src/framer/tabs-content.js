@@ -4,7 +4,8 @@
 "use client";
 import {
   Icon
-} from "./chunks/chunk-BTSBQWPZ.js";
+} from "./chunks/chunk-IXDMRUES.js";
+import "./chunks/chunk-BVM6H744.js";
 
 // virtual:tabs-content
 import { Fragment as Fragment3 } from "react";

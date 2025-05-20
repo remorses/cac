@@ -1,5 +1,5 @@
 import type { MetaFunction } from 'react-router'
-import FooterFramerComponent from '../framer-old/footer'
+import FooterFramerComponent from '../framer/footer'
 import { env } from '../lib/env'
 // @ts-ignore
 import orgImg from 'website/public/migrate-plugin-assets/ogimage.jpeg'

@@ -22,7 +22,7 @@ import { getSupabaseSession } from '../lib/supabase.server'
 import { Button } from "@heroui/react"
 import { notifyError } from '../lib/errors'
 import { fromZodError } from 'zod-validation-error'
-import NavFramerComponent from '../framer-old/nav'
+import NavFramerComponent from '../framer/navigation'
 
 const otpSchema = zfd.formData({
     code: z.string().length(6),
