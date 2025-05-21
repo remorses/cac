@@ -13,7 +13,7 @@
         "typegen": "pnpm react-router typegen",
         "framer": "pnpm unframer --outDir src/framer 620e74c088cdcb26",
         "openapi": "doppler run -- pnpm tsx -C import scripts/openapi.tsx",
-        "gen-client": "export DIR=../unframer/unframer/src/generated/ && tsc --incremental && rm -rf $DIR && mkdir -p $DIR && cp dist/lib/api-client.* $DIR",
+        "gen-client": "export DIR=../unframer/unframer/src/generated/ && tsc --incremental && rm -rf $DIR && mkdir -p $DIR && cp dist/src/lib/api-client.* $DIR",
         "cleanup": "pnpx @line/ts-remove-unused --check --skip '/routes/' --skip /\\.test/ --skip /framer/ --skip entry\\. --skip '/root\\.'",
         "test": "doppler run -- vitest",
         "tunnel": "echo 'listening to https://tunnel.unframer.co' && cloudflared tunnel run --url http://localhost:8040 unframer-local",

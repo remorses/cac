@@ -191,13 +191,8 @@ async function action({ request }: LoaderFunctionArgs) {
             }
             const projectId = projectInfo.id.slice(0, 16)
             const parents = await getParentNodesWithOrdering(x)
+            const parentsOrderings = parents.map((x) => x.ordering)
 
-            const ordering = parents.reduce((acc, parent, i) => {
-                // each parent level becomes smaller additional number, so key can be used to sort like in a tree even among nodes of same parent and at any depth
-                const unit = Math.max(0, Math.pow(0.01, i))
-                return acc + parent.ordering * unit
-            }, 0)
-            console.log('ordering', ordering)
             const pageParent = parents.find((x) => isWebPageNode(x.node))
             if (!pageParent) {
                 console.log('no page parent found for instance', x.id)
@@ -215,35 +210,67 @@ async function action({ request }: LoaderFunctionArgs) {
                 return
             }
 
-            const instance: Prisma.ReactExportComponentInstanceUncheckedCreateInput =
-                {
-                    componentId,
-                    controls:
-                        JSON.parse(JSON.stringify(x.controls || {})) || {},
-                    pageOrdering: ordering,
-                    // componentName: x.name,
-                    // parents: parents.map(
-                    //     (x) => x['name'] || x['path'] || x['__class'],
-                    // ),
-                    webPageId,
-                    projectId,
-                    nodeDepth: parents.length - 1,
-                }
+            const instance = {
+                componentId,
+                controls: x.controls,
+
+                parentsOrderings,
+                // componentName: x.name,
+                // parents: parents.map(
+                //     (x) => x['name'] || x['path'] || x['__class'],
+                // ),
+                webPageId,
+                projectId,
+                nodeDepth: parents.length - 1,
+            }
             return instance
         }),
     )
-    // debugLog('rawComponentInstances', rawComponentInstances)
+    const instancesGropus = Array.from(
+        groupBy(
+            rawComponentInstances.filter(isTruthy),
+            (x) => x.webPageId,
+        ).values(),
+    )
+    let componentInstances = instancesGropus.flatMap((group) => {
+        return group
+            .sort((a, b) => {
+                const minParentLength = Math.min(
+                    a.parentsOrderings?.length,
+                    b.parentsOrderings?.length,
+                )
 
-    const seen = new Set<string>()
-    const componentInstances = rawComponentInstances
-        .filter(isTruthy)
-        .sort((a, b) => a.nodeDepth - b.nodeDepth)
-        .filter((instance) => {
-            const key = `${instance.webPageId}-${instance.componentId}`
-            if (seen.has(key)) return false
-            seen.add(key)
-            return true
-        })
+                for (let i = 0; i < minParentLength; i++) {
+                    if (a.parentsOrderings[i] < b.parentsOrderings[i]) {
+                        return -1
+                    }
+                    if (a.parentsOrderings[i] > b.parentsOrderings[i]) {
+                        return 1
+                    }
+                }
+
+                // If all parent orderings are the same up to the minimum length,
+                // the shorter array should come first
+                return a.parentsOrderings.length - b.parentsOrderings.length
+            })
+            .map((x, pageOrdering) => {
+                const { parentsOrderings, ...rest } = x
+                const instance: Prisma.ReactExportComponentInstanceUncheckedCreateInput =
+                    {
+                        ...rest,
+                        controls:
+                            JSON.parse(JSON.stringify(x.controls || {})) || {},
+                        pageOrdering,
+                    }
+                return instance
+            })
+    })
+    componentInstances = deduplicateByKey(
+        componentInstances,
+        (x) => x.webPageId + x.componentId,
+    )
+
+    // debugLog('rawComponentInstances', rawComponentInstances)
 
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
@@ -582,4 +609,17 @@ function IconChevron() {
             ></path>
         </svg>
     )
+}
+
+function groupBy<T, K>(items: T[], keyFn: (item: T) => K): Map<K, T[]> {
+    const map = new Map<K, T[]>()
+
+    for (const item of items) {
+        const key = keyFn(item)
+        const collection = map.get(key) || []
+        collection.push(item)
+        map.set(key, collection)
+    }
+
+    return map
 }

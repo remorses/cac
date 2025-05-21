@@ -521,6 +521,7 @@ async function getProject({ projectId }) {
         framerWebPages,
         locales,
         breakpoints,
+        componentInstances,
     ] = await Promise.all([
         prisma.reactExportProject.findUnique({
             where: {
@@ -553,6 +554,11 @@ async function getProject({ projectId }) {
                 projectId,
             },
         }),
+        prisma.reactExportComponentInstance.findMany({
+            where: {
+                projectId,
+            },
+        }),
     ])
 
     if (!project) {
@@ -573,5 +579,8 @@ async function getProject({ projectId }) {
         colorStyles,
         locales: locales.map(({ projectId, ...rest }) => rest),
         breakpoints: breakpoints.map(({ projectId, ...rest }) => rest),
+        componentInstances: componentInstances.map(
+            ({ projectId, ...rest }) => rest,
+        ),
     }
 }
