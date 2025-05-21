@@ -5,6 +5,7 @@ import {
     LoaderReturnType,
     Paths,
     getReactPluginData,
+    isTruthy,
     pluginApiClient,
     withMode,
 } from '@/lib/utils'
@@ -20,16 +21,23 @@ import {
 } from 'react-router'
 
 import { notifyError } from '@/lib/errors'
-import { framer, isFrameNode } from 'framer-plugin'
+import { framer, isFrameNode, isWebPageNode } from 'framer-plugin'
 import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
 import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import { useEffect, useRef, useState } from 'react'
-import { getParentNodes } from 'plugin-migrate/src/lib/utils'
+import {
+    collectGenerator,
+    getParentNodes,
+    getParentNodesWithOrdering,
+} from 'plugin-migrate/src/lib/utils'
 import { deduplicateByKey } from 'website/src/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {
-    const components = await framer.getNodesWithType('ComponentNode')
+    const [components] = await Promise.all([
+        framer.getNodesWithType('ComponentNode'),
+    ])
+
     let { id: projectId } = await framer.getProjectInfo()
     let shortId = projectId.slice(0, 16)
     const [org, reactExportProject] = await Promise.all([
@@ -66,18 +74,26 @@ async function loader({}: LoaderFunctionArgs) {
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
 
-    const [publishInfo, components, pages, styles, projectInfo, locales] =
-        await Promise.all([
-            framer.getPublishInfo().catch((e) => null),
-            framer.getNodesWithType('ComponentNode'),
-            framer.getNodesWithType('WebPageNode'),
-            framer.getColorStyles(),
-            framer.getProjectInfo(),
-            framer.getLocales?.()?.catch((err) => {
-                console.error('Error getting locales', err)
-                return []
-            }),
-        ])
+    const [
+        publishInfo,
+        components,
+        pages,
+        styles,
+        projectInfo,
+        locales,
+        instances,
+    ] = await Promise.all([
+        framer.getPublishInfo().catch((e) => null),
+        framer.getNodesWithType('ComponentNode'),
+        framer.getNodesWithType('WebPageNode'),
+        framer.getColorStyles(),
+        framer.getProjectInfo(),
+        framer.getLocales?.()?.catch((err) => {
+            console.error('Error getting locales', err)
+            return []
+        }),
+        framer.getNodesWithType('ComponentInstanceNode'),
+    ])
 
     // throw redirect(withMode(Paths.readme))
     const { id: fullFramerProjectId, name: projectName } = projectInfo
@@ -155,7 +171,52 @@ async function action({ request }: LoaderFunctionArgs) {
         publishInfo?.staging?.url ||
         publishInfo?.production?.currentPageUrl ||
         publishInfo?.production?.url
-    // console.log('styles', styles)
+
+    const projectId = projectInfo.id.slice(0, 16)
+    const rawComponentInstances = await Promise.all(
+        instances.map(async (x) => {
+            const parents = await getParentNodesWithOrdering(x)
+            // const directParent = parents.find((x) => isFrameNode(x.node))
+
+            const ordering = parents.reduce((acc, parent, i) => {
+                const unit = Math.pow(0.01, i) // 1 if i is 0, 0.01 if i is 1, 0.0001 if i is 2, etc.
+                return acc + parent.ordering * unit
+            }, 0)
+            const pageParent = parents.find((x) => isWebPageNode(x.node))
+            if (!pageParent) {
+                console.log('no page parent found for instance', x.id)
+                return
+            }
+            const componentId = getInstanceComponentId(x)
+            return {
+                componentId,
+                ordering,
+                componentName: x.name,
+                parents: parents.map(
+                    (x) => x['name'] || x['path'] || x['__class'],
+                ),
+                webPageId: pageParent?.node?.id,
+                projectId,
+                nodeDepth: parents.length - 1,
+            }
+        }),
+    )
+    console.log(
+        'rawComponentInstances',
+        JSON.stringify(rawComponentInstances, null, 2),
+    )
+
+    const seen = new Set<string>()
+    const componentInstances = rawComponentInstances
+        .filter(isTruthy)
+        .sort((a, b) => a.nodeDepth - b.nodeDepth)
+        .filter((instance) => {
+            const key = `${instance.webPageId}-${instance.componentId}`
+            if (seen.has(key)) return false
+            seen.add(key)
+            return true
+        })
+
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
             projectId: fullFramerProjectId,
@@ -218,6 +279,7 @@ async function action({ request }: LoaderFunctionArgs) {
                     projectId: fullFramerProjectId!,
                 }
             }),
+            componentInstances,
         })
     if (error) {
         throw error
@@ -344,7 +406,6 @@ function Component() {
                             }}
                             checked={selected.includes(component.id)}
                             key={component.id}
-                            
                             {...component}
                         />
                     )

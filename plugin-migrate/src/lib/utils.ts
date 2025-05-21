@@ -4,6 +4,7 @@ import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
 import {
     AnyNode,
+    CanvasNode,
     framer,
     isComponentNode,
     isFrameNode,
@@ -188,6 +189,46 @@ export async function* getParentNodes(node: AnyNode | string | null) {
     }
 }
 
+export async function getParentNodesWithOrdering(
+    node: AnyNode | string | null,
+) {
+    if (typeof node === 'string') {
+        node = await framer.getNode(node)
+    }
+    if (!node) {
+        return []
+    }
+
+    const result = [] as {
+        node: CanvasNode
+        ordering: number
+    }[]
+    let parent = await node.getParent()
+    if (!parent) {
+        console.log('no parent found', node.id)
+        return []
+    }
+
+    while (parent) {
+        const siblings = await parent.getChildren()
+        const ordering = siblings.findIndex((x) => x.id === node.id)
+        result.push({ node: parent as any, ordering })
+
+        if (isRootLevelNode(parent)) {
+            return result
+        }
+
+        const newParent = await parent.getParent()
+        if (!newParent) {
+            console.log('no parent found, last one was', parent)
+            return result
+        }
+        parent = newParent
+    }
+
+    return result
+}
+
 Object.assign(globalThis, { getRootParentNode, getParentNodes })
 
 export enum RouteIds {
@@ -199,7 +240,6 @@ export type LoaderReturnType<T extends Function> = T extends (
 ) => Promise<infer R>
     ? R
     : never
-
 
 export const globalState = {
     // exampleTextToMigrate: [] as RewriteSchema['exampleTextToMigrate'],

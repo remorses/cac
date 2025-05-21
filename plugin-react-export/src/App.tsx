@@ -158,7 +158,7 @@ async function rootLoader({ request }) {
 
     // return redirect(withMode(Paths.login))
 
-    return redirect(withMode(Paths.belongToAnotherUser))
+    return redirect(withMode(Paths.components))
 }
 
 export default function Page() {

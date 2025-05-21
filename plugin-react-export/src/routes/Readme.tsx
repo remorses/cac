@@ -193,6 +193,9 @@ function Component() {
             {/* <hr className='' /> */}
 
             <div className='flex gap-3 grow'>
+                <Link className='grow' to={withMode(Paths.components)}>
+                    <Button className=''>Back</Button>
+                </Link>
                 <a href={stackblitzUrl.href} className='grow' target='_blank'>
                     <Button variant='primary' className=''>
                         <div className='flex items-center text-xs justify-center gap-2'>
@@ -202,9 +205,6 @@ function Component() {
                     </Button>
                 </a>
 
-                {/* <Link className='grow' to={withMode(Paths.components)}>
-                    <Button className=''>back</Button>
-                </Link> */}
                 {/* <a
                     className='grow'
                     target='_blank'

@@ -502,16 +502,16 @@ model GitHubSync {
 
 model ReactExportProject {
   orgId               String
-  projectId           String  @id
+  projectId           String                  @id
   fullFramerProjectId String?
   projectName         String?
   framerUserId        String?
-  websiteUrl  String?
-  createdAt   DateTime                @default(now())
-  components  ReactExportComponent[]
-  colorStyles ReactExportColorStyle[]
-  pages       ReactExportWebPage[]
-  locales     ReactExportLocale[]
+  websiteUrl          String?
+  createdAt           DateTime                @default(now())
+  components          ReactExportComponent[]
+  colorStyles         ReactExportColorStyle[]
+  pages               ReactExportWebPage[]
+  locales             ReactExportLocale[]
 
   org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
@@ -527,6 +527,8 @@ model ReactExportComponent {
 
   project     ReactExportProject               @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   breakpoints ReactExportComponentBreakpoint[]
+
+  foundInPages ReactExportComponentInstance[]
 
   @@id([id, projectId])
   @@schema("public")
@@ -545,6 +547,21 @@ model ReactExportComponentBreakpoint {
   @@schema("public")
 }
 
+model ReactExportComponentInstance {
+  webPageId   String
+  componentId String
+  projectId   String
+
+  ordering  Float
+  nodeDepth Int
+  controls  Json                 @default("{}")
+  webPage   ReactExportWebPage   @relation(fields: [webPageId, projectId], references: [webPageId, projectId], onDelete: Cascade)
+  component ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
+
+  @@id([webPageId, componentId, projectId])
+  @@schema("public")
+}
+
 model ReactExportWebPage {
   webPageId String
   // name      String
@@ -552,6 +569,8 @@ model ReactExportWebPage {
   projectId String
 
   project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  components ReactExportComponentInstance[]
 
   @@id([webPageId, projectId])
   @@schema("public")

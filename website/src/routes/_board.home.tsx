@@ -5,6 +5,8 @@ import { env } from '../lib/env'
 import orgImg from 'website/public/migrate-plugin-assets/ogimage.jpeg'
 import TabsContentFramerComponent from '../framer/tabs-content'
 import TopContentFramerComponent from '../framer/top-content'
+import LogosFramerComponent from 'website/src/framer/logos'
+import TestimonialsFramerComponent from 'website/src/framer/testimonials'
 
 export const meta: MetaFunction = () => {
     return [
@@ -23,12 +25,14 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
     return (
-        <div className='flex w-full absolute left-0 flex-col bg-gray-50 grow min-h-[100vh] gap-[100px] items-stretch'>
-            <div className='flex flex-col max-w-[800px] p-16 mx-auto gap-16'>
-                <TopContentFramerComponent.Responsive className='' />
-                <TabsContentFramerComponent.Responsive />
-                {/* <Footer /> */}
-            </div>
+        <div className='flex flex-col max-w-[700px] mx-auto gap-12'>
+            <TopContentFramerComponent.Responsive className='!w-full' />
+
+            <TestimonialsFramerComponent.Responsive className='mx-auto' />
+            <div className=""></div>
+            <LogosFramerComponent.Responsive className='mx-auto' />
+            <TabsContentFramerComponent.Responsive />
+            {/* <Footer /> */}
         </div>
     )
 }

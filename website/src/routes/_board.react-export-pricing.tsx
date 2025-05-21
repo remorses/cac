@@ -23,6 +23,8 @@ import { href, useLoaderData } from 'react-router'
 import { ReactExportFaq } from 'website/src/components/react-export-faq'
 import { discountCodeUrl, env, reactExportVariants } from 'website/src/lib/env'
 import { Info, Route } from './+types/_board.react-export-pricing'
+import LogosFramerComponent from 'website/src/framer/logos'
+import TestimonialsFramerComponent from 'website/src/framer/testimonials'
 
 enum FrequencyEnum {
     Yearly = 'yearly',
@@ -145,17 +147,6 @@ export function ReactExportPricing({}) {
 
     return (
         <div className='flex max-w-2xl mx-auto flex-col items-center py-12'>
-            <div className='flex max-w-xl flex-col text-center'>
-                <h2 className='font-medium text-primary'>Pricing</h2>
-                <h1 className='text-4xl font-medium tracking-tight'>
-                    React Export Subscription
-                </h1>
-                <Spacer y={4} />
-                <h2 className='text-large text-default-500'>
-                    Export Framer components to React and deploy anywhere
-                </h2>
-            </div>
-            <Spacer y={8} />
             <Tabs
                 classNames={{
                     tab: 'data-[hover-unselected=true]:opacity-90',
@@ -181,7 +172,7 @@ export function ReactExportPricing({}) {
             <div className='grid grid-cols-1 gap-4 md:gap-12 sm:grid-cols-2 '>
                 {tiers.map((tier) => {
                     const p = href('/api/react-export-plugin/buy')
-                    
+
                     const u = new URL(p, env.PUBLIC_URL!)
                     const priceId =
                         reactExportVariants[tier.key]?.[selectedFrequency.key]
@@ -282,7 +273,10 @@ export function ReactExportPricing({}) {
                     <Link
                         color='foreground'
                         className='text-sm'
-                        href={discountCodeUrl('React Export')}
+                        href={discountCodeUrl({
+                            pluginName: 'React Export',
+                            email,
+                        })}
                     >
                         Get Free Access
                     </Link>
@@ -294,8 +288,23 @@ export function ReactExportPricing({}) {
 
 export default function Page() {
     return (
-        <div className=''>
+        <div className='flex flex-col gap-3'>
+            <div className='flex max-w-xl flex-col mx-auto text-center'>
+                <h2 className='font-medium text-primary'>Pricing</h2>
+                <h1 className='text-4xl font-medium tracking-tight'>
+                    React Export Subscription
+                </h1>
+                <Spacer y={4} />
+                <h2 className='text-large text-default-500'>
+                    Export Framer components to React and deploy anywhere
+                </h2>
+            </div>
+            <div className='mt-14'></div>
+            <LogosFramerComponent.Responsive className='mx-auto' />
+
             <ReactExportPricing />
+            <div className=''></div>
+            <TestimonialsFramerComponent.Responsive className='mx-auto' />
             <ReactExportFaq />
         </div>
     )

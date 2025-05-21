@@ -1,6 +1,6 @@
 import NavFramerComponent from '../framer/navigation'
 import { installFramerPluginUrl } from '../lib/env'
-import { Footer } from '../routes/home'
+import { Footer } from '../routes/_board.home'
 
 export function PageContainer({ children }) {
     return (

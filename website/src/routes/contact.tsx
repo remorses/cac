@@ -4,7 +4,7 @@ import { env } from '../lib/env'
 // @ts-ignore
 import orgImg from 'website/public/migrate-plugin-assets/ogimage.jpeg'
 import ContactFramerComponent from '../framer/contact'
-import { Footer } from './home'
+import { Footer } from './_board.home'
 import { PageContainer } from '../components/Container'
 
 export const meta: MetaFunction = () => {
