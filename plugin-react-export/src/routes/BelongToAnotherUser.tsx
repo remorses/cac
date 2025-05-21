@@ -1,18 +1,15 @@
-import {
-    Paths,
-    PluginDataKeys,
-    withMode
-} from '@/lib/utils'
+import { Paths, PluginDataKeys, withMode } from '@/lib/utils'
 import { Button } from 'plugin-migrate/src/components/Button'
 import {
     Form,
     LoaderFunctionArgs,
     redirect,
     RouteObject,
-    useSearchParams
+    useSearchParams,
 } from 'react-router'
 
 import { framer } from 'framer-plugin'
+import { feedbackUrl } from 'website/src/lib/env'
 
 async function action({}: LoaderFunctionArgs) {
     await framer.setPluginData(PluginDataKeys.sessionKey, null)
@@ -61,9 +58,19 @@ function Component() {
                         This Framer project belongs to another user
                     </div>
                     <div className=' opacity-70 text-balance'>
-                        Login again with {email}. After login all users will be able to access the project.
+                        Login again with {email}. After login all users will be
+                        able to access the project.
                     </div>
                 </div>
+                <a
+                    href={feedbackUrl({
+                        email,
+                        pluginName: 'React Export',
+                    })}
+                    target='_blank'
+                >
+                    Contact Support
+                </a>
             </div>
             {/* <hr className='' /> */}
 

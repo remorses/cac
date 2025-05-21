@@ -7,20 +7,29 @@ import path from 'path'
 import { Spiceflow } from 'spiceflow'
 
 import {
+    Prisma,
     prisma,
     ReactExportColorStyle,
     ReactExportComponent,
+    ReactExportComponentInstance,
     ReactExportLocale,
     ReactExportWebPage,
     type ReactExportComponentBreakpoint,
 } from 'db'
 import { z } from 'zod'
 import { Sema } from 'async-sema'
-import { deduplicateByKey } from 'website/src/lib/utils'
+import { deduplicateByKey, isTruthy } from 'website/src/lib/utils'
 import Stripe from 'stripe'
-import { env, REACT_PLUGIN_PRICING_CHANGE } from 'website/src/lib/env'
+import {
+    env,
+    REACT_PLUGIN_PRICING_CHANGE,
+    reactExportVariants,
+    reactExportStatusErrors,
+} from 'website/src/lib/env'
 import { X } from 'lucide-react'
 import type { url } from 'inspector'
+import { email } from 'zod/v4'
+import { status } from 'nprogress'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -128,7 +137,7 @@ export const reactPluginApp = new Spiceflow({
             if (!(await store.orgId)) {
                 throw unauthorizedResponse
             }
-            const { projectId } = query
+            const { projectId, forSubscriptionUpgrade } = query
             const activeSub = await getReactSub({
                 orgId: await store.orgId,
                 projectId,
@@ -140,7 +149,14 @@ export const reactPluginApp = new Spiceflow({
                 const portalSession =
                     await stripe.billingPortal.sessions.create({
                         customer: activeSub.customerId,
-
+                        flow_data: forSubscriptionUpgrade
+                            ? {
+                                  type: 'subscription_update',
+                                  subscription_update: {
+                                      subscription: activeSub.subscriptionId,
+                                  },
+                              }
+                            : undefined,
                         return_url: new URL(
                             '/after-framer-payment',
                             env.PUBLIC_URL,
@@ -159,6 +175,7 @@ export const reactPluginApp = new Spiceflow({
         {
             query: z.object({
                 projectId: z.string(),
+                forSubscriptionUpgrade: z.boolean().optional(),
             }),
         },
     )
@@ -177,6 +194,8 @@ export const reactPluginApp = new Spiceflow({
                 fullFramerProjectId,
                 websiteUrl,
                 breakpoints,
+                framerUserId,
+                componentInstances,
             } = body
 
             const shortId = projectId.slice(0, 4)
@@ -193,26 +212,11 @@ export const reactPluginApp = new Spiceflow({
             projectId = projectId.slice(0, 16)
             console.time(`[${shortId}] initial upsert`)
             console.log(`[${shortId}] upserting project for org ${orgId}`)
-            // Check if project belongs to this org
-            await checkBelongsToUser({ orgId, projectId })
-            const [project, reactSub, org] = await Promise.all([
-                prisma.reactExportProject.upsert({
+            const [existingProject, reactSub, org] = await Promise.all([
+                prisma.reactExportProject.findFirst({
                     where: {
                         orgId,
                         projectId,
-                    },
-                    create: {
-                        orgId,
-                        projectId,
-                        websiteUrl,
-                        projectName,
-                        fullFramerProjectId,
-                    },
-                    update: {
-                        projectId,
-                        websiteUrl,
-                        projectName,
-                        fullFramerProjectId,
                     },
                 }),
                 getReactSub({ orgId, projectId }),
@@ -222,10 +226,9 @@ export const reactPluginApp = new Spiceflow({
                     },
                 }),
             ])
+
             console.timeEnd(`[${shortId}] initial upsert`)
-            if (!project) {
-                throw new Error('Project not created')
-            }
+
             if (!org) {
                 throw new Error('Org not found')
             }
@@ -239,11 +242,101 @@ export const reactPluginApp = new Spiceflow({
             })()
 
             if (needsToBuy) {
-                throw new Response('Need subscription', {
-                    status: 402,
-                })
+                throw new Response(
+                    JSON.stringify({
+                        message: 'Need subscription',
+                    }),
+                    {
+                        status: reactExportStatusErrors.SUB_NEEDED,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
             }
 
+            const [upsertedProject, projectOrg, legacyUserForProject] =
+                await Promise.all([
+                    prisma.reactExportProject.upsert({
+                        where: {
+                            orgId,
+                            projectId,
+                        },
+                        create: {
+                            orgId,
+                            projectId,
+                            websiteUrl,
+                            projectName,
+                            fullFramerProjectId,
+                            framerUserId,
+                        },
+                        update: {
+                            projectId,
+                            websiteUrl,
+                            projectName,
+                            fullFramerProjectId,
+                            framerUserId,
+                        },
+                    }),
+                    existingProject &&
+                        prisma.org.findFirst({
+                            where: {
+                                orgId: existingProject.orgId,
+                            },
+                            include: {
+                                users: { include: { user: true } },
+                            },
+                        }),
+                    existingProject &&
+                        prisma.users.findFirst({
+                            where: {
+                                id: existingProject.orgId,
+                            },
+                        }),
+                ])
+            if (!upsertedProject) {
+                throw new Error('Project not created')
+            }
+
+            const projectEmail =
+                projectOrg?.users?.[0]?.user?.email ||
+                legacyUserForProject?.email ||
+                ''
+            if (existingProject && existingProject.orgId !== orgId) {
+                const message = `Project belongs to another user, login with the project account ${email} first`
+                console.log(message)
+                throw Response.json(
+                    {
+                        message,
+                        email: projectEmail,
+                    },
+                    {
+                        status: reactExportStatusErrors.PROJECT_BELONGS_TO_ANOTHER_USER,
+                    },
+                )
+            }
+
+            const isPersonalSub = [
+                reactExportVariants.personal.monthly,
+                reactExportVariants.personal.yearly,
+            ].includes(reactSub?.variantId || '')
+            let needsBusinessSubscription =
+                isPersonalSub &&
+                existingProject?.framerUserId &&
+                framerUserId &&
+                framerUserId !== existingProject.framerUserId
+            // needsBusinessSubscription = true
+            if (needsBusinessSubscription) {
+                throw Response.json(
+                    {
+                        message: 'Need business subscription',
+                        email: projectEmail,
+                    },
+                    {
+                        status: reactExportStatusErrors.SUB_UPGRADE_NECESSARY,
+                    },
+                )
+            }
             return await prisma.$transaction(async (tx) => {
                 // First upsert the project
 
@@ -267,9 +360,14 @@ export const reactPluginApp = new Spiceflow({
                     tx.reactExportComponentBreakpoint.deleteMany({
                         where: { projectId },
                     }),
+                    tx.reactExportComponentInstance.deleteMany({
+                        where: { projectId },
+                    }),
                 ])
                 console.timeEnd(`[${shortId}] delete existing`)
 
+                const validComponents = new Set(components.map((x) => x.id))
+                const validPages = new Set(pages.map((x) => x.webPageId))
                 // Insert all new records
                 console.time(`[${shortId}] insert new`)
                 await Promise.all(
@@ -298,6 +396,62 @@ export const reactPluginApp = new Spiceflow({
                                     )
                                     .map((x) => ({ ...x, projectId })) || [],
                         }),
+                        componentInstances?.length &&
+                            tx.reactExportComponentInstance.createMany({
+                                data:
+                                    componentInstances
+                                        .filter(isTruthy)
+                                        ?.filter(
+                                            (x) =>
+                                                x.projectId &&
+                                                x.componentId &&
+                                                x.controls &&
+                                                x.webPageId,
+                                        )
+                                        .filter((x) => {
+                                            if (
+                                                !x.projectId ||
+                                                !x.componentId ||
+                                                !x.webPageId
+                                            ) {
+                                                console.log(
+                                                    `[${shortId}] Skipping instance with missing required field:`,
+                                                    {
+                                                        projectId: x.projectId,
+                                                        componentId:
+                                                            x.componentId,
+                                                        webPageId: x.webPageId,
+                                                    },
+                                                )
+                                                return false
+                                            }
+
+                                            if (
+                                                !validComponents.has(
+                                                    x.componentId,
+                                                )
+                                            ) {
+                                                console.log(
+                                                    `[${shortId}] Skipping instance with non-existent componentId:`,
+                                                    x.componentId,
+                                                )
+                                                return false
+                                            }
+
+                                            if (!validPages.has(x.webPageId)) {
+                                                console.log(
+                                                    `[${shortId}] Skipping instance with non-existent webPageId:`,
+                                                    x.webPageId,
+                                                )
+                                                return false
+                                            }
+
+                                            return true
+                                        })
+
+                                        .map((x) => ({ ...x, projectId })) ||
+                                    [],
+                            }),
                     ].filter(Boolean),
                 )
                 console.timeEnd(`[${shortId}] insert new`)
@@ -319,7 +473,12 @@ export const reactPluginApp = new Spiceflow({
                 projectId: z.string(),
                 projectName: z.string().optional().nullable(),
                 colorStyles: z.array(z.custom<ReactExportColorStyle>()),
-                componentInstances: z.array(z.custom<ReactExportComponentInstance>()).optional(),
+                framerUserId: z.string().optional(),
+                componentInstances: z
+                    .array(
+                        z.custom<Prisma.ReactExportComponentInstanceUncheckedCreateInput>(),
+                    )
+                    .optional(),
             }),
         },
     )
@@ -414,46 +573,5 @@ async function getProject({ projectId }) {
         colorStyles,
         locales: locales.map(({ projectId, ...rest }) => rest),
         breakpoints: breakpoints.map(({ projectId, ...rest }) => rest),
-    }
-}
-
-async function checkBelongsToUser({ orgId, projectId }) {
-    const existingProject = await prisma.reactExportProject.findUnique({
-        where: {
-            projectId,
-        },
-    })
-    if (existingProject && existingProject.orgId !== orgId) {
-        const [org, user] = await Promise.all([
-            prisma.org.findFirst({
-                where: {
-                    orgId: existingProject.orgId,
-                    // subscriptions: {
-                    //     some: {},
-                    // },
-                },
-                include: {
-                    users: { include: { user: true } },
-                },
-            }),
-            prisma.users.findFirst({
-                where: {
-                    id: existingProject.orgId,
-                    // subscriptions: {
-                    //     some: {},
-                    // },
-                },
-            }),
-        ])
-
-        const email = org?.users?.[0]?.user?.email || user?.email || ''
-        const message = `Project belongs to another user, login with the project account ${email} first`
-        console.log(message)
-        throw Response.json(
-            { message, email },
-            {
-                status: 403,
-            },
-        )
     }
 }

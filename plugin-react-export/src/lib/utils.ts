@@ -1,4 +1,4 @@
-import { env } from 'website/src/lib/env'
+import { env, reactExportStatusErrors } from 'website/src/lib/env'
 
 import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 
@@ -24,15 +24,35 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
                 throw redirect(withMode(Paths.login))
             }
-            if (response.status === 403) {
-                console.log(
-                    'clearing session because api returned 403, redirecting to page',
+
+            // Check for PROJECT_BELONGS_TO_ANOTHER_USER
+            if (
+                response.status ===
+                reactExportStatusErrors.PROJECT_BELONGS_TO_ANOTHER_USER
+            ) {
+                const responseData = safeJsonParse(await response.text())
+                throw redirect(
+                    withMode(Paths.belongToAnotherUser, {
+                        email: responseData?.email,
+                    }),
                 )
-                const email = safeJsonParse(await response.text())?.email
-                
-                throw redirect(withMode(Paths.belongToAnotherUser, { email }))
             }
-            if (response?.status === 402) {
+
+            // Check for SUB_UPGRADE_NECESSARY
+            if (
+                response.status ===
+                reactExportStatusErrors.SUB_UPGRADE_NECESSARY
+            ) {
+                const responseData = safeJsonParse(await response.text())
+                throw redirect(
+                    withMode(Paths.upgradeToBusiness, {
+                        email: responseData?.email,
+                    }),
+                )
+            }
+
+            // Check for SUB_NEEDED
+            if (response.status === reactExportStatusErrors.SUB_NEEDED) {
                 console.log('redirecting to buy because api returned 402')
                 throw redirect(withMode(Paths.buy))
             }
@@ -66,6 +86,7 @@ export enum Paths {
     settings = '/settings',
     buy = '/buy',
     belongToAnotherUser = '/belongToAnotherUser',
+    upgradeToBusiness = '/upgradeToBusiness',
 }
 
 export enum RouteIds {
@@ -107,5 +128,3 @@ export function debounce<T extends (...args: any[]) => any>(
         }, wait)
     }
 }
-
-

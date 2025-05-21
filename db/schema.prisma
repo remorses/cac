@@ -552,11 +552,11 @@ model ReactExportComponentInstance {
   componentId String
   projectId   String
 
-  ordering  Float
-  nodeDepth Int
-  controls  Json                 @default("{}")
-  webPage   ReactExportWebPage   @relation(fields: [webPageId, projectId], references: [webPageId, projectId], onDelete: Cascade)
-  component ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
+  pageOrdering Float
+  nodeDepth    Int
+  controls     Json                 @default("{}")
+  webPage      ReactExportWebPage   @relation(fields: [webPageId, projectId], references: [webPageId, projectId], onDelete: Cascade)
+  component    ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
 
   @@id([webPageId, componentId, projectId])
   @@schema("public")

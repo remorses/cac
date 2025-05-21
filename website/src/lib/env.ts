@@ -117,7 +117,7 @@ export const variantIdToCredits = Object.assign(
 )
 export const feedbackUrl = ({
     pluginName,
-    title = 'Plugin Feedback',
+    title = 'Plugin',
     email,
 }: {
     pluginName: string
@@ -254,11 +254,17 @@ export const REACT_PLUGIN_PRICING_CHANGE = new Date('2025-01-15')
 
 export const reactExportVariants = {
     personal: {
-        monthly: 'price_1QUWdFLpvqzrp4t9mitxNrkt',
-        yearly: 'price_1RQVt2Lpvqzrp4t9fNsGIs40',
+        monthly: 'price_1RREb6Lpvqzrp4t94ypySNug',
+        yearly: 'price_1RREb6Lpvqzrp4t9e9jt1wqM',
     },
     business: {
         monthly: 'price_1QhCBiLpvqzrp4t9cIJMlIOB',
         yearly: 'price_1RQVsMLpvqzrp4t9MfkJ2Jqh',
     },
+}
+
+export const reactExportStatusErrors = {
+    SUB_UPGRADE_NECESSARY: 405,
+    PROJECT_BELONGS_TO_ANOTHER_USER: 403,
+    SUB_NEEDED: 402,
 }

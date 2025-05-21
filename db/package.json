@@ -10,7 +10,7 @@
         "studio": "doppler run -- prisma studio",
         "enable-rls": "# doppler run -- pnpm tsx scripts/enable-rls.ts",
         "gen:kysely": "doppler run -- kysely-codegen --out-file kysely.types.ts",
-        "diff:prod": "doppler run -c production --command 'pnpm prisma migrate diff --script --from-url $DATABASE_URL --to-schema-datamodel schema.prisma > diff.sql'",
+        "diff:prod": "doppler run --command 'pnpm prisma migrate diff --script --from-url $DATABASE_URL --to-schema-datamodel schema.prisma > diff.sql'",
         "diff:preview": "doppler run -c preview --command 'pnpm prisma migrate diff --script --from-url $DATABASE_URL --to-schema-datamodel schema.prisma > diff.sql'",
         "push:diff": "doppler run --command 'psql \"$DATABASE_URL\" -a -f diff.sql'",
         "dump:prod": "doppler run -c production --command 'pnpm supabase db dump --db-url $DATABASE_URL --schema auth -f dump.sql'",
@@ -26,7 +26,7 @@
     "author": "remorses <beats.by.morse@gmail.com>",
     "license": "ISC",
     "dependencies": {
-        "@prisma/client": "6.7.0",
+        "@prisma/client": "6.8.2",
         "@supabase/supabase-js": "^2.48.1",
         "@types/pg": "^8.11.11",
         "kysely": "^0.27.5",
@@ -36,7 +36,7 @@
         "@types/node": "^22.13.4",
         "concurrently": "^9.1.2",
         "kysely-codegen": "^0.17.0",
-        "prisma": "^6.7.0",
+        "prisma": "^6.8.2",
         "supabase": "^2.9.6"
     }
 }

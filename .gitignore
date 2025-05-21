@@ -12,3 +12,4 @@ plugin.zip
 prisma-dist
 prisma-generated
 .react-router
+.prisma

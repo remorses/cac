@@ -209,15 +209,21 @@ export async function getParentNodesWithOrdering(
         return []
     }
 
+    let currentChild = node
     while (parent) {
         const siblings = await parent.getChildren()
-        const ordering = siblings.findIndex((x) => x.id === node.id)
+        const ordering = siblings.findIndex((x) => x.id === currentChild.id)
+        if (ordering === -1) {
+            console.log('no ordering found for node', currentChild.id)
+            // throw new Error(`No ordering found for node ${currentChild.id} among siblings ${siblings.map(x => x.id).join(', ')}`)
+        }
         result.push({ node: parent as any, ordering })
 
         if (isRootLevelNode(parent)) {
             return result
         }
 
+        currentChild = parent
         const newParent = await parent.getParent()
         if (!newParent) {
             console.log('no parent found, last one was', parent)
@@ -286,4 +292,11 @@ export function simpleHash(input: string) {
         hash = hash & hash // Convert to 32bit integer
     }
     return Math.abs(hash).toString(36).substring(0, 8)
+}
+
+export function debugLog(...x) {
+    // @ts-ignore
+    if (import.meta.env.DEV) {
+        console.log(...x.map(x => JSON.stringify(x, null, 2)))
+    }
 }

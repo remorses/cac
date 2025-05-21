@@ -34,6 +34,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { basePath, reload } from 'plugin-migrate/src/lib/utils'
 import { BuyMore } from '@/routes/Buy'
 import { BelongToAnotherUser } from '@/routes/BelongToAnotherUser'
+import { UpgradeToBusiness } from '@/routes/UpgradeToBusiness'
 
 globalThis.framer = framer
 
@@ -134,12 +135,12 @@ const router = createBrowserRouter(
                     handle: '',
                 },
                 LoginPage(),
-
                 Components(),
                 Settings(),
                 Readme(),
                 BuyMore(),
                 BelongToAnotherUser(),
+                UpgradeToBusiness(),
             ],
         },
     ],
