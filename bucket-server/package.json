@@ -2,20 +2,27 @@
 	"name": "bucket-server",
 	"version": "0.0.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"deployment": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"upload-example": "tsx scripts/upload-example.ts",
+		"test:upload": "vitest src/upload-example.test.ts --run"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"globby": "^14.1.0",
+		"tsx": "^4.19.3",
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.7",
 		"wrangler": "^4.16.1"
 	},
 	"dependencies": {
-		"@cloudflare/workers-types": "^4.20250520.0"
+		"@cloudflare/workers-types": "^4.20250520.0",
+		"spiceflow": "^1.9.1",
+		"zod": "^3.25.17"
 	}
 }

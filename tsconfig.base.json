@@ -1,19 +1,13 @@
 {
     "compilerOptions": {
         "target": "ES2022",
-        "module": "commonjs",
+        "module": "preserve",
         "allowJs": false,
         "composite": true,
         "outDir": "${configDir}/dist",
         "rootDir": "${configDir}/src",
-        "moduleResolution": "Node",
-        "lib": [
-            "es2022",
-            "es2017",
-            "es7",
-            "es6"
-            // "dom"
-        ],
+        "moduleResolution": "bundler",
+        "lib": ["es2022", "es2017", "es7", "es6"],
         "declaration": true,
         "declarationMap": true,
         "strict": true,
