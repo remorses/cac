@@ -45,15 +45,15 @@ describe('uploadExampleWebsite', () => {
               "filesUploaded": 3,
               "paths": [
                 {
-                  "contentType": null,
+                  "contentType": "text/html",
                   "fullPath": "example-demo/index.html",
                 },
                 {
-                  "contentType": null,
+                  "contentType": "text/javascript",
                   "fullPath": "example-demo/script.js",
                 },
                 {
-                  "contentType": null,
+                  "contentType": "text/css",
                   "fullPath": "example-demo/styles.css",
                 },
               ],
@@ -71,7 +71,7 @@ describe('uploadExampleWebsite', () => {
 
         // Check that we got HTML content type
         const contentType = response.headers.get('content-type')
-        expect(contentType).toMatchInlineSnapshot(`null`)
+        expect(contentType).toMatchInlineSnapshot(`"text/html"`)
 
         // Verify we can get the content
         const content = await response.text()
