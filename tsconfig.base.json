@@ -1,9 +1,8 @@
 {
     "compilerOptions": {
-        "target": "ES2022",
-        "module": "preserve",
+        "target": "ESNext",
+        "module": "esnext",
         "allowJs": false,
-        "composite": true,
         "outDir": "${configDir}/dist",
         "rootDir": "${configDir}/src",
         "moduleResolution": "bundler",
@@ -21,5 +20,5 @@
         "rewriteRelativeImportExtensions": true,
         "skipLibCheck": true
     },
-    "exclude": ["**/node_modules", "**/.*/"]
+    "exclude": ["**/node_modules"]
 }

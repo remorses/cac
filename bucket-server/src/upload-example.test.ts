@@ -21,36 +21,38 @@ describe('uploadExampleWebsite', () => {
         expect(filePaths.length).toBeGreaterThan(0)
 
         // Upload the website
-        const result = await unframerBucketServerSdk.api.uploadFiles({
-            files: await Promise.all(
-                filePaths.map(async (filePath) => {
-                    const fullPath = path.resolve(examplePath, filePath)
-                    const contents = await readFile(fullPath, 'utf-8')
+        const { data, error } =
+            await unframerBucketServerSdk.api.uploadFiles.post({
+                files: await Promise.all(
+                    filePaths.map(async (filePath) => {
+                        const fullPath = path.resolve(examplePath, filePath)
+                        const contents = await readFile(fullPath, 'utf-8')
 
-                    return {
-                        path: filePath,
-                        contents,
-                        // contentType: getContentType(filePath),
-                    }
-                }),
-            ),
-            basePath: siteName,
-            secret: siteSecret,
-        })
+                        return {
+                            path: filePath,
+                            contents,
+                            // contentType: getContentType(filePath),
+                        }
+                    }),
+                ),
+                basePath: siteName,
+                secret: siteSecret,
+            })
 
-        // Verify the result
-        expect(result.error).toBeUndefined()
-        expect(result.data).toBeDefined()
-        expect(result.data.filesUploaded).toBe(files.length)
-        expect(result.data.basePath).toBe(siteName)
-        expect(result.data.success).toBe(true)
-
-        // Verify that all files have been uploaded
-        expect(result.data.paths.length).toBe(files.length)
-
-        // Check that each file path includes the base path
-        for (const uploadedPath of result.data.paths) {
-            expect(uploadedPath.startsWith(siteName)).toBe(true)
-        }
+        expect({ data, error }).toMatchInlineSnapshot(`
+          {
+            "data": {
+              "basePath": "example-demo",
+              "filesUploaded": 3,
+              "paths": [
+                "example-demo/script.js",
+                "example-demo/styles.css",
+                "example-demo/index.html",
+              ],
+              "success": true,
+            },
+            "error": null,
+          }
+        `)
     })
 })
