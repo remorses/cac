@@ -1,5 +1,10 @@
 import { Button } from 'plugin-migrate/src/components/Button'
-import { getInstanceComponentId } from 'plugin-migrate/src/lib/framer'
+import {
+    getComponentPropertyControls,
+    getInstanceComponentId,
+    replaceEnumIdsForControls,
+    serializeAttributesForXml,
+} from 'plugin-migrate/src/lib/framer'
 
 import {
     isTruthy,
@@ -107,8 +112,7 @@ async function action({ request }: LoaderFunctionArgs) {
             selectedComponentIds.has(component.id),
     )
 
-    // Get instances and controls for each component
-    const componentsWithInstances = await Promise.all(
+    const componentsWithBreakpoints = await Promise.all(
         filteredComponents.map(async (component) => {
             try {
                 const allInstances = await framer.getNodesWithType(
@@ -172,7 +176,7 @@ async function action({ request }: LoaderFunctionArgs) {
 
     const webPageIds = new Set(pages.map((x) => x.id))
     const componentIds = new Set(
-        componentsWithInstances.map((x) => x.component?.id),
+        componentsWithBreakpoints.map((x) => x.component?.id),
     )
     const rawComponentInstances = await Promise.all(
         instances.map(async (x) => {
@@ -209,11 +213,15 @@ async function action({ request }: LoaderFunctionArgs) {
 
                 return
             }
-
+            const { propertyControls } = await getComponentPropertyControls(
+                components.find((x) => x.id === componentId)?.insertURL,
+            )
             const instance = {
                 componentId,
-                controls: x.controls,
-
+                controls: replaceEnumIdsForControls(
+                    x.controls,
+                    propertyControls,
+                ),
                 parentsOrderings,
                 // componentName: x.name,
                 // parents: parents.map(
@@ -288,7 +296,7 @@ async function action({ request }: LoaderFunctionArgs) {
                     darkColor: dark ?? light, // Ensure darkColor is never null
                 }
             }),
-            components: componentsWithInstances.map(({ component }) => {
+            components: componentsWithBreakpoints.map(({ component }) => {
                 const { name, id, insertURL, componentIdentifier } = component
 
                 return {
@@ -299,7 +307,7 @@ async function action({ request }: LoaderFunctionArgs) {
                     componentIdentifier,
                 }
             }),
-            breakpoints: componentsWithInstances.flatMap(
+            breakpoints: componentsWithBreakpoints.flatMap(
                 ({ breakpoints, component }) => {
                     return (
                         breakpoints?.map((breakpoint) => {

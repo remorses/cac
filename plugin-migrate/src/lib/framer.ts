@@ -19,6 +19,7 @@ import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
 import { FramerLayersTree } from 'website/src/lib/rewrite'
 import { bfsOldTextTree, cleanupOldTextTree } from 'website/src/lib/utils'
 import {} from 'website/src/lib/xml'
+import { notifyError } from './errors'
 
 let cachedPagePaths: string[] = []
 
@@ -33,14 +34,58 @@ async function getPagePaths() {
     return cachedPagePaths
 }
 
-export async function getComponentAttributesComments(url?: string) {
-    if (!url) return
+export function replaceEnumIdsForControls(
+    controls: any,
+    propControls?: PropertyControls,
+) {
+    try {
+        if (!controls || !propControls) return controls
+        controls = { ...controls }
+        for (let [k, value] of Object.entries(
+            propControls || ({} as PropertyControls),
+        )) {
+            if (!value) continue
+            const propName = propCamelCaseJustLikeFramer(value.title) || k
+            switch (value.type) {
+                case ControlType.Enum: {
+                    console.log(value)
+                    if (!('optionTitles' in value)) {
+                        return ''
+                    }
+                    const optionTitles = value.optionTitles || value.options
+                    let v = controls[propName] || controls[k]
+
+                    const optionIndex = value.options.indexOf(v)
+                    const enumTitle = optionTitles[optionIndex]
+                    if (optionIndex !== -1 && enumTitle) {
+                        console.log(
+                            `replacing enum value ${v} with ${enumTitle} for ${propName}`,
+                        )
+                        controls[propName] = enumTitle
+                    }
+                }
+            }
+        }
+        return controls
+    } catch (e) {
+        notifyError(e, 'replaceEnumIdsForControls')
+        return controls
+    }
+}
+
+export async function getComponentPropertyControls(url?: string | null) {
+    if (!url) return { comments: undefined, propertyControls: undefined }
     try {
         const [res, paths] = await Promise.all([import(url), getPagePaths()])
-        return getAttributeComments(res.default?.propertyControls, paths)
+        const propertyControls: PropertyControls = res.default?.propertyControls
+        const comments = getAttributeComments(propertyControls, paths)
+        return {
+            comments,
+            propertyControls,
+        }
     } catch (e) {
         console.log('failed to import component schema', e)
-        return
+        return { comments: undefined, propertyControls: undefined }
     }
 }
 
@@ -171,7 +216,7 @@ export function getAttributeComments(
 }
 
 Object.assign(globalThis, {
-    getComponentSchema: getComponentAttributesComments,
+    getComponentSchema: getComponentPropertyControls,
 })
 export function getInstanceComponentId(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
@@ -472,6 +517,15 @@ async function getNodeAttributesForXml(node: AnyNode) {
         attributes.href = node.link || undefined
     }
     if (isTextNode(node)) {
+        node.inlineTextStyle?.color
+        node.inlineTextStyle?.font
+        node.inlineTextStyle?.fontSize
+        node.inlineTextStyle?.letterSpacing
+        node.inlineTextStyle?.paragraphSpacing
+        node.inlineTextStyle?.lineHeight
+        node.inlineTextStyle?.alignment
+        node.inlineTextStyle?.decoration
+        node.inlineTextStyle?.boldFont
         for (const attr of inlineTextStyleAttributes) {
             const value = node.inlineTextStyle?.[attr] ?? undefined
             if (value) attributes[attr] = value
@@ -530,15 +584,24 @@ async function getNodeAttributesForXml(node: AnyNode) {
         if (!node.insertURL) {
             console.log(`no node.insertURL for compnoent instance ${node.name}`)
         }
-        attrControlsComments = await getComponentAttributesComments(
-            node.insertURL || undefined,
-        )
+        const { comments, propertyControls } =
+            await getComponentPropertyControls(node.insertURL || undefined)
+        if (comments) {
+            attrControlsComments = comments
+        }
+
+        // const controls = replaceEnumIdsForControls(
+        //     { ...node.controls },
+        //     propertyControls,
+        // )
+        const controls = node.controls
         attributes = {
             ...attributes,
-            ...node.controls,
+            ...controls,
         }
     }
-    attributes = serializeAttributesForXml(attributes, attrControlsComments)
+    attributes = serializeAttributesForXml(attributes)
+
     return {
         attributes,
         attrControlsComments,
@@ -557,7 +620,6 @@ function encodeAttributeValue(value) {
 
 export function serializeAttributesForXml(
     attributes?: Record<string, any>,
-    attrControlsComments?: Record<string, string>,
 ): Record<string, string> {
     if (!attributes) {
         return {}
@@ -569,12 +631,7 @@ export function serializeAttributesForXml(
         // }
         // // TODO to support images i would need to add a lot of work
         if (typeof value === 'object') {
-            console.log(
-                'skipping object value for attribute',
-                key,
-                attrControlsComments?.[key],
-                value,
-            )
+            console.log('skipping object value for attribute', key, value)
 
             continue
         }
