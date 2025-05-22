@@ -40,7 +40,7 @@ export default defineConfig({
         },
     },
     plugins: [
-        mkcert(),
+        !process.env.DISABLE_HTTPS && mkcert(),
         reactRouterHonoServer(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
