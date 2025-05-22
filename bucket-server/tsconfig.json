@@ -4,8 +4,9 @@
         "rootDir": "src",
         "outDir": "dist",
         "lib": ["esnext"],
-        "types": ["./worker-configuration.d.ts"]
+
+
+        "types": ["@cloudflare/workers-types"]
     },
-    "include": ["src"],
-    "exclude": ["**/node_modules"]
+    "include": ["src"]
 }

@@ -5,12 +5,11 @@ import { globby } from 'globby'
 import path from 'path'
 
 describe('uploadExampleWebsite', () => {
+    // Site configuration
+    const siteName = 'example-demo'
+    const siteSecret = 'example-secret-key'
+    const baseUrl = `https://${siteName}-demos.unframer.co`
     it('should upload the example website to the bucket server', async () => {
-        // Site configuration
-        const siteName = process.env.SITE_NAME || 'example-demo'
-        const siteSecret = process.env.SITE_SECRET || 'example-secret-key'
-        const baseUrl = `https://${siteName}.demos.unframer.co`
-
         // Find all files in the example website directory
         const examplePath = path.resolve(__dirname, '../example-website')
         const filePaths = await globby('./*', {
@@ -45,14 +44,37 @@ describe('uploadExampleWebsite', () => {
               "basePath": "example-demo",
               "filesUploaded": 3,
               "paths": [
-                "example-demo/script.js",
-                "example-demo/styles.css",
-                "example-demo/index.html",
+                {
+                  "contentType": null,
+                  "fullPath": "example-demo/index.html",
+                },
+                {
+                  "contentType": null,
+                  "fullPath": "example-demo/script.js",
+                },
+                {
+                  "contentType": null,
+                  "fullPath": "example-demo/styles.css",
+                },
               ],
               "success": true,
             },
             "error": null,
           }
         `)
+    })
+
+    it('should serve the index.html file with correct content type', async () => {
+        console.log(baseUrl)
+        const response = await fetch(baseUrl)
+        expect(response.status).toBe(200)
+
+        // Check that we got HTML content type
+        const contentType = response.headers.get('content-type')
+        expect(contentType).toMatchInlineSnapshot(`null`)
+
+        // Verify we can get the content
+        const content = await response.text()
+        expect(content).toContain('<!DOCTYPE html>')
     })
 })

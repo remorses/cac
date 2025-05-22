@@ -21,6 +21,9 @@
     },
     "dependencies": {
         "@cloudflare/workers-types": "^4.20250520.0",
+        "@types/mime-types": "^2.1.4",
+        "mime": "^4.0.7",
+        "mime-types": "^3.0.1",
         "spiceflow": "^1.9.1",
         "zod": "^3.25.21"
     }

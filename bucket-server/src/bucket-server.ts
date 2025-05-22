@@ -1,4 +1,6 @@
 import { Spiceflow } from 'spiceflow'
+import mime from 'mime'
+
 import { z } from 'zod'
 
 type Env = {
@@ -73,6 +75,8 @@ export const app = new Spiceflow()
                     )
                 }
             } else {
+                const headers = new Headers()
+
                 // Create the SECRET file
                 await env.BUCKET.put(
                     secretPath,
@@ -80,30 +84,33 @@ export const app = new Spiceflow()
                 )
             }
 
-            // Upload all files
-            const uploadedPaths = [] as string[]
-            const uploads = files.map(async (file) => {
-                // Normalize file path - remove leading slashes
-                const normalizedFilePath = file.path.replace(/^\/+/, '')
-                const fullPath = `${normalizedBasePath}/${normalizedFilePath}`
-
-                await env.BUCKET.put(
-                    fullPath,
-                    new TextEncoder().encode(file.contents),
-                    file.contentType
-                        ? { httpMetadata: { contentType: file.contentType } }
-                        : undefined,
-                )
-                uploadedPaths.push(fullPath)
-            })
-
-            await Promise.all(uploads)
+            const uploadedPaths = await Promise.all(
+                files.map(async (file) => {
+                    // Normalize file path - remove leading slashes
+                    const normalizedFilePath = file.path.replace(/^\/+/, '')
+                    const fullPath = `${normalizedBasePath}/${normalizedFilePath}`
+                    const headers = new Headers()
+                    const contentType =
+                        file.contentType || mime.getType(fullPath)
+                    if (contentType) {
+                        headers.set('content-type', contentType)
+                    }
+                    await env.BUCKET.put(
+                        fullPath,
+                        new TextEncoder().encode(file.contents),
+                        { httpMetadata: headers },
+                    )
+                    return { fullPath, contentType }
+                }),
+            )
 
             return {
                 success: true,
                 filesUploaded: files.length,
                 basePath: normalizedBasePath,
-                paths: uploadedPaths,
+                paths: uploadedPaths.sort((a, b) =>
+                    a.fullPath.localeCompare(b.fullPath),
+                ),
             }
         } catch (error) {
             throw new Response(
@@ -154,6 +161,9 @@ export const app = new Spiceflow()
             filePath = filePath.replace(/^\/+/, '')
             if (!filePath) {
                 filePath = 'index.html'
+            }
+            if (filePath === 'SECRET') {
+                throw Response.json('Cannot fetch SECRET', { status: 401 })
             }
 
             // Combine to get full path in bucket
