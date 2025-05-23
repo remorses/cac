@@ -50,8 +50,9 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
                 version: 10
                 run_install: false
             - run: pnpm install
+            - run: pnpm framer
             - run: pnpm build
-            - run: pnpx unframer-deploy-demo --secret "${secret}" --slug ${repo} --dir ./dist
+            - run: pnpx unframer-deploy-demo --secret ${secret} --slug ${repo} --dir ./dist
 
       `
     })
