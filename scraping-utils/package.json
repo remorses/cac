@@ -22,7 +22,7 @@
         "@devmehq/email-validator-js": "^1.0.19",
         "@genql/cli": "^6.3.3",
         "@genql/runtime": "^2.10.0",
-        "esbuild": "^0.24.2",
+        "esbuild": "^0.25.4",
         "htmlrewriter": "^0.0.12",
         "p-ratelimit": "^1.0.1",
         "parse-domain": "^8.2.2",

@@ -29,11 +29,44 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
         appComponentCode: exampleCode,
     })
     files.push({
+            relativePath: 'README.md',
+            contents: dedent`
+            # ${title}
+
+            This is an Unframer project generated from Framer project ID: ${projectId}
+
+            ## Development
+
+            Install dependencies:
+            \`\`\`bash
+            pnpm install
+            \`\`\`
+
+            Generate components from Framer:
+            \`\`\`bash
+            pnpm framer
+            \`\`\`
+
+            Start development server:
+            \`\`\`bash
+            pnpm dev
+            \`\`\`
+
+            Build for production:
+            \`\`\`bash
+            pnpm build
+            \`\`\`
+            `
+        })
+    files.push({
       relativePath: '.github/workflows/ci.yml',
       contents: dedent`
       name: CI
       on:
         push:
+      concurrency:
+        group: \${{ github.workflow }}-\${{ github.event.pull_request.number || github.ref }}
+        cancel-in-progress: true
       jobs:
         ci:
           timeout-minutes: 10
@@ -52,7 +85,7 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
             - run: pnpm install
             - run: pnpm framer
             - run: pnpm build
-            - run: pnpx unframer-deploy-demo --secret ${secret} --slug ${repo} --dir ./dist
+            - run: pnpx unframer-deploy-demo@latest --secret ${secret} --slug ${repo} --dir ./dist
 
       `
     })
@@ -158,5 +191,5 @@ export async function upsertUnframerRepoWithFiles({
         }),
     )
 
-    console.log(`https://github.com/${owner}/${repo}`)
+    console.log(`upserted https://github.com/${owner}/${repo}`)
 }

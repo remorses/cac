@@ -1,8 +1,8 @@
 import { cac } from 'cac'
 import fs from 'fs'
 import path from 'path'
-import { notifyError } from './sentry'
-import { unframerBucketServerSdk } from './sdk'
+import { notifyError } from './sentry.js'
+import { unframerBucketServerSdk } from './sdk.js'
 import { globby } from 'globby'
 
 export const cli = cac('unframer-deploy-demo')

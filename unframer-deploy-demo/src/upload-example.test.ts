@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { unframerBucketServerSdk } from '../src/sdk'
+import { unframerBucketServerSdk } from '../src/sdk.js'
 import { readFile } from 'fs/promises'
 import { globby } from 'globby'
 import path from 'path'

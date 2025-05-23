@@ -1,3 +1,4 @@
+
 generator client {
   provider        = "prisma-client"
   output          = ".prisma"
@@ -313,6 +314,7 @@ model Org {
   ssoProviderId    String?              @unique @db.Uuid
   framerSessions   FramerLoginSession[]
   generations      Generation[]
+  loginReasons String[]
 
   ssoProvider     sso_providers?       @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
   invitationLinks OrgInviteLink[]
