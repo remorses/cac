@@ -34,6 +34,7 @@ cli.command('', 'Deploy unframer demo')
                 console.error(`No files to upload inside ${dir}`)
                 return
             }
+            console.log(`uploading ${filePaths.length} files`)
             // Upload the website
             const { data, error } =
                 await unframerBucketServerSdk.api.uploadFiles.post({
@@ -54,6 +55,9 @@ cli.command('', 'Deploy unframer demo')
                     basePath: slug,
                     secret,
                 })
+            if (error) throw error
+
+            console.log(`🚀 Website deployed at ${data.url}`)
         } catch (error) {
             notifyError(error)
 

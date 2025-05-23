@@ -77,7 +77,9 @@ export const app = new Spiceflow()
             const headers = new Headers()
 
             // Create the SECRET file
-            await env.BUCKET.put(secretPath, new TextEncoder().encode(secret))
+            await env.BUCKET.put(secretPath, new TextEncoder().encode(secret), {
+                httpMetadata: new Headers({ 'content-type': 'text' }),
+            })
         }
 
         const uploadedPaths = await Promise.all(
@@ -99,7 +101,9 @@ export const app = new Spiceflow()
             }),
         )
 
+        const url = `https://${basePath}-demos.unframer.co`
         return {
+            url,
             success: true,
             filesUploaded: files.length,
             basePath: normalizedBasePath,

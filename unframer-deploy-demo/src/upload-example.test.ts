@@ -8,7 +8,7 @@ describe('uploadExampleWebsite', () => {
     // Site configuration
     const siteName = 'example-demo'
     const siteSecret = 'example-secret-key'
-    const baseUrl = `https://${siteName}-demos.unframer.co`
+    let baseUrl = ''
     it('should upload the example website to the bucket server', async () => {
         // Find all files in the example website directory
         const examplePath = path.resolve(__dirname, '../example-website')
@@ -61,6 +61,7 @@ describe('uploadExampleWebsite', () => {
             "error": null,
           }
         `)
+        baseUrl = data!.url
     })
 
     it('should serve the index.html file with correct content type', async () => {
