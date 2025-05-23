@@ -29,8 +29,8 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
         appComponentCode: exampleCode,
     })
     files.push({
-            relativePath: 'README.md',
-            contents: dedent`
+        relativePath: 'README.md',
+        contents: dedent`
             # ${title}
 
             This is an Unframer project generated from Framer project ID: ${projectId}
@@ -56,17 +56,18 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
             \`\`\`bash
             pnpm build
             \`\`\`
-            `
-        })
+            `,
+    })
     files.push({
-      relativePath: '.github/workflows/ci.yml',
-      contents: dedent`
+        relativePath: '.github/workflows/ci.yml',
+        contents: dedent`
       name: CI
       on:
         push:
       concurrency:
         group: \${{ github.workflow }}-\${{ github.event.pull_request.number || github.ref }}
         cancel-in-progress: true
+
       jobs:
         ci:
           timeout-minutes: 10
@@ -87,7 +88,7 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
             - run: pnpm build
             - run: pnpx unframer-deploy-demo@latest --secret ${secret} --slug ${repo} --dir ./dist
 
-      `
+      `,
     })
     await upsertUnframerRepoWithFiles({ files, repo })
 }
@@ -95,9 +96,13 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
 export async function upsertUnframerRepoWithFiles({
     files,
     repo,
+    title,
+    homepage,
 }: {
     files: { relativePath: string; contents: string }[]
     repo: string
+    title?: string
+    homepage?: string
 }) {
     const owner = 'unframer'
     const githubBranch = 'main'
@@ -167,8 +172,15 @@ export async function upsertUnframerRepoWithFiles({
             }),
     )
 
-    await Promise.all(
-        files.map(async (file) => {
+    await Promise.all([
+        (title || homepage) &&
+            (await octokit.rest.repos.update({
+                owner,
+                repo,
+                description: title,
+                homepage,
+            })),
+        ...files.map(async (file) => {
             await sema.acquire()
             try {
                 const code = file.contents
@@ -189,7 +201,7 @@ export async function upsertUnframerRepoWithFiles({
                 sema.release()
             }
         }),
-    )
+    ])
 
     console.log(`upserted https://github.com/${owner}/${repo}`)
 }

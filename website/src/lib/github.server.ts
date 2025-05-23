@@ -362,6 +362,7 @@ export async function createNewRepo({
         description: `Repository created using Unframer`,
         has_wiki: false,
         auto_init: true,
+
     }).catch((e) => {
         if (e.status === 422) {
             throw new AppError(`Repository name already used`)
