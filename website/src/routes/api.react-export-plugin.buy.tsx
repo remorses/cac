@@ -2,7 +2,7 @@
 // free with 2J5ZQHW3
 
 import { PluginName } from 'db'
-import { LoaderFunctionArgs, redirect } from 'react-router'
+import { href, LoaderFunctionArgs, redirect } from 'react-router'
 import Stripe from 'stripe'
 import { env, reactExportVariants } from 'website/src/lib/env'
 
@@ -20,8 +20,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     let pluginName: PluginName = 'reactExport'
 
-    const price =
-        u.searchParams.get('priceId') || reactExportVariants.business.monthly
+    const price = u.searchParams.get('priceId')
+    if (!price) {
+      console.log(`no priceId param in buy url, redirecting to pricing page`)
+        const redirectUrl = new URL(
+            href('/react-export-pricing', ),
+            env.PUBLIC_URL,
+        )
+        redirectUrl.search = u.search
+        throw redirect(redirectUrl.toString())
+    }
 
     const session = await stripe.checkout.sessions.create({
         line_items: [{ quantity: 1, price }],
