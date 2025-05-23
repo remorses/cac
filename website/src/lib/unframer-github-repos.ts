@@ -81,10 +81,10 @@ export async function upsertUnframerRepoWithFiles({
             files: [
                 {
                     filePath: 'README.md',
-                    content: `# Welcome to ${repo}`,
+                    content: `\n`,
                 },
             ],
-            isGithubOrg: false,
+            isGithubOrg: true,
             octokit: octokit.rest,
             owner,
             privateRepo: true,

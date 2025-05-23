@@ -7,6 +7,7 @@ test('create example repo', async () => {
         projectId,
         title: 'example test repo',
         repo: 'example-test-repo',
+        secret: 'x',
         // description: 'example test repo description',
     })
     console.log(res)
