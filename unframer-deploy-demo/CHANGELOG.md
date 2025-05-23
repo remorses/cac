@@ -1,5 +1,11 @@
 # unframer-deploy-demo
 
+## 0.0.5
+
+### Patch Changes
+
+- Fix deps
+
 ## 0.0.4
 
 ### Patch Changes

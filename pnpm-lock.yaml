@@ -1285,27 +1285,18 @@ importers:
 
   unframer-deploy-demo:
     dependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20250520.0
-        version: 4.20250520.0
-      '@sentry/core':
-        specifier: ^9.22.0
-        version: 9.22.0
       '@sentry/node':
         specifier: ^9.22.0
         version: 9.22.0
-      '@types/mime-types':
-        specifier: ^2.1.4
-        version: 2.1.4
       cac:
         specifier: ^6.7.14
         version: 6.7.14
+      globby:
+        specifier: ^14.1.0
+        version: 14.1.0
       mime:
         specifier: ^4.0.7
         version: 4.0.7
-      mime-types:
-        specifier: ^3.0.1
-        version: 3.0.1
       spiceflow:
         specifier: ^1.9.1
         version: 1.9.1(@modelcontextprotocol/sdk@1.11.4)
@@ -1316,12 +1307,9 @@ importers:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.8.19
         version: 0.8.32(@cloudflare/workers-types@4.20250520.0)(@vitest/runner@3.1.4)(@vitest/snapshot@3.1.4)(vitest@3.1.4(@types/debug@4.1.12)(@types/node@22.15.21)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1))
-      globby:
-        specifier: ^14.1.0
-        version: 14.1.0
-      tsx:
-        specifier: ^4.19.3
-        version: 4.19.3
+      '@cloudflare/workers-types':
+        specifier: ^4.20250520.0
+        version: 4.20250520.0
       vitest:
         specifier: ~3.1.4
         version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.21)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1)
@@ -5622,9 +5610,6 @@ packages:
 
   '@types/mdx@2.0.13':
     resolution: {integrity: sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==}
-
-  '@types/mime-types@2.1.4':
-    resolution: {integrity: sha512-lfU4b34HOri+kAY5UheuFMWPDOI+OPceBSHZKp69gEyTL/mmJ4cnU6Y/rlme3UL3GyOn6Y42hyIEw0/q8sWx5w==}
 
   '@types/mime@4.0.0':
     resolution: {integrity: sha512-5eEkJZ/BLvTE3vXGKkWlyTSUVZuzj23Wj8PoyOq2lt5I3CYbiLBOPb3XmCW6QcuOibIUE6emHXHt9E/F/rCa6w==}
@@ -16385,8 +16370,6 @@ snapshots:
   '@types/mdurl@2.0.0': {}
 
   '@types/mdx@2.0.13': {}
-
-  '@types/mime-types@2.1.4': {}
 
   '@types/mime@4.0.0':
     dependencies:
