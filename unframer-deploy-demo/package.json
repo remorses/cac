@@ -6,10 +6,9 @@
     "scripts": {
         "deployment": "wrangler deploy",
         "dev": "wrangler dev",
+        "cli": "pnpm tsx bin.js",
         "start": "wrangler dev",
         "test": "vitest",
-        "cf-typegen": "wrangler types",
-        "upload-example": "tsx scripts/upload-example.ts",
         "test:upload": "vitest src/upload-example.test.ts --run"
     },
     "devDependencies": {

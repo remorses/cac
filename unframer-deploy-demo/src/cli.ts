@@ -14,12 +14,26 @@ cli.command('', 'Deploy unframer demo')
     .option('--slug <repo>', 'Repository slug', {})
     .option('--dir <directory>', 'Directory to deploy', { default: './dist' })
     .action(async function main(options) {
+        // console.log({ options })
         const { slug, dir, secret } = options
+        if (!slug) {
+            console.error('No repository slug provided')
+            return
+        }
 
+        if (!secret) {
+            console.error('No secret key provided')
+            return
+        }
         try {
-            const filePaths = await globby('./*', {
+            const filePaths = await globby('**/*', {
                 cwd: dir,
+                onlyFiles: true,
             })
+            if (!filePaths.length) {
+                console.error(`No files to upload inside ${dir}`)
+                return
+            }
             // Upload the website
             const { data, error } =
                 await unframerBucketServerSdk.api.uploadFiles.post({
