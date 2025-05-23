@@ -1,8 +1,8 @@
 {
-    "name": "bucket-server",
+    "name": "unframer-deploy-demo",
     "version": "0.0.0",
-    "private": true,
     "type": "module",
+    "bin": "./bin.js",
     "scripts": {
         "deployment": "wrangler deploy",
         "dev": "wrangler dev",
@@ -21,7 +21,9 @@
     },
     "dependencies": {
         "@cloudflare/workers-types": "^4.20250520.0",
+        "@sentry/node": "^9.22.0",
         "@types/mime-types": "^2.1.4",
+        "cac": "^6.7.14",
         "mime": "^4.0.7",
         "mime-types": "^3.0.1",
         "spiceflow": "^1.9.1",

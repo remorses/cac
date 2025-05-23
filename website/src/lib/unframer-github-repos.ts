@@ -13,9 +13,48 @@ import { cwd } from 'process'
 import { Sema } from 'sema4'
 import { recursiveReaddir } from './__elysia-react-plugin'
 import { generateStackblitzFiles } from './utils'
+import { createExampleComponentCode } from 'unframer-workspace/dist/exporter'
+import { configFromFetch } from '../../../unframer/unframer/dist/cli'
+import dedent from 'dedent'
 
-export async function generateUnframerRepo({ projectId, repo, title }) {
-    const files = generateStackblitzFiles({ projectId, title })
+export async function generateUnframerRepo({ secret, projectId, repo, title }) {
+    const { config } = await configFromFetch({ projectId })
+    const { exampleCode } = await createExampleComponentCode({
+        config,
+        outDir: 'framer',
+    })
+    let files = generateStackblitzFiles({
+        projectId,
+        title,
+        appComponentCode: exampleCode,
+    })
+    files.push({
+      relativePath: '.github/workflows/ci.yml',
+      contents: dedent`
+      name: CI
+      on:
+        push:
+      jobs:
+        ci:
+          timeout-minutes: 10
+          runs-on: ubuntu-latest
+          steps:
+            - uses: actions/checkout@v3
+              with:
+                fetch-depth: 0
+            - uses: actions/setup-node@v3
+              with:
+                node-version: 22
+            - uses: pnpm/action-setup@master
+              with:
+                version: 10
+                run_install: false
+            - run: pnpm install
+            - run: pnpm build
+            - run: pnpx unframer-deploy-demo --secret "${secret}" --slug ${repo} --dir ./dist
+
+      `
+    })
     await upsertUnframerRepoWithFiles({ files, repo })
 }
 

@@ -247,7 +247,11 @@ export function safeUrl(u) {
     }
 }
 
-export function generateStackblitzFiles({ projectId, title = '' }): { relativePath: string; contents: string }[] {
+export function generateStackblitzFiles({
+    projectId,
+    appComponentCode = '',
+    title = '',
+}): { relativePath: string; contents: string }[] {
     const packageJson = {
         name: 'unframer-vite-react-typescript-starter',
         private: true,
@@ -342,7 +346,9 @@ export function generateStackblitzFiles({ projectId, title = '' }): { relativePa
             </body>
         </html>`
 
-    const app = dedent`
+    const app =
+        appComponentCode ||
+        dedent`
         const docs = \`
         # Unframer Demo Project
 
@@ -381,8 +387,14 @@ export function generateStackblitzFiles({ projectId, title = '' }): { relativePa
         @tailwind utilities;`
 
     return [
-        { relativePath: 'tsconfig.json', contents: JSON.stringify(tsconfig, null, 2) },
-        { relativePath: 'package.json', contents: JSON.stringify(packageJson, null, 2) },
+        {
+            relativePath: 'tsconfig.json',
+            contents: JSON.stringify(tsconfig, null, 2),
+        },
+        {
+            relativePath: 'package.json',
+            contents: JSON.stringify(packageJson, null, 2),
+        },
         { relativePath: 'vite.config.ts', contents: viteConfig },
         { relativePath: 'postcss.config.js', contents: postcssConfig },
         { relativePath: 'tailwind.config.js', contents: tailwindConfig },
@@ -391,16 +403,16 @@ export function generateStackblitzFiles({ projectId, title = '' }): { relativePa
         { relativePath: 'src/index.css', contents: css },
         { relativePath: 'pnpm-lock.yaml', contents: '\n' },
         { relativePath: 'src/main.tsx', contents: main },
-    ];
+    ]
 }
 
 export async function generateStackblitzProject({ projectId, title = '' }) {
-    const files = generateStackblitzFiles({ projectId, title });
+    const files = generateStackblitzFiles({ projectId, title })
 
     const filesObject = files.reduce((acc, { relativePath, contents }) => {
-        acc[relativePath] = contents;
-        return acc;
-    }, {});
+        acc[relativePath] = contents
+        return acc
+    }, {})
 
     return sdk.openProject(
         {

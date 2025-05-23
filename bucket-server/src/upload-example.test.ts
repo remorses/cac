@@ -14,7 +14,6 @@ describe('uploadExampleWebsite', () => {
         const examplePath = path.resolve(__dirname, '../example-website')
         const filePaths = await globby('./*', {
             cwd: examplePath,
-            ignore: ['README.md'], // Skip the README
         })
 
         expect(filePaths.length).toBeGreaterThan(0)
