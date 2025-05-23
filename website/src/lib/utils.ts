@@ -246,7 +246,8 @@ export function safeUrl(u) {
         return null
     }
 }
-export async function generateStackblitzProject({ projectId, title = '' }) {
+
+export function generateStackblitzFiles({ projectId, title = '' }): { relativePath: string; contents: string }[] {
     const packageJson = {
         name: 'unframer-vite-react-typescript-starter',
         private: true,
@@ -300,7 +301,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
     const viteConfig = dedent`
         import { defineConfig } from 'vite'
         import react from '@vitejs/plugin-react'
-        
+
         // https://vitejs.dev/config/
         export default defineConfig({
             plugins: [react()],
@@ -344,22 +345,22 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
     const app = dedent`
         const docs = \`
         # Unframer Demo Project
-        
+
         This is a demo project showing how to use Unframer to export Framer components to React.
-        
+
         ## What's happening now:
         If you're seeing this file, the unframer CLI is currently running in the terminal below.
         Just wait until it finishes downloading and bundling your Framer components.
         Once complete, you'll see your components rendered in the browser preview on the right and this file will be replaced with an example.
-        
+
         Try making changes to your components in Framer, then run the \`npm run framer\` command again
         to see the updates reflected here.
-        
+
         ## How it works:
         1. The Framer React Export plugin saves your components to the Unframer database
         2. The unframer CLI downloads and bundles those components into regular React components inside the \`src/framer\` folder
         3. You can then import and use them in your React app just like any other component
-        
+
         \`
 
         `
@@ -369,7 +370,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         import React from 'react'
         import ReactDOM from 'react-dom/client'
         import App from './App'
-        
+
         ReactDOM.createRoot(document.getElementById('root')!).render(
             <App />
         )`
@@ -379,23 +380,34 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         @tailwind components;
         @tailwind utilities;`
 
+    return [
+        { relativePath: 'tsconfig.json', contents: JSON.stringify(tsconfig, null, 2) },
+        { relativePath: 'package.json', contents: JSON.stringify(packageJson, null, 2) },
+        { relativePath: 'vite.config.ts', contents: viteConfig },
+        { relativePath: 'postcss.config.js', contents: postcssConfig },
+        { relativePath: 'tailwind.config.js', contents: tailwindConfig },
+        { relativePath: 'index.html', contents: indexHtml },
+        { relativePath: 'src/App.tsx', contents: app },
+        { relativePath: 'src/index.css', contents: css },
+        { relativePath: 'pnpm-lock.yaml', contents: '\n' },
+        { relativePath: 'src/main.tsx', contents: main },
+    ];
+}
+
+export async function generateStackblitzProject({ projectId, title = '' }) {
+    const files = generateStackblitzFiles({ projectId, title });
+
+    const filesObject = files.reduce((acc, { relativePath, contents }) => {
+        acc[relativePath] = contents;
+        return acc;
+    }, {});
+
     return sdk.openProject(
         {
             title: `Unframer - ${title}`,
             description: `${title} demo for Unframer`,
             template: 'node',
-            files: {
-                'tsconfig.json': JSON.stringify(tsconfig, null, 2),
-                'package.json': JSON.stringify(packageJson, null, 2),
-                'vite.config.ts': viteConfig,
-                'postcss.config.js': postcssConfig,
-                'tailwind.config.js': tailwindConfig,
-                'index.html': indexHtml,
-                'src/App.tsx': app,
-                'src/index.css': css,
-                'pnpm-lock.yaml': '\n',
-                'src/main.tsx': main,
-            },
+            files: filesObject,
         },
         {
             openFile: 'src/App.tsx',

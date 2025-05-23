@@ -307,22 +307,28 @@ export async function createNewRepo({
     // branch,
     files,
     repo,
-    github,
+    isGithubOrg,
+    owner,
+    octokit,
     privateRepo = true,
+    oauthToken,
 }: {
-    github: GithubInstallation
+    owner
+    isGithubOrg
     files: { filePath: string; content: string }[]
     repo: string
+    octokit: Octokit['rest']
     privateRepo: boolean
+    oauthToken?: string
 }) {
     files = files.filter((x) => {
         return true
         // return githubPathToPageSlug(x.filePath) !== TUTORIAL_PAGE_SLUG
     })
-    const owner = github.accountLogin
-    const installationId = github.installationId
-    const isGithubOrg = github.accountType === 'ORGANIZATION'
-    const octokit = (await getOctokit({ installationId })).rest
+    // const owner = github.accountLogin
+    // const isGithubOrg = github.accountType === 'ORGANIZATION'
+    // const installationId = github.installationId
+    // const octokit = (await getOctokit({ installationId })).rest
 
     console.log(`uploading files to github ${owner}/${repo}`)
     console.log(`creating repo for ${isGithubOrg ? 'org' : 'user'} ${owner}`)
@@ -332,7 +338,7 @@ export async function createNewRepo({
         if (isGithubOrg) {
             return await octokit.repos.createInOrg(args)
         } else {
-            if (!github.oauthToken) {
+            if (!oauthToken) {
                 throw new AppError(
                     `Cannot create repo for user without Github token, reconnect Github`,
                 )
@@ -343,7 +349,7 @@ export async function createNewRepo({
             // })
             // const token = res.authentication.token
             const octokit = new Octokit({
-                auth: github.oauthToken,
+                auth: oauthToken,
             }).rest
 
             return await octokit.repos.createForAuthenticatedUser(args)
