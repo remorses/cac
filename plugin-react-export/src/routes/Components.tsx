@@ -84,7 +84,8 @@ async function action({ request }: LoaderFunctionArgs) {
         styles,
         projectInfo,
         locales,
-        instances,
+        allInstances,
+        { id: framerUserId },
     ] = await Promise.all([
         framer.getPublishInfo().catch((e) => null),
         framer.getNodesWithType('ComponentNode'),
@@ -96,6 +97,7 @@ async function action({ request }: LoaderFunctionArgs) {
             return []
         }),
         framer.getNodesWithType('ComponentInstanceNode'),
+        framer.getCurrentUser(),
     ])
 
     // throw redirect(withMode(Paths.readme))
@@ -115,9 +117,6 @@ async function action({ request }: LoaderFunctionArgs) {
     const componentsWithBreakpoints = await Promise.all(
         filteredComponents.map(async (component) => {
             try {
-                const allInstances = await framer.getNodesWithType(
-                    'ComponentInstanceNode',
-                )
                 const instances = allInstances.filter((instance) => {
                     const id = getInstanceComponentId(instance)
                     return id === component.id
@@ -179,7 +178,7 @@ async function action({ request }: LoaderFunctionArgs) {
         componentsWithBreakpoints.map((x) => x.component?.id),
     )
     const rawComponentInstances = await Promise.all(
-        instances.map(async (x) => {
+        allInstances.map(async (x) => {
             const componentId = getInstanceComponentId(x)
             if (!componentId) {
                 console.log('no component id found for instance', x.id)
@@ -285,6 +284,7 @@ async function action({ request }: LoaderFunctionArgs) {
             projectId: fullFramerProjectId,
             projectName,
             fullFramerProjectId,
+            framerUserId,
             websiteUrl,
             colorStyles: styles.map((x) => {
                 const { dark, light, name, id } = x
