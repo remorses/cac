@@ -6,6 +6,6 @@ export function reactExportProjectReady({ deployedUrl, title }) {
 
     I created a GitHub repo with the exported React components, would you like to get access? What is your GitHub email?
 
-    Here is a deployed url with your Framer components: ${deployedUrl}
+    Here is a preview url with your Framer components: ${deployedUrl}
   `
 }
