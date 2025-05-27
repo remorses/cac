@@ -175,6 +175,7 @@ export const reactPluginApp = new Spiceflow({
         '/upsertProject',
         async ({ request, state: store }) => {
             const body = await request.json()
+
             console.log('react upsertProject', body)
             let {
                 colorStyles,
@@ -225,11 +226,16 @@ export const reactPluginApp = new Spiceflow({
             if (!org) {
                 throw new Error('Org not found')
             }
+            let userEmail = await store.userEmail
             let needsToBuy = (() => {
                 if (reactSub) {
                     console.log(
                         `exporting components for user with sub ${JSON.stringify(reactSub)}`,
                     )
+                }
+
+                if (userEmail.endsWith('@framer.com')) {
+                    return false
                 }
                 return !reactSub
             })()
@@ -316,6 +322,7 @@ export const reactPluginApp = new Spiceflow({
                 reactExportVariants.personal.yearly,
             ].includes(reactSub?.variantId || '')
             let needsBusinessSubscription =
+                !userEmail?.endsWith('@framer.com') &&
                 isPersonalSub &&
                 existingProject?.framerUserId &&
                 framerUserId &&
