@@ -686,6 +686,8 @@ paths:
                   type: array
                 framerUserId:
                   type: string
+                pageBackgroundColor:
+                  type: string
                 componentInstances:
                   type: array
               required:

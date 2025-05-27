@@ -1,7 +1,7 @@
 import dedent from 'dedent'
 import { Octokit } from 'octokit'
 import { Sema } from 'sema4'
-import { unframerDemoUrl } from 'unframer-deploy-demo/src/sdk'
+import { unframerDemoUrl } from 'unframer-deploy-demo/src/utils'
 import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { configFromFetch } from 'unframer-workspace/src/cli'
 import { env } from './env'
@@ -58,6 +58,7 @@ export async function generateUnframerRepo({
             The \`package.json\` \`framer\` script generates the React components in the \`src/framer\` folder.
 
             The file \`src/App.tsx\` contains an example generated component with your components, you can modify it to change the appearence of your website. You can also pass Framer variables using props.
+
 
 
             `,

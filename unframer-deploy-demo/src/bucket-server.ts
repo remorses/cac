@@ -2,7 +2,8 @@ import { Spiceflow } from 'spiceflow'
 import mime from 'mime'
 
 import { z } from 'zod'
-import { unframerDemoUrl } from './sdk.ts'
+import { unframerDemoUrl } from './utils.ts'
+
 
 type Env = {
     BUCKET: R2Bucket

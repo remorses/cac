@@ -33,7 +33,6 @@
         "tailwindcss": "^3.4.6",
         "plugin-migrate": "workspace:^",
         "three": "^0.172.0",
-
         "tweakpane": "^4.0.5",
         "tweakpane-plugin-file-import": "^1.1.1",
         "vite-plugin-environment": "^1.1.3",
