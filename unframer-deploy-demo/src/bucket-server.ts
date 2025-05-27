@@ -2,6 +2,7 @@ import { Spiceflow } from 'spiceflow'
 import mime from 'mime'
 
 import { z } from 'zod'
+import { unframerDemoUrl } from './sdk.ts'
 
 type Env = {
     BUCKET: R2Bucket
@@ -100,8 +101,8 @@ export const app = new Spiceflow()
                 return { fullPath, contentType }
             }),
         )
+        const url = unframerDemoUrl({ basePath: normalizedBasePath })
 
-        const url = `https://${basePath}-demos.unframer.co`
         return {
             url,
             success: true,

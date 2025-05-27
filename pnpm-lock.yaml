@@ -290,9 +290,6 @@ importers:
       three:
         specifier: ^0.172.0
         version: 0.172.0
-      three-soft-depth-of-field:
-        specifier: workspace:^
-        version: link:../three-soft-depth-of-field
       tweakpane:
         specifier: ^4.0.5
         version: 4.0.5
@@ -492,9 +489,6 @@ importers:
       three:
         specifier: ^0.172.0
         version: 0.172.0
-      three-soft-depth-of-field:
-        specifier: workspace:^
-        version: link:../three-soft-depth-of-field
       vite-plugin-environment:
         specifier: ^1.1.3
         version: 1.1.3(vite@6.3.5(@types/node@22.15.21)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1))
@@ -1119,16 +1113,6 @@ importers:
         specifier: ^4.16.0
         version: 4.16.1(@cloudflare/workers-types@4.20250520.0)
 
-  three-soft-depth-of-field:
-    dependencies:
-      three:
-        specifier: ^0.172.0
-        version: 0.172.0
-    devDependencies:
-      '@types/three':
-        specifier: ^0.172.0
-        version: 0.172.0
-
   three-video-experiment:
     dependencies:
       '@0b5vr/tweakpane-plugin-rotation':
@@ -1221,9 +1205,6 @@ importers:
       three:
         specifier: ^0.172.0
         version: 0.172.0
-      three-soft-depth-of-field:
-        specifier: workspace:^
-        version: link:../three-soft-depth-of-field
       tweakpane:
         specifier: ^4.0.5
         version: 4.0.5
@@ -1864,6 +1845,9 @@ importers:
       unframer:
         specifier: 2.25.3
         version: 2.25.3(@modelcontextprotocol/sdk@1.11.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      unframer-deploy-demo:
+        specifier: workspace:*
+        version: link:../unframer-deploy-demo
       unframer-workspace:
         specifier: link:../unframer/unframer
         version: link:../unframer/unframer

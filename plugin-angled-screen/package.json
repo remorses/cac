@@ -27,7 +27,7 @@
         "tailwindcss": "^3.4.6",
         "plugin-migrate": "workspace:^",
         "three": "^0.172.0",
-        "three-soft-depth-of-field": "workspace:^",
+
         "vite-plugin-environment": "^1.1.3",
         "vite-plugin-mkcert": "^1.17.6",
         "vite-tsconfig-paths": "^5.1.4",

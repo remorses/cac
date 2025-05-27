@@ -1,23 +1,24 @@
+import dedent from 'dedent'
 import { Octokit } from 'octokit'
+import { Sema } from 'sema4'
+import { unframerDemoUrl } from 'unframer-deploy-demo/src/sdk'
+import { createExampleComponentCode } from 'unframer-workspace/dist/exporter'
+import { configFromFetch } from '../../../unframer/unframer/dist/cli'
+import { env } from './env'
 import {
     createNewRepo,
     doesRepoExist,
-    getOctokit,
     getRepoFiles,
-    githubPathToPageSlug,
     upsertGithubFile,
 } from './github.server'
-import { env } from './env'
-import path from 'path'
-import { cwd } from 'process'
-import { Sema } from 'sema4'
-import { recursiveReaddir } from './__elysia-react-plugin'
 import { generateStackblitzFiles } from './utils'
-import { createExampleComponentCode } from 'unframer-workspace/dist/exporter'
-import { configFromFetch } from '../../../unframer/unframer/dist/cli'
-import dedent from 'dedent'
 
-export async function generateUnframerRepo({ secret, projectId, repo, title }) {
+export async function generateUnframerRepo({
+    secret,
+    projectId,
+    repo,
+    projectTitle = 'Project',
+}) {
     const { config } = await configFromFetch({ projectId })
     const { exampleCode } = await createExampleComponentCode({
         config,
@@ -25,37 +26,40 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
     })
     let files = generateStackblitzFiles({
         projectId,
-        title,
+        title: projectTitle,
         appComponentCode: exampleCode,
     })
     files.push({
         relativePath: 'README.md',
         contents: dedent`
-            # ${title}
+            # ${projectTitle}
 
-            This is an Unframer project generated from Framer project ID: ${projectId}
+            This repo was exported from the Framer project ${projectTitle}
 
             ## Development
 
             Install dependencies:
             \`\`\`bash
-            pnpm install
+            npm install
             \`\`\`
 
             Generate components from Framer:
             \`\`\`bash
-            pnpm framer
+            npm run framer
             \`\`\`
 
             Start development server:
             \`\`\`bash
-            pnpm dev
+            npm run dev
             \`\`\`
 
-            Build for production:
-            \`\`\`bash
-            pnpm build
-            \`\`\`
+            ## Project Structure
+
+            The \`package.json\` \`framer\` script generates the React components in the \`src/framer\` folder.
+
+            The file \`src/App.tsx\` contains an example generated component with your components, you can modify it to change the appearence of your website. You can also pass Framer variables using props.
+
+
             `,
     })
     files.push({
@@ -85,7 +89,13 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
 
       `,
     })
-    await upsertUnframerRepoWithFiles({ files, repo })
+    const homepage = unframerDemoUrl({ basePath: repo })
+    await upsertUnframerRepoWithFiles({
+        files,
+        repo,
+        title: `React Components for ${projectTitle}`,
+        homepage,
+    })
 }
 
 export async function upsertUnframerRepoWithFiles({

@@ -31,6 +31,7 @@ import {
     framer,
     isFrameNode,
     isWebPageNode,
+    WebPageNode,
 } from 'framer-plugin'
 import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
@@ -81,7 +82,7 @@ async function loader({}: LoaderFunctionArgs) {
     return { componentIds, email, orgId, componentsData }
 }
 
-async function getInstancesOnIndexPage({
+async function getInstancesWithOrderAndDepth({
     allInstances,
     webPageIds,
     components,
@@ -192,6 +193,7 @@ async function getInstancesOnIndexPage({
         componentInstances,
         (x) => x.webPageId + x.componentId,
     )
+    return componentInstances
 }
 
 async function action({ request }: LoaderFunctionArgs) {
@@ -295,7 +297,20 @@ async function action({ request }: LoaderFunctionArgs) {
 
     const webPageIds = new Set(pages.map((x) => x.id))
 
-    const componentInstances = await getInstancesOnIndexPage({
+    const indexPage = pages
+        .sort((a, b) => (a.path?.length || 0) - (b.path?.length || 0))
+        .find((x) => x) as WebPageNode
+    console.log('backgroundColor', indexPage['backgroundColor'])
+    const [pageContainer] = (await indexPage.getChildren()) || []
+    let pageBackgroundColor = ''
+    if (isFrameNode(pageContainer) && pageContainer.backgroundColor) {
+        if (typeof pageContainer.backgroundColor === 'string') {
+            pageBackgroundColor = pageContainer.backgroundColor
+        } else {
+            pageBackgroundColor = pageContainer.backgroundColor?.light
+        }
+    }
+    const componentInstances = await getInstancesWithOrderAndDepth({
         allInstances,
         webPageIds,
         components,
@@ -313,6 +328,7 @@ async function action({ request }: LoaderFunctionArgs) {
             fullFramerProjectId,
             framerUserId,
             websiteUrl,
+            pageBackgroundColor,
             colorStyles: styles.map((x) => {
                 const { dark, light, name, id } = x
                 return {

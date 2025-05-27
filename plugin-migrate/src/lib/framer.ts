@@ -48,7 +48,6 @@ export function replaceEnumIdsForControls(
             const propName = propCamelCaseJustLikeFramer(value.title) || k
             switch (value.type) {
                 case ControlType.Enum: {
-                    console.log(value)
                     if (!('optionTitles' in value)) {
                         return ''
                     }
@@ -58,9 +57,9 @@ export function replaceEnumIdsForControls(
                     const optionIndex = value.options.indexOf(v)
                     const enumTitle = optionTitles[optionIndex]
                     if (optionIndex !== -1 && enumTitle) {
-                        console.log(
-                            `replacing enum value ${v} with ${enumTitle} for ${propName}`,
-                        )
+                        // console.log(
+                        //     `replacing enum value ${v} with ${enumTitle} for ${propName}`,
+                        // )
                         controls[propName] = enumTitle
                     }
                 }

@@ -1,4 +1,3 @@
-
 generator client {
   provider        = "prisma-client"
   output          = ".prisma"
@@ -314,7 +313,7 @@ model Org {
   ssoProviderId    String?              @unique @db.Uuid
   framerSessions   FramerLoginSession[]
   generations      Generation[]
-  loginReasons String[]
+  loginReasons     String[]
 
   ssoProvider     sso_providers?       @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
   invitationLinks OrgInviteLink[]
@@ -514,8 +513,8 @@ model ReactExportProject {
   colorStyles         ReactExportColorStyle[]
   pages               ReactExportWebPage[]
   locales             ReactExportLocale[]
-
-  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  pageBackgroundColor String?
+  org                 Org                     @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")
 }

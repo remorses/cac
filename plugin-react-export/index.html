@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>GitHub Sync - Framer Plugin</title>
         <meta
@@ -17,6 +17,17 @@
         <meta property="og:url" content="https://unframer.co" />
         <meta property="og:type" content="website" />
     </head>
+    <script type="importmap">
+        {
+            "imports": {
+                "react": "https://esm.sh/react@19.0.0",
+                "react-dom": "https://esm.sh/react-dom@19.0.0",
+                "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+                "framer-motion": "https://esm.sh/framer-motion",
+                "framer": "https://esm.sh/unframer@latest/esm/framer.js"
+            }
+        }
+    </script>
     <body>
         <div id="root"></div>
         <script type="module" src="/src/main.tsx"></script>

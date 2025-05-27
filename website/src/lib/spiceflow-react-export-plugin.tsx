@@ -1,8 +1,6 @@
-import fs from 'fs'
 import { Evt } from 'evt'
+import fs from 'fs'
 
-import { on, EventEmitter } from 'events'
-import { TransformStream } from 'stream/web'
 import path from 'path'
 import { Spiceflow } from 'spiceflow'
 
@@ -11,25 +9,19 @@ import {
     prisma,
     ReactExportColorStyle,
     ReactExportComponent,
-    ReactExportComponentInstance,
     ReactExportLocale,
     ReactExportWebPage,
     type ReactExportComponentBreakpoint,
 } from 'db'
-import { z } from 'zod'
-import { Sema } from 'async-sema'
-import { deduplicateByKey, isTruthy } from 'website/src/lib/utils'
 import Stripe from 'stripe'
 import {
     env,
-    REACT_PLUGIN_PRICING_CHANGE,
-    reactExportVariants,
     reactExportStatusErrors,
+    reactExportVariants,
 } from 'website/src/lib/env'
-import { X } from 'lucide-react'
-import type { url } from 'inspector'
+import { deduplicateByKey, isTruthy } from 'website/src/lib/utils'
+import { z } from 'zod'
 import { email } from 'zod/v4'
-import { status } from 'nprogress'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -196,6 +188,7 @@ export const reactPluginApp = new Spiceflow({
                 breakpoints,
                 framerUserId,
                 componentInstances,
+                pageBackgroundColor,
             } = body
 
             const shortId = projectId.slice(0, 4)
@@ -269,6 +262,7 @@ export const reactPluginApp = new Spiceflow({
                             projectName,
                             fullFramerProjectId,
                             framerUserId,
+                            pageBackgroundColor,
                         },
                         update: {
                             projectId,
@@ -276,6 +270,7 @@ export const reactPluginApp = new Spiceflow({
                             projectName,
                             fullFramerProjectId,
                             framerUserId,
+                            pageBackgroundColor,
                         },
                     }),
                     existingProject &&
@@ -474,6 +469,7 @@ export const reactPluginApp = new Spiceflow({
                 projectName: z.string().optional().nullable(),
                 colorStyles: z.array(z.custom<ReactExportColorStyle>()),
                 framerUserId: z.string().optional(),
+                pageBackgroundColor: z.string().optional(),
                 componentInstances: z
                     .array(
                         z.custom<Prisma.ReactExportComponentInstanceUncheckedCreateInput>(),
