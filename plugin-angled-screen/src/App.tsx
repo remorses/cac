@@ -33,7 +33,6 @@ import {
     useAsyncEffect,
 } from './utils'
 import { createBuyAngledScreenUrl } from 'website/src/lib/env'
-enum PluginDataKeys {}
 
 enum Paths {
     root = '/',
@@ -41,13 +40,12 @@ enum Paths {
 }
 
 const defaultWith = 340
-const initialImage = await framer.getImage()
 
 await framer.showUI({ position: 'top left', width: defaultWith, height: 0 })
-const initialImageSize = await initialImage?.measure()
+
 
 function useSelectedImage() {
-    const [image, setImage] = useState<ImageAsset | null>(initialImage)
+    const [image, setImage] = useState<ImageAsset | null>(null)
 
     useEffect(() => {
         return framer.subscribeToImage(setImage)
@@ -232,12 +230,7 @@ function RotationsImage() {
 
     const [aperture, setAperture] = useState(0.07)
     const [isLoading, setIsLoading] = useState(true)
-    const [aspectRatio, setAspectRatio] = useState(() => {
-        if (!initialImageSize) {
-            return 1
-        }
-        return initialImageSize?.width / initialImageSize?.height
-    })
+    const [aspectRatio, setAspectRatio] = useState(16/9)
 
     useEffect(() => {
         threeCanvas.shadowColor = color
