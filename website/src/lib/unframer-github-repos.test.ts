@@ -1,7 +1,7 @@
-import { beforeEach, afterEach, describe, it, expect, vi, test } from 'vitest'
-import { generateUnframerRepo } from './unframer-github-repos'
 import { createExampleComponentCode } from 'unframer-workspace/dist/exporter'
-import { configFromFetch } from 'unframer/src/cli'
+import { configFromFetch } from 'unframer-workspace/src/cli'
+import { expect, test } from 'vitest'
+import { generateUnframerRepo } from './unframer-github-repos'
 
 const projectId = 'cf755ed7d59e0319'
 
