@@ -1,5 +1,7 @@
 import { deployFly, getDopplerEnv, shell } from '@xmorse/deployment-utils'
+import fs from 'fs'
 import './openapi'
+import { app } from '../src/lib/spiceflow-plugins.server'
 
 async function main() {
     // const stage = getCurrentStage()
@@ -14,6 +16,11 @@ async function main() {
         //     env,
         // }),
     ])
+    const res = await app.handle(new Request('/api/plugins/openapi'))
+    fs.writeFileSync(
+        'scripts/plugins-openapi.json',
+        JSON.stringify(await res.json(), null, 2),
+    )
 
     await shell(`pnpm tsc --incremental`, {
         env,

@@ -25,9 +25,16 @@ import {
 
 import { notifyError } from '@/lib/errors'
 import { Prisma } from 'db'
-import { framer, isFrameNode, isWebPageNode } from 'framer-plugin'
+import {
+    ComponentInstanceNode,
+    ComponentNode,
+    framer,
+    isFrameNode,
+    isWebPageNode,
+} from 'framer-plugin'
 import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
+    collectGenerator,
     getParentNodes,
     getParentNodesWithOrdering,
 } from 'plugin-migrate/src/lib/utils'
@@ -72,6 +79,119 @@ async function loader({}: LoaderFunctionArgs) {
     })
     const componentIds = reactExportProject?.components?.map((x) => x.id) || []
     return { componentIds, email, orgId, componentsData }
+}
+
+async function getInstancesOnIndexPage({
+    allInstances,
+    webPageIds,
+    components,
+    projectId,
+}: {
+    allInstances: ComponentInstanceNode[]
+    webPageIds: Set<string>
+    components: ComponentNode[]
+    projectId: string
+}) {
+    const componentIds = new Set(components.map((x) => x?.id))
+    const rawComponentInstances = await Promise.all(
+        allInstances.map(async (x) => {
+            const componentId = getInstanceComponentId(x)
+            if (!componentId) {
+                console.log('no component id found for instance', x.id)
+                return
+            }
+            if (!componentIds.has(componentId)) {
+                // console.log(
+                //     'skipping instance with invalid component id',
+                //     x.id,
+                //     componentId,
+                // )
+                return
+            }
+
+            const parents = await getParentNodesWithOrdering(x)
+            const parentsOrderings = parents.map((x) => x.ordering)
+
+            const pageParent = parents.find((x) => isWebPageNode(x.node))
+            if (!pageParent) {
+                console.log('no page parent found for instance', x.id)
+                return
+            }
+
+            const webPageId = pageParent?.node?.id
+            if (!webPageIds.has(webPageId)) {
+                console.log(
+                    'skipping instance with invalid web page id',
+                    x.id,
+                    webPageId,
+                )
+
+                return
+            }
+            const { propertyControls } = await getComponentPropertyControls(
+                components.find((x) => x.id === componentId)?.insertURL,
+            )
+            const instance = {
+                componentId,
+                controls: replaceEnumIdsForControls(
+                    x.controls,
+                    propertyControls,
+                ),
+                parentsOrderings,
+                // componentName: x.name,
+                // parents: parents.map(
+                //     (x) => x['name'] || x['path'] || x['__class'],
+                // ),
+                webPageId,
+                projectId,
+                nodeDepth: parents.length - 1,
+            }
+            return instance
+        }),
+    )
+    const instancesGroups = Array.from(
+        groupBy(
+            rawComponentInstances.filter(isTruthy),
+            (x) => x.webPageId,
+        ).values(),
+    )
+    let componentInstances = instancesGroups.flatMap((group) => {
+        return group
+            .sort((a, b) => {
+                const minParentLength = Math.min(
+                    a.parentsOrderings?.length,
+                    b.parentsOrderings?.length,
+                )
+
+                for (let i = 0; i < minParentLength; i++) {
+                    if (a.parentsOrderings[i] < b.parentsOrderings[i]) {
+                        return -1
+                    }
+                    if (a.parentsOrderings[i] > b.parentsOrderings[i]) {
+                        return 1
+                    }
+                }
+
+                // If all parent orderings are the same up to the minimum length,
+                // the shorter array should come first
+                return a.parentsOrderings.length - b.parentsOrderings.length
+            })
+            .map((x, pageOrdering) => {
+                const { parentsOrderings, ...rest } = x
+                const instance: Prisma.ReactExportComponentInstanceUncheckedCreateInput =
+                    {
+                        ...rest,
+                        controls:
+                            JSON.parse(JSON.stringify(x.controls || {})) || {},
+                        pageOrdering,
+                    }
+                return instance
+            })
+    })
+    componentInstances = deduplicateByKey(
+        componentInstances,
+        (x) => x.webPageId + x.componentId,
+    )
 }
 
 async function action({ request }: LoaderFunctionArgs) {
@@ -129,7 +249,7 @@ async function action({ request }: LoaderFunctionArgs) {
                         if (!variantId) {
                             return
                         }
-                        const parents = await Array.fromAsync(
+                        const parents = await collectGenerator(
                             getParentNodes(instance),
                         )
                         const [root, breakpointNode] = parents.reverse()
@@ -174,109 +294,16 @@ async function action({ request }: LoaderFunctionArgs) {
         publishInfo?.production?.url
 
     const webPageIds = new Set(pages.map((x) => x.id))
-    const componentIds = new Set(
-        componentsWithBreakpoints.map((x) => x.component?.id),
-    )
-    const rawComponentInstances = await Promise.all(
-        allInstances.map(async (x) => {
-            const componentId = getInstanceComponentId(x)
-            if (!componentId) {
-                console.log('no component id found for instance', x.id)
-                return
-            }
-            if (!componentIds.has(componentId)) {
-                // console.log(
-                //     'skipping instance with invalid component id',
-                //     x.id,
-                //     componentId,
-                // )
-                return
-            }
-            const projectId = projectInfo.id.slice(0, 16)
-            const parents = await getParentNodesWithOrdering(x)
-            const parentsOrderings = parents.map((x) => x.ordering)
 
-            const pageParent = parents.find((x) => isWebPageNode(x.node))
-            if (!pageParent) {
-                console.log('no page parent found for instance', x.id)
-                return
-            }
-
-            const webPageId = pageParent?.node?.id
-            if (!webPageIds.has(webPageId)) {
-                console.log(
-                    'skipping instance with invalid web page id',
-                    x.id,
-                    webPageId,
-                )
-
-                return
-            }
-            const { propertyControls } = await getComponentPropertyControls(
-                components.find((x) => x.id === componentId)?.insertURL,
-            )
-            const instance = {
-                componentId,
-                controls: replaceEnumIdsForControls(
-                    x.controls,
-                    propertyControls,
-                ),
-                parentsOrderings,
-                // componentName: x.name,
-                // parents: parents.map(
-                //     (x) => x['name'] || x['path'] || x['__class'],
-                // ),
-                webPageId,
-                projectId,
-                nodeDepth: parents.length - 1,
-            }
-            return instance
-        }),
-    )
-    const instancesGropus = Array.from(
-        groupBy(
-            rawComponentInstances.filter(isTruthy),
-            (x) => x.webPageId,
-        ).values(),
-    )
-    let componentInstances = instancesGropus.flatMap((group) => {
-        return group
-            .sort((a, b) => {
-                const minParentLength = Math.min(
-                    a.parentsOrderings?.length,
-                    b.parentsOrderings?.length,
-                )
-
-                for (let i = 0; i < minParentLength; i++) {
-                    if (a.parentsOrderings[i] < b.parentsOrderings[i]) {
-                        return -1
-                    }
-                    if (a.parentsOrderings[i] > b.parentsOrderings[i]) {
-                        return 1
-                    }
-                }
-
-                // If all parent orderings are the same up to the minimum length,
-                // the shorter array should come first
-                return a.parentsOrderings.length - b.parentsOrderings.length
-            })
-            .map((x, pageOrdering) => {
-                const { parentsOrderings, ...rest } = x
-                const instance: Prisma.ReactExportComponentInstanceUncheckedCreateInput =
-                    {
-                        ...rest,
-                        controls:
-                            JSON.parse(JSON.stringify(x.controls || {})) || {},
-                        pageOrdering,
-                    }
-                return instance
-            })
+    const componentInstances = await getInstancesOnIndexPage({
+        allInstances,
+        webPageIds,
+        components,
+        projectId: projectInfo.id,
+    }).catch((e) => {
+        notifyError(e, 'error getting component instances')
+        return []
     })
-    componentInstances = deduplicateByKey(
-        componentInstances,
-        (x) => x.webPageId + x.componentId,
-    )
-
     // debugLog('rawComponentInstances', rawComponentInstances)
 
     const { error, data } =
@@ -587,7 +614,7 @@ function Item({ id, name, onChange, checked, style, node }) {
                 className='group-hover:opacity-100 opacity-0 flex h-auto w-auto items-center justify-center !m-0 !p-1 bg-transparent hover:bg-framer-tertiary rounded-md'
                 onClick={(e) => {
                     e.stopPropagation()
-                    framer.zoomIntoView(id, { maxZoom: 1 })
+                    framer.zoomIntoView(id, { maxZoom: 0.7 })
                 }}
                 title='Zoom to component'
             >

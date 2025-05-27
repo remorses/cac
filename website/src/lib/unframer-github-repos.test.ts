@@ -8,7 +8,8 @@ test(
         const res = await generateUnframerRepo({
             projectId,
             title: 'example test repo',
-            repo: 'example-test-repo',
+            repo: 'example-test-repo-2',
+
             secret: 'x',
             // description: 'example test repo description',
         })

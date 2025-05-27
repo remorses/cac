@@ -463,32 +463,32 @@ function SimplePromptComponent({}) {
                 </div>
             )}
             <div className='flex justify-stretch w-full gap-3'>
-                {Boolean(isLoading || previousOldText.length) ? (
-                    <Button
-                        className='w-auto'
-                        onClick={discard}
-                        isLoading={isDiscarding}
-                        type='button'
-                    >
-                        {isLoading ? 'Cancel' : 'Discard Replacement'}
-                    </Button>
-                ) : (
-                    <Button
-                        className='w-auto block grow'
-                        onClick={() => {
-                            navigate(withMode(Paths.settings))
-                        }}
-                        type='button'
-                    >
-                        Settings
-                    </Button>
-                )}
+                <Button
+                    className='w-auto block grow'
+                    onClick={() => {
+                        navigate(withMode(Paths.settings))
+                    }}
+                    type='button'
+                >
+                    Settings
+                </Button>
+
                 <SubmitButton
                     disabled={!description}
                     selectedNodes={selectedNodes}
                     isLoading={isLoading}
                 />
             </div>
+            {Boolean(isLoading || previousOldText.length) ? (
+                <Button
+                    className=''
+                    onClick={discard}
+                    isLoading={isDiscarding}
+                    type='button'
+                >
+                    {isLoading ? 'Cancel Generation' : 'Undo Last Generation'}
+                </Button>
+            ) : null}
         </form>
     )
 }

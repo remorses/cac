@@ -61,7 +61,7 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
     files.push({
         relativePath: '.github/workflows/ci.yml',
         contents: dedent`
-      name: CI
+      name: Build and release preview
       on:
         push:
       concurrency:
@@ -74,19 +74,14 @@ export async function generateUnframerRepo({ secret, projectId, repo, title }) {
           runs-on: ubuntu-latest
           steps:
             - uses: actions/checkout@v3
-              with:
-                fetch-depth: 0
-            - uses: actions/setup-node@v3
+            - uses: actions/setup-node@v4
               with:
                 node-version: 22
-            - uses: pnpm/action-setup@master
-              with:
-                version: 10
-                run_install: false
-            - run: pnpm install
-            - run: pnpm framer
-            - run: pnpm build
-            - run: pnpx unframer-deploy-demo@latest --secret ${secret} --slug ${repo} --dir ./dist
+            - uses: oven-sh/setup-bun@v2
+            - run: bun install
+            - run: bun run framer
+            - run: bun run build
+            - run: bunx unframer-deploy-demo@latest --secret ${secret} --slug ${repo} --dir ./dist
 
       `,
     })
