@@ -94,6 +94,7 @@ async function getInstancesWithOrderAndDepth({
     projectId: string
 }) {
     const componentIds = new Set(components.map((x) => x?.id))
+    const componentsAlredyProcessed = new Set<string>()
     const rawComponentInstances = await Promise.all(
         allInstances.map(async (x) => {
             const componentId = getInstanceComponentId(x)
@@ -101,7 +102,10 @@ async function getInstancesWithOrderAndDepth({
                 console.log('no component id found for instance', x.id)
                 return
             }
-            if (!componentIds.has(componentId)) {
+            if (
+                !componentIds.has(componentId) ||
+                componentsAlredyProcessed.has(componentId)
+            ) {
                 // console.log(
                 //     'skipping instance with invalid component id',
                 //     x.id,
@@ -115,7 +119,7 @@ async function getInstancesWithOrderAndDepth({
 
             const pageParent = parents.find((x) => isWebPageNode(x.node))
             if (!pageParent) {
-                console.log('no page parent found for instance', x.id)
+                // console.log('no page parent found for instance', x.id)
                 return
             }
 
@@ -132,6 +136,7 @@ async function getInstancesWithOrderAndDepth({
             const { propertyControls } = await getComponentPropertyControls(
                 components.find((x) => x.id === componentId)?.insertURL,
             )
+            componentsAlredyProcessed.add(componentId)
             const instance = {
                 componentId,
                 controls: replaceEnumIdsForControls(
@@ -199,7 +204,7 @@ async function getInstancesWithOrderAndDepth({
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
 
-    const [
+    let [
         publishInfo,
         components,
         pages,
@@ -295,11 +300,9 @@ async function action({ request }: LoaderFunctionArgs) {
         publishInfo?.production?.currentPageUrl ||
         publishInfo?.production?.url
 
-    const webPageIds = new Set(pages.map((x) => x.id))
+    pages = pages.sort((a, b) => (a.path?.length || 0) - (b.path?.length || 0))
 
-    const indexPage = pages
-        .sort((a, b) => (a.path?.length || 0) - (b.path?.length || 0))
-        .find((x) => x) as WebPageNode
+    const indexPage = pages.find((x) => x) as WebPageNode
     console.log('backgroundColor', indexPage['backgroundColor'])
     const [pageContainer] = (await indexPage.getChildren()) || []
     let pageBackgroundColor = ''
@@ -312,7 +315,7 @@ async function action({ request }: LoaderFunctionArgs) {
     }
     const componentInstances = await getInstancesWithOrderAndDepth({
         allInstances,
-        webPageIds,
+        webPageIds: new Set(pages.slice(1).map((x) => x.id)),
         components,
         projectId: projectInfo.id,
     }).catch((e) => {
