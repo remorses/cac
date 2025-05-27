@@ -4,7 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import react from '@vitejs/plugin-react-swc'
 import mkcert from 'vite-plugin-mkcert'
 import framer from 'vite-plugin-framer'
-import { CopyOnEnd } from '../plugin-migrate/vite.config'
+
 import { visualizer } from 'rollup-plugin-visualizer'
 
 const building = process.env.NODE_ENV === 'production'
@@ -17,10 +17,6 @@ export default defineConfig({
         react(),
         mkcert(),
         framer(),
-        CopyOnEnd({
-            basePath,
-            out: '../website/public',
-        }),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),

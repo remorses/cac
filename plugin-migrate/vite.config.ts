@@ -52,10 +52,7 @@ export default defineConfig({
         react(),
         mkcert(),
         framer(),
-        // CopyOnEnd({
-        //     basePath,
-        //     out: '../website/public',
-        // }),
+
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),

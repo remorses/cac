@@ -625,6 +625,11 @@ paths:
           in: query
           name: projectId
           required: true
+        - schema:
+            type: boolean
+          in: query
+          name: forSubscriptionUpgrade
+          required: false
       responses:
         '200':
           description: ''
@@ -678,6 +683,10 @@ paths:
                         - type: string
                     - type: 'null'
                 colorStyles:
+                  type: array
+                framerUserId:
+                  type: string
+                componentInstances:
                   type: array
               required:
                 - components
