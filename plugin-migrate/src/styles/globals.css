@@ -42,8 +42,11 @@ html,
     display: none !important;
 }
 
-.show-focus button:focus-visible {
-    @apply outline-none ring-2 ring-framer-tint;
+
+@layer components {
+    .show-focus button:focus-visible {
+        @apply outline-none ring-2 ring-framer-tint;
+    }
 }
 
 *:focus {

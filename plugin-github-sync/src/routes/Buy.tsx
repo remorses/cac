@@ -78,7 +78,10 @@ function Component() {
             <div className='flex items-center'>
                 <div className='text-framer-secondary text-balance'>
                     <a
-                        href={discountCodeUrl('GitHub Sync')}
+                        href={discountCodeUrl({
+                            pluginName: 'GitHub Sync',
+                            email,
+                        })}
                         className='font-semibold text-black dark:text-white'
                         target='_blank'
                         rel='noopener noreferrer'
