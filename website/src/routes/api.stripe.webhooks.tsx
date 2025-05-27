@@ -126,7 +126,7 @@ async function handleSubscriptionChange(
 
     if (!orgId) {
         notifyError(
-            new AppError('No orgId in subscription metadata'),
+          new AppError(`No orgId in subscription metadata for subscription ${subscription.id}, customer email: ${subscription.customer}`),
             'Stripe webhook',
         )
         return
