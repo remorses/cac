@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from 'react-router'
 
-import { Link } from "@heroui/react"
+import { Link } from '@heroui/react'
 import { data as json } from 'react-router'
 import { useLoaderData } from 'react-router'
 import { db } from 'db/kysely'

@@ -299,10 +299,10 @@ export default function Page() {
                     Export Framer components to React and deploy anywhere
                 </h2>
             </div>
-            <div className='mt-14'></div>
-            <LogosFramerComponent.Responsive className='mx-auto' />
 
             <ReactExportPricing />
+            <div className='mt-14'></div>
+            <LogosFramerComponent.Responsive className='mx-auto' />
             <div className=''></div>
             <TestimonialsFramerComponent.Responsive className='mx-auto' />
             <ReactExportFaq />
