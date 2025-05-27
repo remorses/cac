@@ -22,9 +22,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const price = u.searchParams.get('priceId')
     if (!price) {
-      console.log(`no priceId param in buy url, redirecting to pricing page`)
+        console.log(`no priceId param in buy url, redirecting to pricing page`)
         const redirectUrl = new URL(
-            href('/react-export-pricing', ),
+            href('/react-export-pricing'),
             env.PUBLIC_URL,
         )
         redirectUrl.search = u.search
