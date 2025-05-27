@@ -6,7 +6,7 @@ import GithubSlugger from 'github-slugger'
 import path from 'path'
 import { Sema } from 'sema4'
 import { Spiceflow } from 'spiceflow'
-import { bundle } from 'unframer-workspace/dist/exporter'
+import { bundle } from 'unframer-workspace/src/exporter'
 
 import { prisma, ReactExportColorStyle, ReactExportComponent } from 'db'
 import dedent from 'dedent'
@@ -304,7 +304,7 @@ export const reactPluginApp = new Spiceflow({
                 git submodule add ${repoUrl}.git
                 \`\`\`
 
-            
+
                 Add the folder to your workspace packages in root \`package.json\`:
 
                 \`\`\`json

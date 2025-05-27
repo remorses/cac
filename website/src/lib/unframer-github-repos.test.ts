@@ -1,4 +1,4 @@
-import { createExampleComponentCode } from 'unframer-workspace/dist/exporter'
+import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { configFromFetch } from 'unframer-workspace/src/cli'
 import { expect, test } from 'vitest'
 import { generateUnframerRepo } from './unframer-github-repos'
@@ -17,7 +17,7 @@ test(
             secret: 'x',
             // description: 'example test repo description',
         })
-        console.log(res)
+        // console.log(res)
     },
     1000 * 100,
 )
@@ -46,7 +46,7 @@ test(
 
           export default function App() {
               return (
-                  <div className='flex flex-col'>
+                  <div className='flex flex-col items-center gap-3 '>
                       <NavigationFramerComponent.Responsive
                           ctaVariant={"Primary"}
                       />
@@ -69,11 +69,8 @@ test(
                           buttonTitle={"Read all blog"}
                           iconVisibility={true}
                       />
-                      <BrandLogoFramerComponent.Responsive
-                          image={{"id":"VXQWmbuFTfjDJWrhQLD1KvfD4.svg","url":"https://framerusercontent.com/images/VXQWmbuFTfjDJWrhQLD1KvfD4.svg","resolution":"auto","thumbnailUrl":"https://framerusercontent.com/images/VXQWmbuFTfjDJWrhQLD1KvfD4.svg?scale-down-to=512"}}
-                      />
+                      <BrandLogoFramerComponent.Responsive/>
                       <TestmonialItemFramerComponent.Responsive
-                          image={{"id":"kHDxLXejuT3j57hc5doGlWU1Jh8.svg","url":"https://framerusercontent.com/images/kHDxLXejuT3j57hc5doGlWU1Jh8.svg","resolution":"auto","thumbnailUrl":"https://framerusercontent.com/images/kHDxLXejuT3j57hc5doGlWU1Jh8.svg?scale-down-to=512"}}
                           name1={"Wade Warren"}
                           paragraph={"Security is non-negotiable in the decentralized world, and we take this aspect very seriously. Our solutions are built with a robust emphasis on security, utilizing advanced cryptographic"}
                           designation={"Flutter Developer"}
@@ -81,7 +78,6 @@ test(
                       <ArticlesCardFramerComponent.Responsive
                           date={"Mar 06, 2024 "}
                           link={"/news/:slug"}
-                          image={{"src":"https://framerusercontent.com/images/uSJiTd2e5Fi7BUC4TtutHC7nf88.png","type":"image","value":"data:framer/asset-reference,uSJiTd2e5Fi7BUC4TtutHC7nf88.png?originalFilename=Blog+1.png&preferredSize=auto"}}
                           title={"Discoveries from Our Thinkers"}
                           excerpt={"Experience seamless integration with decentralized applications (DApps)."}
                       />

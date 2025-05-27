@@ -2,7 +2,7 @@ import dedent from 'dedent'
 import { Octokit } from 'octokit'
 import { Sema } from 'sema4'
 import { unframerDemoUrl } from 'unframer-deploy-demo/src/sdk'
-import { createExampleComponentCode } from 'unframer-workspace/dist/exporter'
+import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { configFromFetch } from 'unframer-workspace/src/cli'
 import { env } from './env'
 import {
