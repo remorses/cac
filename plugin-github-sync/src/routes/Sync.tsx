@@ -1,4 +1,3 @@
-import classNames from 'classnames'
 import {
     getMarkdownPluginData,
     LoaderReturnType,
@@ -7,7 +6,8 @@ import {
     PluginDataKeys,
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
-import { CollectionItemData, framer } from 'framer-plugin'
+import classNames from 'classnames'
+import { FieldDataEntryInput, framer } from 'framer-plugin'
 import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
 import { Sema } from 'sema4'
 
@@ -103,7 +103,10 @@ async function loader({}: LoaderFunctionArgs) {
 
                         fieldData: {
                             // title: item.title,
-                            [CollectionFieldIds.content]: item.html,
+                            [CollectionFieldIds.content]: {
+                                value: item.html,
+                                type: 'formattedText',
+                            },
                             ...frontMatterFields,
                         },
                     },
@@ -200,48 +203,56 @@ function Component() {
         </div>
     )
 }
-
-function mapValueToFieldValue(value: any, field: CollectionFieldConfig) {
+function mapValueToFieldValue(
+    value: any,
+    field: CollectionFieldConfig,
+): FieldDataEntryInput | null {
     if (!field?.type) {
         return null
     }
     if (value == null) {
-        return null
+        return {
+            type: field.type,
+            value,
+        }
     }
     if (field.type === 'string') {
-        return String(value) || ''
+        return { type: 'string', value: String(value) || '' }
     }
     if (field.type === 'number') {
-        return Number(value) ?? null
+        return { type: 'number', value: Number(value) ?? null }
     }
     if (field.type === 'boolean') {
-        return Boolean(value)
+        return { type: 'boolean', value: Boolean(value) }
     }
     if (field.type === 'date') {
         try {
             if (!value) return null
             const date = new Date(value)
-            return date.toISOString()
+            return { type: 'date', value: date.toISOString() }
         } catch (e) {
             return null
         }
     }
     if (field.type === 'enum') {
-        return String(value) || ''
+        return { type: 'enum', value: String(value) || '' }
     }
     if (field.type === 'formattedText') {
-        return String(value) || ''
+        return { type: 'formattedText', value: String(value) || '' }
     }
     if (field.type === 'color') {
-        return String(value) || ''
+        return { type: 'color', value: String(value) || '' }
     }
     if (field.type === 'link') {
-        return String(value) || ''
+        return { type: 'link', value: String(value) || '' }
     }
     if (field.type === 'image') {
-        return String(value) || ''
+        return { type: 'image', value: String(value) || '' }
     }
-    return value
+    return {
+        type: field.type,
+        value,
+    }
 }
 
 function getFieldsForFrontMatter(
