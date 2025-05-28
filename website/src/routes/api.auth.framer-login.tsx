@@ -18,7 +18,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!key) {
         throw new Error('URL is malformed, missing key param')
     }
-    // const next = url.searchParams.get('next') || '/x'
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

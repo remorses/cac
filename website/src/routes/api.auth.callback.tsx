@@ -1,4 +1,4 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router';
+import { redirect, type LoaderFunctionArgs } from 'react-router'
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { prisma } from 'db'
@@ -8,7 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const code = url.searchParams.get('code') || ''
     const type = url.searchParams.get('type') || ''
 
-    const next = url.searchParams.get('next') || '/x'
+    const next = url.searchParams.get('next') || '/subscriptions'
 
     if (code) {
         const { headers, supabase } = getSupabaseWithHeaders({
