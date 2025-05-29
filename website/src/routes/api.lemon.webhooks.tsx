@@ -5,7 +5,7 @@ import {
 import { PluginName, prisma, Prisma } from 'db'
 import { env, plansConfig } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
-import { ActionFunctionArgs } from 'react-router';
+import { ActionFunctionArgs } from 'react-router'
 
 const secret = process.env.SECRET
 
@@ -91,10 +91,8 @@ export const action = ({ request }: ActionFunctionArgs) => {
                 let item = data.attributes.first_order_item
 
                 const productId = String(item.product_id)
-                if (
-                    productId === env.PUBLIC_LEMON_PRODUCT_MIGRATE &&
-                    !pluginName
-                ) {
+                // fix missing pluginName during purchase
+                if (productId === '337795' && !pluginName) {
                     pluginName = 'migrate'
                 }
                 let create: Prisma.PaymentForCreditsCreateManyInput = {
