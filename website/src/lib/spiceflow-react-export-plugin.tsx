@@ -167,7 +167,9 @@ export const reactPluginApp = new Spiceflow({
         {
             query: z.object({
                 projectId: z.string(),
-                forSubscriptionUpgrade: z.boolean().optional(),
+                forSubscriptionUpgrade: z
+                    .union([z.boolean(), z.string()])
+                    .optional(),
             }),
         },
     )

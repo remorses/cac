@@ -73,7 +73,6 @@
         "domhandler": "^5.0.3",
         "domutils": "^3.2.2",
         "dprint-node": "^1.0.8",
-        "event-iterator": "^2.0.0",
         "evt": "^2.5.9",
         "fast-glob": "^3.3.3",
         "framer-plugin": "3.2.0",
