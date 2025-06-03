@@ -626,7 +626,9 @@ paths:
           name: projectId
           required: true
         - schema:
-            type: boolean
+            type:
+              - boolean
+              - string
           in: query
           name: forSubscriptionUpgrade
           required: false

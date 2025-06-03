@@ -12,7 +12,7 @@ import { cors } from 'spiceflow/cors'
 import { reactPluginApp } from 'website/src/lib/spiceflow-react-export-plugin'
 import { llmPluginApp } from 'website/src/lib/spiceflow-ai-rewrite-plugin'
 import { prisma } from 'db'
-import { redirect } from 'react-router';
+import { redirect } from 'react-router'
 import { framer } from 'framer-plugin'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
@@ -41,8 +41,6 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
         }
         let status = 500
         if (code === 'VALIDATION') {
-            status = 400
-        } else if (code === 'PARSE') {
             status = 400
         } else {
             status = 500
