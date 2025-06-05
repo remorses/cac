@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "doppler run -c dev -- vite",
         "check": "pnpm tsc --incremental",
-        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
+        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -- vite build",
         "preview": "vite preview"
     },
     "dependencies": {

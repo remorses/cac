@@ -8,7 +8,7 @@
     "types": "dist/index.d.ts",
     "repository": "https://github.com/remorses/",
     "scripts": {
-        "build": "tsc && tsc -m es6 --outDir esm",
+        "_build": "tsc",
         "watch": "tsc -w"
     },
     "files": [

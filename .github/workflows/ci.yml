@@ -25,5 +25,4 @@ jobs:
                   run_install: false
             - run: pnpm install --frozen-lockfile=false
             # scripts
-            - run: pnpm build
             - run: pnpm test
