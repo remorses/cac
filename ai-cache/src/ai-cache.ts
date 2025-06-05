@@ -8,24 +8,40 @@ import {
 
 export function createAiCacheMiddleware({
     cacheDir = '.aicache',
-    cacheId = 'ai-cache.json',
+    lruSize = 300,
     ttl = 1000 * 60 * 24 * 360,
 }) {
-    const cache = new FlatCache({
-        cacheDir,
-        cacheId,
-        lruSize: 300,
-        ttl,
-        serialize(data) {
-            return JSON.stringify(data, null, 2)
-        },
-        deserialize(data) {
-            return JSON.parse(data)
-        },
-    })
-    cache.load()
+    const modelsCaches = new Map<string, FlatCache>()
+    function getModelCache(modelId: string) {
+        const cache = modelsCaches.get(modelId)
+        if (!modelId) {
+            throw new Error(`no modelId in ai generation`)
+        }
+        if (!cache) {
+            const cacheId = `${modelId}-cache.json`
+            const cache = new FlatCache({
+                cacheDir,
+                cacheId,
+                lruSize,
+
+                ttl,
+                serialize(data) {
+                    return JSON.stringify(data, null, 2)
+                },
+                deserialize(data) {
+                    return JSON.parse(data)
+                },
+            })
+            cache.load()
+            modelsCaches.set(modelId, cache)
+            return cache
+        }
+        return cache
+    }
     const cacheMiddleware: LanguageModelV1Middleware = {
-        wrapGenerate: async ({ doGenerate, params }) => {
+        wrapGenerate: async ({ doGenerate, params, model }) => {
+            const cache = getModelCache(model.modelId)
+
             const cacheKey = JSON.stringify(params)
 
             const cached = (await cache.get(cacheKey)) as Awaited<
@@ -51,10 +67,8 @@ export function createAiCacheMiddleware({
             return result
         },
         wrapStream: async ({ doStream, model, params }) => {
-            const cacheKey = JSON.stringify({
-                modelId: model.modelId,
-                ...params,
-            })
+            const cacheKey = JSON.stringify(params)
+            const cache = getModelCache(model.modelId)
 
             // Check if the result is in the cache
             const cached = (await cache.get(

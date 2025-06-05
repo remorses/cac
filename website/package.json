@@ -67,6 +67,7 @@
         "clsx": "^2.1.1",
         "concurrently": "^9.1.2",
         "db": "workspace:*",
+        "ai-cache": "workspace:*",
         "dedent": "^1.5.3",
         "diff": "^7.0.0",
         "dom-serializer": "^2.0.0",

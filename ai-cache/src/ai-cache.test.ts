@@ -7,9 +7,7 @@ describe(
     'ai-cache middleware',
     () => {
         it('should cache and return the same result for identical requests', async () => {
-            const middleware = createAiCacheMiddleware({
-                cacheId: 'test-cache.json',
-            })
+            const middleware = createAiCacheMiddleware({})
 
             const apiKey = process.env.OPENAI_API_KEY
             if (!apiKey) throw new Error(`missing OPENAI_API_KEY`)
@@ -27,10 +25,10 @@ describe(
             await res.consumeStream()
             const text = await res.text
             expect(text).toMatchInlineSnapshot(`
-              "Whispers of the night sky,
-              Stars like dreams that drift and fly.
-              In the quiet, hearts ignite,
-              Finding joy in soft moonlight."
+              "In a whispering breeze,
+              Leaves dance with delight,
+              Stars twinkle above,
+              Embracing the night."
             `)
         })
     },
