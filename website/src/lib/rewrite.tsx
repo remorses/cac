@@ -291,6 +291,8 @@ export async function* rewriteTemplateChunk({
         experimental_transform: smoothStream({
             chunking: 'line',
         }),
+
+
         // frequencyPenalty: 0.8,
         abortSignal: signal,
     })

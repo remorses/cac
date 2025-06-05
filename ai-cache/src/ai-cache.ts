@@ -5,13 +5,21 @@ import {
     type LanguageModelV1StreamPart,
     simulateReadableStream,
 } from 'ai'
+import { createHash } from 'crypto'
+
+function hashKey(data: any): string {
+    const jsonString = JSON.stringify(data)
+    return createHash('sha256').update(jsonString).digest('hex')
+}
 
 export function createAiCacheMiddleware({
     cacheDir = '.aicache',
     lruSize = 300,
+
     ttl = 1000 * 60 * 24 * 360,
 }) {
     const modelsCaches = new Map<string, FlatCache>()
+
     function getModelCache(modelId: string) {
         const cache = modelsCaches.get(modelId)
         if (!modelId) {
@@ -42,7 +50,7 @@ export function createAiCacheMiddleware({
         wrapGenerate: async ({ doGenerate, params, model }) => {
             const cache = getModelCache(model.modelId)
 
-            const cacheKey = JSON.stringify(params)
+            const cacheKey = hashKey(params)
 
             const cached = (await cache.get(cacheKey)) as Awaited<
                 ReturnType<LanguageModelV1['doGenerate']>
@@ -67,7 +75,7 @@ export function createAiCacheMiddleware({
             return result
         },
         wrapStream: async ({ doStream, model, params }) => {
-            const cacheKey = JSON.stringify(params)
+            const cacheKey = hashKey(params)
             const cache = getModelCache(model.modelId)
 
             // Check if the result is in the cache

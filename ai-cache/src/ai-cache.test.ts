@@ -25,10 +25,10 @@ describe(
             await res.consumeStream()
             const text = await res.text
             expect(text).toMatchInlineSnapshot(`
-              "In a whispering breeze,
-              Leaves dance with delight,
-              Stars twinkle above,
-              Embracing the night."
+              "In the hush of twilight's gaze,  
+              Whispers dance in soft, sweet ways.  
+              Stars alight with dreams so bright,  
+              Night unfolds, in peace, take flight."
             `)
         })
     },
