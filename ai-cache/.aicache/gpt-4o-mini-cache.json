@@ -1,0 +1,177 @@
+[
+  {
+    "key": "48d2da31fc7b74b4d6e4c53509fbd285dde1e0c9af6b57733c5a8f616b189555",
+    "value": [
+      {
+        "type": "response-metadata",
+        "id": "chatcmpl-Bf4aHSGV7ehjekvppubVhJWb9syJW",
+        "modelId": "gpt-4o-mini-2024-07-18",
+        "timestamp": "2025-06-05T13:06:09.000Z"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": ""
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "In"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " the"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " hush"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " of"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " twilight"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "'s"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " gaze"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": ","
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "  \n"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "Wh"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "ispers"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " dance"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " in"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " soft"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": ","
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " sweet"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " ways"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "."
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "  \n"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "Stars"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " al"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "ight"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " with"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " dreams"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " so"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " bright"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": ","
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "  \n"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "Night"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " unfolds"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": ","
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " in"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " peace"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": ","
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " take"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": " flight"
+      },
+      {
+        "type": "text-delta",
+        "textDelta": "."
+      },
+      {
+        "type": "finish",
+        "finishReason": "stop",
+        "usage": {
+          "promptTokens": null,
+          "completionTokens": null
+        },
+        "providerMetadata": {
+          "openai": {}
+        }
+      }
+    ],
+    "expires": 1749647170617
+  }
+]
