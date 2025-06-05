@@ -503,18 +503,20 @@ model GitHubSync {
 
 model ReactExportProject {
   orgId               String
-  projectId           String                  @id
+  projectId           String                     @id
   fullFramerProjectId String?
+  pageBackgroundColor String?
   projectName         String?
   framerUserId        String?
   websiteUrl          String?
-  createdAt           DateTime                @default(now())
+  createdAt           DateTime                   @default(now())
   components          ReactExportComponent[]
   colorStyles         ReactExportColorStyle[]
   pages               ReactExportWebPage[]
   locales             ReactExportLocale[]
-  pageBackgroundColor String?
-  org                 Org                     @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  codeFiles           ReactExportCodeComponent[]
+
+  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")
 }
@@ -530,6 +532,18 @@ model ReactExportComponent {
   breakpoints ReactExportComponentBreakpoint[]
 
   foundInPages ReactExportComponentInstance[]
+
+  @@id([id, projectId])
+  @@schema("public")
+}
+
+model ReactExportCodeComponent {
+  id        String
+  path      String
+  projectId String
+  url       String
+  versionId String
+  project   ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
   @@id([id, projectId])
   @@schema("public")
