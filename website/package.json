@@ -76,6 +76,7 @@
         "dprint-node": "^1.0.8",
         "evt": "^2.5.9",
         "fast-glob": "^3.3.3",
+        "flat-cache": "^6.1.9",
         "framer-plugin": "3.2.0",
         "github-slugger": "^2.0.0",
         "gray-matter": "^4.0.3",

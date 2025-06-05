@@ -1,4 +1,5 @@
 import { FlatCache } from 'flat-cache'
+import stableString from 'fast-json-stable-stringify'
 
 import path, { resolve, dirname, join } from 'path'
 import { existsSync } from 'fs'
@@ -18,18 +19,21 @@ const __dirname = dirname(__filename)
 export function createAiCacheMiddleware({
     cacheDir = '.aicache',
     lruSize = 300,
+    cwd = process.cwd(),
     ttl = 1000 * 60 * 24 * 360,
-}) {
+    onParams = (x) => {},
+} = {}) {
     const modelsCaches = new Map<string, FlatCache>()
 
     function getModelCache(modelId: string) {
         if (!path.isAbsolute(cacheDir)) {
-            cacheDir = findUp(cacheDir, __dirname) || cacheDir
+            cacheDir = findUp(cacheDir, cwd) || cacheDir
         }
-        const cache = modelsCaches.get(modelId)
         if (!modelId) {
             throw new Error(`no modelId in ai generation`)
         }
+        const cache = modelsCaches.get(modelId)
+
         if (!cache) {
             const cacheId = `${modelId}-cache.json`
             const cache = new FlatCache({
@@ -55,6 +59,7 @@ export function createAiCacheMiddleware({
         wrapGenerate: async ({ doGenerate, params, model }) => {
             const cache = getModelCache(model.modelId)
 
+            onParams?.(params)
             const cacheKey = hashKey(params)
 
             const cached = (await cache.get(cacheKey)) as Awaited<
@@ -76,13 +81,15 @@ export function createAiCacheMiddleware({
             const result = await doGenerate()
 
             cache.set(cacheKey, result)
+            cache.save(true)
 
             return result
         },
+
         wrapStream: async ({ doStream, model, params }) => {
             const cacheKey = hashKey(params)
             const cache = getModelCache(model.modelId)
-
+            onParams?.(params)
             // Check if the result is in the cache
             const cached = (await cache.get(
                 cacheKey,
@@ -99,7 +106,7 @@ export function createAiCacheMiddleware({
                 return {
                     stream: simulateReadableStream({
                         initialDelayInMs: 0,
-                        chunkDelayInMs: 5,
+                        chunkDelayInMs: 0,
                         chunks: formattedChunks,
                     }),
 
@@ -120,9 +127,10 @@ export function createAiCacheMiddleware({
                     fullResponse.push(chunk)
                     controller.enqueue(chunk)
                 },
+
                 flush() {
                     // Store the full response in the cache after streaming is complete
-                    // console.log(`saving`,  fullResponse)
+                    // console.log(`saving ai cache`)
                     cache.set(cacheKey, fullResponse)
                     cache.save(true)
                 },
@@ -138,11 +146,11 @@ export function createAiCacheMiddleware({
 }
 
 function hashKey(data: any): string {
-    const jsonString = JSON.stringify(data)
+    const jsonString = stableString(data)
     return createHash('sha256').update(jsonString).digest('hex')
 }
 
-function findUp(filename: string, startDir: string = __dirname): string | null {
+function findUp(filename: string, startDir: string): string | null {
     let currentDir = resolve(startDir)
 
     while (true) {

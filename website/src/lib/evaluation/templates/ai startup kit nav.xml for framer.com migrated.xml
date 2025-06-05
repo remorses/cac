@@ -2,54 +2,42 @@
 <AI_Kit_Nav>
 	<Navigation>
 		<Stack>
-			<!--
-section and role: nav/list/item
-existing text: Features
-length: Is the content characters length different? No.
--->
+			<!-- section and role: nav/link -->
+			<!-- existing text: Features -->
+			<!-- length: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.: no -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
 				Features
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!--
-section and role: nav/list/item
-existing text: Developers (from sidebar)
-length: Is the content characters length different? No.
--->
-			<AI_Kit_Navigation_Nav_Top_Item href="./developers/" nodeId="f9jqiq3c">
+			<!-- section and role: nav/link -->
+			<!-- existing text: Developers -->
+			<!-- length: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.: no -->
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
 				Developers
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!--
-section and role: nav/list/item
-existing text: Brand
-length: Is the content characters length different? No.
--->
+			<!-- section and role: nav/link -->
+			<!-- existing text: Brand -->
+			<!-- length: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.: no -->
 			<AI_Kit_Navigation_Nav_Top_Item href="./brand" nodeId="ttyq47m7">
 				Brand
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!--
-section and role: nav/list/item
-existing text: Blog (from footer)
-length: Is the content characters length different? No.
--->
+			<!-- section and role: nav/link -->
+			<!-- existing text: Blog -->
+			<!-- length: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.: no -->
 			<AI_Kit_Navigation_Nav_Top_Item href="./blog/" nodeId="5mjfkk9h">
 				Blog
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!--
-section and role: nav/list/item
-existing text: No direct match found in original HTML navigation or footer. Keeping template text.
-length: Is the content characters length different? N/A (keeping template text).
--->
+			<!-- section and role: nav/link -->
+			<!-- existing text: Help -->
+			<!-- length: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.: no -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
-				Contact
+				Help
 			</AI_Kit_Navigation_Nav_Top_Item>
 		</Stack>
 		<Stack>
-			<!--
-section and role: nav/button
-existing text: Start for free
-length: Is the content characters length different? Yes, template is "Sign up for free", existing is "Start for free". Using existing text.
--->
-			<AI_Kit_Button href="https://framer.com/r/signup" nodeId="koeyy0nt">
+			<!-- section and role: nav/button -->
+			<!-- existing text: Start for free -->
+			<!-- length: Is the content characters length different? If yes you may have to rephrase it, otherwise just return the existing website text.: no -->
+			<AI_Kit_Button nodeId="koeyy0nt">
 				Start for free
 			</AI_Kit_Button>
 		</Stack>

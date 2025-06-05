@@ -4,53 +4,53 @@
 		<Stack>
 			<!--
 section and role: nav/link
-existing text: Based on the description of a website builder, "Features" is a standard navigation item.
-length: Similar length.
+existing text: Features
+length: Is the content characters length different? no
 -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
 				Features
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<!--
 section and role: nav/link
-existing text: "Developers" doesn't fit the description of a Figma-like website builder for design. "Pricing" is a common navigation item for software services.
-length: Similar length.
+existing text: Learn
+length: Is the content characters length different? no
 -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
+				Learn
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<!--
+section and role: nav/link
+existing text: Pricing
+length: Is the content characters length different? no
+-->
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/brand" nodeId="ttyq47m7">
 				Pricing
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<!--
 section and role: nav/link
-existing text: "Brand" is not a typical primary navigation item. "Templates" is highly relevant for a website builder.
-length: Similar length.
--->
-			<AI_Kit_Navigation_Nav_Top_Item href="example.com/brand" nodeId="ttyq47m7">
-				Templates
-			</AI_Kit_Navigation_Nav_Top_Item>
-			<!--
-section and role: nav/link
-existing text: "Blog" is a common navigation item. Keep it.
-length: Similar length.
+existing text: Blog
+length: Is the content characters length different? no
 -->
 			<AI_Kit_Navigation_Nav_Top_Item href="example.com/blog" nodeId="5mjfkk9h">
 				Blog
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<!--
 section and role: nav/link
-existing text: "Contact" is a common navigation item. Keep it.
-length: Similar length.
+existing text: Templates
+length: Is the content characters length different? no
 -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
-				Contact
+				Templates
 			</AI_Kit_Navigation_Nav_Top_Item>
 		</Stack>
 		<Stack>
 			<!--
 section and role: nav/button
-existing text: "Sign up for free" is a standard call to action. "Get Started" is a common alternative with similar intent.
-length: Similar length.
+existing text: Get started
+length: Is the content characters length different? no
 -->
 			<AI_Kit_Button nodeId="koeyy0nt">
-				Get Started
+				Get started
 			</AI_Kit_Button>
 		</Stack>
 	</Navigation>

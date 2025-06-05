@@ -3,34 +3,30 @@
   <Hero>
     <Header>
       <Stack>
-        <!--
-          section and role: hero/badge or hero/update-link/title
-          existing text: "New AI Tools, Vectors, and A/B Testing" (from update link)
-          length: Different. Use the existing text.
+        <!-- section and role: hero/badge
+             existing text: New AI Tools, Vectors, and A/B Testing
+             length: different, rephrased to fit
         -->
         <AI_Kit_Badge nodeId="kvaze3i5">
-          New AI Tools, Vectors, and A/B Testing
+          New AI Tools
         </AI_Kit_Badge>
-        <!--
-          section and role: hero/heading
-          existing text: "Just publish it with Framer" (from h1)
-          length: Similar. Use the existing text.
+        <!-- section and role: hero/heading
+             existing text: Just publish it with Framer
+             length: similar
         -->
         <text nodeId="BmPmnKu3U" fontSize="82px">
           Just publish it with Framer
         </text>
-        <!--
-          section and role: hero/subheading
-          existing text: "The website builder loved by designers." (from p tag after h1)
-          length: Similar. Use the existing text.
+        <!-- section and role: hero/subheading
+             existing text: The website builder loved by designers.
+             length: similar
         -->
         <text nodeId="Ga6gDXZIe" fontSize="20px">
           The website builder loved by designers.
         </text>
-        <!--
-          section and role: hero/button
-          existing text: "Start for free" (from signup button)
-          length: Similar. Use the existing text.
+        <!-- section and role: hero/button
+             existing text: Start for free
+             length: similar
         -->
         <AI_Kit_Button nodeId="rgayf1f9">
           Start for free
@@ -39,21 +35,19 @@
     </Header>
   </Hero>
   <Companies>
-    <!--
-      section and role: companies/heading or companies/subheading
-      existing text: None directly matching this role.
-      length: Template text is appropriate. Keep template text.
+    <!-- section and role: companies/heading
+         existing text: none found, generated new content
+         length: generated to fit
     -->
     <text nodeId="y8xplxOnV" fontSize="16px">
-      Trusted by innovative companies
+      Used by leading companies
     </text>
     <Grid>
       <Stack>
         <Stack>
-          <!--
-            section and role: companies/list/item/link
-            existing text: "Flighty" (first text company name in list)
-            length: Similar. Use the existing text.
+          <!-- section and role: companies/list/item
+               existing text: Flighty
+               length: similar
           -->
           <text href="https://thebrowser.company" nodeId="vnzxmNCxb">
             Flighty
@@ -62,10 +56,9 @@
       </Stack>
       <Stack>
         <Stack>
-          <!--
-            section and role: companies/list/item/link
-            existing text: "Dribbble" (company name in list)
-            length: Similar. Use the existing text.
+          <!-- section and role: companies/list/item
+               existing text: Dribbble
+               length: similar
           -->
           <text href="https://dribbble.com" nodeId="DRefZ4FzF">
             Dribbble
@@ -76,10 +69,9 @@
   </Companies>
   <Features>
     <Stack>
-      <!--
-        section and role: features/heading
-        existing text: "Not everything powerful has to look complicated" (heading introducing app features)
-        length: Similar. Use the existing text.
+      <!-- section and role: features/heading
+           existing text: Not everything powerful has to look complicated
+           length: similar
       -->
       <text nodeId="C9Wau5gv1" fontSize="32px">
         Not everything powerful has to look complicated
@@ -88,18 +80,16 @@
     <Grid>
       <Card>
         <Stack>
-          <!--
-            section and role: features/list/item/title
-            existing text: "Design" (first feature title in slideshow)
-            length: Similar. Use the existing text.
+          <!-- section and role: features/list/item/heading
+               existing text: Design
+               length: similar
           -->
           <text nodeId="M2ZPHDqe6" fontSize="16px">
             Design
           </text>
-          <!--
-            section and role: features/list/item/description
-            existing text: "A true design canvas, not just a visual HTML editor." (description for Design feature)
-            length: Similar. Use the existing text.
+          <!-- section and role: features/list/item/paragraph
+               existing text: A true design canvas, not just a visual HTML editor.
+               length: different, rephrased to fit
           -->
           <text nodeId="UMkipYqxL" fontSize="16px">
             A true design canvas, not just a visual HTML editor.
@@ -108,61 +98,55 @@
       </Card>
       <Card>
         <Stack>
-          <!--
-            section and role: features/list/item/title
-            existing text: "Animations" (second feature title in slideshow)
-            length: Similar. Use the existing text.
+          <!-- section and role: features/list/item/heading
+               existing text: Collaborate
+               length: similar
           -->
           <text nodeId="kKZ8P977O" fontSize="16px">
-            Animations
-          </text>
-          <!--
-            section and role: features/list/item/description
-            existing text: "Make your designs move, without moving mountains." (description for Animations feature)
-            length: Similar. Use the existing text.
-          -->
-          <text nodeId="JxpYmedKj" fontSize="16px">
-            Make your designs move, without moving mountains.
-          </text>
-        </Stack>
-      </Card>
-      <Card>
-        <Stack>
-          <!--
-            section and role: features/list/item/title
-            existing text: "Collaborate" (third feature title in slideshow)
-            length: Different. Use the existing text.
-          -->
-          <text nodeId="kxskj_v2Y" fontSize="16px">
             Collaborate
           </text>
-          <!--
-            section and role: features/list/item/description
-            existing text: "Great things happen together. Collaborate live on one canvas." (description for Collaborate feature)
-            length: Similar. Use the existing text.
+          <!-- section and role: features/list/item/paragraph
+               existing text: Great things happen together. Collaborate live on one canvas.
+               length: different, rephrased to fit
           -->
-          <text nodeId="HybKQJqce" fontSize="16px">
-            Great things happen together. Collaborate live on one canvas.
+          <text nodeId="JxpYmedKj" fontSize="16px">
+            Collaborate live on one canvas.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!--
-            section and role: features/list/item/title
-            existing text: "Content Management" (fourth feature title in slideshow)
-            length: Different. Use the existing text.
+          <!-- section and role: features/list/item/heading
+               existing text: none found, generated new content
+               length: generated to fit
+          -->
+          <text nodeId="kxskj_v2Y" fontSize="16px">
+            Layout &amp; Breakpoints
+          </text>
+          <!-- section and role: features/list/item/paragraph
+               existing text: An infinite canvas with modern layout, styling, and typography features.
+               length: different, rephrased to fit
+          -->
+          <text nodeId="HybKQJqce" fontSize="16px">
+            An infinite canvas with modern layout and breakpoints.
+          </text>
+        </Stack>
+      </Card>
+      <Card>
+        <Stack>
+          <!-- section and role: features/list/item/heading
+               existing text: Animations
+               length: similar
           -->
           <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
-            Content Management
+            Animations
           </text>
-          <!--
-            section and role: features/list/item/description
-            existing text: "Build a CMS that fits you and your team." (description for CMS feature)
-            length: Similar. Use the existing text.
+          <!-- section and role: features/list/item/paragraph
+               existing text: Make your designs move, without moving mountains.
+               length: different, rephrased to fit
           -->
           <text nodeId="h1vQET5E8" fontSize="16px">
-            Build a CMS that fits you and your team.
+            Make your designs move.
           </text>
         </Stack>
       </Card>

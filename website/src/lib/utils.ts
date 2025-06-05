@@ -100,7 +100,9 @@ export function safeJsonParse<T = any>(str: string): T | null {
     }
 }
 
-export function isTruthy<T>(val: T | undefined | null | false): val is T {
+export function isTruthy<T>(
+    val: T | undefined | null | false | '' | 0,
+): val is T {
     return Boolean(val)
 }
 
