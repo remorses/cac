@@ -1,4 +1,7 @@
 import { FlatCache } from 'flat-cache'
+
+import path, { resolve, dirname, join } from 'path'
+import { existsSync } from 'fs'
 import {
     type LanguageModelV1,
     type LanguageModelV1Middleware,
@@ -6,11 +9,6 @@ import {
     simulateReadableStream,
 } from 'ai'
 import { createHash } from 'crypto'
-
-function hashKey(data: any): string {
-    const jsonString = JSON.stringify(data)
-    return createHash('sha256').update(jsonString).digest('hex')
-}
 
 export function createAiCacheMiddleware({
     cacheDir = '.aicache',
@@ -21,6 +19,9 @@ export function createAiCacheMiddleware({
     const modelsCaches = new Map<string, FlatCache>()
 
     function getModelCache(modelId: string) {
+        if (!path.isAbsolute(cacheDir)) {
+            cacheDir = findUp(cacheDir) || cacheDir
+        }
         const cache = modelsCaches.get(modelId)
         if (!modelId) {
             throw new Error(`no modelId in ai generation`)
@@ -130,4 +131,32 @@ export function createAiCacheMiddleware({
         },
     }
     return cacheMiddleware
+}
+
+function hashKey(data: any): string {
+    const jsonString = JSON.stringify(data)
+    return createHash('sha256').update(jsonString).digest('hex')
+}
+function findUp(
+    filename: string,
+    startDir: string = process.cwd(),
+): string | null {
+    let currentDir = resolve(startDir)
+
+    while (true) {
+        const filePath = join(currentDir, filename)
+
+        if (existsSync(filePath)) {
+            return filePath
+        }
+
+        const parentDir = dirname(currentDir)
+
+        // If we've reached the root directory
+        if (parentDir === currentDir) {
+            return null
+        }
+
+        currentDir = parentDir
+    }
 }

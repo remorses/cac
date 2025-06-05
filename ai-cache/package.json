@@ -1,6 +1,7 @@
 {
     "name": "ai-cache",
     "description": "",
+    "type": "module",
     "private": true,
     "repository": "https://github.com/remorses/",
     "scripts": {
