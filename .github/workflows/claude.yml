@@ -12,6 +12,8 @@ on:
 
 jobs:
     claude:
+        env:
+            DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         if: |
             (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
             (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -29,9 +31,10 @@ jobs:
               with:
                   fetch-depth: 1
                   submodules: true
+            - uses: dopplerhq/cli-action@v2
             - name: Run Claude Code
               id: claude
               uses: anthropics/claude-code-action@beta
               with:
-                  allowed_tools: "Bash(pnpm build),Bash(pnpm test),View,GlobTool,GrepTool,BatchTool"
+                  allowed_tools: 'Bash(pnpm build),Bash(pnpm test),View,GlobTool,GrepTool,BatchTool'
                   anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

@@ -583,7 +583,6 @@ export async function extractExternalLinks({
         schema: LinkSchema,
     })
 
-
     const extractedLinks = await res.object
 
     return extractedLinks?.links

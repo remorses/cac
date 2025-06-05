@@ -13,7 +13,7 @@ import {
 import { anthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 
-import { CoreMessage, streamObject, DeepPartial } from 'ai'
+import { CoreMessage, streamObject, DeepPartial, streamText } from 'ai'
 import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 import { formatHtmlForPrompt } from 'website/src/lib/htmlrewrite.server'
 
@@ -66,13 +66,13 @@ let filledFormInputs = [] as ExtractedFormInput[]
 export const extractedFormInputSchema = z.object({
     label: z.string().describe('the Vimium label of the input'),
     description: z.string().describe(
-        dedent`the description of the input, this description field should always come before the others. 
-            
+        dedent`the description of the input, this description field should always come before the others.
+
             should always answer the questions:
             - what information should go in this form field? what is the data from the files or user information to fill?
             - what format should the data be in based on other surrounding context information?
 
-            
+
             `,
     ),
     options: z
@@ -644,7 +644,7 @@ extract form inputs from top to bottom, always try to fill the firm form inputs 
 
 `
 const promptExtractFromHtml = ({ description, documentHtml }) => `
-Given an HTML document with form elements, extract the form descriptions for each form input. Some input elements will have a ${DATA_LLM_ID} attribute. 
+Given an HTML document with form elements, extract the form descriptions for each form input. Some input elements will have a ${DATA_LLM_ID} attribute.
 Ensure the output follows the logical order of filling, top to bottom, the same order an user would fill the form.
 
 ### Input:
@@ -667,7 +667,7 @@ use the ${DATA_LLM_ID} attribute for the labels;
 
 each input description should completely describe what should be filled in the input, include the type of input (text, number, email, etc.), and any other relevant information like pattern or placeholder.
 
-You should only extract inputs that are user input, the user is searching for inputs that should be filled in the document. 
+You should only extract inputs that are user input, the user is searching for inputs that should be filled in the document.
 Ignore inputs like search bars and buttons, which are not data collection elements.
 
 Skip inputs that are already filled.

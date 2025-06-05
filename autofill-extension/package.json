@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "doppler run -- vite",
+        "dev": "doppler run -c dev -- vite",
         "check": "pnpm tsc --incremental",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
         "preview": "vite preview"

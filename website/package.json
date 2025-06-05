@@ -15,7 +15,7 @@
         "openapi": "doppler run -- pnpm tsx -C import scripts/openapi.tsx",
         "gen-client": "export DIR=../unframer/unframer/src/generated/ && tsc --incremental && rm -rf $DIR && mkdir -p $DIR && cp dist/src/lib/api-client.* $DIR",
         "cleanup": "pnpx @line/ts-remove-unused --check --skip '/routes/' --skip /\\.test/ --skip /framer/ --skip entry\\. --skip '/root\\.'",
-        "test": "doppler run -- vitest",
+        "test": "doppler run -c dev -- vitest",
         "tunnel": "echo 'listening to https://tunnel.unframer.co' && cloudflared tunnel run --url http://localhost:8040 unframer-local",
         "tunnel-token": "cloudflared tunnel token --cred-file ~/.cloudflared/bcb47212-d8bc-49cb-8f05-eb66f280f76e.json unframer-local",
         "test:prod": "doppler run -c production -- vitest -u",
