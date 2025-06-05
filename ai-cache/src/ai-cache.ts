@@ -18,7 +18,6 @@ const __dirname = dirname(__filename)
 export function createAiCacheMiddleware({
     cacheDir = '.aicache',
     lruSize = 300,
-
     ttl = 1000 * 60 * 24 * 360,
 }) {
     const modelsCaches = new Map<string, FlatCache>()
@@ -40,7 +39,7 @@ export function createAiCacheMiddleware({
 
                 ttl,
                 serialize(data) {
-                    return JSON.stringify(data, null, 2)
+                    return JSON.stringify(data)
                 },
                 deserialize(data) {
                     return JSON.parse(data)

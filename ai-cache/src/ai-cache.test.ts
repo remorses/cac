@@ -25,10 +25,10 @@ describe(
             await res.consumeStream()
             const text = await res.text
             expect(text).toMatchInlineSnapshot(`
-              "In the hush of twilight's gaze,  
-              Whispers dance in soft, sweet ways.  
-              Stars alight with dreams so bright,  
-              Night unfolds, in peace, take flight."
+              "Whispers of the evening glow,  
+              Stars awaken, soft and slow.  
+              Moonlight dances, shadows play,  
+              Nighttime dreams drift far away.  "
             `)
         })
     },
