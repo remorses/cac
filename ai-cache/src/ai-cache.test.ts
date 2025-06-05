@@ -53,7 +53,7 @@ describe(
             )
         })
 
-        it.only('should cache and return the same result for generateObject', async () => {
+        it('should cache and return the same result for generateObject', async () => {
             let params
             const middleware = createAiCacheMiddleware({
                 onParams(x) {
