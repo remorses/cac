@@ -57,6 +57,7 @@ describe('uploadExampleWebsite', () => {
                 },
               ],
               "success": true,
+              "url": "https://example-demo-demos.unframer.co",
             },
             "error": null,
           }
