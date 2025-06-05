@@ -20,7 +20,10 @@ describe('markdownToHtml', () => {
 
         const result = await markdownToHtml(markdown, 'md')
         expect(result.html).toMatchInlineSnapshot(`
-          "<h1>Hello World</h1>
+          "<hr>
+          <h2>title: &quot;Hello World&quot;
+          date: 2024-11-26</h2>
+          <h1>Hello World</h1>
           <p>This is Markdown content.</p>
           <ul>
           <li>list one</li>

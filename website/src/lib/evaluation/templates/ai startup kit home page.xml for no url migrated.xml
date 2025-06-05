@@ -1,103 +1,172 @@
 ```xml
 <Container>
   <Hero>
-    <!-- hero/badge: Using a new badge text that matches the AI/tech theme -->
-    <AI_Kit_Badge nodeId="kvaze3i5">
-      AI POWERED
-    </AI_Kit_Badge>
-
-    <!-- hero/heading: Using a bold, direct statement about website creation -->
-    <text nodeId="BmPmnKu3U" fontSize="82px">
-      Design Websites in Minutes
-    </text>
-
-    <!-- hero/subheading: Emphasizing ease and speed of website creation -->
-    <text nodeId="Ga6gDXZIe" fontSize="20px">
-      Create professional, responsive websites with our intuitive drag-and-drop interface.
-    </text>
-
-    <!-- hero/button: Maintaining call-to-action style -->
-    <AI_Kit_Button nodeId="rgayf1f9">
-      Start Building Free
-    </AI_Kit_Button>
+    <Header>
+      <Stack>
+        <!--
+          section and role: hero/badge
+          existing text: NEW
+          length: different - generating new content
+        -->
+        <AI_Kit_Badge nodeId="kvaze3i5">
+          AI Powered
+        </AI_Kit_Badge>
+        <!--
+          section and role: hero/heading
+          existing text: The web builder for stunning sites.
+          length: different - generating new content based on description
+        -->
+        <text nodeId="BmPmnKu3U" fontSize="82px">
+          Build beautiful websites, fast.
+        </text>
+        <!--
+          section and role: hero/subheading
+          existing text: Design and publish modern sites at any scale with Framer’s web builder.
+          length: different - generating new content based on description
+        -->
+        <text nodeId="Ga6gDXZIe" fontSize="20px">
+          Design and publish lightning-fast sites with a visual canvas.
+        </text>
+        <!--
+          section and role: hero/button
+          existing text: Sign up for free
+          length: same - keeping existing text
+        -->
+        <AI_Kit_Button nodeId="rgayf1f9">
+          Sign up for free
+        </AI_Kit_Button>
+      </Stack>
+    </Header>
   </Hero>
-
   <Companies>
-    <!-- companies/heading: Keeping the social proof text -->
+    <!--
+      section and role: companies/heading
+      existing text: Trusted by innovative companies
+      length: same - keeping existing text
+    -->
     <text nodeId="y8xplxOnV" fontSize="16px">
-      Trusted by Innovative Companies
+      Trusted by innovative companies
     </text>
-
-    <!-- companies/grid: Maintaining the grid structure with company names -->
     <Grid>
       <Stack>
         <Stack>
-          <text href="https://framer.com" nodeId="vnzxmNCxb">
-            Framer
+          <!--
+            section and role: companies/link
+            existing text: The Browser Company
+            length: different - generating new content
+          -->
+          <text href="https://thebrowser.company" nodeId="vnzxmNCxb">
+            Creative Studio X
           </text>
         </Stack>
       </Stack>
       <Stack>
         <Stack>
-          <text href="https://figma.com" nodeId="DRefZ4FzF">
-            Figma
+          <!--
+            section and role: companies/link
+            existing text: Dribbble
+            length: same - keeping existing text
+          -->
+          <text href="https://dribbble.com" nodeId="DRefZ4FzF">
+            Dribbble
           </text>
         </Stack>
       </Stack>
     </Grid>
   </Companies>
-
   <Features>
-    <!-- features/heading: Maintaining the focus on design and responsiveness -->
     <Stack>
+      <!--
+        section and role: features/heading
+        existing text: Design beautiful responsive sites with an intuitive interface.
+        length: different - generating new content
+      -->
       <text nodeId="C9Wau5gv1" fontSize="32px">
-        Design Beautiful Responsive Sites with Ease
+        Create stunning, responsive websites visually.
       </text>
     </Stack>
-
-    <!-- features/grid: Keeping the card-based feature presentation -->
     <Grid>
       <Card>
         <Stack>
+          <!--
+            section and role: features/card/heading
+            existing text: Design
+            length: same - keeping existing text
+          -->
           <text nodeId="M2ZPHDqe6" fontSize="16px">
-            Intuitive Design
+            Design
           </text>
+          <!--
+            section and role: features/card/paragraph
+            existing text: Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.
+            length: same - keeping existing text as it matches the description
+          -->
           <text nodeId="UMkipYqxL" fontSize="16px">
-            Experience a Figma-like interface with an infinite canvas and powerful design tools.
+            Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
+          <!--
+            section and role: features/card/heading
+            existing text: Collaborate
+            length: same - keeping existing text
+          -->
           <text nodeId="kKZ8P977O" fontSize="16px">
-            Real-Time Collaboration
+            Collaborate
           </text>
+          <!--
+            section and role: features/card/paragraph
+            existing text: Collaboration in Framer is seamless. Invite your team and work together in real-time.
+            length: same - keeping existing text
+          -->
           <text nodeId="JxpYmedKj" fontSize="16px">
-            Invite team members and work together seamlessly in a shared design environment.
+            Collaboration in Framer is seamless. Invite your team and work together in real-time.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
+          <!--
+            section and role: features/card/heading
+            existing text: Layout & Breakpoints
+            length: same - keeping existing text
+          -->
           <text nodeId="kxskj_v2Y" fontSize="16px">
-            Responsive Layouts
+            Layout &amp; Breakpoints
           </text>
+          <!--
+            section and role: features/card/paragraph
+            existing text: Design your site on a familiar free-form canvas. Add flexible Grids & Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.
+            length: same - keeping existing text
+          -->
           <text nodeId="HybKQJqce" fontSize="16px">
-            Create flexible designs with Grids & Stacks, and customize breakpoints for perfect responsiveness.
+            Design your site on a familiar free-form canvas. Add flexible Grids &amp; Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
+          <!--
+            section and role: features/card/heading
+            existing text: Effects
+            length: same - keeping existing text
+          -->
           <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
-            Interactive Effects
+            Effects
           </text>
+          <!--
+            section and role: features/card/paragraph
+            existing text: Bring your site to life without code. Add effects with a few clicks and capture your audience’s attention when they land on your website.
+            length: same - keeping existing text
+          -->
           <text nodeId="h1vQET5E8" fontSize="16px">
-            Add engaging animations and interactions without writing a single line of code.
+            Bring your site to life without code. Add effects with a few clicks and capture your audience’s attention when they land on your website.
           </text>
         </Stack>
       </Card>
     </Grid>
   </Features>
-</Container>
+</AI_Kit_Footer>
 ```

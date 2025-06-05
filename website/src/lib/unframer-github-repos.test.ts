@@ -45,44 +45,44 @@ test(
           import ArticlesCardFramerComponent from './framer/articles-card'
 
           export default function App() {
-              return (
-                  <div className='flex flex-col items-center gap-3 '>
-                      <NavigationFramerComponent.Responsive
-                          ctaVariant={"Primary"}
-                      />
-                      <HeroFramerComponent.Responsive/>
-                      <PricingBannerFramerComponent.Responsive/>
-                      <FooterFramerComponent.Responsive
-                          year={"2024"}
-                      />
-                      <FeatureListFramerComponent.Responsive/>
-                      <ServiceSliderFramerComponent.Responsive/>
-                      <SectionTitleFramerComponent.Responsive
-                          text={"We are pioneers in harnessing the power of Blockchain and Web3 technologies to drive innovation, security, and decentralization."}
-                          title={"Smart Automation"}
-                          tagline={"Systems and Building Web3"}
-                          iconVisible={true}
-                          textVisible={true}
-                      />
-                      <ButtonFramerComponent.Responsive
-                          link={"/news"}
-                          buttonTitle={"Read all blog"}
-                          iconVisibility={true}
-                      />
-                      <BrandLogoFramerComponent.Responsive/>
-                      <TestmonialItemFramerComponent.Responsive
-                          name1={"Wade Warren"}
-                          paragraph={"Security is non-negotiable in the decentralized world, and we take this aspect very seriously. Our solutions are built with a robust emphasis on security, utilizing advanced cryptographic"}
-                          designation={"Flutter Developer"}
-                      />
-                      <ArticlesCardFramerComponent.Responsive
-                          date={"Mar 06, 2024 "}
-                          link={"/news/:slug"}
-                          title={"Discoveries from Our Thinkers"}
-                          excerpt={"Experience seamless integration with decentralized applications (DApps)."}
-                      />
-                  </div>
-              );
+            return (
+              <div className='flex flex-col items-center gap-3 '>
+                <NavigationFramerComponent.Responsive
+                  ctaVariant={"Primary"}
+                />
+                <HeroFramerComponent.Responsive/>
+                <PricingBannerFramerComponent.Responsive/>
+                <FooterFramerComponent.Responsive
+                  year={"2024"}
+                />
+                <FeatureListFramerComponent.Responsive/>
+                <ServiceSliderFramerComponent.Responsive/>
+                <SectionTitleFramerComponent.Responsive
+                  text={"We are pioneers in harnessing the power of Blockchain and Web3 technologies to drive innovation, security, and decentralization."}
+                  title={"Smart Automation"}
+                  tagline={"Systems and Building Web3"}
+                  iconVisible={true}
+                  textVisible={true}
+                />
+                <ButtonFramerComponent.Responsive
+                  link={"/news"}
+                  buttonTitle={"Read all blog"}
+                  iconVisibility={true}
+                />
+                <BrandLogoFramerComponent.Responsive/>
+                <TestmonialItemFramerComponent.Responsive
+                  name1={"Wade Warren"}
+                  paragraph={"Security is non-negotiable in the decentralized world, and we take this aspect very seriously. Our solutions are built with a robust emphasis on security, utilizing advanced cryptographic"}
+                  designation={"Flutter Developer"}
+                />
+                <ArticlesCardFramerComponent.Responsive
+                  date={"Mar 06, 2024 "}
+                  link={"/news/:slug"}
+                  title={"Discoveries from Our Thinkers"}
+                  excerpt={"Experience seamless integration with decentralized applications (DApps)."}
+                />
+              </div>
+            );
           };"
         `)
     },

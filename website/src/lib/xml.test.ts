@@ -263,14 +263,14 @@ test('oldTextTreeToXml', async () => {
           </AiKitNavigationNavTopItem>
           <AiKitNavigationNavTopItem
               nodeId="hV4y0l50l"
-              <!-- anObject is of type An object -->
+              <!-- An object -->
               anObject="{"a":1,"b":2}"
-              <!-- anArray is of type An array -->
+              <!-- An array -->
               anArray="[1,2,3]"
           >
             Company
           </AiKitNavigationNavTopItem>
-          <AiKitNavigationNavTopItem bool="true">
+          <AiKitNavigationNavTopItem bool="true" shouldBeHidden="false">
             Blog
             <AiKitNavigationNavTopItemNested nodeId="a1b2c3">
               Nested content
