@@ -4,53 +4,53 @@
 		<Stack>
 			<!--
 section and role: nav/link
-existing text: Features
-length: Is the content characters length different? no
+existing text: Product
+length: Is the content characters length different? No
 -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
-				Features
-			</AI_Kit_Navigation_Nav_Top_Item>
-			<!--
-section and role: nav/link
-existing text: Learn
-length: Is the content characters length different? no
--->
-			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
-				Learn
+				Product
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<!--
 section and role: nav/link
 existing text: Pricing
-length: Is the content characters length different? no
+length: Is the content characters length different? No
 -->
-			<AI_Kit_Navigation_Nav_Top_Item href="example.com/brand" nodeId="ttyq47m7">
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
 				Pricing
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<!--
 section and role: nav/link
-existing text: Blog
-length: Is the content characters length different? no
+existing text: Templates
+length: Is the content characters length different? No
 -->
-			<AI_Kit_Navigation_Nav_Top_Item href="example.com/blog" nodeId="5mjfkk9h">
-				Blog
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/brand" nodeId="ttyq47m7">
+				Templates
 			</AI_Kit_Navigation_Nav_Top_Item>
 			<!--
 section and role: nav/link
-existing text: Templates
-length: Is the content characters length different? no
+existing text: Learn
+length: Is the content characters length different? No
+-->
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/blog" nodeId="5mjfkk9h">
+				Learn
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<!--
+section and role: nav/link
+existing text: Support
+length: Is the content characters length different? No
 -->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
-				Templates
+				Support
 			</AI_Kit_Navigation_Nav_Top_Item>
 		</Stack>
 		<Stack>
 			<!--
 section and role: nav/button
-existing text: Get started
-length: Is the content characters length different? no
+existing text: Sign up
+length: Is the content characters length different? Yes, shortening to match the existing text.
 -->
 			<AI_Kit_Button nodeId="koeyy0nt">
-				Get started
+				Sign up
 			</AI_Kit_Button>
 		</Stack>
 	</Navigation>
