@@ -6,13 +6,16 @@ import {
     simulateReadableStream,
 } from 'ai'
 
-export function createAiMiddleware({ cacheId = 'ai-cache.json' }) {
+export function createAiCacheMiddleware({
+    cacheDir = '.aicache',
+    cacheId = 'ai-cache.json',
+    ttl = 1000 * 60 * 24 * 360,
+}) {
     const cache = new FlatCache({
-        cacheDir: '.aicache',
+        cacheDir,
         cacheId,
         lruSize: 300,
-        ttl: 1000 * 60 * 24 * 360,
-
+        ttl,
         serialize(data) {
             return JSON.stringify(data, null, 2)
         },
@@ -48,7 +51,10 @@ export function createAiMiddleware({ cacheId = 'ai-cache.json' }) {
             return result
         },
         wrapStream: async ({ doStream, model, params }) => {
-            const cacheKey = JSON.stringify({ modelId: model.modelId, ...params })
+            const cacheKey = JSON.stringify({
+                modelId: model.modelId,
+                ...params,
+            })
 
             // Check if the result is in the cache
             const cached = (await cache.get(
