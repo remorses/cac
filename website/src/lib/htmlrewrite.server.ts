@@ -1,10 +1,12 @@
 import { openai } from '@ai-sdk/openai'
+import { FlatCache } from 'flat-cache'
 
-import { generateText } from 'ai'
-import {
-    removeMarkdownSnippets
-} from 'website/src/lib/ndjson'
-import { } from 'website/src/lib/spiceflow-plugins.server'
+import { generateText, wrapLanguageModel } from 'ai'
+import { createAiCacheMiddleware } from 'ai-cache'
+import { removeMarkdownSnippets } from 'website/src/lib/ndjson'
+import {} from 'website/src/lib/spiceflow-plugins.server'
+import { isTruthy } from './utils'
+import { maxSize } from 'zod/v4'
 
 export async function formatHtmlForPrompt(
     input: Response,
@@ -80,6 +82,12 @@ export async function formatHtmlForPrompt(
 
     return newHtml
 }
+
+const htmlCache = new FlatCache({
+    cacheDir: '.htmlcache',
+    cacheId: 'htmlcache.json',
+    lruSize: 100,
+})
 export async function fetchFormattedHtml({
     url,
     signal,
@@ -91,6 +99,9 @@ export async function fetchFormattedHtml({
 }): Promise<string> {
     if (!url) {
         return ''
+    }
+    if (htmlCache.get(url)) {
+        return htmlCache.get(url) || ''
     }
     // if there is no https:// or http:// prefix, add it
     if (!url.startsWith('https://') && !url.startsWith('http://')) {
@@ -132,6 +143,8 @@ export async function fetchFormattedHtml({
 
         console.time(`formatHtmlForPrompt: ${url}`)
         const formattedHtml = await formatHtmlForPrompt(res)
+        htmlCache.set(url, formattedHtml)
+        htmlCache.save(true)
         console.timeEnd(`formatHtmlForPrompt: ${url}`)
         console.timeEnd(`fetchFormattedHtml: ${url}`)
         return formattedHtml
@@ -147,6 +160,12 @@ export async function fetchFormattedHtml({
 }
 
 export async function getWebsiteDescription({ html, user, url, signal }) {
+    const model = wrapLanguageModel({
+        middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
+            isTruthy,
+        ),
+        model: openai('gpt-4.1-mini', { user }),
+    })
     console.time('getWebsiteDescription ' + html.length)
     const result = await generateText({
         abortSignal: signal,
@@ -158,7 +177,7 @@ export async function getWebsiteDescription({ html, user, url, signal }) {
         ],
 
         // model: anthropic('claude-3-sonnet-20240229'),
-        model: openai('gpt-4o-mini', { user }),
+        model,
     })
 
     let extractedDescription = result.text

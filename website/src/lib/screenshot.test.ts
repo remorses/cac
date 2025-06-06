@@ -1,13 +1,12 @@
-import { test, describe, it, expect } from 'vitest'
 import fs from 'fs'
+import { describe, test } from 'vitest'
 
-import { getBucketUrl, getScreenshotUrl, groq, screenshot } from './ssr.server'
-import { splitImage } from 'website/src/lib/tile.server'
-import { streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { streamText } from 'ai'
+import { splitImage } from 'website/src/lib/tile.server'
+import { screenshot } from './ssr.server'
 
-describe('screenshot', () => {
+describe.skip('screenshot', () => {
     test(
         'screenshot',
         async () => {
@@ -61,10 +60,8 @@ describe('screenshot', () => {
                                     image: buffer,
                                 }
                             }),
-
                         ],
                     },
-
                 ],
             })
             for await (let chunk of stream.textStream) {

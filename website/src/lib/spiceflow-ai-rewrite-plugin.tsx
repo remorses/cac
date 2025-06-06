@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { smoothStream, streamText, tool } from 'ai'
+import { smoothStream, streamText, tool, wrapLanguageModel } from 'ai'
 import { createTwoFilesPatch } from 'diff'
 import { Evt } from 'evt'
 import dedent from 'string-dedent'
@@ -24,6 +24,8 @@ import { z } from 'zod'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import { google } from '@ai-sdk/google'
 import { fetchFormattedHtml } from './htmlrewrite.server'
+import { createAiCacheMiddleware } from 'ai-cache'
+import { isTruthy } from './utils'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -39,16 +41,21 @@ type FramerEventLLM = {
 
 let projectsEvents = new Map<string, Evt<FramerEventLLM>>()
 
-let model = createFallback({
-    models: [
-        google('gemini-2.5-pro-preview-05-06'),
-        google('gemini-2.0-flash-001'),
-        anthropic('claude-3-5-haiku-latest'),
-        openai('gpt-4o'), //
-    ],
-    onError(error, modelId) {
-        console.error(error)
-    },
+let model = wrapLanguageModel({
+    middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
+        isTruthy,
+    ),
+    model: createFallback({
+        models: [
+            google('gemini-2.5-pro-preview-05-06'),
+            google('gemini-2.0-flash-001'),
+            anthropic('claude-3-5-haiku-latest'),
+            openai('gpt-4o'), //
+        ],
+        onError(error, modelId) {
+            console.error(error)
+        },
+    }),
 })
 
 export const llmPluginApp = new Spiceflow({

@@ -1,17 +1,14 @@
 import dedent from 'dedent'
 import fs from 'fs'
 import path from 'path'
-import { describe, expect, Reporter, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 
 import { fetchFormattedHtml } from 'website/src/lib/htmlrewrite.server'
 import { removeMarkdownSnippets } from 'website/src/lib/ndjson'
 import {
     extractExternalLinks,
-    ITEMS_PER_ITERATION,
-    rewriteTemplateChunk,
-    rewriteTemplateContent,
+    rewriteTemplateChunk
 } from 'website/src/lib/rewrite'
-import { bfsOldTextTree, oldTextTreeToXml } from 'website/src/lib/utils'
 import { rewriteXmlContentForTests } from 'website/src/lib/xml'
 
 const testCases = [

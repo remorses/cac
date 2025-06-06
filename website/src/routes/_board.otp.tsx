@@ -19,7 +19,7 @@ import {
     InputOTPSeparator,
 } from '../components/otp'
 import { getSupabaseSession } from '../lib/supabase.server'
-import { Button } from "@heroui/react"
+import { Button } from '@heroui/react'
 import { notifyError } from '../lib/errors'
 import { fromZodError } from 'zod-validation-error'
 import NavFramerComponent from '../framer/navigation'
@@ -47,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
         if (error) {
             return json({ error: error.message }, { status: 400 })
         }
-        return redirect(next || '/x', { headers })
+        return redirect(next || '/subscriptions', { headers })
     } catch (error: any) {
         if (error instanceof z.ZodError) {
             error = fromZodError(error)

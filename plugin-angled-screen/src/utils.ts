@@ -3,37 +3,27 @@ import { SpiceflowClient, createSpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 import { env } from 'website/src/lib/env'
 
-
 export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {})
 
 /**
  * Convenience method to load an image from a canvas.
- * As a transferable bytes array
+ * As a File object, compressed as JPG
  */
-export function bytesFromCanvas(
-    canvas: HTMLCanvasElement,
-): Promise<{ bytes: Uint8Array; mimeType: string }> {
+export function bytesFromCanvas(canvas: HTMLCanvasElement): Promise<File> {
     return new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-            if (!blob) throw new Error('Blob does not exist')
+        canvas.toBlob(
+            (blob) => {
+                if (!blob) throw new Error('Blob does not exist')
 
-            const reader = new FileReader()
-            const mimeType = blob.type
-
-            reader.onload = () => {
-                if (!reader.result) {
-                    throw new Error('Reader result does not exist')
-                }
-
-                resolve({
-                    bytes: new Uint8Array(reader.result as ArrayBuffer),
-                    mimeType,
+                const file = new File([blob], 'canvas-image.jpg', {
+                    type: blob.type,
                 })
-            }
-            reader.onerror = () => reject(new Error('Could not read from blob'))
-            reader.readAsArrayBuffer(blob)
-        })
+                resolve(file)
+            },
+            'image/jpeg',
+            0.9,
+        )
     })
 }
 

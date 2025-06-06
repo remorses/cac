@@ -1,14 +1,21 @@
+import { createAiCacheMiddleware } from 'ai-cache'
 import { createFallback } from 'ai-fallback'
-import { google } from '@ai-sdk/google'
+
+import { google, GoogleGenerativeAIProviderOptions } from '@ai-sdk/google'
 import dedent from 'string-dedent'
 import { DOMParser, XMLSerializer } from 'xmldom'
-
 import { z } from 'zod'
-
 import { openai } from '@ai-sdk/openai'
-import { CoreMessage, generateObject, smoothStream, streamText } from 'ai'
+import {
+    CoreMessage,
+    generateObject,
+    smoothStream,
+    streamText,
+    wrapLanguageModel,
+} from 'ai'
 
 import { anthropic } from '@ai-sdk/anthropic'
+import { isTruthy } from 'unframer-workspace/src/utils'
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
 import { oldTextTreeToXml, safeUrl } from 'website/src/lib/utils'
 import {
@@ -45,13 +52,18 @@ export const RewriteSchema = z.object({
 
 export type RewriteSchema = z.infer<typeof RewriteSchema>
 
-const model = createFallback({
-    models: [
-        google('gemini-2.0-flash-thinking-exp-01-21'),
-        google('gemini-2.5-pro-exp-03-25'),
-        anthropic('claude-3-5-haiku-latest'),
-        openai('gpt-4o'), //
-    ],
+const model = wrapLanguageModel({
+    middleware: [!!process.env.VITEST && createAiCacheMiddleware()].filter(
+        isTruthy,
+    ),
+    model: createFallback({
+        models: [
+            google('gemini-2.5-flash-preview-04-17'),
+            google('gemini-2.5-pro-exp-03-25'),
+            anthropic('claude-3-5-haiku-latest'),
+            openai('gpt-4o'), //
+        ],
+    }),
 })
 
 function renderHtmlSnippet({
@@ -284,10 +296,15 @@ export async function* rewriteTemplateChunk({
         },
     ]
 
-    const stream1 = await streamText({
+    const stream1 = streamText({
         messages,
         model,
         temperature: 0.5,
+        experimental_providerMetadata: {
+            google: {
+                thinkingConfig: { thinkingBudget: 0 },
+            } satisfies GoogleGenerativeAIProviderOptions,
+        },
         experimental_transform: smoothStream({
             chunking: 'line',
         }),
@@ -548,11 +565,15 @@ export async function extractExternalLinks({
         xml,
     })
 
+    const model = wrapLanguageModel({
+        middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
+            isTruthy,
+        ),
+        model: openai('gpt-4o-2024-08-06', { user, structuredOutputs: true }),
+    })
+
     const res = await generateObject({
-        model: openai('gpt-4o-2024-08-06', {
-            structuredOutputs: true,
-            user,
-        }),
+        model,
         messages: [
             {
                 role: 'user',

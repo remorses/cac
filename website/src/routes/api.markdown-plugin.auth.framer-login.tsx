@@ -1,4 +1,4 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router';
+import { redirect, type LoaderFunctionArgs } from 'react-router'
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { afterFramerLogin, loginRedirectUrl } from 'website/src/lib/utils'
@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!key) {
         throw new Error('URL is malformed, missing key param')
     }
-    // const next = url.searchParams.get('next') || '/x'
+
     let next = new URL(`/api/markdown-plugin/github/install`, env.PUBLIC_URL)
 
     next.searchParams.set(

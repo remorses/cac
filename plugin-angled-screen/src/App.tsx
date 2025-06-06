@@ -33,7 +33,6 @@ import {
     useAsyncEffect,
 } from './utils'
 import { createBuyAngledScreenUrl } from 'website/src/lib/env'
-enum PluginDataKeys {}
 
 enum Paths {
     root = '/',
@@ -41,13 +40,11 @@ enum Paths {
 }
 
 const defaultWith = 340
-const initialImage = await framer.getImage()
 
 await framer.showUI({ position: 'top left', width: defaultWith, height: 0 })
-const initialImageSize = await initialImage?.measure()
 
 function useSelectedImage() {
-    const [image, setImage] = useState<ImageAsset | null>(initialImage)
+    const [image, setImage] = useState<ImageAsset | null>(null)
 
     useEffect(() => {
         return framer.subscribeToImage(setImage)
@@ -232,12 +229,7 @@ function RotationsImage() {
 
     const [aperture, setAperture] = useState(0.07)
     const [isLoading, setIsLoading] = useState(true)
-    const [aspectRatio, setAspectRatio] = useState(() => {
-        if (!initialImageSize) {
-            return 1
-        }
-        return initialImageSize?.width / initialImageSize?.height
-    })
+    const [aspectRatio, setAspectRatio] = useState(16 / 9)
 
     useEffect(() => {
         threeCanvas.shadowColor = color
@@ -267,31 +259,21 @@ function RotationsImage() {
             console.log('redirecting to license')
             return await navigate(withMode(Paths.license))
         }
-        const [
-            { bytes: nextBytes, mimeType },
-            { id: framerUserId, name: userName },
-        ] = await Promise.all([
-            bytesFromCanvas(threeCanvas.canvas),
-            framer.getCurrentUser(),
-        ])
-
-        // const img = document.createElement('img')
-        // img.src = URL.createObjectURL(new Blob([nextBytes!]))
-        // document.body.appendChild(img)
-        assert(nextBytes)
+        const [resultFile, { id: framerUserId, name: userName }] =
+            await Promise.all([
+                bytesFromCanvas(threeCanvas.canvas),
+                framer.getCurrentUser(),
+            ])
 
         console.log(
             'saving image with type',
-            mimeType,
-            formatBytes(nextBytes.length || 0),
+            resultFile.type,
+            formatBytes(resultFile.size || 0),
         )
         const start = performance.now()
         await Promise.all([
             framer.setImage({
-                image: {
-                    bytes: nextBytes,
-                    mimeType,
-                },
+                image: resultFile,
             }),
             pluginApiClient.api.plugins.angledScreen.incrementGenerations.post({
                 framerUserId,
@@ -301,9 +283,10 @@ function RotationsImage() {
         revalidator.revalidate()
         await threeCanvas.updateRendererSize({ isPreview: true })
         setIsLoading(false)
-        console.log('total duration', performance.now() - start)
+        console.log('total duration', performance.now() - start, framer.mode)
+
         if (framer.mode !== 'canvas') {
-            await framer.closePlugin()
+            await framer.closePlugin('Image Saved')
             return
         }
 
@@ -315,10 +298,13 @@ function RotationsImage() {
             return
         }
         console.log('loading image into canvas')
-        const imgEl = await image.loadImage()
-        const bitmap = await createImageBitmap(imgEl, {
-            imageOrientation: 'flipY',
-        })
+        const imgEl = await image.getData()
+        const bitmap = await createImageBitmap(
+            new Blob([imgEl.bytes], { type: imgEl.mimeType }),
+            {
+                imageOrientation: 'flipY',
+            },
+        )
         if (!bitmap) {
             return
         }

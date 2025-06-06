@@ -2,7 +2,7 @@
     "name": "root",
     "private": true,
     "scripts": {
-        "test": "NODE_ENV=test vitest",
+        "test": "NODE_ENV=test pnpm -r --filter='!*spiceflow*' test",
         "watch": "pnpm -r watch",
         "typecheck": "pnpm -r --parallel typecheck",
         "build": "pnpm -r build",
@@ -14,9 +14,7 @@
         "./spiceflow/*"
     ],
     "pnpm": {
-        "overrides": {
-
-        }
+        "overrides": {}
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.12",

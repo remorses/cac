@@ -30,6 +30,7 @@ export const env = {
     PUBLIC_LEMON_PRODUCT_ANGLED: process.env.PUBLIC_LEMON_PRODUCT_ANGLED,
     GITHUB_TOKEN_UNFRAMER_ORG: process.env.GITHUB_TOKEN_UNFRAMER_ORG,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    LEMON_SQUEEZY_API_KEY: process.env.LEMON_SQUEEZY_API_KEY,
 }
 
 // console.log(env)
