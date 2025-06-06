@@ -128,7 +128,7 @@
         "stripe": "^18.0.0",
         "tailwindcss": "^3.4.6",
         "type-fest": "^4.33.0",
-        "unframer": "2.25.4",
+        "unframer": "2.26.0",
         "unframer-deploy-demo": "workspace:*",
         "unframer-workspace": "link:../unframer/unframer",
         "unified": "^11.0.5",
