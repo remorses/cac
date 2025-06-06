@@ -1,0 +1,82 @@
+[
+    {
+        "key": "6b9f8cea576f4510bc7619cacdc96cc18671b26da46c5072f69673614477c046",
+        "value": [
+            {
+                "type": "text-delta",
+                "textDelta": "```xml\n<!-- skipped nodes -->\n      <AiKitNavigation"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "NavTopItem nodeId=\"f9jqiq3c\">\n        Learn\n      </AiKitNavigationNavTopItem>"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "\n      <AiKitNavigationNavTopItem nodeId=\"ttyq47m7\" href=\"example.com/"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "showcase\">\n        Showcase\n      </AiKitNavigationNavTopItem>\n      <!-- skipped nodes -->\n      "
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "<AiKitNavigationNavTopItem nodeId=\"phn7sz8d\">\n        Community\n      </AiKitNavigationNavTop"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "Item>\n<!-- skipped nodes -->\n```"
+            },
+            {
+                "type": "finish",
+                "finishReason": "stop",
+                "usage": { "promptTokens": 2005, "completionTokens": 119 },
+                "providerMetadata": {
+                    "google": {
+                        "groundingMetadata": null,
+                        "safetyRatings": null
+                    }
+                }
+            }
+        ],
+        "expires": 1749727720567
+    },
+    {
+        "key": "47aca75600c9fb05e5de898bed46d37fbef7badb0afa8883f082275c0531d400",
+        "value": [
+            { "type": "text-delta", "textDelta": "Okay" },
+            {
+                "type": "text-delta",
+                "textDelta": ", \"do something\" is a bit vague! To show you how I can help, I'll make a small change to"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": " the navigation menu. If you have a more specific change in mind, please let me know.\n\nI will update the text"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": " of the \"Features\" link to \"Our Amazing Features\". This does not require any duplication or deletion of elements.\n\n"
+            },
+            { "type": "text-delta", "textDelta": "```xml" },
+            {
+                "type": "text-delta",
+                "textDelta": "\n<!-- skipped nodes -->\n      <AiKitNavigationNavTopItem nodeId=\"w2keh4di\">\n        Our"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": " Amazing Features\n      </AiKitNavigationNavTopItem>\n<!-- skipped nodes -->\n```"
+            },
+            {
+                "type": "finish",
+                "finishReason": "stop",
+                "usage": { "promptTokens": 1998, "completionTokens": 120 },
+                "providerMetadata": {
+                    "google": {
+                        "groundingMetadata": null,
+                        "safetyRatings": null
+                    }
+                }
+            }
+        ],
+        "expires": 1749727678573
+    }
+]

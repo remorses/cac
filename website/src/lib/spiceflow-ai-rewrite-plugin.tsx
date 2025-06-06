@@ -6,25 +6,25 @@ import dedent from 'string-dedent'
 
 import { Spiceflow } from 'spiceflow'
 
+import { google, GoogleGenerativeAIProviderOptions } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
+import { createAiCacheMiddleware } from 'ai-cache'
 import { createFallback } from 'ai-fallback'
-import { db } from 'db/kysely'
 import { prisma } from 'db'
+import { db } from 'db/kysely'
 import Stripe from 'stripe'
 import { getOrgPluginCredits } from 'website/src/lib/credits'
 import { env } from 'website/src/lib/env'
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
 import { FramerLayersTree } from 'website/src/lib/rewrite'
+import { splitIntoWords } from 'website/src/lib/ssr.server'
 import {
     extractObjectsFromXmlContent,
     NewExtractedNode,
     oldTextTreeToXml,
 } from 'website/src/lib/xml'
 import { z } from 'zod'
-import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { google } from '@ai-sdk/google'
 import { fetchFormattedHtml } from './htmlrewrite.server'
-import { createAiCacheMiddleware } from 'ai-cache'
 import { isTruthy } from './utils'
 
 const unauthorizedResponse = new Response('Unauthorized', {
@@ -173,6 +173,9 @@ export const llmPluginApp = new Spiceflow({
         '/generate',
         async function* ({ params, request, state: store }) {
             const orgId = await store.orgId
+            if (!orgId) {
+                throw new Error(`unauthrozied`)
+            }
             request.signal.addEventListener('abort', () => {
                 console.log('aborting')
             })
@@ -228,6 +231,11 @@ export const llmPluginApp = new Spiceflow({
                     experimental_transform: smoothStream({
                         chunking: 'line',
                     }),
+                    experimental_providerMetadata: {
+                        google: {
+                            thinkingConfig: { thinkingBudget: 0 },
+                        } satisfies GoogleGenerativeAIProviderOptions,
+                    },
 
                     tools: {
                         fetch: tool({
