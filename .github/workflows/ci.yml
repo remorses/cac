@@ -24,5 +24,6 @@ jobs:
               with:
                   run_install: false
             - run: pnpm install --frozen-lockfile=false
+            - run: pnpm bootstrap
             # scripts
             - run: pnpm test

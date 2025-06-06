@@ -3,7 +3,7 @@
     "private": true,
     "scripts": {
         "test": "NODE_ENV=test pnpm -r --filter='!*spiceflow*' test",
-        "watch": "pnpm -r watch",
+        "bootstrap": "pnpm --parallel --filter spiceflow build",
         "typecheck": "pnpm -r --parallel typecheck",
         "build": "pnpm -r build",
         "release": "git merge main && git checkout main && git merge preview && git push && git checkout preview"
