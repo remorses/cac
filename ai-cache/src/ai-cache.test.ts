@@ -22,16 +22,11 @@ describe(
             const res = streamText({
                 model,
                 temperature: 1,
-                prompt: 'Generate a simple very short poem',
+                prompt: 'Generate a simple very short story',
             })
             await res.consumeStream()
             const text = await res.text
-            expect(text).toMatchInlineSnapshot(`
-              "Beneath the stars, a whispering breeze,
-              Dancing leaves sway with gentle ease.
-              Night’s embrace, a soft lullaby,
-              In dreams we soar, where hearts can fly."
-            `)
+            expect(text).toMatchInlineSnapshot(`"Once upon a time, in a quiet village, a little girl found a mysterious key in her backyard. Curious, she searched for what it opened. After days of wandering, she discovered an old, forgotten door in the woods. Heart pounding, she inserted the key, and the door creaked open to reveal a beautiful garden filled with vibrant flowers and shimmering butterflies. It turned out to be a magical place where dreams came true. From that day on, the girl visited often, sharing her joy with everyone in the village, reminding them that magic can be found anywhere if you just look closely."`)
         })
 
         it('should cache and return the same result for generateText', async () => {
@@ -85,8 +80,8 @@ describe(
             expect(result.object).toMatchInlineSnapshot(`
               {
                 "age": 30,
-                "name": "Johnathan Alexander Montgomery III",
-                "occupation": "Senior Software Engineer specializing in Full-Stack Development with a focus on Web Technologies including but not limited to JavaScript frameworks such as React and Angular, back-end technologies including Node.js, and proficiency in DevOps methodologies ensuring seamless integration and deployment processes.",
+                "name": "Johnathan Alexander Smith the Second",
+                "occupation": "Senior Software Engineer specializing in Full-Stack Development with a deep expertise in JavaScript frameworks and cloud computing solutions.",
               }
             `)
         })

@@ -7,7 +7,7 @@
     "repository": "https://github.com/remorses/",
     "scripts": {
         "build": "tsc",
-        "test": "doppler run -- pnpm vitest --reporter=basic",
+        "test": "doppler run -- pnpm vitest",
         "watch": "tsc -w"
     },
     "files": [
