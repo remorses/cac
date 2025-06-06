@@ -15,9 +15,9 @@ import {
 } from 'ai'
 
 import { anthropic } from '@ai-sdk/anthropic'
-import { isTruthy } from 'unframer-workspace/src/utils'
+
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
-import { oldTextTreeToXml, safeUrl } from 'website/src/lib/utils'
+import { isTruthy, oldTextTreeToXml, safeUrl } from 'website/src/lib/utils'
 import {
     addNodeCount,
     extractObjectsFromXmlContent,

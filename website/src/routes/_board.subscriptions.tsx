@@ -11,7 +11,8 @@ import {
     getSubscription,
     lemonSqueezySetup,
 } from '@lemonsqueezy/lemonsqueezy.js'
-import { isTruthy } from 'unframer-workspace/src/utils'
+import { isTruthy } from '../lib/utils'
+
 
 export let loader = async ({ request }: LoaderFunctionArgs) => {
     lemonSqueezySetup({
