@@ -97,42 +97,43 @@ export let loader = async ({ request }: LoaderFunctionArgs) => {
         { headers },
     )
 }
+
 export default function Page() {
     const { subsWithManageUrl } = useLoaderData<typeof loader>()
 
     return (
         <div className='w-full max-w-4xl mx-auto px-4 py-8'>
-            <h1 className='text-3xl font-bold text-center mb-8'>
+            <h1 className='text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white'>
                 Your Subscriptions
             </h1>
             {subsWithManageUrl.length === 0 ? (
-                <div className='w-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center'>
-                    <div className='text-gray-500 text-lg'>
+                <div className='w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center'>
+                    <div className='text-gray-500 dark:text-gray-400 text-lg'>
                         No active subscriptions found.
                     </div>
                 </div>
             ) : (
-                <div className='w-full bg-white rounded-xl shadow-sm border border-gray-200'>
+                <div className='w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700'>
                     {subsWithManageUrl.map(({ sub, manageUrl }, index) => (
                         <div
                             key={`${sub.subscriptionId}-${sub.variantId}`}
-                            className={`p-6 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200 ${
+                            className={`p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${
                                 index !== subsWithManageUrl.length - 1
-                                    ? 'border-b border-gray-200'
+                                    ? 'border-b border-gray-200 dark:border-gray-700'
                                     : ''
                             }`}
                         >
                             <div className='flex-1 space-y-1'>
-                                <div className='font-semibold text-lg text-gray-900'>
+                                <div className='font-semibold text-lg text-gray-900 dark:text-white'>
                                     Subscription for {sub.pluginName}{' '}
                                     {sub.variantName || ''}
                                 </div>
-                                <div className='flex items-center space-x-4 text-sm text-gray-600'>
+                                <div className='flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400'>
                                     <span
                                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                                             sub.status === 'active'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-gray-100 text-gray-800'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                                         }`}
                                     >
                                         {sub.status}
@@ -153,7 +154,7 @@ export default function Page() {
                             <Link
                                 href={manageUrl}
                                 target='_blank'
-                                className='ml-4 inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200'
+                                className='ml-4 inline-flex items-center bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200'
                             >
                                 Manage Subscription
                             </Link>

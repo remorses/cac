@@ -19,7 +19,7 @@ stdin_default.Responsive = ({ locale, ...rest }) => {
   return /* @__PURE__ */ jsx(
     ContextProviders,
     {
-      routes: { "CDLIDQEFG": { "path": "/contact" }, "augiA20Il": { "path": "/" }, "s69UEbhsF": { "path": "/404" } },
+      routes: { "CDLIDQEFG": { "path": "/contact" }, "augiA20Il": { "path": "/" }, "s69UEbhsF": { "path": "/404" }, "tfaaimH0f": { "path": "/testing" } },
       children: /* @__PURE__ */ jsx(
         WithFramerBreakpoints,
         {
@@ -47,6 +47,9 @@ function ComponentWithRoot({ locale, ...rest }) {
         },
         "s69UEbhsF": {
           "path": "/404"
+        },
+        "tfaaimH0f": {
+          "path": "/testing"
         }
       },
       children: /* @__PURE__ */ jsx(stdin_default, { ...rest }),
