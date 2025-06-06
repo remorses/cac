@@ -1,0 +1,44 @@
+[
+    {
+        "key": "8d6b3b06f9fb7d774a54fa0ce18ea22dc24d1d6ebeb1fe46e4cbc66e4e3aad7b",
+        "value": [
+            { "type": "text-delta", "textDelta": "```xml\n<" },
+            {
+                "type": "text-delta",
+                "textDelta": "AiKitNavigationNavTopItem nodeId=\"w2keh4di\">\n        "
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "Fonctionnalités\n</AiKitNavigationNavTopItem>\n<AiKitNavigation"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "NavTopItem nodeId=\"f9jqiq3c\">\n        Développeurs\n</AiKitNavigationNavTopItem>\n<AiKitNavigationNav"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "TopItem nodeId=\"ttyq47m7\" href=\"example.com/brand\">\n        Marque\n</AiKitNavigationNavTopItem>"
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "\n      <AiKitNavigationNavTopItem nodeId=\"5mjfkk9h\" href=\"example.com/blog\">\n        Blog\n      </AiKitNavigationNavTopItem>\n<AiKitNavigationNavTopItem nodeId=\""
+            },
+            {
+                "type": "text-delta",
+                "textDelta": "phn7sz8d\">\n        Contact\n</AiKitNavigationNavTopItem>\n<AiKitButton nodeId=\"koeyy0nt\">\n        Inscrivez-vous gratuitement\n</AiKitButton>\n```"
+            },
+            {
+                "type": "finish",
+                "finishReason": "stop",
+                "usage": { "promptTokens": 1858, "completionTokens": 196 },
+                "providerMetadata": {
+                    "google": {
+                        "groundingMetadata": null,
+                        "safetyRatings": null
+                    }
+                }
+            }
+        ],
+        "expires": 1749729633368
+    }
+]
