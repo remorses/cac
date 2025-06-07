@@ -121,6 +121,7 @@
         "safe-mdx": "^0.0.5",
         "screenshotone-api-sdk": "^1.1.18",
         "sema4": "^0.1.3",
+        "sentries": "^0.2.2",
         "sharp": "^0.33.5",
         "spiceflow": "workspace:*",
         "string-dedent": "^3.0.1",

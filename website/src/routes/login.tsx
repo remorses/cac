@@ -1,4 +1,4 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router'
+import { href, redirect, type LoaderFunctionArgs } from 'react-router'
 import { getSupabaseWithHeaders } from '../lib/supabase.server'
 import { notifyError } from '../lib/errors'
 import { loginRedirectUrl } from 'website/src/lib/utils'
@@ -19,6 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             }),
         },
     })
+
     if (error) {
         notifyError(error, 'Error logging in via /login')
 
