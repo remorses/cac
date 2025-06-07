@@ -1,18 +1,11 @@
-import { init, captureException, flush } from '@sentry/node'
-import { sortUserPlugins } from 'vite'
+import { captureException, flush, init } from 'sentries'
 
 init({
     dsn: 'https://3e3f1075fec9ee2de1e0f79026b5f734@o4508014272446464.ingest.de.sentry.io/4508014292697168',
-
     integrations: [],
-
-    // Performance Monitoring
-    tracesSampleRate: 0.01, //  Capture 100% of the transactions
-
-    // Set sampling rate for profiling - this is relative to tracesSampleRate
+    tracesSampleRate: 0.01,
     profilesSampleRate: 0.01,
     beforeSend(event) {
-        // do not send in development
         if (process.env.NODE_ENV === 'development') {
             return null
         }
@@ -27,10 +20,10 @@ init({
     },
 })
 
-export async function notifyError(error, msg?: string) {
+export async function notifyError(error: any, msg?: string) {
     console.error(msg, error)
     captureException(error, { extra: { msg } })
-    await flush(1000) // delivery timeout in ms
+    await flush(1000)
 }
 
 export class AppError extends Error {
