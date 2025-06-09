@@ -826,7 +826,7 @@ input is
 </RemoveButton>
 ```
 
---- 
+---
 
 I'll migrate the template section by section, focusing on using content from the Holocron website HTML:
 
