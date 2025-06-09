@@ -3,7 +3,6 @@ import { DB } from './kysely.types'
 import pg from 'pg'
 import type { Pool } from 'pg'
 
-
 declare global {
     var __pg_pool: Pool | undefined
 }

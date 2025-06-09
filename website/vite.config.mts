@@ -1,19 +1,18 @@
-import { remarkCodeHike } from '@code-hike/mdx'
-import mkcert from 'vite-plugin-mkcert'
-import withSlugs from 'rehype-slug'
-import withToc from '@stefanprobst/rehype-extract-toc'
-import { reactRouterHonoServer } from 'react-router-hono-server/dev'
-import { reactRouter } from '@react-router/dev/vite'
+/// <reference types="vitest/config" />
 import mdx from '@mdx-js/rollup'
-import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
-import remarkFrontmatter from 'remark-frontmatter'
-import rehypeMdxImportMedia from 'rehype-mdx-import-media'
-import { defineConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
-import Inspect from 'vite-plugin-inspect'
-import EnvironmentPlugin from 'vite-plugin-environment'
+import { reactRouter } from '@react-router/dev/vite'
+import withToc from '@stefanprobst/rehype-extract-toc'
 import { viteExternalsPlugin } from '@xmorse/deployment-utils/dist/vite-externals-plugin'
+import { reactRouterHonoServer } from 'react-router-hono-server/dev'
+import rehypeMdxImportMedia from 'rehype-mdx-import-media'
+import withSlugs from 'rehype-slug'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { defineConfig } from 'vite'
+import EnvironmentPlugin from 'vite-plugin-environment'
+import mkcert from 'vite-plugin-mkcert'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 const NODE_ENV = JSON.stringify(process.env.NODE_ENV || 'production')
 
@@ -57,8 +56,6 @@ export default defineConfig({
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         // Inspect(),
-
-
         tsconfigPaths(),
         viteExternalsPlugin({
             externals: ['dprint-node', 'playwright', 'htmlrewriter', '@sentry/node'],
