@@ -32,6 +32,7 @@ jobs:
                   fetch-depth: 1
                   submodules: true
             - uses: dopplerhq/cli-action@v2
+            - run: pnpm bootstrap
             - name: Run Claude Code
               id: claude
               uses: anthropics/claude-code-action@beta
