@@ -176,6 +176,7 @@ export const reactPluginApp = new Spiceflow({
                 subs: [activeSub],
                 activeSub,
                 manageSubUrl,
+                subscriptionStatus: anySubscription?.status,
             }
         },
         {

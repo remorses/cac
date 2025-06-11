@@ -34,7 +34,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             }),
     ])
-    const { activeSub, freeComponents, manageSubUrl } =
+    const { activeSub, freeComponents, manageSubUrl, subscriptionStatus } =
         await pluginApiClient.api.plugins.reactExportPlugin.subscriptions
             .get({ query: { projectId: pluginData.projectId } })
             .then(({ data, error }) => {
@@ -47,7 +47,7 @@ async function loader({}: LoaderFunctionArgs) {
         throw redirect(withMode(Paths.components))
     }
     const { email, orgId } = org
-    return { ...pluginData, freeComponents, email, orgId, manageSubUrl }
+    return { ...pluginData, freeComponents, email, orgId, manageSubUrl, subscriptionStatus }
 }
 
 export function BuyMore(): RouteObject {
@@ -59,7 +59,7 @@ export function BuyMore(): RouteObject {
 }
 
 function Component() {
-    const { orgId, projectId, freeComponents, email, manageSubUrl } =
+    const { orgId, projectId, freeComponents, email, manageSubUrl, subscriptionStatus } =
         useLoaderData() as LoaderReturnType<typeof loader>
     useRefreshOnVisible({ enabled: true })
     const revalidator = useRevalidator()
@@ -79,7 +79,7 @@ function Component() {
                     </div>
                     <div className=' opacity-70 text-balance'>
                         {manageSubUrl 
-                            ? 'your subscription needs attention to access your React components'
+                            ? `your subscription (${subscriptionStatus}) needs attention to access your React components`
                             : 'to access your React components you will need a subscription'
                         }
                     </div>
