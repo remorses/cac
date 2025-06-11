@@ -34,7 +34,7 @@ async function loader({}: LoaderFunctionArgs) {
                 return data
             }),
     ])
-    const { activeSub, freeComponents } =
+    const { activeSub, freeComponents, manageSubUrl } =
         await pluginApiClient.api.plugins.reactExportPlugin.subscriptions
             .get({ query: { projectId: pluginData.projectId } })
             .then(({ data, error }) => {
@@ -47,7 +47,7 @@ async function loader({}: LoaderFunctionArgs) {
         throw redirect(withMode(Paths.components))
     }
     const { email, orgId } = org
-    return { ...pluginData, freeComponents, email, orgId }
+    return { ...pluginData, freeComponents, email, orgId, manageSubUrl }
 }
 
 export function BuyMore(): RouteObject {
@@ -59,7 +59,7 @@ export function BuyMore(): RouteObject {
 }
 
 function Component() {
-    const { orgId, projectId, freeComponents, email } =
+    const { orgId, projectId, freeComponents, email, manageSubUrl } =
         useLoaderData() as LoaderReturnType<typeof loader>
     useRefreshOnVisible({ enabled: true })
     const revalidator = useRevalidator()
@@ -78,7 +78,10 @@ function Component() {
                         Your React components are ready
                     </div>
                     <div className=' opacity-70 text-balance'>
-                        to access your React components you will need a subscription
+                        {manageSubUrl 
+                            ? 'your subscription needs attention to access your React components'
+                            : 'to access your React components you will need a subscription'
+                        }
                     </div>
                 </div>
             </div>
@@ -97,18 +100,19 @@ function Component() {
                     variant='primary'
                     onClick={() =>
                         window.open(
-                            getBuyReactExportPluginUrl({
-                                orgId,
-                                projectId,
-                                email,
-                            }),
+                            manageSubUrl ||
+                                getBuyReactExportPluginUrl({
+                                    orgId,
+                                    projectId,
+                                    email,
+                                }),
                             '_blank',
                             'noopener,noreferrer',
                         )
                     }
                     className='font-semibold grow w-auto '
                 >
-                    Start 7 Days Free Trial
+                    {manageSubUrl ? 'Manage Subscription' : 'Start 7 Days Free Trial'}
                 </Button>
             </div>
         </div>
