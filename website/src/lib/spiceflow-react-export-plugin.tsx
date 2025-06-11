@@ -135,17 +135,31 @@ export const reactPluginApp = new Spiceflow({
                 projectId,
             })
 
+            // If no active subscription, try to find any subscription (including inactive ones)
+            let anySubscription = activeSub
+            if (!activeSub) {
+                anySubscription = await prisma.subscription.findFirst({
+                    where: {
+                        orgId: await store.orgId,
+                        pluginName: 'reactExport',
+                    },
+                    orderBy: {
+                        createdAt: 'desc', // Get the most recent subscription
+                    },
+                })
+            }
+
             let manageSubUrl: string | undefined
-            // const activeSub = subs.find((sub) => sub)
-            if (activeSub?.customerId) {
+            // Create manage URL for any subscription with a customerId (active or inactive)
+            if (anySubscription?.customerId) {
                 const portalSession =
                     await stripe.billingPortal.sessions.create({
-                        customer: activeSub.customerId,
+                        customer: anySubscription.customerId,
                         flow_data: forSubscriptionUpgrade
                             ? {
                                   type: 'subscription_update',
                                   subscription_update: {
-                                      subscription: activeSub.subscriptionId,
+                                      subscription: anySubscription.subscriptionId,
                                   },
                               }
                             : undefined,
