@@ -258,16 +258,13 @@ export function ReactExportPricing({}) {
             <div className='flex py-2'>
                 <p className='text-default-400 text-sm'>
                     Open source and non commercial?&nbsp;
-                    <Link
+                    <a
                         color='foreground'
                         className='text-sm'
-                        href={discountCodeUrl({
-                            pluginName: 'React Export',
-                            email,
-                        })}
+                        href={'mailto:tommy@unframer.co'}
                     >
                         Get Free Access
-                    </Link>
+                    </a>
                 </p>
             </div>
         </div>
