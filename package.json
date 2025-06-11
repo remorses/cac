@@ -6,7 +6,7 @@
         "bootstrap": "pnpm --parallel --filter spiceflow build && pnpm --filter db gen",
         "typecheck": "pnpm -r --parallel typecheck",
         "build": "pnpm -r build",
-        "release": "pnpm build && changeset"
+        "release": "git merge main && git checkout main && git merge preview && git push && git checkout preview"
     },
     "workspaces": [
         "./*",
