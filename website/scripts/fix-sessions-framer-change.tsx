@@ -7,7 +7,7 @@ async function main() {
             where: {
                 projectId: {
                     not: '',
-                    
+
                 },
             },
             // select: {
@@ -19,7 +19,7 @@ async function main() {
         console.log('Found records to update:', records.length)
         const orgIds = new Set(records.map((r) => r.orgId))
         console.log('Unique org IDs:', Array.from(orgIds).length)
-        
+
         return
         // Then update them
         const result = await prisma.framerLoginSession.updateMany({
@@ -46,5 +46,3 @@ main().catch((e) => {
     console.error(e)
     process.exit(1)
 })
-
-
