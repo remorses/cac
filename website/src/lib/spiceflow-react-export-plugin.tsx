@@ -16,6 +16,8 @@ import {
 import Stripe from 'stripe'
 import {
     env,
+    getBuyGithubPluginUrl,
+    getBuyReactExportPluginUrl,
     reactExportStatusErrors,
     reactExportVariants,
 } from 'website/src/lib/env'
@@ -71,7 +73,7 @@ export const reactPluginApp = new Spiceflow({
         async ({ params, state: store }) => {
             let { projectId } = params
             projectId = projectId.slice(0, 16)
-            return await getProject({ projectId })
+            return await getProject({ projectId, email: '' })
         },
         {},
     )
@@ -102,7 +104,7 @@ export const reactPluginApp = new Spiceflow({
         '/project/:projectId/subscribe',
         async function* ({ params, state: store }) {
             const { projectId } = params
-            const project = await getProject({ projectId })
+            const project = await getProject({ projectId, email: '' })
             try {
                 yield { type: 'project' as const, ...project }
                 const emitter = projectsEvents.get(projectId)
@@ -159,7 +161,8 @@ export const reactPluginApp = new Spiceflow({
                             ? {
                                   type: 'subscription_update',
                                   subscription_update: {
-                                      subscription: anySubscription.subscriptionId,
+                                      subscription:
+                                          anySubscription.subscriptionId,
                                   },
                               }
                             : undefined,
@@ -256,21 +259,6 @@ export const reactPluginApp = new Spiceflow({
                 }
                 return !reactSub
             })()
-
-            if (needsToBuy) {
-                throw new Response(
-                    JSON.stringify({
-                        message: 'Need subscription',
-                    }),
-                    {
-                        status: reactExportStatusErrors.SUB_NEEDED,
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    },
-                )
-            }
-
             const [upsertedProject, projectOrg, legacyUserForProject] =
                 await Promise.all([
                     prisma.reactExportProject.upsert({
@@ -356,7 +344,8 @@ export const reactPluginApp = new Spiceflow({
                     },
                 )
             }
-            return await prisma.$transaction(async (tx) => {
+
+            await prisma.$transaction(async (tx) => {
                 // First upsert the project
 
                 // Delete all existing records
@@ -476,6 +465,20 @@ export const reactPluginApp = new Spiceflow({
                 console.timeEnd(`[${shortId}] insert new`)
                 console.timeEnd(`[${shortId}] total upsert`)
 
+                if (needsToBuy) {
+                    throw new Response(
+                        JSON.stringify({
+                            message: 'Need subscription',
+                        }),
+                        {
+                            status: reactExportStatusErrors.SUB_NEEDED,
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        },
+                    )
+                }
+
                 return { projectId }
             })
         },
@@ -533,7 +536,7 @@ async function getReactSub({ orgId, projectId }) {
     })
 }
 
-async function getProject({ projectId }) {
+async function getProject({ projectId, email }) {
     const [
         project,
         components,
@@ -586,6 +589,26 @@ async function getProject({ projectId }) {
             status: 404,
         })
     }
+
+    // TODO enable this, require subscription to download the components
+    // if (project && project.orgId) {
+    //     const orgSubscription = await getReactSub({
+    //         orgId: project.orgId,
+    //         projectId,
+    //     })
+    //     if (!orgSubscription) {
+    //         const orgId = project.orgId
+    //         const buyUrl = getBuyReactExportPluginUrl({
+    //             orgId,
+    //             projectId,
+    //             email,
+    //         })
+    //         throw new Response(
+    //             `Framer React Export project has no active subscription, get one here: ${buyUrl} or add new payment method on https://unframer.co`,
+    //             { status: reactExportStatusErrors.SUB_NEEDED, statusText: 'Payment Required' },
+    //         )
+    //     }
+    // }
 
     return {
         project,

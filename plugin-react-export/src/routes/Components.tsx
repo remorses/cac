@@ -75,6 +75,7 @@ async function loader({}: LoaderFunctionArgs) {
 
     const { email, orgId } = org
     let componentsData = components.map((component) => {
+
         const { name, id, insertURL, componentIdentifier } = component
 
         return { name, id, insertURL, componentIdentifier, node: component }
@@ -219,6 +220,7 @@ async function action({ request }: LoaderFunctionArgs) {
         framer.getNodesWithType('ComponentInstanceNode'),
         framer.getCurrentUser(),
     ])
+
 
     // throw redirect(withMode(Paths.readme))
     const { id: fullFramerProjectId, name: projectName } = projectInfo
