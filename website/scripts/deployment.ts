@@ -10,27 +10,12 @@ async function main() {
         shell(`pnpm --filter spiceflow build`, {
             env,
         }),
-
-        // shell(`pnpm --filter unframer build`, {
-        //     env,
-        // }),
     ])
 
     await shell(`pnpm tsc --incremental`, {
         env,
     })
 
-    await Promise.all([
-        // shell(`pnpm --filter plugin-migrate build`, {
-        //     env,
-        // }),
-        // shell(`pnpm --filter github-framer build`, {
-        //     env,
-        // }),
-        // shell(`pnpm --filter angled-screen build`, {
-        //     env,
-        // }),
-    ])
     await Promise.all([
         shell(`pnpm build`, {
             env,
@@ -42,7 +27,7 @@ async function main() {
         appName: 'unframer-website-prod',
         port,
         buildRemotely: true,
-        // strategy: 'rolling',
+
         dockerfile: 'Dockerfile',
         minInstances: 1,
         forceHttps: false,
@@ -51,13 +36,7 @@ async function main() {
         memorySize: '1gb',
         machineType: 'shared-cpu-2x',
         depot: true,
-        // statics: [
-        //     {
-        //         guest_path: '/app/build/client',
-        //         url_prefix: '/',
-        //         index_document: 'index.html',
-        //     },
-        // ],
+
         env: {
             ...env,
             NODE_ENV: 'production',

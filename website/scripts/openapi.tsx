@@ -25,14 +25,6 @@ async function main() {
         }),
     )
     console.log('Successfully wrote OpenAPI spec')
-    // Log any unhandled promises before exiting
-    // const unhandledHandles = process._getActiveHandles()
-    // if (unhandledHandles.length > 0) {
-    //     console.log('Warning: Found unhandled handles:', unhandledHandles.length)
-    //     unhandledHandles.forEach((handle, i) => {
-    //         console.log(`Handle ${i + 1}:`, handle)
-    //     })
-    // }
 }
 
 main().catch((e) => {
