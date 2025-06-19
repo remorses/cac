@@ -113,6 +113,7 @@ export function loader({ request }: Route.LoaderArgs) {
     if (!orgId) {
         throw new Error('No orgId found in search params')
     }
+
     return {
         orgId,
         email,
