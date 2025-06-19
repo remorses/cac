@@ -47,10 +47,10 @@ let model = wrapLanguageModel({
     ),
     model: createFallback({
         models: [
-            google('gemini-2.5-pro-preview-05-06'),
+            openai('gpt-4.1'), //
+            google('gemini-2.5-flash-preview-04-17'),
             google('gemini-2.0-flash-001'),
             anthropic('claude-3-5-haiku-latest'),
-            openai('gpt-4o'), //
         ],
         onError(error, modelId) {
             console.error(error)
