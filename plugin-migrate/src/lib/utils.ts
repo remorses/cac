@@ -137,8 +137,18 @@ export async function getDesktop() {
 }
 Object.assign(globalThis, { getDesktop })
 
+
+// handle template nodes, which are considered root
+export function isUnknownNode(node) {
+  return node?.['__class'] === 'UnknownNode'
+}
+
 function isRootLevelNode(node: AnyNode) {
-    return isComponentNode(node) || isWebPageNode(node)
+    return (
+        isComponentNode(node) ||
+        isWebPageNode(node)
+        // || isUnknownNode(node)
+    )
 }
 
 export async function getRootParentNode(node: AnyNode | string | null) {
@@ -297,6 +307,6 @@ export function simpleHash(input: string) {
 export function debugLog(...x) {
     // @ts-ignore
     if (import.meta.env.DEV) {
-        console.log(...x.map(x => JSON.stringify(x, null, 2)))
+        console.log(...x.map((x) => JSON.stringify(x, null, 2)))
     }
 }

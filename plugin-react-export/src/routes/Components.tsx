@@ -38,6 +38,7 @@ import {
     collectGenerator,
     getParentNodes,
     getParentNodesWithOrdering,
+    isUnknownNode,
 } from 'plugin-migrate/src/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import {} from 'react-router'
@@ -99,7 +100,11 @@ async function getInstancesWithOrderAndDepth({
         allInstances.map(async (x) => {
             const componentId = getInstanceComponentId(x)
             if (!componentId) {
-                console.log('no component id found for instance', x.id)
+                console.log(
+                    'no component id found for instance',
+                    x.id,
+                    x.componentIdentifier,
+                )
                 return
             }
             if (
@@ -118,21 +123,9 @@ async function getInstancesWithOrderAndDepth({
             const parentsOrderings = parents.map((x) => x.ordering)
 
             const pageParent = parents.find((x) => isWebPageNode(x.node))
-            if (!pageParent) {
-                // console.log('no page parent found for instance', x.id)
-                return
-            }
 
-            const webPageId = pageParent?.node?.id
-            if (!webPageIds.has(webPageId)) {
-                console.log(
-                    'skipping instance with invalid web page id',
-                    x.id,
-                    webPageId,
-                )
+            const webPageId = pageParent?.node?.id || ''
 
-                return
-            }
             const { propertyControls } = await getComponentPropertyControls(
                 components.find((x) => x.id === componentId)?.insertURL,
             )
@@ -323,6 +316,10 @@ async function action({ request }: LoaderFunctionArgs) {
         return []
     })
     // debugLog('rawComponentInstances', rawComponentInstances)
+    console.log(
+        `found ${componentInstances?.length} componentInstances`,
+        componentInstances,
+    )
 
     const { error, data } =
         await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({

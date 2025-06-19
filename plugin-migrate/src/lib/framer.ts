@@ -222,14 +222,14 @@ export function getInstanceComponentId(componentInstance: AnyNode) {
         return
     }
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
-        console.log(`component ${componentInstance.name} is not a local module`)
+        console.log(`component ${componentInstance.name} is not a local module: ${componentInstance.componentIdentifier} `)
         return
     }
     const regex = /local-module:.*\/(.*):.*/
     const match = componentInstance.componentIdentifier.match(regex)
     if (!match) {
         console.log(
-            `component ${componentInstance.name} does not match regex to get component id`,
+            `component ${componentInstance.name} does not match regex to get component id: ${componentInstance.componentIdentifier} `,
         )
         return
     }
