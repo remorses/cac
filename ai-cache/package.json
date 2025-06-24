@@ -1,6 +1,6 @@
 {
     "name": "ai-cache",
-    "description": "",
+    "description": "Add a file based cache to the ai sdk",
     "type": "module",
     "main": "./src/ai-cache.ts",
     "private": true,
@@ -8,6 +8,7 @@
     "scripts": {
         "build": "tsc",
         "test": "doppler run -- pnpm vitest",
+        "prepublishOnly": "pnpm build",
         "watch": "tsc -w"
     },
     "files": [

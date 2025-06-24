@@ -1,9 +1,6 @@
-import { FlatCache } from 'flat-cache'
 import stableString from 'fast-json-stable-stringify'
+import { FlatCache } from 'flat-cache'
 
-import path, { resolve, dirname, join } from 'path'
-import { existsSync } from 'fs'
-import { fileURLToPath } from 'url'
 import {
     type LanguageModelV1,
     type LanguageModelV1Middleware,
@@ -11,10 +8,8 @@ import {
     simulateReadableStream,
 } from 'ai'
 import { createHash } from 'crypto'
-
-// Generate __dirname for ESM
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { existsSync } from 'fs'
+import path, { dirname, join, resolve } from 'path'
 
 export function createAiCacheMiddleware({
     cacheDir = '.aicache',
