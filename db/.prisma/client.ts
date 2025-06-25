@@ -186,6 +186,11 @@ export type ReactExportProject = Prisma.ReactExportProjectModel
  */
 export type ReactExportComponent = Prisma.ReactExportComponentModel
 /**
+ * Model ReactExportCodeComponent
+ * 
+ */
+export type ReactExportCodeComponent = Prisma.ReactExportCodeComponentModel
+/**
  * Model ReactExportComponentBreakpoint
  * 
  */

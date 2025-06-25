@@ -42,7 +42,7 @@ async function main() {
             NODE_ENV: 'production',
             PORT: String(port),
         },
-        regions: ['iad'],
+        regions: ['ewr'],
     })
 }
 
