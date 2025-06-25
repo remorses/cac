@@ -229,8 +229,14 @@ export const reactPluginApp = new Spiceflow({
             const [existingProject, reactSub, org] = await Promise.all([
                 prisma.reactExportProject.findFirst({
                     where: {
-                        orgId,
                         projectId,
+                    },
+                    include: {
+                        org: {
+                            include: {
+                                users: { include: { user: true } },
+                            },
+                        },
                     },
                 }),
                 getReactSub({ orgId, projectId }),
@@ -259,57 +265,19 @@ export const reactPluginApp = new Spiceflow({
                 }
                 return !reactSub
             })()
-            const [upsertedProject, projectOrg, legacyUserForProject] =
-                await Promise.all([
-                    prisma.reactExportProject.upsert({
-                        where: {
-                            orgId,
-                            projectId,
-                        },
-                        create: {
-                            orgId,
-                            projectId,
-                            websiteUrl,
-                            projectName,
-                            fullFramerProjectId,
-                            framerUserId,
-                            pageBackgroundColor,
-                        },
-                        update: {
-                            projectId,
-                            websiteUrl,
-                            projectName,
-                            fullFramerProjectId,
-                            framerUserId,
-                            pageBackgroundColor,
-                        },
-                    }),
-                    existingProject &&
-                        prisma.org.findFirst({
-                            where: {
-                                orgId: existingProject.orgId,
-                            },
-                            include: {
-                                users: { include: { user: true } },
-                            },
-                        }),
-                    existingProject &&
-                        prisma.users.findFirst({
-                            where: {
-                                id: existingProject.orgId,
-                            },
-                        }),
-                ])
-            if (!upsertedProject) {
-                throw new Error('Project not created')
-            }
-
-            const projectEmail =
-                projectOrg?.users?.[0]?.user?.email ||
-                legacyUserForProject?.email ||
-                ''
+            let projectEmail =
+                existingProject?.org?.users?.[0]?.user?.email || ''
             if (existingProject && existingProject.orgId !== orgId) {
-                const message = `Project belongs to another user, login with the project account ${email} first`
+                if (!projectEmail) {
+                    // get user with the project orgId
+                    const legacyUserPerOrg = await prisma.users.findFirst({
+                        where: {
+                            id: existingProject.orgId,
+                        },
+                    })
+                    projectEmail = legacyUserPerOrg?.email || ''
+                }
+                const message = `Project belongs to another user, login with the account ${email} first`
                 console.log(message)
                 throw Response.json(
                     {
@@ -320,6 +288,33 @@ export const reactPluginApp = new Spiceflow({
                         status: reactExportStatusErrors.PROJECT_BELONGS_TO_ANOTHER_USER,
                     },
                 )
+            }
+            const [upsertedProject] = await Promise.all([
+                prisma.reactExportProject.upsert({
+                    where: {
+                        projectId,
+                    },
+                    create: {
+                        orgId,
+                        projectId,
+                        websiteUrl,
+                        projectName,
+                        fullFramerProjectId,
+                        framerUserId,
+                        pageBackgroundColor,
+                    },
+                    update: {
+                        websiteUrl,
+                        projectName,
+
+                        fullFramerProjectId,
+                        framerUserId,
+                        pageBackgroundColor,
+                    },
+                }),
+            ])
+            if (!upsertedProject) {
+                throw new Error('Project not created')
             }
 
             const isPersonalSub = [
