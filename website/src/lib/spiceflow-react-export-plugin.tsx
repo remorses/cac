@@ -237,7 +237,7 @@ export const reactPluginApp = new Spiceflow({
 
                 // const hasSubscription = !!subscription
 
-                const emailContent = createGithubSetupEmail({
+                const emailContent = await createGithubSetupEmail({
                     projectId,
                     userEmail,
                     projectName,
@@ -734,7 +734,7 @@ async function getProject({ projectId, email }) {
     }
 }
 
-export function createGithubSetupEmail({
+export async function createGithubSetupEmail({
     projectId,
     userEmail,
     projectName,
@@ -768,6 +768,6 @@ export function createGithubSetupEmail({
 
     return {
         subject: 'Your Framer components code is ready',
-        html: marked.parse(markdown) as string,
+        html: await marked.parse(markdown),
     }
 }
