@@ -38,7 +38,7 @@ export async function generateUnframerRepo({
     projectId,
     repo = '',
     projectTitle = '',
-    addProjectUserAsContributor = true,
+    addCollaboratorUsername = '',
     useAI = true,
 }) {
     const [project] = await Promise.all([
@@ -69,12 +69,7 @@ export async function generateUnframerRepo({
 
     projectTitle = projectTitle || project?.projectName || 'untitled'
     repo ||= generateRepoName({ projectId, projectTitle })
-    let addEmailAsContributor =
-        project?.org?.users?.find((x) => x.user?.email)?.user?.email ||
-        undefined
-    if (!addProjectUserAsContributor) {
-        addEmailAsContributor = undefined
-    }
+
     const { config } = await configFromFetch({ projectId })
 
     const { exampleCode } = await createExampleComponentCodeWithAI({
@@ -174,7 +169,7 @@ export async function generateUnframerRepo({
         files,
         repo,
         title: `React Components for ${projectTitle}`,
-        addEmailAsContributor,
+        addCollaboratorUsername,
         homepage: previewUrl,
     })
 }
@@ -184,13 +179,13 @@ export async function upsertUnframerRepoWithFiles({
     repo,
     title,
     homepage,
-    addEmailAsContributor,
+    addCollaboratorUsername,
 }: {
     files: { relativePath: string; contents: string }[]
     repo: string
     title?: string
     homepage?: string
-    addEmailAsContributor?: string
+    addCollaboratorUsername?: string
 }) {
     const owner = 'unframer'
     const githubBranch = 'main'
@@ -214,7 +209,7 @@ export async function upsertUnframerRepoWithFiles({
                     content: file.contents,
                 }
             }),
-            addCollaboratorUsername: addEmailAsContributor,
+            addCollaboratorUsername,
             isGithubOrg: true,
             octokit: octokit.rest,
             owner,
@@ -299,9 +294,9 @@ export async function upsertUnframerRepoWithFiles({
         }),
     ])
 
-    const url = `upserted https://github.com/${owner}/${repo}`
+    const url = `https://github.com/${owner}/${repo}`
     console.log(url)
-    return { url }
+    return { url, repoName: repo }
 }
 
 const model = wrapLanguageModel({

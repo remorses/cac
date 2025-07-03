@@ -1,11 +1,11 @@
-import { App, OAuthApp, Octokit } from 'octokit'
-import { env } from './env'
-import { isTruthy } from 'website/src/lib/utils'
 import { Sema } from 'async-sema'
-import { GithubInstallation, prisma } from 'db'
+import { prisma } from 'db'
 import { db } from 'db/kysely'
-import { AppError, notifyError } from 'website/src/lib/errors'
 import * as https from 'https'
+import { App, Octokit } from 'octokit'
+import { AppError, notifyError } from 'website/src/lib/errors'
+import { isTruthy } from 'website/src/lib/utils'
+import { env } from './env'
 
 type OctokitRest = Octokit['rest']
 
@@ -25,7 +25,6 @@ export function getGithubApp(): App {
             clientId: env.GITHUB_CLIENT_ID!,
             clientSecret: env.GITHUB_CLIENT_SECRET!,
             allowSignup: true,
-
         },
 
         webhooks: {
@@ -448,7 +447,7 @@ export async function createNewRepo({
             }
         }),
     )
-console.log('creating tree with inline content')
+    console.log('creating tree with inline content')
     const { data: tree } = await repoOctokit.git.createTree({
         owner,
         repo,
@@ -500,9 +499,9 @@ async function addGithubCollaboratorIfNeeded({
     repo: string
     octokit: Octokit['rest']
 }) {
-    let addedCollaborator = false
+
     if (!addCollaboratorUsername) {
-        return addedCollaborator
+        return false
     }
 
     // Add the user as a collaborator with maintain permission with retry logic
@@ -517,12 +516,11 @@ async function addGithubCollaboratorIfNeeded({
         { maxRetries: 3, initialDelay: 1000 },
     )
 
-    addedCollaborator = true
     console.log(
         `Successfully added ${addCollaboratorUsername} as collaborator to ${owner}/${repo}`,
     )
 
-    return addedCollaborator
+    return true
 }
 
 export const createNewTree = async ({

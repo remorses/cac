@@ -1,5 +1,5 @@
-import { PrismaClient } from './.prisma'
-export * from './.prisma'
+import { PrismaClient } from './.prisma/client'
+export * from './.prisma/client'
 
 
 const debugQueries = false
@@ -18,5 +18,3 @@ export const prisma: PrismaClient =
     })
 
 if (process.env.NODE_ENV !== 'production') (global as any).prisma = prisma
-
-

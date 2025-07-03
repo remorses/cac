@@ -514,7 +514,11 @@ model ReactExportProject {
   colorStyles         ReactExportColorStyle[]
   pages               ReactExportWebPage[]
   locales             ReactExportLocale[]
-  codeFiles           ReactExportCodeComponent[]
+  // codeFiles           ReactExportCodeComponent[]
+
+  connectedGitHubRepoName     String?
+  invitedGitHubRepoUsername   String?
+  connectedGitHubRepoAt       DateTime?
 
   org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
@@ -537,17 +541,17 @@ model ReactExportComponent {
   @@schema("public")
 }
 
-model ReactExportCodeComponent {
-  id        String
-  path      String
-  projectId String
-  url       String
-  versionId String
-  project   ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+// model ReactExportCodeComponent {
+//   id        String
+//   path      String
+//   projectId String
+//   url       String
+//   versionId String
+//   project   ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
-  @@id([id, projectId])
-  @@schema("public")
-}
+//   @@id([id, projectId])
+//   @@schema("public")
+// }
 
 model ReactExportComponentBreakpoint {
   componentId    String
