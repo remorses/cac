@@ -67,8 +67,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Exchange code for access token
     const app = new OAuthApp({
-        clientId: env.GITHUB_CLIENT_STATELESS_ID!,
-        clientSecret: env.GITHUB_CLIENT_STATELESS_SECRET!,
+        clientId: env.GITHUB_COLLABORATORS_EXPORT_CLIENT_ID!,
+        clientSecret: env.GITHUB_COLLABORATORS_EXPORT_CLIENT_SECRET!,
     })
     const tokenRes = await app.createToken({
         code,
