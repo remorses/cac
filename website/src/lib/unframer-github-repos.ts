@@ -1,14 +1,16 @@
 import dedent from 'string-dedent'
 
+import { generateText, tool, wrapLanguageModel } from 'ai'
+import { prisma } from 'db'
 import { Octokit } from 'octokit'
 import { Sema } from 'sema4'
 import { unframerDemoUrl } from 'unframer-deploy-demo/src/utils'
+import { Config, configFromFetch } from 'unframer-workspace/src/cli'
 import {
     componentCamelCase,
     createExampleComponentCode,
-    indentWithTabs,
 } from 'unframer-workspace/src/exporter'
-import { Config, configFromFetch } from 'unframer-workspace/src/cli'
+import { kebabCase } from 'unframer-workspace/src/utils'
 import { env } from './env'
 import {
     createNewRepo,
@@ -17,125 +19,17 @@ import {
     upsertGithubFile,
 } from './github.server'
 import { generateStackblitzFiles, isTruthy } from './utils'
-import { prisma } from 'db'
-import { componentNameToPath, kebabCase } from 'unframer-workspace/src/utils'
-import path from 'path'
-import { generateText, tool, wrapLanguageModel } from 'ai'
 
-import { createAiCacheMiddleware } from 'ai-cache'
-import {
-    openai,
-    OpenAIProviderSettings,
-    OpenAIResponsesProviderOptions,
-} from '@ai-sdk/openai'
-import { z } from 'zod'
-import { Biome, Distribution } from '@biomejs/js-api'
 import { google } from '@ai-sdk/google'
+import { openai } from '@ai-sdk/openai'
+import { Biome, Distribution } from '@biomejs/js-api'
+import { createAiCacheMiddleware } from 'ai-cache'
 import { createFallback } from 'ai-fallback'
+import { z } from 'zod'
 
 let biome: Biome
 export function generateRepoName({ projectId, projectTitle }) {
     return kebabCase(projectTitle + ' ' + projectId.slice(0, 5))
-}
-
-const model = wrapLanguageModel({
-    middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
-        isTruthy,
-    ),
-    model: createFallback({
-        models: [
-            openai('gpt-4.1', { structuredOutputs: true }), //
-            google('gemini-2.5-flash-preview-04-17', {
-                structuredOutputs: true,
-            }),
-        ],
-    }),
-})
-
-export async function createExampleComponentCodeWithAI({
-    outDir,
-    config,
-}: {
-    outDir: string
-    config: Config
-}) {
-    const { exampleCode, outDirForExample } = await createExampleComponentCode({
-        outDir,
-        config,
-    })
-
-    const imports = Object.keys(config.components)?.map((importPath) => {
-        return `import ${componentCamelCase(importPath)} from './${outDirForExample}/${importPath}'`
-    })
-    const prompt = dedent`
-    Generate a component page that renders a few components in a single default export using typescript and tailwind, here is an example:
-
-    \`\`\`tsx
-    ${exampleCode}
-    \`\`\`
-
-    Every component must use the .Responsive static field to render a responsive variant of the component, just like in the example.
-
-    That example component is already a good starting point but the components need to be reordered in a way that makes sense for a typical landing page for example: navbar first, then hero, then logos, testimonials, other components and then finally footer.
-
-    You can also import new components, these are all the possible imports:
-
-    \`\`\`tsx
-    ${imports.join('\n')}
-    \`\`\`
-
-    Return good valid code using the tool generate_code. Make sure the code is valid and has no duplicate import names or invalid tsx.
-
-    Before calling the generate_code tool think step by step on which components you should use and in which order to get the best possible result. Only output the code in the tool generate_code, no need to also output it in a conversation message. think hard step by step at an high level, using bullet points.
-
-    After you call the tool generate_code successfully you can end the conversation, do not say anything after that.
-
-    Keep the same top level tailwind bg class if present. Always keep the styles.css from the example. Use comments if they make the code easier to understand.
-    `
-    console.log('prompt', prompt)
-    let outputCode = exampleCode
-    console.time(`ai generate code for project ${config.projectId}`)
-    const { text } = await generateText({
-        maxSteps: 4,
-        providerOptions: {},
-        tools: {
-            generate_code: tool({
-                parameters: z.object({
-                    code: z.string(),
-                }),
-                description: `This tool needs to ALWAYS be called with the generated code.`,
-                async execute({ code }) {
-                    try {
-                        console.log(`ai is generating code`, code)
-                        if (outputCode) {
-                            biome = await Biome.create({
-                                distribution: Distribution.NODE,
-                            })
-                            let result = biome.formatContent(code, {
-                                filePath: 'example.jsx',
-                            })
-                            outputCode = result.content
-                        }
-                        return `Code generated successfully`
-                    } catch (e) {
-                        console.log(
-                            `LLM produced invalid code, generating again`,
-                        )
-                        return `code is invalid, generate it again: ${e.message}`
-                    }
-                },
-            }),
-        },
-        prompt,
-        model,
-    })
-    console.timeEnd(`ai generate code for project ${config.projectId}`)
-
-    console.log(text)
-
-    return {
-        exampleCode: outputCode,
-    }
 }
 
 export async function generateUnframerRepo({
@@ -387,4 +281,104 @@ export async function upsertUnframerRepoWithFiles({
     ])
 
     console.log(`upserted https://github.com/${owner}/${repo}`)
+}
+
+const model = wrapLanguageModel({
+    middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
+        isTruthy,
+    ),
+    model: createFallback({
+        models: [
+            openai('gpt-4.1', { structuredOutputs: true }), //
+            google('gemini-2.5-flash-preview-04-17', {
+                structuredOutputs: true,
+            }),
+        ],
+    }),
+})
+
+export async function createExampleComponentCodeWithAI({
+    outDir,
+    config,
+}: {
+    outDir: string
+    config: Config
+}) {
+    const { exampleCode, outDirForExample } = await createExampleComponentCode({
+        outDir,
+        config,
+    })
+
+    const imports = Object.keys(config.components)?.map((importPath) => {
+        return `import ${componentCamelCase(importPath)} from './${outDirForExample}/${importPath}'`
+    })
+    const prompt = dedent`
+    Generate a component page that renders a few components in a single default export using typescript and tailwind, here is an example:
+
+    \`\`\`tsx
+    ${exampleCode}
+    \`\`\`
+
+    Every component must use the .Responsive static field to render a responsive variant of the component, just like in the example.
+
+    That example component is already a good starting point but the components need to be reordered in a way that makes sense for a typical landing page for example: navbar first, then hero, then logos, testimonials, other components and then finally footer.
+
+    You can also import new components, these are all the possible imports:
+
+    \`\`\`tsx
+    ${imports.join('\n')}
+    \`\`\`
+
+    Return good valid code using the tool generate_code. Make sure the code is valid and has no duplicate import names or invalid tsx.
+
+    Before calling the generate_code tool think step by step on which components you should use and in which order to get the best possible result. Only output the code in the tool generate_code, no need to also output it in a conversation message. think hard step by step at an high level, using bullet points.
+
+    After you call the tool generate_code successfully you can end the conversation, do not say anything after that.
+
+    Keep the same top level tailwind bg class if present. Always keep the styles.css from the example. Use comments if they make the code easier to understand.
+    `
+    console.log('prompt', prompt)
+    let outputCode = exampleCode
+    console.time(`ai generate code for project ${config.projectId}`)
+    const { text } = await generateText({
+        maxSteps: 4,
+        providerOptions: {},
+        tools: {
+            generate_code: tool({
+                parameters: z.object({
+                    code: z.string(),
+                }),
+                description: `This tool needs to ALWAYS be called with the generated code.`,
+                async execute({ code }) {
+                    try {
+                        console.log(`ai is generating code`, code)
+                        if (outputCode) {
+                            biome = await Biome.create({
+                                distribution: Distribution.NODE,
+                            })
+                            let result = biome.formatContent(code, {
+                                filePath: 'example.jsx',
+                            })
+                            outputCode = result.content
+                        }
+                        return `Code generated successfully`
+                    } catch (e) {
+                        console.log(
+                            `LLM produced invalid code, generating again`,
+                        )
+                        return `code is invalid, generate it again: ${e.message}`
+                    }
+                },
+            }),
+        },
+        prompt,
+        model,
+    })
+    console.timeEnd(`ai generate code for project ${config.projectId}`)
+
+    console.log(text)
+
+    return {
+        exampleCode: outputCode,
+    }
 }
