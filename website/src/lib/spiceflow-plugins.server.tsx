@@ -9,16 +9,23 @@ import { markdownPluginApp } from 'website/src/lib/spiceflow-github-sync-plugin'
 import { rewritePluginApp } from 'website/src/lib/spiceflow-migrate-plugin'
 import { z } from 'zod'
 import { cors } from 'spiceflow/cors'
-import { reactPluginApp } from 'website/src/lib/spiceflow-react-export-plugin'
+import {
+    getReactSub,
+    reactPluginApp,
+} from 'website/src/lib/spiceflow-react-export-plugin'
 import { llmPluginApp } from 'website/src/lib/spiceflow-ai-rewrite-plugin'
 import { prisma } from 'db'
-import { redirect } from 'react-router'
+import { href, redirect } from 'react-router'
 import { framer } from 'framer-plugin'
 import { generateUnframerRepo } from 'website/src/lib/unframer-github-repos'
 import { env } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
+import dedent from 'dedent'
+import { marked } from 'marked'
 
-export const app = new Spiceflow({ basePath: '/api/plugins' })
+import { defaultResendOptions, resend } from './resend'
+
+export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', Promise.resolve(''))
     .state('orgId', Promise.resolve(''))
     .state('userEmail', Promise.resolve(''))
@@ -335,43 +342,11 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
             description: 'Health check',
         },
     )
-    .post(
-        '/generateUnframerRepo',
-        async ({ request }) => {
-            const body = await request.json()
-            const generateRepoSchema = z.object({
-                secret: z.string(),
-                projectId: z.string(),
-            })
-            const parsed = generateRepoSchema.parse(body)
 
-            // Validate secret
-            if (parsed.secret !== env.SECRET) {
-                throw new AppError('Invalid secret')
-            }
-
-            // Call the generateUnframerRepo function
-            const result = await generateUnframerRepo({
-                projectId: parsed.projectId,
-                addProjectUserAsContributor: true,
-            })
-
-            return Response.json({
-                success: true,
-                result,
-            })
-        },
-        {
-            body: z.object({
-                secret: z.string(),
-                projectId: z.string(),
-            }),
-        },
-    )
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
 
 // app.use(swagger({}))
-export type RouteType = typeof app
+export type RouteType = typeof spiceflowApp

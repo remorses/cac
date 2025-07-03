@@ -1,7 +1,7 @@
 import { Evt } from 'evt'
-import fs from 'fs'
+import * as fs from 'fs'
 
-import path from 'path'
+import * as path from 'path'
 import { Spiceflow } from 'spiceflow'
 
 import {
@@ -24,6 +24,13 @@ import {
 import { deduplicateByKey, isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
 import { email } from 'zod/v4'
+import { qstash } from 'website/src/lib/qstash'
+import { defaultResendOptions, resend } from 'website/src/lib/resend'
+import { AppError, notifyError } from 'website/src/lib/errors'
+import { marked } from 'marked'
+import dedent from 'string-dedent'
+import { href } from 'react-router'
+import { generateUnframerRepo } from './unframer-github-repos'
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
@@ -192,6 +199,83 @@ export const reactPluginApp = new Spiceflow({
         },
     )
     .post(
+        '/upsertUnframerRepoWithAI',
+        async ({ request }) => {
+            const body = await request.json()
+
+            // Validate secret
+            if (body.secret !== env.SECRET) {
+                throw new AppError('Invalid secret')
+            }
+
+            // Call the generateUnframerRepo function
+            const result = await generateUnframerRepo({
+                projectId: body.projectId,
+                useAI: true,
+            })
+
+            // Send email after repo is created
+            const project = await prisma.reactExportProject.findFirst({
+                where: { projectId: body.projectId },
+                include: {
+                    org: {
+                        include: {
+                            users: { include: { user: true } },
+                        },
+                    },
+                },
+            })
+
+            const userEmail = project?.org?.users?.[0]?.user?.email
+            if (userEmail) {
+                const projectId = project.projectId
+                const projectName = project.projectName || 'without name'
+                // const subscription = await getReactSub({
+                //     orgId: project.org.orgId,
+                //     projectId,
+                // })
+
+                // const hasSubscription = !!subscription
+
+                const emailContent = createGithubSetupEmail({
+                    projectId,
+                    userEmail,
+                    projectName,
+                })
+
+                const idempotencyKey = `github-repo-created/${userEmail}`
+
+                const result = await resend.emails.send(
+                    {
+                        ...defaultResendOptions,
+                        to: [userEmail],
+                        subject: emailContent.subject,
+                        html: emailContent.html,
+                    },
+                    {
+                        idempotencyKey,
+                    },
+                )
+
+                console.log(
+                    `Email sent successfully to ${userEmail} for project ${projectId}:`,
+                    result,
+                )
+            }
+
+            return Response.json({
+                success: true,
+                result,
+            })
+        },
+        {
+            body: z.object({
+                secret: z.string(),
+                projectId: z.string(),
+            }),
+        },
+    )
+    .post(
         '/upsertProject',
         async ({ request, state: store }) => {
             const body = await request.json()
@@ -252,6 +336,8 @@ export const reactPluginApp = new Spiceflow({
             if (!org) {
                 throw new Error('Org not found')
             }
+
+            const isNewProject = !existingProject
             let userEmail = await store.userEmail
             let needsToBuy = (() => {
                 if (reactSub) {
@@ -460,6 +546,31 @@ export const reactPluginApp = new Spiceflow({
                 console.timeEnd(`[${shortId}] insert new`)
                 console.timeEnd(`[${shortId}] total upsert`)
 
+                if (isNewProject) {
+                    await qstash
+                        .publishJSON({
+                            url: new URL(
+                                '/api/plugins/reactExportPlugin/upsertUnframerRepoWithAI',
+                                env.PUBLIC_URL,
+                            ).toString(),
+                            body: {
+                                secret: env.SECRET,
+                                projectId: upsertedProject.projectId,
+                            },
+                            flowControl: {
+                                parallelism: 1,
+                                key: `sync-${upsertedProject.projectId}`,
+                            },
+                        })
+                        .catch((error) => {
+                            notifyError(error, 'Error queuing repo AI task')
+                        })
+
+                    console.log(
+                        `Scheduled repo generation for new project ${projectId}`,
+                    )
+                }
+
                 if (needsToBuy) {
                     throw new Response(
                         JSON.stringify({
@@ -512,7 +623,7 @@ export async function recursiveReaddir(dir: string) {
     return files.flat()
 }
 
-async function getReactSub({ orgId, projectId }) {
+export async function getReactSub({ orgId, projectId }) {
     // if (!projectId) {
     //     throw new Error('projectId missing, cannot get subscription')
     // }
@@ -620,5 +731,43 @@ async function getProject({ projectId, email }) {
         componentInstances: componentInstances.map(
             ({ projectId, ...rest }) => rest,
         ),
+    }
+}
+
+export function createGithubSetupEmail({
+    projectId,
+    userEmail,
+    projectName,
+}: {
+    projectId: string
+    userEmail: string
+    projectName: string
+}) {
+    const githubUrl = new URL(
+        href(`/api/react-export-plugin/github/create-repo/:projectId`, {
+            projectId,
+        }),
+        env.PUBLIC_URL,
+    )
+
+    const markdown = dedent`
+    Hey, thanks for trying the React Export plugin!
+
+    I just created a GitHub repo for your Framer components in "${projectName}".
+
+    The repo includes:
+    - Example code showing how to integrate the React components
+    - Live preview URL (link in the README)
+
+    Get access to the repo [here](${githubUrl.toString()})
+
+    Any questions? Reply to this email, I read all the replies
+
+    Tommy
+    `
+
+    return {
+        subject: 'Your Framer components code is ready',
+        html: marked.parse(markdown) as string,
     }
 }

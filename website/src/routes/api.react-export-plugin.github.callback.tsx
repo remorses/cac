@@ -2,16 +2,17 @@ import { prisma } from 'db'
 import { OAuthApp, Octokit } from 'octokit'
 import { useEffect, useRef } from 'react'
 import {
-    data,
-    Form,
-    href,
-    redirect,
-    useLoaderData,
-    useNavigation,
-    type ActionFunctionArgs,
-    type LoaderFunctionArgs,
+  data,
+  Form,
+  href,
+  redirect,
+  useLoaderData,
+  useNavigation,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
 } from 'react-router'
 import { env } from 'website/src/lib/env'
+import { addUnframerGithubCollaboratorIfNeeded } from 'website/src/lib/github.server'
 import { generateUnframerRepo } from 'website/src/lib/unframer-github-repos'
 import { safeJsonParse } from 'website/src/lib/utils'
 
@@ -39,15 +40,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (!project) {
         throw new Response('Project not found', { status: 404 })
-    }
-
-    // Check if repo already exists
-    if (project.connectedGitHubRepoName) {
-        const existingRepoUrl = `https://github.com/unframer/${project.connectedGitHubRepoName}`
-        console.log(
-            `Project ${state.projectId} already has connected repo: ${existingRepoUrl}`,
-        )
-        return redirect(existingRepoUrl)
     }
 
     return data({
@@ -102,6 +94,20 @@ export async function action({ request }: ActionFunctionArgs) {
         throw new Response('Project not found', { status: 404 })
     }
 
+    if (project.connectedGitHubRepoName) {
+        const existingRepoUrl = `https://github.com/unframer/${project.connectedGitHubRepoName}`
+        console.log(
+            `Project ${state.projectId} already has connected repo: ${existingRepoUrl}`,
+        )
+        const repo = project.connectedGitHubRepoName
+
+        await addUnframerGithubCollaboratorIfNeeded({
+            addCollaboratorUsername: user.login,
+            owner: 'unframer',
+            repo,
+        })
+        throw redirect(existingRepoUrl)
+    }
     const { url: repoUrl, repoName } = await generateUnframerRepo({
         projectId: state.projectId,
         projectTitle: project.projectName || 'Untitled',

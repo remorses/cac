@@ -38,6 +38,8 @@ instead of adding packages directly in package.json use `pnpm install package` i
 
 - use || over in: avoid 'x' in obj checks. prefer doing `obj?.x || ''` over doing `'x' in obj ? obj.x : ''`. only use the in operator if that field causes problems in typescript checks because typescript thinks the field is missing, as a last resort.
 
+- when creating urls from a path and a base url prefer using `new URL(path, baseUrl).toString()` instead of normal string interpolation. use type safe react-router `href` or spiceflow `this.safePath` (available inside routes) if possible
+
 ```ts
 // BAD. DO NOT DO THIS
 let favicon: string | undefined
@@ -280,6 +282,8 @@ This url returns a single long documentation that covers your use case, always f
 
 when adding spiceflow to a react-router route always add the basePath param set to that route path, for example for api.$ you would use new Spiceflow({ basePath: '/api' })
 
+always prefer camel case route names for spiceflow routes
+
 ## prisma
 
 this project uses prisma to interact with the database. if you need to add new queries always read the schema.prisma inside the db folder first so you understand the shape of the tables in the database.
@@ -396,3 +400,56 @@ You can swap out the topic with text you want to search docs for. You can also l
 ## lucide icons
 
 use lucide-react to import icons. always add the Icon import name, for example `ImageIcon` instead of just `Image`.
+
+## qstash
+
+I like to use qstash to schedule tasks, for example to send emails after some amount of time or limit the parallelism of tasks, here is an example usage inside a spiceflow app
+
+```tsx
+await qstash
+    .publishJSON({
+        url: new URL(
+            this.safePath('/api/plugins/route'),
+            env.PUBLIC_URL,
+        ).href,
+        body: {
+            secret: env.SECRET,
+            projectId,
+        },
+        headers: {
+            Authorization: `Bearer ${env.SECRET}`,
+        },
+        flowControl: {
+            parallelism: 1,
+            key: `sync-${projectId}`,
+        },
+    })
+
+    .catch((error) => {
+        notifyError(error, 'Error queuing AI task')
+    })
+```
+
+usually qstash should be placed in a lib/qstash.ts file like this:
+
+```ts
+import { Client } from '@upstash/qstash'
+import { env } from './env'
+
+export const qstash = new Client({
+    token: env.QSTASH_TOKEN!,
+})
+```
+
+to read more info about qstash fetch the following context7 url with the appropriate search topic:
+
+https://context7.com/upstash/qstash-js/llms.txt?topic=query&tokens=2000
+
+
+## emails using resend
+
+I use resend js sdk to use email. the client should be placed in a file lib/resend.ts
+
+to read resend email sending sdk docs fetch the following url:
+
+https://context7.com/resend.com/llmstxt/llms.txt?topic=query&tokens=2000
