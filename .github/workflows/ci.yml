@@ -14,15 +14,14 @@ jobs:
               with:
                   fetch-depth: 0
                   submodules: true
-            - uses: dopplerhq/cli-action@master
             - uses: actions/setup-node@v3
               with:
                   node-version: 22
                   registry-url: https://registry.npmjs.org/
-            - uses: dopplerhq/cli-action@v2
             - uses: pnpm/action-setup@master
               with:
                   run_install: false
+            - uses: dopplerhq/cli-action@master
             - run: pnpm install --frozen-lockfile=false
             - run: pnpm bootstrap
             # scripts
