@@ -39,6 +39,7 @@ export async function generateUnframerRepo({
     repo = '',
     projectTitle = '',
     addProjectUserAsContributor = true,
+    useAI = true,
 }) {
     const [project] = await Promise.all([
         prisma.reactExportProject.findFirst({
@@ -63,6 +64,7 @@ export async function generateUnframerRepo({
                 `unframer-secret-token-${projectId}-${env.SECRET!.slice(0, 5)}`,
             )
             .digest('hex')
+            .slice(0, 16)
     }
 
     projectTitle = projectTitle || project?.projectName || 'untitled'
@@ -78,6 +80,7 @@ export async function generateUnframerRepo({
     const { exampleCode } = await createExampleComponentCodeWithAI({
         config,
         outDir: 'framer',
+        useAI,
     })
     let files = generateStackblitzFiles({
         projectId,
@@ -167,7 +170,7 @@ export async function generateUnframerRepo({
       `,
     })
 
-    await upsertUnframerRepoWithFiles({
+    return await upsertUnframerRepoWithFiles({
         files,
         repo,
         title: `React Components for ${projectTitle}`,
@@ -230,7 +233,7 @@ export async function upsertUnframerRepoWithFiles({
             return x.relativePath
         }),
     )
-    const sema = new Sema(5)
+    const sema = new Sema(20)
     await Promise.all(
         existingFiles
             .filter((x) => {
@@ -289,7 +292,9 @@ export async function upsertUnframerRepoWithFiles({
         }),
     ])
 
-    console.log(`upserted https://github.com/${owner}/${repo}`)
+    const url = `upserted https://github.com/${owner}/${repo}`
+    console.log(url)
+    return { url }
 }
 
 const model = wrapLanguageModel({
@@ -309,14 +314,22 @@ const model = wrapLanguageModel({
 export async function createExampleComponentCodeWithAI({
     outDir,
     config,
+    useAI = true,
 }: {
     outDir: string
     config: Config
+    useAI: boolean
 }) {
     const { exampleCode, outDirForExample } = await createExampleComponentCode({
         outDir,
         config,
     })
+    if (!useAI) {
+        return {
+            exampleCode,
+            outDirForExample,
+        }
+    }
 
     const imports = Object.keys(config.components)?.map((importPath) => {
         return `import ${componentCamelCase(importPath)} from './${outDirForExample}/${importPath}'`

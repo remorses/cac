@@ -71,18 +71,21 @@ test('generateRepoName', () => {
         }),
     ).toMatchInlineSnapshot(`"caps-lock-cf755"`)
 })
-
 test(
-    'create repo',
+    'create repo, without ai',
     async () => {
         const projectId = 'cf755ed7d59e0319'
+        const start = Date.now()
         const res = await generateUnframerRepo({
             projectId,
             projectTitle: 'example test repo',
-            repo: 'example-test-repo-2',
+            repo: 'example-test-repo-3',
             projectSecret: 'x',
+            useAI: false,
             // description: 'example test repo description',
         })
+        const duration = Date.now() - start
+        console.log(`Time taken: ${duration / 1000}s`) // takes about 20 seconds first time, 6 seconds on existing repo
         // console.log(res)
     },
     1000 * 100,
@@ -94,7 +97,9 @@ test(
         const projectId = '547a70ab05fb01e5'
         const res = await generateUnframerRepo({
             projectId,
-            // repo: `test-for-547a70ab05fb01e5-ai`,
+            repo: `test-for-547a70ab05fb01e5-ai`,
+            addProjectUserAsContributor: false,
+            useAI: true,
             projectSecret: '547a70ab05fb01e5',
             // description: 'example test repo description',
         })
@@ -102,6 +107,7 @@ test(
     },
     1000 * 100,
 )
+
 test(
     'example code',
     async () => {
