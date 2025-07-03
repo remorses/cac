@@ -14,6 +14,9 @@ import { llmPluginApp } from 'website/src/lib/spiceflow-ai-rewrite-plugin'
 import { prisma } from 'db'
 import { redirect } from 'react-router'
 import { framer } from 'framer-plugin'
+import { generateUnframerRepo } from 'website/src/lib/unframer-github-repos'
+import { env } from 'website/src/lib/env'
+import { AppError } from 'website/src/lib/errors'
 
 export const app = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', Promise.resolve(''))
@@ -330,6 +333,39 @@ export const app = new Spiceflow({ basePath: '/api/plugins' })
                 }),
             },
             description: 'Health check',
+        },
+    )
+    .post(
+        '/generateUnframerRepo',
+        async ({ request }) => {
+            const body = await request.json()
+            const generateRepoSchema = z.object({
+                secret: z.string(),
+                projectId: z.string(),
+            })
+            const parsed = generateRepoSchema.parse(body)
+
+            // Validate secret
+            if (parsed.secret !== env.SECRET) {
+                throw new AppError('Invalid secret')
+            }
+
+            // Call the generateUnframerRepo function
+            const result = await generateUnframerRepo({
+                projectId: parsed.projectId,
+                addProjectUserAsContributor: true,
+            })
+
+            return Response.json({
+                success: true,
+                result,
+            })
+        },
+        {
+            body: z.object({
+                secret: z.string(),
+                projectId: z.string(),
+            }),
         },
     )
 

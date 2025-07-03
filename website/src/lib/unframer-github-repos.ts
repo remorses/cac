@@ -1,4 +1,5 @@
 import dedent from 'string-dedent'
+import crypto from 'crypto'
 
 import { generateText, tool, wrapLanguageModel } from 'ai'
 import { prisma } from 'db'
@@ -33,7 +34,7 @@ export function generateRepoName({ projectId, projectTitle }) {
 }
 
 export async function generateUnframerRepo({
-    projectSecret,
+    projectSecret = '',
     projectId,
     repo = '',
     projectTitle = '',
@@ -55,6 +56,14 @@ export async function generateUnframerRepo({
             },
         }),
     ])
+    if (!projectSecret) {
+        projectSecret = crypto
+            .createHash('sha256')
+            .update(
+                `unframer-secret-token-${projectId}-${env.SECRET!.slice(0, 5)}`,
+            )
+            .digest('hex')
+    }
 
     projectTitle = projectTitle || project?.projectName || 'untitled'
     repo ||= generateRepoName({ projectId, projectTitle })
