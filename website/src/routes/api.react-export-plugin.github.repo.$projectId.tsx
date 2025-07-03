@@ -1,9 +1,9 @@
-// https://localhost:8040/api/react-export-plugin/github/create-repo/cf755ed7d59e0319
+// https://localhost:8040/api/react-export-plugin/github/repo/cf755ed7d59e0319
 import { redirect, type LoaderFunctionArgs, href } from 'react-router'
 import { getGithubApp } from 'website/src/lib/github.server'
 import { env } from 'website/src/lib/env'
 import { prisma } from 'db'
-import type { Route } from './+types/api.react-export-plugin.github.create-repo.$projectId'
+import type { Route } from './+types/api.react-export-plugin.github.repo.$projectId'
 import { OAuthApp } from 'octokit'
 
 export type GithubState = {
