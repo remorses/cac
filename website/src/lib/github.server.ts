@@ -25,6 +25,7 @@ export function getGithubApp(): App {
             clientId: env.GITHUB_CLIENT_ID!,
             clientSecret: env.GITHUB_CLIENT_SECRET!,
             allowSignup: true,
+
         },
 
         webhooks: {
@@ -329,7 +330,7 @@ export async function createNewRepo({
     octokit,
     privateRepo = true,
     oauthToken,
-    addEmailAsContributor,
+    addCollaboratorUsername,
 }: {
     owner
     isGithubOrg
@@ -338,7 +339,7 @@ export async function createNewRepo({
     octokit: Octokit['rest']
     privateRepo: boolean
     oauthToken?: string
-    addEmailAsContributor?: string
+    addCollaboratorUsername?: string
 }) {
     files = files.filter((x) => {
         return true
@@ -411,9 +412,9 @@ export async function createNewRepo({
         return
     }
 
-    // Start collaborator lookup early but don't await it yet
-    const addCollaboratorPromise = addGithubCollaboratorIfNeeded({
-        addEmailAsContributor,
+    // Add collaborator if needed
+    const addedCollaborator = await addGithubCollaboratorIfNeeded({
+        addCollaboratorUsername,
         owner,
         repo,
         octokit: repoOctokit,
@@ -480,9 +481,6 @@ console.log('creating tree with inline content')
         throw err
     }
 
-    console.log(`waiting for collaborator addition`)
-    const addedCollaborator = await addCollaboratorPromise
-
     return {
         branch: defaultBranch,
         githubRepoId: String(repoResult.id),
@@ -490,66 +488,41 @@ console.log('creating tree with inline content')
     }
 }
 
-// Add collaborator if email is provided
+// Add collaborator if username is provided
 async function addGithubCollaboratorIfNeeded({
-    addEmailAsContributor,
+    addCollaboratorUsername,
     owner,
     repo,
     octokit,
 }: {
-    addEmailAsContributor?: string
+    addCollaboratorUsername?: string
     owner: string
     repo: string
     octokit: Octokit['rest']
 }) {
     let addedCollaborator = false
-    if (!addEmailAsContributor) {
+    if (!addCollaboratorUsername) {
         return addedCollaborator
     }
-    try {
-        // First, try to get the user by email with retry logic
-        const { data: userData } = await withRetry(
-            () =>
-                octokit.search.users({
-                    q: `${addEmailAsContributor} in:email`,
-                    per_page: 1,
-                }),
-            { maxRetries: 3, initialDelay: 1000 },
-        )
 
-        if (userData.items && userData.items.length > 0) {
-            const username = userData.items[0].login
+    // Add the user as a collaborator with maintain permission with retry logic
+    await withRetry(
+        () =>
+            octokit.repos.addCollaborator({
+                owner,
+                repo,
+                username: addCollaboratorUsername,
+                permission: 'maintain',
+            }),
+        { maxRetries: 3, initialDelay: 1000 },
+    )
 
-            // Add the user as a collaborator with maintain permission with retry logic
-            await withRetry(
-                () =>
-                    octokit.repos.addCollaborator({
-                        owner,
-                        repo,
-                        username,
-                        permission: 'maintain',
-                    }),
-                { maxRetries: 3, initialDelay: 1000 },
-            )
+    addedCollaborator = true
+    console.log(
+        `Successfully added ${addCollaboratorUsername} as collaborator to ${owner}/${repo}`,
+    )
 
-            addedCollaborator = true
-            console.log(
-                `Successfully added ${username} as collaborator to ${owner}/${repo}`,
-            )
-        } else {
-            console.log(
-                `Could not find GitHub user with email ${addEmailAsContributor}`,
-            )
-        }
-    } catch (error) {
-        console.error(`Failed to add github collaborator: ${error.message}`)
-        notifyError(
-            error,
-            `Failed to add collaborator ${addEmailAsContributor} to ${owner}/${repo}`,
-        )
-    } finally {
-        return addedCollaborator
-    }
+    return addedCollaborator
 }
 
 export const createNewTree = async ({

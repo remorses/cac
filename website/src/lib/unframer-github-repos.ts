@@ -214,7 +214,7 @@ export async function upsertUnframerRepoWithFiles({
                     content: file.contents,
                 }
             }),
-            addEmailAsContributor,
+            addCollaboratorUsername: addEmailAsContributor,
             isGithubOrg: true,
             octokit: octokit.rest,
             owner,
