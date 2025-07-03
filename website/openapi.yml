@@ -643,6 +643,35 @@ paths:
           content:
             '*/*':
               schema: {}
+  /api/plugins/reactExportPlugin/upsertUnframerRepoWithAI:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                secret:
+                  type: string
+                projectId:
+                  type: string
+              required:
+                - secret
+                - projectId
+              additionalProperties: true
   /api/plugins/reactExportPlugin/upsertProject:
     post:
       parameters: []

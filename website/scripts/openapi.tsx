@@ -1,12 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 import yaml from 'js-yaml'
-import { app } from '../src/lib/spiceflow-plugins.server'
+import { spiceflowApp } from '../src/lib/spiceflow-plugins.server'
 import { createSpiceflowClient } from 'spiceflow/client'
 
 async function main() {
     console.log('Creating Spiceflow client...')
-    const client = createSpiceflowClient(app)
+    const client = createSpiceflowClient(spiceflowApp)
 
     console.log('Fetching OpenAPI spec...')
     const { data: openapiJson, error } = await client.api.plugins.openapi.get()
