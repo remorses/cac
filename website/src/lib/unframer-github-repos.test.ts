@@ -86,7 +86,7 @@ test(
                 repo,
             })
             // It can take a few seconds for GitHub to fully delete the repo
-            console.log(`witing for github to delete repo ${repo}`)
+            console.log(`waiting for github to delete repo ${repo}`)
             await new Promise((res) => setTimeout(res, 4 * 1000))
         } catch (e) {
             if (e.status === 404) {
