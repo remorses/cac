@@ -430,7 +430,7 @@ export async function createNewRepo({
     const { data: newCommit } = await octokit.git.createCommit({
         owner: owner,
         repo,
-        message: `Holocron Initial Commit`,
+        message: `Unframer Initial Commit`,
         tree: newTree.sha,
 
         committer: committer,
