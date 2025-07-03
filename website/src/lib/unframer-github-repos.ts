@@ -144,13 +144,30 @@ export async function generateUnframerRepo({
     repo = '',
     projectTitle = '',
 }) {
-    const project = await prisma.reactExportProject.findFirst({
-        where: { projectId },
-    })
+    const [project] = await Promise.all([
+        prisma.reactExportProject.findFirst({
+            where: { projectId },
+            include: {
+                org: {
+                    include: {
+                        users: {
+                            include: {
+                                user: true,
+                            },
+                        },
+                    },
+                },
+            },
+        }),
+    ])
 
     projectTitle = projectTitle || project?.projectName || 'untitled'
     repo ||= generateRepoName({ projectId, projectTitle })
+    const addEmailAsContributor =
+        project?.org?.users?.find((x) => x.user?.email)?.user?.email ||
+        undefined
     const { config } = await configFromFetch({ projectId })
+
     const { exampleCode } = await createExampleComponentCodeWithAI({
         config,
         outDir: 'framer',
@@ -247,6 +264,7 @@ export async function generateUnframerRepo({
         files,
         repo,
         title: `React Components for ${projectTitle}`,
+        addEmailAsContributor,
         homepage: previewUrl,
     })
 }
@@ -256,11 +274,13 @@ export async function upsertUnframerRepoWithFiles({
     repo,
     title,
     homepage,
+    addEmailAsContributor,
 }: {
     files: { relativePath: string; contents: string }[]
     repo: string
     title?: string
     homepage?: string
+    addEmailAsContributor?: string
 }) {
     const owner = 'unframer'
     const githubBranch = 'main'
@@ -280,6 +300,7 @@ export async function upsertUnframerRepoWithFiles({
                     content: `\n`,
                 },
             ],
+            addEmailAsContributor,
             isGithubOrg: true,
             octokit: octokit.rest,
             owner,
