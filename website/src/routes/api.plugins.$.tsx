@@ -1,10 +1,10 @@
 import { ActionFunctionArgs } from 'react-router';
-import { app } from 'website/src/lib/spiceflow-plugins.server'
+import { spiceflowApp } from 'website/src/lib/spiceflow-plugins.server'
 
 export function action({ request }: ActionFunctionArgs) {
     // console.log('action', [...request.headers.entries()])
-    return app.handle(request)
+    return spiceflowApp.handle(request)
 }
 export function loader({ request }: ActionFunctionArgs) {
-    return app.handle(request)
+    return spiceflowApp.handle(request)
 }

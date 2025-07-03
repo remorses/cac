@@ -412,11 +412,10 @@ export async function createNewRepo({
     }
 
     // Add collaborator if needed
-    const addedCollaborator = await addGithubCollaboratorIfNeeded({
+    const addedCollaborator = await addUnframerGithubCollaboratorIfNeeded({
         addCollaboratorUsername,
         owner,
         repo,
-        octokit: repoOctokit,
     })
 
     console.log(`creating git blobs`)
@@ -487,40 +486,50 @@ export async function createNewRepo({
     }
 }
 
-// Add collaborator if username is provided
-async function addGithubCollaboratorIfNeeded({
+export async function addUnframerGithubCollaboratorIfNeeded({
     addCollaboratorUsername,
-    owner,
+    owner = 'unframer',
     repo,
-    octokit,
 }: {
     addCollaboratorUsername?: string
     owner: string
     repo: string
-    octokit: Octokit['rest']
 }) {
-
     if (!addCollaboratorUsername) {
         return false
     }
+    const octokit = new Octokit({ auth: env.GITHUB_TOKEN_UNFRAMER_ORG })
 
-    // Add the user as a collaborator with maintain permission with retry logic
-    await withRetry(
-        () =>
-            octokit.repos.addCollaborator({
-                owner,
-                repo,
-                username: addCollaboratorUsername,
-                permission: 'maintain',
-            }),
-        { maxRetries: 3, initialDelay: 1000 },
-    )
+    try {
+        // Add the user as a collaborator with maintain permission with retry logic
+        await withRetry(
+            () =>
+                octokit.rest.repos.addCollaborator({
+                    owner,
+                    repo,
+                    username: addCollaboratorUsername,
+                    permission: 'maintain',
+                }),
+            { maxRetries: 3, initialDelay: 1000 },
+        )
 
-    console.log(
-        `Successfully added ${addCollaboratorUsername} as collaborator to ${owner}/${repo}`,
-    )
+        console.log(
+            `Successfully added ${addCollaboratorUsername} as collaborator to ${owner}/${repo}`,
+        )
 
-    return true
+        return true
+    } catch (error) {
+        // If user is already a collaborator, GitHub returns 422
+        if (error.status === 422) {
+            console.log(
+                `User ${addCollaboratorUsername} is already a collaborator on ${owner}/${repo}`,
+            )
+            return true
+        }
+
+        // Re-throw other errors
+        throw error
+    }
 }
 
 export const createNewTree = async ({
