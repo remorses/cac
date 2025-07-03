@@ -587,7 +587,7 @@ export const reactPluginApp = new Spiceflow({
                                 secret: env.SECRET,
                                 projectId: upsertedProject.projectId,
                             },
-                            timeout: 1000 * 60 * 20,
+                            timeout: 900,
                             flowControl: {
                                 parallelism: 1,
                                 key: `sync-${upsertedProject.projectId}`,
