@@ -143,6 +143,7 @@ export async function generateUnframerRepo({
     projectId,
     repo = '',
     projectTitle = '',
+    addProjectUserAsContributor = true,
 }) {
     const [project] = await Promise.all([
         prisma.reactExportProject.findFirst({
@@ -163,9 +164,12 @@ export async function generateUnframerRepo({
 
     projectTitle = projectTitle || project?.projectName || 'untitled'
     repo ||= generateRepoName({ projectId, projectTitle })
-    const addEmailAsContributor =
+    let addEmailAsContributor =
         project?.org?.users?.find((x) => x.user?.email)?.user?.email ||
         undefined
+    if (!addProjectUserAsContributor) {
+        addEmailAsContributor = undefined
+    }
     const { config } = await configFromFetch({ projectId })
 
     const { exampleCode } = await createExampleComponentCodeWithAI({
