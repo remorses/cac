@@ -101,7 +101,7 @@ test(
             projectTitle: 'example test repo',
             repo,
             projectSecret: 'x',
-            addProjectUserAsContributor: true,
+            addCollaboratorUsername: 'daertommy',
             useAI: false,
             // description: 'example test repo description',
         })
@@ -119,7 +119,7 @@ test(
         const res = await generateUnframerRepo({
             projectId,
             repo: `test-for-547a70ab05fb01e5-ai`,
-            addProjectUserAsContributor: false,
+
             useAI: true,
             projectSecret: '547a70ab05fb01e5',
             // description: 'example test repo description',
