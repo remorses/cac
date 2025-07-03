@@ -87,6 +87,20 @@ test(
     },
     1000 * 100,
 )
+
+test.skip(
+    'create repo for 547a70ab05fb01e5',
+    async () => {
+        const projectId = '547a70ab05fb01e5'
+        const res = await generateUnframerRepo({
+            projectId,
+            projectSecret: '547a70ab05fb01e5',
+            // description: 'example test repo description',
+        })
+        // console.log(res)
+    },
+    1000 * 100,
+)
 test(
     'example code',
     async () => {
