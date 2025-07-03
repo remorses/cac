@@ -1,20 +1,86 @@
 import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { configFromFetch } from 'unframer-workspace/src/cli'
-import { expect, test } from 'vitest'
-import { generateUnframerRepo } from './unframer-github-repos'
+import { describe, expect, test } from 'vitest'
+import { generateRepoName, generateUnframerRepo } from './unframer-github-repos'
 
-const projectId = 'cf755ed7d59e0319'
+test('generateRepoName', () => {
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'My Project',
+        }),
+    ).toMatchInlineSnapshot(`"my-project-cf755"`)
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'Untitled',
+        }),
+    ).toMatchInlineSnapshot(`"untitled-cf755"`)
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'template (Copy)',
+        }),
+    ).toMatchInlineSnapshot(`"template-copy-cf755"`)
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: '',
+        }),
+    ).toMatchInlineSnapshot(`"cf755"`)
+
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'Hello World!',
+        }),
+    ).toMatchInlineSnapshot(`"hello-world-cf755"`)
+
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'Repo_123',
+        }),
+    ).toMatchInlineSnapshot(`"repo-123-cf755"`)
+
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'Something   With  Spaces',
+        }),
+    ).toMatchInlineSnapshot(`"something-with-spaces-cf755"`)
+
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: '  Leading and Trailing  ',
+        }),
+    ).toMatchInlineSnapshot(`"leading-and-trailing-cf755"`)
+
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'Ünicode Çhärß',
+        }),
+    ).toMatchInlineSnapshot(`"ünicode-çhärß-cf755"`)
+
+    expect(
+        generateRepoName({
+            projectId: 'cf755ed7dsdf0319',
+            projectTitle: 'CAPS lock',
+        }),
+    ).toMatchInlineSnapshot(`"caps-lock-cf755"`)
+})
 
 test(
     'create repo',
     async () => {
+        const projectId = 'cf755ed7d59e0319'
         const res = await generateUnframerRepo({
             projectId,
             projectTitle: 'example test repo',
-
             repo: 'example-test-repo-2',
-
-            secret: 'x',
+            projectSecret: 'x',
             // description: 'example test repo description',
         })
         // console.log(res)
@@ -24,6 +90,7 @@ test(
 test(
     'example code',
     async () => {
+        const projectId = 'cf755ed7d59e0319'
         const { config } = await configFromFetch({ projectId })
         const { exampleCode } = await createExampleComponentCode({
             config,

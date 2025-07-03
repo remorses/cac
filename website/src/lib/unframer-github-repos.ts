@@ -12,13 +12,25 @@ import {
     upsertGithubFile,
 } from './github.server'
 import { generateStackblitzFiles } from './utils'
+import { prisma } from 'db'
+import { kebabCase } from 'unframer-workspace/src/utils'
+
+export function generateRepoName({ projectId, projectTitle }) {
+    return kebabCase(projectTitle + ' ' + projectId.slice(0, 5))
+}
 
 export async function generateUnframerRepo({
-    secret,
+    projectSecret,
     projectId,
-    repo,
-    projectTitle = 'Project',
+    repo = '',
+    projectTitle = '',
 }) {
+    const project = await prisma.reactExportProject.findFirst({
+        where: { projectId },
+    })
+
+    projectTitle = projectTitle || project?.projectName || 'untitled'
+    repo ||= generateRepoName({ projectId, projectTitle })
     const { config } = await configFromFetch({ projectId })
     const { exampleCode } = await createExampleComponentCode({
         config,
@@ -86,7 +98,7 @@ export async function generateUnframerRepo({
             - run: bun install
             - run: bun run framer
             - run: bun run build
-            - run: bunx unframer-deploy-demo@latest --secret ${secret} --slug ${repo} --dir ./dist
+            - run: bunx unframer-deploy-demo@latest --secret ${projectSecret} --slug ${repo} --dir ./dist
 
       `,
     })
