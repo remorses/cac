@@ -215,57 +215,87 @@ export const reactPluginApp = new Spiceflow({
             })
 
             // Send email after repo is created
-            const project = await prisma.reactExportProject.findFirst({
-                where: { projectId: body.projectId },
-                include: {
-                    org: {
-                        include: {
-                            users: { include: { user: true } },
+            const [project] = await Promise.all([
+                prisma.reactExportProject.findFirst({
+                    where: { projectId: body.projectId },
+                    include: {
+                        org: {
+                            include: {
+                                users: { include: { user: true } },
+                            },
                         },
                     },
-                },
+                }),
+            ])
+            if (!project) {
+                console.log(
+                    `cannot find project to send new email for new github project`,
+                    project,
+                )
+                return Response.json({
+                    success: false,
+                    error: 'Project not found',
+                })
+            }
+
+            let userEmail = project?.org?.users?.[0]?.user?.email || ''
+            if (!userEmail) {
+                const legacyUser = await prisma.users.findFirst({
+                    where: {
+                        id: project.orgId,
+                    },
+                })
+                if (legacyUser) {
+                    userEmail = legacyUser.email || ''
+                }
+            }
+            if (!userEmail) {
+                console.log(
+                    `cannot find user email to send new email for new github project`,
+                    project,
+                )
+                return Response.json({
+                    success: false,
+                    error: 'User email not found',
+                })
+            }
+            const projectId = project.projectId
+            const projectName = project.projectName || 'without name'
+            // const subscription = await getReactSub({
+            //     orgId: project.org.orgId,
+            //     projectId,
+            // })
+
+            // const hasSubscription = !!subscription
+
+            const emailContent = await createGithubSetupEmail({
+                projectId,
+                userEmail,
+                projectName,
             })
 
-            const userEmail = project?.org?.users?.[0]?.user?.email
-            if (userEmail) {
-                const projectId = project.projectId
-                const projectName = project.projectName || 'without name'
-                // const subscription = await getReactSub({
-                //     orgId: project.org.orgId,
-                //     projectId,
-                // })
+            const idempotencyKey = `github-new-repo-created/${userEmail}`
 
-                // const hasSubscription = !!subscription
+            const res = await resend.emails.send(
+                {
+                    ...defaultResendOptions,
+                    to: [userEmail],
+                    subject: emailContent.subject,
+                    html: emailContent.html,
+                },
+                {
+                    idempotencyKey,
+                },
+            )
 
-                const emailContent = await createGithubSetupEmail({
-                    projectId,
-                    userEmail,
-                    projectName,
-                })
-
-                const idempotencyKey = `github-repo-created/${userEmail}`
-
-                const result = await resend.emails.send(
-                    {
-                        ...defaultResendOptions,
-                        to: [userEmail],
-                        subject: emailContent.subject,
-                        html: emailContent.html,
-                    },
-                    {
-                        idempotencyKey,
-                    },
-                )
-
-                console.log(
-                    `Email sent successfully to ${userEmail} for project ${projectId}:`,
-                    result,
-                )
-            }
+            console.log(
+                `Email sent successfully to ${userEmail} for project ${projectId}:`,
+                res,
+            )
 
             return Response.json({
                 success: true,
-                result,
+                result: res,
             })
         },
         {
@@ -557,6 +587,7 @@ export const reactPluginApp = new Spiceflow({
                                 secret: env.SECRET,
                                 projectId: upsertedProject.projectId,
                             },
+                            timeout: 1000 * 60 * 20,
                             flowControl: {
                                 parallelism: 1,
                                 key: `sync-${upsertedProject.projectId}`,
