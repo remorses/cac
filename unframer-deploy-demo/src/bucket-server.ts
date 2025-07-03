@@ -4,7 +4,6 @@ import mime from 'mime'
 import { z } from 'zod'
 import { unframerDemoUrl } from './utils.ts'
 
-
 type Env = {
     BUCKET: R2Bucket
 }
@@ -163,6 +162,72 @@ export const app = new Spiceflow()
 
         // Return 404 if object not found
         if (!obj) {
+            if (filePath === 'index.html') {
+                throw new Response(
+                    `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Preview Deploying...</title>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                            body {
+                                background: #18181b;
+                                color: #e5e5e5;
+                                font-family: system-ui, sans-serif;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                min-height: 100vh;
+                                margin: 0;
+                            }
+                            .card {
+                                background: #27272a;
+                                border-radius: 1rem;
+                                padding: 2rem 2.5rem;
+                                box-shadow: 0 2px 12px rgba(0,0,0,0.11);
+                                max-width: 480px;
+                                text-align: center;
+                            }
+                            h1, p {
+                                color: #e5e5e5;
+                            }
+                            h1 {
+                                font-size: 1.3rem;
+                                margin-bottom: 1.25rem;
+                                line-height: 1.8;
+                                text-wrap: balance;
+                                text-align: center;
+                            }
+                            p {
+                                font-size: 0.95rem;
+                                margin-top: 0.75rem;
+                                line-height: 1.8;
+                                text-wrap: balance;
+                                text-align: center;
+                            }
+
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <h1>Deploying…</h1>
+                            <p>
+                                Your Framer React Export preview website is still being deployed.<br>
+                                Please check back in a minute!
+                            </p>
+                        </div>
+                    </body>
+                    </html>
+                  `,
+                    {
+                        status: 404,
+                        headers: { 'Content-Type': 'text/html' },
+                    },
+                )
+            }
             throw new Response(JSON.stringify({ error: 'File not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
