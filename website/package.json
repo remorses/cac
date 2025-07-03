@@ -8,7 +8,7 @@
         "build": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' doppler run -c production -- pnpm concurrently 'pnpm react-router build' 'pnpm tsc'",
         "prebuild": "pnpm --filter spiceflow build",
         "fly": "fly --app unframer-website-prod",
-        "deployment": "doppler run -- pnpm tsx -C import scripts/deployment.ts",
+        "deployment": "doppler run -- pnpm vite-node scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
         "typegen": "pnpm react-router typegen",
         "framer": "pnpm unframer --outDir src/framer 620e74c088cdcb26",
