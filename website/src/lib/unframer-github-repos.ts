@@ -204,12 +204,16 @@ export async function upsertUnframerRepoWithFiles({
 
     if (!exists) {
         await createNewRepo({
-            files: [
-                {
-                    filePath: 'README.md',
-                    content: `\n`,
-                },
-            ],
+            files: files.map((file) => {
+                let githubPath = file.relativePath
+                if (githubPath.startsWith('/')) {
+                    githubPath = githubPath.slice(1)
+                }
+                return {
+                    filePath: githubPath,
+                    content: file.contents,
+                }
+            }),
             addEmailAsContributor,
             isGithubOrg: true,
             octokit: octokit.rest,
@@ -217,6 +221,9 @@ export async function upsertUnframerRepoWithFiles({
             privateRepo: true,
             repo,
         })
+        const url = `upserted https://github.com/${owner}/${repo}`
+        console.log(url)
+        return { url }
     }
 
     const existingFiles = await getRepoFiles({

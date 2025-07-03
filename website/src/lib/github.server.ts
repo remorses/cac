@@ -5,6 +5,7 @@ import { Sema } from 'async-sema'
 import { GithubInstallation, prisma } from 'db'
 import { db } from 'db/kysely'
 import { AppError, notifyError } from 'website/src/lib/errors'
+import * as https from 'https'
 
 type OctokitRest = Octokit['rest']
 
@@ -12,6 +13,8 @@ type OctokitRest = Octokit['rest']
 export type GithubLoginRequestData = {
     githubAccountLogin: string
 }
+
+const agent = new https.Agent({ keepAlive: true })
 
 export function getGithubApp(): App {
     const app = new App({
@@ -27,6 +30,8 @@ export function getGithubApp(): App {
         webhooks: {
             secret: env.SECRET!,
         },
+
+        request: { agent },
     })
     return app
 }
@@ -346,22 +351,15 @@ export async function createNewRepo({
 
     console.log(`uploading files to github ${owner}/${repo}`)
     console.log(`creating repo for ${isGithubOrg ? 'org' : 'user'} ${owner}`)
+    // Use the correct octokit instance for subsequent operations
+    let repoOctokit = octokit
+
     const create = async (
         args: Parameters<typeof octokit.repos.createInOrg>[0],
     ) => {
         if (isGithubOrg) {
             return await octokit.repos.createInOrg(args)
         } else {
-            if (!oauthToken) {
-                throw new AppError(
-                    `Cannot create repo for user without Github token, reconnect Github`,
-                )
-            }
-            // const app = getGithubApp()
-            // const res = await app.oauth.refreshToken({
-            //     refreshToken: github.oauthRefreshToken,
-            // })
-            // const token = res.authentication.token
             const octokit = new Octokit({
                 auth: oauthToken,
             }).rest
@@ -375,22 +373,24 @@ export async function createNewRepo({
         private: privateRepo,
         description: `Repository created using Unframer`,
         has_wiki: false,
-        auto_init: false,
+        auto_init: true,
     }).catch((e) => {
         if (e.status === 422) {
             throw new AppError(`Repository name already used`)
         }
         throw e
     })
-    const branch = repoResult.default_branch
-    const { data: refData } = await octokit.git.getRef({
+    const defaultBranch = repoResult.default_branch
+
+    // Get the existing commit SHA from the auto-initialized repo
+    const { data: refData } = await repoOctokit.git.getRef({
         owner: owner,
         repo,
-        ref: `heads/${branch}`,
+        ref: `heads/${defaultBranch}`,
     })
     const commitSha = refData.object.sha
     console.log(`getting commit ${commitSha}`)
-    const { data: commitData } = await octokit.git.getCommit({
+    const { data: commitData } = await repoOctokit.git.getCommit({
         owner: owner,
         repo,
         commit_sha: commitSha,
@@ -410,69 +410,81 @@ export async function createNewRepo({
     if (!files.length) {
         return
     }
+
+    // Start collaborator lookup early but don't await it yet
     const addCollaboratorPromise = addGithubCollaboratorIfNeeded({
         addEmailAsContributor,
         owner,
         repo,
-        octokit,
+        octokit: repoOctokit,
     })
-    console.log('getting blobs')
-    const withBlobs = await Promise.all(
-        files.map(async (x) => {
-            const encoding = 'utf-8'
-            const blobData = await octokit.git.createBlob({
-                owner: owner,
+
+    console.log(`creating git blobs`)
+
+    // Build tree in one call with inline content for small files
+    const treeItems = await Promise.all(
+        files.map(async (f) => {
+            if (Buffer.byteLength(f.content, 'utf8') <= 100_000) {
+                return {
+                    path: f.filePath,
+                    mode: '100644' as const,
+                    type: 'blob' as const,
+                    content: f.content,
+                }
+            }
+            // Fallback for big files
+            const { data: blob } = await repoOctokit.git.createBlob({
+                owner,
                 repo,
-                content: x.content,
-                encoding,
+                content: f.content,
+                encoding: 'utf-8',
             })
             return {
-                ...x,
-                blobSha: blobData.data.sha,
-                blob: blobData.data,
+                path: f.filePath,
+                mode: '100644' as const,
+                type: 'blob' as const,
+                sha: blob.sha,
             }
         }),
     )
-
-    // Create a new tree from all of the files, so that a new commit can be made from it
-    const newTree = await createNewTree({
-        octokit,
+console.log('creating tree with inline content')
+    const { data: tree } = await repoOctokit.git.createTree({
         owner,
         repo,
-        create: withBlobs,
-        parentTreeSha: treeSha,
+        tree: treeItems,
+        base_tree: treeSha,
     })
 
-    // Create the new commit with all of the file changes
-
+    // Create the first commit with all of the file changes
     console.log('creating commit')
-    const { data: newCommit } = await octokit.git.createCommit({
+
+    const { data: commit } = await repoOctokit.git.createCommit({
         owner: owner,
         repo,
         message: `Unframer Initial Commit`,
-        tree: newTree.sha,
-
+        tree: tree.sha,
         committer: committer,
-        parents: [commitSha],
+        parents: [commitSha], // Use the existing commit as parent
     })
 
     try {
-        console.log('pushing commit')
-        // This pushes the commit to the main branch in GitHub
-        await octokit.git.updateRef({
+        console.log('updating branch')
+        // Update the existing branch with our new commit
+        await repoOctokit.git.updateRef({
             owner: owner,
             repo,
-            ref: `heads/${branch}`,
-            sha: newCommit.sha,
+            ref: `heads/${defaultBranch}`,
+            sha: commit.sha,
         })
     } catch (err) {
         throw err
     }
 
+    console.log(`waiting for collaborator addition`)
     const addedCollaborator = await addCollaboratorPromise
 
     return {
-        branch,
+        branch: defaultBranch,
         githubRepoId: String(repoResult.id),
         addedCollaborator,
     }
