@@ -2,6 +2,8 @@ import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { configFromFetch } from 'unframer-workspace/src/cli'
 import { describe, expect, test } from 'vitest'
 import { generateRepoName, generateUnframerRepo } from './unframer-github-repos'
+import { Octokit } from 'octokit'
+import { env } from './env'
 
 test('generateRepoName', () => {
     expect(
@@ -75,12 +77,31 @@ test(
     'create repo, without ai',
     async () => {
         const projectId = 'cf755ed7d59e0319'
+        const repo = 'example-test-repo-3'
+        const octokit = new Octokit({ auth: env.GITHUB_TOKEN_UNFRAMER_ORG })
+        try {
+            console.log(`deleting repo ${repo}`)
+            await octokit.rest.repos.delete({
+                owner: 'unframer',
+                repo,
+            })
+            // It can take a few seconds for GitHub to fully delete the repo
+            console.log(`witing for github to delete repo ${repo}`)
+            await new Promise((res) => setTimeout(res, 4 * 1000))
+        } catch (e) {
+            if (e.status === 404) {
+                // repo does not exist, ok
+            } else {
+                throw e
+            }
+        }
         const start = Date.now()
         const res = await generateUnframerRepo({
             projectId,
             projectTitle: 'example test repo',
-            repo: 'example-test-repo-3',
+            repo,
             projectSecret: 'x',
+            addProjectUserAsContributor: true,
             useAI: false,
             // description: 'example test repo description',
         })
