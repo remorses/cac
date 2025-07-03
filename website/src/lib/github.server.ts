@@ -35,9 +35,13 @@ export async function checkGitHubIsInstalled({ installationId }) {
     try {
         const octokit = await getGithubApp()
 
-        const installation = await octokit.octokit.rest.apps.getInstallation({
-            installation_id: installationId,
-        })
+        const installation = await withRetry(
+            () =>
+                octokit.octokit.rest.apps.getInstallation({
+                    installation_id: installationId,
+                }),
+            { maxRetries: 3, initialDelay: 1000 },
+        )
         return !!installation.data.id
     } catch (e) {
         if (e.status === 404) {
@@ -65,7 +69,10 @@ export async function getOctokit({ installationId }): Promise<Octokit> {
     const app = getGithubApp()
 
     // https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation
-    const octokit = await app.getInstallationOctokit(installationId)
+    const octokit = await withRetry(
+        () => app.getInstallationOctokit(installationId),
+        { maxRetries: 3, initialDelay: 1000 },
+    )
     // .catch(handleOctokitError(installationId))
     // installationsCache.set(installationId, octokit)
     return octokit
@@ -235,27 +242,28 @@ export async function upsertGithubFile({
         return
     }
     const base64New = Buffer.from(code).toString('base64')
-    const { data } = await octokit.rest.repos
-        .createOrUpdateFileContents({
-            owner: owner,
-            repo: repo,
-            path: githubPath,
-            message: getCommitMessage({
-                filePaths: [githubPath],
+    const { data } = await withRetry(
+        () =>
+            octokit.rest.repos.createOrUpdateFileContents({
+                owner: owner,
+                repo: repo,
+                path: githubPath,
+                message: getCommitMessage({
+                    filePaths: [githubPath],
+                }),
+                content: base64New,
+                sha,
+                branch: githubBranch,
+                committer: committer,
             }),
-            content: base64New,
-            sha,
-            branch: githubBranch,
-
-            committer: committer,
-        })
-        .catch((e) => {
-            notifyError(
-                e,
-                `Could not update github file ${owner}/${repo}/${githubBranch}, path ${githubPath} `,
-            )
-            return { data: null }
-        })
+        { maxRetries: 3, initialDelay: 1000 },
+    ).catch((e) => {
+        notifyError(
+            e,
+            `Could not update github file ${owner}/${repo}/${githubBranch}, path ${githubPath} `,
+        )
+        return { data: null }
+    })
     if (!data) {
         return
     }
@@ -286,10 +294,14 @@ export async function doesRepoExist({
     repo: string
 }) {
     try {
-        const res = await octokit.repos.get({
-            owner,
-            repo,
-        })
+        const res = await withRetry(
+            () =>
+                octokit.repos.get({
+                    owner,
+                    repo,
+                }),
+            { maxRetries: 3, initialDelay: 1000 },
+        )
         console.log(`Repository ${owner}/${repo} exists.`)
         return res.data
     } catch (error) {
@@ -363,7 +375,7 @@ export async function createNewRepo({
         private: privateRepo,
         description: `Repository created using Unframer`,
         has_wiki: false,
-        auto_init: true,
+        auto_init: false,
     }).catch((e) => {
         if (e.status === 422) {
             throw new AppError(`Repository name already used`)
@@ -483,27 +495,30 @@ async function addGithubCollaboratorIfNeeded({
         return addedCollaborator
     }
     try {
-        // First, try to get the user by email
-        const { data: userData } = await octokit.search
-            .users({
-                q: `${addEmailAsContributor} in:email`,
-                per_page: 1,
-            })
-            .catch((err) => {
-                console.log('Failed to search for github user by email', err)
-                return { data: { items: [] } }
-            })
+        // First, try to get the user by email with retry logic
+        const { data: userData } = await withRetry(
+            () =>
+                octokit.search.users({
+                    q: `${addEmailAsContributor} in:email`,
+                    per_page: 1,
+                }),
+            { maxRetries: 3, initialDelay: 1000 },
+        )
 
         if (userData.items && userData.items.length > 0) {
             const username = userData.items[0].login
 
-            // Add the user as a collaborator with maintain permission
-            await octokit.repos.addCollaborator({
-                owner,
-                repo,
-                username,
-                permission: 'maintain',
-            })
+            // Add the user as a collaborator with maintain permission with retry logic
+            await withRetry(
+                () =>
+                    octokit.repos.addCollaborator({
+                        owner,
+                        repo,
+                        username,
+                        permission: 'maintain',
+                    }),
+                { maxRetries: 3, initialDelay: 1000 },
+            )
 
             addedCollaborator = true
             console.log(
@@ -516,6 +531,10 @@ async function addGithubCollaboratorIfNeeded({
         }
     } catch (error) {
         console.error(`Failed to add github collaborator: ${error.message}`)
+        notifyError(
+            error,
+            `Failed to add collaborator ${addEmailAsContributor} to ${owner}/${repo}`,
+        )
     } finally {
         return addedCollaborator
     }
@@ -691,4 +710,89 @@ export async function getGithubFile({
     } catch (e) {}
     return null
 }
-type Repo = { owner: string; repo: string; branch: string }
+
+export type RetryOptions = {
+    maxRetries?: number
+    initialDelay?: number
+    maxDelay?: number
+    backoffFactor?: number
+    retryIf?: (error: any) => boolean
+}
+
+export const isRetryableError = (error: any): boolean => {
+    if (!error) return false
+
+    // HTTP status codes that should be retried
+    const retryableStatusCodes = [
+        408, // Request Timeout
+        429, // Too Many Requests
+        500, // Internal Server Error
+        502, // Bad Gateway
+        503, // Service Unavailable
+        504, // Gateway Timeout
+    ]
+
+    // Check for status code in error
+    if (error.status && retryableStatusCodes.includes(error.status)) {
+        return true
+    }
+
+    // Check for network errors
+    if (
+        error.code === 'ECONNRESET' ||
+        error.code === 'ENOTFOUND' ||
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ETIMEDOUT'
+    ) {
+        return true
+    }
+
+    // Check for timeout errors
+    if (error.message && error.message.includes('timeout')) {
+        return true
+    }
+
+    return false
+}
+
+export const withRetry = async <T>(
+    operation: () => Promise<T>,
+    options: RetryOptions = {},
+): Promise<T> => {
+    const {
+        maxRetries = 3,
+        initialDelay = 1000,
+        maxDelay = 10000,
+        backoffFactor = 2,
+        retryIf = isRetryableError,
+    } = options
+
+    let lastError: any
+    let delay = initialDelay
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await operation()
+        } catch (error) {
+            lastError = error
+
+            if (attempt === maxRetries || !retryIf(error)) {
+                throw error
+            }
+
+            console.log(
+                `Attempt ${attempt + 1} failed, retrying in ${delay}ms...`,
+                {
+                    error: error.message || error,
+                    status: error.status,
+                    code: error.code,
+                },
+            )
+
+            await new Promise((resolve) => setTimeout(resolve, delay))
+            delay = Math.min(delay * backoffFactor, maxDelay)
+        }
+    }
+
+    throw lastError
+}
