@@ -124,7 +124,7 @@ export async function getRepoFiles({
         return true
     })
     console.log(`found ${files.length} files in repo ${owner}/${repo}`)
-    const sema = new Sema(10)
+    const sema = new Sema(20)
     const downloadedFiles = await Promise.all(
         files.map(async (file) => {
             try {
@@ -364,7 +364,6 @@ export async function createNewRepo({
         description: `Repository created using Unframer`,
         has_wiki: false,
         auto_init: true,
-
     }).catch((e) => {
         if (e.status === 422) {
             throw new AppError(`Repository name already used`)
@@ -399,6 +398,12 @@ export async function createNewRepo({
     if (!files.length) {
         return
     }
+    const addCollaboratorPromise = addGithubCollaboratorIfNeeded({
+        addEmailAsContributor,
+        owner,
+        repo,
+        octokit,
+    })
     console.log('getting blobs')
     const withBlobs = await Promise.all(
         files.map(async (x) => {
@@ -452,44 +457,67 @@ export async function createNewRepo({
         throw err
     }
 
-    // Add collaborator if email is provided
-    let addedCollaborator = false
-    if (addEmailAsContributor) {
-        try {
-            // First, try to get the user by email
-            const { data: userData } = await octokit.search.users({
-                q: `${addEmailAsContributor} in:email`,
-                per_page: 1
-            }).catch((err) => {
-                console.log('Failed to search for github user by email', err)
-                return { data: { items: [] } }
-            })
-
-            if (userData.items && userData.items.length > 0) {
-                const username = userData.items[0].login
-
-                // Add the user as a collaborator with maintain permission
-                await octokit.repos.addCollaborator({
-                    owner,
-                    repo,
-                    username,
-                    permission: 'maintain'
-                })
-
-                addedCollaborator = true
-                console.log(`Successfully added ${username} as collaborator to ${owner}/${repo}`)
-            } else {
-                console.log(`Could not find GitHub user with email ${addEmailAsContributor}`)
-            }
-        } catch (error) {
-            console.error(`Failed to add github collaborator: ${error.message}`)
-        }
-    }
+    const addedCollaborator = await addCollaboratorPromise
 
     return {
         branch,
         githubRepoId: String(repoResult.id),
-        addedCollaborator
+        addedCollaborator,
+    }
+}
+
+// Add collaborator if email is provided
+async function addGithubCollaboratorIfNeeded({
+    addEmailAsContributor,
+    owner,
+    repo,
+    octokit,
+}: {
+    addEmailAsContributor?: string
+    owner: string
+    repo: string
+    octokit: Octokit['rest']
+}) {
+    let addedCollaborator = false
+    if (!addEmailAsContributor) {
+        return addedCollaborator
+    }
+    try {
+        // First, try to get the user by email
+        const { data: userData } = await octokit.search
+            .users({
+                q: `${addEmailAsContributor} in:email`,
+                per_page: 1,
+            })
+            .catch((err) => {
+                console.log('Failed to search for github user by email', err)
+                return { data: { items: [] } }
+            })
+
+        if (userData.items && userData.items.length > 0) {
+            const username = userData.items[0].login
+
+            // Add the user as a collaborator with maintain permission
+            await octokit.repos.addCollaborator({
+                owner,
+                repo,
+                username,
+                permission: 'maintain',
+            })
+
+            addedCollaborator = true
+            console.log(
+                `Successfully added ${username} as collaborator to ${owner}/${repo}`,
+            )
+        } else {
+            console.log(
+                `Could not find GitHub user with email ${addEmailAsContributor}`,
+            )
+        }
+    } catch (error) {
+        console.error(`Failed to add github collaborator: ${error.message}`)
+    } finally {
+        return addedCollaborator
     }
 }
 
