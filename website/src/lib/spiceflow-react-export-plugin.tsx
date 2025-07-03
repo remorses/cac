@@ -744,7 +744,7 @@ export function createGithubSetupEmail({
     projectName: string
 }) {
     const githubUrl = new URL(
-        href(`/api/react-export-plugin/github/create-repo/:projectId`, {
+        href(`/api/react-export-plugin/github/repo/:projectId`, {
             projectId,
         }),
         env.PUBLIC_URL,
