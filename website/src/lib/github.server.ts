@@ -312,6 +312,7 @@ export async function createNewRepo({
     octokit,
     privateRepo = true,
     oauthToken,
+    addEmailAsContributor,
 }: {
     owner
     isGithubOrg
@@ -320,6 +321,7 @@ export async function createNewRepo({
     octokit: Octokit['rest']
     privateRepo: boolean
     oauthToken?: string
+    addEmailAsContributor?: string
 }) {
     files = files.filter((x) => {
         return true
@@ -449,7 +451,46 @@ export async function createNewRepo({
     } catch (err) {
         throw err
     }
-    return { branch, githubRepoId: String(repoResult.id) }
+
+    // Add collaborator if email is provided
+    let addedCollaborator = false
+    if (addEmailAsContributor) {
+        try {
+            // First, try to get the user by email
+            const { data: userData } = await octokit.search.users({
+                q: `${addEmailAsContributor} in:email`,
+                per_page: 1
+            }).catch((err) => {
+                console.log('Failed to search for github user by email', err)
+                return { data: { items: [] } }
+            })
+
+            if (userData.items && userData.items.length > 0) {
+                const username = userData.items[0].login
+
+                // Add the user as a collaborator with maintain permission
+                await octokit.repos.addCollaborator({
+                    owner,
+                    repo,
+                    username,
+                    permission: 'maintain'
+                })
+
+                addedCollaborator = true
+                console.log(`Successfully added ${username} as collaborator to ${owner}/${repo}`)
+            } else {
+                console.log(`Could not find GitHub user with email ${addEmailAsContributor}`)
+            }
+        } catch (error) {
+            console.error(`Failed to add github collaborator: ${error.message}`)
+        }
+    }
+
+    return {
+        branch,
+        githubRepoId: String(repoResult.id),
+        addedCollaborator
+    }
 }
 
 export const createNewTree = async ({
