@@ -51,14 +51,20 @@ export default defineConfig({
             mdExtensions: [],
         }),
         // TODO vitest breaks with opentelemetry invalid esm output, react router makes vitest import the module package.json file
-       !process.env.VITEST && reactRouter(),
+        !process.env.VITEST && reactRouter(),
         reactRouterHonoServer(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         // Inspect(),
         tsconfigPaths(),
         viteExternalsPlugin({
-            externals: ['dprint-node', 'playwright', 'htmlrewriter', '@sentry/node'],
+            externals: [
+                'dprint-node',
+                'playwright',
+                'htmlrewriter',
+                '@sentry/node',
+                'pg',
+            ],
         }),
         {
             apply(config, env) {

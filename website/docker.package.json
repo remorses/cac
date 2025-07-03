@@ -3,8 +3,9 @@
   "scripts": {},
   "dependencies": {
     "@prisma/client": "*",
-    "@sentry/node": "^9.27.0",
+    "@sentry/node": "^9.30.0",
     "htmlrewriter": "^0.0.12",
+    "pg": "^8.16.3",
     "sharp": "^0.33.5"
   }
 }
