@@ -2,7 +2,7 @@
     // "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "lib": ["DOM", "DOM.Iterable", "ES2022", "esnext"],
-        "types": ["@react-router/node", "vite/client"],
+        "types": ["@react-router/node", "vite/client", "./src/global.d.ts"],
 
         "isolatedModules": true,
         // "rootDir": "src",
