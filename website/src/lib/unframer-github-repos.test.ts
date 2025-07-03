@@ -88,12 +88,13 @@ test(
     1000 * 100,
 )
 
-test.skip(
+test(
     'create repo for 547a70ab05fb01e5',
     async () => {
         const projectId = '547a70ab05fb01e5'
         const res = await generateUnframerRepo({
             projectId,
+            // repo: `test-for-547a70ab05fb01e5-ai`,
             projectSecret: '547a70ab05fb01e5',
             // description: 'example test repo description',
         })
