@@ -22,7 +22,7 @@ import type { ButtonProps } from '@heroui/react'
 import { href, useLoaderData } from 'react-router'
 import { ReactExportFaq } from 'website/src/components/react-export-faq'
 import { discountCodeUrl, env, reactExportVariants } from 'website/src/lib/env'
-import { Info, Route } from './+types/_board.react-export-pricing'
+import {  Route } from './+types/_board.react-export-pricing'
 import LogosFramerComponent from 'website/src/framer/logos'
 import TestimonialsFramerComponent from 'website/src/framer/testimonials'
 
@@ -121,7 +121,7 @@ export function loader({ request }: Route.LoaderArgs) {
 }
 
 export function ReactExportPricing({}) {
-    const { orgId, email } = useLoaderData<Info['loaderData']>()
+    const { orgId, email } = useLoaderData<Route.ComponentProps['loaderData']>()
     const [selectedFrequency, setSelectedFrequency] = React.useState(
         frequencies[0],
     )
