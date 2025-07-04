@@ -571,10 +571,10 @@ export const reactPluginApp = new Spiceflow({
                         ).toString(),
                         body: {
                             secret: env.SECRET,
+                            sendEmail: isNewProject,
                             projectId: upsertedProject.projectId,
                         },
                         timeout: 900,
-                        sendEmail: isNewProject,
                         flowControl: {
                             parallelism: 1,
                             key: `sync-${upsertedProject.projectId}`,
@@ -585,7 +585,7 @@ export const reactPluginApp = new Spiceflow({
                     })
 
                 console.log(
-                    `Scheduled repo generation for new project ${projectId}`,
+                    `Scheduled repo generation for project ${projectId}`,
                 )
             }
 
