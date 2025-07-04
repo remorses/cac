@@ -257,6 +257,14 @@ export async function upsertUnframerRepoWithFiles({
             repo,
         })
 
+        if (homepage || title)
+            await octokit.rest.repos.update({
+                owner,
+                repo,
+                description: title,
+                homepage,
+            })
+
         const url = `upserted https://github.com/${owner}/${repo}`
         console.log(url)
         return { url }
