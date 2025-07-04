@@ -208,8 +208,6 @@ export const reactPluginApp = new Spiceflow({
                 throw new AppError('Invalid secret')
             }
 
-
-
             // Call the generateUnframerRepo function
             const result = await generateUnframerRepo({
                 projectId: body.projectId,
@@ -446,42 +444,40 @@ export const reactPluginApp = new Spiceflow({
             console.log(
                 `creating ${components.length} components for project ${upsertedProject.projectId}`,
             )
-            await prisma.$transaction([
+            await prisma.$transaction(async (prisma) => {
                 // Delete all existing records
-                prisma.reactExportColorStyle.deleteMany({
+                await prisma.reactExportColorStyle.deleteMany({
                     where: { projectId },
-                }),
-                prisma.reactExportWebPage.deleteMany({
+                })
+                await prisma.reactExportWebPage.deleteMany({
                     where: { projectId },
-                }),
+                })
                 // only delete locales if there are some, so users can use locales created in my database manually
-                ...(locales?.length
-                    ? [
-                          prisma.reactExportLocale.deleteMany({
-                              where: { projectId },
-                          }),
-                      ]
-                    : []),
-                prisma.reactExportComponentBreakpoint.deleteMany({
+                if (locales?.length) {
+                    await prisma.reactExportLocale.deleteMany({
+                        where: { projectId },
+                    })
+                }
+                await prisma.reactExportComponentBreakpoint.deleteMany({
                     where: { projectId },
-                }),
-                prisma.reactExportComponentInstance.deleteMany({
+                })
+                await prisma.reactExportComponentInstance.deleteMany({
                     where: { projectId },
-                }),
+                })
                 // Insert all new records
-                prisma.reactExportComponent.createMany({
+                await prisma.reactExportComponent.createMany({
                     data: components.map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportColorStyle.createMany({
+                })
+                await prisma.reactExportColorStyle.createMany({
                     data: colorStyles.map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportLocale.createMany({
+                })
+                await prisma.reactExportLocale.createMany({
                     data: locales.map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportWebPage.createMany({
+                })
+                await prisma.reactExportWebPage.createMany({
                     data: pages.map((x) => ({ ...x, projectId })),
-                }),
-                prisma.reactExportComponentBreakpoint.createMany({
+                })
+                await prisma.reactExportComponentBreakpoint.createMany({
                     data:
                         breakpoints
                             ?.filter(
@@ -492,73 +488,65 @@ export const reactPluginApp = new Spiceflow({
                                     x.variantId,
                             )
                             .map((x) => ({ ...x, projectId })) || [],
-                }),
-                ...(componentInstances?.length
-                    ? [
-                          prisma.reactExportComponentInstance.createMany({
-                              data:
-                                  componentInstances
-                                      .filter(isTruthy)
-                                      ?.filter(
-                                          (x) =>
-                                              x.projectId &&
-                                              x.componentId &&
-                                              x.controls &&
-                                              x.webPageId,
-                                      )
-                                      .filter((x) => {
-                                          if (
-                                              !x.projectId ||
-                                              !x.componentId ||
-                                              !x.webPageId
-                                          ) {
-                                              console.log(
-                                                  `[${shortId}] Skipping instance with missing required field:`,
-                                                  {
-                                                      projectId: x.projectId,
-                                                      componentId:
-                                                          x.componentId,
-                                                      webPageId: x.webPageId,
-                                                  },
-                                              )
-                                              return false
-                                          }
+                })
+                if (componentInstances?.length) {
+                    await prisma.reactExportComponentInstance.createMany({
+                        data:
+                            componentInstances
+                                .filter(isTruthy)
+                                ?.filter(
+                                    (x) =>
+                                        x.projectId &&
+                                        x.componentId &&
+                                        x.controls &&
+                                        x.webPageId,
+                                )
+                                .filter((x) => {
+                                    if (
+                                        !x.projectId ||
+                                        !x.componentId ||
+                                        !x.webPageId
+                                    ) {
+                                        console.log(
+                                            `[${shortId}] Skipping instance with missing required field:`,
+                                            {
+                                                projectId: x.projectId,
+                                                componentId: x.componentId,
+                                                webPageId: x.webPageId,
+                                            },
+                                        )
+                                        return false
+                                    }
 
-                                          const validComponents = new Set(
-                                              components.map((x) => x.id),
-                                          )
-                                          const validPages = new Set(
-                                              pages.map((x) => x.webPageId),
-                                          )
+                                    const validComponents = new Set(
+                                        components.map((x) => x.id),
+                                    )
+                                    const validPages = new Set(
+                                        pages.map((x) => x.webPageId),
+                                    )
 
-                                          if (
-                                              !validComponents.has(
-                                                  x.componentId,
-                                              )
-                                          ) {
-                                              console.log(
-                                                  `[${shortId}] Skipping instance with non-existent componentId:`,
-                                                  x.componentId,
-                                              )
-                                              return false
-                                          }
+                                    if (!validComponents.has(x.componentId)) {
+                                        console.log(
+                                            `[${shortId}] Skipping instance with non-existent componentId:`,
+                                            x.componentId,
+                                        )
+                                        return false
+                                    }
 
-                                          if (!validPages.has(x.webPageId)) {
-                                              console.log(
-                                                  `[${shortId}] Skipping instance with non-existent webPageId:`,
-                                                  x.webPageId,
-                                              )
-                                              return false
-                                          }
+                                    if (!validPages.has(x.webPageId)) {
+                                        console.log(
+                                            `[${shortId}] Skipping instance with non-existent webPageId:`,
+                                            x.webPageId,
+                                        )
+                                        return false
+                                    }
 
-                                          return true
-                                      })
-
-                                      .map((x) => ({ ...x, projectId })) || [],
-                          }),
-                      ]
-                    : []),
-            ])
+                                    return true
+                                })
+                                .map((x) => ({ ...x, projectId })) || [],
+                    })
+                }
+            })
             console.timeEnd(`[${shortId}] insert new`)
             console.timeEnd(`[${shortId}] total upsert`)
 
