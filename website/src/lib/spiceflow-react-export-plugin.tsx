@@ -433,29 +433,6 @@ export const reactPluginApp = new Spiceflow({
                 throw new Error('Project not created')
             }
 
-            const isPersonalSub = [
-                reactExportVariants.personal.monthly,
-                reactExportVariants.personal.yearly,
-            ].includes(reactSub?.variantId || '')
-            let needsBusinessSubscription =
-                !userEmail?.endsWith('@framer.com') &&
-                isPersonalSub &&
-                existingProject?.framerUserId &&
-                framerUserId &&
-                framerUserId !== existingProject.framerUserId
-            // needsBusinessSubscription = true
-            if (needsBusinessSubscription) {
-                throw Response.json(
-                    {
-                        message: 'Need business subscription',
-                        email: projectEmail,
-                    },
-                    {
-                        status: reactExportStatusErrors.SUB_UPGRADE_NECESSARY,
-                    },
-                )
-            }
-
             await prisma.$transaction(async (tx) => {
                 // First upsert the project
 
@@ -612,6 +589,29 @@ export const reactPluginApp = new Spiceflow({
                             headers: {
                                 'Content-Type': 'application/json',
                             },
+                        },
+                    )
+                }
+
+                const isPersonalSub = [
+                    reactExportVariants.personal.monthly,
+                    reactExportVariants.personal.yearly,
+                ].includes(reactSub?.variantId || '')
+                let needsBusinessSubscription =
+                    !userEmail?.endsWith('@framer.com') &&
+                    isPersonalSub &&
+                    existingProject?.framerUserId &&
+                    framerUserId &&
+                    framerUserId !== existingProject.framerUserId
+                // needsBusinessSubscription = true
+                if (needsBusinessSubscription) {
+                    throw Response.json(
+                        {
+                            message: 'Need business subscription',
+                            email: projectEmail,
+                        },
+                        {
+                            status: reactExportStatusErrors.SUB_UPGRADE_NECESSARY,
                         },
                     )
                 }

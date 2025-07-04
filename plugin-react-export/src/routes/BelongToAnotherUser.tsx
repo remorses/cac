@@ -1,10 +1,18 @@
-import { Paths, PluginDataKeys, withMode } from '@/lib/utils'
+import {
+    getReactPluginData,
+    LoaderReturnType,
+    Paths,
+    pluginApiClient,
+    PluginDataKeys,
+    withMode,
+} from '@/lib/utils'
 import { Button } from 'plugin-migrate/src/components/Button'
 import {
     Form,
     LoaderFunctionArgs,
     redirect,
     RouteObject,
+    useLoaderData,
     useSearchParams,
 } from 'react-router'
 
@@ -16,10 +24,31 @@ async function action({}: LoaderFunctionArgs) {
     throw redirect(withMode(Paths.login))
 }
 
+async function loader({}: LoaderFunctionArgs) {
+    const { projectId } = await getReactPluginData()
+    const [org] = await Promise.all([
+        pluginApiClient.api.plugins.currentOrg
+            .post({})
+            .then(({ data, error }) => {
+                if (error) {
+                    throw error
+                }
+                return data
+            }),
+    ])
+    const { email, orgId } = org
+    return {
+        projectId,
+        userEmail: email,
+        orgId,
+    }
+}
+
 export function BelongToAnotherUser(): RouteObject {
     return {
         path: Paths.belongToAnotherUser,
         action,
+        loader,
         Component,
     }
 }
@@ -46,6 +75,8 @@ const errorIcon = (
 function Component() {
     const [searchParams] = useSearchParams()
     const email = searchParams.get('email') || ''
+    const { userEmail } =
+        (useLoaderData() as LoaderReturnType<typeof loader>) || {}
     return (
         <Form
             method='POST'
@@ -64,7 +95,7 @@ function Component() {
                 </div>
                 <a
                     href={feedbackUrl({
-                        email,
+                        email: userEmail,
                         pluginName: 'React Export',
                     })}
                     target='_blank'
