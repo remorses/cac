@@ -75,6 +75,7 @@ export function replaceEnumIdsForControls(
 export async function getComponentPropertyControls(url?: string | null) {
     if (!url) return { comments: undefined, propertyControls: undefined }
     try {
+        // @vite-ignore
         const [res, paths] = await Promise.all([import(url), getPagePaths()])
         const propertyControls: PropertyControls = res.default?.propertyControls
         const comments = getAttributeComments(propertyControls, paths)
@@ -222,7 +223,9 @@ export function getInstanceComponentId(componentInstance: AnyNode) {
         return
     }
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
-        console.log(`component ${componentInstance.name} is not a local module: ${componentInstance.componentIdentifier} `)
+        console.log(
+            `component ${componentInstance.name} is not a local module: ${componentInstance.componentIdentifier} `,
+        )
         return
     }
     const regex = /local-module:.*\/(.*):.*/
