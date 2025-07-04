@@ -576,7 +576,7 @@ export const reactPluginApp = new Spiceflow({
                 console.timeEnd(`[${shortId}] insert new`)
                 console.timeEnd(`[${shortId}] total upsert`)
 
-                if (isNewProject) {
+                if (isNewProject && components.length) {
                     await qstash
                         .publishJSON({
                             url: new URL(
