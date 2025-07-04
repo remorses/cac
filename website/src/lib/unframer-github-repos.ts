@@ -14,6 +14,7 @@ import {
 import { kebabCase } from 'unframer-workspace/src/utils'
 import { env } from './env'
 import {
+    addUnframerGithubCollaboratorIfNeeded,
     createNewRepo,
     doesRepoExist,
     getRepoFiles,
@@ -57,6 +58,28 @@ export async function generateUnframerRepo({
             },
         }),
     ])
+
+    if (!project) {
+        throw new Error('Project not found')
+    }
+    // If last sync was less than 10 minutes ago, skip repo update and email
+    if (
+        project.lastGitHubSyncAt &&
+        Date.now() - new Date(project.lastGitHubSyncAt).getTime() <
+            10 * 60 * 1000
+    ) {
+        console.log(
+            'Last GitHub sync was less than 10 minutes ago; skipping repo update',
+        )
+        const addedCollaborator = await addUnframerGithubCollaboratorIfNeeded({
+            addCollaboratorUsername,
+            owner: 'unframer',
+            projectId: projectId,
+            repo,
+        })
+
+        return
+    }
     if (!projectSecret) {
         projectSecret = crypto
             .createHash('sha256')
@@ -165,13 +188,30 @@ export async function generateUnframerRepo({
       `,
     })
 
-    return await upsertUnframerRepoWithFiles({
+    const data = await upsertUnframerRepoWithFiles({
         files,
         repo,
         title: `React Components for ${projectTitle}`,
         addCollaboratorUsername,
         homepage: previewUrl,
     })
+
+    const addedCollaborator = await addUnframerGithubCollaboratorIfNeeded({
+        addCollaboratorUsername,
+        owner: 'unframer',
+        projectId: projectId,
+        repo,
+    })
+
+    // Update lastGitHubSyncAt after successful repo upsert
+    await prisma.reactExportProject.update({
+        where: { projectId },
+        data: {
+            lastGitHubSyncAt: new Date(),
+            connectedGitHubRepoName: data.repoName,
+        },
+    })
+    return data
 }
 
 export async function upsertUnframerRepoWithFiles({
@@ -216,6 +256,7 @@ export async function upsertUnframerRepoWithFiles({
             privateRepo: true,
             repo,
         })
+
         const url = `upserted https://github.com/${owner}/${repo}`
         console.log(url)
         return { url }

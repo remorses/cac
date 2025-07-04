@@ -2,14 +2,14 @@ import { prisma } from 'db'
 import { OAuthApp, Octokit } from 'octokit'
 import { useEffect, useRef } from 'react'
 import {
-  data,
-  Form,
-  href,
-  redirect,
-  useLoaderData,
-  useNavigation,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+    data,
+    Form,
+    href,
+    redirect,
+    useLoaderData,
+    useNavigation,
+    type ActionFunctionArgs,
+    type LoaderFunctionArgs,
 } from 'react-router'
 import { env } from 'website/src/lib/env'
 import { addUnframerGithubCollaboratorIfNeeded } from 'website/src/lib/github.server'
@@ -105,28 +105,44 @@ export async function action({ request }: ActionFunctionArgs) {
             addCollaboratorUsername: user.login,
             owner: 'unframer',
             repo,
+            projectId: project.projectId,
         })
+
+        await prisma.reactExportProject.update({
+            where: { projectId: state.projectId },
+            data: {
+                connectedGitHubRepoAt: new Date(),
+            },
+        })
+        console.log(
+            `Connected project ${state.projectId} to GitHub repo: ${repo}`,
+        )
+
         throw redirect(existingRepoUrl)
     }
-    const { url: repoUrl, repoName } = await generateUnframerRepo({
+    const data = await generateUnframerRepo({
         projectId: state.projectId,
         projectTitle: project.projectName || 'Untitled',
         addCollaboratorUsername: user.login,
         useAI: false,
     })
+    if (!data) {
+        return {
+            success: false,
+            message: 'skipped sync',
+        }
+    }
+    const { url: repoUrl, repoName: repo } = data
 
-    // Save repo connection to database
-    if (repoName) {
+    if (repo) {
         await prisma.reactExportProject.update({
             where: { projectId: state.projectId },
             data: {
-                connectedGitHubRepoName: repoName,
-                invitedGitHubRepoUsername: user.login,
                 connectedGitHubRepoAt: new Date(),
             },
         })
         console.log(
-            `Connected project ${state.projectId} to GitHub repo: ${repoName}`,
+            `Connected project ${state.projectId} to GitHub repo: ${repo}`,
         )
     }
 

@@ -411,13 +411,6 @@ export async function createNewRepo({
         return
     }
 
-    // Add collaborator if needed
-    const addedCollaborator = await addUnframerGithubCollaboratorIfNeeded({
-        addCollaboratorUsername,
-        owner,
-        repo,
-    })
-
     console.log(`creating git blobs`)
 
     // Build tree in one call with inline content for small files
@@ -482,7 +475,6 @@ export async function createNewRepo({
     return {
         branch: defaultBranch,
         githubRepoId: String(repoResult.id),
-        addedCollaborator,
     }
 }
 
@@ -490,8 +482,10 @@ export async function addUnframerGithubCollaboratorIfNeeded({
     addCollaboratorUsername,
     owner = 'unframer',
     repo,
+    projectId,
 }: {
     addCollaboratorUsername?: string
+    projectId: string
     owner: string
     repo: string
 }) {
@@ -516,6 +510,13 @@ export async function addUnframerGithubCollaboratorIfNeeded({
         console.log(
             `Successfully added ${addCollaboratorUsername} as collaborator to ${owner}/${repo}`,
         )
+
+        await prisma.reactExportProject.update({
+            where: { projectId: projectId },
+            data: {
+                invitedGitHubRepoUsername: addCollaboratorUsername,
+            },
+        })
 
         return true
     } catch (error) {
