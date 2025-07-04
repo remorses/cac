@@ -519,6 +519,7 @@ model ReactExportProject {
   connectedGitHubRepoName     String?
   invitedGitHubRepoUsername   String?
   connectedGitHubRepoAt       DateTime?
+  lastGitHubSyncAt            DateTime?
 
   org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 

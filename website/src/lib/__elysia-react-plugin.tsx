@@ -274,6 +274,7 @@ export const reactPluginApp = new Spiceflow({
                     repo,
                 })
             }
+
             const cwd = path.resolve(
                 process.cwd(),
                 'outputs',

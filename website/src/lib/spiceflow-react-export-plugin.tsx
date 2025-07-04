@@ -208,6 +208,8 @@ export const reactPluginApp = new Spiceflow({
                 throw new AppError('Invalid secret')
             }
 
+
+
             // Call the generateUnframerRepo function
             const result = await generateUnframerRepo({
                 projectId: body.projectId,
@@ -259,6 +261,13 @@ export const reactPluginApp = new Spiceflow({
                     error: 'User email not found',
                 })
             }
+
+            if (!body.sendEmail) {
+                return {
+                    success: true,
+                }
+            }
+
             const projectId = project.projectId
             const projectName = project.projectName || 'without name'
             // const subscription = await getReactSub({
@@ -301,6 +310,7 @@ export const reactPluginApp = new Spiceflow({
         {
             body: z.object({
                 secret: z.string(),
+                sendEmail: z.boolean().optional(),
                 projectId: z.string(),
             }),
         },
@@ -552,7 +562,7 @@ export const reactPluginApp = new Spiceflow({
             console.timeEnd(`[${shortId}] insert new`)
             console.timeEnd(`[${shortId}] total upsert`)
 
-            if (isNewProject && components.length) {
+            if (components.length) {
                 await qstash
                     .publishJSON({
                         url: new URL(
@@ -564,6 +574,7 @@ export const reactPluginApp = new Spiceflow({
                             projectId: upsertedProject.projectId,
                         },
                         timeout: 900,
+                        sendEmail: isNewProject,
                         flowControl: {
                             parallelism: 1,
                             key: `sync-${upsertedProject.projectId}`,

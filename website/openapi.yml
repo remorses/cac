@@ -666,6 +666,8 @@ paths:
               properties:
                 secret:
                   type: string
+                sendEmail:
+                  type: boolean
                 projectId:
                   type: string
               required:
