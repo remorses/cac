@@ -433,191 +433,189 @@ export const reactPluginApp = new Spiceflow({
                 throw new Error('Project not created')
             }
 
-            await prisma.$transaction(async (tx) => {
-                // First upsert the project
-
+            console.log(
+                `creating ${components.length} components for project ${upsertedProject.projectId}`,
+            )
+            await prisma.$transaction([
                 // Delete all existing records
-                console.time(`[${shortId}] delete existing`)
-                await Promise.all([
-                    tx.reactExportComponent.deleteMany({
-                        where: { projectId },
-                    }),
-                    tx.reactExportColorStyle.deleteMany({
-                        where: { projectId },
-                    }),
-                    tx.reactExportWebPage.deleteMany({
-                        where: { projectId },
-                    }),
-                    // only delete locales if there are some, so users can use locales created in my database manually
-                    locales?.length &&
-                        tx.reactExportLocale.deleteMany({
-                            where: { projectId },
-                        }),
-                    tx.reactExportComponentBreakpoint.deleteMany({
-                        where: { projectId },
-                    }),
-                    tx.reactExportComponentInstance.deleteMany({
-                        where: { projectId },
-                    }),
-                ])
-                console.timeEnd(`[${shortId}] delete existing`)
-
-                const validComponents = new Set(components.map((x) => x.id))
-                const validPages = new Set(pages.map((x) => x.webPageId))
+                prisma.reactExportColorStyle.deleteMany({
+                    where: { projectId },
+                }),
+                prisma.reactExportWebPage.deleteMany({
+                    where: { projectId },
+                }),
+                // only delete locales if there are some, so users can use locales created in my database manually
+                ...(locales?.length
+                    ? [
+                          prisma.reactExportLocale.deleteMany({
+                              where: { projectId },
+                          }),
+                      ]
+                    : []),
+                prisma.reactExportComponentBreakpoint.deleteMany({
+                    where: { projectId },
+                }),
+                prisma.reactExportComponentInstance.deleteMany({
+                    where: { projectId },
+                }),
                 // Insert all new records
-                console.time(`[${shortId}] insert new`)
-                await Promise.all(
-                    [
-                        tx.reactExportComponent.createMany({
-                            data: components.map((x) => ({ ...x, projectId })),
-                        }),
-                        tx.reactExportColorStyle.createMany({
-                            data: colorStyles.map((x) => ({ ...x, projectId })),
-                        }),
-                        tx.reactExportLocale.createMany({
-                            data: locales.map((x) => ({ ...x, projectId })),
-                        }),
-                        tx.reactExportWebPage.createMany({
-                            data: pages.map((x) => ({ ...x, projectId })),
-                        }),
-                        tx.reactExportComponentBreakpoint.createMany({
-                            data:
-                                breakpoints
-                                    ?.filter(
-                                        (x) =>
-                                            x.breakpointName &&
-                                            x.width &&
-                                            x.componentId &&
-                                            x.variantId,
-                                    )
-                                    .map((x) => ({ ...x, projectId })) || [],
-                        }),
-                        componentInstances?.length &&
-                            tx.reactExportComponentInstance.createMany({
-                                data:
-                                    componentInstances
-                                        .filter(isTruthy)
-                                        ?.filter(
-                                            (x) =>
-                                                x.projectId &&
-                                                x.componentId &&
-                                                x.controls &&
-                                                x.webPageId,
-                                        )
-                                        .filter((x) => {
-                                            if (
-                                                !x.projectId ||
-                                                !x.componentId ||
-                                                !x.webPageId
-                                            ) {
-                                                console.log(
-                                                    `[${shortId}] Skipping instance with missing required field:`,
-                                                    {
-                                                        projectId: x.projectId,
-                                                        componentId:
-                                                            x.componentId,
-                                                        webPageId: x.webPageId,
-                                                    },
-                                                )
-                                                return false
-                                            }
+                prisma.reactExportComponent.createMany({
+                    data: components.map((x) => ({ ...x, projectId })),
+                }),
+                prisma.reactExportColorStyle.createMany({
+                    data: colorStyles.map((x) => ({ ...x, projectId })),
+                }),
+                prisma.reactExportLocale.createMany({
+                    data: locales.map((x) => ({ ...x, projectId })),
+                }),
+                prisma.reactExportWebPage.createMany({
+                    data: pages.map((x) => ({ ...x, projectId })),
+                }),
+                prisma.reactExportComponentBreakpoint.createMany({
+                    data:
+                        breakpoints
+                            ?.filter(
+                                (x) =>
+                                    x.breakpointName &&
+                                    x.width &&
+                                    x.componentId &&
+                                    x.variantId,
+                            )
+                            .map((x) => ({ ...x, projectId })) || [],
+                }),
+                ...(componentInstances?.length
+                    ? [
+                          prisma.reactExportComponentInstance.createMany({
+                              data:
+                                  componentInstances
+                                      .filter(isTruthy)
+                                      ?.filter(
+                                          (x) =>
+                                              x.projectId &&
+                                              x.componentId &&
+                                              x.controls &&
+                                              x.webPageId,
+                                      )
+                                      .filter((x) => {
+                                          if (
+                                              !x.projectId ||
+                                              !x.componentId ||
+                                              !x.webPageId
+                                          ) {
+                                              console.log(
+                                                  `[${shortId}] Skipping instance with missing required field:`,
+                                                  {
+                                                      projectId: x.projectId,
+                                                      componentId:
+                                                          x.componentId,
+                                                      webPageId: x.webPageId,
+                                                  },
+                                              )
+                                              return false
+                                          }
 
-                                            if (
-                                                !validComponents.has(
-                                                    x.componentId,
-                                                )
-                                            ) {
-                                                console.log(
-                                                    `[${shortId}] Skipping instance with non-existent componentId:`,
-                                                    x.componentId,
-                                                )
-                                                return false
-                                            }
+                                          const validComponents = new Set(
+                                              components.map((x) => x.id),
+                                          )
+                                          const validPages = new Set(
+                                              pages.map((x) => x.webPageId),
+                                          )
 
-                                            if (!validPages.has(x.webPageId)) {
-                                                console.log(
-                                                    `[${shortId}] Skipping instance with non-existent webPageId:`,
-                                                    x.webPageId,
-                                                )
-                                                return false
-                                            }
+                                          if (
+                                              !validComponents.has(
+                                                  x.componentId,
+                                              )
+                                          ) {
+                                              console.log(
+                                                  `[${shortId}] Skipping instance with non-existent componentId:`,
+                                                  x.componentId,
+                                              )
+                                              return false
+                                          }
 
-                                            return true
-                                        })
+                                          if (!validPages.has(x.webPageId)) {
+                                              console.log(
+                                                  `[${shortId}] Skipping instance with non-existent webPageId:`,
+                                                  x.webPageId,
+                                              )
+                                              return false
+                                          }
 
-                                        .map((x) => ({ ...x, projectId })) ||
-                                    [],
-                            }),
-                    ].filter(Boolean),
+                                          return true
+                                      })
+
+                                      .map((x) => ({ ...x, projectId })) || [],
+                          }),
+                      ]
+                    : []),
+            ])
+            console.timeEnd(`[${shortId}] insert new`)
+            console.timeEnd(`[${shortId}] total upsert`)
+
+            if (isNewProject && components.length) {
+                await qstash
+                    .publishJSON({
+                        url: new URL(
+                            '/api/plugins/reactExportPlugin/upsertUnframerRepoWithAI',
+                            env.PUBLIC_URL,
+                        ).toString(),
+                        body: {
+                            secret: env.SECRET,
+                            projectId: upsertedProject.projectId,
+                        },
+                        timeout: 900,
+                        flowControl: {
+                            parallelism: 1,
+                            key: `sync-${upsertedProject.projectId}`,
+                        },
+                    })
+                    .catch((error) => {
+                        notifyError(error, 'Error queuing repo AI task')
+                    })
+
+                console.log(
+                    `Scheduled repo generation for new project ${projectId}`,
                 )
-                console.timeEnd(`[${shortId}] insert new`)
-                console.timeEnd(`[${shortId}] total upsert`)
+            }
 
-                if (isNewProject && components.length) {
-                    await qstash
-                        .publishJSON({
-                            url: new URL(
-                                '/api/plugins/reactExportPlugin/upsertUnframerRepoWithAI',
-                                env.PUBLIC_URL,
-                            ).toString(),
-                            body: {
-                                secret: env.SECRET,
-                                projectId: upsertedProject.projectId,
-                            },
-                            timeout: 900,
-                            flowControl: {
-                                parallelism: 1,
-                                key: `sync-${upsertedProject.projectId}`,
-                            },
-                        })
-                        .catch((error) => {
-                            notifyError(error, 'Error queuing repo AI task')
-                        })
-
-                    console.log(
-                        `Scheduled repo generation for new project ${projectId}`,
-                    )
-                }
-
-                if (needsToBuy) {
-                    throw new Response(
-                        JSON.stringify({
-                            message: 'Need subscription',
-                        }),
-                        {
-                            status: reactExportStatusErrors.SUB_NEEDED,
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+            if (needsToBuy) {
+                throw new Response(
+                    JSON.stringify({
+                        message: 'Need subscription',
+                    }),
+                    {
+                        status: reactExportStatusErrors.SUB_NEEDED,
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                    )
-                }
+                    },
+                )
+            }
 
-                const isPersonalSub = [
-                    reactExportVariants.personal.monthly,
-                    reactExportVariants.personal.yearly,
-                ].includes(reactSub?.variantId || '')
-                let needsBusinessSubscription =
-                    !userEmail?.endsWith('@framer.com') &&
-                    isPersonalSub &&
-                    existingProject?.framerUserId &&
-                    framerUserId &&
-                    framerUserId !== existingProject.framerUserId
-                // needsBusinessSubscription = true
-                if (needsBusinessSubscription) {
-                    throw Response.json(
-                        {
-                            message: 'Need business subscription',
-                            email: projectEmail,
-                        },
-                        {
-                            status: reactExportStatusErrors.SUB_UPGRADE_NECESSARY,
-                        },
-                    )
-                }
+            const isPersonalSub = [
+                reactExportVariants.personal.monthly,
+                reactExportVariants.personal.yearly,
+            ].includes(reactSub?.variantId || '')
+            let needsBusinessSubscription =
+                !userEmail?.endsWith('@framer.com') &&
+                isPersonalSub &&
+                existingProject?.framerUserId &&
+                framerUserId &&
+                framerUserId !== existingProject.framerUserId
+            // needsBusinessSubscription = true
+            if (needsBusinessSubscription) {
+                throw Response.json(
+                    {
+                        message: 'Need business subscription',
+                        email: projectEmail,
+                    },
+                    {
+                        status: reactExportStatusErrors.SUB_UPGRADE_NECESSARY,
+                    },
+                )
+            }
 
-                return { projectId }
-            })
+            return { projectId }
         },
         {
             body: z.object({
