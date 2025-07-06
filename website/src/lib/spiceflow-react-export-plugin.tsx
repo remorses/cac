@@ -13,23 +13,21 @@ import {
     ReactExportWebPage,
     type ReactExportComponentBreakpoint,
 } from 'db'
+import { marked } from 'marked'
+import { href } from 'react-router'
+import dedent from 'string-dedent'
 import Stripe from 'stripe'
 import {
     env,
-    getBuyGithubPluginUrl,
-    getBuyReactExportPluginUrl,
     reactExportStatusErrors,
     reactExportVariants,
 } from 'website/src/lib/env'
+import { AppError, notifyError } from 'website/src/lib/errors'
+import { qstash } from 'website/src/lib/qstash'
+import { defaultResendOptions, resend } from 'website/src/lib/resend'
 import { deduplicateByKey, isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
 import { email } from 'zod/v4'
-import { qstash } from 'website/src/lib/qstash'
-import { defaultResendOptions, resend } from 'website/src/lib/resend'
-import { AppError, notifyError } from 'website/src/lib/errors'
-import { marked } from 'marked'
-import dedent from 'string-dedent'
-import { href } from 'react-router'
 import { generateUnframerRepo } from './unframer-github-repos'
 
 const unauthorizedResponse = new Response('Unauthorized', {
@@ -650,6 +648,9 @@ export const reactPluginApp = new Spiceflow({
             }),
         },
     )
+    .onError((error) => {
+        notifyError(error, 'react export api')
+    })
 
 export async function recursiveReaddir(dir: string) {
     const dirents = await fs.promises.readdir(dir, { withFileTypes: true })
@@ -754,9 +755,11 @@ async function getProject({ projectId, email }) {
     //         )
     //     }
     // }
+    //
 
     return {
         project,
+
         components: components
             .filter((x) => x?.url && x?.id)
             .map((c) => ({

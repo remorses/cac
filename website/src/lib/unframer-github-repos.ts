@@ -100,6 +100,9 @@ export async function generateUnframerRepo({
         outDir: 'framer',
         useAI,
     })
+    if (!exampleCode) {
+        return
+    }
     let files = generateStackblitzFiles({
         projectId,
         title: projectTitle,
@@ -385,6 +388,12 @@ export async function createExampleComponentCodeWithAI({
     const imports = Object.keys(config.components)?.map((importPath) => {
         return `import ${componentCamelCase(importPath)} from './${outDirForExample}/${importPath}'`
     })
+    if (!imports.length) {
+        console.log(
+            `no framer components found, not producing any Unframer example code`,
+        )
+        return { exampleCode: '' }
+    }
     const prompt = dedent`
     Generate a component page that renders a few components in a single default export using typescript and tailwind, here is an example:
 
