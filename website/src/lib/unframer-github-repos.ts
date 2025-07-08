@@ -411,6 +411,8 @@ export async function createExampleComponentCodeWithAI({
     ${imports.join('\n')}
     \`\`\`
 
+    > IMPORTANT! if a variable starts with a number fix it! in javascript variables and import names cannot start with a number! the example code may be wrong.
+
     Return good valid code using the tool generate_code. Make sure the code is valid and has no duplicate import names or invalid tsx.
 
     Before calling the generate_code tool think step by step on which components you should use and in which order to get the best possible result. Only output the code in the tool generate_code, no need to also output it in a conversation message. think hard step by step at an high level, using bullet points.
