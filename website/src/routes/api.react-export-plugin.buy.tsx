@@ -34,7 +34,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const ONE_TIME_DOLLAR_PRICE_ID = 'price_1RlotoLpvqzrp4t9SDXijkte'
     const session = await stripe.checkout.sessions.create({
         line_items: [
+            // order of items is important
             { quantity: 1, price },
+            // this line item should NEVER be first
             { quantity: 1, price: ONE_TIME_DOLLAR_PRICE_ID },
         ],
         mode: 'subscription',
