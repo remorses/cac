@@ -1,4 +1,4 @@
-// http://localhost:8040/api/react-export-plugin/buy?email=tommy@example.com&orgId=12345678
+// https://localhost:8040/api/react-export-plugin/buy?email=tommy@example.com&orgId=12345678&priceId=price_1RREb6Lpvqzrp4t94ypySNug
 // free with 2J5ZQHW3
 
 import { PluginName } from 'db'
@@ -31,8 +31,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         throw redirect(redirectUrl.toString())
     }
 
+    const ONE_TIME_DOLLAR_PRICE_ID = 'price_1RlotoLpvqzrp4t9SDXijkte'
     const session = await stripe.checkout.sessions.create({
-        line_items: [{ quantity: 1, price }],
+        line_items: [
+            { quantity: 1, price },
+            { quantity: 1, price: ONE_TIME_DOLLAR_PRICE_ID },
+        ],
         mode: 'subscription',
         customer_email: params.email || undefined,
         client_reference_id: orgId,
