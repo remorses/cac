@@ -413,9 +413,15 @@ export async function createExampleComponentCodeWithAI({
 
     > IMPORTANT! if a variable starts with a number fix it! in javascript variables and import names cannot start with a number! the example code may be wrong.
 
-    Return good valid code using the tool generate_code. Make sure the code is valid and has no duplicate import names or invalid tsx.
+    BEFORE calling the generate_code tool, you MUST respond to these questions in a bullet list:
 
-    Before calling the generate_code tool think step by step on which components you should use and in which order to get the best possible result. Only output the code in the tool generate_code, no need to also output it in a conversation message. think hard step by step at an high level, using bullet points.
+    - **What components will I use?** Only choose component paths from the ones available above. These are the ONLY imports possible. Any other import will fail.
+
+    - **In what order should these components be?** Think about typical landing page structure (navbar, hero, logos, testimonials, footer, etc.)
+
+    - **What props can I use?** ALWAYS only use the props that are already in the example code. Any other prop will fail.
+
+    After answering these questions, return good valid code using the tool generate_code. Make sure the code is valid and has no duplicate import names or invalid tsx.
 
     After you call the tool generate_code successfully you can end the conversation, do not say anything after that.
 
