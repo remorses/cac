@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from 'react-router'
 
 import { Link } from '@heroui/react'
 import { prisma } from 'db'
-import { data as json, useLoaderData } from 'react-router'
+import { data as json, useLoaderData, Form } from 'react-router'
 import Stripe from 'stripe'
 import { env } from '../lib/env'
 import { getSupabaseSession } from '../lib/supabase.server'
@@ -162,6 +162,16 @@ export default function Page() {
                     ))}
                 </div>
             )}
+            <div className="mt-8 text-center">
+                <Form method="post" action="/api/auth/signout">
+                    <button
+                        type="submit"
+                        className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 underline bg-transparent border-none cursor-pointer"
+                    >
+                        Sign Out
+                    </button>
+                </Form>
+            </div>
         </div>
     )
 }

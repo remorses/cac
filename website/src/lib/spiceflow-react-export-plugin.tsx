@@ -197,10 +197,14 @@ export const reactPluginApp = new Spiceflow({
         },
     )
     .post(
+        // given this route is very slow, use an async generator so that Cloudflare does not return error 524
         '/upsertUnframerRepoWithAI',
-        async ({ request }) => {
+        async function* upsertUnframerRepoWithAI({ request }) {
             const body = await request.json()
 
+            yield {
+                message: 'starting sync',
+            }
             // Validate secret
             if (body.secret !== env.SECRET) {
                 throw new AppError('Invalid secret')
@@ -230,10 +234,10 @@ export const reactPluginApp = new Spiceflow({
                     `cannot find project to send new email for new github project`,
                     project,
                 )
-                return Response.json({
+                return {
                     success: false,
                     error: 'Project not found',
-                })
+                }
             }
 
             let userEmail = project?.org?.users?.[0]?.user?.email || ''
@@ -298,10 +302,10 @@ export const reactPluginApp = new Spiceflow({
                 res,
             )
 
-            return Response.json({
+            yield {
                 success: true,
                 result: res,
-            })
+            }
         },
         {
             body: z.object({
