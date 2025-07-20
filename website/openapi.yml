@@ -645,6 +645,8 @@ paths:
               schema: {}
   /api/plugins/reactExportPlugin/upsertUnframerRepoWithAI:
     post:
+      x-fern-streaming:
+        format: sse
       parameters: []
       responses:
         '200':
