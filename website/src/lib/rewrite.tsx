@@ -59,7 +59,7 @@ const model = wrapLanguageModel({
     model: createFallback({
         models: [
             openai('gpt-4.1'), //
-            google('gemini-2.5-flash-preview-04-17'),
+            google('gemini-2.0-flash'),
             // google('gemini-2.5-pro-exp-03-25'),
             anthropic('claude-3-5-haiku-latest'),
         ],
