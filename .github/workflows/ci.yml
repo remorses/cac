@@ -22,6 +22,7 @@ jobs:
               with:
                   run_install: false
             - uses: dopplerhq/cli-action@master
+            - uses: superfly/flyctl-actions/setup-flyctl@master
             - run: pnpm install --frozen-lockfile=false
             - run: pnpm bootstrap
             # scripts
