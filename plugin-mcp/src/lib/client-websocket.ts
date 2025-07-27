@@ -17,6 +17,7 @@ export async function websocketClientHandling({
     const websocketUrl = `wss://unframer.co/_tunnel/client?id=${websocketId}`
     const ws = new WebSocket(websocketUrl)
     ws.onopen = () => {
+        console.log('websocket client connected', websocketId)
         ws.send(JSON.stringify({ type: 'ready' }))
     }
     ws.onclose = () => {}
@@ -33,9 +34,12 @@ export async function websocketClientHandling({
             console.error(`websocket sent invalid data`, event.data)
             return
         }
+        console.log(`websocket message received`, payload)
 
         try {
             const output = await handle(payload)
+            console.log(`websocket message handled`, payload.type, output)
+
             ws.send(
                 JSON.stringify({
                     id,

@@ -12,6 +12,7 @@
         "strict": true,
         "downlevelIteration": true,
         "esModuleInterop": true,
+        "noFallthroughCasesInSwitch": true,
         "noImplicitAny": false,
         "sourceMap": true,
         "jsx": "react-jsx",
