@@ -11,7 +11,10 @@ globalThis.websocketId = websocketId
 
 const cleanup = await websocketClientHandling({
     handle({ input, type }) {
-        if (type === McpToolNames.ApplyColorStyle) {
+        switch (type) {
+            case McpToolNames.ApplyColorStyle: {
+                break
+            }
         }
     },
     websocketId,

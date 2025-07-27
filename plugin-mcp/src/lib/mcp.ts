@@ -13,7 +13,6 @@ import { McpToolNames } from './types'
 
 /* ──────────────────────────── 1. Enum ────────────────────────────── */
 
-
 /* ──────────────────────────── 2. Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
 const Role = z.enum(['background', 'text', 'border'])
@@ -260,17 +259,6 @@ export async function implementMcpTools({
         cleanup()
         stop()
     }
-
-    // Keep-alive ping (for browser, send empty message or ping equivalent)
-    const pingInterval = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send('ping')
-        }
-    }, 20000)
-
-    ws.addEventListener('close', () => {
-        clearInterval(pingInterval)
-    })
 
     // Use your handler
 }
