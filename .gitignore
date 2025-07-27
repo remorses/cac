@@ -14,3 +14,4 @@ prisma-generated
 .react-router
 .prisma
 .prisma/**
+.wrangler
