@@ -1,9 +1,6 @@
 import { Button } from 'plugin-migrate/src/components/Button'
 import {
-    getComponentPropertyControls,
-    getInstanceComponentId,
-    replaceEnumIdsForControls,
-    serializeAttributesForXml,
+    processReactExportData,
 } from 'plugin-mcp'
 
 import {
@@ -24,26 +21,13 @@ import {
 } from 'react-router'
 
 import { notifyError } from '@/lib/errors'
-import { Prisma } from 'db'
 import {
-    ComponentInstanceNode,
-    ComponentNode,
     framer,
-    isFrameNode,
-    isWebPageNode,
-    WebPageNode,
 } from 'framer-plugin'
 import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
-import {
-    collectGenerator,
-    getParentNodes,
-    getParentNodesWithOrdering,
-    isUnknownNode,
-} from 'plugin-migrate/src/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
-import { deduplicateByKey } from 'website/src/lib/utils'
 
 async function loader({}: LoaderFunctionArgs) {
     const [components] = await Promise.all([
@@ -84,6 +68,8 @@ async function loader({}: LoaderFunctionArgs) {
     return { componentIds, email, orgId, componentsData }
 }
 
+// Moved to plugin-mcp
+/*
 async function getInstancesWithOrderAndDepth({
     allInstances,
     webPageIds,
@@ -194,205 +180,22 @@ async function getInstancesWithOrderAndDepth({
     )
     return componentInstances
 }
+*/
 
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
-
-    let [
-        publishInfo,
-        components,
-        pages,
-        styles,
-        projectInfo,
-        locales,
-        allInstances,
-        { id: framerUserId },
-    ] = await Promise.all([
-        framer.getPublishInfo().catch((e) => null),
-        framer.getNodesWithType('ComponentNode'),
-        framer.getNodesWithType('WebPageNode'),
-        framer.getColorStyles(),
-        framer.getProjectInfo(),
-        framer.getLocales?.()?.catch((err) => {
-            console.error('Error getting locales', err)
-            return []
-        }),
-        framer.getNodesWithType('ComponentInstanceNode'),
-        framer.getCurrentUser(),
-    ])
-
-
-    // throw redirect(withMode(Paths.readme))
-    const { id: fullFramerProjectId, name: projectName } = projectInfo
-    if (!fullFramerProjectId) {
-        throw new Error('No project id found')
-    }
     const selectedComponentIds = new Set(formData.keys())
-    // console.log('selectedComponentIds', [...selectedComponentIds])
-    const filteredComponents = components.filter(
-        (component) =>
-            component.id &&
-            component.insertURL &&
-            selectedComponentIds.has(component.id),
-    )
-
-    const componentsWithBreakpoints = await Promise.all(
-        filteredComponents.map(async (component) => {
-            try {
-                const instances = allInstances.filter((instance) => {
-                    const id = getInstanceComponentId(instance)
-                    return id === component.id
-                })
-                let breakpoints = await Promise.all(
-                    instances.map(async (instance) => {
-                        const variantId = String(
-                            instance.controls?.variant || '',
-                        )
-                        if (!variantId) {
-                            return
-                        }
-                        const parents = await collectGenerator(
-                            getParentNodes(instance),
-                        )
-                        const [root, breakpointNode] = parents.reverse()
-                        if (!isFrameNode(breakpointNode)) {
-                            console.log(
-                                'breakpoint is not a frame node for',
-                                breakpointNode,
-                            )
-                            return
-                        }
-                        const breakpointName = breakpointNode?.name
-
-                        // console.log(component.name, variantId, breakpointName)
-                        let rect = await breakpointNode?.getRect()
-                        return {
-                            variantId,
-                            width: rect?.width,
-                            breakpointName,
-                        }
-                    }),
-                )
-                breakpoints = breakpoints.filter(
-                    (x) => x?.breakpointName && x?.width && x?.variantId,
-                )
-                breakpoints = deduplicateByKey(
-                    breakpoints,
-                    (x) => x?.variantId || '',
-                )
-                return { component, breakpoints }
-            } catch (err) {
-                notifyError(err, 'error getting component breakpoints')
-                return { component }
-            }
-        }),
-    )
-
-    // console.log('publishInfo', publishInfo)
-    let websiteUrl =
-        publishInfo?.staging?.currentPageUrl ||
-        publishInfo?.staging?.url ||
-        publishInfo?.production?.currentPageUrl ||
-        publishInfo?.production?.url
-
-    pages = pages.sort((a, b) => (a.path?.length || 0) - (b.path?.length || 0))
-
-    const indexPage = pages.find((x) => x) as WebPageNode
-    console.log('backgroundColor', indexPage['backgroundColor'])
-    const [pageContainer] = (await indexPage.getChildren()) || []
-    let pageBackgroundColor = ''
-    if (isFrameNode(pageContainer) && pageContainer.backgroundColor) {
-        if (typeof pageContainer.backgroundColor === 'string') {
-            pageBackgroundColor = pageContainer.backgroundColor
-        } else {
-            pageBackgroundColor = pageContainer.backgroundColor?.light
-        }
-    }
-    const componentInstances = await getInstancesWithOrderAndDepth({
-        allInstances,
-        webPageIds: new Set(pages.slice(1).map((x) => x.id)),
-        components,
-        projectId: projectInfo.id,
-    }).catch((e) => {
-        notifyError(e, 'error getting component instances')
-        return []
+    
+    const data = await processReactExportData({
+        selectedComponentIds,
     })
-    // debugLog('rawComponentInstances', rawComponentInstances)
-    console.log(
-        `found ${componentInstances?.length} componentInstances`,
-        componentInstances,
-    )
 
-    const { error, data } =
-        await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
-            projectId: fullFramerProjectId,
-            projectName,
-            fullFramerProjectId,
-            framerUserId,
-            websiteUrl,
-            pageBackgroundColor,
-            colorStyles: styles.map((x) => {
-                const { dark, light, name, id } = x
-                return {
-                    name,
-                    id,
-                    projectId: fullFramerProjectId!,
-                    lightColor: light,
-                    darkColor: dark ?? light, // Ensure darkColor is never null
-                }
-            }),
-            components: componentsWithBreakpoints.map(({ component }) => {
-                const { name, id, insertURL, componentIdentifier } = component
-
-                return {
-                    name: name ?? '',
-                    id,
-                    url: insertURL ?? '',
-                    projectId: fullFramerProjectId!,
-                    componentIdentifier,
-                }
-            }),
-            breakpoints: componentsWithBreakpoints.flatMap(
-                ({ breakpoints, component }) => {
-                    return (
-                        breakpoints?.map((breakpoint) => {
-                            const { variantId, width, breakpointName } =
-                                breakpoint!
-                            return {
-                                variantId: variantId!,
-                                width: width || 0,
-                                breakpointName: breakpointName || '',
-                                componentId: component.id!,
-                                projectId: fullFramerProjectId!,
-                            }
-                        }) || []
-                    )
-                },
-            ),
-            pages: pages.map((page) => {
-                const { id, collectionId, path } = page
-                return {
-                    path: path ?? '', // Ensure path is never null
-                    webPageId: id,
-                    projectId: fullFramerProjectId!,
-                }
-            }),
-            locales: locales?.map((locale) => {
-                const { id, name, slug, code } = locale
-                return {
-                    id,
-                    name,
-                    slug,
-                    code,
-                    projectId: fullFramerProjectId!,
-                }
-            }),
-            componentInstances,
-        })
+    const { error, data: responseData } =
+        await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post(data)
     if (error) {
         throw error
     }
-    console.log(data)
+    console.log(responseData)
     throw redirect(withMode(Paths.readme))
 }
 
@@ -662,17 +465,4 @@ function IconChevron() {
             ></path>
         </svg>
     )
-}
-
-function groupBy<T, K>(items: T[], keyFn: (item: T) => K): Map<K, T[]> {
-    const map = new Map<K, T[]>()
-
-    for (const item of items) {
-        const key = keyFn(item)
-        const collection = map.get(key) || []
-        collection.push(item)
-        map.set(key, collection)
-    }
-
-    return map
 }

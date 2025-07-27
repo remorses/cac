@@ -28,4 +28,13 @@ export {
     cleanupOldTextTree,
 } from './lib/tree-utils'
 
+export {
+    getInstancesWithOrderAndDepth,
+    getComponentsWithBreakpoints,
+    processReactExportData,
+    type ReactExportComponentInstance,
+} from './lib/react-export'
+
 export type { FramerLayersTree } from './types'
+
+export { notifyError } from './lib/errors'

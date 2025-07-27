@@ -1,4 +1,4 @@
-import { notifyError } from 'plugin-migrate/src/lib/errors'
+import { notifyError } from 'plugin-mcp'
 import NProgress from 'nprogress'
 import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
