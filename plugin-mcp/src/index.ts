@@ -24,8 +24,8 @@ export {
 
 
 export {
-    bfsOldTextTree,
-    cleanupOldTextTree,
+    bfsFramerLayersTree as bfsOldTextTree,
+    cleanupTreeFromEmptyNodes as cleanupOldTextTree,
 } from './lib/tree-utils'
 
 export {
@@ -35,6 +35,6 @@ export {
     type ReactExportComponentInstance,
 } from './lib/react-export'
 
-export type { FramerLayersTree } from './types'
+export type { FramerLayersTree } from './lib/types'
 
 export { notifyError } from './lib/errors'
