@@ -2,7 +2,9 @@ import { McpToolWebsocketPayload } from './mcp'
 
 export type WebsocketMessage = {
     id: string
-    payload?: McpToolWebsocketPayload | { type: 'ready' | 'close' }
+    payload?:
+        | McpToolWebsocketPayload
+        | { type: 'ready' | 'close'; input?: never }
 
     error?: string
 }
