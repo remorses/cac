@@ -1,8 +1,9 @@
 import { McpToolWebsocketPayload } from './mcp'
 
-type WebsocketMessage = {
+export type WebsocketMessage = {
     id: string
     payload?: McpToolWebsocketPayload
+
     error?: string
 }
 

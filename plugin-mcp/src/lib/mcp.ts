@@ -72,7 +72,7 @@ type McpToolMsg<
 > = {
     type: T
     input: z.infer<InputSchema>
-    output?: z.infer<OutputSchema>
+    output?: any
 }
 
 /* explicit union */
