@@ -12,11 +12,9 @@ export async function websocketClientHandling({
     ) => Promise<T['output']>
 }) {
     if (typeof window === 'undefined') return
-    if (globalThis.websocketHandlingDone) return
-    globalThis.websocketHandlingDone = true
 
-    console.log('connecting over preview websocketId', websocketId)
-    const websocketUrl = `wss://fumabase.com/_tunnel/client?id=${websocketId}`
+    console.log('connecting over mcp websocketId', websocketId)
+    const websocketUrl = `wss://unframer.co/_tunnel/client?id=${websocketId}`
     const ws = new WebSocket(websocketUrl)
     ws.onopen = () => {
         ws.send(JSON.stringify({ type: 'ready' }))
