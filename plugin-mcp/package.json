@@ -20,11 +20,13 @@
         "dom-serializer": "^2.0.0",
         "framer-plugin": "^3.5.2",
         "htmlparser2": "^9.1.0",
+        "lucide-react": "^0.474.0",
         "plugin-mcp": "workspace:*",
         "react": "19.1.0",
         "react-dom": "19.1.0",
         "unframer": "workspace:*",
-        "zod": "^3.25.71"
+        "zod": "^3.25.71",
+        "zustand": "^5.0.5"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20250712.0",
