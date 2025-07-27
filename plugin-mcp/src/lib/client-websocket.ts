@@ -57,9 +57,15 @@ export async function websocketClientHandling({
         }
     }
     // ping interval
-    setInterval(() => {
+    const pingInterval = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'ping' }))
         }
     }, 1000)
+
+    // Return a cleanup function to close connection
+    return () => {
+        clearInterval(pingInterval)
+        ws.close()
+    }
 }
