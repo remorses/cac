@@ -109,6 +109,11 @@ export async function implementMcpTools({
             console.log('Upstream WebSocket closed')
         })
     })
+    const { send, cleanup } = createWebsocketHandling({ ws })
+
+    await send({
+        payload: { type: 'ready' },
+    })
 
     // Graceful shutdown
     const stop = () => {
@@ -197,7 +202,6 @@ export async function implementMcpTools({
         ],
     }))
 
-    const { send, cleanup } = createWebsocketHandling({ ws })
     server.setRequestHandler(
         CallToolRequestSchema,
         async (request: CallToolRequest) => {
