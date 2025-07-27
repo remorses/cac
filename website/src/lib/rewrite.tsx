@@ -26,8 +26,8 @@ import {
 
 export const ITEMS_PER_ITERATION = 30
 
-import type { FramerLayersTree as ImportedFramerLayersTree } from 'plugin-mcp'
-export type FramerLayersTree = ImportedFramerLayersTree
+import type { FramerLayersTree } from 'plugin-mcp'
+export type { FramerLayersTree }
 
 // Legacy type definition for backward compatibility
 export type OldFramerLayersTree = Array<{

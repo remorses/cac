@@ -1,4 +1,4 @@
-import { FramerLayersTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'plugin-mcp'
 import sdk from '@stackblitz/sdk'
 
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
@@ -8,7 +8,7 @@ import camelCase from 'camelcase'
 import { env } from './env'
 import dedent from 'dedent'
 import { PluginName } from 'db'
-export { oldTextTreeToXml } from 'plugin-mcp'
+export { oldTextTreeToXml, bfsOldTextTree, cleanupOldTextTree } from 'plugin-mcp'
 
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
@@ -150,65 +150,7 @@ export function sortByKey<T>(arr: T[], key: (x: T) => string) {
     })
 }
 
-const namesToRemove = ['Desktop', 'Mobile', 'Tablet']
-export function cleanupOldTextTree(tree: FramerLayersTree): FramerLayersTree {
-    // Helper function to process a single node
-    function processNode(
-        node: FramerLayersTree[number],
-    ): FramerLayersTree[number] | FramerLayersTree | null {
-        // Remove node if its name is in namesToRemove, but keep its children
-        if (node.name && namesToRemove.includes(node.name)) {
-            return node.children?.flatMap(processNode).filter(isTruthy) || []
-        }
 
-        // Use content as name if they are the same when lowercase
-        if (
-            node.content &&
-            node.name &&
-            node.content.trim().toLowerCase() === node.name.trim().toLowerCase()
-        ) {
-            node.name = 'text'
-        }
-
-        // Remove nodeId if the node has children
-        if (node.children?.length) {
-            const {
-                // nodeId, //
-                ...rest
-            } = node
-            return {
-                ...rest,
-                children: node.children.flatMap(processNode).filter(isTruthy),
-            }
-        }
-        return node
-    }
-
-    // Process each node in the tree
-    let cleanedTree = tree
-        .flatMap(processNode)
-        .filter((node): node is FramerLayersTree[number] => node !== null)
-
-    return cleanedTree
-}
-
-export function bfsOldTextTree(tree: FramerLayersTree): FramerLayersTree {
-    const queue: FramerLayersTree = [...tree]
-    const result: FramerLayersTree = []
-
-    while (queue.length > 0) {
-        const node = queue.shift()
-        if (node) {
-            result.push(node)
-
-            if (node.children && node.children.length > 0) {
-                queue.push(...node.children)
-            }
-        }
-    }
-
-    return result
-}
 
 export function canHaveFreePlugin(email?: string) {
     // return false

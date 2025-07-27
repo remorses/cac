@@ -1,5 +1,5 @@
 import { Button } from 'plugin-migrate/src/components/Button'
-import { notifyError } from 'plugin-migrate/src/lib/errors'
+import { notifyError } from 'plugin-mcp'
 import {
     useHistoryNavigation,
     useLatestFunction,
@@ -36,7 +36,7 @@ import {
     useRevalidator,
 } from 'react-router'
 
-import { FramerLayersTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'plugin-mcp'
 
 import { StarReview } from 'plugin-migrate/src/components/StarReview'
 import {
@@ -45,7 +45,8 @@ import {
     getFramerTree,
     isNodeZoomable,
 } from 'plugin-mcp'
-import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
+import { bfsOldTextTree, oldTextTreeToXml } from 'plugin-mcp'
+import { sleep } from 'website/src/lib/utils'
 import { createBuyMigrateUrl } from 'website/src/lib/env'
 import { MentionsTextArea } from '../components/mentions/Mentions'
 

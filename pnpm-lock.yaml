@@ -663,6 +663,9 @@ importers:
 
   plugin-mcp:
     dependencies:
+      '@sentry/browser':
+        specifier: ^9.22.0
+        version: 9.30.0
       camelcase:
         specifier: ^8.0.0
         version: 8.0.0
@@ -678,6 +681,9 @@ importers:
       unframer:
         specifier: workspace:*
         version: link:../unframer/unframer
+      zod:
+        specifier: ^3.25.71
+        version: 3.25.71
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -5587,40 +5593,20 @@ packages:
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
 
-  '@sentry-internal/browser-utils@9.27.0':
-    resolution: {integrity: sha512-SJa7f6Ct1BzP8rWEomnshSGN1CmT+axNKvT+StrbFPD6AyHnYfFLJpKgc2iToIJHB/pmeuOI9dUwqtzVx+5nSw==}
-    engines: {node: '>=18'}
-
   '@sentry-internal/browser-utils@9.30.0':
     resolution: {integrity: sha512-e6ZlN8oWheCB0YJSGlBNUlh6UPnY5Ecj1P+/cgeKBhNm7c3bIx4J50485hB8LQsu+b7Q11L2o/wucZ//Pb6FCg==}
-    engines: {node: '>=18'}
-
-  '@sentry-internal/feedback@9.27.0':
-    resolution: {integrity: sha512-e7L8eG0y63RulN352lmafoCCfQGg4jLVT8YLx6096eWu/YKLkgmVpgi8livsT5WREnH+HB+iFSrejOwK7cRkhw==}
     engines: {node: '>=18'}
 
   '@sentry-internal/feedback@9.30.0':
     resolution: {integrity: sha512-qAZ7xxLqZM7GlEvmSUmTHnoueg+fc7esMQD4vH8pS7HI3n9C5MjGn3HHlndRpD8lL7iUUQ0TPZQgU6McbzMDyw==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/replay-canvas@9.27.0':
-    resolution: {integrity: sha512-44rVSt3LCH6qePYRQrl4WUBwnkOk9dzinmnKmuwRksEdDOkVq5KBRhi/IDr7omwSpX8C+KrX5alfKhOx1cP0gQ==}
-    engines: {node: '>=18'}
-
   '@sentry-internal/replay-canvas@9.30.0':
     resolution: {integrity: sha512-I4MxS27rfV7vnOU29L80y4baZ4I1XqpnYvC/yLN7C17nA8eDCufQ8WVomli41y8JETnfcxlm68z7CS0sO4RCSA==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/replay@9.27.0':
-    resolution: {integrity: sha512-n2kO1wOfCG7GxkMAqbYYkpgTqJM5tuVLdp0JuNCqTOLTXWvw6svWGaYKlYpKUgsK9X/GDzJYSXZmfe+Dbg+FJQ==}
-    engines: {node: '>=18'}
-
   '@sentry-internal/replay@9.30.0':
     resolution: {integrity: sha512-+6wkqQGLJuFUzvGRzbh3iIhFGyxQx/Oxc0ODDKmz9ag2xYRjCYb3UUQXmQX9navAF0HXUsq8ajoJPm2L1ZyWVg==}
-    engines: {node: '>=18'}
-
-  '@sentry/browser@9.27.0':
-    resolution: {integrity: sha512-geR3lhRJOmUQqi1WgovLSYcD/f66zYnctdnDEa7j1BW2XIB1nlTJn0mpYyAHghXKkUN/pBpp1Z+Jk0XlVwFYVg==}
     engines: {node: '>=18'}
 
   '@sentry/browser@9.30.0':
@@ -16791,49 +16777,23 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@sentry-internal/browser-utils@9.27.0':
-    dependencies:
-      '@sentry/core': 9.27.0
-
   '@sentry-internal/browser-utils@9.30.0':
     dependencies:
       '@sentry/core': 9.30.0
 
-  '@sentry-internal/feedback@9.27.0':
-    dependencies:
-      '@sentry/core': 9.27.0
-
   '@sentry-internal/feedback@9.30.0':
     dependencies:
       '@sentry/core': 9.30.0
-
-  '@sentry-internal/replay-canvas@9.27.0':
-    dependencies:
-      '@sentry-internal/replay': 9.27.0
-      '@sentry/core': 9.27.0
 
   '@sentry-internal/replay-canvas@9.30.0':
     dependencies:
       '@sentry-internal/replay': 9.30.0
       '@sentry/core': 9.30.0
 
-  '@sentry-internal/replay@9.27.0':
-    dependencies:
-      '@sentry-internal/browser-utils': 9.27.0
-      '@sentry/core': 9.27.0
-
   '@sentry-internal/replay@9.30.0':
     dependencies:
       '@sentry-internal/browser-utils': 9.30.0
       '@sentry/core': 9.30.0
-
-  '@sentry/browser@9.27.0':
-    dependencies:
-      '@sentry-internal/browser-utils': 9.27.0
-      '@sentry-internal/feedback': 9.27.0
-      '@sentry-internal/replay': 9.27.0
-      '@sentry-internal/replay-canvas': 9.27.0
-      '@sentry/core': 9.27.0
 
   '@sentry/browser@9.30.0':
     dependencies:
@@ -22880,7 +22840,7 @@ snapshots:
 
   sentries@0.2.2(@cloudflare/workers-types@4.20250619.0):
     dependencies:
-      '@sentry/browser': 9.27.0
+      '@sentry/browser': 9.30.0
       '@sentry/cloudflare': 9.27.0(@cloudflare/workers-types@4.20250619.0)
       '@sentry/node': 9.30.0
     transitivePeerDependencies:

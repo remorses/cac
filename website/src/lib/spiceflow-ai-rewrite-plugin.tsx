@@ -16,7 +16,7 @@ import Stripe from 'stripe'
 import { getOrgPluginCredits } from 'website/src/lib/credits'
 import { env } from 'website/src/lib/env'
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
-import { FramerLayersTree } from 'website/src/lib/rewrite'
+import { FramerLayersTree } from 'plugin-mcp'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
 import {
     extractObjectsFromXmlContent,
