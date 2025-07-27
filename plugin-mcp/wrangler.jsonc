@@ -24,6 +24,7 @@
     },
     "routes": [
         {
+            "zone_name": "unframer.co",
             "pattern": "mcp.unframer.co",
             "custom_domain": true,
         },

@@ -18,7 +18,6 @@ const { websocketId } = useStore.getState()
 const cleanup = await websocketClientHandling({
     // @ts-ignore
     handle({ input, type }) {
-        useStore.setState({ isConnected: true })
         switch (type) {
             case McpToolNames.ApplyColorStyle: {
                 break
@@ -49,15 +48,6 @@ export default function App() {
         const newExpanded = !isExpanded
         useStore.setState({ isExpanded: newExpanded })
     }
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            useStore.setState({ isConnected: false })
-        }, 10000)
-        return () => {
-            clearInterval(interval)
-        }
-    }, [])
 
     // Update framer UI size when height changes or expansion state changes
     useLayoutEffect(() => {
