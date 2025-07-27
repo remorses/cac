@@ -1,4 +1,4 @@
-import { McpToolWebsocketPayload } from './mcp'
+import { McpToolWebsocketPayload } from './mcp-tools'
 
 export type WebsocketMessage = {
     id: string
