@@ -44,7 +44,7 @@ import {
     discardFramerChanges,
     getFramerTree,
     isNodeZoomable,
-} from 'plugin-migrate/src/lib/framer'
+} from 'plugin-mcp'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { createBuyMigrateUrl } from 'website/src/lib/env'
 import { MentionsTextArea } from '../components/mentions/Mentions'

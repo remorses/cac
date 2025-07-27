@@ -9,17 +9,10 @@ import {
     supportsName,
     supportsVisible,
 } from 'framer-plugin'
-import {
-    collectGenerator,
-    getParentNodes,
-    isTruthy,
-} from 'plugin-migrate/src/lib/utils'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
-import { FramerLayersTree } from 'website/src/lib/rewrite'
-import { bfsOldTextTree, cleanupOldTextTree } from 'website/src/lib/utils'
-import {} from 'website/src/lib/xml'
-import { notifyError } from './errors'
+import { FramerLayersTree } from '../types'
+import { bfsOldTextTree, cleanupOldTextTree } from './tree-utils'
 
 let cachedPagePaths: string[] = []
 
@@ -28,9 +21,8 @@ async function getPagePaths() {
     const pages = await framer.getNodesWithType('WebPageNode')
     cachedPagePaths = pages
         .map((x) => x.path)
-        .filter((val) => isTruthy(val))
+        .filter((val) => val != null)
         .filter((val) => !val?.includes(':'))
-    // console.log({ cachedPagePaths })
     return cachedPagePaths
 }
 
@@ -57,9 +49,6 @@ export function replaceEnumIdsForControls(
                     const optionIndex = value.options.indexOf(v)
                     const enumTitle = optionTitles[optionIndex]
                     if (optionIndex !== -1 && enumTitle) {
-                        // console.log(
-                        //     `replacing enum value ${v} with ${enumTitle} for ${propName}`,
-                        // )
                         controls[propName] = enumTitle
                     }
                 }
@@ -67,7 +56,7 @@ export function replaceEnumIdsForControls(
         }
         return controls
     } catch (e) {
-        notifyError(e, 'replaceEnumIdsForControls')
+        console.error('replaceEnumIdsForControls error:', e)
         return controls
     }
 }
@@ -128,7 +117,6 @@ export function getAttributeComments(
     if (!controls) {
         return {}
     }
-    // console.log(controls)
 
     const result: Record<string, string> = {}
     Object.entries(controls || ({} as PropertyControls)).forEach(
@@ -218,6 +206,7 @@ export function getAttributeComments(
 Object.assign(globalThis, {
     getComponentSchema: getComponentPropertyControls,
 })
+
 export function getInstanceComponentId(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
         return
@@ -254,8 +243,6 @@ async function getInstanceComponent(componentInstance: AnyNode) {
 }
 
 async function getComponentCodeUrl(componentNode?: AnyNode) {
-    // example is https://framer.com/m/FAQ-Row-Copy-FR9A9RBHB.js
-    // https://framer.com/m/AccordionOne-V8Wz.js@FR9A9RBHB
     if (isComponentInstanceNode(componentNode)) {
         return await getComponentCodeUrl(
             await getInstanceComponent(componentNode),
@@ -267,13 +254,11 @@ async function getComponentCodeUrl(componentNode?: AnyNode) {
             return
         }
 
-        // turn FAQ Row Copy into FAQ-Row-Copy, replace space with -
         nameEncoding = nameEncoding.replace(/ +/g, '-')
         nameEncoding = encodeURIComponent(nameEncoding)
         let id = componentNode.id
         return `https://framer.com/m/${nameEncoding}-${id}.js`
     }
-    // console.log('not a component node', componentNode?.constructor?.name)
 }
 Object.assign(globalThis, { getComponentCodeUrl })
 
@@ -300,7 +285,6 @@ async function* recurseIntoComponent(
             yield* recurseIntoComponent(child, encounteredIds)
         }
     }
-    // TODO get modified text nodes in replicas, so there is nothing left that is stale because text is overridden in breakpoint
 }
 
 async function isNodeVisible(node: AnyNode) {
@@ -313,19 +297,12 @@ async function isNodeVisible(node: AnyNode) {
     })
     return isVisible && (!supportsVisible(node) || node.visible)
 }
+
 export async function isNodeZoomable(node: AnyNode) {
     if (!(await isNodeVisible(node))) {
         return false
     }
     return true
-    // const parents = await collectGenerator(getParentNodes(node))
-    // const componentChild = parents.some((parent) => {
-    //     if (isComponentNode(parent)) {
-    //         return true
-    //     }
-    //     return false
-    // })
-    // return !componentChild
 }
 
 const possibleInstanceTextFields = [
@@ -352,12 +329,9 @@ async function push({
     text?: string
     nodeId: string
 }) {
-    // console.trace('push')
-    // console.log(`adding node ${node?.['name']}`)
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
     let currentLevel = tree
 
-    // Traverse or create the hierarchy
     for (let i = 0; i < parents.length; i++) {
         const parent = parents[i]
 
@@ -367,9 +341,8 @@ async function push({
 
         if (!existingNode) {
             existingNode = {
-                // content: ,
                 nodeId: parent.id,
-                name: supportsName(parent) ? parent.name : '',
+                name: supportsName(parent) ? parent.name || '' : '',
                 children: [],
             }
             currentLevel.push(existingNode)
@@ -388,16 +361,16 @@ async function push({
     currentLevel.push({
         content: text,
         nodeId,
-        name: 'name' in node ? node.name : '',
+        name: 'name' in node ? node.name || '' : '',
         attributes,
         attrControlsComments,
         children: [],
     })
     return tree
 }
+
 export async function getFramerTree({
     rootNodes,
-
     recursive = true,
 }: {
     rootNodes: AnyNode[]
@@ -409,8 +382,6 @@ export async function getFramerTree({
 
     let componentInstanceChildrenSeen = new Set<string>()
     async function handleNode(node: AnyNode) {
-        // console.log('node', node.constructor.name)
-
         if (isTextNode(node)) {
             const isVisible = await isNodeVisible(node)
             if (!isVisible) {
@@ -439,11 +410,6 @@ export async function getFramerTree({
                 return
             }
 
-            // TODO what is this?
-            // const _component = await getInstanceComponent(node)
-            // if (!_component) {
-            //     return
-            // }
             oldText = await push({
                 node,
                 tree: oldText,
@@ -491,7 +457,6 @@ export async function discardFramerChanges({
         let node = await framer.getNode(nodeId)
 
         if (isTextNode(node)) {
-            // console.log('setting text', oldContent)
             return await node.setText(oldContent)
         }
 
@@ -503,13 +468,9 @@ export async function discardFramerChanges({
 export const inlineTextStyleAttributes = [
     'fontSize',
     'color',
-    // 'transform',
     'alignment',
-    // 'decoration',
-    // 'balance',
     'letterSpacing',
     'lineHeight',
-    // 'paragraphSpacing',
 ] as const
 
 async function getNodeAttributesForXml(node: AnyNode) {
@@ -532,53 +493,17 @@ async function getNodeAttributesForXml(node: AnyNode) {
             const value = node.inlineTextStyle?.[attr] ?? undefined
             if (value) attributes[attr] = value
         }
-        // attributes.font = node.font ?? undefined
-        // attributes.rotation = node.rotation ?? undefined
         if (node.opacity !== 1) {
             attributes.opacity = node.opacity ?? undefined
         }
-
-        // attributes.position = node.position ?? undefined
-        // attributes.top = node.top ?? undefined
-        // attributes.right = node.right ?? undefined
-        // attributes.bottom = node.bottom ?? undefined
-        // attributes.left = node.left ?? undefined
-        // attributes.centerX = node.centerX ?? undefined
-        // attributes.centerY = node.centerY ?? undefined
-        // attributes.width = node.width ?? undefined
-        // attributes.height = node.height ?? undefined
-        // attributes.maxWidth = node.maxWidth ?? undefined
-        // attributes.minWidth = node.minWidth ?? undefined
-        // attributes.maxHeight = node.maxHeight ?? undefined
-        // attributes.minHeight = node.minHeight ?? undefined
     }
     if (isFrameNode(node)) {
         if (typeof node.backgroundColor === 'string') {
             attributes.backgroundColor = node.backgroundColor
         }
-        // attributes.backgroundImage = node.backgroundImage ?? undefined
-        // attributes.backgroundGradient = node.backgroundGradient ?? undefined
         if (node.borderRadius) {
             attributes.borderRadius = node.borderRadius ?? undefined
         }
-
-        // attributes.rotation = node.rotation ?? undefined
-        // attributes.opacity = node.opacity ?? undefined
-        // attributes.borderRadius = node.borderRadius ?? undefined
-        // attributes.position = node.position ?? undefined
-        // attributes.top = node.top ?? undefined
-        // attributes.right = node.right ?? undefined
-        // attributes.bottom = node.bottom ?? undefined
-        // attributes.left = node.left ?? undefined
-        // attributes.centerX = node.centerX ?? undefined
-        // attributes.centerY = node.centerY ?? undefined
-        // attributes.width = node.width ?? undefined
-        // attributes.height = node.height ?? undefined
-        // attributes.maxWidth = node.maxWidth ?? undefined
-        // attributes.minWidth = node.minWidth ?? undefined
-        // attributes.maxHeight = node.maxHeight ?? undefined
-        // attributes.minHeight = node.minHeight ?? undefined
-        // attributes.aspectRatio = node.aspectRatio ?? undefined
     }
 
     let attrControlsComments
@@ -592,10 +517,6 @@ async function getNodeAttributesForXml(node: AnyNode) {
             attrControlsComments = comments
         }
 
-        // const controls = replaceEnumIdsForControls(
-        //     { ...node.controls },
-        //     propertyControls,
-        // )
         const controls = node.controls
         attributes = {
             ...attributes,
@@ -628,13 +549,8 @@ export function serializeAttributesForXml(
     }
     const result: Record<string, string> = {}
     for (const [key, value] of Object.entries(attributes)) {
-        // if (value == null) {
-        //     continue
-        // }
-        // // TODO to support images i would need to add a lot of work
         if (typeof value === 'object') {
             console.log('skipping object value for attribute', key, value)
-
             continue
         }
         result[key] = encodeAttributeValue(value)
@@ -649,6 +565,7 @@ function decodeAttributeValueAsJson(value: string) {
         return value
     }
 }
+
 function onlyChangedKeys(
     oldObj: Record<string, any>,
     newObj: Record<string, any>,
@@ -681,7 +598,6 @@ export async function applyAttributes(
     }
 
     if (isTextNode(node)) {
-        // Apply text-specific attributes
         await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
 
         const inlineTextStyleObj: Record<string, any> = {}
@@ -695,14 +611,52 @@ export async function applyAttributes(
             onlyChangedKeys(node.inlineTextStyle || {}, inlineTextStyleObj),
         )
     } else if (isComponentInstanceNode(node)) {
-        // Apply component instance specific attributes
-
         await node.setAttributes(onlyChangedKeys(node || {}, decodedAttrs))
         await node.setAttributes({
             controls: onlyChangedKeys(node.controls || {}, decodedAttrs),
         })
     } else {
-        // Apply general attributes
         await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
+    }
+}
+
+// Helper functions that need to be in this package
+async function collectGenerator<T>(
+    gen: AsyncGenerator<T | null, void, unknown>,
+) {
+    const result = [] as T[]
+    for await (const item of gen) {
+        if (!item) {
+            continue
+        }
+        result.push(item)
+    }
+    return result
+}
+
+async function* getParentNodes(node: AnyNode | string | null) {
+    if (typeof node === 'string') {
+        node = await framer.getNode(node)
+    }
+    if (!node) {
+        return
+    }
+    let parent = await node.getParent()
+    if (!parent) {
+        console.log('no parent found', node.id)
+        return
+    }
+    while (parent) {
+        yield parent
+        if (isComponentNode(parent) || isComponentNode(parent)) {
+            return
+        }
+        let newParent = await parent.getParent()
+        if (!newParent) {
+            console.log('no parent found, last one was', parent)
+            yield parent
+            return
+        }
+        parent = newParent
     }
 }

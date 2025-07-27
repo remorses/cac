@@ -283,8 +283,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       mp4-muxer:
         specifier: ^5.1.5
         version: 5.2.1
@@ -391,8 +391,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       isbot:
         specifier: ^5.1.21
         version: 5.1.28
@@ -405,6 +405,9 @@ importers:
       openai:
         specifier: ^4.80.1
         version: 4.104.0(ws@8.18.3)(zod@3.25.71)
+      plugin-mcp:
+        specifier: workspace:*
+        version: link:../plugin-mcp
       plugin-migrate:
         specifier: workspace:^
         version: link:../plugin-migrate
@@ -482,8 +485,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       plugin-migrate:
         specifier: workspace:^
         version: link:../plugin-migrate
@@ -579,8 +582,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       isbot:
         specifier: ^5.1.21
         version: 5.1.28
@@ -658,6 +661,31 @@ importers:
         specifier: ^1.0.3
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
+  plugin-mcp:
+    dependencies:
+      camelcase:
+        specifier: ^8.0.0
+        version: 8.0.0
+      dom-serializer:
+        specifier: ^2.0.0
+        version: 2.0.0
+      framer-plugin:
+        specifier: ^3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      htmlparser2:
+        specifier: ^9.1.0
+        version: 9.1.0
+      unframer:
+        specifier: workspace:*
+        version: link:../unframer/unframer
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.9
+      typescript:
+        specifier: ^5.5.3
+        version: 5.8.3
+
   plugin-migrate:
     dependencies:
       '@ariakit/react':
@@ -703,8 +731,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       isbot:
         specifier: ^5.1.21
         version: 5.1.28
@@ -720,6 +748,9 @@ importers:
       openai:
         specifier: ^4.80.1
         version: 4.104.0(ws@8.18.3)(zod@3.25.71)
+      plugin-mcp:
+        specifier: workspace:*
+        version: link:../plugin-mcp
       plugin-migrate:
         specifier: workspace:^
         version: 'link:'
@@ -821,8 +852,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       isbot:
         specifier: ^5.1.21
         version: 5.1.28
@@ -835,6 +866,9 @@ importers:
       openai:
         specifier: ^4.80.1
         version: 4.104.0(ws@8.18.3)(zod@3.25.71)
+      plugin-mcp:
+        specifier: workspace:*
+        version: link:../plugin-mcp
       plugin-migrate:
         specifier: workspace:^
         version: link:../plugin-migrate
@@ -967,8 +1001,8 @@ importers:
         version: 3.25.71
     devDependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.12.3
-        version: 1.13.0
+        specifier: ^1.16.0
+        version: 1.17.0
       '@types/ps-tree':
         specifier: ^1.1.6
         version: 1.1.6
@@ -1016,8 +1050,8 @@ importers:
         version: 3.24.6(zod@3.25.71)
     devDependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.12.3
-        version: 1.13.0
+        specifier: ^1.16.0
+        version: 1.17.0
       ai:
         specifier: ^4.3.16
         version: 4.3.16(react@19.1.0)(zod@3.25.71)
@@ -1052,8 +1086,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(acorn@8.14.1)(rollup@4.41.0)
       '@modelcontextprotocol/sdk':
-        specifier: ^1.12.3
-        version: 1.13.0
+        specifier: ^1.16.0
+        version: 1.17.0
       '@react-router/cloudflare':
         specifier: ^7.6.3
         version: 7.6.3(@cloudflare/workers-types@4.20250619.0)(react-router@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.3)
@@ -1188,8 +1222,8 @@ importers:
         specifier: ^12.0.6
         version: 12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       idb-keyval:
         specifier: ^6.2.1
         version: 6.2.2
@@ -1304,7 +1338,7 @@ importers:
         version: 4.0.7
       spiceflow:
         specifier: ^1.13.2
-        version: 1.13.2(@modelcontextprotocol/sdk@1.13.0)
+        version: 1.13.2(@modelcontextprotocol/sdk@1.17.0)
       zod:
         specifier: ^3.25.71
         version: 3.25.71
@@ -1510,7 +1544,7 @@ importers:
         version: framer-motion@12.18.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       spiceflow:
         specifier: ^1.13.2
-        version: 1.13.2(@modelcontextprotocol/sdk@1.13.0)
+        version: 1.13.2(@modelcontextprotocol/sdk@1.17.0)
       string-dedent:
         specifier: ^3.0.1
         version: 3.0.1
@@ -1747,8 +1781,8 @@ importers:
         specifier: ^6.1.9
         version: 6.1.10
       framer-plugin:
-        specifier: 3.3.2
-        version: 3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 3.5.2
+        version: 3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       github-slugger:
         specifier: ^2.0.0
         version: 2.0.0
@@ -1818,6 +1852,9 @@ importers:
       playwright:
         specifier: ^1.50.0
         version: 1.53.1
+      plugin-mcp:
+        specifier: workspace:*
+        version: link:../plugin-mcp
       posthtml:
         specifier: ^0.16.6
         version: 0.16.6
@@ -1907,7 +1944,7 @@ importers:
         version: 4.41.0
       unframer:
         specifier: 2.26.0
-        version: 2.26.0(@modelcontextprotocol/sdk@1.13.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 2.26.0(@modelcontextprotocol/sdk@1.17.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       unframer-deploy-demo:
         specifier: workspace:*
         version: link:../unframer-deploy-demo
@@ -4169,8 +4206,8 @@ packages:
   '@mjackson/node-fetch-server@0.6.1':
     resolution: {integrity: sha512-9ZJnk/DJjt805uv5PPv11haJIW+HHf3YEEyVXv+8iLQxLD/iXA68FH220XoiTPBC4gCg5q+IMadDw8qPqlA5wg==}
 
-  '@modelcontextprotocol/sdk@1.13.0':
-    resolution: {integrity: sha512-P5FZsXU0kY881F6Hbk9GhsYx02/KgWK1DYf7/tyE/1lcFKhDYPQR9iYjhQXJn+Sg6hQleMo3DB7h7+p4wgp2Lw==}
+  '@modelcontextprotocol/sdk@1.17.0':
+    resolution: {integrity: sha512-qFfbWFA7r1Sd8D697L7GkTd36yqDuTkvz0KfOGkgXR8EUhQn3/EDNIR/qUdQNMT8IjmasBvHWuXeisxtXTQT2g==}
     engines: {node: '>=18'}
 
   '@motionone/animation@10.18.0':
@@ -5989,6 +6026,9 @@ packages:
   '@types/node@18.19.112':
     resolution: {integrity: sha512-i+Vukt9POdS/MBI7YrrkkI5fMfwFtOjphSmt4WXYLfwqsfr6z/HdCx7LqT9M7JktGob8WNgj8nFB4TbGNE4Cog==}
 
+  '@types/node@20.19.9':
+    resolution: {integrity: sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==}
+
   '@types/node@22.15.21':
     resolution: {integrity: sha512-EV/37Td6c+MgKAbkcLG6vqZ2zEYHD7bvSrzqqs2RIhbA6w3x+Dqz8MZM3sP6kGTeLrdoOgKZe+Xja7tUB2DNkQ==}
 
@@ -7693,8 +7733,8 @@ packages:
       react-dom:
         optional: true
 
-  framer-plugin@3.3.2:
-    resolution: {integrity: sha512-ZKFpbOUUdfne7aMP0wpRRvJzd4WQc6w5wZDM0sAZPnAE4a/MKnay9bsj14mJRUwlEoM6sk77KTfQyDNQ+770WQ==}
+  framer-plugin@3.5.2:
+    resolution: {integrity: sha512-eJBlj+IS0J7yf3Pgcq0OsCSZN0OaukRNckQVeko++e6i6GqshT8vO9bOSgkVIWVf/aJzaD6cOb5ULKjB76dl6Q==}
     peerDependencies:
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -8011,6 +8051,9 @@ packages:
 
   htmlparser2@8.0.2:
     resolution: {integrity: sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA==}
+
+  htmlparser2@9.1.0:
+    resolution: {integrity: sha512-5zfg6mHUoaer/97TxnGpxmbR7zJtPwIYFMZ/H5ucTlPZhKvtum05yiPK3Mgai3a0DyVxv7qYqoweaEd2nrYQzQ==}
 
   htmlrewriter@0.0.12:
     resolution: {integrity: sha512-Tw+wORUlNL9+JQCIo7J4SuX/T3M1xRAC/0XaifnRPLHCX95jbZy/0CI06n7BhuFQJhSdNA7ZoxnStJmF31FZRw==}
@@ -12283,7 +12326,7 @@ snapshots:
       '@babel/traverse': 7.28.0
       '@babel/types': 7.28.0
       convert-source-map: 2.0.0
-      debug: 4.4.0
+      debug: 4.4.1
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -14849,13 +14892,14 @@ snapshots:
 
   '@mjackson/node-fetch-server@0.6.1': {}
 
-  '@modelcontextprotocol/sdk@1.13.0':
+  '@modelcontextprotocol/sdk@1.17.0':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5
       cors: 2.8.5
       cross-spawn: 7.0.6
       eventsource: 3.0.7
+      eventsource-parser: 3.0.3
       express: 5.1.0
       express-rate-limit: 7.5.0(express@5.1.0)
       pkce-challenge: 5.0.0
@@ -17111,7 +17155,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
 
   '@types/cookie@0.6.0': {}
 
@@ -17173,7 +17217,7 @@ snapshots:
 
   '@types/fontkit@2.0.8':
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
 
   '@types/har-format@1.2.16': {}
 
@@ -17226,7 +17270,7 @@ snapshots:
 
   '@types/mysql@2.15.26':
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
 
   '@types/nlcst@2.0.3':
     dependencies:
@@ -17242,6 +17286,10 @@ snapshots:
   '@types/node@18.19.112':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/node@20.19.9':
+    dependencies:
+      undici-types: 6.21.0
 
   '@types/node@22.15.21':
     dependencies:
@@ -17271,7 +17319,7 @@ snapshots:
 
   '@types/pg@8.6.1':
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
@@ -17301,7 +17349,7 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
 
   '@types/textarea-caret@3.0.4': {}
 
@@ -17326,7 +17374,7 @@ snapshots:
 
   '@types/ws@6.0.4':
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
 
   '@types/ws@8.18.1':
     dependencies:
@@ -18968,7 +19016,7 @@ snapshots:
 
   eval@0.1.8:
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 22.15.32
       require-like: 0.1.2
 
   event-stream@3.3.4:
@@ -19338,7 +19386,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  framer-plugin@3.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  framer-plugin@3.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -19821,6 +19869,13 @@ snapshots:
       entities: 3.0.1
 
   htmlparser2@8.0.2:
+    dependencies:
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
+      domutils: 3.2.2
+      entities: 4.5.0
+
+  htmlparser2@9.1.0:
     dependencies:
       domelementtype: 2.3.0
       domhandler: 5.0.3
@@ -23023,7 +23078,7 @@ snapshots:
 
   spdx-license-ids@3.0.21: {}
 
-  spiceflow@1.13.2(@modelcontextprotocol/sdk@1.13.0):
+  spiceflow@1.13.2(@modelcontextprotocol/sdk@1.17.0):
     dependencies:
       '@medley/router': 0.2.1
       '@standard-schema/spec': 1.0.0
@@ -23034,7 +23089,7 @@ snapshots:
       zod: 3.25.71
       zod-to-json-schema: 3.24.6(zod@3.25.71)
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.13.0
+      '@modelcontextprotocol/sdk': 1.17.0
 
   split2@3.2.2:
     dependencies:
@@ -23540,7 +23595,7 @@ snapshots:
 
   unfetch@4.2.0: {}
 
-  unframer@2.26.0(@modelcontextprotocol/sdk@1.13.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  unframer@2.26.0(@modelcontextprotocol/sdk@1.17.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@babel/core': 7.27.4
       '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
@@ -23554,7 +23609,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       real-framer-motion: framer-motion@12.16.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      spiceflow: 1.13.2(@modelcontextprotocol/sdk@1.13.0)
+      spiceflow: 1.13.2(@modelcontextprotocol/sdk@1.17.0)
       string-dedent: 3.0.1
       undici: 7.10.0
     transitivePeerDependencies:

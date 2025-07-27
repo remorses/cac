@@ -22,11 +22,15 @@ import {
     addNodeCount,
     extractObjectsFromXmlContent,
     NewExtractedNode,
-} from 'website/src/lib/xml'
+} from 'plugin-mcp'
 
 export const ITEMS_PER_ITERATION = 30
 
-export type FramerLayersTree = Array<{
+import type { FramerLayersTree as ImportedFramerLayersTree } from 'plugin-mcp'
+export type FramerLayersTree = ImportedFramerLayersTree
+
+// Legacy type definition for backward compatibility
+export type OldFramerLayersTree = Array<{
     name?: string | null
     content?: string | null
     nodeId?: string | null

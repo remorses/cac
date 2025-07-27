@@ -1,0 +1,30 @@
+{
+    "name": "plugin-mcp",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "main": "./esm/index.js",
+    "types": "./esm/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./esm/index.js",
+            "types": "./esm/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc",
+        "tsc": "tsc --skipLibCheck",
+        "typecheck": "pnpm tsc --noEmit"
+    },
+    "dependencies": {
+        "camelcase": "^8.0.0",
+        "dom-serializer": "^2.0.0",
+        "framer-plugin": "^3.5.2",
+        "htmlparser2": "^9.1.0",
+        "unframer": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "typescript": "^5.5.3"
+    }
+}
