@@ -9,7 +9,7 @@
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
         "check": "pnpm tsc --incremental",
         "typecheck": "pnpm tsc --noEmit --incremental",
-        "deployment": "pnpm build && pnpm wrangler pages deploy dist",
+        "deployment": "pnpm build && pnpm wrangler deploy",
         "start": "vite preview --port 5173"
     },
     "dependencies": {
@@ -44,6 +44,6 @@
         "vite-plugin-framer": "^1.0.7",
         "vite-plugin-mkcert": "^1.17.6",
         "vite-tsconfig-paths": "^5.1.4",
-        "wrangler": "^4.24.3"
+        "wrangler": "^4.26.0"
     }
 }
