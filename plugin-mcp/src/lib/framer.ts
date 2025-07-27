@@ -11,8 +11,8 @@ import {
 } from 'framer-plugin'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
-import { FramerLayersTree } from '../types'
-import { bfsOldTextTree, cleanupOldTextTree } from './tree-utils'
+import { FramerLayersTree } from './types'
+import { bfsFramerLayersTree, cleanupTreeFromEmptyNodes } from './tree-utils'
 
 let cachedPagePaths: string[] = []
 
@@ -305,19 +305,6 @@ export async function isNodeZoomable(node: AnyNode) {
     return true
 }
 
-const possibleInstanceTextFields = [
-    'text',
-    'placeholder',
-    'label',
-    'title',
-    'description',
-    'hint',
-    'question',
-    'answer',
-    'buttontext',
-    'content',
-]
-
 async function push({
     node,
     tree,
@@ -378,7 +365,7 @@ export async function getFramerTree({
 }) {
     const timeId = `getFramerTree-${Date.now()}-${Math.random().toString(36).slice(2)}`
     console.time(timeId)
-    let oldText = [] as FramerLayersTree
+    let tree = [] as FramerLayersTree
 
     let componentInstanceChildrenSeen = new Set<string>()
     async function handleNode(node: AnyNode) {
@@ -395,9 +382,9 @@ export async function getFramerTree({
                 return
             }
             if (text) {
-                oldText = await push({
+                tree = await push({
                     node,
-                    tree: oldText,
+                    tree: tree,
                     text,
                     nodeId: node.id,
                 })
@@ -410,9 +397,9 @@ export async function getFramerTree({
                 return
             }
 
-            oldText = await push({
+            tree = await push({
                 node,
-                tree: oldText,
+                tree: tree,
                 nodeId: node.id,
             })
         }
@@ -436,17 +423,17 @@ export async function getFramerTree({
         }
     }
 
-    oldText = cleanupOldTextTree(oldText)
+    tree = cleanupTreeFromEmptyNodes(tree)
     console.timeEnd(timeId)
-    return oldText
+    return tree
 }
 
 export async function discardFramerChanges({
-    previousOldText,
+    previousTree: previousTree,
 }: {
-    previousOldText: FramerLayersTree
+    previousTree: FramerLayersTree
 }) {
-    const allNodes = bfsOldTextTree(previousOldText).filter((x) => x?.nodeId)
+    const allNodes = bfsFramerLayersTree(previousTree).filter((x) => x?.nodeId)
     const promises = allNodes.map(async (oldNodeObj) => {
         const { nodeId, content: oldContent, attributes } = oldNodeObj
         if (!oldContent || !nodeId) {

@@ -60,7 +60,7 @@ function SimplePromptComponent({}) {
     )
 
     const [isLoading, setIsLoading] = useState(false)
-    const [previousOldText, setPreviousOldText] = useState<FramerLayersTree>([])
+    const [previousTree, setPreviousTree] = useState<FramerLayersTree>([])
     const { onKeyDown, onSubmit: historyOnSubmit } = useHistoryNavigation({
         value: description,
         setValue: setDescription,
@@ -124,7 +124,7 @@ function SimplePromptComponent({}) {
     }, [])
 
     function reset() {
-        setPreviousOldText([])
+        setPreviousTree([])
 
         setGenerationId(0)
         setError('')
@@ -177,7 +177,7 @@ function SimplePromptComponent({}) {
             setError('No text found to replace')
             return
         }
-        setPreviousOldText([...oldText])
+        setPreviousTree([...oldText])
 
         const { name: projectName } = await framer.getProjectInfo()
         let pagePath = ''
@@ -336,14 +336,14 @@ function SimplePromptComponent({}) {
             abortController.abort()
             return
         }
-        if (!previousOldText.length) {
+        if (!previousTree.length) {
             console.log('no old nodes to discard')
             return
         }
         setIsDiscarding(true)
         try {
             await Promise.all([
-                discardFramerChanges({ previousOldText }),
+                discardFramerChanges({ previousTree: previousTree }),
                 pluginApiClient.api.plugins.rewritePlugin.discardGeneration.post(
                     {
                         id: generationId,
@@ -394,7 +394,7 @@ function SimplePromptComponent({}) {
 
     const [isDiscarding, setIsDiscarding] = useState(false)
     const [shouldShowStars, setShouldShowStars] = useState(
-        !!previousOldText.length && !isLoading,
+        !!previousTree.length && !isLoading,
     )
 
     return (
@@ -480,7 +480,7 @@ function SimplePromptComponent({}) {
                     isLoading={isLoading}
                 />
             </div>
-            {Boolean(isLoading || previousOldText.length) ? (
+            {Boolean(isLoading || previousTree.length) ? (
                 <Button
                     className=''
                     onClick={discard}
