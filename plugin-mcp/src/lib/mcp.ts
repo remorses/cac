@@ -9,17 +9,10 @@ import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
+import { McpToolNames } from './types'
 
 /* ──────────────────────────── 1. Enum ────────────────────────────── */
-export enum McpToolNames {
-    GetPublishedURL = 'getPublishedURL',
-    FetchHTML = 'fetchHTML',
-    GetSelectedNodeIds = 'getSelectedNodeIds',
-    SetNodeAttributes = 'setNodeAttributes',
-    ApplyColorStyle = 'applyColorStyle',
-    InsertComponentInstance = 'insertComponentInstance',
-    ExportReactComponents = 'exportReactComponents',
-}
+
 
 /* ──────────────────────────── 2. Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
