@@ -2,7 +2,7 @@ import { McpToolWebsocketPayload } from './mcp'
 
 export type WebsocketMessage = {
     id: string
-    payload?: McpToolWebsocketPayload
+    payload?: McpToolWebsocketPayload | { type: 'ready' | 'close' }
 
     error?: string
 }
@@ -29,7 +29,7 @@ export function createWebsocketHandling({
         payload,
     }: {
         idempotenceKey?: string
-        payload: McpToolWebsocketPayload
+        payload: WebsocketMessage['payload']
     }): Promise<any> => {
         if (!ws || ws.readyState !== WebSocket.OPEN) {
             throw new Error('WebSocket instance not open.')
@@ -102,8 +102,13 @@ export function createWebsocketHandling({
     // Attach ws 'message' event handler
     ws.addEventListener('message', onMessage)
 
-    const cleanup = () => {
+    const cleanup = async () => {
         ws.removeEventListener('message', onMessage)
+
+        await send({
+            payload: { type: 'close' },
+        })
+
         // Clean up any pending requests
         for (const [id, pending] of Array.from(pendingRequests)) {
             clearTimeout(pending.timeout)

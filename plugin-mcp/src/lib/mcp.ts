@@ -1,4 +1,3 @@
-
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import {
     CallToolRequest,
@@ -7,7 +6,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { McpToolNames } from './types'
-import { createWebsocketHandling } from './websocket'
+import { createWebsocketHandling } from './websocket-server'
 
 /* ──────────────────────────── 1. Enum ────────────────────────────── */
 
@@ -46,14 +45,8 @@ export const ExportReactComponentsInput = z.object({
 const TextOut = z.object({ text: z.string() })
 const JsonOut = z.object({ json: z.any() })
 
-
-
 /* ───────────────────────── 3. Message types ──────────────────────── */
-type McpToolMsg<
-    T extends McpToolNames,
-    InputSchema extends z.ZodTypeAny,
-
-> = {
+type McpToolMsg<T extends McpToolNames, InputSchema extends z.ZodTypeAny> = {
     type: T
     input: z.infer<InputSchema>
     output?: any
@@ -61,26 +54,14 @@ type McpToolMsg<
 
 /* explicit union */
 export type McpToolWebsocketPayload =
-    | McpToolMsg<
-          McpToolNames.GetPublishedURL,
-          typeof GetPublishedURLInput
-      >
-    | McpToolMsg<
-          McpToolNames.FetchHTML,
-          typeof FetchHTMLInput
-      >
+    | McpToolMsg<McpToolNames.GetPublishedURL, typeof GetPublishedURLInput>
+    | McpToolMsg<McpToolNames.FetchHTML, typeof FetchHTMLInput>
     | McpToolMsg<
           McpToolNames.GetSelectedNodeIds,
           typeof GetSelectedNodeIdsInput
       >
-    | McpToolMsg<
-          McpToolNames.SetNodeAttributes,
-          typeof SetNodeAttributesInput
-      >
-    | McpToolMsg<
-          McpToolNames.ApplyColorStyle,
-          typeof ApplyColorStyleInput
-      >
+    | McpToolMsg<McpToolNames.SetNodeAttributes, typeof SetNodeAttributesInput>
+    | McpToolMsg<McpToolNames.ApplyColorStyle, typeof ApplyColorStyleInput>
     | McpToolMsg<
           McpToolNames.InsertComponentInstance,
           typeof InsertComponentInstanceInput
