@@ -113,17 +113,24 @@ export type McpToolWebsocketPayload =
           typeof ExportReactComponentsOutput
       >
 
-export async function implementMcpTools({ server }: { server: Server }) {
+export async function implementMcpTools({
+    server,
+    websocketId,
+}: {
+    server: Server
+    websocketId?: string
+}) {
     // Generate a new websocketId using Web Crypto if not provided
 
-    const bytes = new Uint8Array(8)
-    crypto.getRandomValues(bytes)
-    const websocketId = Array.from(bytes)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
-
+    if (!websocketId) {
+        const bytes = new Uint8Array(8)
+        crypto.getRandomValues(bytes)
+        websocketId = Array.from(bytes)
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('')
+    }
     const start = Date.now()
-    const upstreamUrl = `wss://example.com/ws-endpoint?id=${websocketId}`
+    const upstreamUrl = `wss://unframer.co/framer-mcp-tunnel?id=${websocketId}`
     const ws = new WebSocket(upstreamUrl)
 
     // Wait for connection
