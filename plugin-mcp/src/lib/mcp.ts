@@ -130,7 +130,7 @@ export async function implementMcpTools({
             .join('')
     }
     const start = Date.now()
-    const upstreamUrl = `wss://unframer.co/framer-mcp-tunnel?id=${websocketId}`
+    const upstreamUrl = `wss://unframer.co/_tunnel/upstream?id=${websocketId}`
     const ws = new WebSocket(upstreamUrl)
 
     // Wait for connection
