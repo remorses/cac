@@ -1,7 +1,7 @@
 import { createSpiceflowClient } from 'spiceflow/client'
 import { expect, test } from 'vitest'
 import { llmPluginApp } from './spiceflow-ai-rewrite-plugin'
-import { rewriteXmlContentForTests, xmlToOldTextTree } from './xml'
+import { rewriteXmlContentForTests, xmlToOldTextTree } from 'plugin-mcp'
 import { isTruthy } from './utils'
 
 test(

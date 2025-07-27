@@ -37,7 +37,7 @@ import {
     applyAttributes,
     getFramerTree,
     isNodeZoomable,
-} from 'plugin-migrate/src/lib/framer'
+} from 'plugin-mcp'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { flushSync } from 'react-dom'

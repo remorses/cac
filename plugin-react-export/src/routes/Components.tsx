@@ -4,7 +4,7 @@ import {
     getInstanceComponentId,
     replaceEnumIdsForControls,
     serializeAttributesForXml,
-} from 'plugin-migrate/src/lib/framer'
+} from 'plugin-mcp'
 
 import {
     isTruthy,

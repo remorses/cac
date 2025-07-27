@@ -22,7 +22,7 @@ import {
     extractObjectsFromXmlContent,
     NewExtractedNode,
     oldTextTreeToXml,
-} from 'website/src/lib/xml'
+} from 'plugin-mcp'
 import { z } from 'zod'
 import { fetchFormattedHtml } from './htmlrewrite.server'
 import { isTruthy } from './utils'

@@ -9,7 +9,7 @@ import {
     extractExternalLinks,
     rewriteTemplateChunk
 } from 'website/src/lib/rewrite'
-import { rewriteXmlContentForTests } from 'website/src/lib/xml'
+import { rewriteXmlContentForTests } from 'plugin-mcp'
 
 const testCases = [
     {

@@ -15,7 +15,7 @@ import {
     extractObjectsFromXmlContent,
     rewriteXmlContentForTests,
     xmlToOldTextTree,
-} from 'website/src/lib/xml'
+} from 'plugin-mcp'
 import path from 'path'
 
 test('splitTreeInChunks long', () => {
