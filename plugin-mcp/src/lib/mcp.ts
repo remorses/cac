@@ -1,15 +1,13 @@
-// framer‑mcp.ts
-// import { createWebsocketHandling } from './lib/websocket'
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { z } from 'zod'
-import { createWebsocketHandling } from './websocket'
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import {
     CallToolRequest,
     CallToolRequestSchema,
     ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
+import { z } from 'zod'
 import { McpToolNames } from './types'
+import { createWebsocketHandling } from './websocket'
 
 /* ──────────────────────────── 1. Enum ────────────────────────────── */
 
@@ -48,19 +46,13 @@ export const ExportReactComponentsInput = z.object({
 const TextOut = z.object({ text: z.string() })
 const JsonOut = z.object({ json: z.any() })
 
-export const GetPublishedURLOutput = JsonOut
-export const FetchHTMLOutput = TextOut
-export const GetSelectedNodeIdsOutput = JsonOut
-export const SetNodeAttributesOutput = TextOut
-export const ApplyColorStyleOutput = TextOut
-export const InsertComponentInstanceOutput = JsonOut
-export const ExportReactComponentsOutput = TextOut
+
 
 /* ───────────────────────── 3. Message types ──────────────────────── */
 type McpToolMsg<
     T extends McpToolNames,
     InputSchema extends z.ZodTypeAny,
-    OutputSchema extends z.ZodTypeAny,
+
 > = {
     type: T
     input: z.infer<InputSchema>
@@ -71,38 +63,31 @@ type McpToolMsg<
 export type McpToolWebsocketPayload =
     | McpToolMsg<
           McpToolNames.GetPublishedURL,
-          typeof GetPublishedURLInput,
-          typeof GetPublishedURLOutput
+          typeof GetPublishedURLInput
       >
     | McpToolMsg<
           McpToolNames.FetchHTML,
-          typeof FetchHTMLInput,
-          typeof FetchHTMLOutput
+          typeof FetchHTMLInput
       >
     | McpToolMsg<
           McpToolNames.GetSelectedNodeIds,
-          typeof GetSelectedNodeIdsInput,
-          typeof GetSelectedNodeIdsOutput
+          typeof GetSelectedNodeIdsInput
       >
     | McpToolMsg<
           McpToolNames.SetNodeAttributes,
-          typeof SetNodeAttributesInput,
-          typeof SetNodeAttributesOutput
+          typeof SetNodeAttributesInput
       >
     | McpToolMsg<
           McpToolNames.ApplyColorStyle,
-          typeof ApplyColorStyleInput,
-          typeof ApplyColorStyleOutput
+          typeof ApplyColorStyleInput
       >
     | McpToolMsg<
           McpToolNames.InsertComponentInstance,
-          typeof InsertComponentInstanceInput,
-          typeof InsertComponentInstanceOutput
+          typeof InsertComponentInstanceInput
       >
     | McpToolMsg<
           McpToolNames.ExportReactComponents,
-          typeof ExportReactComponentsInput,
-          typeof ExportReactComponentsOutput
+          typeof ExportReactComponentsInput
       >
 
 export async function implementMcpTools({
