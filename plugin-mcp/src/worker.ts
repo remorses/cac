@@ -5,7 +5,7 @@ import { implementMcpTools } from './lib/mcp'
 export class MyMCP extends McpAgent<Env> {
     server = new Server(
         {
-            name: 'Authless Calculator',
+            name: 'Framer MCP',
             version: '1.0.0',
         },
         {
@@ -14,17 +14,12 @@ export class MyMCP extends McpAgent<Env> {
             },
         },
     )
-    websocketId: string | undefined
-    async fetch(request: Request): Promise<Response> {
-        const url = new URL(request.url)
-        const websocketId = url.searchParams.get('id') as string | undefined
-        console.log('Fetching MyMCP with websocketId:', websocketId)
-        this.websocketId = websocketId
-        return await super.fetch(request)
-    }
+
     async init() {
         const env = this.env
-        const websocketId = this.websocketId
+        const websocketId = this.props?.websocketId as string
+        if (!websocketId)
+            throw new Error('websocketId ?id search param is required')
         console.log('Initializing MyMCP with websocketId:', websocketId)
         await implementMcpTools({ websocketId, server: this.server })
     }
@@ -38,6 +33,10 @@ export default {
     fetch(request: Request, env: Env, ctx: ExecutionContext) {
         const url = new URL(request.url)
 
+        const id = url.searchParams.get('id') as string | undefined
+        ctx.props = {
+            websocketId: id,
+        }
         if (url.pathname === '/sse' || url.pathname === '/sse/message') {
             const mcp = MyMCP.serveSSE('/sse')
 
