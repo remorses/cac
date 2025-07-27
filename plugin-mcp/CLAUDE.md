@@ -83,3 +83,73 @@ The system implements these MCP tools (defined in `src/lib/types.ts`):
 - Includes ping/pong mechanism to keep connections alive
 - Supports request/response correlation via message IDs
 - Implements timeout handling for MCP requests (default 5 seconds)
+
+## Framer Theme Styling
+
+The plugin uses Framer's built-in CSS variables for consistent theming that adapts to light/dark modes. These are configured in `tailwind.config.mjs`:
+
+### Color Classes
+
+**Text Colors:**
+- `text-framer-primary` - Primary text color (--framer-color-text)
+- `text-framer-secondary` - Secondary text color (--framer-color-text-secondary)
+- `text-framer-tertiary` - Tertiary text color (--framer-color-text-tertiary)
+- `text-framer-inverted` - Inverted text color (--framer-color-text-inverted)
+- `text-framer-tint` - Tint/accent color (--framer-color-tint)
+
+**Background Colors:**
+- `bg-framer-primary` - Primary background (--framer-color-bg)
+- `bg-framer-secondary` - Secondary background (--framer-color-bg-secondary)
+- `bg-framer-tertiary` - Tertiary background (--framer-color-bg-tertiary)
+- `bg-framer-divider` - Divider background (--framer-color-divider)
+- `bg-framer-tint` - Tint/accent background (--framer-color-tint)
+- `bg-framer-tintDimmed` - Dimmed tint background (--framer-color-tint-dimmed)
+- `bg-framer-tintDark` - Dark tint background (--framer-color-tint-dark)
+
+**Border Colors:**
+- `border-framer-divider` - Divider border color (--framer-color-divider)
+
+### Usage Examples
+
+**Buttons:**
+```tsx
+// Primary button (uses Framer's built-in class)
+<button className='framer-button-primary'>
+    Click me
+</button>
+
+// Secondary button with hover state
+<button className='px-3 py-2 hover:bg-framer-tertiary rounded border border-framer-divider transition-colors'>
+    Secondary Action
+</button>
+```
+
+**Input Fields:**
+```tsx
+<input 
+    className='px-3 py-2 text-xs rounded bg-framer-tertiary text-framer-primary border border-framer-divider'
+    type='text'
+/>
+```
+
+**Cards/Containers:**
+```tsx
+<div className='p-4 bg-framer-primary border border-framer-divider rounded'>
+    <h2 className='text-framer-primary font-medium'>Title</h2>
+    <p className='text-framer-secondary'>Description text</p>
+</div>
+```
+
+**Status Indicators:**
+```tsx
+// Connection status badge
+<CircleIcon className={`size-2 fill-current ${isConnected ? 'text-green-500' : 'text-orange-500'}`} />
+```
+
+### Best Practices
+
+1. Always use Framer theme colors instead of hardcoded colors (e.g., use `text-framer-secondary` instead of `text-gray-600`)
+2. Add `transition-colors` class for smooth hover effects
+3. Use appropriate semantic colors (primary for main content, secondary for supporting text, tertiary for disabled/muted states)
+4. The `framer-button-primary` class provides complete button styling consistent with Framer's design system
+5. All theme colors automatically adapt to light/dark mode based on Framer's theme setting

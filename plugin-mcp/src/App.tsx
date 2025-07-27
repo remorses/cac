@@ -1,32 +1,16 @@
 import { framer } from 'framer-plugin'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
+import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/client-websocket'
 import { McpToolNames } from './lib/types'
 import { useStore } from './lib/store'
 import { CopyIcon, CheckIcon, MaximizeIcon, CircleIcon } from 'lucide-react'
 
-const websocketId =
-    globalThis.websocketId || Math.random().toString(36).substring(2, 18)
 
-globalThis.websocketId = websocketId
-useStore.setState({ websocketId })
+// Get initial websocketId from store
+const { websocketId } = useStore.getState()
 
-const isExpanded = useStore.getState().isExpanded
-void framer.showUI({
-    position: 'top left',
-    width: isExpanded ? 320 : 120,
-    height: isExpanded ? 280 : 40,
-})
-
-// Subscribe to isExpanded changes
-useStore.subscribe((state) => {
-    void framer.showUI({
-        position: 'top left',
-        width: state.isExpanded ? 320 : 120,
-        height: state.isExpanded ? 280 : 40,
-    })
-})
-
+// Initialize websocket connection
 const cleanup = await websocketClientHandling({
     // @ts-ignore
     handle({ input, type }) {
@@ -43,7 +27,9 @@ const cleanup = await websocketClientHandling({
 export default function App() {
     const isConnected = useStore((state) => state.isConnected)
     const isExpanded = useStore((state) => state.isExpanded)
+    const websocketId = useStore((state) => state.websocketId)
     const [copied, setCopied] = useState(false)
+    const [ref, { height }] = useMeasure()
 
     const mcpServerUrl = `https://mcp.unframer.co/mcp?id=${websocketId}`
 
@@ -69,52 +55,54 @@ export default function App() {
         }
     }, [])
 
+    // Update framer UI size when height changes or expansion state changes
+    useLayoutEffect(() => {
+        void framer.showUI({
+            position: 'top left',
+            width: isExpanded ? 340 : 140,
+            height: isExpanded ? (height || 280) : 44,
+        })
+    }, [height, isExpanded])
+
     if (!isExpanded) {
         return (
-            <div className='flex items-center justify-between h-full px-3'>
+            <div className='flex items-center justify-between h-full px-3 bg-framer-primary'>
                 <div className='flex items-center gap-2'>
                     <CircleIcon
                         className={`size-2 fill-current ${isConnected ? 'text-green-500' : 'text-orange-500'}`}
                     />
-                    <span className='text-xs font-medium'>MCP</span>
+                    <span className='text-xs font-medium text-framer-primary'>MCP</span>
                 </div>
                 <button
                     onClick={toggleExpanded}
-                    className='p-1 hover:bg-gray-100 rounded'
+                    className='w-auto p-1.5 hover:bg-framer-tertiary rounded transition-colors'
                 >
-                    <MaximizeIcon className='size-3' />
+                    <MaximizeIcon className='size-3 text-framer-secondary' />
                 </button>
             </div>
         )
     }
 
     return (
-        <div className='flex flex-col gap-4 p-4 h-full'>
+        <div ref={ref} className='flex flex-col gap-4 p-4 h-full bg-framer-primary'>
             <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                    <h1 className='text-lg font-semibold'>Framer MCP</h1>
-                    <CircleIcon
-                        className={`size-2 fill-current ${isConnected ? 'text-green-500' : 'text-orange-500'}`}
-                    />
-                </div>
+                <h2 className='text-sm font-medium text-framer-primary'>Framer MCP Installation</h2>
                 <button
                     onClick={toggleExpanded}
-                    className='p-1 hover:bg-gray-100 rounded'
+                    className='w-auto p-1.5 hover:bg-framer-tertiary rounded transition-colors'
                 >
-                    <MaximizeIcon className='size-3 rotate-180' />
+                    <MaximizeIcon className='size-3 rotate-180 text-framer-secondary' />
                 </button>
             </div>
-
             <div className='flex flex-col gap-2'>
-                <h2 className='text-sm font-medium'>Installation</h2>
-                <p className='text-xs text-gray-600'>
+                <p className='text-xs text-framer-secondary'>
                     Copy the MCP server URL below and add it to your MCP client
                     (Claude Desktop, Cline, etc.)
                 </p>
             </div>
 
             <div className='flex flex-col gap-2'>
-                <label className='text-xs font-medium text-gray-600'>
+                <label className='text-xs font-medium text-framer-secondary'>
                     MCP Server URL
                 </label>
                 <div className='flex gap-2'>
@@ -122,16 +110,16 @@ export default function App() {
                         type='text'
                         value={mcpServerUrl}
                         readOnly
-                        className='flex-1 px-2 py-1 text-xs border rounded bg-gray-50'
+                        className='flex-1 px-3 py-2 text-xs rounded bg-framer-tertiary text-framer-primary border border-framer-divider'
                     />
                     <button
                         onClick={handleCopy}
-                        className='p-1.5 hover:bg-gray-100 rounded border'
+                        className='w-auto px-3 py-2 hover:bg-framer-tertiary rounded border border-framer-divider transition-colors'
                     >
                         {copied ? (
-                            <CheckIcon className='size-3 text-green-600' />
+                            <CheckIcon className='size-3.5 text-green-500' />
                         ) : (
-                            <CopyIcon className='size-3' />
+                            <CopyIcon className='size-3.5 text-framer-secondary' />
                         )}
                     </button>
                 </div>
@@ -142,13 +130,13 @@ export default function App() {
                     <CircleIcon
                         className={`size-2 fill-current ${isConnected ? 'text-green-500' : 'text-orange-500'}`}
                     />
-                    <span className='text-xs text-gray-600'>
+                    <span className='text-xs text-framer-secondary'>
                         {isConnected
                             ? 'Connected to MCP client'
                             : 'Waiting for connection'}
                     </span>
                 </div>
-                <p className='text-xs text-gray-500'>
+                <p className='text-xs text-framer-tertiary'>
                     Keep this plugin open while using MCP
                 </p>
             </div>

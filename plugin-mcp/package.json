@@ -24,6 +24,7 @@
         "plugin-mcp": "workspace:*",
         "react": "19.1.0",
         "react-dom": "19.1.0",
+        "react-use-measure": "^2.1.7",
         "unframer": "workspace:*",
         "zod": "^3.25.71",
         "zustand": "^5.0.5"
