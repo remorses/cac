@@ -201,7 +201,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   chrome-renderer:
@@ -347,7 +347,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   new-package-template: {}
@@ -467,7 +467,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   plugin-angled-screen:
@@ -543,7 +543,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   plugin-github-sync:
@@ -658,7 +658,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   plugin-mcp:
@@ -684,6 +684,15 @@ importers:
       htmlparser2:
         specifier: ^9.1.0
         version: 9.1.0
+      plugin-mcp:
+        specifier: workspace:*
+        version: 'link:'
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
       unframer:
         specifier: workspace:*
         version: link:../unframer/unframer
@@ -697,9 +706,42 @@ importers:
       '@types/node':
         specifier: ^20
         version: 20.19.9
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.1.8
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.1.6(@types/react@19.1.8)
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.8.1
+        version: 3.10.2(@swc/helpers@0.5.17)(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.5.1)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.1
+      tailwindcss:
+        specifier: ^3.4.15
+        version: 3.4.17
       typescript:
         specifier: ^5.5.3
         version: 5.8.3
+      vite:
+        specifier: ^6.3.5
+        version: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+      vite-plugin-environment:
+        specifier: ^1.1.3
+        version: 1.1.3(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
+      vite-plugin-framer:
+        specifier: ^1.0.7
+        version: 1.0.7(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
+      vite-plugin-mkcert:
+        specifier: ^1.17.6
+        version: 1.17.8(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
+      vite-tsconfig-paths:
+        specifier: ^5.1.4
+        version: 5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
       wrangler:
         specifier: ^4.24.3
         version: 4.26.0(@cloudflare/workers-types@4.20250726.0)
@@ -831,7 +873,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   plugin-react-export:
@@ -946,7 +988,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   scraping-utils:
@@ -1313,7 +1355,7 @@ importers:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-framer:
-        specifier: ^1.0.3
+        specifier: ^1.0.7
         version: 1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))
 
   unframer:
@@ -6589,8 +6631,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  browserslist@4.24.5:
-    resolution: {integrity: sha512-FDToo4Wo82hIdgc1CQ+NQD0hEhmpPjrZ3hiUgwgOG6IuTdlpr8jdjyG24P6cNP1yJpTLzS5OcGgSw0xmDU1/Tw==}
+  browserslist@4.25.1:
+    resolution: {integrity: sha512-KGj0KoOMXLpSNkkEI6Z6mShmQy0bc1I+T7K9N81k4WWMrfz+6fQ6es80B/YLAeRoKvjYE1YSHHOW1qe9xIVzHw==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -6676,8 +6718,8 @@ packages:
   caniuse-lite@1.0.30001713:
     resolution: {integrity: sha512-wCIWIg+A4Xr7NfhTuHdX+/FKh3+Op3LBbSp2N5Pfx6T/LhdQy3GTyoTg48BReaW/MyMNZAkTadsBtai3ldWK0Q==}
 
-  caniuse-lite@1.0.30001718:
-    resolution: {integrity: sha512-AflseV1ahcSunK53NfEs9gFWgOEmzr0f+kaMFA4xiLZlr9Hzt7HxcSpIFcnNCUkz6R6dWKa54rUz3HUmI3nVcw==}
+  caniuse-lite@1.0.30001727:
+    resolution: {integrity: sha512-pB68nIHmbN6L/4C6MH1DokyR3bYqFwjaSs/sWDHGj4CTcFtQUQMuJftVwWkXq7mNWOybD3KhUv3oWHoGxgP14Q==}
 
   canvas-confetti@1.9.3:
     resolution: {integrity: sha512-rFfTURMvmVEX1gyXFgn5QMn81bYk70qa0HLzcIOSVEyl57n6o9ItHeBtUSWdvKAPY0xlvBHno4/v3QPrT83q9g==}
@@ -7320,8 +7362,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.155:
-    resolution: {integrity: sha512-ps5KcGGmwL8VaeJlvlDlu4fORQpv3+GIcF5I3f9tUKUlJ/wsysh6HU8P5L1XWRYeXfA0oJd4PyM8ds8zTFf6Ng==}
+  electron-to-chromium@1.5.191:
+    resolution: {integrity: sha512-xcwe9ELcuxYLUFqZZxL19Z6HVKcvNkIwhbHUz7L3us6u12yR+7uY89dSl570f/IqNthx8dAw3tojG7i4Ni4tDA==}
 
   electron-to-chromium@1.5.88:
     resolution: {integrity: sha512-K3C2qf1o+bGzbilTDCTBhTQcMS9KW60yTAaTeeXsfvQuTDDwlokLam/AdqlqcSy9u4UainDgsHV23ksXAOgamw==}
@@ -12514,7 +12556,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.27.2
       '@babel/helper-validator-option': 7.27.1
-      browserslist: 4.24.5
+      browserslist: 4.25.1
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -17586,6 +17628,14 @@ snapshots:
 
   '@vanilla-extract/private@1.0.6': {}
 
+  '@vitejs/plugin-react-swc@3.10.2(@swc/helpers@0.5.17)(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-beta.11
+      '@swc/core': 1.12.3(@swc/helpers@0.5.17)
+      vite: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+    transitivePeerDependencies:
+      - '@swc/helpers'
+
   '@vitejs/plugin-react-swc@3.10.2(@swc/helpers@0.5.17)(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.11
@@ -18156,9 +18206,9 @@ snapshots:
     dependencies:
       pako: 0.2.9
 
-  browserslist-to-esbuild@2.1.1(browserslist@4.24.4):
+  browserslist-to-esbuild@2.1.1(browserslist@4.25.1):
     dependencies:
-      browserslist: 4.24.4
+      browserslist: 4.25.1
       meow: 13.2.0
 
   browserslist@4.24.4:
@@ -18168,12 +18218,12 @@ snapshots:
       node-releases: 2.0.19
       update-browserslist-db: 1.1.2(browserslist@4.24.4)
 
-  browserslist@4.24.5:
+  browserslist@4.25.1:
     dependencies:
-      caniuse-lite: 1.0.30001718
-      electron-to-chromium: 1.5.155
+      caniuse-lite: 1.0.30001727
+      electron-to-chromium: 1.5.191
       node-releases: 2.0.19
-      update-browserslist-db: 1.1.3(browserslist@4.24.5)
+      update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
   buffer-from@1.1.2: {}
 
@@ -18278,7 +18328,7 @@ snapshots:
 
   caniuse-lite@1.0.30001713: {}
 
-  caniuse-lite@1.0.30001718: {}
+  caniuse-lite@1.0.30001727: {}
 
   canvas-confetti@1.9.3: {}
 
@@ -18885,7 +18935,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.155: {}
+  electron-to-chromium@1.5.191: {}
 
   electron-to-chromium@1.5.88: {}
 
@@ -24019,9 +24069,9 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  update-browserslist-db@1.1.3(browserslist@4.24.5):
+  update-browserslist-db@1.1.3(browserslist@4.25.1):
     dependencies:
-      browserslist: 4.24.5
+      browserslist: 4.25.1
       escalade: 3.2.0
       picocolors: 1.1.1
 
@@ -24223,6 +24273,10 @@ snapshots:
       - tsx
       - yaml
 
+  vite-plugin-environment@1.1.3(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)):
+    dependencies:
+      vite: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+
   vite-plugin-environment@1.1.3(vite@6.3.5(@types/node@22.15.32)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)):
     dependencies:
       vite: 6.3.5(@types/node@22.15.32)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
@@ -24231,10 +24285,17 @@ snapshots:
     dependencies:
       vite: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
 
+  vite-plugin-framer@1.0.7(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)):
+    dependencies:
+      browserslist: 4.25.1
+      browserslist-to-esbuild: 2.1.1(browserslist@4.25.1)
+      picocolors: 1.1.1
+      vite: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+
   vite-plugin-framer@1.0.7(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)):
     dependencies:
-      browserslist: 4.24.4
-      browserslist-to-esbuild: 2.1.1(browserslist@4.24.4)
+      browserslist: 4.25.1
+      browserslist-to-esbuild: 2.1.1(browserslist@4.25.1)
       picocolors: 1.1.1
       vite: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
 
@@ -24246,6 +24307,15 @@ snapshots:
       open: 10.1.0
       sirv: 3.0.1
       vite: 6.3.5(@types/node@22.15.32)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+    transitivePeerDependencies:
+      - supports-color
+
+  vite-plugin-mkcert@1.17.8(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)):
+    dependencies:
+      axios: 1.8.4(debug@4.4.0)
+      debug: 4.4.0
+      picocolors: 1.1.1
+      vite: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -24274,6 +24344,17 @@ snapshots:
       tsconfck: 3.1.5(typescript@5.8.3)
     optionalDependencies:
       vite: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  vite-tsconfig-paths@5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)):
+    dependencies:
+      debug: 4.4.0
+      globrex: 0.1.2
+      tsconfck: 3.1.4(typescript@5.8.3)
+    optionalDependencies:
+      vite: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -24317,6 +24398,21 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.0.3
       fsevents: 2.3.3
+
+  vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1):
+    dependencies:
+      esbuild: 0.25.4
+      fdir: 6.4.4(picomatch@4.0.2)
+      picomatch: 4.0.2
+      postcss: 8.5.3
+      rollup: 4.41.0
+      tinyglobby: 0.2.13
+    optionalDependencies:
+      '@types/node': 20.19.9
+      fsevents: 2.3.3
+      jiti: 2.4.2
+      tsx: 4.20.3
+      yaml: 2.7.1
 
   vite@6.3.5(@types/node@22.15.32)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1):
     dependencies:
