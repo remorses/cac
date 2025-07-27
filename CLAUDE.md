@@ -453,3 +453,7 @@ I use resend js sdk to use email. the client should be placed in a file lib/rese
 to read resend email sending sdk docs fetch the following url:
 
 https://context7.com/resend.com/llmstxt/llms.txt?topic=query&tokens=2000
+
+# circular dependencies
+
+it is fine to have circular dependencies in pnpm and package.json of workspace packages. one package can also install itself so it can import itself. this is an alternative to tsconfig.json paths
