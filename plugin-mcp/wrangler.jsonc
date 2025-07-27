@@ -22,6 +22,12 @@
             },
         ],
     },
+    "routes": [
+        {
+            "pattern": "mcp.unframer.co",
+            "custom_domain": true,
+        },
+    ],
     "observability": {
         "enabled": true,
     },
