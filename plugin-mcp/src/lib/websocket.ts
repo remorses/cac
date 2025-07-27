@@ -1,13 +1,8 @@
-import type { WebSocket, RawData } from 'ws'
-
-type Payload = {
-    type: 'someType'
-    input: {}
-}
+import { McpToolWebsocketPayload } from './mcp'
 
 type WebsocketMessage = {
     id: string
-    payload?: Payload
+    payload?: McpToolWebsocketPayload
     error?: string
 }
 
@@ -23,7 +18,7 @@ export function createWebsocketHandling({
         {
             resolve: (value: any) => void
             reject: (error: any) => void
-            timeout: NodeJS.Timeout
+            timeout: ReturnType<typeof setTimeout>
         }
     >()
     const usedIdempotenceIds = new Set<string>()
@@ -33,9 +28,9 @@ export function createWebsocketHandling({
         payload,
     }: {
         idempotenceKey?: string
-        payload: Payload
+        payload: McpToolWebsocketPayload
     }): Promise<any> => {
-        if (!ws || ws.readyState !== 1) {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
             throw new Error('WebSocket instance not open.')
         }
 
@@ -71,12 +66,16 @@ export function createWebsocketHandling({
             }
         })
     }
-    function onMessage(data: RawData, isBinary: boolean) {
+    function onMessage(event: MessageEvent) {
         let msg: WebsocketMessage | undefined
         try {
-            // Only parse if not binary
-            if (isBinary) return
-            msg = JSON.parse(data.toString())
+            // Handle both string and Blob data
+            if (typeof event.data === 'string') {
+                msg = JSON.parse(event.data)
+            } else if (event.data instanceof Blob) {
+                // Skip binary data
+                return
+            }
         } catch (err) {
             // ignore parse errors
             return
@@ -100,14 +99,10 @@ export function createWebsocketHandling({
     }
 
     // Attach ws 'message' event handler
-    // handle multiple calls gracefully
-    function messageHandler(data: RawData, isBinary: boolean) {
-        onMessage(data, isBinary)
-    }
+    ws.addEventListener('message', onMessage)
 
-    ws.on('message', messageHandler)
     const cleanup = () => {
-        ws.off('message', messageHandler)
+        ws.removeEventListener('message', onMessage)
         // Clean up any pending requests
         for (const [id, pending] of Array.from(pendingRequests)) {
             clearTimeout(pending.timeout)
