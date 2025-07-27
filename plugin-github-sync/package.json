@@ -8,7 +8,7 @@
         "check": "pnpm tsc --incremental",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "start": "vite preview --port 5173",
-        "deployment_": "pnpm build && pnpm wrangler pages deploy dist",
+
         "preview": "vite preview --port 5173"
     },
     "dependencies": {
