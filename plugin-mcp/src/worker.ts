@@ -1,6 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { McpAgent } from 'agents/mcp'
-import { implementMcpTools } from './lib/mcp'
+import { implementMcpTools } from './lib/mcp-tools'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(

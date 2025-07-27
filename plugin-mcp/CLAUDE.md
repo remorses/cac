@@ -2,6 +2,10 @@
 
 This folder contains both the Framer plugin client code and the Cloudflare Worker MCP server implementation. The system enables MCP (Model Context Protocol) integration with Framer, allowing AI assistants to interact with Framer projects.
 
+The most important code is in `src/App.tsx` in the `websocketClientHandling` `handle` callback. this is where the actual MCP implementation is done.
+
+Also the tools schema is defined in `src/lib/mcp-tools.ts`. This is where you should add the schema when adding or updating MCP tools.
+
 ## Architecture Overview
 
 The system consists of three main components:
@@ -62,9 +66,9 @@ The system implements these MCP tools (defined in `src/lib/types.ts`):
 
 - `src/App.tsx` - Framer plugin UI and WebSocket client setup
 - `src/worker.ts` - Cloudflare Worker MCP server implementation
-- `src/lib/mcp.ts` - MCP tool definitions and server setup
+- `src/lib/mcp-tools.ts` - MCP tool definitions and server setup
 - `src/lib/client-websocket.ts` - WebSocket client handling for Framer plugin
-- `src/lib/websocket.ts` - WebSocket message handling utilities
+- `src/lib/websocket-server.ts` - WebSocket worker handling
 - `src/lib/types.ts` - TypeScript types and enums
 - `wrangler.jsonc` - Cloudflare Worker configuration
 - `framer.json` - Framer plugin manifest
@@ -126,7 +130,7 @@ The plugin uses Framer's built-in CSS variables for consistent theming that adap
 
 **Input Fields:**
 ```tsx
-<input 
+<input
     className='px-3 py-2 text-xs rounded bg-framer-tertiary text-framer-primary border border-framer-divider'
     type='text'
 />
