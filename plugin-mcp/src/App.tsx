@@ -6,7 +6,11 @@ import { McpToolNames } from './lib/types'
 import { useStore } from './lib/store'
 import { CopyIcon, CheckIcon, MaximizeIcon, CircleIcon } from 'lucide-react'
 
-
+framer.showUI({
+    position: 'top left',
+    width: 140,
+    height: 44,
+})
 // Get initial websocketId from store
 const { websocketId } = useStore.getState()
 
@@ -59,23 +63,25 @@ export default function App() {
     useLayoutEffect(() => {
         void framer.showUI({
             position: 'top left',
-            width: isExpanded ? 340 : 140,
-            height: isExpanded ? (height || 280) : 44,
+            width: isExpanded ? 340 : 160,
+            height: height || 280,
         })
     }, [height, isExpanded])
 
     if (!isExpanded) {
         return (
-            <div className='flex items-center justify-between h-full px-3 bg-framer-primary'>
+            <div className='flex items-center justify-between px-3 py-3 bg-framer-primary'>
                 <div className='flex items-center gap-2'>
                     <CircleIcon
                         className={`size-2 fill-current ${isConnected ? 'text-green-500' : 'text-orange-500'}`}
                     />
-                    <span className='text-xs font-medium text-framer-primary'>MCP</span>
+                    <span className='text-xs truncate font-medium text-framer-primary'>
+                        Framer MCP
+                    </span>
                 </div>
                 <button
                     onClick={toggleExpanded}
-                    className='w-auto p-1.5 hover:bg-framer-tertiary rounded transition-colors'
+                    className='w-auto bg-transparent hover:bg-framer-tertiary rounded transition-colors'
                 >
                     <MaximizeIcon className='size-3 text-framer-secondary' />
                 </button>
@@ -84,12 +90,17 @@ export default function App() {
     }
 
     return (
-        <div ref={ref} className='flex flex-col gap-4 p-4 h-full bg-framer-primary'>
+        <div
+            ref={ref}
+            className='flex flex-col gap-4 p-4 pt-0 bg-framer-primary'
+        >
             <div className='flex items-center justify-between'>
-                <h2 className='text-sm font-medium text-framer-primary'>Framer MCP Installation</h2>
+                <h2 className='text-sm font-medium text-framer-primary'>
+                    {/* Framer MCP Installation */}
+                </h2>
                 <button
                     onClick={toggleExpanded}
-                    className='w-auto p-1.5 hover:bg-framer-tertiary rounded transition-colors'
+                    className='w-auto py-1 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
                 >
                     <MaximizeIcon className='size-3 rotate-180 text-framer-secondary' />
                 </button>
