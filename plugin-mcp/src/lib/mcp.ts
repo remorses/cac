@@ -78,8 +78,6 @@ export async function implementMcpTools({
     server: Server
     websocketId?: string
 }) {
-    // Generate a new websocketId using Web Crypto if not provided
-
     if (!websocketId) {
         const bytes = new Uint8Array(8)
         crypto.getRandomValues(bytes)
@@ -111,7 +109,7 @@ export async function implementMcpTools({
     })
     const { send, cleanup } = createWebsocketHandling({ ws })
 
-    await send({
+    send({
         payload: { type: 'ready' },
     })
 

@@ -107,7 +107,7 @@ export function createWebsocketHandling({
     const cleanup = async () => {
         ws.removeEventListener('message', onMessage)
 
-        await send({
+        send({
             payload: { type: 'close' },
         })
 
