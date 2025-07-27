@@ -49,6 +49,6 @@
         "@vitejs/plugin-react-swc": "^3.8.1",
         "marked": "^15.0.6",
         "vite": "^6.3.5",
-        "vite-plugin-framer": "^1.0.3"
+        "vite-plugin-framer": "^1.0.7"
     }
 }

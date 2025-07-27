@@ -1,4 +1,4 @@
-import 'plugin-migrate/src/styles/reset.css'
+import 'plugin-mcp/src/styles/reset.css'
 import './slider.css'
 import './styles.css'
 import 'tailwindcss/tailwind.css'

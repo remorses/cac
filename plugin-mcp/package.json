@@ -3,19 +3,14 @@
     "private": true,
     "version": "0.0.0",
     "type": "module",
-    "main": "./esm/index.js",
-    "types": "./esm/index.d.ts",
-    "exports": {
-        ".": {
-            "import": "./esm/index.js",
-            "types": "./esm/index.d.ts"
-        }
-    },
+    "main": "./src/index.ts",
     "scripts": {
-      "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
-        "deployment": "wrangler deploy",
-        "start": "vite preview --port 5173",
-        "typecheck": "pnpm tsc --noEmit"
+        "dev": "doppler run -- vite",
+        "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
+        "check": "pnpm tsc --incremental",
+        "typecheck": "pnpm tsc --noEmit --incremental",
+        "deployment": "pnpm build && pnpm wrangler pages deploy dist",
+        "start": "vite preview --port 5173"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.17.0",
@@ -25,13 +20,27 @@
         "dom-serializer": "^2.0.0",
         "framer-plugin": "^3.5.2",
         "htmlparser2": "^9.1.0",
+        "plugin-mcp": "workspace:*",
+        "react": "19.1.0",
+        "react-dom": "19.1.0",
         "unframer": "workspace:*",
         "zod": "^3.25.71"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20250712.0",
         "@types/node": "^20",
+        "@types/react": "^19.1.8",
+        "@types/react-dom": "^19.1.2",
+        "@vitejs/plugin-react-swc": "^3.8.1",
+        "autoprefixer": "^10.4.20",
+        "postcss": "^8.4.47",
+        "tailwindcss": "^3.4.15",
         "typescript": "^5.5.3",
+        "vite": "^6.3.5",
+        "vite-plugin-environment": "^1.1.3",
+        "vite-plugin-framer": "^1.0.7",
+        "vite-plugin-mkcert": "^1.17.6",
+        "vite-tsconfig-paths": "^5.1.4",
         "wrangler": "^4.24.3"
     }
 }
