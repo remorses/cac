@@ -12,10 +12,9 @@
         }
     },
     "scripts": {
-        "build": "tsc",
+      "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "deployment": "wrangler deploy",
-        "dev": "wrangler dev",
-        "tsc": "tsc --skipLibCheck",
+        "start": "vite preview --port 5173",
         "typecheck": "pnpm tsc --noEmit"
     },
     "dependencies": {
