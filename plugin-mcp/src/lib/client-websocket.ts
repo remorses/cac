@@ -1,5 +1,6 @@
 import { WebsocketMessage } from './websocket-server'
 import { useStore } from './store'
+import { McpToolWebsocketPayload } from './mcp'
 
 // Function for handling websocket connection based on session cookie
 export async function websocketClientHandling({
@@ -41,14 +42,16 @@ export async function websocketClientHandling({
         }
         if (payload.type === 'ready') {
             useStore.setState({ isConnected: true })
+            return
         }
         if (payload.type === 'close') {
             useStore.setState({ isConnected: false })
+            return
         }
         console.log(`websocket message received`, payload)
 
         try {
-            const output = await handle(payload)
+            const output = await handle(payload as any)
             console.log(`websocket message handled`, payload.type, output)
 
             ws.send(
