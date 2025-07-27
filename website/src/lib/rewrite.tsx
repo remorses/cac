@@ -29,21 +29,6 @@ export const ITEMS_PER_ITERATION = 30
 import type { FramerLayersTree } from 'plugin-mcp'
 export type { FramerLayersTree }
 
-// Legacy type definition for backward compatibility
-export type OldFramerLayersTree = Array<{
-    name?: string | null
-    content?: string | null
-    nodeId?: string | null
-    attributes?: {
-        fontSize?: string
-        href?: string | null
-        [key: string]: any
-    }
-    attrControlsComments?: Record<string, string>
-    children?: FramerLayersTree
-    count?: number
-    // index: number;
-}>
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
