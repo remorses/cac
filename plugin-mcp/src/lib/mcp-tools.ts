@@ -89,6 +89,9 @@ export async function implementMcpTools({
     const upstreamUrl = `wss://unframer.co/_tunnel/upstream?id=${websocketId}`
     const ws = new WebSocket(upstreamUrl)
 
+    // Track if the Framer plugin is ready
+    let isFramerPluginReady = false
+
     // Wait for connection
     await new Promise<void>((resolve, reject) => {
         ws.addEventListener('open', () => {
@@ -105,9 +108,23 @@ export async function implementMcpTools({
         })
         ws.addEventListener('close', () => {
             console.log('Upstream WebSocket closed')
+            isFramerPluginReady = false
         })
     })
     const { send, cleanup } = createWebsocketHandling({ ws })
+
+    // Listen for ready message from Framer plugin
+    ws.addEventListener('message', (event) => {
+        try {
+            const data = JSON.parse(event.data)
+            if (data.type === 'ready') {
+                isFramerPluginReady = true
+                console.log('Framer plugin is ready')
+            }
+        } catch {
+            // Ignore parse errors
+        }
+    })
 
     send({
         payload: { type: 'ready' },
@@ -203,6 +220,18 @@ export async function implementMcpTools({
     server.setRequestHandler(
         CallToolRequestSchema,
         async (request: CallToolRequest) => {
+            // Check if Framer plugin is connected
+            if (!isFramerPluginReady) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: 'The Framer app plugin is not connected. Please ensure the Framer plugin is open and connected.',
+                        },
+                    ],
+                }
+            }
+
             const { name, arguments: args = {} } = request.params
             const reply = await send({
                 payload: { type: name as any, input: args },

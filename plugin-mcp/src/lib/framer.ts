@@ -5,9 +5,26 @@ import {
     isComponentNode,
     isFrameNode,
     isTextNode,
+    isSVGNode,
+    supportsAspectRatio,
+    supportsBackgroundColor,
+    supportsBackgroundImage,
+    supportsBorderRadius,
+    supportsFont,
+    supportsImageRendering,
+    supportsInlineTextStyle,
     supportsLink,
+    supportsLocked,
     supportsName,
+    supportsOpacity,
+    supportsPins,
+    supportsPosition,
+    supportsRotation,
+    supportsSize,
+    supportsSizeConstraints,
+    supportsSVG,
     supportsVisible,
+    type ImageAsset,
 } from 'framer-plugin'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
@@ -15,6 +32,14 @@ import { FramerLayersTree } from './types'
 import { bfsFramerLayersTree, cleanupTreeFromEmptyNodes } from './tree-utils'
 
 let cachedPagePaths: string[] = []
+
+// Cache for uploaded images to prevent re-uploading
+const uploadedImagesCache = new Map<string, ImageAsset>()
+
+// Export a function to clear the cache if needed
+export function clearUploadedImagesCache() {
+    uploadedImagesCache.clear()
+}
 
 async function getPagePaths() {
     if (cachedPagePaths?.length) return cachedPagePaths
@@ -452,64 +477,139 @@ export async function discardFramerChanges({
     return await Promise.all(promises)
 }
 
-export const inlineTextStyleAttributes = [
-    'fontSize',
-    'color',
-    'alignment',
-    'letterSpacing',
-    'lineHeight',
-] as const
+// Note: inlineTextStyle attributes are now handled with dot notation
+// e.g., inlineTextStyle.fontSize, inlineTextStyle.color, etc.
 
 async function getNodeAttributesForXml(node: AnyNode) {
     let attributes = {} as Record<string, any>
 
-    if (supportsLink(node) && node.link) {
-        attributes.href = node.link || undefined
-    }
-    if (isTextNode(node)) {
-        node.inlineTextStyle?.color
-        node.inlineTextStyle?.font
-        node.inlineTextStyle?.fontSize
-        node.inlineTextStyle?.letterSpacing
-        node.inlineTextStyle?.paragraphSpacing
-        node.inlineTextStyle?.lineHeight
-        node.inlineTextStyle?.alignment
-        node.inlineTextStyle?.decoration
-        node.inlineTextStyle?.boldFont
-        for (const attr of inlineTextStyleAttributes) {
-            const value = node.inlineTextStyle?.[attr] ?? undefined
-            if (value) attributes[attr] = value
-        }
-        if (node.opacity !== 1) {
-            attributes.opacity = node.opacity ?? undefined
-        }
-    }
-    if (isFrameNode(node)) {
-        if (typeof node.backgroundColor === 'string') {
-            attributes.backgroundColor = node.backgroundColor
-        }
-        if (node.borderRadius) {
-            attributes.borderRadius = node.borderRadius ?? undefined
+    // Helper to add attribute if it exists
+    const addAttribute = (key: string, value: any) => {
+        if (value !== undefined && value !== null) {
+            attributes[key] = value
         }
     }
 
+    // Common attributes (DrawableNode)
+    if (supportsOpacity(node)) {
+        addAttribute('opacity', node.opacity)
+    }
+    if (supportsVisible(node)) {
+        addAttribute('visible', node.visible)
+    }
+    if (supportsLocked(node)) {
+        addAttribute('locked', node.locked)
+    }
+    // if (supportsName(node)) {
+    //     addAttribute('name', node.name)
+    // }
+
+    // Position attributes
+    if (supportsPosition(node)) {
+        addAttribute('position', node.position)
+    }
+
+    // Size attributes
+    if (supportsSize(node)) {
+        addAttribute('width', node.width)
+        addAttribute('height', node.height)
+    }
+
+    // Rotation
+    if (supportsRotation(node)) {
+        addAttribute('rotation', node.rotation)
+    }
+
+    // Pins (positioning constraints)
+    if (supportsPins(node)) {
+        if (node.top !== undefined) addAttribute('top', node.top)
+        if (node.right !== undefined) addAttribute('right', node.right)
+        if (node.bottom !== undefined) addAttribute('bottom', node.bottom)
+        if (node.left !== undefined) addAttribute('left', node.left)
+        if (node.centerX !== undefined) addAttribute('centerX', node.centerX)
+        if (node.centerY !== undefined) addAttribute('centerY', node.centerY)
+    }
+
+    // Size constraints
+    if (supportsSizeConstraints(node)) {
+        if (node.minWidth !== undefined) addAttribute('minWidth', node.minWidth)
+        if (node.maxWidth !== undefined) addAttribute('maxWidth', node.maxWidth)
+        if (node.minHeight !== undefined)
+            addAttribute('minHeight', node.minHeight)
+        if (node.maxHeight !== undefined)
+            addAttribute('maxHeight', node.maxHeight)
+    }
+
+    // Aspect ratio
+    if (supportsAspectRatio(node)) {
+        addAttribute('aspectRatio', node.aspectRatio)
+    }
+
+    // Link attributes
+    if (supportsLink(node)) {
+        addAttribute('link', node.link)
+        addAttribute('linkOpenInNewTab', node.linkOpenInNewTab)
+    }
+
+    // Frame-specific attributes
+    if (supportsBackgroundColor(node) && node.backgroundColor) {
+        // Check if it's a ColorStyle or a plain color string
+        if (typeof node.backgroundColor === 'string') {
+            addAttribute('backgroundColor', node.backgroundColor)
+        } else {
+            // It's a ColorStyle, store the path
+            addAttribute('backgroundColor', node.backgroundColor.path)
+        }
+    }
+    if (supportsBorderRadius(node)) {
+        addAttribute('borderRadius', node.borderRadius)
+    }
+    if (supportsImageRendering(node)) {
+        addAttribute('imageRendering', node.imageRendering)
+    }
+    if (supportsBackgroundImage(node) && node.backgroundImage) {
+        // Store the image URL
+        addAttribute('backgroundImage', node.backgroundImage.url)
+    }
+
+    // Font attributes (for TextNode)
+    if (supportsFont(node) && node.font) {
+        // Store only the font ID/selector
+        addAttribute('font', node.font.selector)
+    }
+
+    // Inline text style handling - always a reference to a TextStyle
+    if (supportsInlineTextStyle(node) && node.inlineTextStyle) {
+        // Store the path to the text style for easy lookup
+        addAttribute('inlineTextStyle', node.inlineTextStyle.path)
+    }
+
+    // SVG-specific attributes
+    if (supportsSVG(node) && node.svg) {
+        addAttribute('svg', node.svg)
+    }
+
+    // Component instance controls
     let attrControlsComments
     if (isComponentInstanceNode(node)) {
         if (!node.insertURL) {
-            console.log(`no node.insertURL for compnoent instance ${node.name}`)
+            console.log(`no node.insertURL for component instance ${node.name}`)
         }
-        const { comments, propertyControls } =
-            await getComponentPropertyControls(node.insertURL || undefined)
+        const { comments } = await getComponentPropertyControls(
+            node.insertURL || undefined,
+        )
         if (comments) {
             attrControlsComments = comments
         }
 
-        const controls = node.controls
-        attributes = {
-            ...attributes,
-            ...controls,
+        // Add all controls as top-level attributes
+        if (node.controls) {
+            for (const [key, value] of Object.entries(node.controls)) {
+                addAttribute(key, value)
+            }
         }
     }
+
     attributes = serializeAttributesForXml(attributes)
 
     return {
@@ -517,6 +617,26 @@ async function getNodeAttributesForXml(node: AnyNode) {
         attrControlsComments,
     }
 }
+
+Object.assign(globalThis, {
+    getNodeAttributesForXml,
+    getAttributesForSelectedNodes: async () => {
+        const selectedNodes = await framer.getSelection()
+        if (!selectedNodes || !selectedNodes.length) {
+            console.log('no nodes selected')
+            return
+        }
+        const attributesList: Record<string, any>[] = []
+        for (const node of selectedNodes) {
+            const { attributes: nodeAttrs, attrControlsComments } =
+                await getNodeAttributesForXml(node)
+            console.log(node.id, node['name'], JSON.stringify(nodeAttrs, null, 2))
+            console.log(JSON.stringify(attrControlsComments, null, 2))
+            attributesList.push(nodeAttrs)
+        }
+        return attributesList
+    },
+})
 
 function encodeAttributeValue(value) {
     if (value === undefined) {
@@ -575,35 +695,124 @@ export async function applyAttributes(
         return
     }
 
+    // Decode all attribute values
     const decodedAttrs: Record<string, any> = {}
     for (const [key, value] of Object.entries(_attributes)) {
         decodedAttrs[key] = decodeAttributeValueAsJson(value)
     }
 
-    if (supportsLink(node) && decodedAttrs.href) {
-        await node.setAttributes({ link: decodedAttrs.href })
+    // Handle font selector if present
+    if (decodedAttrs.font && supportsFont(node)) {
+        const fontSelector = decodedAttrs.font
+        const fonts = await framer.getFonts()
+        const font = fonts.find(f => f.selector === fontSelector)
+        if (!font) {
+            throw new Error(`Font with selector "${fontSelector}" not found`)
+        }
+        decodedAttrs.font = font
     }
 
-    if (isTextNode(node)) {
-        await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
+    // Handle style references that start with /
+    // These could be TextStyle or ColorStyle paths
+    for (const [key, value] of Object.entries(decodedAttrs)) {
+        if (typeof value === 'string' && value.startsWith('/')) {
+            if (key === 'inlineTextStyle') {
+                // It's a TextStyle path
+                const textStyles = await framer.getTextStyles()
+                const textStyle = textStyles.find((ts) => ts.path === value)
+                if (!textStyle) {
+                    throw new Error(`TextStyle with path "${value}" not found`)
+                }
+                decodedAttrs[key] = textStyle
+            } else if (key === 'backgroundColor') {
+                // It's a ColorStyle path
+                const colorStyles = await framer.getColorStyles()
+                const colorStyle = colorStyles.find((cs) => cs.path === value)
+                if (!colorStyle) {
+                    throw new Error(`ColorStyle with path "${value}" not found`)
+                }
+                decodedAttrs[key] = colorStyle
+            }
+        }
+    }
 
-        const inlineTextStyleObj: Record<string, any> = {}
-        for (let attrName of inlineTextStyleAttributes) {
-            if (decodedAttrs[attrName] !== undefined) {
-                inlineTextStyleObj[attrName] = decodedAttrs[attrName]
+    // Handle backgroundImage URL
+    if (decodedAttrs.backgroundImage && typeof decodedAttrs.backgroundImage === 'string' && supportsBackgroundImage(node)) {
+        const imageUrl = decodedAttrs.backgroundImage
+
+        // Check if the image needs to be uploaded (not already on framerusercontent.com)
+        if (!imageUrl.includes('framerusercontent.com')) {
+            // Check cache first
+            let imageAsset = uploadedImagesCache.get(imageUrl)
+
+            if (!imageAsset) {
+                try {
+                    // Upload the image and get the ImageAsset
+                    imageAsset = await framer.uploadImage({
+                        image: imageUrl,
+                        name: 'background-image',
+                    })
+                    // Store in cache for future use
+                    uploadedImagesCache.set(imageUrl, imageAsset)
+                } catch (error) {
+                    throw new Error(`Failed to upload background image from URL "${imageUrl}": ${error}`)
+                }
+            }
+
+            decodedAttrs.backgroundImage = imageAsset
+        }
+        // If it's already on framerusercontent.com, leave it as-is for Framer to handle
+    }
+
+    // For component instances, separate controls from other attributes
+    if (isComponentInstanceNode(node)) {
+        // Component instances only have these standard node attributes
+        const standardNodeAttrs = [
+            'opacity',
+            'visible',
+            'locked',
+            'position',
+            'width',
+            'height',
+            'rotation'
+        ]
+
+        const nodeAttrs: Record<string, any> = {}
+        const controlsAttrs: Record<string, any> = {}
+
+        for (const [key, value] of Object.entries(decodedAttrs)) {
+            if (standardNodeAttrs.includes(key)) {
+                nodeAttrs[key] = value
+            } else {
+                // It's a control property
+                controlsAttrs[key] = value
             }
         }
 
-        await node.inlineTextStyle?.setAttributes(
-            onlyChangedKeys(node.inlineTextStyle || {}, inlineTextStyleObj),
-        )
-    } else if (isComponentInstanceNode(node)) {
-        await node.setAttributes(onlyChangedKeys(node || {}, decodedAttrs))
-        await node.setAttributes({
-            controls: onlyChangedKeys(node.controls || {}, decodedAttrs),
-        })
+        // Apply node-level attributes
+        const changedNodeAttrs = onlyChangedKeys(node, nodeAttrs)
+        if (Object.keys(changedNodeAttrs).length > 0) {
+            await node.setAttributes(changedNodeAttrs)
+        }
+
+        // Apply controls
+        if (Object.keys(controlsAttrs).length > 0) {
+            const changedControls = onlyChangedKeys(
+                node.controls || {},
+                controlsAttrs,
+            )
+            if (Object.keys(changedControls).length > 0) {
+                await node.setAttributes({
+                    controls: { ...node.controls, ...changedControls },
+                })
+            }
+        }
     } else {
-        await node.setAttributes(onlyChangedKeys(node, decodedAttrs))
+        // For non-component instance nodes, apply all attributes directly
+        const changedNodeAttrs = onlyChangedKeys(node, decodedAttrs)
+        if (Object.keys(changedNodeAttrs).length > 0) {
+            await node.setAttributes(changedNodeAttrs)
+        }
     }
 }
 

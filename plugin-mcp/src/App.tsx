@@ -3,8 +3,11 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/client-websocket'
 import { McpToolNames } from './lib/types'
+import './lib/framer'
 import { useStore } from './lib/store'
 import { CopyIcon, CheckIcon, MaximizeIcon, CircleIcon } from 'lucide-react'
+
+globalThis.framer = framer
 
 framer.showUI({
     position: 'top left',
@@ -88,12 +91,6 @@ export default function App() {
                 <h2 className='text-sm font-medium text-framer-primary'>
                     {/* Framer MCP Installation */}
                 </h2>
-                <button
-                    onClick={toggleExpanded}
-                    className='w-auto py-1 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
-                >
-                    <MaximizeIcon className='size-3 rotate-180 text-framer-secondary' />
-                </button>
             </div>
             <div className='flex flex-col gap-2'>
                 <p className='text-xs text-framer-secondary'>
@@ -137,9 +134,17 @@ export default function App() {
                             : 'Waiting for connection'}
                     </span>
                 </div>
-                <p className='text-xs text-framer-tertiary'>
-                    Keep this plugin open while using MCP
-                </p>
+                <div className='flex items-center justify-between'>
+                    <p className='text-xs text-framer-tertiary'>
+                        Keep this plugin open while using MCP
+                    </p>
+                    <button
+                        onClick={toggleExpanded}
+                        className='w-auto p-1 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
+                    >
+                        <MaximizeIcon className='size-3 rotate-180 text-framer-secondary' />
+                    </button>
+                </div>
             </div>
         </div>
     )

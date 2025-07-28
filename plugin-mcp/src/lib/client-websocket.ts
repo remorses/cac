@@ -41,6 +41,7 @@ export async function websocketClientHandling({
             return
         }
         if (payload.type === 'ready') {
+            ws.send(JSON.stringify({ type: 'ready' }))
             useStore.setState({ isConnected: true })
             return
         }
