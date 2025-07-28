@@ -11,8 +11,8 @@ export class MyMCP extends McpAgent<Env> {
         {
             capabilities: {
                 tools: {},
-                // prompts: {},
-                // resources: {},
+                prompts: {},
+                resources: {},
             },
         },
     )
