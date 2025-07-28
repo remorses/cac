@@ -58,7 +58,6 @@ export async function implementMcpTools({
 
             // Wait for connection and ready message
             await new Promise<void>((resolve, reject) => {
-
                 const handleOpen = () => {
                     console.log(
                         `Connected to upstream tunnel with ID: ${websocketId}`,
@@ -81,7 +80,10 @@ export async function implementMcpTools({
                                 `Framer plugin is ready, connection established in ${(elapsed / 1000).toFixed(2)}s`,
                             )
                             // Remove the message listener since we only need it once
-                            ws!.removeEventListener('message', handleMessageReady)
+                            ws!.removeEventListener(
+                                'message',
+                                handleMessageReady,
+                            )
                             resolve()
                         }
                     } catch {
@@ -151,8 +153,7 @@ export async function implementMcpTools({
         }
     }
 
-    // Initial connection
-    await connectWebSocket()
+    let clientConnectedPromise = connectWebSocket()
 
     // Graceful shutdown
     const stop = () => {
@@ -185,6 +186,7 @@ export async function implementMcpTools({
     server.setRequestHandler(
         CallToolRequestSchema,
         async (request: CallToolRequest) => {
+            await clientConnectedPromise
             // Check if Framer plugin is connected
             if (!isFramerPluginReady || !websocketRpc) {
                 return {
@@ -197,8 +199,9 @@ export async function implementMcpTools({
                 }
             }
 
+            if (!websocketRpc) throw new Error('Websocket RPC is not initialized')
             const { name, arguments: args = {} } = request.params
-            const reply = await websocketRpc?.send({
+            const reply = await websocketRpc.send({
                 payload: { type: name as any, input: args as any },
             })
             const text =
