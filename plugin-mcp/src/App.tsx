@@ -74,7 +74,7 @@ export default function App() {
     const [copied, setCopied] = useState(false)
     const [ref, { height }] = useMeasure()
 
-    const mcpServerUrl = `https://mcp.unframer.co/mcp?id=${websocketId}`
+    const mcpServerUrl = `https://mcp.unframer.co/sse?id=${websocketId}`
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(mcpServerUrl)

@@ -36,7 +36,7 @@ The system consists of three main components:
 1. **Initialization**:
    - The Framer plugin generates a unique `websocketId` (or reuses an existing one)
    - Plugin connects to the WebSocket tunnel as a client
-   - User copies the MCP server URL with the websocketId: `https://mcp.unframer.co/mcp?id={websocketId}`
+   - User copies the MCP server URL with the websocketId: `https://mcp.unframer.co/sse?id={websocketId}`
    - User configures their MCP client (Claude app/code) with this URL
 
 2. **MCP Request Flow**:

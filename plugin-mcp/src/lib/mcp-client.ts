@@ -30,6 +30,7 @@ export async function createMCPClient(options: CreateTransportOptions) {
     const { transport } = await createTransport(options)
 
     await client.connect(transport)
+
     await client.ping()
 
     const cleanup = async () => {

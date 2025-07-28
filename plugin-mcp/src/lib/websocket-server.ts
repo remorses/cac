@@ -4,7 +4,7 @@ export type WebsocketMessage = {
     id: string
     payload?:
         | McpToolWebsocketPayload
-        | { type: 'ready' | 'close'; input?: never }
+        | { type: 'ready' | 'close'; input?: never; output?: never }
 
     error?: string
 }
@@ -97,7 +97,7 @@ export function createWebsocketHandling({
         if (error) {
             pending.reject(new Error(error))
         } else {
-            pending.resolve(payload)
+            pending.resolve(payload?.output ?? null)
         }
     }
 

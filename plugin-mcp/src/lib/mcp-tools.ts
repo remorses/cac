@@ -110,11 +110,13 @@ export async function implementMcpTools({
                 typeof reply === 'string'
                     ? reply
                     : JSON.stringify(reply, null, 2)
+
             return {
                 content: [
                     {
                         type: 'text',
                         text,
+
                     },
                 ],
             }
