@@ -1,382 +1,116 @@
-# Framer MCP Tools - XML Format Guide
+# Framer MCP Tools Guide
 
-This guide explains how to interact with Framer projects using the MCP (Model Context Protocol) tools, focusing on navigating the project structure and updating nodes via XML.
+This guide explains how to interact with Framer projects using MCP (Model Context Protocol) tools.
+
+## Overview
+
+The MCP tools allow you to:
+- Navigate and inspect Framer project structure
+- Read and modify node properties via XML
+- Update text content and styling
+- Manage project-wide styles (colors, text styles)
+- Search and apply fonts
 
 ## Getting Started
 
-The first tool you should always call is:
+Always begin by calling `getProjectXml` to understand the project structure. This returns an XML tree showing all pages and components with their IDs, which you'll use for subsequent operations.
 
-### 1. `getProjectXml`
-- **Purpose**: Get the project structure including all pages and components
-- **Returns**: XML tree showing pages and components with their IDs
-- **Example response**:
-```xml
-<Project>
-  <Pages>
-    <Page nodeId="abc123" path="/home" type="WebPageNode" />
-    <Page nodeId="def456" path="/about" type="WebPageNode" />
-  </Pages>
-  <Components>
-    <Component nodeId="xyz789" name="Button" type="ComponentNode" />
-  </Components>
-</Project>
-```
+## Working with Nodes
 
-## Core Tools
+Framer projects consist of nodes (pages, components, frames, text, etc.) that can be inspected and modified through XML. Each node has a unique `nodeId` that identifies it throughout the system.
 
-### 2. `getNodeXml`
-- **Purpose**: Get detailed XML for a specific node (page or component)
-- **Input**: `{ nodeId: "abc123" }`
-- **Returns**: Full XML tree with all child nodes and attributes
+To work with nodes:
+1. Get the current state using `getNodeXml` or `getSelectedNodesXml`
+2. Modify the XML with desired changes
+3. Apply changes using `updateXmlForNode`
 
-### 3. `getSelectedNodesXml`
-- **Purpose**: Get XML for nodes currently selected in Framer
-- **No input required**
-- **Returns**: XML tree of selected nodes
-
-### 4. `updateXmlForNode`
-- **Purpose**: Update a node's text content or attributes
-- **Input**: 
-  ```json
-  {
-    "nodeId": "abc123",
-    "xml": "<TextNode nodeId=\"abc123\">New text content</TextNode>"
-  }
-  ```
-
-### 5. `zoomIntoView`
-- **Purpose**: Focus the Framer canvas on a specific node
-- **Input**: `{ nodeId: "abc123" }`
-
-## Attribute Format Reference
+## XML Attribute Formats
 
 ### Dimensions and Units
 
-All dimension values in XML attributes use CSS units:
-
-- **Pixels**: `"100px"` - Most common for fixed sizes
+Dimension values use CSS units:
+- **Pixels**: `"100px"` - Fixed sizes
 - **Percentage**: `"50%"` - Relative to parent
 - **Viewport**: `"100vh"` or `"100vw"` - Viewport units
 - **Fraction**: `"1fr"` - Flexible grid unit
 - **Fit Content**: `"fit-content"` - Auto-sizing
-- **Rem**: `"1.5rem"` - Relative to root font size
-- **Em**: `"2em"` - Relative to current font size
+- **Rem/Em**: `"1.5rem"` or `"2em"` - Relative units
 
-### Common Node Attributes
+### Common Attributes
 
-```xml
-<NodeName
-    nodeId="unique-id"
-    
-    <!-- Visibility & Interaction -->
-    opacity="1"              <!-- 0 to 1 -->
-    visible="true"           <!-- true/false -->
-    locked="false"          <!-- true/false -->
-    
-    <!-- Positioning -->
-    position="relative"      <!-- relative/absolute/fixed -->
-    top="100px"             <!-- CSSDimension<Pixel> -->
-    right="20px"            <!-- CSSDimension<Pixel> -->
-    bottom="10px"           <!-- CSSDimension<Pixel> -->
-    left="30px"             <!-- CSSDimension<Pixel> -->
-    centerX="50%"           <!-- CSSDimension<Percentage> -->
-    centerY="50%"           <!-- CSSDimension<Percentage> -->
-    
-    <!-- Sizing -->
-    width="300px"           <!-- Length | fit-content | 100% | 1fr -->
-    height="200px"          <!-- Length | fit-content | 100vh -->
-    minWidth="100px"        <!-- pixels only -->
-    maxWidth="500px"        <!-- pixels only -->
-    minHeight="50px"        <!-- pixels only -->
-    maxHeight="300px"       <!-- pixels only -->
-    aspectRatio="1.5"       <!-- number -->
-    
-    <!-- Transformation -->
-    rotation="45"           <!-- degrees as number -->
-    
-    <!-- Styling -->
-    borderRadius="8px"      <!-- single value or "8px 8px 8px 8px" -->
-    backgroundColor="#FF0000"    <!-- hex color or style path -->
-    backgroundImage="https://example.com/image.jpg"
-    imageRendering="pixelated"   <!-- auto/pixelated/crisp-edges -->
-    
-    <!-- Links -->
-    link="/about"           <!-- URL or page path -->
-    linkOpenInNewTab="true" <!-- true/false -->
-    
-    <!-- Text Styles (TextNode only) -->
-    font="GF;Inter-400"     <!-- font selector -->
-    inlineTextStyle="/Heading xl"  <!-- project style path -->
->
-  Text content goes here
-</NodeName>
-```
+Nodes support various attributes:
+- **Visibility**: opacity (0-1), visible (true/false), locked (true/false)
+- **Positioning**: position (relative/absolute/fixed), top/right/bottom/left (pixels), centerX/centerY (percentage)
+- **Sizing**: width/height (various units), min/max constraints (pixels), aspectRatio (number)
+- **Styling**: borderRadius, backgroundColor, backgroundImage, imageRendering
+- **Text**: font (selector format like "GF;Inter-400"), inlineTextStyle (project style path)
+- **Links**: link (URL or path), linkOpenInNewTab (true/false)
 
 ### Style References
 
-Framer uses path-based references for project styles:
+Project styles are referenced by paths starting with `/`:
+- Text Styles: `"/Heading xl"`, `"/Body md"`
+- Color Styles: `"/Primary/Blue"`, `"/Background/Secondary"`
 
-- **Text Styles**: Start with `/` like `"/Heading xl"`, `"/Body md"`
-- **Color Styles**: Start with `/` like `"/Primary/Blue"`
+## Component Instances
 
-Example:
-```xml
-<Heading 
-    nodeId="abc123"
-    inlineTextStyle="/Heading 2xl"
-    backgroundColor="/Brand/Primary"
->
-  Welcome to our site
-</Heading>
-```
+Component instances are references to reusable components. They have:
+- A `nodeId` identifying the specific instance
+- A `componentId` linking to the component definition
+- Control attributes that can be customized per instance
+- Standard node attributes (width, height, position, etc.)
 
-### Component Instances
+### Updating Components vs Instances
 
-Component instances are references to reusable components. They have a special `componentId` attribute that links to the component definition:
+**Instance updates**: Modify the specific instance's attributes or control values. Changes affect only that instance.
 
-```xml
-<Button
-    nodeId="comp123"
-    componentId="xyz789"    <!-- ID of the component this instance uses -->
-    
-    <!-- Standard node attributes -->
-    width="200px"
-    height="48px"
-    
-    <!-- Component-specific control attributes (customizable per instance) -->
-    variant="primary"
-    label="Click me"
-    isDisabled="false"
-/>
-```
+**Component definition updates**: Use the `componentId` to get and update the component itself. Changes automatically propagate to ALL instances throughout the project.
 
-#### Important: Updating Component Definitions
-
-Component instances can have control attributes that are customizable per instance. However, to update the component definition itself (which affects ALL instances):
-
-1. **Get the component's XML** using the `componentId`:
-   ```javascript
-   getNodeXml({ nodeId: "xyz789" })  // Use the componentId
-   ```
-
-2. **Update the component definition**:
-   ```javascript
-   updateXmlForNode({
-     nodeId: "xyz789",  // The componentId
-     xml: `<Component nodeId="xyz789">
-       <!-- Your updates to the component structure -->
-     </Component>`
-   })
-   ```
-
-3. **All instances will reflect the changes** - When you update a component definition, every instance of that component throughout the project will automatically inherit the structural changes.
-
-**Example workflow**:
-```javascript
-// 1. Find a component instance
-getSelectedNodesXml()
-// Returns: <Button nodeId="instance123" componentId="xyz789" label="Click me" />
-
-// 2. Get the component definition
-getNodeXml({ nodeId: "xyz789" })
-// Returns the full component structure
-
-// 3. Update the component definition
-updateXmlForNode({
-  nodeId: "xyz789",
-  xml: `<Frame nodeId="xyz789">
-    <Text nodeId="abc" inlineTextStyle="/Body md">Updated component structure</Text>
-  </Frame>`
-})
-// Now ALL Button instances will show the new structure
-```
+This distinction is crucial - updating a component definition is a powerful operation that affects every instance of that component.
 
 ## Fonts
 
-### Search for Fonts
+Framer provides access to over 8000 fonts. Use `searchFonts` to find fonts by searching their selector string. The returned `selector` value is what you use in the `font` attribute.
 
-Framer provides access to over 8000 fonts. Use the search tool to find specific fonts:
-
-```javascript
-// Search for fonts by selector substring
-searchFonts({
-  query: "Inter"  // Searches in font selector
-})
-// Returns: {
-//   message: "Found 12 fonts matching 'Inter'. Showing first 20.",
-//   results: [{
-//     family: "Inter",
-//     selector: "GF;Inter-400",
-//     weight: 400,
-//     style: "normal"
-//   }, ...],
-//   totalMatches: 12
-// }
-
-// More specific searches
-searchFonts({ query: "Inter-600" })     // Find specific weight
-searchFonts({ query: "italic" })        // Find italic variants
-searchFonts({ query: "Roboto-bold" })   // Find bold Roboto
-```
-
-**Note**: The search is case-insensitive and matches substrings in the font selector. Use specific terms to narrow results.
+**Important**: Text nodes can use EITHER `inlineTextStyle` (project text style) OR `font` (custom font), not both. Remove `inlineTextStyle` before applying a custom font.
 
 ## Project Styles
 
-### Get Style Information
+Project styles provide consistent design tokens across your project:
 
-Use these tools to discover available styles:
+### Color Styles
+- Referenced by paths like `/Primary/Blue`
+- Support light and dark theme variants
+- Can be updated globally using `updateColorStyle`
 
-```javascript
-// Get all color styles
-getProjectColorStyles()
-// Returns: [{ 
-//   id, name, path, 
-//   light: "rgb(255, 255, 255)",  // Light theme color
-//   dark: null                     // Dark theme color (optional)
-// }, ...]
+### Text Styles
+- Referenced by paths like `/Heading xl`
+- Include typography properties (size, line height, spacing, etc.)
+- Can be updated globally using `updateTextStyle`
 
-// Get all text styles  
-getProjectTextStyles()
-// Returns: [{ 
-//   id, name, path,
-//   fontSize: "16px",
-//   lineHeight: "24px", 
-//   letterSpacing: "0px",
-//   paragraphSpacing: 20,
-//   transform: "none",
-//   alignment: "left",
-//   decoration: "none",
-//   balance: false,
-//   tag: "p"  // HTML tag (h1, h2, p, etc.)
-// }, ...]
-```
-
-### Update Styles
-
-```javascript
-// Update a color style by its path
-updateColorStyle({
-  stylePath: "/Primary/Blue",  // Must start with /
-  updates: {
-    name: "Primary Blue",
-    light: "#0066CC",
-    dark: "#4488FF"  // null to remove dark variant
-  }
-})
-
-// Update a text style by its path
-updateTextStyle({
-  stylePath: "/Heading xl",  // Must start with /
-  updates: {
-    name: "Heading Large",
-    fontSize: "32px",
-    lineHeight: "1.5em",
-    letterSpacing: "-0.02em",
-    paragraphSpacing: 40,
-    transform: "none", // none/uppercase/lowercase/capitalize
-    alignment: "left", // left/center/right/justify
-    decoration: "none", // none/underline/line-through
-    balance: true
-  }
-})
-```
-
-## Practical Examples
-
-### Example 1: Update Text Content
-```xml
-<updateXmlForNode>
-  <nodeId>abc123</nodeId>
-  <xml>
-    <Heading nodeId="abc123">
-      New heading text
-    </Heading>
-  </xml>
-</updateXmlForNode>
-```
-
-### Example 2: Change Multiple Attributes
-```xml
-<updateXmlForNode>
-  <nodeId>def456</nodeId>
-  <xml>
-    <Container 
-        nodeId="def456"
-        width="100%"
-        maxWidth="1200px"
-        backgroundColor="/Background/Secondary"
-        borderRadius="16px"
-    />
-  </xml>
-</updateXmlForNode>
-```
-
-### Example 3: Update Multiple Nodes
-```xml
-<updateXmlForNode>
-  <nodeId>parent123</nodeId>
-  <xml>
-    <Section nodeId="parent123">
-      <Title nodeId="child1" inlineTextStyle="/Heading xl">
-        Updated Title
-      </Title>
-      <Description nodeId="child2" opacity="0.8">
-        Updated description text
-      </Description>
-    </Section>
-  </xml>
-</updateXmlForNode>
-```
+Use `getProjectColorStyles` and `getProjectTextStyles` to discover available styles.
 
 ## Best Practices
 
-1. **Always start with `getProjectXml`** to understand the project structure
-2. **Use `getNodeXml` before updating** to see current state and available attributes
-3. **Preserve existing attributes** when updating - only change what's needed
-4. **Use project styles** (paths starting with `/`) instead of hardcoded values when possible
-5. **Include nodeId attributes** in your XML updates to target specific nodes
-6. **Test with `getSelectedNodesXml`** to work with user-selected elements
+1. **Start with `getProjectXml`** to understand the project structure
+2. **Inspect before modifying** - Use `getNodeXml` to see current state
+3. **Preserve existing attributes** - Only include attributes you want to change
+4. **Use project styles** - Reference style paths instead of hardcoded values
+5. **Include nodeId attributes** - Essential for targeting specific nodes
+6. **Work with user selection** - Use `getSelectedNodesXml` for context-aware operations
 
-## Common Patterns
+## Key Concepts
 
-### Responsive Sizing
-```xml
-<!-- Desktop -->
-<Container width="1200px" height="auto">
+### XML Structure
+- Nodes are represented as XML elements with attributes
+- Text content goes inside text nodes
+- The `nodeId` attribute identifies specific nodes
+- Only include attributes you want to change - others are preserved
 
-<!-- Tablet -->  
-<Container width="100%" maxWidth="768px">
+### Common Patterns
+- **Responsive sizing**: Use percentages, max-width constraints, or viewport units
+- **Positioning**: Combine position type with directional attributes
+- **Typography**: Use either project text styles or custom fonts (not both)
+- **Styling**: Reference project color styles or use direct color values
 
-<!-- Mobile -->
-<Container width="100%" padding="16px">
-```
-
-### Positioning
-```xml
-<!-- Centered -->
-<Element position="absolute" top="50%" left="50%" centerX="50%" centerY="50%">
-
-<!-- Pinned to edges -->
-<Header position="fixed" top="0px" left="0px" right="0px" height="64px">
-
-<!-- Relative spacing -->
-<Card position="relative" width="300px" height="fit-content">
-```
-
-### Typography
-```xml
-<!-- Using project styles -->
-<Text inlineTextStyle="/Body lg">Content</Text>
-
-<!-- Custom font (use searchFonts to find selector) -->
-<Text font="GF;Inter-600" fontSize="18px" lineHeight="1.5">Custom styled text</Text>
-
-<!-- Font selector format examples -->
-<Text font="GF;Inter-400">Regular Inter</Text>
-<Text font="GF;Inter-600">Semi-bold Inter</Text>
-<Text font="GF;Inter-400-italic">Italic Inter</Text>
-<Text font="GF;Roboto-700">Bold Roboto</Text>
-```
-
-Remember: The XML format is forgiving - you only need to include the attributes you want to change. The system will preserve all other existing attributes.
+The XML format is designed to be intuitive and forgiving, making it easy to make targeted updates without affecting unintended properties.

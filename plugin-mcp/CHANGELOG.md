@@ -5,6 +5,7 @@
 - Added `searchFonts` tool to search through available fonts by selector substring
 - Limited search results to 20 fonts to handle Framer's 8000+ font library
 - Added documentation and tests for the new searchFonts tool
+- Updated tool description to explain font selector usage and inlineTextStyle conflict
 
 ## 2025-07-28 13:35
 

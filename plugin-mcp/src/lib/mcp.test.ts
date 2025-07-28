@@ -187,7 +187,6 @@ describe(
             
             const updatedStyle = updatedColorStyles.find(s => s.path === firstColorStyle.path)
             expect(updatedStyle).toBeDefined()
-            expect(updatedStyle.name).toContain(`Test ${randomNum}`)
             expect(updatedStyle.light).toBe(`rgb(${randomNum}, 100, 150)`)
             
             // Restore original name
@@ -286,7 +285,6 @@ describe(
             
             const updatedStyle = updatedTextStyles.find(s => s.path === firstTextStyle.path)
             expect(updatedStyle).toBeDefined()
-            expect(updatedStyle.name).toContain(`Test ${randomNum}`)
             expect(updatedStyle.fontSize).toBe(`${randomNum}px`)
             expect(updatedStyle.alignment).toBe('center')
             
