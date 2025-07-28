@@ -159,34 +159,50 @@ Use these tools to discover available styles:
 ```javascript
 // Get all color styles
 getProjectColorStyles()
-// Returns: [{ id, name, path, light, dark }, ...]
+// Returns: [{ 
+//   id, name, path, 
+//   light: "rgb(255, 255, 255)",  // Light theme color
+//   dark: null                     // Dark theme color (optional)
+// }, ...]
 
 // Get all text styles  
 getProjectTextStyles()
-// Returns: [{ id, name, path, fontSize, lineHeight, ... }, ...]
+// Returns: [{ 
+//   id, name, path,
+//   fontSize: "16px",
+//   lineHeight: "24px", 
+//   letterSpacing: "0px",
+//   paragraphSpacing: 20,
+//   transform: "none",
+//   alignment: "left",
+//   decoration: "none",
+//   balance: false,
+//   tag: "p"  // HTML tag (h1, h2, p, etc.)
+// }, ...]
 ```
 
 ### Update Styles
 
 ```javascript
-// Update a color style
+// Update a color style by its path
 updateColorStyle({
-  styleId: "color123",
+  stylePath: "/Primary/Blue",  // Must start with /
   updates: {
     name: "Primary Blue",
     light: "#0066CC",
-    dark: "#4488FF"
+    dark: "#4488FF"  // null to remove dark variant
   }
 })
 
-// Update a text style
+// Update a text style by its path
 updateTextStyle({
-  styleId: "text456",
+  stylePath: "/Heading xl",  // Must start with /
   updates: {
     name: "Heading Large",
     fontSize: "32px",
     lineHeight: "1.5em",
     letterSpacing: "-0.02em",
+    paragraphSpacing: 40,
     transform: "none", // none/uppercase/lowercase/capitalize
     alignment: "left", // left/center/right/justify
     decoration: "none", // none/underline/line-through
