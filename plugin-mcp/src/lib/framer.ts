@@ -472,7 +472,10 @@ export async function discardFramerChanges({
             return await node.setText(oldContent)
         }
 
-        await applyAttributes(node, attributes)
+        await applyAttributes(node, attributes).catch((e) => {
+            console.error('applyAttributes', e)
+            framer.notify(e.message, { variant: 'error' })
+        })
     })
     return await Promise.all(promises)
 }
@@ -630,7 +633,11 @@ Object.assign(globalThis, {
         for (const node of selectedNodes) {
             const { attributes: nodeAttrs, attrControlsComments } =
                 await getNodeAttributesForXml(node)
-            console.log(node.id, node['name'], JSON.stringify(nodeAttrs, null, 2))
+            console.log(
+                node.id,
+                node['name'],
+                JSON.stringify(nodeAttrs, null, 2),
+            )
             console.log(JSON.stringify(attrControlsComments, null, 2))
             attributesList.push(nodeAttrs)
         }
@@ -705,7 +712,7 @@ export async function applyAttributes(
     if (decodedAttrs.font && supportsFont(node)) {
         const fontSelector = decodedAttrs.font
         const fonts = await framer.getFonts()
-        const font = fonts.find(f => f.selector === fontSelector)
+        const font = fonts.find((f) => f.selector === fontSelector)
         if (!font) {
             throw new Error(`Font with selector "${fontSelector}" not found`)
         }
@@ -737,7 +744,11 @@ export async function applyAttributes(
     }
 
     // Handle backgroundImage URL
-    if (decodedAttrs.backgroundImage && typeof decodedAttrs.backgroundImage === 'string' && supportsBackgroundImage(node)) {
+    if (
+        decodedAttrs.backgroundImage &&
+        typeof decodedAttrs.backgroundImage === 'string' &&
+        supportsBackgroundImage(node)
+    ) {
         const imageUrl = decodedAttrs.backgroundImage
 
         // Check if the image needs to be uploaded (not already on framerusercontent.com)
@@ -752,12 +763,14 @@ export async function applyAttributes(
                         image: imageUrl,
                         name: 'background-image',
                     })
-                    // Store in cache for future use
-                    uploadedImagesCache.set(imageUrl, imageAsset)
                 } catch (error) {
-                    throw new Error(`Failed to upload background image from URL "${imageUrl}": ${error}`)
+                    throw new Error(
+                        `Failed to upload background image from URL "${imageUrl}": ${error}`,
+                    )
                 }
             }
+
+            uploadedImagesCache.set(imageUrl, imageAsset)
 
             decodedAttrs.backgroundImage = imageAsset
         }
@@ -774,7 +787,7 @@ export async function applyAttributes(
             'position',
             'width',
             'height',
-            'rotation'
+            'rotation',
         ]
 
         const nodeAttrs: Record<string, any> = {}
@@ -792,6 +805,10 @@ export async function applyAttributes(
         // Apply node-level attributes
         const changedNodeAttrs = onlyChangedKeys(node, nodeAttrs)
         if (Object.keys(changedNodeAttrs).length > 0) {
+            console.log(
+                `Setting attributes on ${node.__class} (${node.id}):`,
+                changedNodeAttrs,
+            )
             await node.setAttributes(changedNodeAttrs)
         }
 
@@ -802,9 +819,14 @@ export async function applyAttributes(
                 controlsAttrs,
             )
             if (Object.keys(changedControls).length > 0) {
-                await node.setAttributes({
+                const controlsUpdate = {
                     controls: { ...node.controls, ...changedControls },
-                })
+                }
+                console.log(
+                    `Setting controls on ${node.__class} (${node.id}):`,
+                    controlsUpdate,
+                )
+                await node.setAttributes(controlsUpdate)
             }
         }
     } else {

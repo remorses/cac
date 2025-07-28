@@ -314,13 +314,12 @@ function SimplePromptComponent({}) {
                         `node type for id ${partialItem.nodeId} ${node?.['name']} not supported: ${node?.constructor.name}`,
                     )
                 }
-                await applyAttributes(node, partialItem.attributes)
-
-                // TODO add links
-                // if (supportsLink(node) && chunk.href) {
-                //     console.log('setting link', chunk.href)
-                //     await node.setAttributes({ link: chunk.href })
-                // }
+                await applyAttributes(node, partialItem.attributes).catch(
+                    (e) => {
+                        console.error('applyAttributes', e)
+                        framer.notify(e.message, { variant: 'error' })
+                    },
+                )
             }
             await sleep(200)
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })

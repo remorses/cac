@@ -33,11 +33,7 @@ import { FramerLayersTree } from 'website/src/lib/rewrite'
 
 import { Paths, pluginApiClient } from '@/lib/utils'
 import { StarReview } from 'plugin-migrate/src/components/StarReview'
-import {
-    applyAttributes,
-    getFramerTree,
-    isNodeZoomable,
-} from 'plugin-mcp'
+import { applyAttributes, getFramerTree, isNodeZoomable } from 'plugin-mcp'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
 import { flushSync } from 'react-dom'
@@ -383,7 +379,12 @@ function SimplePromptComponent({}) {
                         )
                     }
 
-                    await applyAttributes(node, partialItem.attributes)
+                    await applyAttributes(node, partialItem.attributes).catch(
+                        (e) => {
+                            console.error('applyAttributes', e)
+                            framer.notify(e.message, { variant: 'error' })
+                        },
+                    )
                 }
             }
             console.log('done')

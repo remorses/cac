@@ -20,8 +20,6 @@ export {
     type NewExtractedNode,
 } from './lib/xml'
 
-
-
 export {
     bfsFramerLayersTree as bfsOldTextTree,
     cleanupTreeFromEmptyNodes as cleanupOldTextTree,
