@@ -6,24 +6,39 @@ const Role = z.enum(['background', 'text', 'border'])
 
 /* ──────────────────────────── Tool Definitions ─────────────────────────── */
 export const mcpTools = {
-    getPublishedURL: {
-        description: 'Return staging & production publish info.',
+    getProjectXml: {
+        description:
+            'Gets the project pages and components XML, with information of the currently focused page or component. These referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.',
         input: z.object({}),
         output: z.any(),
     },
-    getXmlSelection: {
-        description: '',
+    getSelectionXml: {
+        description: 'Gets the currently selected node IDs',
         input: z.object({}),
         output: z.any(),
     },
-    getPages: {
-        description: '',
-        input: z.object({}),
+    zoomIntoView: {
+        description: 'Zooms the canvas to center on the given node ID.',
+        input: z.object({
+            nodeId: NodeId,
+        }),
         output: z.any(),
     },
-    getComponents: {
-        description: '',
-        input: z.object({}),
+    getNodeXml: {
+        description:
+            'Get a specific Framer node as XML. You first need to get a node id via getProjectXml or getSelectedNode.',
+        input: z.object({
+            nodeId: NodeId,
+        }),
+        output: z.any(),
+    },
+    updateXmlForNode: {
+        description:
+            'Updates the XML for a specific node using its nodeId and the provided new XML string. It can be used to update nodes text or attributes.',
+        input: z.object({
+            nodeId: NodeId,
+            xml: z.string().min(1),
+        }),
         output: z.any(),
     },
 } as const

@@ -699,6 +699,9 @@ importers:
       react-use-measure:
         specifier: ^2.1.7
         version: 2.1.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      string-dedent:
+        specifier: ^3.0.1
+        version: 3.0.1
       unframer:
         specifier: workspace:*
         version: link:../unframer/unframer
