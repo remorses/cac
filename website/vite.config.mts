@@ -79,6 +79,7 @@ export default defineConfig({
 
     build: {
         // sourcemap: true,
+        target: 'esnext',
         commonjsOptions: {
             transformMixedEsModules: true,
         },

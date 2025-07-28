@@ -24,7 +24,7 @@ import {
 import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
 import { canHaveFreePlugin, isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
-import { ManagedCollection, ManagedCollectionField } from 'framer-plugin'
+import type { ManagedCollectionField } from 'framer-plugin'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 const freeSyncs = 5
