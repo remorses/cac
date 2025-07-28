@@ -65,6 +65,46 @@ describe(
                 `snapshots/component.html`,
             )
         })
+        
+        it('should update node XML with random number', async () => {
+            // First get the page XML to find the node
+            const pageResult = await callTool({
+                name: 'getNodeXml',
+                args: { nodeId: 'CpFAHygNJ' },
+            })
+            const pageXml = getTextContent(pageResult.content)
+            expect(pageXml).toBeDefined()
+            
+            // Generate a random number
+            const randomNum = Math.floor(Math.random() * 10000)
+            
+            // Create XML to update the node - look for node with id yK6cCeTUB
+            const updateXml = `<TextNode nodeId="yK6cCeTUB">Updated text ${randomNum}</TextNode>`
+            
+            // Update the node
+            const updateResult = await callTool({
+                name: 'updateXmlForNode',
+                args: {
+                    nodeId: 'CpFAHygNJ',
+                    xml: updateXml,
+                },
+            })
+            
+            const updatedContent = getTextContent(updateResult.content)
+            expect(updatedContent).toBeDefined()
+            expect(updatedContent).toContain(`Updated text ${randomNum}`)
+            expect(updatedContent).toContain('Successfully updated')
+            expect(updatedContent).toContain('Updated XML:')
+            
+            // Verify the update by getting the node again
+            const verifyResult = await callTool({
+                name: 'getNodeXml',
+                args: { nodeId: 'yK6cCeTUB' },
+            })
+            const verifyXml = getTextContent(verifyResult.content)
+            expect(verifyXml).toBeDefined()
+            expect(verifyXml).toContain(`Updated text ${randomNum}`)
+        })
     },
     1000 * 20,
 )
