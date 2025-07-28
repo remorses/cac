@@ -294,6 +294,38 @@ const cleanup = await websocketClientHandling({
                     }
                 }
             }
+            case 'searchFonts': {
+                const { query } = input
+                
+                // Get all fonts from Framer
+                const allFonts = await framer.getFonts()
+                
+                // Filter fonts that contain the query substring in their selector
+                const matchingFonts = allFonts.filter(font => 
+                    font.selector.toLowerCase().includes(query.toLowerCase())
+                )
+                
+                // Limit to 20 results
+                const limitedFonts = matchingFonts.slice(0, 20)
+                
+                // Return formatted results
+                const results = limitedFonts.map(font => ({
+                    family: font.family,
+                    selector: font.selector,
+                    weight: font.weight,
+                    style: font.style,
+                }))
+                
+                const message = matchingFonts.length > 20 
+                    ? `Found ${matchingFonts.length} fonts matching "${query}". Showing first 20. Use a more specific search term to narrow results.`
+                    : `Found ${matchingFonts.length} fonts matching "${query}".`
+                
+                return {
+                    message,
+                    results,
+                    totalMatches: matchingFonts.length,
+                }
+            }
             default:
                 throw new Error(`Unknown tool type: ${type}`)
         }

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import dedent from 'string-dedent'
 
 /* ──────────────────────────── Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
@@ -80,6 +81,22 @@ export const mcpTools = {
                 decoration: z.enum(['none', 'underline', 'line-through']).optional().describe('Text decoration'),
                 balance: z.boolean().optional().describe('Enable balanced text wrapping for better legibility'),
             }).describe('Properties to update on the text style'),
+        }),
+        output: z.any(),
+    },
+    searchFonts: {
+        description: dedent`
+            Search for fonts by selector substring. Returns max 20 results. Use specific search terms for better results.
+            
+            IMPORTANT: The returned 'selector' field is what you use in XML font attributes:
+            <Text font="GF;Inter-600">Bold text</Text>
+            
+            NOTE: You can only apply a font attribute to text nodes that do NOT have an inlineTextStyle.
+            If a text node has inlineTextStyle="/Heading xl", you must remove it before applying a custom font.
+            Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not both.
+        `,
+        input: z.object({
+            query: z.string().min(1).describe('Search query to match against font selector (e.g., "Inter", "bold", "italic")'),
         }),
         output: z.any(),
     },

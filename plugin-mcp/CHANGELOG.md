@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-07-28 13:40
+
+- Added `searchFonts` tool to search through available fonts by selector substring
+- Limited search results to 20 fonts to handle Framer's 8000+ font library
+- Added documentation and tests for the new searchFonts tool
+
 ## 2025-07-28 13:35
 
 - Changed `updateColorStyle` and `updateTextStyle` to use style path instead of ID for more user-friendly API

@@ -203,6 +203,37 @@ describe(
             })
         })
         
+        it('should search fonts', async () => {
+            const result = await callTool({
+                name: 'searchFonts',
+                args: {
+                    query: 'Inter',
+                },
+            })
+            
+            const content = getTextContent(result.content)
+            expect(content).toBeDefined()
+            expect(content.message).toBeDefined()
+            expect(content.results).toBeDefined()
+            expect(Array.isArray(content.results)).toBe(true)
+            expect(content.totalMatches).toBeGreaterThanOrEqual(0)
+            
+            // Check if results have proper structure
+            if (content.results.length > 0) {
+                const firstFont = content.results[0]
+                expect(firstFont).toHaveProperty('family')
+                expect(firstFont).toHaveProperty('selector')
+                expect(firstFont).toHaveProperty('weight')
+                expect(firstFont).toHaveProperty('style')
+                
+                // Verify the query matches in selector
+                expect(firstFont.selector.toLowerCase()).toContain('inter')
+            }
+            
+            // Test that results are limited to 20
+            expect(content.results.length).toBeLessThanOrEqual(20)
+        })
+        
         it('should update a text style', async () => {
             // First get text styles to find one to update
             const textStylesResult = await callTool({
