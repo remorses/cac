@@ -34,6 +34,23 @@ import { Sema } from 'sema4'
 
 let cachedPagePaths: string[] = []
 
+// Generic utility function to sort an array based on the order of IDs in a reference array
+function sortArrayLike<T>(
+    array: T[],
+    getItemId: (item: T) => string,
+    referenceIds: string[]
+): T[] {
+    return array.sort((a, b) => {
+        const aIndex = referenceIds.indexOf(getItemId(a))
+        const bIndex = referenceIds.indexOf(getItemId(b))
+        // If not found in reference, maintain current order
+        if (aIndex === -1 && bIndex === -1) return 0
+        if (aIndex === -1) return 1
+        if (bIndex === -1) return -1
+        return aIndex - bIndex
+    })
+}
+
 // Cache for uploaded images to prevent re-uploading
 const uploadedImagesCache = new Map<string, ImageAsset>()
 
@@ -365,15 +382,11 @@ async function push({
             if (currentParent) {
                 const parentChildren = await currentParent.getChildren()
                 const childIds = parentChildren.map(child => child.id)
-                currentLevel.sort((a, b) => {
-                    const aIndex = childIds.indexOf(a.nodeId || '')
-                    const bIndex = childIds.indexOf(b.nodeId || '')
-                    // If not found in parent's children, maintain current order
-                    if (aIndex === -1 && bIndex === -1) return 0
-                    if (aIndex === -1) return 1
-                    if (bIndex === -1) return -1
-                    return aIndex - bIndex
-                })
+                sortArrayLike(
+                    currentLevel,
+                    (item) => item.nodeId || '',
+                    childIds
+                )
             }
         }
 
@@ -403,15 +416,11 @@ async function push({
         if (parentNode) {
             const parentChildren = await parentNode.getChildren()
             const childIds = parentChildren.map(child => child.id)
-            currentLevel.sort((a, b) => {
-                const aIndex = childIds.indexOf(a.nodeId || '')
-                const bIndex = childIds.indexOf(b.nodeId || '')
-                // If not found in parent's children, maintain current order
-                if (aIndex === -1 && bIndex === -1) return 0
-                if (aIndex === -1) return 1
-                if (bIndex === -1) return -1
-                return aIndex - bIndex
-            })
+            sortArrayLike(
+                currentLevel,
+                (item) => item.nodeId || '',
+                childIds
+            )
         }
     }
     
