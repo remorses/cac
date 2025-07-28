@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-01-28 18:30
+
+- Added `deleteNode` MCP tool to permanently delete nodes from Framer projects
+- Added `duplicateNode` MCP tool to create copies of nodes with all their children
+- Updated prompt.md documentation with node operations section
+
 ## 2025-01-28 18:00
 
 - Handle WebSocket error code 4009 when another plugin is already connected

@@ -10,6 +10,7 @@ The MCP tools allow you to:
 - Update text content and styling
 - Manage project-wide styles (colors, text styles)
 - Search and apply fonts
+- Delete and duplicate nodes
 
 ## Getting Started
 
@@ -105,6 +106,22 @@ Project styles provide consistent design tokens across your project:
 
 Use `getProjectColorStyles` and `getProjectTextStyles` to discover available styles.
 
+## Node Operations
+
+### Deleting Nodes
+
+Use `deleteNode` to permanently remove a node and all its children from the project:
+- **Irreversible**: This action cannot be undone
+- **Protected nodes**: Cannot delete root frames of components or pages
+- **Cascading**: Deletes the node and ALL child nodes
+
+### Duplicating Nodes
+
+Use `duplicateNode` to create an exact copy of a node:
+- **Complete copy**: Duplicates the node and all its children
+- **Positioning**: Duplicated nodes are placed as siblings, slightly offset if visual
+- **Returns new ID**: The tool returns the ID of the newly created node
+
 ## Best Practices
 
 1. **Start with `getProjectXml`** to understand the project structure
@@ -113,6 +130,8 @@ Use `getProjectColorStyles` and `getProjectTextStyles` to discover available sty
 4. **Use project styles** - Reference style paths instead of hardcoded values
 5. **Include nodeId attributes** - Essential for targeting specific nodes
 6. **Work with user selection** - Use `getSelectedNodesXml` for context-aware operations
+7. **Be cautious with deletion** - `deleteNode` is permanent and cannot be undone
+8. **Check duplicate results** - Use the returned ID to inspect or further modify duplicated nodes
 
 ## Key Concepts
 
