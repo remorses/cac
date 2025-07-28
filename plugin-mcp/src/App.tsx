@@ -167,20 +167,118 @@ const cleanup = await websocketClientHandling({
                 
                 // Return color styles with available properties
                 return colorStyles.map(style => ({
+                    id: style.id,
                     name: style.name,
                     path: style.path,
+                    light: style.light,
+                    dark: style.dark,
                 }))
             }
             case 'getProjectTextStyles': {
                 const textStyles = await framer.getTextStyles()
                 
                 return textStyles.map(style => ({
+                    id: style.id,
                     name: style.name,
                     path: style.path,
                     fontSize: style.fontSize,
                     lineHeight: style.lineHeight,
                     letterSpacing: style.letterSpacing,
+                    paragraphSpacing: style.paragraphSpacing,
+                    transform: style.transform,
+                    alignment: style.alignment,
+                    decoration: style.decoration,
+                    balance: style.balance,
+                    tag: style.tag,
                 }))
+            }
+            case 'updateColorStyle': {
+                const { styleId, updates } = input
+                const colorStyle = await framer.getColorStyle(styleId)
+                
+                if (!colorStyle) {
+                    return `Color style with ID ${styleId} not found.`
+                }
+                
+                const result = await colorStyle.setAttributes(updates)
+                
+                if (!result) {
+                    return `Failed to update color style ${styleId}.`
+                }
+                
+                return {
+                    message: `Successfully updated color style: ${result.name}`,
+                    style: {
+                        id: result.id,
+                        name: result.name,
+                        path: result.path,
+                        light: result.light,
+                        dark: result.dark,
+                    }
+                }
+            }
+            case 'updateTextStyle': {
+                const { styleId, updates } = input
+                const textStyle = await framer.getTextStyle(styleId)
+                
+                if (!textStyle) {
+                    return `Text style with ID ${styleId} not found.`
+                }
+                
+                // Prepare the attributes with proper types
+                const attributes: any = {}
+                
+                if (updates.name !== undefined) {
+                    attributes.name = updates.name
+                }
+                if (updates.fontSize !== undefined) {
+                    attributes.fontSize = updates.fontSize as any
+                }
+                if (updates.lineHeight !== undefined) {
+                    attributes.lineHeight = updates.lineHeight as any
+                }
+                if (updates.letterSpacing !== undefined) {
+                    attributes.letterSpacing = updates.letterSpacing as any
+                }
+                if (updates.paragraphSpacing !== undefined) {
+                    attributes.paragraphSpacing = updates.paragraphSpacing
+                }
+                if (updates.transform !== undefined) {
+                    attributes.transform = updates.transform
+                }
+                if (updates.alignment !== undefined) {
+                    attributes.alignment = updates.alignment
+                }
+                if (updates.decoration !== undefined) {
+                    attributes.decoration = updates.decoration
+                }
+                if (updates.balance !== undefined) {
+                    attributes.balance = updates.balance
+                }
+                
+                const result = await textStyle.setAttributes(attributes)
+                
+                if (!result) {
+                    return `Failed to update text style ${styleId}.`
+                }
+                
+                return {
+                    message: `Successfully updated text style: ${result.name}`,
+                    style: {
+                        id: result.id,
+                        name: result.name,
+                        path: result.path,
+                        fontSize: result.fontSize,
+                        lineHeight: result.lineHeight,
+                        letterSpacing: result.letterSpacing,
+                        paragraphSpacing: result.paragraphSpacing,
+                        transform: result.transform,
+                        alignment: result.alignment,
+                        decoration: result.decoration,
+                        balance: result.balance,
+                        tag: result.tag,
+                    }
+                }
             }
             default:
                 throw new Error(`Unknown tool type: ${type}`)

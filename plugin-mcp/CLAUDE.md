@@ -6,6 +6,8 @@ The most important code is in `src/App.tsx` in the `websocketClientHandling` `ha
 
 Also the tools schema is defined in `src/lib/mcp-tools.ts`. This is where you should add the schema when adding or updating MCP tools.
 
+To understand framer-plugin package api read `plugin-mcp/node_modules/framer-plugin/dist/index.d.ts`
+
 ## Architecture Overview
 
 The system consists of three main components:
