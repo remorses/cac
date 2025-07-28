@@ -1,6 +1,19 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import {
+    CallToolRequest,
+    CallToolRequestSchema,
+    GetPromptRequest,
+    GetPromptRequestSchema,
+    ListPromptsRequestSchema,
+    ListResourcesRequestSchema,
+    ListToolsRequestSchema,
+    ReadResourceRequest,
+    ReadResourceRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js'
 import { McpAgent } from 'agents/mcp'
-import { implementMcpTools } from './lib/mcp-tools'
+import { toJSONSchema } from 'zod'
+import { mcpTools } from './lib/types'
+import { WebsocketRpc, createWebsocketHandling } from './lib/websocket-server'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(
@@ -18,11 +31,228 @@ export class MyMCP extends McpAgent<Env> {
     )
 
     async init() {
+        const server = this.server
         const websocketId = this.props?.websocketId as string
         if (!websocketId)
             throw new Error('websocketId ?id search param is required')
         console.log('Initializing MyMCP with websocketId:', websocketId)
-        await implementMcpTools({ websocketId, server: this.server })
+
+        let ws: WebSocket | null = null
+        let isServerStopped = false
+        let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
+        const reconnectDelay = 2000 // Fixed 2 second delay
+
+        let retries = 0
+
+        const connectWebSocket = async (): Promise<WebsocketRpc> => {
+            if (isServerStopped) {
+                console.log('Server is stopped, not attempting reconnection')
+                throw new Error('Server is stopped')
+            }
+
+            console.log(
+                `trying to connect to Websocket tunnel to get access to Framer app MCP with id ${websocketId}, retry #${retries + 1}`,
+            )
+            retries += 1
+
+            try {
+                const start = Date.now()
+                const upstreamUrl = `wss://unframer.co/_tunnel/client?id=${websocketId}`
+                ws = new WebSocket(upstreamUrl)
+
+                // Wait for connection and ready message
+                const rpc = await new Promise<WebsocketRpc>(
+                    (resolve, reject) => {
+                        const handleOpen = () => {
+                            console.log(
+                                `Connected to upstream tunnel with ID: ${websocketId}`,
+                            )
+
+                            // Send ready message after WebSocket opens
+                            const rpc = createWebsocketHandling({ ws: ws! })
+                            const handleMessageReady = (
+                                event: MessageEvent,
+                            ) => {
+                                try {
+                                    const data = JSON.parse(event.data)
+                                    if (data.type === 'ready') {
+                                        const elapsed = Date.now() - start
+                                        console.log(
+                                            `Framer plugin is ready, connection established in ${(elapsed / 1000).toFixed(2)}s`,
+                                        )
+                                        // Remove the message listener since we only need it once
+                                        ws!.removeEventListener(
+                                            'message',
+                                            handleMessageReady,
+                                        )
+                                        resolve(rpc)
+                                    }
+                                } catch {
+                                    // Ignore parse errors
+                                }
+                            }
+                            ws!.addEventListener('message', handleMessageReady)
+
+                            rpc.send({
+                                payload: { type: 'ready' },
+                            })
+                        }
+
+                        const handleError = (err: Event) => {
+                            console.error('Upstream WebSocket Error:', err)
+                            reject(err)
+                        }
+
+                        ws!.addEventListener('open', handleOpen, { once: true })
+                        ws!.addEventListener('error', handleError, {
+                            once: true,
+                        })
+                    },
+                )
+
+
+                // Set up persistent event listeners
+                ws.addEventListener('close', () => {
+                    console.log('Upstream WebSocket closed')
+
+                    // Attempt reconnection if server is not stopped
+                    if (!isServerStopped) {
+                        console.log(
+                            `Attempting reconnection in ${reconnectDelay}ms`,
+                        )
+                        reconnectTimeout = setTimeout(() => {
+                            clientConnectedPromise = connectWebSocket().catch(
+                                (err) => {
+                                    console.error('Reconnection failed:', err)
+                                    throw err
+                                },
+                            )
+                        }, reconnectDelay)
+                    }
+                })
+
+                ws.addEventListener('error', (err) => {
+                    console.error('Upstream WebSocket Error:', err)
+                })
+
+                return rpc
+            } catch (error) {
+                console.error('Failed to connect WebSocket:', error)
+
+                // Attempt reconnection if server is not stopped
+                if (!isServerStopped) {
+                    console.log(
+                        `Attempting reconnection in ${reconnectDelay}ms`,
+                    )
+                    reconnectTimeout = setTimeout(() => {
+                        clientConnectedPromise = connectWebSocket().catch(
+                            (err) => {
+                                console.error('Reconnection failed:', err)
+                                throw err
+                            },
+                        )
+                    }, reconnectDelay)
+                }
+
+                throw error
+            }
+        }
+
+        let clientConnectedPromise = connectWebSocket()
+
+        // Graceful shutdown
+        const stop = () => {
+            console.log('\n⏹ shutting down…')
+            isServerStopped = true
+
+            // Clear any pending reconnect timeout
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout)
+                reconnectTimeout = null
+            }
+
+            if (
+                ws &&
+                (ws.readyState === WebSocket.OPEN ||
+                    ws.readyState === WebSocket.CONNECTING)
+            ) {
+                ws.close()
+            }
+        }
+
+        server.setRequestHandler(ListToolsRequestSchema, async () => ({
+            tools: Object.entries(mcpTools).map(([name, tool]) => ({
+                name,
+                description: tool.description,
+                inputSchema: toJSONSchema(tool.input),
+            })),
+        }))
+
+        server.setRequestHandler(
+            CallToolRequestSchema,
+            async (request: CallToolRequest) => {
+                try {
+                    const rpc = await clientConnectedPromise
+
+                    const { name, arguments: args = {} } = request.params
+                    const reply = await rpc.send({
+                        payload: { type: name as any, input: args as any },
+                    })
+                    const text =
+                        typeof reply === 'string'
+                            ? reply
+                            : JSON.stringify(reply, null, 2)
+
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text,
+                            },
+                        ],
+                    }
+                } catch (error) {
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: 'The Framer app plugin is not connected. Please ensure the Framer plugin is open and connected.',
+                            },
+                        ],
+                    }
+                }
+            },
+        )
+
+        // Prompts handlers - return empty array
+        server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+            prompts: [],
+        }))
+
+        server.setRequestHandler(
+            GetPromptRequestSchema,
+            async (request: GetPromptRequest) => {
+                throw new Error(`No prompts available`)
+            },
+        )
+
+        // Resources handlers - return empty array
+        server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+            resources: [],
+        }))
+
+        server.setRequestHandler(
+            ReadResourceRequestSchema,
+            async (request: ReadResourceRequest) => {
+                throw new Error(`No resources available`)
+            },
+        )
+
+        server.onclose = () => {
+            console.log('Server closed, cleaning up...')
+            stop()
+            // this.ctx.storage.deleteAll()
+        }
     }
 }
 

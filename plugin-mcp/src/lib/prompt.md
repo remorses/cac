@@ -68,6 +68,21 @@ Component instances are references to reusable components. They have:
 
 This distinction is crucial - updating a component definition is a powerful operation that affects every instance of that component.
 
+### Replica Nodes (Variants)
+
+When calling `getNodeXml` on a replica node (variant), children are automatically hidden to avoid confusion. The tool will also return a warning message recommending to update the original component instead. 
+
+In the XML, replica nodes will have a special comment in their attributes:
+
+```xml
+<ReplicaNode
+    <!-- To see these nodes values and override some of them for this variant, call getNodeXml on this nodeId -->
+    nodeId="xyz456">
+</ReplicaNode>
+```
+
+This behavior applies to both root replica nodes and any child nodes that are replicas. When traversing the tree, replica nodes themselves ARE included in the output (with the special comment), but their children are not. This means you'll see the replica node in the XML tree, but it will appear as a leaf node without any children. This helps prevent accidentally modifying the wrong nodes and guides you to inspect child nodes individually when working with variants. Remember: updating the original component is usually the better approach as changes will propagate to all variants automatically.
+
 ## Fonts
 
 Framer provides access to over 8000 fonts. Use `searchFonts` to find fonts by searching their selector string. The returned `selector` value is what you use in the `font` attribute.

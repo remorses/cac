@@ -1,6 +1,6 @@
 import { WebsocketMessage } from './websocket-server'
 import { useStore } from './store'
-import { McpToolWebsocketPayload } from './mcp-tools'
+import { McpToolWebsocketPayload } from './types'
 
 // Function for handling websocket connection based on session cookie
 export async function websocketClientHandling({
@@ -14,7 +14,7 @@ export async function websocketClientHandling({
 }) {
     if (typeof window === 'undefined') return
 
-    const websocketUrl = `wss://unframer.co/_tunnel/client?id=${websocketId}`
+    const websocketUrl = `wss://unframer.co/_tunnel/upstream?id=${websocketId}`
 
     let ws: WebSocket
     let pingInterval: NodeJS.Timeout | null = null

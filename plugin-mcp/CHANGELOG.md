@@ -1,5 +1,51 @@
 # Changelog
 
+## 2025-01-28 17:15
+
+- Removed duplicate utility functions (framerLoginUrl, generateSecurePassword, etc.)
+- Updated imports to use functions from website package instead
+- Fixed website dependency to use workspace:* format for proper resolution
+
+## 2025-01-28 17:00
+
+- Updated Login page to match exact styling from plugin-react-export
+- Created Button component matching plugin-migrate implementation
+- Added Spinner component for loading states
+- Removed custom styling in favor of exact style replication
+
+## 2025-01-28 16:45
+
+- Moved height and sizing logic to RootLayout component so both Login and Main screens have proper sizing
+- Fixed Login screen remaining small by using consistent layout structure
+- Improved Login screen styling with better spacing and Framer theme colors
+
+## 2025-01-28 16:30
+
+- Added Google OAuth login flow similar to plugin-react-export
+- Added router setup with react-router for navigation
+- Created API client generation script that reuses website's api-client
+- Added authentication check before loading main MCP interface
+- Created Button component with Framer theme styling
+- Added session management with framer.setPluginData/getPluginData
+
+## 2025-01-28 15:20
+
+- Fixed WebSocket connection state reliability by removing mutable `isFramerPluginReady` variable and using resolved `websocketRpc` promise instead
+
+## 2025-07-28 16:09
+
+- Clarified replica node handling: replica nodes are included in output but their children are skipped
+- Tree traversal correctly includes replica nodes as leaf nodes with special comment
+- Updated documentation to clarify that replica nodes appear in XML but without children
+
+## 2025-07-28 16:00
+
+- Simplified replica node handling by removing `showReplicaChildren` parameter entirely
+- `getNodeXml` now returns a warning when called on replica nodes, recommending to update the original
+- `getSelectedNodesXml` shows warning if any selected nodes are replicas
+- Replica nodes automatically hide children and show actionable comment in attributes
+- Updated src/lib/prompt.md documentation to explain replica node behavior and warnings
+
 ## 2025-07-28 14:08
 
 - Changed WebSocket connection to resolve when "ready" message is received instead of on open

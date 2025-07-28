@@ -40,6 +40,7 @@ export enum PluginNames {
     migrate = 'migrate',
     react = 'react',
     llm = 'llm',
+    mcp = 'mcp',
 }
 
 export function framerLoginUrl({
