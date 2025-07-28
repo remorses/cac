@@ -1,25 +1,22 @@
 import { expect, test } from 'vitest'
 
-import dedent from 'string-dedent'
 import fs from 'fs'
 import path from 'path'
 import {
     bfsFramerLayersTree,
-    cleanupTreeFromEmptyNodes,
     extractObjectsFromXmlContent,
     framerLayersTreeToXml,
     rewriteXmlContentForTests,
     splitTreeInChunks,
-    xmlToFramerLayersTree,
+    xmlToFramerLayersTree
 } from 'plugin-mcp'
+import dedent from 'string-dedent'
 
 export const ITEMS_PER_ITERATION = 30
-
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 test('splitTreeInChunks long', () => {
-
     let folder = path.resolve(__dirname, 'evaluation/xml/')
     const xml = fs.readFileSync(path.resolve(folder, 'long.xml'), 'utf8')
     const max = ITEMS_PER_ITERATION
@@ -175,85 +172,83 @@ test('xml partial content, rewriteXmlContent', () => {
 })
 
 test('oldTextTreeToXml', async () => {
-    const res = framerLayersTreeToXml(
-        cleanupTreeFromEmptyNodes([
-            {
-                name: 'AI Kit/Nav',
-                children: [
-                    {
-                        nodeId: 'O6ldbjyTJ',
-                        name: 'Stack',
-                        children: [
-                            {
-                                content: 'Features',
-                                nodeId: 'A3ZxD9MzX',
-                                name: 'AI Kit/Navigation/Nav Top Item',
-                                children: [],
+    const res = framerLayersTreeToXml([
+        {
+            name: 'AI Kit/Nav',
+            children: [
+                {
+                    nodeId: 'O6ldbjyTJ',
+                    name: 'Stack',
+                    children: [
+                        {
+                            content: 'Features',
+                            nodeId: 'A3ZxD9MzX',
+                            name: 'AI Kit/Navigation/Nav Top Item',
+                            children: [],
+                        },
+                        {
+                            content: 'Developers',
+                            nodeId: 'kEfI03xW5',
+                            name: 'AI Kit/Navigation/Nav Top Item',
+                            children: [],
+                        },
+                        {
+                            content: 'Company',
+                            nodeId: 'hV4y0l50l',
+                            name: 'AI Kit/Navigation/Nav Top Item',
+                            attributes: {
+                                anObject: JSON.stringify({ a: 1, b: 2 }),
+                                anArray: JSON.stringify([1, 2, 3]),
                             },
-                            {
-                                content: 'Developers',
-                                nodeId: 'kEfI03xW5',
-                                name: 'AI Kit/Navigation/Nav Top Item',
-                                children: [],
+                            attrControlsComments: {
+                                anObject: 'An object',
+                                anArray: 'An array',
                             },
-                            {
-                                content: 'Company',
-                                nodeId: 'hV4y0l50l',
-                                name: 'AI Kit/Navigation/Nav Top Item',
-                                attributes: {
-                                    anObject: JSON.stringify({ a: 1, b: 2 }),
-                                    anArray: JSON.stringify([1, 2, 3]),
+                            children: [],
+                        },
+                        {
+                            content: 'Blog',
+                            nodeId: 'Kn7sH0z2q',
+                            name: 'AI Kit/Navigation/Nav Top Item',
+                            attributes: {
+                                bool: 'true',
+                                shouldBeHidden: 'false',
+                            },
+                            attrControlsComments: {
+                                shouldBeHidden: '',
+                            },
+                            children: [
+                                {
+                                    content: 'Nested content',
+                                    nodeId: 'a1b2c3',
+                                    name: 'AI Kit/Navigation/Nav Top Item/Nested',
+                                    children: [],
                                 },
-                                attrControlsComments: {
-                                    anObject: 'An object',
-                                    anArray: 'An array',
-                                },
-                                children: [],
-                            },
-                            {
-                                content: 'Blog',
-                                nodeId: 'Kn7sH0z2q',
-                                name: 'AI Kit/Navigation/Nav Top Item',
-                                attributes: {
-                                    bool: 'true',
-                                    shouldBeHidden: 'false',
-                                },
-                                attrControlsComments: {
-                                    shouldBeHidden: '',
-                                },
-                                children: [
-                                    {
-                                        content: 'Nested content',
-                                        nodeId: 'a1b2c3',
-                                        name: 'AI Kit/Navigation/Nav Top Item/Nested',
-                                        children: [],
-                                    },
-                                ],
-                            },
-                            {
-                                content: 'Changelog',
-                                nodeId: 'QjTxmhFlU',
-                                name: 'AI Kit/Navigation/Nav Top Item',
-                                children: [],
-                            },
-                        ],
-                    },
-                    {
-                        nodeId: 'JGJDKjLQs',
-                        name: 'Stack',
-                        children: [
-                            {
-                                content: 'Join waitlist',
-                                nodeId: 'LrErZw5ej',
-                                name: 'AI Kit/Button',
-                                children: [],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ]),
-    )
+                            ],
+                        },
+                        {
+                            content: 'Changelog',
+                            nodeId: 'QjTxmhFlU',
+                            name: 'AI Kit/Navigation/Nav Top Item',
+                            children: [],
+                        },
+                    ],
+                },
+                {
+                    nodeId: 'JGJDKjLQs',
+                    name: 'Stack',
+                    children: [
+                        {
+                            content: 'Join waitlist',
+                            nodeId: 'LrErZw5ej',
+                            name: 'AI Kit/Button',
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        },
+    ])
     expect(res).toMatchInlineSnapshot(`
       "<AiKitNav>
         <Stack>

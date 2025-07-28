@@ -21,37 +21,6 @@ export function bfsFramerLayersTree(tree: FramerLayersTree) {
     return result
 }
 
-export function cleanupTreeFromEmptyNodes(tree: FramerLayersTree): FramerLayersTree {
-    function cleanNode(node: FramerLayersTree[number]): FramerLayersTree[number] | null {
-        // Skip nodes without content and without children
-        if (!node.content && (!node.children || node.children.length === 0)) {
-            return null
-        }
-
-        const cleanedNode: FramerLayersTree[number] = {
-            ...node
-        }
-
-        if (node.children) {
-            const cleanedChildren = node.children
-                .map(cleanNode)
-                .filter((n): n is FramerLayersTree[number] => n !== null)
-
-            if (cleanedChildren.length > 0) {
-                cleanedNode.children = cleanedChildren
-            } else {
-                delete cleanedNode.children
-            }
-        }
-
-        return cleanedNode
-    }
-
-    return tree
-        .map(cleanNode)
-        .filter((n): n is FramerLayersTree[number] => n !== null)
-}
-
 
 
 export function mergeCloseChunks(
@@ -177,7 +146,6 @@ function findFirstChildrenLayer(tree: FramerLayersTree): {
     }
     return { layer: currentLayer, parents }
 }
-
 
 function splitTreeInChunksRecursive(
     tree: FramerLayersTree,
