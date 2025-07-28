@@ -1,4 +1,4 @@
-import { WebsocketMessage } from './websocket-server'
+import { WebsocketMessage } from './mcp-websocket'
 import { useStore } from './store'
 import { McpToolWebsocketPayload } from './types'
 
@@ -101,7 +101,7 @@ export async function websocketClientHandling({
             if (event.code === 4009) {
                 const errorMessage = 'Another plugin is already connected. Please close the other plugin and keep only one plugin open.'
                 console.error('Another plugin is already connected for this user')
-                useStore.setState({ 
+                useStore.setState({
                     isConnected: false,
                     error: errorMessage
                 })
@@ -112,7 +112,7 @@ export async function websocketClientHandling({
                 }
                 return
             }
-            
+
             console.log(
                 `websocket client disconnected (${event.code}), reconnecting in ${reconnectInterval}ms`,
             )
