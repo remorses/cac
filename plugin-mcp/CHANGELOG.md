@@ -1,5 +1,9 @@
 # Changelog
 
+## 2025-07-28 13:49
+
+- Removed `id` and `name` fields from color and text style outputs as they're not needed with path-based updates
+
 ## 2025-07-28 13:40
 
 - Added `searchFonts` tool to search through available fonts by selector substring

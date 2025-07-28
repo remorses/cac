@@ -5,7 +5,13 @@ import { websocketClientHandling } from './lib/client-websocket'
 import { FramerLayersTree, McpToolNames } from './lib/types'
 import './lib/framer'
 import { useStore } from './lib/store'
-import { CopyIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CircleIcon } from 'lucide-react'
+import {
+    CopyIcon,
+    CheckIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
+    CircleIcon,
+} from 'lucide-react'
 import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
 import { getFramerTree, applyAttributes } from './lib/framer'
 
@@ -131,9 +137,14 @@ const cleanup = await websocketClientHandling({
                     }
 
                     // Apply attributes if any
-                    if (extractedNode.attributes && Object.keys(extractedNode.attributes).length > 0) {
+                    if (
+                        extractedNode.attributes &&
+                        Object.keys(extractedNode.attributes).length > 0
+                    ) {
                         await applyAttributes(node, extractedNode.attributes)
-                        results.push(`Updated attributes for node ${targetNodeId}`)
+                        results.push(
+                            `Updated attributes for node ${targetNodeId}`,
+                        )
                         wasUpdated = true
                     }
 
@@ -145,9 +156,10 @@ const cleanup = await websocketClientHandling({
                 // Get the updated XML for the primary node
                 const updatedXml = await getNodeXml(nodeId)
 
-                const resultMessage = results.length > 0
-                    ? `Successfully updated:\n${results.join('\n')}`
-                    : 'No updates were made.'
+                const resultMessage =
+                    results.length > 0
+                        ? `Successfully updated:\n${results.join('\n')}`
+                        : 'No updates were made.'
 
                 return updatedXml
                     ? `${resultMessage}\n\nUpdated XML:\n${updatedXml}`
@@ -166,7 +178,7 @@ const cleanup = await websocketClientHandling({
                 const colorStyles = await framer.getColorStyles()
 
                 // Return color styles with available properties
-                return colorStyles.map(style => ({
+                return colorStyles.map((style) => ({
                     path: style.path,
                     light: style.light,
                     dark: style.dark,
@@ -175,7 +187,7 @@ const cleanup = await websocketClientHandling({
             case 'getProjectTextStyles': {
                 const textStyles = await framer.getTextStyles()
 
-                return textStyles.map(style => ({
+                return textStyles.map((style) => ({
                     path: style.path,
                     fontSize: style.fontSize,
                     lineHeight: style.lineHeight,
@@ -197,7 +209,9 @@ const cleanup = await websocketClientHandling({
 
                 // Get all color styles and find by path
                 const colorStyles = await framer.getColorStyles()
-                const colorStyle = colorStyles.find(style => style.path === stylePath)
+                const colorStyle = colorStyles.find(
+                    (style) => style.path === stylePath,
+                )
 
                 if (!colorStyle) {
                     return `Color style with path ${stylePath} not found.`
@@ -212,12 +226,11 @@ const cleanup = await websocketClientHandling({
                 return {
                     message: `Successfully updated color style: ${result.name}`,
                     style: {
-                        id: result.id,
-                        name: result.name,
                         path: result.path,
+
                         light: result.light,
                         dark: result.dark,
-                    }
+                    },
                 }
             }
             case 'updateTextStyle': {
@@ -229,7 +242,9 @@ const cleanup = await websocketClientHandling({
 
                 // Get all text styles and find by path
                 const textStyles = await framer.getTextStyles()
-                const textStyle = textStyles.find(style => style.path === stylePath)
+                const textStyle = textStyles.find(
+                    (style) => style.path === stylePath,
+                )
 
                 if (!textStyle) {
                     return `Text style with path ${stylePath} not found.`
@@ -275,9 +290,8 @@ const cleanup = await websocketClientHandling({
                 return {
                     message: `Successfully updated text style: ${result.name}`,
                     style: {
-                        id: result.id,
-                        name: result.name,
                         path: result.path,
+                        name: result.name,
                         fontSize: result.fontSize,
                         lineHeight: result.lineHeight,
                         letterSpacing: result.letterSpacing,
@@ -287,7 +301,7 @@ const cleanup = await websocketClientHandling({
                         decoration: result.decoration,
                         balance: result.balance,
                         tag: result.tag,
-                    }
+                    },
                 }
             }
             case 'searchFonts': {
@@ -297,24 +311,25 @@ const cleanup = await websocketClientHandling({
                 const allFonts = await framer.getFonts()
 
                 // Filter fonts that contain the query substring in their selector
-                const matchingFonts = allFonts.filter(font =>
-                    font.selector.toLowerCase().includes(query.toLowerCase())
+                const matchingFonts = allFonts.filter((font) =>
+                    font.selector.toLowerCase().includes(query.toLowerCase()),
                 )
 
                 // Limit to 20 results
                 const limitedFonts = matchingFonts.slice(0, 20)
 
                 // Return formatted results
-                const results = limitedFonts.map(font => ({
+                const results = limitedFonts.map((font) => ({
                     family: font.family,
                     selector: font.selector,
                     weight: font.weight,
                     style: font.style,
                 }))
 
-                const baseMessage = matchingFonts.length > 20
-                    ? `Found ${matchingFonts.length} fonts matching "${query}". Showing first 20. Use a more specific search term to narrow results.`
-                    : `Found ${matchingFonts.length} fonts matching "${query}".`
+                const baseMessage =
+                    matchingFonts.length > 20
+                        ? `Found ${matchingFonts.length} fonts matching "${query}". Showing first 20. Use a more specific search term to narrow results.`
+                        : `Found ${matchingFonts.length} fonts matching "${query}".`
 
                 const message = `${baseMessage}\n\nTo use a font: <Text font="selector">Text</Text>\nNote: font and inlineTextStyle attributes are mutually exclusive`
 
