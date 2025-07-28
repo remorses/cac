@@ -1,0 +1,81 @@
+[
+  {
+    "description": "Gets the project pages and components XML, with information of the currently focused page or component. These referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+    "name": "getProjectXml",
+  },
+  {
+    "description": "Gets the currently selected node IDs",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+    "name": "getSelectionXml",
+  },
+  {
+    "description": "Zooms the canvas to center on the given node ID.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+      ],
+      "type": "object",
+    },
+    "name": "zoomIntoView",
+  },
+  {
+    "description": "Get a specific Framer node as XML. You first need to get a node id via getProjectXml or getSelectedNode.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+      ],
+      "type": "object",
+    },
+    "name": "getNodeXml",
+  },
+  {
+    "description": "Updates the XML for a specific node using its nodeId and the provided new XML string. It can be used to update nodes text or attributes.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "minLength": 1,
+          "type": "string",
+        },
+        "xml": {
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+        "xml",
+      ],
+      "type": "object",
+    },
+    "name": "updateXmlForNode",
+  },
+]
