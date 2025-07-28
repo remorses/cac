@@ -359,6 +359,7 @@ async function push({
     node: AnyNode
     text?: string
     nodeId: string
+    isReplica?: boolean
 }) {
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
     let currentLevel = tree
@@ -375,6 +376,7 @@ async function push({
             existingNode = {
                 nodeId: parent.id,
                 name: supportsName(parent) ? parent.name || '' : '',
+                isReplica: parent.isReplica,
                 children: [],
             }
             currentLevel.push(existingNode)
@@ -462,6 +464,7 @@ export async function getFramerTree({
                     tree: tree,
                     text,
                     nodeId: node.id,
+                    isReplica: node.isReplica,
                 })
             }
         }
@@ -476,6 +479,7 @@ export async function getFramerTree({
                 node,
                 tree: tree,
                 nodeId: node.id,
+                isReplica: node.isReplica,
             })
         }
     }

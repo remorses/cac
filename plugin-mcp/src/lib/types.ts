@@ -87,10 +87,10 @@ export const mcpTools = {
     searchFonts: {
         description: dedent`
             Search for fonts by selector substring. Returns max 20 results. Use specific search terms for better results.
-            
+
             IMPORTANT: The returned 'selector' field is what you use in XML font attributes:
             <Text font="GF;Inter-600">Bold text</Text>
-            
+
             NOTE: You can only apply a font attribute to text nodes that do NOT have an inlineTextStyle.
             If a text node has inlineTextStyle="/Heading xl", you must remove it before applying a custom font.
             Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not both.
@@ -121,6 +121,7 @@ export type FramerLayersTree = Array<{
      * The text of the node, if this is a text node.
      */
     content?: string
+    isReplica?: boolean
     nodeId?: string
     name?: string
     children?: FramerLayersTree
