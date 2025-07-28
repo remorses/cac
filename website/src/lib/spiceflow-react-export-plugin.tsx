@@ -19,6 +19,7 @@ import dedent from 'string-dedent'
 import Stripe from 'stripe'
 import {
     env,
+    getBuyReactExportPluginUrl,
     reactExportStatusErrors,
     reactExportVariants,
 } from 'website/src/lib/env'
@@ -139,7 +140,6 @@ export const reactPluginApp = new Spiceflow({
             const { projectId, forSubscriptionUpgrade } = query
             const activeSub = await getReactSub({
                 orgId: await store.orgId,
-                projectId,
             })
 
             // If no active subscription, try to find any subscription (including inactive ones)
@@ -272,7 +272,6 @@ export const reactPluginApp = new Spiceflow({
             const projectName = project.projectName || 'without name'
             // const subscription = await getReactSub({
             //     orgId: project.org.orgId,
-            //     projectId,
             // })
 
             // const hasSubscription = !!subscription
@@ -363,7 +362,7 @@ export const reactPluginApp = new Spiceflow({
                         },
                     },
                 }),
-                getReactSub({ orgId, projectId }),
+                getReactSub({ orgId }),
                 prisma.org.findUnique({
                     where: {
                         orgId,
@@ -403,7 +402,7 @@ export const reactPluginApp = new Spiceflow({
                     })
                     projectEmail = legacyUserPerOrg?.email || ''
                 }
-                const message = `Project belongs to another user, login with the account ${email} first`
+                const message = `This Framer project belongs to another user account (${projectEmail}). Please log out and log in with the correct account to access this project. If you need to transfer ownership, please contact support.`
                 console.log(message)
                 throw Response.json(
                     {
@@ -591,9 +590,15 @@ export const reactPluginApp = new Spiceflow({
             }
 
             if (needsToBuy) {
+                const buyUrl = getBuyReactExportPluginUrl({
+                    orgId,
+                    email: userEmail,
+                    projectId,
+                })
                 throw new Response(
                     JSON.stringify({
-                        message: 'Need subscription',
+                        message: `No active React Export subscription found. To export components and use the React Export plugin, please purchase a subscription at: ${buyUrl}`,
+                        buyUrl,
                     }),
                     {
                         status: reactExportStatusErrors.SUB_NEEDED,
@@ -616,10 +621,19 @@ export const reactPluginApp = new Spiceflow({
                 framerUserId !== existingProject.framerUserId
             // needsBusinessSubscription = true
             if (needsBusinessSubscription) {
+                const upgradeUrl = getBuyReactExportPluginUrl({
+                    orgId,
+                    email: userEmail,
+                    projectId,
+                })
                 throw Response.json(
                     {
-                        message: 'Need business subscription',
+                        message: `Your current Personal subscription doesn't support multiple Framer users. This project was created by Framer user "${existingProject?.framerUserId}" but you're trying to export as Framer user "${framerUserId}". The project owner's email is: ${projectEmail || 'unknown'}. Your current email is: ${userEmail}. Please upgrade to a Business subscription to collaborate with other team members. Upgrade at: ${upgradeUrl}`,
                         email: projectEmail,
+                        currentEmail: userEmail,
+                        projectOwnerFramerId: existingProject?.framerUserId,
+                        currentFramerId: framerUserId,
+                        upgradeUrl,
                     },
                     {
                         status: reactExportStatusErrors.SUB_UPGRADE_NECESSARY,
@@ -667,7 +681,7 @@ export async function recursiveReaddir(dir: string) {
     return files.flat()
 }
 
-export async function getReactSub({ orgId, projectId }) {
+export async function getReactSub({ orgId }) {
     // if (!projectId) {
     //     throw new Error('projectId missing, cannot get subscription')
     // }
@@ -735,7 +749,7 @@ async function getProject({ projectId, email }) {
     ])
 
     if (!project) {
-        throw new Response(`Project with id ${projectId} not found`, {
+        throw new Response(`Project with id ${projectId} not found. Please ensure you've exported components from Framer first.`, {
             status: 404,
         })
     }
@@ -744,22 +758,19 @@ async function getProject({ projectId, email }) {
     // if (project && project.orgId) {
     //     const orgSubscription = await getReactSub({
     //         orgId: project.orgId,
-    //         projectId,
     //     })
     //     if (!orgSubscription) {
-    //         const orgId = project.orgId
     //         const buyUrl = getBuyReactExportPluginUrl({
-    //             orgId,
-    //             projectId,
+    //             orgId: project.orgId,
     //             email,
+    //             projectId,
     //         })
     //         throw new Response(
-    //             `Framer React Export project has no active subscription, get one here: ${buyUrl} or add new payment method on https://unframer.co`,
+    //             `No active React Export subscription found for this project. To access exported components, please purchase a subscription at: ${buyUrl}\n\nIf you already have a subscription, ensure you're logged in with the correct account or visit https://unframer.co to manage your subscription.`,
     //             { status: reactExportStatusErrors.SUB_NEEDED, statusText: 'Payment Required' },
     //         )
     //     }
     // }
-    //
 
     return {
         project,

@@ -43,6 +43,14 @@ export function framerLoginUrl({
     pluginName,
     projectId,
     projectName,
+    framerUserId,
+}: {
+    key: string
+    code: string
+    pluginName?: string
+    projectId?: string
+    projectName?: string
+    framerUserId?: string
 }) {
     let url: URL
     if (pluginName === PluginNames.github) {
@@ -55,10 +63,13 @@ export function framerLoginUrl({
         url.searchParams.set('projectId', projectId)
     }
     if (pluginName) {
-        url.searchParams.set('pluginName', projectId)
+        url.searchParams.set('pluginName', pluginName)
     }
     if (projectName) {
         url.searchParams.set('projectName', projectName)
+    }
+    if (framerUserId) {
+        url.searchParams.set('framerUserId', framerUserId)
     }
     url.searchParams.set('code', code)
     return url.toString()
@@ -111,12 +122,14 @@ export function afterFramerLogin({
     pluginName,
     projectName,
     code,
+    framerUserId,
 }: {
     key: string
     projectId?: string
     pluginName?: PluginName
     projectName?: string
     code: string
+    framerUserId?: string
 }) {
     const url = new URL('/after-framer-login', env.PUBLIC_URL)
     url.searchParams.set('key', key)
@@ -130,6 +143,9 @@ export function afterFramerLogin({
         url.searchParams.set('projectName', projectName)
     }
     url.searchParams.set('code', code)
+    if (framerUserId) {
+        url.searchParams.set('framerUserId', framerUserId)
+    }
     return url.toString()
 }
 

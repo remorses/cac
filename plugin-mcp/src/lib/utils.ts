@@ -1,7 +1,8 @@
-import { createSpiceflowClient } from 'spiceflow/client'
+import { createSpiceflowClient, SpiceflowClient } from 'spiceflow/client'
 import { framer } from 'framer-plugin'
 import { redirect } from 'react-router'
 import { createClient } from '../generated/api-client'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 export type LoaderReturnType<T extends (...args: any) => any> = Awaited<
     ReturnType<T>
@@ -9,30 +10,23 @@ export type LoaderReturnType<T extends (...args: any) => any> = Awaited<
 
 const PUBLIC_URL = import.meta.env.PUBLIC_URL || 'https://unframer.co'
 
-// Create API client with authentication
-export async function getPluginApiClient() {
-    const { createSpiceflowClient } = await import('spiceflow/client')
-    const client = createSpiceflowClient(PUBLIC_URL, {
-        async onResponse(response) {
-            if (response.status === 401) {
-                console.log('clearing session because api returned 401')
-                await framer.setPluginData(PluginDataKeys.sessionKey, null)
-                throw redirect(withMode(Paths.login))
-            }
-
-        },
-        async onRequest() {
-            const { sessionKey } = await getMcpPluginData()
-            return {
-                headers: {
-                    sessionKey,
-                },
-            }
-        },
-    })
-    return client
-}
-
+export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(PUBLIC_URL, {
+    async onResponse(response) {
+        if (response.status === 401) {
+            console.log('clearing session because api returned 401')
+            await framer.setPluginData(PluginDataKeys.sessionKey, null)
+            throw redirect(withMode(Paths.login))
+        }
+    },
+    async onRequest() {
+        const { sessionKey } = await getMcpPluginData()
+        return {
+            headers: {
+                sessionKey,
+            },
+        }
+    },
+})
 export const noop: any = () => {}
 
 export function isTruthy<T>(val: T | undefined | null | false): val is T {

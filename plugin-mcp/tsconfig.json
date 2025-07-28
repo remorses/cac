@@ -11,7 +11,7 @@
         "types": ["@cloudflare/workers-types", "node", "vite/client"],
 
         "skipLibCheck": true,
-        "lib": ["es2022", "dom"],
+        "lib": ["esnext", "dom"],
         "paths": {
             "plugin-mcp/*": ["./src/*"]
         }

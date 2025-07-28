@@ -276,6 +276,66 @@ describe(
             })
         })
 
+        it('should create a new color style', async () => {
+            const randomNum = Math.floor(Math.random() * 1000)
+            const newStylePath = `/Test-Color-${randomNum}`
+            
+            // Create a new color style
+            const result = await callTool({
+                name: 'createColorStyle',
+                args: {
+                    stylePath: newStylePath,
+                    properties: {
+                        name: `Test Color ${randomNum}`,
+                        light: `rgb(${randomNum % 255}, 100, 200)`,
+                        dark: `rgb(${randomNum % 255}, 50, 100)`,
+                    }
+                },
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toBeDefined()
+            
+            // Check if creation was successful
+            if (typeof content === 'object' && content.message) {
+                expect(content.message).toContain('Successfully created color style')
+                expect(content.style.path).toBe(newStylePath)
+                expect(content.style.name).toBe(`Test Color ${randomNum}`)
+                expect(content.style.light).toBe(`rgb(${randomNum % 255}, 100, 200)`)
+                expect(content.style.dark).toBe(`rgb(${randomNum % 255}, 50, 100)`)
+            }
+
+            // Verify the style exists by getting all color styles
+            const verifyResult = await callTool({
+                name: 'getProjectColorStyles',
+                args: undefined,
+            })
+
+            const colorStyles = Array.isArray(verifyResult.content) && verifyResult.content[0]?.text
+                ? JSON.parse(verifyResult.content[0].text)
+                : verifyResult.content
+
+            const createdStyle = colorStyles.find(s => s.path === newStylePath)
+            expect(createdStyle).toBeDefined()
+            expect(createdStyle.light).toBe(`rgb(${randomNum % 255}, 100, 200)`)
+            expect(createdStyle.dark).toBe(`rgb(${randomNum % 255}, 50, 100)`)
+
+            // Test creating duplicate should fail
+            const duplicateResult = await callTool({
+                name: 'createColorStyle',
+                args: {
+                    stylePath: newStylePath,
+                    properties: {
+                        name: `Duplicate Test`,
+                        light: `rgb(255, 0, 0)`,
+                    }
+                },
+            })
+
+            const duplicateContent = getTextContent(duplicateResult.content)
+            expect(duplicateContent).toContain('already exists')
+        })
+
         it('should search fonts', async () => {
             const result = await callTool({
                 name: 'searchFonts',

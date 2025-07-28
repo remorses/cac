@@ -344,6 +344,7 @@ model FramerLoginSession {
   usedByUserId String   @db.Uuid
   orgId        String
   data         Json     @default("{}")
+  framerUserId String?
   projectId    String?
   projectName  String?
   org          Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)

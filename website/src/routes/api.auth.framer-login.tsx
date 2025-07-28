@@ -12,6 +12,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const pluginName: PluginName =
         url.searchParams.get('pluginName') || ('' as any)
     const projectName = url.searchParams.get('projectName') || ''
+    const framerUserId = url.searchParams.get('framerUserId') || ''
     const { supabase, headers } = getSupabaseWithHeaders({
         request,
     })
@@ -30,6 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                     projectId,
                     projectName,
                     pluginName,
+                    framerUserId,
                 }),
             }),
         },

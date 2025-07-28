@@ -9,6 +9,11 @@
 
 ## Todos
 
+- mcp
+- when
+-
+
+
 - need to add ways to use these features via xml:
     - apply color styles instead of simple color strings
         - text color

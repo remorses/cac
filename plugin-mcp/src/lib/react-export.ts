@@ -12,6 +12,7 @@ import {
     getInstanceComponentId,
     replaceEnumIdsForControls,
 } from './framer'
+import { isTruthy } from './utils'
 
 // Type definitions
 export interface ReactExportComponentInstance {
@@ -121,9 +122,6 @@ async function getParentNodesWithOrdering(node: any) {
     return result
 }
 
-function isTruthy<T>(val: T | undefined | null | false): val is T {
-    return Boolean(val)
-}
 
 function deduplicateByKey<T>(
     items: T[],

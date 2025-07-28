@@ -2,6 +2,7 @@ import { Button } from "@heroui/react"
 import { LoaderFunctionArgs } from 'react-router';
 import { Form, useActionData, useNavigation, useSearchParams } from 'react-router';
 import { db } from 'db/kysely'
+import { prisma } from 'db'
 import { safeJsonParse } from 'website/src/lib/utils'
 import { getSupabaseSession } from '../lib/supabase.server'
 import { PluginName } from 'db'
@@ -99,12 +100,14 @@ async function confirmLogin({
     projectId,
     requestData,
     userId,
+    framerUserId,
 }: {
     key: string
     projectName: string
     projectId: string
     requestData: any
     userId: string
+    framerUserId: string
 }) {
     if (!key) {
         throw new Error('No key provided')
@@ -121,9 +124,9 @@ async function confirmLogin({
         .execute()
 
     const [framerRequest, authUser] = await Promise.all([
-        db
-            .insertInto('FramerLoginSession')
-            .values({
+        prisma.framerLoginSession.upsert({
+            where: { key },
+            create: {
                 key,
                 createdAt: new Date(),
                 usedByUserId: userId,
@@ -131,11 +134,10 @@ async function confirmLogin({
                 projectId,
                 projectName,
                 orgId,
-            })
-            .onConflict((oc) => {
-                return oc.columns(['key']).doNothing()
-            })
-            .execute(),
+                framerUserId,
+            },
+            update: {},
+        }),
         db
             .selectFrom('auth.users')
             .where('id', '=', userId)
@@ -165,6 +167,7 @@ export async function action({ request }: LoaderFunctionArgs) {
     const key = url.searchParams.get('key') || ''
     const projectName = url.searchParams.get('projectName') || ''
     const projectId = url.searchParams.get('projectId') || ''
+    const framerUserId = url.searchParams.get('framerUserId') || ''
     let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
 
     return await confirmLogin({
@@ -173,6 +176,7 @@ export async function action({ request }: LoaderFunctionArgs) {
         projectId,
         requestData,
         userId,
+        framerUserId,
     })
 }
 
