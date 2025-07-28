@@ -12,8 +12,8 @@ export const mcpTools = {
         input: z.object({}),
         output: z.any(),
     },
-    getSelectionXml: {
-        description: 'Gets the currently selected node IDs',
+    getSelectedNodesXml: {
+        description: 'Gets the currently selected nodes as xml',
         input: z.object({}),
         output: z.any(),
     },
@@ -30,6 +30,16 @@ export const mcpTools = {
         input: z.object({
             nodeId: NodeId,
         }),
+        output: z.any(),
+    },
+    getProjectColorStyles: {
+        description:
+            'Gets all project-level color styles, grouped by their style role, if available.',
+        input: z.object({}),
+    },
+    getProjectTextStyles: {
+        description: 'Gets all project-level text styles, if available.',
+        input: z.object({}),
         output: z.any(),
     },
     updateXmlForNode: {
