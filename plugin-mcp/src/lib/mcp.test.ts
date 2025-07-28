@@ -31,7 +31,7 @@ describe(
             const { tools } = await client.listTools()
 
             expect(Array.isArray(tools)).toBe(true)
-            await expect(tools).toMatchFileSnapshot(`snapshots/tools.json`)
+            await expect(tools).toMatchFileSnapshot(`snapshots/tools.jsonc`)
             expect(tools.length).toBeGreaterThan(0)
         })
         it('should get project XML', async () => {
@@ -104,6 +104,36 @@ describe(
             const verifyXml = getTextContent(verifyResult.content)
             expect(verifyXml).toBeDefined()
             expect(verifyXml).toContain(`Updated text ${randomNum}`)
+        })
+        
+        it('should get project color styles', async () => {
+            const result = await callTool({
+                name: 'getProjectColorStyles',
+                args: undefined,
+            })
+            
+            expect(result.content).toBeDefined()
+            const content = Array.isArray(result.content) && result.content[0]?.text 
+                ? JSON.parse(result.content[0].text)
+                : result.content
+            await expect(content).toMatchFileSnapshot(
+                `snapshots/color-styles.jsonc`,
+            )
+        })
+        
+        it('should get project text styles', async () => {
+            const result = await callTool({
+                name: 'getProjectTextStyles',
+                args: undefined,
+            })
+            
+            expect(result.content).toBeDefined()
+            const content = Array.isArray(result.content) && result.content[0]?.text 
+                ? JSON.parse(result.content[0].text)
+                : result.content
+            await expect(content).toMatchFileSnapshot(
+                `snapshots/text-styles.jsonc`,
+            )
         })
     },
     1000 * 20,

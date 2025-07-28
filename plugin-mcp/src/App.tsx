@@ -153,6 +153,35 @@ const cleanup = await websocketClientHandling({
                     ? `${resultMessage}\n\nUpdated XML:\n${updatedXml}`
                     : resultMessage
             }
+            case 'zoomIntoView': {
+                const { nodeId } = input
+                const node = await framer.getNode(nodeId)
+                if (!node) {
+                    return `Node with ID ${nodeId} not found.`
+                }
+                await framer.zoomIntoView(nodeId)
+                return `Zoomed into view for node ${nodeId}`
+            }
+            case 'getProjectColorStyles': {
+                const colorStyles = await framer.getColorStyles()
+                
+                // Return color styles with available properties
+                return colorStyles.map(style => ({
+                    name: style.name,
+                    path: style.path,
+                }))
+            }
+            case 'getProjectTextStyles': {
+                const textStyles = await framer.getTextStyles()
+                
+                return textStyles.map(style => ({
+                    name: style.name,
+                    path: style.path,
+                    fontSize: style.fontSize,
+                    lineHeight: style.lineHeight,
+                    letterSpacing: style.letterSpacing,
+                }))
+            }
             default:
                 throw new Error(`Unknown tool type: ${type}`)
         }

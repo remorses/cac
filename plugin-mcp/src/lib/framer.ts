@@ -30,6 +30,7 @@ import type { ControlDescription, PropertyControls } from 'unframer/src/index'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
 import { FramerLayersTree } from './types'
 import { bfsFramerLayersTree, cleanupTreeFromEmptyNodes } from './tree-utils'
+import { Sema } from 'sema4'
 
 let cachedPagePaths: string[] = []
 
@@ -343,6 +344,7 @@ async function push({
 }) {
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
     let currentLevel = tree
+    let currentParent: AnyNode | null = null
 
     for (let i = 0; i < parents.length; i++) {
         const parent = parents[i]
@@ -358,12 +360,28 @@ async function push({
                 children: [],
             }
             currentLevel.push(existingNode)
+            
+            // Sort siblings based on parent's children order if we have a parent
+            if (currentParent) {
+                const parentChildren = await currentParent.getChildren()
+                const childIds = parentChildren.map(child => child.id)
+                currentLevel.sort((a, b) => {
+                    const aIndex = childIds.indexOf(a.nodeId || '')
+                    const bIndex = childIds.indexOf(b.nodeId || '')
+                    // If not found in parent's children, maintain current order
+                    if (aIndex === -1 && bIndex === -1) return 0
+                    if (aIndex === -1) return 1
+                    if (bIndex === -1) return -1
+                    return aIndex - bIndex
+                })
+            }
         }
 
         if (!existingNode.children) {
             existingNode.children = []
         }
 
+        currentParent = parent
         currentLevel = existingNode.children
     }
 
@@ -378,6 +396,25 @@ async function push({
         attrControlsComments,
         children: [],
     })
+    
+    // Sort the final level based on the last parent's children order
+    if (currentParent || parents.length === 0) {
+        const parentNode = currentParent || (parents.length === 0 && node.getParent ? await node.getParent() : null)
+        if (parentNode) {
+            const parentChildren = await parentNode.getChildren()
+            const childIds = parentChildren.map(child => child.id)
+            currentLevel.sort((a, b) => {
+                const aIndex = childIds.indexOf(a.nodeId || '')
+                const bIndex = childIds.indexOf(b.nodeId || '')
+                // If not found in parent's children, maintain current order
+                if (aIndex === -1 && bIndex === -1) return 0
+                if (aIndex === -1) return 1
+                if (bIndex === -1) return -1
+                return aIndex - bIndex
+            })
+        }
+    }
+    
     return tree
 }
 
@@ -392,6 +429,9 @@ export async function getFramerTree({
     console.time(timeId)
     let tree = [] as FramerLayersTree
 
+    // Create semaphore with concurrency limit of 6
+    const semaphore = new Sema(6)
+    
     let componentInstanceChildrenSeen = new Set<string>()
     async function handleNode(node: AnyNode) {
         if (isTextNode(node)) {
@@ -430,23 +470,39 @@ export async function getFramerTree({
         }
     }
 
+    // Collect all nodes to process
+    const nodesToProcess: Array<{ node: AnyNode; fromRecursion?: boolean }> = []
+    
     for (let rootNode of rootNodes) {
         if (!rootNode) {
             continue
         }
 
         for await (let node of rootNode.walk()) {
-            await handleNode(node)
+            nodesToProcess.push({ node })
             if (recursive) {
                 for await (let child of recurseIntoComponent(
                     node,
                     componentInstanceChildrenSeen,
                 )) {
-                    await handleNode(child)
+                    nodesToProcess.push({ node: child, fromRecursion: true })
                 }
             }
         }
     }
+
+    // Process nodes concurrently with semaphore limiting concurrency
+    const processingPromises = nodesToProcess.map(async ({ node }) => {
+        await semaphore.acquire()
+        try {
+            await handleNode(node)
+        } finally {
+            semaphore.release()
+        }
+    })
+
+    // Wait for all nodes to be processed
+    await Promise.all(processingPromises)
 
     tree = cleanupTreeFromEmptyNodes(tree)
     console.timeEnd(timeId)
