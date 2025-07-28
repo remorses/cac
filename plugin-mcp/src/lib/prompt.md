@@ -132,23 +132,94 @@ Example:
 
 ### Component Instances
 
-Component instances have additional attributes for their props:
+Component instances are references to reusable components. They have a special `componentId` attribute that links to the component definition:
 
 ```xml
 <Button
     nodeId="comp123"
-    componentId="xyz789"
+    componentId="xyz789"    <!-- ID of the component this instance uses -->
     
     <!-- Standard node attributes -->
     width="200px"
     height="48px"
     
-    <!-- Component-specific props -->
+    <!-- Component-specific control attributes (customizable per instance) -->
     variant="primary"
     label="Click me"
     isDisabled="false"
 />
 ```
+
+#### Important: Updating Component Definitions
+
+Component instances can have control attributes that are customizable per instance. However, to update the component definition itself (which affects ALL instances):
+
+1. **Get the component's XML** using the `componentId`:
+   ```javascript
+   getNodeXml({ nodeId: "xyz789" })  // Use the componentId
+   ```
+
+2. **Update the component definition**:
+   ```javascript
+   updateXmlForNode({
+     nodeId: "xyz789",  // The componentId
+     xml: `<Component nodeId="xyz789">
+       <!-- Your updates to the component structure -->
+     </Component>`
+   })
+   ```
+
+3. **All instances will reflect the changes** - When you update a component definition, every instance of that component throughout the project will automatically inherit the structural changes.
+
+**Example workflow**:
+```javascript
+// 1. Find a component instance
+getSelectedNodesXml()
+// Returns: <Button nodeId="instance123" componentId="xyz789" label="Click me" />
+
+// 2. Get the component definition
+getNodeXml({ nodeId: "xyz789" })
+// Returns the full component structure
+
+// 3. Update the component definition
+updateXmlForNode({
+  nodeId: "xyz789",
+  xml: `<Frame nodeId="xyz789">
+    <Text nodeId="abc" inlineTextStyle="/Body md">Updated component structure</Text>
+  </Frame>`
+})
+// Now ALL Button instances will show the new structure
+```
+
+## Fonts
+
+### Search for Fonts
+
+Framer provides access to over 8000 fonts. Use the search tool to find specific fonts:
+
+```javascript
+// Search for fonts by selector substring
+searchFonts({
+  query: "Inter"  // Searches in font selector
+})
+// Returns: {
+//   message: "Found 12 fonts matching 'Inter'. Showing first 20.",
+//   results: [{
+//     family: "Inter",
+//     selector: "GF;Inter-400",
+//     weight: 400,
+//     style: "normal"
+//   }, ...],
+//   totalMatches: 12
+// }
+
+// More specific searches
+searchFonts({ query: "Inter-600" })     // Find specific weight
+searchFonts({ query: "italic" })        // Find italic variants
+searchFonts({ query: "Roboto-bold" })   // Find bold Roboto
+```
+
+**Note**: The search is case-insensitive and matches substrings in the font selector. Use specific terms to narrow results.
 
 ## Project Styles
 
@@ -298,8 +369,14 @@ updateTextStyle({
 <!-- Using project styles -->
 <Text inlineTextStyle="/Body lg">Content</Text>
 
-<!-- Custom font -->
+<!-- Custom font (use searchFonts to find selector) -->
 <Text font="GF;Inter-600" fontSize="18px" lineHeight="1.5">Custom styled text</Text>
+
+<!-- Font selector format examples -->
+<Text font="GF;Inter-400">Regular Inter</Text>
+<Text font="GF;Inter-600">Semi-bold Inter</Text>
+<Text font="GF;Inter-400-italic">Italic Inter</Text>
+<Text font="GF;Roboto-700">Bold Roboto</Text>
 ```
 
 Remember: The XML format is forgiving - you only need to include the attributes you want to change. The system will preserve all other existing attributes.
