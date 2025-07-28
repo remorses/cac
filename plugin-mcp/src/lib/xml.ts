@@ -199,6 +199,7 @@ export function framerLayersTreeToXml(
     options: {
         shouldAddNodeIdAlways?: boolean
         indent?: string
+        showReplicaChildren?: boolean
     } = {},
 ): string {
     const { shouldAddNodeIdAlways = false, indent = '' } = options

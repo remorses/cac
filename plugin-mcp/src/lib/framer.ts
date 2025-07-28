@@ -468,20 +468,19 @@ export async function getFramerTree({
                 })
             }
         }
-        if (isComponentInstanceNode(node)) {
-            const isVisible = await isNodeVisible(node)
-            if (!isVisible) {
-                console.log('node not visible', node.id)
-                return
-            }
 
-            tree = await push({
-                node,
-                tree: tree,
-                nodeId: node.id,
-                isReplica: node.isReplica,
-            })
+        const isVisible = await isNodeVisible(node)
+        if (!isVisible) {
+            console.log('node not visible', node.id)
+            return
         }
+
+        tree = await push({
+            node,
+            tree: tree,
+            nodeId: node.id,
+            isReplica: node.isReplica,
+        })
     }
 
     // Collect all nodes to process
@@ -709,6 +708,7 @@ async function getNodeAttributesForXml(node: AnyNode) {
 
 Object.assign(globalThis, {
     getNodeAttributesForXml,
+    supportsBackgroundColor,
     getAttributesForSelectedNodes: async () => {
         const selectedNodes = await framer.getSelection()
         if (!selectedNodes || !selectedNodes.length) {
