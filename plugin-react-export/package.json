@@ -7,7 +7,6 @@
         "check": "pnpm tsc --incremental",
         "typecheck": "pnpm tsc --noEmit --incremental",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
-
         "start": "vite preview --port 5173"
     },
     "dependencies": {
@@ -17,7 +16,7 @@
         "@sindresorhus/slugify": "^2.2.1",
         "@supabase/supabase-js": "^2.48.1",
         "@tailwindcss/forms": "^0.5.10",
-        "ai": "^4.3.16",
+        "ai": "^4.3.19",
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "eventsource-parser": "^3.0.0",
