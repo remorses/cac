@@ -5,7 +5,7 @@ import { websocketClientHandling } from './lib/client-websocket'
 import { FramerLayersTree, McpToolNames } from './lib/types'
 import './lib/framer'
 import { useStore } from './lib/store'
-import { CopyIcon, CheckIcon, MaximizeIcon, CircleIcon } from 'lucide-react'
+import { CopyIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CircleIcon } from 'lucide-react'
 import { framerLayersTreeToXml } from './lib/xml'
 import { getFramerTree } from './lib/framer'
 
@@ -130,9 +130,9 @@ export default function App() {
                 </div>
                 <button
                     onClick={toggleExpanded}
-                    className='w-auto bg-transparent hover:bg-framer-tertiary rounded transition-colors'
+                    className='w-auto p-1 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
                 >
-                    <MaximizeIcon className='size-3 text-framer-secondary' />
+                    <ChevronDownIcon className='size-3 text-framer-secondary' />
                 </button>
             </div>
         )
@@ -195,7 +195,7 @@ export default function App() {
                         onClick={toggleExpanded}
                         className='w-auto p-1 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
                     >
-                        <MaximizeIcon className='size-3 rotate-180 text-framer-secondary' />
+                        <ChevronUpIcon className='size-3 text-framer-secondary' />
                     </button>
                 </div>
             </div>
