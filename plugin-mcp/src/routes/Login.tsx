@@ -80,17 +80,16 @@ function LoginComponent() {
     return (
         <div
             style={containerStyle}
-            className='flex flex-col justify-end grow gap-3'
+            className='flex flex-col justify-end gap-3'
         >
-            <div className='flex flex-col min-h-[180px]'>
+            <div className='flex flex-col min-h-[140px]'>
                 <div className='text-center mx-auto my-8 mt-10 grow gap-2 flex flex-col max-w-xs'>
                     <div className='font-semibold text-balance max-w-[300px] self-center text-center'>
-                        Control Framer with AI assistants
+                        Control Framer with MCP
                     </div>
                     <div className='opacity-70 text-center text-balance'></div>
                     <div className='opacity-70 text-center text-balance'>
-                        Login is necessary to track usage and manage
-                        your plugin subscription
+                        login is necessary to prevent abuse and track usage
                     </div>
                 </div>
             </div>
