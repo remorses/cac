@@ -3,6 +3,7 @@ import {
     ComponentNode,
     WebPageNode,
     framer,
+    isComponentNode,
     isFrameNode,
     isWebPageNode,
 } from 'framer-plugin'
@@ -106,6 +107,9 @@ async function getParentNodesWithOrdering(node: any) {
         result.push({ node: parent, ordering })
 
         currentChild = parent
+        // if (isComponentNode(parent) || isComponentNode(parent)) {
+        //   break
+        // }
         const newParent = await parent.getParent()
         if (!newParent) {
             console.log('no parent found, last one was', parent)
@@ -303,7 +307,7 @@ export async function getComponentsWithBreakpoints({
                     }),
                 )
                 const filteredBreakpoints = breakpoints.filter(
-                    (x): x is NonNullable<typeof x> => 
+                    (x): x is NonNullable<typeof x> =>
                         Boolean(x?.breakpointName && x?.width && x?.variantId),
                 )
                 const deduplicatedBreakpoints = deduplicateByKey(

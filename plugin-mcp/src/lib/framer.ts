@@ -25,6 +25,7 @@ import {
     supportsSVG,
     supportsVisible,
     type ImageAsset,
+    isWebPageNode,
 } from 'framer-plugin'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
@@ -38,7 +39,7 @@ let cachedPagePaths: string[] = []
 function sortArrayLike<T>(
     array: T[],
     getItemId: (item: T) => string,
-    referenceIds: string[]
+    referenceIds: string[],
 ): T[] {
     return array.sort((a, b) => {
         const aIndex = referenceIds.indexOf(getItemId(a))
@@ -377,15 +378,15 @@ async function push({
                 children: [],
             }
             currentLevel.push(existingNode)
-            
+
             // Sort siblings based on parent's children order if we have a parent
             if (currentParent) {
                 const parentChildren = await currentParent.getChildren()
-                const childIds = parentChildren.map(child => child.id)
+                const childIds = parentChildren.map((child) => child.id)
                 sortArrayLike(
                     currentLevel,
                     (item) => item.nodeId || '',
-                    childIds
+                    childIds,
                 )
             }
         }
@@ -409,21 +410,21 @@ async function push({
         attrControlsComments,
         children: [],
     })
-    
+
     // Sort the final level based on the last parent's children order
     if (currentParent || parents.length === 0) {
-        const parentNode = currentParent || (parents.length === 0 && node.getParent ? await node.getParent() : null)
+        const parentNode =
+            currentParent ||
+            (parents.length === 0 && node.getParent
+                ? await node.getParent()
+                : null)
         if (parentNode) {
             const parentChildren = await parentNode.getChildren()
-            const childIds = parentChildren.map(child => child.id)
-            sortArrayLike(
-                currentLevel,
-                (item) => item.nodeId || '',
-                childIds
-            )
+            const childIds = parentChildren.map((child) => child.id)
+            sortArrayLike(currentLevel, (item) => item.nodeId || '', childIds)
         }
     }
-    
+
     return tree
 }
 
@@ -440,7 +441,7 @@ export async function getFramerTree({
 
     // Create semaphore with concurrency limit of 6
     const semaphore = new Sema(6)
-    
+
     let componentInstanceChildrenSeen = new Set<string>()
     async function handleNode(node: AnyNode) {
         if (isTextNode(node)) {
@@ -481,7 +482,7 @@ export async function getFramerTree({
 
     // Collect all nodes to process
     const nodesToProcess: Array<{ node: AnyNode; fromRecursion?: boolean }> = []
-    
+
     for (let rootNode of rootNodes) {
         if (!rootNode) {
             continue
@@ -660,8 +661,10 @@ async function getNodeAttributesForXml(node: AnyNode) {
     // Create base comments object
     let attrComments: Record<string, string> = {
         inlineTextStyle: 'project text style path, always starts with /',
-        backgroundImage: 'background image URL, if you pass a new image url, the image will be uploaded to Framer',
-        backgroundColor: 'background color string or project color style path (if starts with /)',
+        backgroundImage:
+            'background image URL, if you pass a new image url, the image will be uploaded to Framer',
+        backgroundColor:
+            'background color string or project color style path (if starts with /)',
     }
 
     // Component instance specific handling
@@ -941,12 +944,14 @@ async function* getParentNodes(node: AnyNode | string | null) {
     }
     let parent = await node.getParent()
     if (!parent) {
-        console.log('no parent found', node.id)
+        if (!isWebPageNode(parent) && !isComponentNode(parent)) {
+            console.log('no parent found', node.id)
+        }
         return
     }
     while (parent) {
         yield parent
-        if (isComponentNode(parent) || isComponentNode(parent)) {
+        if (isWebPageNode(parent) || isComponentNode(parent)) {
             return
         }
         let newParent = await parent.getParent()
