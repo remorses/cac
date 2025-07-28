@@ -7,6 +7,7 @@ import './lib/framer'
 import { useStore } from './lib/store'
 import { CopyIcon, CheckIcon, MaximizeIcon, CircleIcon } from 'lucide-react'
 import { framerLayersTreeToXml } from './lib/xml'
+import { getFramerTree } from './lib/framer'
 
 globalThis.framer = framer
 
@@ -22,6 +23,20 @@ const { websocketId } = useStore.getState()
 const cleanup = await websocketClientHandling({
     async handle({ input, type }) {
         switch (type) {
+            case 'getNodeXml': {
+                const node = await framer.getNode(input.nodeId)
+                if (!node) {
+                    return `Node with ID ${input.nodeId} not found.`
+                }
+                const tree = await getFramerTree({
+                    rootNodes: [node],
+                    recursive: false,
+                })
+                const xml = framerLayersTreeToXml(tree, {
+                    shouldAddNodeIdAlways: true,
+                })
+                return `Node xml:\n` + xml
+            }
             case 'getProjectXml': {
                 const pages = await framer.getNodesWithType('WebPageNode')
                 const components =
@@ -61,7 +76,6 @@ const cleanup = await websocketClientHandling({
                 ]
                 const xml = framerLayersTreeToXml(tree, {
                     shouldAddNodeIdAlways: true,
-                    indent: '  ',
                 })
                 return `Project structure:\n` + xml
             }

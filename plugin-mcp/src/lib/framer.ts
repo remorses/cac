@@ -594,34 +594,9 @@ async function getNodeAttributesForXml(node: AnyNode) {
 
     // Create base comments object
     let attrComments: Record<string, string> = {
-        // Common attributes
-        opacity: 'opacity value between 0 and 1',
-        visible: 'whether the node is visible',
-        locked: 'whether the node is locked',
-        position: 'position type',
-        width: 'width in pixels',
-        height: 'height in pixels',
-        rotation: 'rotation in degrees',
-        top: 'top position constraint',
-        right: 'right position constraint',
-        bottom: 'bottom position constraint',
-        left: 'left position constraint',
-        centerX: 'horizontal center constraint',
-        centerY: 'vertical center constraint',
-        minWidth: 'minimum width constraint',
-        maxWidth: 'maximum width constraint',
-        minHeight: 'minimum height constraint',
-        maxHeight: 'maximum height constraint',
-        aspectRatio: 'aspect ratio constraint',
-        link: 'link URL',
-        linkOpenInNewTab: 'whether link opens in new tab',
-        backgroundColor: 'background color or color style path',
-        borderRadius: 'border radius in pixels',
-        imageRendering: 'image rendering mode',
-        backgroundImage: 'background image URL',
-        font: 'font selector',
-        inlineTextStyle: 'text style path',
-        svg: 'SVG content',
+        inlineTextStyle: 'project text style path, always starts with /',
+        backgroundImage: 'background image URL, if you pass a new image url, the image will be uploaded to Framer',
+        backgroundColor: 'background color string or project color style path (if starts with /)',
     }
 
     // Component instance specific handling
@@ -636,9 +611,8 @@ async function getNodeAttributesForXml(node: AnyNode) {
         if (!node.insertURL) {
             console.log(`no node.insertURL for component instance ${node.name}`)
         }
-        const { comments: controlComments } = await getComponentPropertyControls(
-            node.insertURL || undefined,
-        )
+        const { comments: controlComments } =
+            await getComponentPropertyControls(node.insertURL || undefined)
 
         // Merge control comments into the main comments object
         if (controlComments) {
