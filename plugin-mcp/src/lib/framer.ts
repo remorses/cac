@@ -521,13 +521,13 @@ export async function getFramerTree({
 
             // Skip children if this is a root replica node
             if (isRoot && isRootReplica) {
-                console.log(`Skipping children of root replica node ${node.id} (${node.name})`)
+                console.log(`Skipping children of root replica node ${node.id} (${'name' in node ? node.name : 'unknown'})`)
                 return
             }
 
             // Also skip children if this node itself is a replica (not just root replicas)
             if (!isRoot && node.isReplica) {
-                console.log(`Skipping children of replica node ${node.id} (${node.name})`)
+                console.log(`Skipping children of replica node ${node.id} (${'name' in node ? node.name : 'unknown'})`)
                 return
             }
 
