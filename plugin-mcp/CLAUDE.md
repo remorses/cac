@@ -9,8 +9,6 @@ This folder contains both the Framer plugin client code and the Cloudflare Worke
 
 The most important code is in `src/App.tsx` in the `websocketClientHandling` `handle` callback. this is where the actual MCP implementation is done.
 
-Also the tools schema is defined in `src/lib/mcp-tools.ts`. This is where you should add the schema when adding or updating MCP tools.
-
 To understand framer-plugin package api read `plugin-mcp/node_modules/framer-plugin/dist/index.d.ts`
 
 After making MCP API changes always update `src/prompt.md` with the new API. try to keep it short.

@@ -13,7 +13,7 @@ import {
 import { McpAgent } from 'agents/mcp'
 import { toJSONSchema } from 'zod'
 import { mcpTools } from './lib/types'
-import { WebsocketRpc, createWebsocketHandling } from './lib/websocket-server'
+import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(
