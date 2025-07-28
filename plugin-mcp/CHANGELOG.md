@@ -1,5 +1,49 @@
 # Changelog
 
+## 2025-01-28 20:40
+
+- Optimized `updateTextStyle` and `createTextStyle` to call `getColorStyles` only once
+- Added conditional check to load color styles only when color style paths are used
+- Improved performance by avoiding redundant API calls
+
+## 2025-01-28 20:30
+
+- Extracted color style properties into reusable `colorStylePropertiesSchema`
+- Added `createColorStyle` MCP tool to create new color styles with name, light, and dark properties
+- Both create and update color style tools now use the same schema
+- Validates that color style paths don't already exist before creation
+
+## 2025-01-28 20:20
+
+- Extracted text style properties into reusable `textStylePropertiesSchema`
+- Added `createTextStyle` MCP tool to create new text styles with full property support
+- Both create and update text style tools now handle color style path resolution
+- Validates that text style paths don't already exist before creation
+
+## 2025-01-28 20:10
+
+- Enhanced `updateTextStyle` to handle color style references for color and decorationColor fields
+- When color values start with `/`, they are now resolved to actual ColorStyle objects
+- Throws error if referenced color style path is not found
+
+## 2025-01-28 20:00
+
+- Updated `exportReactComponents` to use `isComponentNode` helper for proper component validation
+
+## 2025-01-28 19:50
+
+- Extended `updateTextStyle` MCP tool schema to support all TextStyleData fields
+- Added support for color, font variants (bold, italic, boldItalic), and decoration properties
+- Added support for decoration styling (color, thickness, style, skip ink, offset)
+- Added name and tag fields to both updateTextStyle and updateColorStyle tools
+
+## 2025-01-28 19:00
+
+- Added `exportReactComponents` MCP tool to export Framer components as React code
+- Validates that all provided node IDs are component nodes before exporting
+- Integrates with existing React export plugin API
+- Returns export URL and list of exported components
+
 ## 2025-01-28 18:30
 
 - Added `deleteNode` MCP tool to permanently delete nodes from Framer projects

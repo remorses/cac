@@ -1,4 +1,5 @@
-import { framer, isTextNode } from 'framer-plugin'
+import { framer, isTextNode, isComponentNode, TextStyle } from 'framer-plugin'
+import dedent from 'string-dedent'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/plugin-websocket'
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react'
 import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
 import { getFramerTree, applyAttributes } from './lib/framer'
+import { processReactExportData } from './lib/react-export'
 import {
     createBrowserRouter,
     RouterProvider,
@@ -29,8 +31,8 @@ import {
     PluginDataKeys,
     Paths,
     withMode,
-    getPluginApiClient,
     LoaderReturnType,
+    pluginApiClient,
 } from './lib/utils'
 
 globalThis.framer = framer
@@ -275,6 +277,52 @@ async function websocketHandler({
                 },
             }
         }
+        case 'createColorStyle': {
+            const { stylePath, properties } = input
+
+            if (!stylePath.startsWith('/')) {
+                return `Color style path must start with /. Got: ${stylePath}`
+            }
+
+            // Check if style already exists
+            const colorStyles = await framer.getColorStyles()
+            const existingStyle = colorStyles.find(
+                (style) => style.path === stylePath,
+            )
+
+            if (existingStyle) {
+                return `Color style with path ${stylePath} already exists.`
+            }
+
+            // Prepare the attributes with proper types
+            type ColorStyleAttributes = Parameters<
+                typeof framer.createColorStyle
+            >[0]
+            const attributes: ColorStyleAttributes = {
+                ...properties,
+                path: stylePath,
+            }
+
+            try {
+                const result = await framer.createColorStyle(attributes)
+
+                if (!result) {
+                    return `Failed to create color style at ${stylePath}.`
+                }
+
+                return {
+                    message: `Successfully created color style: ${result.name}`,
+                    style: {
+                        path: result.path,
+                        name: result.name,
+                        light: result.light,
+                        dark: result.dark,
+                    },
+                }
+            } catch (error) {
+                return `Failed to create color style: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
         case 'updateTextStyle': {
             const { stylePath, updates } = input
 
@@ -292,35 +340,49 @@ async function websocketHandler({
                 return `Text style with path ${stylePath} not found.`
             }
 
-            // Prepare the attributes with proper types
-            const attributes: any = {}
+            // Get color styles once if needed
+            const needsColorStyles = 
+                (typeof updates.color === 'string' && updates.color.startsWith('/')) ||
+                (typeof updates.decorationColor === 'string' && updates.decorationColor.startsWith('/'))
+            
+            const colorStyles = needsColorStyles ? await framer.getColorStyles() : []
 
-            if (updates.name !== undefined) {
-                attributes.name = updates.name
+            // Prepare the attributes with proper types
+            type TextStyleAttributes = Parameters<TextStyle['setAttributes']>[0]
+            const attributes: TextStyleAttributes = { ...updates }
+
+            // Handle color style paths for color field
+            if (
+                typeof updates.color === 'string' &&
+                updates.color.startsWith('/')
+            ) {
+                const colorStyle = colorStyles.find(
+                    (style) => style.path === updates.color,
+                )
+
+                if (!colorStyle) {
+                    return `Color style with path ${updates.color} not found.`
+                }
+
+                // Use the color style object instead of the path string
+                attributes.color = colorStyle as any
             }
-            if (updates.fontSize !== undefined) {
-                attributes.fontSize = updates.fontSize as any
-            }
-            if (updates.lineHeight !== undefined) {
-                attributes.lineHeight = updates.lineHeight as any
-            }
-            if (updates.letterSpacing !== undefined) {
-                attributes.letterSpacing = updates.letterSpacing as any
-            }
-            if (updates.paragraphSpacing !== undefined) {
-                attributes.paragraphSpacing = updates.paragraphSpacing
-            }
-            if (updates.transform !== undefined) {
-                attributes.transform = updates.transform
-            }
-            if (updates.alignment !== undefined) {
-                attributes.alignment = updates.alignment
-            }
-            if (updates.decoration !== undefined) {
-                attributes.decoration = updates.decoration
-            }
-            if (updates.balance !== undefined) {
-                attributes.balance = updates.balance
+
+            // Handle color style paths for decorationColor field
+            if (
+                typeof updates.decorationColor === 'string' &&
+                updates.decorationColor.startsWith('/')
+            ) {
+                const colorStyle = colorStyles.find(
+                    (style) => style.path === updates.decorationColor,
+                )
+
+                if (!colorStyle) {
+                    return `Color style with path ${updates.decorationColor} not found.`
+                }
+
+                // Use the color style object instead of the path string
+                attributes.decorationColor = colorStyle as any
             }
 
             const result = await textStyle.setAttributes(attributes)
@@ -344,6 +406,100 @@ async function websocketHandler({
                     balance: result.balance,
                     tag: result.tag,
                 },
+            }
+        }
+        case 'createTextStyle': {
+            const { stylePath, properties } = input
+
+            if (!stylePath.startsWith('/')) {
+                return `Text style path must start with /. Got: ${stylePath}`
+            }
+
+            // Check if style already exists
+            const textStyles = await framer.getTextStyles()
+            const existingStyle = textStyles.find(
+                (style) => style.path === stylePath,
+            )
+
+            if (existingStyle) {
+                return `Text style with path ${stylePath} already exists.`
+            }
+
+            // Get color styles once if needed
+            const needsColorStyles = 
+                (typeof properties.color === 'string' && properties.color.startsWith('/')) ||
+                (typeof properties.decorationColor === 'string' && properties.decorationColor.startsWith('/'))
+            
+            const colorStyles = needsColorStyles ? await framer.getColorStyles() : []
+
+            // Prepare the attributes with proper types
+            type TextStyleAttributes = Parameters<
+                typeof framer.createTextStyle
+            >[0]
+            const attributes: TextStyleAttributes = {
+                ...properties,
+                path: stylePath,
+            }
+
+            // Handle color style paths for color field
+            if (
+                typeof properties.color === 'string' &&
+                properties.color.startsWith('/')
+            ) {
+                const colorStyle = colorStyles.find(
+                    (style) => style.path === properties.color,
+                )
+
+                if (!colorStyle) {
+                    return `Color style with path ${properties.color} not found.`
+                }
+
+                // Use the color style object instead of the path string
+                attributes.color = colorStyle as any
+            }
+
+            // Handle color style paths for decorationColor field
+            if (
+                typeof properties.decorationColor === 'string' &&
+                properties.decorationColor.startsWith('/')
+            ) {
+                const colorStyle = colorStyles.find(
+                    (style) => style.path === properties.decorationColor,
+                )
+
+                if (!colorStyle) {
+                    return `Color style with path ${properties.decorationColor} not found.`
+                }
+
+                // Use the color style object instead of the path string
+                attributes.decorationColor = colorStyle as any
+            }
+
+            try {
+                const result = await framer.createTextStyle(attributes)
+
+                if (!result) {
+                    return `Failed to create text style at ${stylePath}.`
+                }
+
+                return {
+                    message: `Successfully created text style: ${result.name}`,
+                    style: {
+                        path: result.path,
+                        name: result.name,
+                        fontSize: result.fontSize,
+                        lineHeight: result.lineHeight,
+                        letterSpacing: result.letterSpacing,
+                        paragraphSpacing: result.paragraphSpacing,
+                        transform: result.transform,
+                        alignment: result.alignment,
+                        decoration: result.decoration,
+                        balance: result.balance,
+                        tag: result.tag,
+                    },
+                }
+            } catch (error) {
+                return `Failed to create text style: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
         case 'searchFonts': {
@@ -422,6 +578,72 @@ async function websocketHandler({
                 return `Failed to duplicate node ${nodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
+        case 'exportReactComponents': {
+            const { nodeIds } = input
+
+            // Validate that all nodes exist and are components
+            const componentIds = new Set<string>()
+            const invalidNodes: string[] = []
+
+            for (const nodeId of nodeIds) {
+                const node = await framer.getNode(nodeId)
+                if (!node) {
+                    invalidNodes.push(`${nodeId} (not found)`)
+                    continue
+                }
+
+                // Check if it's a component node
+                if (isComponentNode(node)) {
+                    componentIds.add(nodeId)
+                } else {
+                    invalidNodes.push(`${nodeId} (not a component)`)
+                }
+            }
+
+            if (invalidNodes.length > 0) {
+                return `Cannot export the following nodes: ${invalidNodes.join(', ')}. Only component nodes can be exported.`
+            }
+
+            if (componentIds.size === 0) {
+                return `No valid component nodes found to export.`
+            }
+
+            try {
+                // Process the export data
+                const data = await processReactExportData({
+                    selectedComponentIds: componentIds,
+                })
+
+                // Get the API client and submit the export
+
+                const { error, data: responseData } =
+                    await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post(
+                        data,
+                    )
+
+                if (error) {
+                    throw new Error(error.message || 'Export failed')
+                }
+
+                const projectId = responseData.projectId
+
+                return dedent`
+                  Components successfully exported!
+
+                  Now you can run the following command to download the React components into your own codebase
+
+                  \`npx unframer --outDir src/framer ${projectId}\`
+
+                  You can also run \`npx unframer --help\` for more available options.
+
+                  If you install unframer locally in the project you won't need to use npx. Install as a dependency and not a devDependency to use it in production builds.
+
+
+                  `
+            } catch (error) {
+                return `Failed to export components: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
         default:
             throw new Error(`Unknown tool type: ${type}`)
     }
@@ -435,7 +657,16 @@ function MainComponent() {
     const data = useLoaderData() as LoaderReturnType<typeof rootLoader>
     const navigate = useNavigate()
 
-    const mcpServerUrl = `https://mcp.unframer.co/sse?id=${data.userId}`
+    // Get session ID from localStorage
+    const [sessionId, setSessionId] = useState<string | null>(null)
+    useEffect(() => {
+        const storedSessionId = localStorage.getItem('framer-mcp-session-id')
+        setSessionId(storedSessionId)
+    }, [])
+
+    const mcpServerUrl = sessionId
+        ? `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
+        : `https://mcp.unframer.co/sse?id=${data.userId}`
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(mcpServerUrl)
@@ -498,6 +729,13 @@ function MainComponent() {
                         <p className='text-xs text-red-500'>{error}</p>
                     </div>
                 )}
+                {sessionId && (
+                    <div className='p-2 bg-orange-500/10 rounded border border-orange-500/30'>
+                        <p className='text-xs text-orange-600'>
+                            ⚠️ Never share this URL with anyone - it contains your personal session
+                        </p>
+                    </div>
+                )}
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex gap-2'>
@@ -530,6 +768,7 @@ function MainComponent() {
                             PluginDataKeys.sessionKey,
                             null,
                         )
+                        localStorage.removeItem('framer-mcp-session-id')
                         navigate(Paths.login)
                     }}
                     className='!text-xs text-framer-tertiary  transition-colors w-auto bg-transparent'
@@ -553,17 +792,19 @@ async function rootLoader({}: LoaderFunctionArgs) {
     if (!sessionKey) {
         throw redirect(withMode(Paths.login))
     }
+    
+    // Also save to localStorage for access in the component
+    localStorage.setItem('framer-mcp-session-id', sessionKey)
 
     // Get current user info
-    const apiClient = await getPluginApiClient()
-    const { data, error } = await (
-        apiClient as any
-    ).api.plugins.currentOrg.post()
+
+    const { data, error } = await pluginApiClient.api.plugins.currentOrg.post()
 
     if (error) {
         console.error('Failed to get current org:', error)
         // Clear session on error
         await framer.setPluginData(PluginDataKeys.sessionKey, null)
+        localStorage.removeItem('framer-mcp-session-id')
         throw redirect(withMode(Paths.login))
     }
 

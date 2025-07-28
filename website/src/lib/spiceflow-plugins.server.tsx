@@ -342,6 +342,47 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             description: 'Health check',
         },
     )
+    .post(
+        '/validateSession',
+        async ({ request }) => {
+            const { sessionId, framerUserId } = await request.json()
+            
+            if (!sessionId || !framerUserId) {
+                return { valid: false, error: 'Missing required parameters' }
+            }
+            
+            const session = await prisma.framerLoginSession.findUnique({
+                where: { key: sessionId },
+            })
+            
+            if (!session) {
+                return { valid: false, error: 'Session not found' }
+            }
+            
+            if (session.framerUserId !== framerUserId) {
+                return { valid: false, error: 'Session belongs to different user' }
+            }
+            
+            if (!session.usedByUserId) {
+                return { valid: false, error: 'Session not yet authenticated' }
+            }
+            
+            return { valid: true }
+        },
+        {
+            body: z.object({
+                sessionId: z.string(),
+                framerUserId: z.string(),
+            }),
+            response: {
+                200: z.object({
+                    valid: z.boolean(),
+                    error: z.string().optional(),
+                }),
+            },
+            description: 'Validates a session belongs to the given Framer user',
+        },
+    )
 
 
 const unauthorizedResponse = new Response('Unauthorized', {

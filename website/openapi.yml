@@ -6,12 +6,7 @@ info:
 paths:
   /api/plugins/angledScreen/generationsForUser:
     get:
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: framerUserId
-          required: true
+      parameters: []
       responses:
         '200':
           description: ''
@@ -41,16 +36,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                framerUserId:
-                  type: string
-                userName:
-                  type: string
-              required:
-                - framerUserId
-              additionalProperties: true
+            schema: {}
   /api/plugins/angledScreen/activate:
     post:
       parameters: []
@@ -69,19 +55,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                framerUserId:
-                  type: string
-                userName:
-                  type: string
-                licenseKey:
-                  type: string
-              required:
-                - framerUserId
-                - licenseKey
-              additionalProperties: true
+            schema: {}
   /api/plugins/currentOrg:
     post:
       responses:
@@ -113,14 +87,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                key:
-                  type: string
-                projectId:
-                  type: string
-              additionalProperties: true
+            schema: {}
   /api/plugins/health:
     get:
       responses:
@@ -128,13 +95,7 @@ paths:
           description: ''
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                required:
-                  - ok
+              schema: {}
         default:
           description: ''
           content:
@@ -162,18 +123,31 @@ paths:
           description: ''
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                required:
-                  - ok
+              schema: {}
         default:
           description: ''
           content:
             '*/*':
               schema: {}
+  /api/plugins/validateSession:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema: {}
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {}
   /api/plugins/openapi:
     get:
       responses:
@@ -205,20 +179,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                stars:
-                  type: integer
-                  minimum: 1
-                  maximum: 5
-                generationId:
-                  type: integer
-                  exclusiveMinimum: 0
-              required:
-                - stars
-                - generationId
-              additionalProperties: true
+            schema: {}
   /api/plugins/rewritePlugin/rephrase:
     post:
       x-fern-streaming:
@@ -239,30 +200,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                description:
-                  anyOf:
-                    - anyOf:
-                        - not: {}
-                        - type: string
-                    - type: 'null'
-                oldText: {}
-                sourceHtml:
-                  type:
-                    - string
-                    - 'null'
-                url:
-                  type: string
-                projectName:
-                  type: string
-                pagePath:
-                  type: string
-              required:
-                - sourceHtml
-                - url
-              additionalProperties: true
+            schema: {}
   /api/plugins/rewritePlugin/discardGeneration:
     post:
       parameters: []
@@ -281,14 +219,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                id:
-                  type: number
-              required:
-                - id
-              additionalProperties: true
+            schema: {}
   /api/plugins/rewritePlugin/getCredits:
     post:
       responses:
@@ -320,14 +251,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                domain:
-                  type: string
-              required:
-                - domain
-              additionalProperties: true
+            schema: {}
   /api/plugins/markdownPlugin/health:
     get:
       responses:
@@ -359,15 +283,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                githubAccountLogin:
-                  type: string
-                  minLength: 1
-              required:
-                - githubAccountLogin
-              additionalProperties: true
+            schema: {}
   /api/plugins/markdownPlugin/syncsThisMonth:
     post:
       parameters: []
@@ -386,22 +302,10 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                projectId:
-                  type: string
-                projectName:
-                  type: string
-              additionalProperties: true
+            schema: {}
   /api/plugins/markdownPlugin/subscriptions:
     get:
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: projectId
-          required: false
+      parameters: []
       responses:
         '200':
           description: ''
@@ -431,23 +335,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                owner:
-                  type: string
-                repo:
-                  type: string
-                basePath:
-                  type: string
-                githubAccountLogin:
-                  type: string
-              required:
-                - owner
-                - repo
-                - basePath
-                - githubAccountLogin
-              additionalProperties: true
+            schema: {}
   /api/plugins/markdownPlugin/syncGithub:
     post:
       parameters: []
@@ -466,38 +354,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                itemIds:
-                  type: array
-                  items:
-                    type: string
-                owner:
-                  type: string
-                repo:
-                  type: string
-                basePath:
-                  type: string
-                githubAccountLogin:
-                  type: string
-                projectId:
-                  type: string
-                projectName:
-                  type: string
-                mapFieldsConfig: {}
-                onlyGetFrontmatter:
-                  type: boolean
-                enablePartialUpdate:
-                  type: boolean
-              required:
-                - owner
-                - repo
-                - basePath
-                - githubAccountLogin
-                - projectId
-                - projectName
-              additionalProperties: true
+            schema: {}
   /api/plugins/markdownPlugin/checkBasePath:
     post:
       parameters: []
@@ -516,23 +373,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                owner:
-                  type: string
-                repo:
-                  type: string
-                basePath:
-                  type: string
-                githubAccountLogin:
-                  type: string
-              required:
-                - owner
-                - repo
-                - basePath
-                - githubAccountLogin
-              additionalProperties: true
+            schema: {}
   /api/plugins/reactExportPlugin/health:
     get:
       responses:
@@ -588,14 +429,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                components:
-                  type: array
-              required:
-                - components
-              additionalProperties: true
+            schema: {}
   /api/plugins/reactExportPlugin/project/{projectId}/subscribe:
     get:
       x-fern-streaming:
@@ -619,19 +453,7 @@ paths:
               schema: {}
   /api/plugins/reactExportPlugin/subscriptions:
     get:
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: projectId
-          required: true
-        - schema:
-            type:
-              - boolean
-              - string
-          in: query
-          name: forSubscriptionUpgrade
-          required: false
+      parameters: []
       responses:
         '200':
           description: ''
@@ -663,19 +485,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                secret:
-                  type: string
-                sendEmail:
-                  type: boolean
-                projectId:
-                  type: string
-              required:
-                - secret
-                - projectId
-              additionalProperties: true
+            schema: {}
   /api/plugins/reactExportPlugin/upsertProject:
     post:
       parameters: []
@@ -694,42 +504,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                components:
-                  type: array
-                breakpoints:
-                  type: array
-                pages:
-                  type: array
-                fullFramerProjectId:
-                  type: string
-                websiteUrl:
-                  type: string
-                locales:
-                  type: array
-                projectId:
-                  type: string
-                projectName:
-                  anyOf:
-                    - anyOf:
-                        - not: {}
-                        - type: string
-                    - type: 'null'
-                colorStyles:
-                  type: array
-                framerUserId:
-                  type: string
-                pageBackgroundColor:
-                  type: string
-                componentInstances:
-                  type: array
-              required:
-                - components
-                - projectId
-                - colorStyles
-              additionalProperties: true
+            schema: {}
   /api/plugins/llm/health:
     get:
       responses:
@@ -761,20 +536,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                stars:
-                  type: integer
-                  minimum: 1
-                  maximum: 5
-                generationId:
-                  type: integer
-                  exclusiveMinimum: 0
-              required:
-                - stars
-                - generationId
-              additionalProperties: true
+            schema: {}
   /api/plugins/llm/publish:
     post:
       parameters: []
@@ -793,18 +555,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                randomId:
-                  type: string
-                callId:
-                  type: string
-                tree: {}
-              required:
-                - randomId
-                - callId
-              additionalProperties: true
+            schema: {}
   /api/plugins/llm/getCredits:
     post:
       responses:
@@ -838,30 +589,10 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                projectId:
-                  type: string
-                projectName:
-                  type: string
-                randomId:
-                  type: string
-                description:
-                  type: string
-                tree: {}
-              required:
-                - randomId
-                - description
-              additionalProperties: true
+            schema: {}
   /api/plugins/llm/subscriptions:
     get:
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: projectId
-          required: true
+      parameters: []
       responses:
         '200':
           description: ''

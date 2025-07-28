@@ -33,9 +33,43 @@ export class MyMCP extends McpAgent<Env> {
     async init() {
         const server = this.server
         const websocketId = this.props?.websocketId as string
-        if (!websocketId)
+        const secret = this.props?.secret as string
+        
+        if (!websocketId) {
             throw new Error('websocketId ?id search param is required')
+        }
+        
+        if (!secret) {
+            throw new Error('secret ?secret search param is required for authentication')
+        }
+        
         console.log('Initializing MyMCP with websocketId:', websocketId)
+        
+        // Validate session
+        try {
+            const response = await fetch('https://unframer.co/api/plugins/validateSession', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionId: secret,
+                    framerUserId: websocketId,
+                }),
+            })
+            
+            const data = await response.json() as { valid: boolean; error?: string }
+            
+            if (!data.valid) {
+                console.error('Session validation failed:', data.error)
+                throw new Error(`Session validation failed: ${data.error}`)
+            }
+            
+            console.log('Session validated successfully')
+        } catch (error) {
+            console.error('Failed to validate session:', error)
+            throw new Error('Failed to validate session')
+        }
 
         let ws: WebSocket | null = null
         let isServerStopped = false
@@ -265,8 +299,10 @@ export default {
         const url = new URL(request.url)
 
         const id = url.searchParams.get('id') as string | undefined
+        const secret = url.searchParams.get('secret') as string | undefined
         ctx.props = {
             websocketId: id,
+            secret,
         }
         if (url.pathname === '/sse' || url.pathname === '/sse/message') {
             const mcp = MyMCP.serveSSE('/sse')
