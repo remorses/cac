@@ -135,12 +135,149 @@ describe(
                 `snapshots/text-styles.jsonc`,
             )
         })
+        
+        it('should update a color style', async () => {
+            // First get color styles to find one to update
+            const colorStylesResult = await callTool({
+                name: 'getProjectColorStyles',
+                args: undefined,
+            })
+            
+            const colorStyles = Array.isArray(colorStylesResult.content) && colorStylesResult.content[0]?.text 
+                ? JSON.parse(colorStylesResult.content[0].text)
+                : colorStylesResult.content
+                
+            expect(colorStyles.length).toBeGreaterThan(0)
+            const firstColorStyle = colorStyles[0]
+            
+            // Update the color style
+            const randomNum = Math.floor(Math.random() * 255)
+            const result = await callTool({
+                name: 'updateColorStyle',
+                args: {
+                    stylePath: firstColorStyle.path,
+                    updates: {
+                        name: `${firstColorStyle.name} - Test ${randomNum}`,
+                        light: `rgb(${randomNum}, 100, 150)`,
+                    }
+                },
+            })
+            
+            const content = getTextContent(result.content)
+            expect(content).toBeDefined()
+            
+            // Check if content is an object or string
+            if (typeof content === 'object' && content.message) {
+                expect(content.message).toContain('Successfully updated color style')
+                expect(content.message).toContain(`Test ${randomNum}`)
+            } else {
+                expect(content).toContain('Successfully updated color style')
+                expect(content).toContain(`Test ${randomNum}`)
+            }
+            
+            // Verify the update by getting color styles again
+            const verifyResult = await callTool({
+                name: 'getProjectColorStyles',
+                args: undefined,
+            })
+            
+            const updatedColorStyles = Array.isArray(verifyResult.content) && verifyResult.content[0]?.text 
+                ? JSON.parse(verifyResult.content[0].text)
+                : verifyResult.content
+            
+            const updatedStyle = updatedColorStyles.find(s => s.path === firstColorStyle.path)
+            expect(updatedStyle).toBeDefined()
+            expect(updatedStyle.name).toContain(`Test ${randomNum}`)
+            expect(updatedStyle.light).toBe(`rgb(${randomNum}, 100, 150)`)
+            
+            // Restore original name
+            await callTool({
+                name: 'updateColorStyle',
+                args: {
+                    stylePath: firstColorStyle.path,
+                    updates: {
+                        name: firstColorStyle.name,
+                        light: firstColorStyle.light,
+                    }
+                },
+            })
+        })
+        
+        it('should update a text style', async () => {
+            // First get text styles to find one to update
+            const textStylesResult = await callTool({
+                name: 'getProjectTextStyles',
+                args: undefined,
+            })
+            
+            const textStyles = Array.isArray(textStylesResult.content) && textStylesResult.content[0]?.text 
+                ? JSON.parse(textStylesResult.content[0].text)
+                : textStylesResult.content
+                
+            expect(textStyles.length).toBeGreaterThan(0)
+            const firstTextStyle = textStyles[0]
+            
+            // Update the text style
+            const randomNum = Math.floor(Math.random() * 100)
+            const result = await callTool({
+                name: 'updateTextStyle',
+                args: {
+                    stylePath: firstTextStyle.path,
+                    updates: {
+                        name: `${firstTextStyle.name} - Test ${randomNum}`,
+                        fontSize: `${randomNum}px`,
+                        alignment: 'center',
+                    }
+                },
+            })
+            
+            const content = getTextContent(result.content)
+            expect(content).toBeDefined()
+            
+            // Check if content is an object or string
+            if (typeof content === 'object' && content.message) {
+                expect(content.message).toContain('Successfully updated text style')
+                expect(content.message).toContain(`Test ${randomNum}`)
+            } else {
+                expect(content).toContain('Successfully updated text style')
+                expect(content).toContain(`Test ${randomNum}`)
+            }
+            
+            // Verify the update by getting text styles again
+            const verifyResult = await callTool({
+                name: 'getProjectTextStyles',
+                args: undefined,
+            })
+            
+            const updatedTextStyles = Array.isArray(verifyResult.content) && verifyResult.content[0]?.text 
+                ? JSON.parse(verifyResult.content[0].text)
+                : verifyResult.content
+            
+            const updatedStyle = updatedTextStyles.find(s => s.path === firstTextStyle.path)
+            expect(updatedStyle).toBeDefined()
+            expect(updatedStyle.name).toContain(`Test ${randomNum}`)
+            expect(updatedStyle.fontSize).toBe(`${randomNum}px`)
+            expect(updatedStyle.alignment).toBe('center')
+            
+            // Restore original values
+            await callTool({
+                name: 'updateTextStyle',
+                args: {
+                    stylePath: firstTextStyle.path,
+                    updates: {
+                        name: firstTextStyle.name,
+                        fontSize: firstTextStyle.fontSize,
+                        alignment: firstTextStyle.alignment,
+                    }
+                },
+            })
+        })
     },
     1000 * 20,
 )
 
-function getTextContent(arr: Array<{ type?: string; text?: string } | any>) {
-    if (!Array.isArray(arr)) return undefined
+function getTextContent(arr: Array<{ type?: string; text?: string } | any> | any) {
+    if (!Array.isArray(arr)) return arr
     for (const item of arr) {
         if (
             item &&

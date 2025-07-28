@@ -51,7 +51,7 @@ const cleanup = await websocketClientHandling({
                 if (!selectedNodes || selectedNodes.length === 0) {
                     return 'No nodes are currently selected.'
                 }
-                
+
                 const tree = await getFramerTree({
                     rootNodes: selectedNodes,
                     recursive: false,
@@ -105,51 +105,51 @@ const cleanup = await websocketClientHandling({
             }
             case 'updateXmlForNode': {
                 const { nodeId, xml } = input
-                
+
                 // Extract nodes from the provided XML
                 const extractedNodes = extractObjectsFromXmlContent(xml)
-                
+
                 const results: string[] = []
                 const updatedNodeIds: string[] = []
-                
+
                 for (const extractedNode of extractedNodes) {
                     const targetNodeId = extractedNode.nodeId || nodeId
                     const node = await framer.getNode(targetNodeId)
-                    
+
                     if (!node) {
                         results.push(`Node with ID ${targetNodeId} not found.`)
                         continue
                     }
-                    
+
                     let wasUpdated = false
-                    
+
                     // Update text if it's a text node and new content is provided
                     if (extractedNode.newContent && isTextNode(node)) {
                         await node.setText(extractedNode.newContent)
                         results.push(`Updated text for node ${targetNodeId}`)
                         wasUpdated = true
                     }
-                    
+
                     // Apply attributes if any
                     if (extractedNode.attributes && Object.keys(extractedNode.attributes).length > 0) {
                         await applyAttributes(node, extractedNode.attributes)
                         results.push(`Updated attributes for node ${targetNodeId}`)
                         wasUpdated = true
                     }
-                    
+
                     if (wasUpdated) {
                         updatedNodeIds.push(targetNodeId)
                     }
                 }
-                
+
                 // Get the updated XML for the primary node
                 const updatedXml = await getNodeXml(nodeId)
-                
-                const resultMessage = results.length > 0 
-                    ? `Successfully updated:\n${results.join('\n')}` 
+
+                const resultMessage = results.length > 0
+                    ? `Successfully updated:\n${results.join('\n')}`
                     : 'No updates were made.'
-                    
-                return updatedXml 
+
+                return updatedXml
                     ? `${resultMessage}\n\nUpdated XML:\n${updatedXml}`
                     : resultMessage
             }
@@ -164,7 +164,7 @@ const cleanup = await websocketClientHandling({
             }
             case 'getProjectColorStyles': {
                 const colorStyles = await framer.getColorStyles()
-                
+
                 // Return color styles with available properties
                 return colorStyles.map(style => ({
                     id: style.id,
@@ -176,7 +176,7 @@ const cleanup = await websocketClientHandling({
             }
             case 'getProjectTextStyles': {
                 const textStyles = await framer.getTextStyles()
-                
+
                 return textStyles.map(style => ({
                     id: style.id,
                     name: style.name,
@@ -193,19 +193,26 @@ const cleanup = await websocketClientHandling({
                 }))
             }
             case 'updateColorStyle': {
-                const { styleId, updates } = input
-                const colorStyle = await framer.getColorStyle(styleId)
-                
+                const { stylePath, updates } = input
+
+                if (!stylePath.startsWith('/')) {
+                    return `Color style path must start with /. Got: ${stylePath}`
+                }
+
+                // Get all color styles and find by path
+                const colorStyles = await framer.getColorStyles()
+                const colorStyle = colorStyles.find(style => style.path === stylePath)
+
                 if (!colorStyle) {
-                    return `Color style with ID ${styleId} not found.`
+                    return `Color style with path ${stylePath} not found.`
                 }
-                
+
                 const result = await colorStyle.setAttributes(updates)
-                
+
                 if (!result) {
-                    return `Failed to update color style ${styleId}.`
+                    return `Failed to update color style ${stylePath}.`
                 }
-                
+
                 return {
                     message: `Successfully updated color style: ${result.name}`,
                     style: {
@@ -218,16 +225,23 @@ const cleanup = await websocketClientHandling({
                 }
             }
             case 'updateTextStyle': {
-                const { styleId, updates } = input
-                const textStyle = await framer.getTextStyle(styleId)
-                
-                if (!textStyle) {
-                    return `Text style with ID ${styleId} not found.`
+                const { stylePath, updates } = input
+
+                if (!stylePath.startsWith('/')) {
+                    return `Text style path must start with /. Got: ${stylePath}`
                 }
-                
+
+                // Get all text styles and find by path
+                const textStyles = await framer.getTextStyles()
+                const textStyle = textStyles.find(style => style.path === stylePath)
+
+                if (!textStyle) {
+                    return `Text style with path ${stylePath} not found.`
+                }
+
                 // Prepare the attributes with proper types
                 const attributes: any = {}
-                
+
                 if (updates.name !== undefined) {
                     attributes.name = updates.name
                 }
@@ -255,13 +269,13 @@ const cleanup = await websocketClientHandling({
                 if (updates.balance !== undefined) {
                     attributes.balance = updates.balance
                 }
-                
+
                 const result = await textStyle.setAttributes(attributes)
-                
+
                 if (!result) {
-                    return `Failed to update text style ${styleId}.`
+                    return `Failed to update text style ${stylePath}.`
                 }
-                
+
                 return {
                     message: `Successfully updated text style: ${result.name}`,
                     style: {

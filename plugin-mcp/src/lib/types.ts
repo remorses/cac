@@ -53,9 +53,9 @@ export const mcpTools = {
     },
     updateColorStyle: {
         description:
-            'Updates a color style by its ID. Can modify the name, light color, and dark color.',
+            'Updates a color style by its path. Can modify the name, light color, and dark color.',
         input: z.object({
-            styleId: NodeId.describe('The ID of the color style to update'),
+            stylePath: z.string().describe('The path of the color style to update. Must start with /'),
             updates: z.object({
                 name: z.string().optional().describe('New name for the color style'),
                 light: z.string().optional().describe('Light theme color in any CSS color format (e.g., "rgb(255, 0, 0)", "#FF0000", "red")'),
@@ -66,9 +66,9 @@ export const mcpTools = {
     },
     updateTextStyle: {
         description:
-            'Updates a text style by its ID. Can modify various typography properties.',
+            'Updates a text style by its path. Can modify various typography properties.',
         input: z.object({
-            styleId: NodeId.describe('The ID of the text style to update'),
+            stylePath: z.string().describe('The path of the text style to update. Must start with /'),
             updates: z.object({
                 name: z.string().optional().describe('New name for the text style'),
                 fontSize: z.string().optional().describe('Font size with units (e.g., "16px", "1.5rem")'),
