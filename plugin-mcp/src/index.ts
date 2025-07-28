@@ -7,7 +7,6 @@ export {
     isNodeZoomable,
     getFramerTree,
     discardFramerChanges,
-    inlineTextStyleAttributes,
     serializeAttributesForXml,
     applyAttributes,
 } from './lib/framer'

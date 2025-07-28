@@ -1,5 +1,7 @@
 when summarizing changes at the end of the message be super short, a few words and in bullet points, use bold text to highlight important keywords. use markdown.
 
+Please ask questions and confirm assumptions before generating complex architecture code.
+
 # package manager: pnpm with workspace
 
 This project uses pnpm workspaces to manage dependencies. Important scripts are in the root package.json or various packages package.json
@@ -38,7 +40,9 @@ instead of adding packages directly in package.json use `pnpm install package` i
 
 - use || over in: avoid 'x' in obj checks. prefer doing `obj?.x || ''` over doing `'x' in obj ? obj.x : ''`. only use the in operator if that field causes problems in typescript checks because typescript thinks the field is missing, as a last resort.
 
-- when creating urls from a path and a base url prefer using `new URL(path, baseUrl).toString()` instead of normal string interpolation. use type safe react-router `href` or spiceflow `this.safePath` (available inside routes) if possible
+- for node built ins imports never import singular names, instead do `import fs from 'node:fs'`, same for path, os, etc.
+
+- NEVER start the development server with pnpm dev yourself. there is not reason to do so, even with &
 
 ```ts
 // BAD. DO NOT DO THIS
@@ -73,6 +77,15 @@ const favicon: string = () => {
 
 - when a package has to import files from another packages in the workspace never add a new tsconfig path, instead add that package as a workspace dependency using `pnpm i "package@workspace:*"`
 
+## react
+
+- never test react code. instead put as much code as possible in react agonistic function or classes and test those if needed.
+
+- hooks, all functions that start with use, MUST ALWAYS be called in the component render scope, never inside other closures in the component or event handlers. Follow react rules of hooks.
+
+
+
+
 # testing
 
 do not write new test files unless asked. do not write tests if there is not already a test or describe block for that function or module.
@@ -85,6 +98,8 @@ To understand how the code you are writing works you should add inline snapshots
 
 > Always call `pnpm vitest` or `pnpm test` with `--run` or they will hang forever waiting for changes!
 > ALWAYS read back the test if you use the `-u` option, to make sure the inline snapshot are as you expect.
+
+- for very long snapshots you should use `toMatchFileSnapshot(filename)` instead of `toMatchInlineSnapshot()`. Put the snapshots files in a snapshots/ directory and use the appropriate extension for the file based on the content
 
 Never test client React components. Only server code that runs on the server.
 
@@ -105,8 +120,6 @@ Never write tests yourself that call prisma or interact with database or emails.
 # secrets
 
 this project uses Doppler to manage secrets, with a single project with 3 envs: dev, preview and production. dev is the env already selected and implicing in doppler calls.
-
-never use process.env directly, instead find the closes `env.ts` file that export a env object (this file should already exist). so the env can be used type safely and i can clearly see which secrets are available and need to be added.
 
 # react router v7
 
@@ -145,6 +158,13 @@ export function Component() {
 the loader data from parent layouts will NOT be present in the children routes `Route.componentProps['loaderData']` type. Instead you have to use the `useRouteLoaderData('/prefix-path')` instead. Always add the type to this calls getting the `Route` type from the parent layout
 
 > layout routes should ALWAYS export their own Route namespace types so that child route can use it to type `useRouteLoaderData`!
+
+## cookies
+
+never use react-router or remix `createCookieSessionStorage`, instead just use the npm cookie package to serialize and parse cookies. keep it simple.
+
+if you want to store json data in cookies remember to use encodeURIComponent to encode the data before storing it in the cookie, and decodeURIComponent to decode it when reading it back. This is because cookies can only store string values.
+
 
 ## website, react-routes
 
@@ -227,6 +247,22 @@ Always try to use non relative imports, each package has a absolute import with 
 
 This is preferable other aliases like @/ because i can easily move the code from one package to another without changing the import paths. This way you can even move a file and import paths do not change much.
 
+Always specify the type when creating arrays, especially for empty arrays. If you don't, TypeScript will infer the type as `never[]`, which can cause type errors when adding elements later.
+
+**Example:**
+
+```ts
+// BAD: Type will be never[]
+const items = []
+
+// GOOD: Specify the expected type
+const items: string[] = []
+const numbers: number[] = []
+const users: User[] = []
+```
+
+Remember to always add the explicit type to avoid unexpected type inference.
+
 ## styling
 
 - always use tailwind for styling, prefer using simple styles using flex and gap. Margins should be avoided, instead use flexbox gaps, grid gaps, or separate spacing divs.
@@ -274,15 +310,11 @@ Spiceflow has support for client side type safe rpc, use this client when you ne
 
 Always use `const {data, error} = await apiClient...` when calling spiceflow rpc. If data is already declared, give it a different name with `const {data: data2, error} = await apiClient...` This patten of destructuring is preferred over for all apis that return data and error object fields.
 
-## spiceflow
+## getting spiceflow docs
 
 spiceflow is a little known api framework. If you add server routes to a file that includes spiceflow in the name or you are using the apiClient rpc you always need to fetch the Spiceflow docs first, using the @fetch tool on https://getspiceflow.com/
 
 This url returns a single long documentation that covers your use case, always fetch this document so you know how to use Spiceflow. Spiceflow is different than hono and other api frameworks, that's why you should ALWAYS fetch the docs first before using it
-
-when adding spiceflow to a react-router route always add the basePath param set to that route path, for example for api.$ you would use new Spiceflow({ basePath: '/api' })
-
-always prefer camel case route names for spiceflow routes
 
 ## prisma
 
@@ -294,11 +326,11 @@ prisma upsert calls are preferable over updates, so that you also handle the cas
 
 never make changes to schema.prisma yourself, instead propose a change with a message and ask me to do it. this file is too important to be edited by agents.
 
-## prisma queries for relation
+### prisma queries for relations
 
 - NEVER add more than 1 include nesting. This is very bad for performance because prisma will have to do the query to get the relation sequentially. Instead of adding a new nested `include` you should add a new prisma query and wrap them in a `Promise.all`
 
-## prisma transactions for complex relations inserts
+### prisma transactions for complex relations inserts
 
 for very complex updates or inserts that involve more than 3 related tables, for example a Chat with ChatMessages and ChatMessagePath, you should use transaction instead of a super complex single query:
 
@@ -307,7 +339,7 @@ for very complex updates or inserts that involve more than 3 related tables, for
 - recreate all the tables again, reuse the old existing rows data when you don't have all the fields available
 - make sure to create all the rows in the related tables. use for loops if necessary
 
-## always make sure use has access to prisma tables
+### prisma, always make sure use has access to prisma tables
 
 > IMPORTANT! always read the schema.prisma file before adding a new prisma query, to understand how to structure it
 
@@ -315,7 +347,7 @@ try to never write sql by hand, user prisma
 
 if a query becomes too complex because fetching too deeply into related tables (more than 1 `include` nesting), use different queries instead, put them in a Promise.all
 
-## concurrency
+### prisma, concurrency
 
 when doing prisma queries or other async operations try to parallelize them using Promise.all
 
@@ -323,7 +355,7 @@ this will speed up operations that can be done concurrently.
 
 this is especially important in react-router loaders
 
-## security
+### prisma security
 
 All loaders, actions and Spiceflow routes of the project should have authorization checks.
 
@@ -339,6 +371,18 @@ if (!resource) {
     throw new AppError(`cannot find resource`)
 }
 ```
+
+### prisma transactions
+
+NEVER use prisma interactive transatciont (passing a function to `prisma.$transaction`), instead pass an array of operations. this is basically the same thing, operations are executed in order, but it has much better performance.
+
+If you need to use complex logic to construct the array of operations, create a empty array using `const operations: Prisma.PrismaPromise<any>[]` first, then push to this array the queries you want to excecute
+
+> IMPORTANT! while constructing the operations array you should never call await in between, this would cause the prisma query to start and would make the transaction invalid.
+
+
+
+```typescript
 
 ## errors
 
@@ -401,58 +445,62 @@ You can swap out the topic with text you want to search docs for. You can also l
 
 use lucide-react to import icons. always add the Icon import name, for example `ImageIcon` instead of just `Image`.
 
-## qstash
+## cli folder
 
-I like to use qstash to schedule tasks, for example to send emails after some amount of time or limit the parallelism of tasks, here is an example usage inside a spiceflow app
+the cli uses cac npm package.
 
-```tsx
-await qstash
-    .publishJSON({
-        url: new URL(
-            this.safePath('/api/plugins/route'),
-            env.PUBLIC_URL,
-        ).href,
-        body: {
-            secret: env.SECRET,
-            projectId,
-        },
-        headers: {
-            Authorization: `Bearer ${env.SECRET}`,
-        },
-        flowControl: {
-            parallelism: 1,
-            key: `sync-${projectId}`,
-        },
-    })
+notice that if you add a route in the spiceflow server you will need to run `pnpm --filter website gen-client` to update the apiClient inside cli.
 
-    .catch((error) => {
-        notifyError(error, 'Error queuing AI task')
-    })
+## files
+
+always use kebab case for new filenames. never use uppercase letters in filenames
+
+## changelog
+
+after you make a change that is noteworthy, add an entry in the CHANGELOG.md file in the root of the package. there are 2 kinds of packages, public and private packages. private packages have a private: true field in package.json, public packages do not and instead have a version field in package.json. public packages are the ones that are published to npm.
+
+to write a changelog.md file for a public package, use the following format, add a heading with the new version and a bullet list of your changes, like this:
+
+```md
+## 0.1.3
+
+### Patch Changes
+
+- bug fixes
+
+## 0.1.2
+
+### Patch Changes
+
+- add support for githubPath
 ```
 
-usually qstash should be placed in a lib/qstash.ts file like this:
+For private packages, which do not have versions, you must instead use the current date and time, for example:
 
-```ts
-import { Client } from '@upstash/qstash'
-import { env } from './env'
+```md
+# Changelog
 
-export const qstash = new Client({
-    token: env.QSTASH_TOKEN!,
-})
+## 2025-01-24 19:50
+
+- Added a feature to improve user experience
+- Fixed a bug that caused the app to crash on startup
 ```
 
-to read more info about qstash fetch the following context7 url with the appropriate search topic:
+these are just example, be clear and consies in your changelog entries.
 
-https://context7.com/upstash/qstash-js/llms.txt?topic=query&tokens=2000
+use present tense. Be detailed but concise, omit useless verbs like "implement", "added", just put the subject there instead, so it is showerer. it's implicit we are adding feature or fixes. do not use nested bullet points. Always show example code snippets if applicable, and use proper markdown formatting.
+
+```
+
+the website package has a dependency on docs-website. instead of duplicating code that is needed both in website and docs-website keep a file in docs-website instead and import from there for the website package.
 
 
-## emails using resend
+## playwriter
 
-I use resend js sdk to use email. the client should be placed in a file lib/resend.ts
+you can run control the browser using the playwriter mcp tools. these tools let you control the browser to get information or accomplish actions
 
-to read resend email sending sdk docs fetch the following url:
+if i ask you to test something in the browser, know that the website dev server is already running at http://localhost:7664 for website and :7777 for docs-website (but docs-website need to use the website domain specifically, for example name-hash.localhost:7777)
 
-https://context7.com/resend.com/llmstxt/llms.txt?topic=query&tokens=2000
 
 # circular dependencies
 
