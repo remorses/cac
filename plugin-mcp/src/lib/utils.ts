@@ -52,20 +52,13 @@ export const globalState = {}
 
 export enum PluginDataKeys {
     sessionKey = 'sessionKey',
-    websocketId = 'websocketId',
 }
 
 export async function getMcpPluginData() {
     const sessionKey = await framer.getPluginData(PluginDataKeys.sessionKey)
-    const websocketId = await framer.getPluginData(PluginDataKeys.websocketId)
     return {
         sessionKey: sessionKey || '',
-        websocketId: websocketId || generateWebsocketId(),
     }
-}
-
-export function generateWebsocketId() {
-    return Math.random().toString(36).substring(2, 15)
 }
 
 export function withMode(path: string, params?: Record<string, string>) {

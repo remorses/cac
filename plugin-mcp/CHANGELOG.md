@@ -1,5 +1,19 @@
 # Changelog
 
+## 2025-01-28 18:00
+
+- Handle WebSocket error code 4009 when another plugin is already connected
+- Display error message in UI instructing user to close other plugin instances
+- Prevent reconnection attempts when this specific error occurs
+- Clear error state on successful connection
+- Add error state to store for displaying connection errors
+
+## 2025-01-28 17:45
+
+- Changed WebSocket ID from random generated ID to Framer user ID for consistent MCP URL across all projects for the same user
+- Moved websocket initialization to rootLoader after authentication
+- Removed websocketId from store and plugin data
+
 ## 2025-01-28 17:30
 
 - Added user email display and sign out button to main MCP component

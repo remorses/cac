@@ -54,7 +54,7 @@ export async function websocketClientHandling({
             }
             if (payload.type === 'ready') {
                 ws.send(JSON.stringify({ type: 'ready' }))
-                useStore.setState({ isConnected: true })
+                useStore.setState({ isConnected: true, error: undefined })
                 return
             }
             if (payload.type === 'close') {
@@ -97,10 +97,26 @@ export async function websocketClientHandling({
         }
 
         ws.onclose = (event) => {
+            // Check for specific error code 4009 - another plugin already connected
+            if (event.code === 4009) {
+                const errorMessage = 'Another plugin is already connected. Please close the other plugin and keep only one plugin open.'
+                console.error('Another plugin is already connected for this user')
+                useStore.setState({ 
+                    isConnected: false,
+                    error: errorMessage
+                })
+                shouldReconnect = false
+                if (pingInterval) {
+                    clearInterval(pingInterval)
+                    pingInterval = null
+                }
+                return
+            }
+            
             console.log(
                 `websocket client disconnected (${event.code}), reconnecting in ${reconnectInterval}ms`,
             )
-            useStore.setState({ isConnected: false })
+            useStore.setState({ isConnected: false, error: undefined })
             if (pingInterval) {
                 clearInterval(pingInterval)
                 pingInterval = null

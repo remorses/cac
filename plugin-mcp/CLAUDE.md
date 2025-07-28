@@ -39,8 +39,8 @@ The system consists of three main components:
 - Creates a bidirectional connection between the MCP server and Framer plugin
 - Uses a unique ID to match the server and client connections
 - Endpoints:
-  - `wss://unframer.co/_tunnel/upstream?id={websocketId}` - Used by MCP server
-  - `wss://unframer.co/_tunnel/client?id={websocketId}` - Used by Framer plugin
+  - `wss://unframer.co/_tunnel/upstream?id={websocketId}` -
+  - `wss://unframer.co/_tunnel/client?id={websocketId}` -
 
 ## How It Works
 
