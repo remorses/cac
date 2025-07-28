@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-01-28 17:30
+
+- Added user email display and sign out button to main MCP component
+- Modified root loader to fetch current user info from API
+- Added seamless sign out functionality that clears session and redirects to login
+
 ## 2025-01-28 17:15
 
 - Removed duplicate utility functions (framerLoginUrl, generateSecurePassword, etc.)
