@@ -381,6 +381,47 @@ async function websocketHandler({
                 totalMatches: matchingFonts.length,
             }
         }
+        case 'deleteNode': {
+            const { nodeId } = input
+            const node = await framer.getNode(nodeId)
+
+            if (!node) {
+                return `Node with ID ${nodeId} not found.`
+            }
+
+            try {
+                await node.remove()
+                return `Successfully deleted node ${nodeId}.`
+            } catch (error) {
+                return `Failed to delete node ${nodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'duplicateNode': {
+            const { nodeId } = input
+            const node = await framer.getNode(nodeId)
+
+            if (!node) {
+                return `Node with ID ${nodeId} not found.`
+            }
+
+            try {
+                const parent = await node.getParent()
+                if (!parent) {
+                    throw new Error('No parent found for node')
+                }
+                let cloned = await node.clone()
+                if (!cloned) {
+                    throw new Error('No new node cloned found')
+                }
+                await framer.setParent(cloned.id, parent.id)
+                if (!cloned) {
+                    return `Failed to duplicate node ${nodeId}: The operation returned null.`
+                }
+                return `Here is the new node XML:\n\n` + getNodeXml(cloned.id)
+            } catch (error) {
+                return `Failed to duplicate node ${nodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
         default:
             throw new Error(`Unknown tool type: ${type}`)
     }
