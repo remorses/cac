@@ -1,4 +1,6 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
+
 import EnvironmentPlugin from 'vite-plugin-environment'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import react from '@vitejs/plugin-react-swc'
@@ -7,6 +9,15 @@ import framer from 'vite-plugin-framer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    test: {
+        pool: 'threads',
+        exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],
+        poolOptions: {
+            threads: {
+                isolate: false,
+            },
+        },
+    },
     plugins: [
         react(),
         mkcert(),

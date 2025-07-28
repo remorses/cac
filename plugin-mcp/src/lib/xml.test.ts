@@ -16,7 +16,10 @@ import {
 export const ITEMS_PER_ITERATION = 30
 
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
+
 test('splitTreeInChunks long', () => {
+
     let folder = path.resolve(__dirname, 'evaluation/xml/')
     const xml = fs.readFileSync(path.resolve(folder, 'long.xml'), 'utf8')
     const max = ITEMS_PER_ITERATION
@@ -151,24 +154,24 @@ test('xml partial content, rewriteXmlContent', () => {
 
     const result = rewriteXmlContentForTests({ xml: str, newContent })
     expect(result).toMatchInlineSnapshot(`
-      "<Container>
-        <Hero>
-          <Header>
-            <Stack>
-              <AI_Kit_Badge nodeId="kvaze3i5">
-              badge
-              </AI_Kit_Badge>
-              <text nodeId="BmPmnKu3U" fontSize="82px">
-                Hero replaced
-              </text>
-              <text nodeId="Ga6gDXZIe" fontSize="20px">
-                Description replaced
-              </text>
-              <AI_Kit_Button nodeId="rgayf1f9">
-                cta replaced
-              </AI_Kit_Button>
-      </Stack></Header></Hero></Container>"
-    `)
+          "<Container>
+            <Hero>
+              <Header>
+                <Stack>
+                  <AI_Kit_Badge nodeId="kvaze3i5">
+                  badge
+                  </AI_Kit_Badge>
+                  <text nodeId="BmPmnKu3U" fontSize="82px">
+                    Hero replaced
+                  </text>
+                  <text nodeId="Ga6gDXZIe" fontSize="20px">
+                    Description replaced
+                  </text>
+                  <AI_Kit_Button nodeId="rgayf1f9">
+                    cta replaced
+                  </AI_Kit_Button>
+          </Stack></Header></Hero></Container>"
+        `)
 })
 
 test('oldTextTreeToXml', async () => {
