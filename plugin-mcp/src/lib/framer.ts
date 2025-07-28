@@ -108,8 +108,11 @@ export function replaceEnumIdsForControls(
 export async function getComponentPropertyControls(url?: string | null) {
     if (!url) return { comments: undefined, propertyControls: undefined }
     try {
-        // @vite-ignore
-        const [res, paths] = await Promise.all([import(url), getPagePaths()])
+        const [res, paths] = await Promise.all([
+            // @vite-ignore
+            import(url),
+            getPagePaths(),
+        ])
         const propertyControls: PropertyControls = res.default?.propertyControls
         const comments = getAttributeComments(propertyControls, paths)
         return {
@@ -354,12 +357,14 @@ async function push({
     tree,
     text,
     nodeId,
+    isRootNode = false,
 }: {
     tree: FramerLayersTree
     node: AnyNode
     text?: string
     nodeId: string
     isReplica?: boolean
+    isRootNode?: boolean
 }) {
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
     let currentLevel = tree
@@ -401,17 +406,28 @@ async function push({
         currentLevel = existingNode.children
     }
 
-    const { attributes, attrControlsComments } =
+    let { attributes, attrControlsComments } =
         await getNodeAttributesForXml(node)
 
-    currentLevel.push({
+    // Add comment for root replica nodes
+    if (isRootNode && node.isReplica) {
+        attrControlsComments = {
+            ...attrControlsComments,
+            nodeId: 'To see these nodes values and override some of them for this variant, call getNodeXml on this nodeId',
+        }
+    }
+
+    const nodeEntry: FramerLayersTree[number] = {
         content: text,
         nodeId,
         name: 'name' in node ? node.name || '' : '',
         attributes,
         attrControlsComments,
         children: [],
-    })
+        isReplica: node.isReplica,
+    }
+
+    currentLevel.push(nodeEntry)
 
     // Sort the final level based on the last parent's children order
     if (currentParent || parents.length === 0) {
@@ -445,6 +461,8 @@ export async function getFramerTree({
     const semaphore = new Sema(6)
 
     let componentInstanceChildrenSeen = new Set<string>()
+    let rootNodeIds = new Set<string>(rootNodes.map((n) => n.id))
+
     async function handleNode(node: AnyNode) {
         if (isTextNode(node)) {
             const isVisible = await isNodeVisible(node)
@@ -465,6 +483,7 @@ export async function getFramerTree({
                     text,
                     nodeId: node.id,
                     isReplica: node.isReplica,
+                    isRootNode: rootNodeIds.has(node.id),
                 })
             }
         }
@@ -480,6 +499,7 @@ export async function getFramerTree({
             tree: tree,
             nodeId: node.id,
             isReplica: node.isReplica,
+            isRootNode: rootNodeIds.has(node.id),
         })
     }
 
@@ -491,8 +511,34 @@ export async function getFramerTree({
             continue
         }
 
-        for await (let node of rootNode.walk()) {
+        const isRootReplica = rootNode.isReplica
+
+        // Custom walk to handle replica children
+        async function* walkNode(
+            node: AnyNode,
+            isRoot: boolean = false,
+        ): AsyncGenerator<AnyNode> {
+            yield node
+
+            // Skip children if this is a root replica node
+            if (isRoot && isRootReplica) {
+                return
+            }
+
+            // Also skip children if this node itself is a replica (not just root replicas)
+            if (!isRoot && node.isReplica) {
+                return
+            }
+
+            const children = await node.getChildren()
+            for (const child of children) {
+                yield* walkNode(child, false)
+            }
+        }
+
+        for await (let node of walkNode(rootNode, true)) {
             nodesToProcess.push({ node })
+
             if (recursive) {
                 for await (let child of recurseIntoComponent(
                     node,

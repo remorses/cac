@@ -1,3 +1,8 @@
+before any chat in the plugin-mcp folder run the commands
+- tree, to get the folder files in a tree format and know what files are in the project
+- read src/types.ts to understand the MCP schema
+
+
 # Framer MCP Plugin Architecture
 
 This folder contains both the Framer plugin client code and the Cloudflare Worker MCP server implementation. The system enables MCP (Model Context Protocol) integration with Framer, allowing AI assistants to interact with Framer projects.
@@ -8,7 +13,7 @@ Also the tools schema is defined in `src/lib/mcp-tools.ts`. This is where you sh
 
 To understand framer-plugin package api read `plugin-mcp/node_modules/framer-plugin/dist/index.d.ts`
 
-After making MCP API changes always update `prompt.md` with the new API. try to keep it short.
+After making MCP API changes always update `src/prompt.md` with the new API. try to keep it short.
 
 When running tests always run them with `-u` to update snapshot, then see what are the differences of the snapshots with `git diff src/lib/snapshots` and make sure they are what you expect. If not, fix the code to make sure the tests output are what you expect.
 

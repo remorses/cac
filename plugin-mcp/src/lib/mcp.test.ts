@@ -185,6 +185,80 @@ describe(
                 ? JSON.parse(verifyResult.content[0].text)
                 : verifyResult.content
 
+            expect(updatedColorStyles).toMatchInlineSnapshot(`
+              [
+                {
+                  "dark": null,
+                  "light": "rgb(231, 100, 150)",
+                  "path": "/undefined - Test 231",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(13, 13, 23)",
+                  "path": "/Gray-900",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(27, 27, 37)",
+                  "path": "/Gray-800",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(39, 39, 49)",
+                  "path": "/Gray-700",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(69, 69, 79)",
+                  "path": "/Gray-600",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(97, 97, 107)",
+                  "path": "/Gray-500",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(148, 148, 158)",
+                  "path": "/Gray-400",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(201, 201, 210)",
+                  "path": "/Gray-300",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(224, 224, 230)",
+                  "path": "/Gray-200",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(241, 241, 244)",
+                  "path": "/Gray-100",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(247, 247, 248)",
+                  "path": "/Gray-50",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(93, 58, 234)",
+                  "path": "/Royal blue-600",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(114, 92, 247)",
+                  "path": "/Royal blue-500",
+                },
+                {
+                  "dark": null,
+                  "light": "rgb(184, 181, 254)",
+                  "path": "/Royal blue-300",
+                },
+              ]
+            `)
             const updatedStyle = updatedColorStyles.find(s => s.path === firstColorStyle.path)
             expect(updatedStyle).toBeDefined()
             expect(updatedStyle.light).toBe(`rgb(${randomNum}, 100, 150)`)
@@ -206,11 +280,139 @@ describe(
             const result = await callTool({
                 name: 'searchFonts',
                 args: {
-                    query: 'Inter',
+                    query: 'Inter-200',
                 },
             })
 
             const content = getTextContent(result.content)
+            expect(content).toMatchInlineSnapshot(`
+              "{
+                "message": "Found 40 fonts matching \\"Inter\\". Showing first 20. Use a more specific search term to narrow results.\\n\\nTo use a font: <Text font=\\"selector\\">Text</Text>\\nNote: font and inlineTextStyle attributes are mutually exclusive",
+                "results": [
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-100",
+                    "weight": 100,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-200",
+                    "weight": 200,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-300",
+                    "weight": 300,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-regular",
+                    "weight": 400,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-500",
+                    "weight": 500,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-600",
+                    "weight": 600,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-700",
+                    "weight": 700,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-800",
+                    "weight": 800,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-900",
+                    "weight": 900,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-100italic",
+                    "weight": 100,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-200italic",
+                    "weight": 200,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-300italic",
+                    "weight": 300,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-italic",
+                    "weight": 400,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-500italic",
+                    "weight": 500,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-600italic",
+                    "weight": 600,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-700italic",
+                    "weight": 700,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-800italic",
+                    "weight": 800,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-900italic",
+                    "weight": 900,
+                    "style": "italic"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-variable-regular",
+                    "weight": 400,
+                    "style": "normal"
+                  },
+                  {
+                    "family": "Inter",
+                    "selector": "GF;Inter-variable-italic",
+                    "weight": 400,
+                    "style": "italic"
+                  }
+                ],
+                "totalMatches": 40
+              }"
+            `)
             expect(content).toBeDefined()
             expect(content.message).toBeDefined()
             expect(content.results).toBeDefined()
@@ -243,6 +445,119 @@ describe(
             const textStyles = Array.isArray(textStylesResult.content) && textStylesResult.content[0]?.text
                 ? JSON.parse(textStylesResult.content[0].text)
                 : textStylesResult.content
+
+            expect(textStyles).toMatchInlineSnapshot(`
+              [
+                {
+                  "alignment": "center",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "90px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "72px",
+                  "paragraphSpacing": 40,
+                  "path": "/undefined - Test 90",
+                  "tag": "h1",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "36px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "44px",
+                  "paragraphSpacing": 40,
+                  "path": "/Heading 2xl",
+                  "tag": "h2",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "30px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "38px",
+                  "paragraphSpacing": 38,
+                  "path": "/Heading xl",
+                  "tag": "h2",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "18px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "28px",
+                  "paragraphSpacing": 40,
+                  "path": "/Heading lg",
+                  "tag": "h5",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "16px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "24px",
+                  "paragraphSpacing": 40,
+                  "path": "/Heading md",
+                  "tag": "h6",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "14px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "20px",
+                  "paragraphSpacing": 40,
+                  "path": "/Heading sm",
+                  "tag": "h6",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "18px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "28px",
+                  "paragraphSpacing": 20,
+                  "path": "/Body lg",
+                  "tag": "p",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "16px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "24px",
+                  "paragraphSpacing": 0,
+                  "path": "/Body md",
+                  "tag": "p",
+                  "transform": "none",
+                },
+                {
+                  "alignment": "left",
+                  "balance": false,
+                  "decoration": "none",
+                  "fontSize": "14px",
+                  "letterSpacing": "0px",
+                  "lineHeight": "20px",
+                  "paragraphSpacing": 20,
+                  "path": "/Body sm",
+                  "tag": "p",
+                  "transform": "none",
+                },
+              ]
+            `)
 
             expect(textStyles.length).toBeGreaterThan(0)
             const firstTextStyle = textStyles[0] || 'test-style'

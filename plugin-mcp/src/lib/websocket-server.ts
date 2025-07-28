@@ -1,4 +1,4 @@
-import { McpToolWebsocketPayload } from './mcp-tools'
+import { McpToolWebsocketPayload } from './types'
 
 export type WebsocketMessage = {
     id: string
@@ -14,7 +14,6 @@ export interface WebsocketRpc {
         idempotenceKey?: string
         payload: WebsocketMessage['payload']
     }) => Promise<any>
-    cleanup: () => Promise<void>
 }
 
 export function createWebsocketHandling({
@@ -126,9 +125,13 @@ export function createWebsocketHandling({
         }
         pendingRequests.clear()
         usedIdempotenceIds.clear()
+        ws.close()
     }
+    // Register cleanup on ws close
+    ws.addEventListener('close', () => {
+        cleanup()
+    })
     return {
         send,
-        cleanup,
     }
 }

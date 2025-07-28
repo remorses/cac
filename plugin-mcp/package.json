@@ -5,13 +5,14 @@
     "type": "module",
     "main": "./src/index.ts",
     "scripts": {
-        "dev": "doppler run -- vite",
-        "test": "pnpm vitest -u",
+        "dev": "vite",
+        "test": "doppler run -- pnpm vitest -u --run",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
         "check": "pnpm tsc --incremental",
         "typecheck": "pnpm tsc --noEmit --incremental",
         "deployment": "pnpm build && pnpm wrangler deploy",
-        "start": "vite preview --port 5173"
+        "start": "vite preview --port 5173",
+        "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.17.0",
@@ -23,12 +24,17 @@
         "htmlparser2": "^9.1.0",
         "lucide-react": "^0.474.0",
         "plugin-mcp": "workspace:*",
+        "plugin-migrate": "0.0.1-security",
         "react": "19.1.0",
         "react-dom": "19.1.0",
+        "react-router": "^7.6.3",
+        "react-router-dom": "^7.6.3",
         "react-use-measure": "^2.1.7",
         "sema4": "^0.1.3",
+        "spiceflow": "^1.17.4",
         "string-dedent": "^3.0.1",
         "unframer": "workspace:*",
+        "website": "workspace:*",
         "zod": "^4.0.10",
         "zustand": "^5.0.5"
     },

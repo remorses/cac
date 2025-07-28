@@ -14,6 +14,16 @@ import {
 } from 'lucide-react'
 import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
 import { getFramerTree, applyAttributes } from './lib/framer'
+import {
+    createBrowserRouter,
+    RouterProvider,
+    redirect,
+    RouteObject,
+    Outlet,
+    LoaderFunctionArgs,
+} from 'react-router'
+import { LoginPage } from './routes/Login'
+import { PluginDataKeys, Paths, withMode } from './lib/utils'
 
 globalThis.framer = framer
 
@@ -26,7 +36,7 @@ framer.showUI({
 const { websocketId } = useStore.getState()
 
 // Helper function to get XML for a node
-async function getNodeXml(nodeId: string): Promise<string | null> {
+async function getNodeXml(nodeId: string): Promise<{ xml: string; isReplica: boolean } | null> {
     const node = await framer.getNode(nodeId)
     if (!node) {
         return null
@@ -38,19 +48,26 @@ async function getNodeXml(nodeId: string): Promise<string | null> {
     const xml = framerLayersTreeToXml(tree, {
         shouldAddNodeIdAlways: true,
     })
-    return xml
+    return { xml, isReplica: node.isReplica }
 }
 
-// Initialize websocket connection
-const cleanup = await websocketClientHandling({
-    async handle({ input, type }) {
+// Initialize websocket connection (will be moved to authenticated component)
+let cleanup: (() => void) | undefined
+
+async function initializeWebsocket() {
+    cleanup = await websocketClientHandling({
+        async handle({ input, type }) {
         switch (type) {
             case 'getNodeXml': {
-                const xml = await getNodeXml(input.nodeId)
-                if (!xml) {
+                const result = await getNodeXml(input.nodeId)
+                if (!result) {
                     return `Node with ID ${input.nodeId} not found.`
                 }
-                return `Node xml:\n${xml}`
+                let response = `Node xml:\n${result.xml}`
+                if (result.isReplica) {
+                    response = `WARNING: This is a replica node (variant). It's recommended to update the original component instead to maintain consistency.\n\n${response}`
+                }
+                return response
             }
             case 'getSelectedNodesXml': {
                 const selectedNodes = await framer.getSelection()
@@ -65,7 +82,19 @@ const cleanup = await websocketClientHandling({
                 const xml = framerLayersTreeToXml(tree, {
                     shouldAddNodeIdAlways: true,
                 })
-                return `Selected nodes XML:\n${xml}`
+
+                // Check if any selected nodes are replicas
+                const replicaCount = selectedNodes.filter(node => node.isReplica).length
+                let response = `Selected nodes XML:\n${xml}`
+
+                if (replicaCount > 0) {
+                    const warning = replicaCount === 1
+                        ? 'WARNING: One of the selected nodes is a replica (variant). It\'s recommended to update the original component instead.'
+                        : `WARNING: ${replicaCount} of the selected nodes are replicas (variants). It's recommended to update the original components instead.`
+                    response = `${warning}\n\n${response}`
+                }
+
+                return response
             }
             case 'getProjectXml': {
                 const pages = await framer.getNodesWithType('WebPageNode')
@@ -154,15 +183,15 @@ const cleanup = await websocketClientHandling({
                 }
 
                 // Get the updated XML for the primary node
-                const updatedXml = await getNodeXml(nodeId)
+                const updatedResult = await getNodeXml(nodeId)
 
                 const resultMessage =
                     results.length > 0
                         ? `Successfully updated:\n${results.join('\n')}`
                         : 'No updates were made.'
 
-                return updatedXml
-                    ? `${resultMessage}\n\nUpdated XML:\n${updatedXml}`
+                return updatedResult
+                    ? `${resultMessage}\n\nUpdated XML:\n${updatedResult.xml}`
                     : resultMessage
             }
             case 'zoomIntoView': {
@@ -342,16 +371,16 @@ const cleanup = await websocketClientHandling({
             default:
                 throw new Error(`Unknown tool type: ${type}`)
         }
-    },
-    websocketId,
-})
+        },
+        websocketId,
+    })
+}
 
-export default function App() {
+function MainComponent() {
     const isConnected = useStore((state) => state.isConnected)
     const isExpanded = useStore((state) => state.isExpanded)
     const websocketId = useStore((state) => state.websocketId)
     const [copied, setCopied] = useState(false)
-    const [ref, { height }] = useMeasure()
 
     const mcpServerUrl = `https://mcp.unframer.co/sse?id=${websocketId}`
 
@@ -367,15 +396,6 @@ export default function App() {
         const newExpanded = !isExpanded
         useStore.setState({ isExpanded: newExpanded })
     }
-
-    // Update framer UI size when height changes or expansion state changes
-    useLayoutEffect(() => {
-        void framer.showUI({
-            position: 'top left',
-            width: isExpanded ? 340 : 160,
-            height: height || 280,
-        })
-    }, [height, isExpanded])
 
     if (!isExpanded) {
         return (
@@ -399,10 +419,7 @@ export default function App() {
     }
 
     return (
-        <div
-            ref={ref}
-            className='flex flex-col gap-4 p-4 pt-0 bg-framer-primary'
-        >
+        <div className='flex flex-col gap-4 bg-framer-primary'>
             <div className='flex items-center justify-between'>
                 <h2 className='text-sm font-medium text-framer-primary'>
                     {/* Framer MCP Installation */}
@@ -461,6 +478,64 @@ export default function App() {
             </div>
         </div>
     )
+}
+
+// Root loader to check authentication
+async function rootLoader({}: LoaderFunctionArgs) {
+    const sessionKey = await framer.getPluginData(PluginDataKeys.sessionKey)
+    if (!sessionKey) {
+        throw redirect(withMode(Paths.login))
+    }
+    // Initialize websocket after auth check
+    if (!cleanup) {
+        await initializeWebsocket()
+    }
+    return null
+}
+
+function RootLayout() {
+    const [ref, { height }] = useMeasure()
+    const isExpanded = useStore((state) => state.isExpanded)
+
+    // Update framer UI size when height changes or expansion state changes
+    useLayoutEffect(() => {
+        void framer.showUI({
+            position: 'top left',
+            width: isExpanded ? 300 : 180,
+            height: height || 400,
+        })
+    }, [height, isExpanded])
+
+    return (
+        <div ref={ref} className='flex flex-col p-4 pt-0'>
+            <Outlet />
+        </div>
+    )
+}
+
+function MainPage(): RouteObject {
+    return {
+        path: Paths.main,
+        loader: rootLoader,
+        Component: MainComponent,
+    }
+}
+
+const routes: RouteObject[] = [
+    {
+        path: '/',
+        Component: RootLayout,
+        children: [
+            MainPage(),
+            LoginPage(),
+        ],
+    },
+]
+
+const router = createBrowserRouter(routes)
+
+export default function App() {
+    return <RouterProvider router={router} />
 }
 
 import.meta.hot?.accept(() => {
