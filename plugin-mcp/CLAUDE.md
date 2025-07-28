@@ -21,45 +21,56 @@ When running tests always run them with `-u` to update snapshot, then see what a
 
 The system consists of three main components:
 
-### 1. **Framer Plugin (Client)**
+### 1. **Framer Plugin (Tunnel Upstream)**
 - Lives inside the Framer app as a plugin
 - Implements MCP tool handlers that perform actions on Framer using the Framer Plugin API
-- Connects to a WebSocket tunnel to receive MCP tool requests
+- Connects to the WebSocket tunnel as the upstream connection (only one plugin can be connected per user)
 - Entry point: `src/App.tsx` and `src/main.tsx`
 
-### 2. **MCP Server (Cloudflare Worker)**
+### 2. **MCP Server (Tunnel Client)**
 - Runs on Cloudflare Workers at `mcp.unframer.co`
 - Implements the MCP protocol using the `@modelcontextprotocol/sdk` and `agents` npm package
+- Connects to the WebSocket tunnel as a client (multiple MCP servers can connect to the same plugin)
 - Exposes endpoints:
   - `/sse` and `/sse/message` - For SSE-based MCP communication
   - `/mcp` - Standard MCP endpoint
 - Entry point: `src/worker.ts`
 
 ### 3. **WebSocket Tunnel (Cloudflare Worker)**
-- Creates a bidirectional connection between the MCP server and Framer plugin
-- Uses a unique ID to match the server and client connections
+- Creates a bidirectional connection between MCP servers and the Framer plugin
+- Uses the Framer user ID as the connection identifier (consistent across all projects for the same user)
 - Endpoints:
-  - `wss://unframer.co/_tunnel/upstream?id={websocketId}` -
-  - `wss://unframer.co/_tunnel/client?id={websocketId}` -
+  - `wss://unframer.co/_tunnel/upstream?id={userId}` - Used by the Framer plugin (only one allowed per user)
+  - `wss://unframer.co/_tunnel/client?id={userId}` - Used by MCP servers (multiple allowed)
 
 ## How It Works
 
 1. **Initialization**:
-   - The Framer plugin generates a unique `websocketId` (or reuses an existing one)
-   - Plugin connects to the WebSocket tunnel as a client
-   - User copies the MCP server URL with the websocketId: `https://mcp.unframer.co/sse?id={websocketId}`
+   - User logs into the Framer plugin with Google OAuth
+   - Plugin retrieves the Framer user ID using `framer.getCurrentUser()`
+   - Plugin connects to the WebSocket tunnel as upstream using the user ID
+   - User copies the MCP server URL with their user ID: `https://mcp.unframer.co/sse?id={userId}`
    - User configures their MCP client (Claude app/code) with this URL
+   - The MCP URL remains consistent across all Framer projects for the same user
 
 2. **MCP Request Flow**:
-   - MCP client sends a tool request to the Cloudflare Worker
-   - Worker forwards the request through the WebSocket tunnel to the Framer plugin
+   - MCP client (Claude, Cline, etc.) sends a tool request to the Cloudflare Worker
+   - Worker connects to the WebSocket tunnel as a client using the user ID
+   - Worker forwards the request through the tunnel to the Framer plugin
    - Plugin executes the tool using Framer Plugin APIs
    - Plugin sends the response back through the tunnel
    - Worker returns the response to the MCP client
 
-3. **Authentication**:
-   - Currently uses the unique `websocketId` as the authentication mechanism
-   - The ID must match between the MCP URL and the Framer plugin connection
+3. **Connection Management**:
+   - Only one Framer plugin can be connected per user ID (upstream connection)
+   - Multiple MCP servers can connect to the same plugin (client connections)
+   - If a second plugin tries to connect with the same user ID, it receives error code 4009
+   - The plugin displays an error message instructing the user to close other plugin instances
+
+4. **Authentication**:
+   - Uses the Framer user ID as the connection identifier
+   - Plugin must be authenticated via Google OAuth before connecting
+   - The user ID ensures the MCP URL is consistent and tied to the user, not individual projects
 
 ## Available MCP Tools
 
