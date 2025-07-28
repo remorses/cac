@@ -639,7 +639,7 @@ async function getNodeAttributesForXml(node: AnyNode) {
         const { comments: controlComments } = await getComponentPropertyControls(
             node.insertURL || undefined,
         )
-        
+
         // Merge control comments into the main comments object
         if (controlComments) {
             Object.assign(attrComments, controlComments)

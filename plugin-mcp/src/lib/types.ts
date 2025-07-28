@@ -69,3 +69,10 @@ export type FramerLayersTree = Array<{
     attrControlsComments?: Record<string, string>
     count?: number
 }>
+
+export type McpCallParam = {
+    [K in McpToolNames]: {
+        name: K
+        args: z.infer<(typeof mcpTools)[K]['input']> | undefined
+    }
+}[McpToolNames]

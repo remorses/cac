@@ -182,18 +182,6 @@ Skip nodes for which you don't plant to update the content and attributes.
 
 `
 }
-function findFirstChildrenLayer(tree: FramerLayersTree): {
-    layer: FramerLayersTree
-    parents: FramerLayersTree
-} {
-    let currentLayer = tree
-    let parents: FramerLayersTree = []
-    while (currentLayer.length === 1 && currentLayer[0].children?.length) {
-        parents.push({ ...currentLayer[0], children: [] })
-        currentLayer = currentLayer[0].children
-    }
-    return { layer: currentLayer, parents }
-}
 
 const templateText = ({ xml }) => {
     return dedent`
