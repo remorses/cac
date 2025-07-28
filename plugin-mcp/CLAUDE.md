@@ -1,6 +1,6 @@
 before any chat in the plugin-mcp folder run the commands
-- tree, to get the folder files in a tree format and know what files are in the project
-- read src/types.ts to understand the MCP schema
+- `tree`, to get the folder files in a tree format and know what files are in the project
+- read src/schema.ts to understand the MCP tools schema
 
 
 # Framer MCP Plugin Architecture
@@ -72,7 +72,7 @@ The system consists of three main components:
 
 ## Available MCP Tools
 
-The system implements these MCP tools (defined in `src/lib/types.ts`):
+The system implements these MCP tools (defined in `src/lib/schema.ts`):
 
 1. **GetPublishedURL** - Returns staging & production publish information
 2. **FetchHTML** - Downloads raw HTML from a public URL
@@ -89,7 +89,7 @@ The system implements these MCP tools (defined in `src/lib/types.ts`):
 - `src/lib/mcp-tools.ts` - MCP tool definitions and server setup
 - `src/lib/client-websocket.ts` - WebSocket client handling for Framer plugin
 - `src/lib/websocket-server.ts` - WebSocket worker handling
-- `src/lib/types.ts` - TypeScript types and enums
+
 - `wrangler.jsonc` - Cloudflare Worker configuration
 - `framer.json` - Framer plugin manifest
 

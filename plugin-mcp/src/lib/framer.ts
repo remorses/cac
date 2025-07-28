@@ -30,7 +30,7 @@ import { Sema } from 'sema4'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'
 import { bfsFramerLayersTree, } from './tree-utils'
-import { FramerLayersTree } from './types'
+import { FramerLayersTree } from './schema'
 
 let cachedPagePaths: string[] = []
 

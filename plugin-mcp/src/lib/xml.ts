@@ -1,7 +1,7 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
-import type { FramerLayersTree } from './types'
+import type { FramerLayersTree } from './schema'
 
 export function rewriteXmlContentForTests({
     xml: xml,

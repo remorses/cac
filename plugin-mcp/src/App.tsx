@@ -481,7 +481,7 @@ function MainComponent() {
             <div className='flex flex-col gap-2'>
                 <p className='text-xs text-framer-secondary'>
                     Copy the MCP server URL below and add it to your MCP client
-                    (Claude Desktop, Cline, etc.)
+                    (Claude Desktop, Cursor, etc.)
                 </p>
             </div>
             <div className='flex flex-col gap-2 mt-auto'>

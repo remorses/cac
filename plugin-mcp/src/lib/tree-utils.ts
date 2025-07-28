@@ -1,4 +1,4 @@
-import { FramerLayersTree } from './types'
+import { FramerLayersTree } from './schema'
 import { addNodeCount } from './xml'
 
 export const ITEMS_PER_ITERATION = 30
