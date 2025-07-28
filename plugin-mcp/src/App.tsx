@@ -500,7 +500,7 @@ function MainComponent() {
                     }}
                     className='!text-xs text-framer-tertiary  transition-colors w-auto bg-transparent'
                 >
-                    Sign out
+                    sign out
                 </button>
                 <button
                     onClick={toggleExpanded}

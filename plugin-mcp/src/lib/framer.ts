@@ -5,7 +5,7 @@ import {
     isComponentNode,
     isFrameNode,
     isTextNode,
-    isSVGNode,
+    isWebPageNode,
     supportsAspectRatio,
     supportsBackgroundColor,
     supportsBackgroundImage,
@@ -24,14 +24,13 @@ import {
     supportsSizeConstraints,
     supportsSVG,
     supportsVisible,
-    type ImageAsset,
-    isWebPageNode,
+    type ImageAsset
 } from 'framer-plugin'
-import type { ControlDescription, PropertyControls } from 'unframer/src/index'
-import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
-import { FramerLayersTree } from './types'
-import { bfsFramerLayersTree, cleanupTreeFromEmptyNodes } from './tree-utils'
 import { Sema } from 'sema4'
+import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
+import type { ControlDescription, PropertyControls } from 'unframer/src/index'
+import { bfsFramerLayersTree, } from './tree-utils'
+import { FramerLayersTree } from './types'
 
 let cachedPagePaths: string[] = []
 
@@ -496,6 +495,7 @@ export async function getFramerTree({
         tree = await push({
             node,
             tree: tree,
+
             nodeId: node.id,
             isReplica: node.isReplica,
             isRootNode: rootNodeIds.has(node.id),
@@ -521,11 +521,13 @@ export async function getFramerTree({
 
             // Skip children if this is a root replica node
             if (isRoot && isRootReplica) {
+                console.log(`Skipping children of root replica node ${node.id} (${node.name})`)
                 return
             }
 
             // Also skip children if this node itself is a replica (not just root replicas)
             if (!isRoot && node.isReplica) {
+                console.log(`Skipping children of replica node ${node.id} (${node.name})`)
                 return
             }
 
@@ -562,7 +564,7 @@ export async function getFramerTree({
     // Wait for all nodes to be processed
     await Promise.all(processingPromises)
 
-    tree = cleanupTreeFromEmptyNodes(tree)
+
     console.timeEnd(timeId)
     return tree
 }
