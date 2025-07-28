@@ -37,6 +37,7 @@ const cleanup = await websocketClientHandling({
                                     id: page.id,
                                     attributes: {
                                         type: 'WebPageNode',
+                                        nodeId: page.id,
                                         path: page.path || '',
                                     },
                                     children: [],
@@ -49,6 +50,7 @@ const cleanup = await websocketClientHandling({
                                     id: component.id,
                                     attributes: {
                                         type: 'ComponentNode',
+                                        nodeId: component.id,
                                         name: component.componentName || '',
                                     },
                                     children: [],
@@ -57,7 +59,10 @@ const cleanup = await websocketClientHandling({
                         ],
                     },
                 ]
-                const xml = framerLayersTreeToXml(tree)
+                const xml = framerLayersTreeToXml(tree, {
+                    shouldAddNodeIdAlways: true,
+                    indent: '  ',
+                })
                 return `Project structure:\n` + xml
             }
             default:

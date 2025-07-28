@@ -263,7 +263,7 @@ export function framerLayersTreeToXml(
 
         const attributesString =
             attributes.length > 0
-                ? hasComments
+                ? hasComments || attributes.length >= 3
                     ? '\n' +
                       indent +
                       '    ' +
