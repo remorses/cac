@@ -1,0 +1,58 @@
+[
+  {
+    "name": "White",
+    "path": "/White",
+  },
+  {
+    "name": "Gray-900",
+    "path": "/Gray-900",
+  },
+  {
+    "name": "Gray-800",
+    "path": "/Gray-800",
+  },
+  {
+    "name": "Gray-700",
+    "path": "/Gray-700",
+  },
+  {
+    "name": "Gray-600",
+    "path": "/Gray-600",
+  },
+  {
+    "name": "Gray-500",
+    "path": "/Gray-500",
+  },
+  {
+    "name": "Gray-400",
+    "path": "/Gray-400",
+  },
+  {
+    "name": "Gray-300",
+    "path": "/Gray-300",
+  },
+  {
+    "name": "Gray-200",
+    "path": "/Gray-200",
+  },
+  {
+    "name": "Gray-100",
+    "path": "/Gray-100",
+  },
+  {
+    "name": "Gray-50",
+    "path": "/Gray-50",
+  },
+  {
+    "name": "Royal blue-600",
+    "path": "/Royal blue-600",
+  },
+  {
+    "name": "Royal blue-500",
+    "path": "/Royal blue-500",
+  },
+  {
+    "name": "Royal blue-300",
+    "path": "/Royal blue-300",
+  },
+]
