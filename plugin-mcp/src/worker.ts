@@ -1,4 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import codeComponentsResourceMarkdown from './workshop.md?raw'
 import {
     CallToolRequest,
     CallToolRequestSchema,
@@ -12,7 +13,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { McpAgent } from 'agents/mcp'
 import { toJSONSchema } from 'zod'
-import { mcpTools } from './lib/schema'
+import { codeComponentsResourceUri, mcpTools } from './lib/schema'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket'
 
 export class MyMCP extends McpAgent<Env> {
@@ -34,37 +35,45 @@ export class MyMCP extends McpAgent<Env> {
         const server = this.server
         const websocketId = this.props?.websocketId as string
         const secret = this.props?.secret as string
-        
+
         if (!websocketId) {
             throw new Error('websocketId ?id search param is required')
         }
-        
+
         if (!secret) {
-            throw new Error('secret ?secret search param is required for authentication')
+            throw new Error(
+                'secret ?secret search param is required for authentication',
+            )
         }
-        
+
         console.log('Initializing MyMCP with websocketId:', websocketId)
-        
+
         // Validate session
         try {
-            const response = await fetch('https://unframer.co/api/plugins/validateSession', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            const response = await fetch(
+                'https://unframer.co/api/plugins/validateSession',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: secret,
+                        framerUserId: websocketId,
+                    }),
                 },
-                body: JSON.stringify({
-                    sessionId: secret,
-                    framerUserId: websocketId,
-                }),
-            })
-            
-            const data = await response.json() as { valid: boolean; error?: string }
-            
+            )
+
+            const data = (await response.json()) as {
+                valid: boolean
+                error?: string
+            }
+
             if (!data.valid) {
                 console.error('Session validation failed:', data.error)
                 throw new Error(`Session validation failed: ${data.error}`)
             }
-            
+
             console.log('Session validated successfully')
         } catch (error) {
             console.error('Failed to validate session:', error)
@@ -143,7 +152,6 @@ export class MyMCP extends McpAgent<Env> {
                         })
                     },
                 )
-
 
                 // Set up persistent event listeners
                 ws.addEventListener('close', () => {
@@ -258,7 +266,6 @@ export class MyMCP extends McpAgent<Env> {
             },
         )
 
-        // Prompts handlers - return empty array
         server.setRequestHandler(ListPromptsRequestSchema, async () => ({
             prompts: [],
         }))
@@ -270,15 +277,38 @@ export class MyMCP extends McpAgent<Env> {
             },
         )
 
+
         // Resources handlers - return empty array
         server.setRequestHandler(ListResourcesRequestSchema, async () => ({
-            resources: [],
+            resources: [
+                {
+                    title: `How to write Framer code components files in TypeScript`,
+                    // name: 'framer-code-component',
+                    uri: codeComponentsResourceUri,
+                    description: `Prompt explaining how to write code components for Framer. ALWAYS read this resource before calling createCodeFile or updateCodeFile`,
+                },
+            ],
         }))
 
         server.setRequestHandler(
             ReadResourceRequestSchema,
             async (request: ReadResourceRequest) => {
-                throw new Error(`No resources available`)
+                if (request.params.uri === codeComponentsResourceUri) {
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: codeComponentsResourceMarkdown,
+                            },
+                        ],
+                    }
+                }
+                return {
+                    error: {
+                        message: `Resource with uri ${request.params.uri} not found`,
+                        code: 'NOT_FOUND',
+                    },
+                }
             },
         )
 
