@@ -10,16 +10,32 @@
   <MainContainer>
     <Links>
       <InlineLink>
-        <Text nodeId="h0AxRbKfn" href="/pricing" fontSize="16px">
+        <Text
+            nodeId="h0AxRbKfn"
+            href="/pricing"
+            fontSize="16px"
+        >
           Pricing
         </Text>
-        <Text nodeId="tNk8d0Tf4" href="/blog" fontSize="16px">
+        <Text
+            nodeId="tNk8d0Tf4"
+            href="/blog"
+            fontSize="16px"
+        >
           Showcase
         </Text>
-        <Text nodeId="MaC15YC5L" href="/docs" fontSize="16px">
+        <Text
+            nodeId="MaC15YC5L"
+            href="/docs"
+            fontSize="16px"
+        >
           Product
         </Text>
-        <Text nodeId="tAy29Vpru" href="/contact-sales" fontSize="16px">
+        <Text
+            nodeId="tAy29Vpru"
+            href="/contact-sales"
+            fontSize="16px"
+        >
           Contact
         </Text>
       </InlineLink>
@@ -819,16 +835,32 @@
               <Text nodeId="Oe6VzyYPt" fontSize="16px">
                 Company
               </Text>
-              <Text nodeId="qqoXrPNMS" href="/pricing" fontSize="16px">
+              <Text
+                  nodeId="qqoXrPNMS"
+                  href="/pricing"
+                  fontSize="16px"
+              >
                 Terms
               </Text>
-              <Text nodeId="l7OQq4utu" href="/contact-sales" fontSize="16px">
+              <Text
+                  nodeId="l7OQq4utu"
+                  href="/contact-sales"
+                  fontSize="16px"
+              >
                 Privacy
               </Text>
-              <Text nodeId="bikySphEg" href="/contact-sales-2" fontSize="16px">
+              <Text
+                  nodeId="bikySphEg"
+                  href="/contact-sales-2"
+                  fontSize="16px"
+              >
                 Affiliate Program
               </Text>
-              <Text nodeId="iHjW2DIUD" href="/support" fontSize="16px">
+              <Text
+                  nodeId="iHjW2DIUD"
+                  href="/support"
+                  fontSize="16px"
+              >
                 Mission
               </Text>
             </Products>
@@ -836,16 +868,32 @@
               <Text nodeId="f78Cl8aMt" fontSize="16px">
                 Resources
               </Text>
-              <Text nodeId="j61eXvWu4" href="/docs" fontSize="16px">
+              <Text
+                  nodeId="j61eXvWu4"
+                  href="/docs"
+                  fontSize="16px"
+              >
                 Docs
               </Text>
-              <Text nodeId="sLk4tpNBu" href="/docs/getting-started" fontSize="16px">
+              <Text
+                  nodeId="sLk4tpNBu"
+                  href="/docs/getting-started"
+                  fontSize="16px"
+              >
                 Blog
               </Text>
-              <Text nodeId="SXH0QhPQh" href="/blog" fontSize="16px">
+              <Text
+                  nodeId="SXH0QhPQh"
+                  href="/blog"
+                  fontSize="16px"
+              >
                 Icons Generator
               </Text>
-              <Text nodeId="QAkShYN00" href="/blog/unleashing-the-power-of-voice-a-guide-to-ai-voice-agent-apis" fontSize="16px">
+              <Text
+                  nodeId="QAkShYN00"
+                  href="/blog/unleashing-the-power-of-voice-a-guide-to-ai-voice-agent-apis"
+                  fontSize="16px"
+              >
                 Showcase
               </Text>
             </Resources>
@@ -853,13 +901,25 @@
               <Text nodeId="Ivgzd60Bz" fontSize="16px">
                 Comparisons
               </Text>
-              <Text nodeId="LTv8KqkOs" href="/404" fontSize="16px">
+              <Text
+                  nodeId="LTv8KqkOs"
+                  href="/404"
+                  fontSize="16px"
+              >
                 Helpkit
               </Text>
-              <Text nodeId="VwbqQlOzf" href="/sign-in" fontSize="16px">
+              <Text
+                  nodeId="VwbqQlOzf"
+                  href="/sign-in"
+                  fontSize="16px"
+              >
                 Feather
               </Text>
-              <Text nodeId="vAfs7XlmL" href="/sign-up" fontSize="16px">
+              <Text
+                  nodeId="vAfs7XlmL"
+                  href="/sign-up"
+                  fontSize="16px"
+              >
                 GitBook
               </Text>
             </OtherPages>
@@ -867,16 +927,32 @@
               <Text nodeId="iIMqGQYQg" fontSize="16px">
                 Template
               </Text>
-              <Text nodeId="I8u5j7Dyz" href="https://framer.ing/aiwingman" fontSize="16px">
+              <Text
+                  nodeId="I8u5j7Dyz"
+                  href="https://framer.ing/aiwingman"
+                  fontSize="16px"
+              >
                 Features
               </Text>
-              <Text nodeId="FVHbAv5Yt" href="https://framer.ing/tutorials" fontSize="16px">
+              <Text
+                  nodeId="FVHbAv5Yt"
+                  href="https://framer.ing/tutorials"
+                  fontSize="16px"
+              >
                 Tutorials
               </Text>
-              <Text nodeId="s4fAfy6EV" href="https://shop.framer.ing/buy/6ea945c7-6d54-49b0-83cd-f16cc4dde53e" fontSize="16px">
+              <Text
+                  nodeId="s4fAfy6EV"
+                  href="https://shop.framer.ing/buy/6ea945c7-6d54-49b0-83cd-f16cc4dde53e"
+                  fontSize="16px"
+              >
                 Purchase
               </Text>
-              <Text nodeId="etn7aFFvg" href="https://framer.ing/" fontSize="16px">
+              <Text
+                  nodeId="etn7aFFvg"
+                  href="https://framer.ing/"
+                  fontSize="16px"
+              >
                 All templates
               </Text>
             </Template>
@@ -899,10 +975,18 @@
           © Notaku. All rights reserved
         </Text>
         <Stack>
-          <Text nodeId="JEOXZnb8F" href="/terms-conditions" fontSize="16px">
+          <Text
+              nodeId="JEOXZnb8F"
+              href="/terms-conditions"
+              fontSize="16px"
+          >
             Status
           </Text>
-          <Text nodeId="wT3nbZ8v7" href="/privacy-policy" fontSize="16px">
+          <Text
+              nodeId="wT3nbZ8v7"
+              href="/privacy-policy"
+              fontSize="16px"
+          >
             Twitter
           </Text>
         </Stack>
@@ -937,13 +1021,25 @@
   <MainContainer>
     <Links>
       <InlineLink>
-        <Text nodeId="h0AxRbKfn" href="https://holocron.so/#pricing" fontSize="16px">
+        <Text
+            nodeId="h0AxRbKfn"
+            href="https://holocron.so/#pricing"
+            fontSize="16px"
+        >
           Pricing
         </Text>
-        <Text nodeId="tNk8d0Tf4" href="https://holocron.so/blog" fontSize="16px">
+        <Text
+            nodeId="tNk8d0Tf4"
+            href="https://holocron.so/blog"
+            fontSize="16px"
+        >
           Blog
         </Text>
-        <Text nodeId="MaC15YC5L" href="./" fontSize="16px">
+        <Text
+            nodeId="MaC15YC5L"
+            href="./"
+            fontSize="16px"
+        >
           Home
         </Text>
       </InlineLink>
