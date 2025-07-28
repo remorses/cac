@@ -1,0 +1,3281 @@
+[
+  {
+    "name": "NavigationLogo",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "CZDt6l2Ov",
+            "content": "Notaku",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "NavigationNavBar",
+    "content": "",
+    "children": [
+      {
+        "name": "MainContainer",
+        "content": "",
+        "children": [
+          {
+            "name": "Links",
+            "content": "",
+            "children": [
+              {
+                "name": "InlineLink",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "h0AxRbKfn",
+                    "attributes": {
+                      "href": "/pricing",
+                      "fontSize": "16px"
+                    },
+                    "content": "Pricing",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "tNk8d0Tf4",
+                    "attributes": {
+                      "href": "/blog",
+                      "fontSize": "16px"
+                    },
+                    "content": "Showcase",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "MaC15YC5L",
+                    "attributes": {
+                      "href": "/docs",
+                      "fontSize": "16px"
+                    },
+                    "content": "Product",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "tAy29Vpru",
+                    "attributes": {
+                      "href": "/contact-sales",
+                      "fontSize": "16px"
+                    },
+                    "content": "Contact",
+                    "count": 1
+                  }
+                ],
+                "count": 5
+              },
+              {
+                "name": "SignInSignUp",
+                "content": "",
+                "children": [
+                  {
+                    "name": "ButtonsSignUpButton",
+                    "nodeId": "ifvjngenx",
+                    "attributes": {
+                      "controlKey": "buttonText"
+                    },
+                    "content": "Login or Sign Up",
+                    "count": 1
+                  },
+                  {
+                    "name": "ButtonsSignUpButton",
+                    "nodeId": "frwhrdpi1",
+                    "attributes": {
+                      "controlKey": "buttonText"
+                    },
+                    "content": "Sign up",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              }
+            ],
+            "count": 9
+          }
+        ],
+        "count": 10
+      }
+    ],
+    "count": 11
+  },
+  {
+    "name": "ButtonsSignUpButton",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "JOn8gzR30sz0TWsWnJ",
+            "attributes": {
+              "fontSize": "16px"
+            },
+            "content": "Sign in",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "HeroSection",
+    "content": "",
+    "children": [
+      {
+        "name": "MainContainer",
+        "content": "",
+        "children": [
+          {
+            "name": "Content",
+            "content": "",
+            "children": [
+              {
+                "name": "Title",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "YTpkTplet",
+                    "attributes": {
+                      "fontSize": "52px"
+                    },
+                    "content": "Turn Notion into a professional docs website",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "VqEU0TFLW",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Publish awesome websites using Notion to manage content. Save 500+ hours of dev work. No design or code skills required.",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "at_FLmz5A",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Integrate seamlessly with our advanced technology platform",
+                    "count": 1
+                  }
+                ],
+                "count": 4
+              },
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "ButtonsPrimary",
+                    "nodeId": "p6n97zwf3",
+                    "attributes": {
+                      "controlKey": "buttonText"
+                    },
+                    "content": "Sign Up With Google",
+                    "count": 1
+                  },
+                  {
+                    "name": "ButtonsPrimary",
+                    "nodeId": "v90pzg6ai",
+                    "attributes": {
+                      "controlKey": "buttonText"
+                    },
+                    "content": "Try Our Demo for Free",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              }
+            ],
+            "count": 8
+          }
+        ],
+        "count": 9
+      }
+    ],
+    "count": 10
+  },
+  {
+    "name": "ButtonsPrimary",
+    "content": "",
+    "children": [
+      {
+        "name": "Primary",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "sz0TWsWnJ",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "Get Started Today",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "Container",
+    "content": "",
+    "children": [
+      {
+        "name": "ValidationSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Title",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "tX_L_ALb6",
+                    "attributes": {
+                      "fontSize": "22px"
+                    },
+                    "content": "Trusted by innovative companies",
+                    "count": 1
+                  }
+                ],
+                "count": 2
+              }
+            ],
+            "count": 3
+          }
+        ],
+        "count": 4
+      },
+      {
+        "name": "HighlightsSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Title",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "hy_JwJhGY",
+                    "attributes": {
+                      "fontSize": "36px"
+                    },
+                    "content": "Notion as CMS",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "sAFsxQSEQ",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Keep your websites content in Notion",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "Cards",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Text",
+                            "nodeId": "eB34y4HU5",
+                            "attributes": {
+                              "fontSize": "22px"
+                            },
+                            "content": "Team Collaboration",
+                            "count": 1
+                          },
+                          {
+                            "name": "Text",
+                            "nodeId": "XeGLCuAop",
+                            "attributes": {
+                              "fontSize": "18px"
+                            },
+                            "content": "All your team members can edit and publish new content super fast",
+                            "count": 1
+                          }
+                        ],
+                        "count": 3
+                      }
+                    ],
+                    "count": 4
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Text",
+                            "nodeId": "sBVefc7DT",
+                            "attributes": {
+                              "fontSize": "22px"
+                            },
+                            "content": "Content Management",
+                            "count": 1
+                          },
+                          {
+                            "name": "Text",
+                            "nodeId": "ll5vUXQpu",
+                            "attributes": {
+                              "fontSize": "18px"
+                            },
+                            "content": "Use Notion to manage content for docs, blog, changelog and roadmap",
+                            "count": 1
+                          }
+                        ],
+                        "count": 3
+                      }
+                    ],
+                    "count": 4
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Text",
+                            "nodeId": "MWvXB6cQF",
+                            "attributes": {
+                              "fontSize": "22px"
+                            },
+                            "content": "Multilingual Support",
+                            "count": 1
+                          },
+                          {
+                            "name": "Text",
+                            "nodeId": "jG6I0z0wh",
+                            "attributes": {
+                              "fontSize": "18px"
+                            },
+                            "content": "Enable your AI agents to communicate in multiple languages, ensuring customer support in their preferred language.",
+                            "count": 1
+                          }
+                        ],
+                        "count": 3
+                      }
+                    ],
+                    "count": 4
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Text",
+                            "nodeId": "fuNHEaT5j",
+                            "attributes": {
+                              "fontSize": "22px"
+                            },
+                            "content": "Custom Language Models",
+                            "count": 1
+                          },
+                          {
+                            "name": "Text",
+                            "nodeId": "ezEK7hA9Q",
+                            "attributes": {
+                              "fontSize": "18px"
+                            },
+                            "content": "Utilize your own language models to develop a bot tailored to your specific context and needs",
+                            "count": 1
+                          }
+                        ],
+                        "count": 3
+                      }
+                    ],
+                    "count": 4
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Text",
+                            "nodeId": "KNIRMdbTh",
+                            "attributes": {
+                              "fontSize": "22px"
+                            },
+                            "content": "Human transfer",
+                            "count": 1
+                          },
+                          {
+                            "name": "Text",
+                            "nodeId": "yAeVifIPd",
+                            "attributes": {
+                              "fontSize": "18px"
+                            },
+                            "content": "Our bots can hold the line for you and seamlessly transfer the call to a human agent when necessary.",
+                            "count": 1
+                          }
+                        ],
+                        "count": 3
+                      }
+                    ],
+                    "count": 4
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Text",
+                            "nodeId": "odCJzGgrn",
+                            "attributes": {
+                              "fontSize": "22px"
+                            },
+                            "content": "Knowledge Integration",
+                            "count": 1
+                          },
+                          {
+                            "name": "Text",
+                            "nodeId": "sD0y9OiAz",
+                            "attributes": {
+                              "fontSize": "18px"
+                            },
+                            "content": "Enhance your bot's intelligence by integrating knowledge from various sources, making it more contextually aware and smarter.",
+                            "count": 1
+                          }
+                        ],
+                        "count": 3
+                      }
+                    ],
+                    "count": 4
+                  }
+                ],
+                "count": 25
+              }
+            ],
+            "count": 29
+          }
+        ],
+        "count": 30
+      },
+      {
+        "name": "FeaturedTestimonial",
+        "content": "",
+        "children": [
+          {
+            "name": "Banner",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "Iv88w4YBd",
+                    "attributes": {
+                      "fontSize": "28px"
+                    },
+                    "content": "\"We're using Notaku Docs for formcarry.com, and it's a blessing. When editing something we just change the Notion document and documentation got the changes.\"",
+                    "count": 1
+                  }
+                ],
+                "count": 2
+              },
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "MzJhPGNQw",
+                    "attributes": {
+                      "fontSize": "18px"
+                    },
+                    "content": "@nusualabuga, Founder of formcarry.com",
+                    "count": 1
+                  }
+                ],
+                "count": 2
+              }
+            ],
+            "count": 5
+          }
+        ],
+        "count": 6
+      },
+      {
+        "name": "Feature1",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Stack",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "Mv5VPuUut",
+                                "attributes": {
+                                  "fontSize": "22px"
+                                },
+                                "content": "Daniel",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "Qp3qpVViU",
+                                "attributes": {
+                                  "fontSize": "18px"
+                                },
+                                "content": "Male, American voice",
+                                "count": 1
+                              }
+                            ],
+                            "count": 3
+                          }
+                        ],
+                        "count": 4
+                      }
+                    ],
+                    "count": 5
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Stack",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Stack",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "GHrGNNC8P",
+                                "attributes": {
+                                  "fontSize": "22px"
+                                },
+                                "content": "Ignacio",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "SrVUiQEMc",
+                                "attributes": {
+                                  "fontSize": "18px"
+                                },
+                                "content": "Male, Spanish voice",
+                                "count": 1
+                              }
+                            ],
+                            "count": 3
+                          }
+                        ],
+                        "count": 4
+                      }
+                    ],
+                    "count": 5
+                  }
+                ],
+                "count": 11
+              },
+              {
+                "name": "Content",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "rc97g95ix",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Voice cloning",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "sbfAXy0rS",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "Call your customers with AI agents that sound human",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "tUSaXqBVK",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "ApiFlow's advanced voice cloning technology allows you to create unique, human-like voices tailored to your brand. Seamlessly integrate external APIs to inject live data into calls, enhancing the customer experience and driving business success.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  },
+                  {
+                    "name": "Stats",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "zmhjf97kc",
+                        "attributes": {
+                          "controlKey": "title"
+                        },
+                        "content": "239+ voices to choose from",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "no3yve5ws",
+                        "attributes": {
+                          "controlKey": "description"
+                        },
+                        "content": "Our voices library features over 200 unique voices to pick from",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "wcfi0rca1",
+                        "attributes": {
+                          "controlKey": "title"
+                        },
+                        "content": "10+ different languages",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "m8vhtobrt",
+                        "attributes": {
+                          "controlKey": "description"
+                        },
+                        "content": "Our library of voices features 10+ languages & it's growing",
+                        "count": 1
+                      }
+                    ],
+                    "count": 5
+                  }
+                ],
+                "count": 10
+              }
+            ],
+            "count": 22
+          }
+        ],
+        "count": 23
+      },
+      {
+        "name": "Feature2",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Content",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "8hr96qm5k",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Drag & Drop builder",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "bCkWUFKVa",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "Deploy agents in minutes with drag & drop builder",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "Jh7mUSlNg",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Seamlessly integrate AI models, APIs, and data sources to create powerful agents that automate tasks and enhance your workflow. With our user-friendly interface, you can build and deploy agents quickly and efficiently, without requiring extensive coding knowledge.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  },
+                  {
+                    "name": "Stats",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "lzsp1gznt",
+                        "attributes": {
+                          "controlKey": "title"
+                        },
+                        "content": "No-code tools",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "vc3io6dve",
+                        "attributes": {
+                          "controlKey": "description"
+                        },
+                        "content": "Create agents without writing a single line of code",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "yyjjskgbf",
+                        "attributes": {
+                          "controlKey": "title"
+                        },
+                        "content": "Conversation paths",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "4gcl8dwlt",
+                        "attributes": {
+                          "controlKey": "description"
+                        },
+                        "content": "Building custom conversation paths based on your use-case",
+                        "count": 1
+                      }
+                    ],
+                    "count": 5
+                  }
+                ],
+                "count": 10
+              },
+              {
+                "name": "Visual",
+                "content": "",
+                "children": [
+                  {
+                    "name": "FormContainers",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Form1",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Stack",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Stack",
+                                "content": "",
+                                "children": [
+                                  {
+                                    "name": "Text",
+                                    "nodeId": "lwWOoQI_A",
+                                    "attributes": {
+                                      "fontSize": "18px"
+                                    },
+                                    "content": "Contact form submitted",
+                                    "count": 1
+                                  },
+                                  {
+                                    "name": "Text",
+                                    "nodeId": "rEtqC7S9u",
+                                    "attributes": {
+                                      "fontSize": "18px"
+                                    },
+                                    "content": "Hubspot",
+                                    "count": 1
+                                  }
+                                ],
+                                "count": 3
+                              }
+                            ],
+                            "count": 4
+                          }
+                        ],
+                        "count": 5
+                      }
+                    ],
+                    "count": 6
+                  },
+                  {
+                    "name": "Form2Container",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Form",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Stack",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Stack",
+                                "content": "",
+                                "children": [
+                                  {
+                                    "name": "Text",
+                                    "nodeId": "VPK9iseTn",
+                                    "attributes": {
+                                      "fontSize": "18px"
+                                    },
+                                    "content": "Make a phone call",
+                                    "count": 1
+                                  },
+                                  {
+                                    "name": "Text",
+                                    "nodeId": "aWjP4bXae",
+                                    "attributes": {
+                                      "fontSize": "18px"
+                                    },
+                                    "content": "ApiFlow",
+                                    "count": 1
+                                  }
+                                ],
+                                "count": 3
+                              }
+                            ],
+                            "count": 4
+                          }
+                        ],
+                        "count": 5
+                      }
+                    ],
+                    "count": 6
+                  }
+                ],
+                "count": 13
+              }
+            ],
+            "count": 24
+          }
+        ],
+        "count": 25
+      },
+      {
+        "name": "Feature3",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Content",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "27qbbrdsq",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Integrations",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "da3H2Ctw6",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "Integrate with 6,000+ tools",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "i4AkEmlkJ",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Take your workflow to the next level by integrating with over 6,000 tools and applications. Our platform offers a vast ecosystem of integrations, allowing you to automate tasks, streamline processes, and enhance collaboration across your entire tech stack.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  },
+                  {
+                    "name": "Stats",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "8y5lqos5s",
+                        "attributes": {
+                          "controlKey": "title"
+                        },
+                        "content": "6000+ integrations",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "j8rcdcdqr",
+                        "attributes": {
+                          "controlKey": "description"
+                        },
+                        "content": "Integrate with over 6,000+ tools with ease",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "zy58qv8ys",
+                        "attributes": {
+                          "controlKey": "title"
+                        },
+                        "content": "Zapier & Make integrations",
+                        "count": 1
+                      },
+                      {
+                        "name": "CardsStatsCard",
+                        "nodeId": "68wgtebxr",
+                        "attributes": {
+                          "controlKey": "description"
+                        },
+                        "content": "ApiFlow integrates with both Zapier and Make",
+                        "count": 1
+                      }
+                    ],
+                    "count": 5
+                  }
+                ],
+                "count": 10
+              }
+            ],
+            "count": 11
+          }
+        ],
+        "count": 12
+      },
+      {
+        "name": "CtaSection",
+        "content": "",
+        "children": [
+          {
+            "name": "Banner",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "JYfxn0Glj",
+                    "attributes": {
+                      "fontSize": "44px"
+                    },
+                    "content": "Start building your AI agents today",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "zYFwmGaAq",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Join 10,000+ developers building AI agents with ApiFlow",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "ButtonsPrimary",
+                "nodeId": "8zjdpjrgq",
+                "attributes": {
+                  "controlKey": "buttonText"
+                },
+                "content": "Get started for free",
+                "count": 1
+              }
+            ],
+            "count": 5
+          }
+        ],
+        "count": 6
+      },
+      {
+        "name": "UseCasesSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Header",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "5rgdw0wbm",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Use cases",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "mxsJPW9K7",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "One solution, unlimited use-cases",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "MLv5E2Aij",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Here's what sets our agents apart",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              }
+            ],
+            "count": 6
+          }
+        ],
+        "count": 7
+      },
+      {
+        "name": "HighlightsSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Header",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "m3e8wqhr3",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Implementation",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "uozEn5iaz",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "Get started with less than 10 lines of code",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "s6ERP14Ke",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Copy the API implementation code and start your first call.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              }
+            ],
+            "count": 6
+          }
+        ],
+        "count": 7
+      },
+      {
+        "name": "CtaSection",
+        "content": "",
+        "children": [
+          {
+            "name": "Banner",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "WauVYAAZm",
+                    "attributes": {
+                      "fontSize": "44px"
+                    },
+                    "content": "Join 10,000+ developers building AI agents",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "i9DvRm_0T",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Get started with ApiFlow for free today.",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "ButtonsPrimary",
+                "nodeId": "mkxxjngue",
+                "attributes": {
+                  "controlKey": "buttonText"
+                },
+                "content": "Get started for free",
+                "count": 1
+              }
+            ],
+            "count": 5
+          }
+        ],
+        "count": 6
+      },
+      {
+        "name": "PricingSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Header",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "xue30tzij",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Pricing",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "el9jTFEq5",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "ApiFlow costs $0.10 per minute",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "OyNNOkpDI",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Pay only for what you use. You can estimate your monthly bill using the calculator below.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              },
+              {
+                "name": "Calculator",
+                "nodeId": "m4vckhkj3",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "ApiFlow cost estimator",
+                "count": 1
+              },
+              {
+                "name": "ButtonsPrimary",
+                "nodeId": "lkhnt52l9",
+                "attributes": {
+                  "controlKey": "buttonText"
+                },
+                "content": "Learn about Pricing",
+                "count": 1
+              }
+            ],
+            "count": 8
+          }
+        ],
+        "count": 9
+      },
+      {
+        "name": "TestimonialsSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Title",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "oNsqA9pIi",
+                    "attributes": {
+                      "fontSize": "36px"
+                    },
+                    "content": "Companies love building with ApiFlow",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "gzfM_SKeK",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Here's what our customers say about us",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              }
+            ],
+            "count": 4
+          }
+        ],
+        "count": 5
+      },
+      {
+        "name": "CtaSection",
+        "content": "",
+        "children": [
+          {
+            "name": "Banner",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "aGvHtpKGp",
+                    "attributes": {
+                      "fontSize": "44px"
+                    },
+                    "content": "Join 10,000+ developers building AI agents",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "SEUZc6QZ8",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Get started with ApiFlow for free today.",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "ButtonsPrimary",
+                "nodeId": "ayvhuvh9n",
+                "attributes": {
+                  "controlKey": "buttonText"
+                },
+                "content": "Get started for free",
+                "count": 1
+              }
+            ],
+            "count": 5
+          }
+        ],
+        "count": 6
+      },
+      {
+        "name": "UseCasesSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Header",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "3340d62b8",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Customer stories",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "wNJFSQTyC",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "How businesses are using ApiFlow",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "W3jKT_lTF",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Learn how business from different industries are using our platform to automate processes.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              }
+            ],
+            "count": 6
+          }
+        ],
+        "count": 7
+      },
+      {
+        "name": "BlogsSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Header",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "42bya2l82",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Blog",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "gsIV7HWDV",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "Read our latest pieces",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "p7mlpzQqY",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Check out our latest pieces on Ai Voice agents & APIs.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              },
+              {
+                "name": "BlogPosts",
+                "content": "",
+                "children": [
+                  {
+                    "name": "CardsBlogCard",
+                    "nodeId": "d1xe4w6wp",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "Making AI Voice Agent APIs Inclusive",
+                    "count": 1
+                  },
+                  {
+                    "name": "CardsBlogCard",
+                    "nodeId": "yus2ho3hk",
+                    "attributes": {
+                      "controlKey": "description"
+                    },
+                    "content": "Ensuring Voice Technology Reaches Everyone",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "ButtonsPrimary",
+                "nodeId": "9ugx4gs9f",
+                "attributes": {
+                  "controlKey": "buttonText"
+                },
+                "content": "See all blogs",
+                "count": 1
+              }
+            ],
+            "count": 10
+          }
+        ],
+        "count": 11
+      },
+      {
+        "name": "FaqSection",
+        "content": "",
+        "children": [
+          {
+            "name": "MainContainer",
+            "content": "",
+            "children": [
+              {
+                "name": "Header",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Tag",
+                    "nodeId": "xodc133i7",
+                    "attributes": {
+                      "controlKey": "title"
+                    },
+                    "content": "FAQs",
+                    "count": 1
+                  },
+                  {
+                    "name": "Title",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "nV1K98pyo",
+                        "attributes": {
+                          "fontSize": "36px"
+                        },
+                        "content": "Questions? We got answers",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "l4i6Srxvv",
+                        "attributes": {
+                          "fontSize": "20px"
+                        },
+                        "content": "Check out the answers to most frequently asked questions.",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              }
+            ],
+            "count": 6
+          }
+        ],
+        "count": 7
+      }
+    ],
+    "count": 172
+  },
+  {
+    "name": "Tag",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "gHBqvdFgM",
+            "attributes": {
+              "fontSize": "16px"
+            },
+            "content": "Voice cloning",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "CardsStatsCard",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "MqNPuMcGd",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "239+ voices to choose from",
+            "count": 1
+          },
+          {
+            "name": "Text",
+            "nodeId": "YHz1MA82P",
+            "attributes": {
+              "fontSize": "14px"
+            },
+            "content": "Our voices library features over 200 unique voices to pick from",
+            "count": 1
+          }
+        ],
+        "count": 3
+      }
+    ],
+    "count": 4
+  },
+  {
+    "name": "InteractiveUseCases",
+    "content": "",
+    "children": [
+      {
+        "name": "FirstUseCase",
+        "content": "",
+        "children": [
+          {
+            "name": "SectionButtons",
+            "content": "",
+            "children": [
+              {
+                "name": "Tabs",
+                "nodeId": "yuoxzulsn",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Docs website",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "8jqo0etd6",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Blog website",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "1dqc1nthm",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Changelog website",
+                "count": 1
+              }
+            ],
+            "count": 4
+          },
+          {
+            "name": "InboundCallsCards",
+            "content": "",
+            "children": [
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "2qnug43gm",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Knowledge base",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "8ka8uwca2",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Keep all your product public docs in one place",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "f0m9owfuy",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Help Desk",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "1wqcqm3cd",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Create support articles and tutorials",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "xkrs049xx",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Changelog",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "57plqk2in",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Track release notes, new features and fixes",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "qet0pha6t",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Roadmap",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "vfo1fwrgn",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Show your company's future roadmap and let users vote on features",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "s4hobbt9m",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Blog",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "cnisi0u8a",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Share stories, articles and announcements",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "g3u9jyjcz",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Multi-language",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "nify6gi3j",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Write content in multiple languages in different Notion pages",
+                "count": 1
+              }
+            ],
+            "count": 13
+          }
+        ],
+        "count": 18
+      }
+    ],
+    "count": 19
+  },
+  {
+    "name": "Tabs",
+    "content": "",
+    "children": [
+      {
+        "name": "Active",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "MQlp_X_Gm",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "Inbound calls",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "CardsUseCasesCards",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "sHsxs6nj6",
+                "attributes": {
+                  "fontSize": "22px"
+                },
+                "content": "Always On-Demand",
+                "count": 1
+              },
+              {
+                "name": "Text",
+                "nodeId": "BGtoogdpN",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "Operate around the clock with the ability.",
+                "count": 1
+              }
+            ],
+            "count": 3
+          }
+        ],
+        "count": 4
+      }
+    ],
+    "count": 5
+  },
+  {
+    "name": "InteractiveCodeSnippets",
+    "content": "",
+    "children": [
+      {
+        "name": "Python",
+        "content": "",
+        "children": [
+          {
+            "name": "PythonButton",
+            "nodeId": "0njo2f4a6",
+            "attributes": {
+              "controlKey": "text"
+            },
+            "content": "Copy code",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "ButtonsCopySnippet",
+    "content": "",
+    "children": [
+      {
+        "name": "Default",
+        "content": "",
+        "children": [
+          {
+            "name": "Label",
+            "nodeId": "HGO1F5Het",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "Copy snippet",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "CardsTestimonialCard",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Heading",
+                        "nodeId": "I15:764;15:723",
+                        "attributes": {
+                          "fontSize": "18px"
+                        },
+                        "content": "Person name",
+                        "count": 1
+                      },
+                      {
+                        "name": "Position",
+                        "nodeId": "Lp0AAs16H",
+                        "attributes": {
+                          "fontSize": "14px"
+                        },
+                        "content": "Developer at Meta",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 4
+              },
+              {
+                "name": "SupportingText",
+                "nodeId": "I15:764;15:726",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "test",
+                "count": 1
+              },
+              {
+                "name": "SupportingText",
+                "nodeId": "GBqZR2Mm7",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "x. xx",
+                "count": 1
+              }
+            ],
+            "count": 7
+          }
+        ],
+        "count": 8
+      }
+    ],
+    "count": 9
+  },
+  {
+    "name": "InteractiveCustomerStories",
+    "content": "",
+    "children": [
+      {
+        "name": "First",
+        "content": "",
+        "children": [
+          {
+            "name": "SectionButtons",
+            "content": "",
+            "children": [
+              {
+                "name": "Tabs",
+                "nodeId": "0nh7shels",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Documentation",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "yxca2myb5",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Help Desk",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "b2qn6sxv5",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Blog",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "66di6avgv",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Changelog",
+                "count": 1
+              }
+            ],
+            "count": 5
+          },
+          {
+            "name": "Retail",
+            "nodeId": "kbbuzvrzu",
+            "attributes": {
+              "controlKey": "title"
+            },
+            "content": "Turn Notion into a professional docs website",
+            "count": 1
+          },
+          {
+            "name": "Retail",
+            "nodeId": "ea419keaw",
+            "attributes": {
+              "controlKey": "description"
+            },
+            "content": "Publish awesome websites using Notion to manage content. Save 500+ hours of dev work. No design or code skills required.",
+            "count": 1
+          }
+        ],
+        "count": 8
+      }
+    ],
+    "count": 9
+  },
+  {
+    "name": "CardsCustomerStories",
+    "content": "",
+    "children": [
+      {
+        "name": "Testimonial",
+        "content": "",
+        "children": [
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "o35e1NS1c",
+                "attributes": {
+                  "fontSize": "20px"
+                },
+                "content": "\"Integrating ApiFlow's AI voice API into our stores has been a game-changer. We've reduced our operational costs by 40% and significantly enhanced the shopping experience for our customers. \"",
+                "count": 1
+              }
+            ],
+            "count": 2
+          },
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "OkNGouKVs",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "Jack Jones",
+                "count": 1
+              },
+              {
+                "name": "Text",
+                "nodeId": "zoo4B0GrA",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "CTO at BigCompany",
+                "count": 1
+              }
+            ],
+            "count": 3
+          }
+        ],
+        "count": 6
+      },
+      {
+        "name": "Info",
+        "content": "",
+        "children": [
+          {
+            "name": "Paragraph",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "lcLZ6wzPk",
+                "attributes": {
+                  "fontSize": "22px"
+                },
+                "content": "Enhancing Customer Experience and Reducing Costs with ApiFlow",
+                "count": 1
+              },
+              {
+                "name": "Text",
+                "nodeId": "DJEaYvSmp",
+                "attributes": {
+                  "fontSize": "16px"
+                },
+                "content": "A leading retail chain integrated ApiFlow's AI voice API to provide voice-activated assistance in their stores. This technology allowed customers to easily find products, check prices, and get personalized recommendations.",
+                "count": 1
+              }
+            ],
+            "count": 3
+          }
+        ],
+        "count": 4
+      }
+    ],
+    "count": 11
+  },
+  {
+    "name": "CardsBlogCard",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "Hj4i_tXrx",
+                    "attributes": {
+                      "fontSize": "18px"
+                    },
+                    "content": "Here goes the title of the article and it will be long",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "qapkBQIZd",
+                    "attributes": {
+                      "fontSize": "16px"
+                    },
+                    "content": "And here is the a short description of the article that we are about to read",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "Text",
+                "nodeId": "AOqVZ0D69",
+                "attributes": {
+                  "fontSize": "14px"
+                },
+                "content": "June 20, 2024",
+                "count": 1
+              }
+            ],
+            "count": 5
+          }
+        ],
+        "count": 6
+      }
+    ],
+    "count": 7
+  },
+  {
+    "name": "CardsFaqCard",
+    "content": "",
+    "children": [
+      {
+        "name": "Answers",
+        "content": "",
+        "children": [
+          {
+            "name": "Question",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "oYGyR9CoX",
+                "attributes": {
+                  "fontSize": "20px"
+                },
+                "content": "Here is a question?",
+                "count": 1
+              }
+            ],
+            "count": 2
+          },
+          {
+            "name": "Text",
+            "nodeId": "z2dgAQMis",
+            "attributes": {
+              "fontSize": "16px"
+            },
+            "content": "Okay, this is an answer and it's going to be longer than usual bu tit's going to be a great answer.",
+            "count": 1
+          }
+        ],
+        "count": 4
+      }
+    ],
+    "count": 5
+  },
+  {
+    "name": "NavigationFooter",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "FooterTop",
+            "content": "",
+            "children": [
+              {
+                "name": "MainContainer",
+                "content": "",
+                "children": [
+                  {
+                    "name": "TopPart",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "LogoAuthor",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Logo",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "inGJDsmYO",
+                                "attributes": {
+                                  "fontSize": "16px"
+                                },
+                                "content": "Publish awesome websites with Notion",
+                                "count": 1
+                              }
+                            ],
+                            "count": 2
+                          },
+                          {
+                            "name": "Author",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "dNTXAT24e",
+                                "attributes": {
+                                  "fontSize": "16px"
+                                },
+                                "content": "By Tommy",
+                                "count": 1
+                              }
+                            ],
+                            "count": 2
+                          }
+                        ],
+                        "count": 5
+                      },
+                      {
+                        "name": "SiteNavigation",
+                        "content": "",
+                        "children": [
+                          {
+                            "name": "Products",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "Oe6VzyYPt",
+                                "attributes": {
+                                  "fontSize": "16px"
+                                },
+                                "content": "Company",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "qqoXrPNMS",
+                                "attributes": {
+                                  "href": "/pricing",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Terms",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "l7OQq4utu",
+                                "attributes": {
+                                  "href": "/contact-sales",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Privacy",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "bikySphEg",
+                                "attributes": {
+                                  "href": "/contact-sales-2",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Affiliate Program",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "iHjW2DIUD",
+                                "attributes": {
+                                  "href": "/support",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Mission",
+                                "count": 1
+                              }
+                            ],
+                            "count": 6
+                          },
+                          {
+                            "name": "Resources",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "f78Cl8aMt",
+                                "attributes": {
+                                  "fontSize": "16px"
+                                },
+                                "content": "Resources",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "j61eXvWu4",
+                                "attributes": {
+                                  "href": "/docs",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Docs",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "sLk4tpNBu",
+                                "attributes": {
+                                  "href": "/docs/getting-started",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Blog",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "SXH0QhPQh",
+                                "attributes": {
+                                  "href": "/blog",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Icons Generator",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "QAkShYN00",
+                                "attributes": {
+                                  "href": "/blog/unleashing-the-power-of-voice-a-guide-to-ai-voice-agent-apis",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Showcase",
+                                "count": 1
+                              }
+                            ],
+                            "count": 6
+                          },
+                          {
+                            "name": "OtherPages",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "Ivgzd60Bz",
+                                "attributes": {
+                                  "fontSize": "16px"
+                                },
+                                "content": "Comparisons",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "LTv8KqkOs",
+                                "attributes": {
+                                  "href": "/404",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Helpkit",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "VwbqQlOzf",
+                                "attributes": {
+                                  "href": "/sign-in",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Feather",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "vAfs7XlmL",
+                                "attributes": {
+                                  "href": "/sign-up",
+                                  "fontSize": "16px"
+                                },
+                                "content": "GitBook",
+                                "count": 1
+                              }
+                            ],
+                            "count": 5
+                          },
+                          {
+                            "name": "Template",
+                            "content": "",
+                            "children": [
+                              {
+                                "name": "Text",
+                                "nodeId": "iIMqGQYQg",
+                                "attributes": {
+                                  "fontSize": "16px"
+                                },
+                                "content": "Template",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "I8u5j7Dyz",
+                                "attributes": {
+                                  "href": "https://framer.ing/aiwingman",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Features",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "FVHbAv5Yt",
+                                "attributes": {
+                                  "href": "https://framer.ing/tutorials",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Tutorials",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "s4fAfy6EV",
+                                "attributes": {
+                                  "href": "https://shop.framer.ing/buy/6ea945c7-6d54-49b0-83cd-f16cc4dde53e",
+                                  "fontSize": "16px"
+                                },
+                                "content": "Purchase",
+                                "count": 1
+                              },
+                              {
+                                "name": "Text",
+                                "nodeId": "etn7aFFvg",
+                                "attributes": {
+                                  "href": "https://framer.ing/",
+                                  "fontSize": "16px"
+                                },
+                                "content": "All templates",
+                                "count": 1
+                              }
+                            ],
+                            "count": 6
+                          }
+                        ],
+                        "count": 24
+                      }
+                    ],
+                    "count": 30
+                  }
+                ],
+                "count": 31
+              }
+            ],
+            "count": 32
+          },
+          {
+            "name": "FooterBottom",
+            "content": "",
+            "children": [
+              {
+                "name": "MainContainer",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "ATDzUR2Uh",
+                    "attributes": {
+                      "fontSize": "16px"
+                    },
+                    "content": "© Notaku. All rights reserved",
+                    "count": 1
+                  },
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "nodeId": "JEOXZnb8F",
+                        "attributes": {
+                          "href": "/terms-conditions",
+                          "fontSize": "16px"
+                        },
+                        "content": "Status",
+                        "count": 1
+                      },
+                      {
+                        "name": "Text",
+                        "nodeId": "wT3nbZ8v7",
+                        "attributes": {
+                          "href": "/privacy-policy",
+                          "fontSize": "16px"
+                        },
+                        "content": "Twitter",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 5
+              }
+            ],
+            "count": 6
+          }
+        ],
+        "count": 39
+      }
+    ],
+    "count": 40
+  },
+  {
+    "name": "NavigationTwitterProfilePreview",
+    "content": "",
+    "children": [
+      {
+        "name": "Closed",
+        "content": "",
+        "children": [
+          {
+            "name": "Link",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "l9D2UPiVw",
+                "attributes": {
+                  "fontSize": "16px"
+                },
+                "content": "Follow on X",
+                "count": 1
+              }
+            ],
+            "count": 2
+          }
+        ],
+        "count": 3
+      }
+    ],
+    "count": 4
+  },
+  {
+    "name": "RemoveButton",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "xRh2ZBpJM",
+            "content": "Sign Up With Google",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "NavigationLogo",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "CZDt6l2Ov",
+            "content": "holocron",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "NavigationNavBar",
+    "content": "",
+    "children": [
+      {
+        "name": "MainContainer",
+        "content": "",
+        "children": [
+          {
+            "name": "Links",
+            "content": "",
+            "children": [
+              {
+                "name": "InlineLink",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "h0AxRbKfn",
+                    "attributes": {
+                      "href": "https://holocron.so/#pricing",
+                      "fontSize": "16px"
+                    },
+                    "content": "Pricing",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "tNk8d0Tf4",
+                    "attributes": {
+                      "href": "https://holocron.so/blog",
+                      "fontSize": "16px"
+                    },
+                    "content": "Blog",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "MaC15YC5L",
+                    "attributes": {
+                      "href": "./",
+                      "fontSize": "16px"
+                    },
+                    "content": "Home",
+                    "count": 1
+                  }
+                ],
+                "count": 4
+              },
+              {
+                "name": "SignInSignUp",
+                "content": "",
+                "children": [
+                  {
+                    "name": "ButtonsSignUpButton",
+                    "nodeId": "ifvjngenx",
+                    "attributes": {
+                      "controlKey": "buttonText"
+                    },
+                    "content": "Signup or Login",
+                    "count": 1
+                  }
+                ],
+                "count": 2
+              }
+            ],
+            "count": 7
+          }
+        ],
+        "count": 8
+      }
+    ],
+    "count": 9
+  },
+  {
+    "name": "HeroSection",
+    "content": "",
+    "children": [
+      {
+        "name": "MainContainer",
+        "content": "",
+        "children": [
+          {
+            "name": "Content",
+            "content": "",
+            "children": [
+              {
+                "name": "Title",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Text",
+                    "nodeId": "YTpkTplet",
+                    "attributes": {
+                      "fontSize": "52px"
+                    },
+                    "content": "Notion like editor for your markdown files",
+                    "count": 1
+                  },
+                  {
+                    "name": "Text",
+                    "nodeId": "VqEU0TFLW",
+                    "attributes": {
+                      "fontSize": "20px"
+                    },
+                    "content": "Make your markdown files editable by everyone. Let non technical team members write docs, save 1000+ hours of your engineers time!",
+                    "count": 1
+                  }
+                ],
+                "count": 3
+              },
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "ButtonsPrimary",
+                    "nodeId": "p6n97zwf3",
+                    "attributes": {
+                      "controlKey": "buttonText"
+                    },
+                    "content": "Start Writing Now",
+                    "count": 1
+                  }
+                ],
+                "count": 2
+              }
+            ],
+            "count": 6
+          }
+        ],
+        "count": 7
+      }
+    ],
+    "count": 8
+  },
+  {
+    "name": "Tag",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "gHBqvdFgM",
+            "attributes": {
+              "fontSize": "16px"
+            },
+            "content": "Markdown Editor",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "CardsStatsCard",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "MqNPuMcGd",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "Notion like editor for markdown",
+            "count": 1
+          },
+          {
+            "name": "Text",
+            "nodeId": "YHz1MA82P",
+            "attributes": {
+              "fontSize": "14px"
+            },
+            "content": "Make your markdown files editable by everyone",
+            "count": 1
+          }
+        ],
+        "count": 3
+      }
+    ],
+    "count": 4
+  },
+  {
+    "name": "InteractiveUseCases",
+    "content": "",
+    "children": [
+      {
+        "name": "FirstUseCase",
+        "content": "",
+        "children": [
+          {
+            "name": "SectionButtons",
+            "content": "",
+            "children": [
+              {
+                "name": "Tabs",
+                "nodeId": "yuoxzulsn",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Docs",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "8jqo0etd6",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Blog",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "1dqc1nthm",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Changelog",
+                "count": 1
+              }
+            ],
+            "count": 4
+          },
+          {
+            "name": "InboundCallsCards",
+            "content": "",
+            "children": [
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "2qnug43gm",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Documentation",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "8ka8uwca2",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Collaborate on technical documentation easily",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "f0m9owfuy",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Support",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "1wqcqm3cd",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Create help articles for your team",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "xkrs049xx",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Changelog",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "57plqk2in",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Track product updates and releases",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "qet0pha6t",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Product Roadmap",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "vfo1fwrgn",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Share future plans with your community",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "s4hobbt9m",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Blog",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "cnisi0u8a",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Publish articles and announcements",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "g3u9jyjcz",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Multi-language",
+                "count": 1
+              },
+              {
+                "name": "CardsUseCasesCards",
+                "nodeId": "nify6gi3j",
+                "attributes": {
+                  "controlKey": "text"
+                },
+                "content": "Support content in multiple languages",
+                "count": 1
+              }
+            ],
+            "count": 13
+          }
+        ],
+        "count": 18
+      }
+    ],
+    "count": 19
+  },
+  {
+    "name": "Tabs",
+    "content": "",
+    "children": [
+      {
+        "name": "Active",
+        "content": "",
+        "children": [
+          {
+            "name": "Text",
+            "nodeId": "MQlp_X_Gm",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "Use Cases",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "CardsUseCasesCards",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Text",
+                "nodeId": "sHsxs6nj6",
+                "attributes": {
+                  "fontSize": "22px"
+                },
+                "content": "Always Accessible",
+                "count": 1
+              },
+              {
+                "name": "Text",
+                "nodeId": "BGtoogdpN",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "Edit and collaborate from anywhere",
+                "count": 1
+              }
+            ],
+            "count": 3
+          }
+        ],
+        "count": 4
+      }
+    ],
+    "count": 5
+  },
+  {
+    "name": "InteractiveCodeSnippets",
+    "content": "",
+    "children": [
+      {
+        "name": "Python",
+        "content": "",
+        "children": [
+          {
+            "name": "PythonButton",
+            "nodeId": "0njo2f4a6",
+            "attributes": {
+              "controlKey": "text"
+            },
+            "content": "Copy code",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "ButtonsCopySnippet",
+    "content": "",
+    "children": [
+      {
+        "name": "Default",
+        "content": "",
+        "children": [
+          {
+            "name": "Label",
+            "nodeId": "HGO1F5Het",
+            "attributes": {
+              "fontSize": "18px"
+            },
+            "content": "Copy snippet",
+            "count": 1
+          }
+        ],
+        "count": 2
+      }
+    ],
+    "count": 3
+  },
+  {
+    "name": "CardsTestimonialCard",
+    "content": "",
+    "children": [
+      {
+        "name": "Variant1",
+        "content": "",
+        "children": [
+          {
+            "name": "Stack",
+            "content": "",
+            "children": [
+              {
+                "name": "Stack",
+                "content": "",
+                "children": [
+                  {
+                    "name": "Stack",
+                    "content": "",
+                    "children": [
+                      {
+                        "name": "Heading",
+                        "nodeId": "I15:764;15:723",
+                        "attributes": {
+                          "fontSize": "18px"
+                        },
+                        "content": "Developer",
+                        "count": 1
+                      },
+                      {
+                        "name": "Position",
+                        "nodeId": "Lp0AAs16H",
+                        "attributes": {
+                          "fontSize": "14px"
+                        },
+                        "content": "Holocron User",
+                        "count": 1
+                      }
+                    ],
+                    "count": 3
+                  }
+                ],
+                "count": 4
+              },
+              {
+                "name": "SupportingText",
+                "nodeId": "I15:764;15:726",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "Holocron saves our team hours of documentation work",
+                "count": 1
+              },
+              {
+                "name": "SupportingText",
+                "nodeId": "GBqZR2Mm7",
+                "attributes": {
+                  "fontSize": "18px"
+                },
+                "content": "Highly recommended",
+                "count": 1
+              }
+            ],
+            "count": 7
+          }
+        ],
+        "count": 8
+      }
+    ],
+    "count": 9
+  },
+  {
+    "name": "InteractiveCustomerStories",
+    "content": "",
+    "children": [
+      {
+        "name": "First",
+        "content": "",
+        "children": [
+          {
+            "name": "SectionButtons",
+            "content": "",
+            "children": [
+              {
+                "name": "Tabs",
+                "nodeId": "0nh7shels",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Documentation",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "yxca2myb5",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Help Desk",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "b2qn6sxv5",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Blog",
+                "count": 1
+              },
+              {
+                "name": "Tabs",
+                "nodeId": "66di6avgv",
+                "attributes": {
+                  "controlKey": "title"
+                },
+                "content": "Changelog",
+                "count": 1
+              }
+            ],
+            "count": 5
+          },
+          {
+            "name": "Retail",
+            "nodeId": "kbbuzvrzu",
+            "attributes": {
+              "controlKey": "title"
+            },
+            "content": "Markdown Editing Made Simple",
+            "count": 1
+          },
+          {
+            "name": "Retail",
+            "nodeId": "ea419keaw",
+            "attributes": {
+              "controlKey": "description"
+            },
+            "content": "Create, edit, and publish markdown files with ease. Collaborate without technical barriers.",
+            "count": 1
+          }
+        ],
+        "count": 8
+      }
+    ],
+    "count": 9
+  }
+]
