@@ -13,7 +13,8 @@ import {
     xmlToFramerLayersTree,
 } from 'plugin-mcp'
 
-let ITEMS_PER_ITERATION = 10
+export const ITEMS_PER_ITERATION = 30
+
 
 test('splitTreeInChunks long', () => {
     let folder = path.resolve(__dirname, 'evaluation/xml/')
@@ -165,7 +166,8 @@ test('xml partial content, rewriteXmlContent', () => {
               </text>
               <AI_Kit_Button nodeId="rgayf1f9">
                 cta replaced
-              </AI_Kit_Button></Stack></Header></Hero></Container>"
+              </AI_Kit_Button>
+      </Stack></Header></Hero></Container>"
     `)
 })
 

@@ -6,23 +6,22 @@ import z from 'zod'
 
 export interface CreateTransportOptions {
     clientName?: string
-    id?: string
+    mcpUrl: string
 }
 
 export async function createTransport(
-    options?: CreateTransportOptions,
+    options: CreateTransportOptions,
 ): Promise<{
     transport: Transport
 }> {
-    const id = options?.id || 'test-id'
-    const sseUrl = new URL(`https://mcp.unframer.co/sse?id=${id}`)
+    const sseUrl = new URL(options.mcpUrl)
     const transport = new SSEClientTransport(sseUrl)
     return {
         transport,
     }
 }
 
-export async function createMCPClient(options?: CreateTransportOptions) {
+export async function createMCPClient(options: CreateTransportOptions) {
     const client = new Client({
         name: options?.clientName ?? 'test',
         version: '1.0.0',

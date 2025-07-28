@@ -1,0 +1,58 @@
+```xml
+<AI_Kit_Nav>
+	<Navigation>
+		<Stack>
+			<!--
+section and role: nav/link
+existing text: Product
+length: Is the content characters length different? No
+-->
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
+				Product
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<!--
+section and role: nav/link
+existing text: Pricing
+length: Is the content characters length different? No
+-->
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
+				Pricing
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<!--
+section and role: nav/link
+existing text: Templates
+length: Is the content characters length different? No
+-->
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/brand" nodeId="ttyq47m7">
+				Templates
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<!--
+section and role: nav/link
+existing text: Learn
+length: Is the content characters length different? No
+-->
+			<AI_Kit_Navigation_Nav_Top_Item href="example.com/blog" nodeId="5mjfkk9h">
+				Learn
+			</AI_Kit_Navigation_Nav_Top_Item>
+			<!--
+section and role: nav/link
+existing text: Support
+length: Is the content characters length different? No
+-->
+			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
+				Support
+			</AI_Kit_Navigation_Nav_Top_Item>
+		</Stack>
+		<Stack>
+			<!--
+section and role: nav/button
+existing text: Sign up
+length: Is the content characters length different? Yes, shortening to match the existing text.
+-->
+			<AI_Kit_Button nodeId="koeyy0nt">
+				Sign up
+			</AI_Kit_Button>
+		</Stack>
+	</Navigation>
+</AI_Kit_Nav>
+```
