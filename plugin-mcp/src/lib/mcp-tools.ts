@@ -4,72 +4,10 @@ import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-import { z } from 'zod'
-import { McpToolNames } from './types'
+import { McpToolNames, mcpTools } from './types'
+export type { McpToolWebsocketPayload } from './types'
 import { createWebsocketHandling } from './websocket-server'
-
-/* ──────────────────────────── 1. Enum ────────────────────────────── */
-
-/* ──────────────────────────── 2. Schemas ─────────────────────────── */
-const NodeId = z.string().min(1)
-const Role = z.enum(['background', 'text', 'border'])
-
-/* inputs */
-export const GetPublishedURLInput = z.object({})
-export const FetchHTMLInput = z.object({ url: z.string().url() })
-export const GetSelectedNodeIdsInput = z.object({})
-export const SetNodeAttributesInput = z.object({
-    nodeId: NodeId,
-    attributes: z.record(z.any()),
-})
-export const ApplyColorStyleInput = z
-    .object({
-        nodeId: NodeId,
-        role: Role,
-        styleId: z.string().optional(),
-        color: z.string().optional(),
-    })
-    .refine((d) => (d.styleId ? !d.color : !!d.color), {
-        message: 'use styleId OR color',
-    })
-export const InsertComponentInstanceInput = z.object({
-    url: z.string().url(),
-    attributes: z.record(z.any()).optional(),
-    controls: z.record(z.any()).optional(),
-})
-export const ExportReactComponentsInput = z.object({
-    outDir: z.string().optional(),
-})
-
-/* outputs (payload only) */
-const TextOut = z.object({ text: z.string() })
-const JsonOut = z.object({ json: z.any() })
-
-/* ───────────────────────── 3. Message types ──────────────────────── */
-type McpToolMsg<T extends McpToolNames, InputSchema extends z.ZodTypeAny> = {
-    type: T
-    input: z.infer<InputSchema>
-    output?: any
-}
-
-/* explicit union */
-export type McpToolWebsocketPayload =
-    | McpToolMsg<McpToolNames.GetPublishedURL, typeof GetPublishedURLInput>
-    | McpToolMsg<McpToolNames.FetchHTML, typeof FetchHTMLInput>
-    | McpToolMsg<
-          McpToolNames.GetSelectedNodeIds,
-          typeof GetSelectedNodeIdsInput
-      >
-    | McpToolMsg<McpToolNames.SetNodeAttributes, typeof SetNodeAttributesInput>
-    | McpToolMsg<McpToolNames.ApplyColorStyle, typeof ApplyColorStyleInput>
-    | McpToolMsg<
-          McpToolNames.InsertComponentInstance,
-          typeof InsertComponentInstanceInput
-      >
-    | McpToolMsg<
-          McpToolNames.ExportReactComponents,
-          typeof ExportReactComponentsInput
-      >
+import { toJSONSchema } from 'zod'
 
 export async function implementMcpTools({
     server,
@@ -142,79 +80,11 @@ export async function implementMcpTools({
     }
 
     server.setRequestHandler(ListToolsRequestSchema, async () => ({
-        tools: [
-            {
-                name: McpToolNames.GetPublishedURL,
-                description: 'Return staging & production publish info.',
-                inputSchema: { type: 'object', properties: {}, required: [] },
-            },
-            {
-                name: McpToolNames.FetchHTML,
-                description: 'Download raw HTML from a public URL.',
-                inputSchema: {
-                    type: 'object',
-                    properties: { url: { type: 'string', format: 'uri' } },
-                    required: ['url'],
-                },
-            },
-            {
-                name: McpToolNames.GetSelectedNodeIds,
-                description: 'Get IDs of currently selected nodes.',
-                inputSchema: { type: 'object', properties: {}, required: [] },
-            },
-            {
-                name: McpToolNames.SetNodeAttributes,
-                description: 'Bulk‑set style/layout attributes on one node.',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        nodeId: { type: 'string' },
-                        attributes: { type: 'object' },
-                    },
-                    required: ['nodeId', 'attributes'],
-                },
-            },
-            {
-                name: McpToolNames.ApplyColorStyle,
-                description: 'Apply a colour (style link or inline).',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        nodeId: { type: 'string' },
-                        role: {
-                            type: 'string',
-                            enum: ['background', 'text', 'border'],
-                        },
-                        styleId: { type: 'string' },
-                        color: { type: 'string' },
-                    },
-                    required: ['nodeId', 'role'],
-                },
-            },
-            {
-                name: McpToolNames.InsertComponentInstance,
-                description: 'Insert a code‑component via its URL.',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        url: { type: 'string', format: 'uri' },
-                        attributes: { type: 'object' },
-                        controls: { type: 'object' },
-                    },
-                    required: ['url'],
-                },
-            },
-            {
-                name: McpToolNames.ExportReactComponents,
-                description:
-                    'Return CLI command to export components as React.',
-                inputSchema: {
-                    type: 'object',
-                    properties: { outDir: { type: 'string' } },
-                    required: [],
-                },
-            },
-        ],
+        tools: Object.entries(mcpTools).map(([name, tool]) => ({
+            name,
+            description: tool.description,
+            inputSchema: toJSONSchema(tool.input),
+        })),
     }))
 
     server.setRequestHandler(

@@ -22,7 +22,7 @@ const cleanup = await websocketClientHandling({
     // @ts-ignore
     handle({ input, type }) {
         switch (type) {
-            case McpToolNames.ApplyColorStyle: {
+            case 'applyColorStyle': {
                 break
             }
         }

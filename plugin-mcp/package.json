@@ -26,7 +26,7 @@
         "react-dom": "19.1.0",
         "react-use-measure": "^2.1.7",
         "unframer": "workspace:*",
-        "zod": "^3.25.71",
+        "zod": "^4.0.10",
         "zustand": "^5.0.5"
     },
     "devDependencies": {
