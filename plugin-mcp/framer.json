@@ -2,5 +2,5 @@
     "id": "mcp001",
     "name": "MCP",
     "modes": ["canvas"],
-    "icon": "/icon.svg"
+    "icon": "/icon.png"
 }
