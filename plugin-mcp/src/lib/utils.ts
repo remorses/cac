@@ -19,6 +19,7 @@ export async function getPluginApiClient() {
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
                 throw redirect(withMode(Paths.login))
             }
+
         },
         async onRequest() {
             const { sessionKey } = await getMcpPluginData()
@@ -31,7 +32,6 @@ export async function getPluginApiClient() {
     })
     return client
 }
-
 
 export const noop: any = () => {}
 
@@ -72,4 +72,3 @@ export function withMode(path: string, params?: Record<string, string>) {
     const searchParams = new URLSearchParams(params)
     return `${path}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 }
-

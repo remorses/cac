@@ -109,8 +109,7 @@ export async function getComponentPropertyControls(url?: string | null) {
     if (!url) return { comments: undefined, propertyControls: undefined }
     try {
         const [res, paths] = await Promise.all([
-            // @vite-ignore
-            import(url),
+            import(/* @vite-ignore */ url),
             getPagePaths(),
         ])
         const propertyControls: PropertyControls = res.default?.propertyControls

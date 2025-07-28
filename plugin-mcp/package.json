@@ -5,7 +5,7 @@
     "type": "module",
     "main": "./src/index.ts",
     "scripts": {
-        "dev": "vite",
+        "dev": "doppler run -c production -- vite",
         "test": "doppler run -- pnpm vitest -u --run",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build",
         "check": "pnpm tsc --incremental",
