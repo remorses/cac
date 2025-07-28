@@ -592,17 +592,57 @@ async function getNodeAttributesForXml(node: AnyNode) {
         addAttribute('svg', node.svg)
     }
 
-    // Component instance controls
-    let attrControlsComments
+    // Create base comments object
+    let attrComments: Record<string, string> = {
+        // Common attributes
+        opacity: 'opacity value between 0 and 1',
+        visible: 'whether the node is visible',
+        locked: 'whether the node is locked',
+        position: 'position type',
+        width: 'width in pixels',
+        height: 'height in pixels',
+        rotation: 'rotation in degrees',
+        top: 'top position constraint',
+        right: 'right position constraint',
+        bottom: 'bottom position constraint',
+        left: 'left position constraint',
+        centerX: 'horizontal center constraint',
+        centerY: 'vertical center constraint',
+        minWidth: 'minimum width constraint',
+        maxWidth: 'maximum width constraint',
+        minHeight: 'minimum height constraint',
+        maxHeight: 'maximum height constraint',
+        aspectRatio: 'aspect ratio constraint',
+        link: 'link URL',
+        linkOpenInNewTab: 'whether link opens in new tab',
+        backgroundColor: 'background color or color style path',
+        borderRadius: 'border radius in pixels',
+        imageRendering: 'image rendering mode',
+        backgroundImage: 'background image URL',
+        font: 'font selector',
+        inlineTextStyle: 'text style path',
+        svg: 'SVG content',
+    }
+
+    // Component instance specific handling
     if (isComponentInstanceNode(node)) {
+        // Add componentId attribute
+        const componentId = getInstanceComponentId(node)
+        if (componentId) {
+            addAttribute('componentId', componentId)
+            attrComments.componentId = 'the component id this instance uses'
+        }
+
         if (!node.insertURL) {
             console.log(`no node.insertURL for component instance ${node.name}`)
         }
-        const { comments } = await getComponentPropertyControls(
+        const { comments: controlComments } = await getComponentPropertyControls(
             node.insertURL || undefined,
         )
-        if (comments) {
-            attrControlsComments = comments
+        
+        // Merge control comments into the main comments object
+        if (controlComments) {
+            Object.assign(attrComments, controlComments)
         }
 
         // Add all controls as top-level attributes
@@ -617,7 +657,7 @@ async function getNodeAttributesForXml(node: AnyNode) {
 
     return {
         attributes,
-        attrControlsComments,
+        attrControlsComments: attrComments,
     }
 }
 
@@ -788,6 +828,7 @@ export async function applyAttributes(
             'width',
             'height',
             'rotation',
+            'componentId', // componentId cannot be updated
         ]
 
         const nodeAttrs: Record<string, any> = {}

@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 import {
-    bfsOldTextTree,
-    cleanupOldTextTree,
-    oldTextTreeToXml,
+    bfsFramerLayersTree,
+    cleanupTreeFromEmptyNodes,
+    framerLayersTreeToXml,
 } from 'website/src/lib/utils'
 
 import { ITEMS_PER_ITERATION, splitTreeInChunks } from 'website/src/lib/rewrite'
@@ -14,7 +14,7 @@ import { ElementType, Parser } from 'htmlparser2'
 import {
     extractObjectsFromXmlContent,
     rewriteXmlContentForTests,
-    xmlToOldTextTree,
+    xmlToFramerLayersTree,
 } from 'plugin-mcp'
 import path from 'path'
 
@@ -22,7 +22,7 @@ test('splitTreeInChunks long', () => {
     let folder = path.resolve(__dirname, 'evaluation/xml/')
     const xml = fs.readFileSync(path.resolve(folder, 'long.xml'), 'utf8')
     const max = ITEMS_PER_ITERATION
-    const tree = xmlToOldTextTree(xml)
+    const tree = xmlToFramerLayersTree(xml)
     fs.writeFileSync(
         path.resolve(folder, './long-tree.json'),
         JSON.stringify(tree, null, 2),
@@ -35,14 +35,14 @@ test('splitTreeInChunks long', () => {
             .map(
                 (res) =>
                     `<-- ${res.reduce((acc, x) => acc + x.count!, 0)} -->\n` +
-                    oldTextTreeToXml(res),
+                    framerLayersTreeToXml(res),
             )
             .join('\n\n---\n\n'),
     )
 
     // Additional chunk size checks
     for (let chunk of chunks) {
-        const nodes = bfsOldTextTree(chunk)
+        const nodes = bfsFramerLayersTree(chunk)
         expect(nodes.length).toBeLessThanOrEqual(max * 2)
         const withNodeId = nodes.filter((x) => x.nodeId)
         expect(nodes.length).toBeGreaterThanOrEqual(10)
@@ -50,13 +50,13 @@ test('splitTreeInChunks long', () => {
     }
 
     // Get all nodeIds from original tree
-    const originalNodes = bfsOldTextTree(tree)
+    const originalNodes = bfsFramerLayersTree(tree)
     const originalNodeIds = originalNodes
         .filter((x) => x.nodeId)
         .map((x) => x.nodeId)
 
     // Get all nodeIds from chunked trees
-    const chunkedNodeIds = bfsOldTextTree(chunks.flat())
+    const chunkedNodeIds = bfsFramerLayersTree(chunks.flat())
         .filter((x) => x.nodeId)
         .map((x) => x.nodeId)
 
@@ -85,7 +85,7 @@ test('extractObjectsFromXmlContent', ({ expect }) => {
             </Hero>
         </Container>
         \`\`\`
-        
+
     `
 
     const results = extractObjectsFromXmlContent(xml)
@@ -173,8 +173,8 @@ test('xml partial content, rewriteXmlContent', () => {
 })
 
 test('oldTextTreeToXml', async () => {
-    const res = oldTextTreeToXml(
-        cleanupOldTextTree([
+    const res = framerLayersTreeToXml(
+        cleanupTreeFromEmptyNodes([
             {
                 name: 'AI Kit/Nav',
                 children: [
@@ -217,7 +217,7 @@ test('oldTextTreeToXml', async () => {
                                     shouldBeHidden: 'false',
                                 },
                                 attrControlsComments: {
-                                  shouldBeHidden: ''
+                                    shouldBeHidden: '',
                                 },
                                 children: [
                                     {
@@ -376,7 +376,7 @@ test('splitTreeInChunks', () => {
     ]
 
     const result = splitTreeInChunks(inputTree, 3).map((x) =>
-        oldTextTreeToXml(x),
+        framerLayersTreeToXml(x),
     )
     expect(result).toMatchInlineSnapshot(`
       [

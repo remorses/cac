@@ -104,7 +104,7 @@ export async function implementMcpTools({
 
             const { name, arguments: args = {} } = request.params
             const reply = await send({
-                payload: { type: name as any, input: args },
+                payload: { type: name as any, input: args as any },
             })
             const text =
                 typeof reply === 'string'

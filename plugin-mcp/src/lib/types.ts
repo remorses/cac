@@ -11,52 +11,19 @@ export const mcpTools = {
         input: z.object({}),
         output: z.any(),
     },
-    fetchHTML: {
-        description: 'Download raw HTML from a public URL.',
-        input: z.object({ url: z.string().url() }),
-        output: z.any(),
-    },
-    getSelectedNodeIds: {
-        description: 'Get IDs of currently selected nodes.',
+    getXmlSelection: {
+        description: '',
         input: z.object({}),
         output: z.any(),
     },
-    setNodeAttributes: {
-        description: 'Bulk‑set style/layout attributes on one node.',
-        input: z.object({
-            nodeId: NodeId,
-            attributes: z.record(z.string(), z.any()),
-        }),
+    getPages: {
+        description: '',
+        input: z.object({}),
         output: z.any(),
     },
-    applyColorStyle: {
-        description: 'Apply a colour (style link or inline).',
-        input: z
-            .object({
-                nodeId: NodeId,
-                role: Role,
-                styleId: z.string().optional(),
-                color: z.string().optional(),
-            })
-            .refine((d) => (d.styleId ? !d.color : !!d.color), {
-                message: 'use styleId OR color',
-            }),
-        output: z.any(),
-    },
-    insertComponentInstance: {
-        description: 'Insert a code‑component via its URL.',
-        input: z.object({
-            url: z.string().url(),
-            attributes: z.record(z.string(), z.any()).optional(),
-            controls: z.record(z.string(), z.any()).optional(),
-        }),
-        output: z.any(),
-    },
-    exportReactComponents: {
-        description: 'Return CLI command to export components as React.',
-        input: z.object({
-            outDir: z.string().optional(),
-        }),
+    getComponents: {
+        description: '',
+        input: z.object({}),
         output: z.any(),
     },
 } as const
@@ -66,7 +33,7 @@ export type McpToolNames = keyof typeof mcpTools
 
 type McpToolMsg<T extends McpToolNames> = {
     type: T
-    input: z.infer<typeof mcpTools[T]['input']>
+    input: z.infer<(typeof mcpTools)[T]['input']>
     output?: any
 }
 
@@ -76,6 +43,9 @@ export type McpToolWebsocketPayload = {
 }[McpToolNames]
 
 export type FramerLayersTree = Array<{
+    /**
+     * The text of the node, if this is a text node.
+     */
     content?: string
     nodeId?: string
     name?: string

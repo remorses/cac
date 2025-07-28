@@ -19,12 +19,11 @@ const { websocketId } = useStore.getState()
 
 // Initialize websocket connection
 const cleanup = await websocketClientHandling({
-    // @ts-ignore
-    handle({ input, type }) {
+    async handle({ input, type }) {
         switch (type) {
-            case 'applyColorStyle': {
-                break
-            }
+            // Handle MCP tool requests here
+            default:
+                throw new Error(`Unknown tool type: ${type}`)
         }
     },
     websocketId,

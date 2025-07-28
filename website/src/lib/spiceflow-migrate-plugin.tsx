@@ -13,7 +13,7 @@ import {
 } from 'website/src/lib/htmlrewrite.server'
 import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { oldTextTreeToXml } from 'website/src/lib/utils'
+import { framerLayersTreeToXml } from 'website/src/lib/utils'
 import { z } from 'zod'
 
 export const rewritePluginApp = new Spiceflow({
@@ -83,7 +83,7 @@ export const rewritePluginApp = new Spiceflow({
                 pagePath,
                 projectName,
             } = body
-            const xml = oldTextTreeToXml(oldText)
+            const xml = framerLayersTreeToXml(oldText)
 
             // let linksPromise = extractExternalLinks({
             //     websiteUrl: url,
