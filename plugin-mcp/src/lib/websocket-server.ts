@@ -9,13 +9,21 @@ export type WebsocketMessage = {
     error?: string
 }
 
+export interface WebsocketRpc {
+    send: (params: {
+        idempotenceKey?: string
+        payload: WebsocketMessage['payload']
+    }) => Promise<any>
+    cleanup: () => Promise<void>
+}
+
 export function createWebsocketHandling({
     ws,
     defaultTimeout = 1000 * 5,
 }: {
     ws: WebSocket
     defaultTimeout?: number
-}) {
+}): WebsocketRpc {
     const pendingRequests = new Map<
         string,
         {

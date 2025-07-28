@@ -10,14 +10,14 @@
     "name": "getProjectXml",
   },
   {
-    "description": "Gets the currently selected node IDs",
+    "description": "Gets the currently selected nodes as xml",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {},
       "type": "object",
     },
-    "name": "getSelectionXml",
+    "name": "getSelectedNodesXml",
   },
   {
     "description": "Zooms the canvas to center on the given node ID.",
@@ -26,6 +26,7 @@
       "additionalProperties": false,
       "properties": {
         "nodeId": {
+          "description": "The ID of the node to zoom into view",
           "minLength": 1,
           "type": "string",
         },
@@ -44,6 +45,7 @@
       "additionalProperties": false,
       "properties": {
         "nodeId": {
+          "description": "The ID of the node to get as XML",
           "minLength": 1,
           "type": "string",
         },
@@ -56,16 +58,38 @@
     "name": "getNodeXml",
   },
   {
+    "description": "Gets all project-level color styles, grouped by their style role, if available.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+    "name": "getProjectColorStyles",
+  },
+  {
+    "description": "Gets all project-level text styles, if available.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+    "name": "getProjectTextStyles",
+  },
+  {
     "description": "Updates the XML for a specific node using its nodeId and the provided new XML string. It can be used to update nodes text or attributes.",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {
         "nodeId": {
+          "description": "The ID of the node to update",
           "minLength": 1,
           "type": "string",
         },
         "xml": {
+          "description": "XML string containing the updates. Can include multiple nodes with their nodeId attributes",
           "minLength": 1,
           "type": "string",
         },
@@ -77,5 +101,155 @@
       "type": "object",
     },
     "name": "updateXmlForNode",
+  },
+  {
+    "description": "Updates a color style by its path. Can modify the name, light color, and dark color.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "stylePath": {
+          "description": "The path of the color style to update. Must start with /",
+          "type": "string",
+        },
+        "updates": {
+          "additionalProperties": false,
+          "description": "Properties to update on the color style",
+          "properties": {
+            "dark": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Dark theme color in any CSS color format, or null to remove dark variant",
+            },
+            "light": {
+              "description": "Light theme color in any CSS color format (e.g., "rgb(255, 0, 0)", "#FF0000", "red")",
+              "type": "string",
+            },
+            "name": {
+              "description": "New name for the color style",
+              "type": "string",
+            },
+          },
+          "type": "object",
+        },
+      },
+      "required": [
+        "stylePath",
+        "updates",
+      ],
+      "type": "object",
+    },
+    "name": "updateColorStyle",
+  },
+  {
+    "description": "Updates a text style by its path. Can modify various typography properties.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "stylePath": {
+          "description": "The path of the text style to update. Must start with /",
+          "type": "string",
+        },
+        "updates": {
+          "additionalProperties": false,
+          "description": "Properties to update on the text style",
+          "properties": {
+            "alignment": {
+              "description": "Text alignment",
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify",
+              ],
+              "type": "string",
+            },
+            "balance": {
+              "description": "Enable balanced text wrapping for better legibility",
+              "type": "boolean",
+            },
+            "decoration": {
+              "description": "Text decoration",
+              "enum": [
+                "none",
+                "underline",
+                "line-through",
+              ],
+              "type": "string",
+            },
+            "fontSize": {
+              "description": "Font size with units (e.g., "16px", "1.5rem")",
+              "type": "string",
+            },
+            "letterSpacing": {
+              "description": "Letter spacing with units (e.g., "0px", "0.05em")",
+              "type": "string",
+            },
+            "lineHeight": {
+              "description": "Line height with units (e.g., "24px", "1.5em", "150%")",
+              "type": "string",
+            },
+            "name": {
+              "description": "New name for the text style",
+              "type": "string",
+            },
+            "paragraphSpacing": {
+              "description": "Space between paragraphs in pixels",
+              "type": "number",
+            },
+            "transform": {
+              "description": "Text transformation",
+              "enum": [
+                "none",
+                "uppercase",
+                "lowercase",
+                "capitalize",
+              ],
+              "type": "string",
+            },
+          },
+          "type": "object",
+        },
+      },
+      "required": [
+        "stylePath",
+        "updates",
+      ],
+      "type": "object",
+    },
+    "name": "updateTextStyle",
+  },
+  {
+    "description": "Search for fonts by selector substring. Returns max 20 results. Use specific search terms for better results.
+
+IMPORTANT: The returned 'selector' field is what you use in XML font attributes:
+<Text font="GF;Inter-600">Bold text</Text>
+
+NOTE: You can only apply a font attribute to text nodes that do NOT have an inlineTextStyle.
+If a text node has inlineTextStyle="/Heading xl", you must remove it before applying a custom font.
+Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not both.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "description": "Search query to match against font selector (e.g., "Inter", "bold", "italic")",
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "query",
+      ],
+      "type": "object",
+    },
+    "name": "searchFonts",
   },
 ]

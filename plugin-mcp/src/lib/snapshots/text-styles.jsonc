@@ -1,13 +1,13 @@
 [
   {
-    "alignment": "left",
+    "alignment": "center",
     "balance": false,
     "decoration": "none",
-    "fontSize": "60px",
+    "fontSize": "68px",
     "letterSpacing": "0px",
     "lineHeight": "72px",
     "paragraphSpacing": 40,
-    "path": "/Heading 3xl",
+    "path": "/undefined - Test 68",
     "tag": "h1",
     "transform": "none",
   },

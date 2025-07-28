@@ -6,17 +6,18 @@ export class MyMCP extends McpAgent<Env> {
     server = new Server(
         {
             name: 'Framer MCP',
-            version: '1.0.0',
+            version: '1.2.0',
         },
         {
             capabilities: {
                 tools: {},
+                // prompts: {},
+                // resources: {},
             },
         },
     )
 
     async init() {
-        const env = this.env
         const websocketId = this.props?.websocketId as string
         if (!websocketId)
             throw new Error('websocketId ?id search param is required')
