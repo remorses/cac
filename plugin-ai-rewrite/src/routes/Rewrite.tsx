@@ -35,7 +35,7 @@ import { Paths, pluginApiClient } from '@/lib/utils'
 import { StarReview } from 'plugin-migrate/src/components/StarReview'
 import { applyAttributes, getFramerTree, isNodeZoomable } from 'plugin-mcp'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
-import { bfsOldTextTree, oldTextTreeToXml, sleep } from 'website/src/lib/utils'
+import { bfsFramerLayersTree, framerLayersTreeToXml, sleep } from 'website/src/lib/utils'
 import { flushSync } from 'react-dom'
 
 let abortController = new AbortController()
@@ -168,7 +168,7 @@ function SimplePromptComponent({}) {
         })
 
         try {
-            const xml = oldTextTreeToXml(oldText, {
+            const xml = framerLayersTreeToXml(oldText, {
                 shouldAddNodeIdAlways: true,
             })
 

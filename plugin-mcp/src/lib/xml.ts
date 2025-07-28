@@ -3,15 +3,13 @@ import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
 import type { FramerLayersTree } from './types'
 
-interface RewriteOldTextContentParams {
-    xml: string
-    newContent: { nodeId: string; newContent?: string }[]
-}
-
 export function rewriteXmlContentForTests({
     xml: xml,
     newContent,
-}: RewriteOldTextContentParams): string {
+}: {
+    xml: string
+    newContent: { nodeId: string; newContent?: string }[]
+}): string {
     const handler = new DomHandler((error, dom) => {
         if (error) {
             console.error(error)
@@ -137,7 +135,7 @@ export function extractObjectsFromXmlContent(xml: string) {
     return results
 }
 
-export function xmlToOldTextTree(xml: string): FramerLayersTree {
+export function xmlToFramerLayersTree(xml: string): FramerLayersTree {
     const handler = new DomHandler()
     const parser = new Parser(handler, { xmlMode: true })
     parser.write(xml)
@@ -196,17 +194,14 @@ export function xmlToOldTextTree(xml: string): FramerLayersTree {
     return addNodeCount(rootNodes)
 }
 
-export function oldTextTreeToXml(
+export function framerLayersTreeToXml(
     tree: FramerLayersTree,
     options: {
         shouldAddNodeIdAlways?: boolean
         indent?: string
     } = {},
 ): string {
-    const {
-        shouldAddNodeIdAlways = false,
-        indent = '',
-    } = options
+    const { shouldAddNodeIdAlways = false, indent = '' } = options
     let xml = ''
 
     for (const node of tree) {
@@ -219,7 +214,7 @@ export function oldTextTreeToXml(
                 xml += `${indent}${escapeXml(node.content)}\n`
             }
             if (node.children && node.children.length > 0) {
-                xml += oldTextTreeToXml(node.children, {
+                xml += framerLayersTreeToXml(node.children, {
                     shouldAddNodeIdAlways,
                     indent,
                 })
@@ -285,7 +280,7 @@ export function oldTextTreeToXml(
         }
 
         if (node.children && node.children.length > 0) {
-            xml += oldTextTreeToXml(node.children, {
+            xml += framerLayersTreeToXml(node.children, {
                 shouldAddNodeIdAlways,
                 indent: indent + '  ',
             })

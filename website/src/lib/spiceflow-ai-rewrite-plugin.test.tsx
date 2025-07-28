@@ -1,7 +1,7 @@
 import { createSpiceflowClient } from 'spiceflow/client'
 import { expect, test } from 'vitest'
 import { llmPluginApp } from './spiceflow-ai-rewrite-plugin'
-import { rewriteXmlContentForTests, xmlToOldTextTree } from 'plugin-mcp'
+import { rewriteXmlContentForTests, xmlToFramerLayersTree } from 'plugin-mcp'
 import { isTruthy } from './utils'
 
 test(
@@ -41,7 +41,7 @@ test(
     </AI_Kit_Nav>
 
     `
-        const tree = xmlToOldTextTree(xml)
+        const tree = xmlToFramerLayersTree(xml)
         const res = await client.llm.generate.post({
             description: 'convert text to french',
             randomId: 'x',

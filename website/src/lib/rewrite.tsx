@@ -17,7 +17,7 @@ import {
 import { anthropic } from '@ai-sdk/anthropic'
 
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
-import { isTruthy, oldTextTreeToXml, safeUrl } from 'website/src/lib/utils'
+import { isTruthy, framerLayersTreeToXml, safeUrl } from 'website/src/lib/utils'
 import {
     addNodeCount,
     extractObjectsFromXmlContent,
@@ -493,7 +493,7 @@ export async function* rewriteTemplateContent({
         const chunk = chunkedOldText[i]
 
         console.log(`asking to convert ${chunk.length} items`)
-        const xml = oldTextTreeToXml(chunk)
+        const xml = framerLayersTreeToXml(chunk)
         const iterationObject = yield* rewriteTemplateChunk({
             description: description || undefined,
             xml,

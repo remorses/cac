@@ -8,7 +8,11 @@ import camelCase from 'camelcase'
 import { env } from './env'
 import dedent from 'dedent'
 import { PluginName } from 'db'
-export { oldTextTreeToXml, bfsOldTextTree, cleanupOldTextTree } from 'plugin-mcp'
+export {
+  framerLayersTreeToXml,
+  bfsFramerLayersTree,
+  cleanupTreeFromEmptyNodes,
+} from 'plugin-mcp'
 
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
@@ -149,8 +153,6 @@ export function sortByKey<T>(arr: T[], key: (x: T) => string) {
         return 0
     })
 }
-
-
 
 export function canHaveFreePlugin(email?: string) {
     // return false

@@ -21,7 +21,7 @@ import { splitIntoWords } from 'website/src/lib/ssr.server'
 import {
     extractObjectsFromXmlContent,
     NewExtractedNode,
-    oldTextTreeToXml,
+    framerLayersTreeToXml,
 } from 'plugin-mcp'
 import { z } from 'zod'
 import { fetchFormattedHtml } from './htmlrewrite.server'
@@ -183,7 +183,7 @@ export const llmPluginApp = new Spiceflow({
             console.log('body', body)
             const { projectName, randomId, description, tree, projectId } = body
 
-            const initialXml = oldTextTreeToXml(tree, {
+            const initialXml = framerLayersTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
             })
             console.log(initialXml)
@@ -206,7 +206,7 @@ export const llmPluginApp = new Spiceflow({
                     }
                     console.log('generating diff')
                     const { tree } = result
-                    const xml = oldTextTreeToXml(tree, {
+                    const xml = framerLayersTreeToXml(tree, {
                         shouldAddNodeIdAlways: true,
                     })
                     const patch = createTwoFilesPatch(

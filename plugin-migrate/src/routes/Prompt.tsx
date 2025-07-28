@@ -45,7 +45,7 @@ import {
     getFramerTree,
     isNodeZoomable,
 } from 'plugin-mcp'
-import { bfsOldTextTree, oldTextTreeToXml } from 'plugin-mcp'
+import { bfsFramerLayersTree, framerLayersTreeToXml } from 'plugin-mcp'
 import { sleep } from 'website/src/lib/utils'
 import { createBuyMigrateUrl } from 'website/src/lib/env'
 import { MentionsTextArea } from '../components/mentions/Mentions'
@@ -160,7 +160,7 @@ function SimplePromptComponent({}) {
         // @ts-ignore
         if (import.meta.env?.DEV) {
             try {
-                const xml = oldTextTreeToXml(oldText)
+                const xml = framerLayersTreeToXml(oldText)
 
                 await navigator.clipboard.writeText(
                     JSON.stringify(oldText, null, 2),
