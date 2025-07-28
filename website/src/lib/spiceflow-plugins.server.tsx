@@ -16,7 +16,6 @@ import {
 import { llmPluginApp } from 'website/src/lib/spiceflow-ai-rewrite-plugin'
 import { prisma } from 'db'
 import { href, redirect } from 'react-router'
-import { framer } from 'framer-plugin'
 import { generateUnframerRepo } from 'website/src/lib/unframer-github-repos'
 import { env } from 'website/src/lib/env'
 import { AppError } from 'website/src/lib/errors'
