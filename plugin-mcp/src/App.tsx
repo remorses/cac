@@ -1,4 +1,4 @@
-import { framer } from 'framer-plugin'
+import { framer, isTextNode } from 'framer-plugin'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/client-websocket'
@@ -6,8 +6,8 @@ import { FramerLayersTree, McpToolNames } from './lib/types'
 import './lib/framer'
 import { useStore } from './lib/store'
 import { CopyIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CircleIcon } from 'lucide-react'
-import { framerLayersTreeToXml } from './lib/xml'
-import { getFramerTree } from './lib/framer'
+import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
+import { getFramerTree, applyAttributes } from './lib/framer'
 
 globalThis.framer = framer
 
@@ -19,23 +19,47 @@ framer.showUI({
 // Get initial websocketId from store
 const { websocketId } = useStore.getState()
 
+// Helper function to get XML for a node
+async function getNodeXml(nodeId: string): Promise<string | null> {
+    const node = await framer.getNode(nodeId)
+    if (!node) {
+        return null
+    }
+    const tree = await getFramerTree({
+        rootNodes: [node],
+        recursive: false,
+    })
+    const xml = framerLayersTreeToXml(tree, {
+        shouldAddNodeIdAlways: true,
+    })
+    return xml
+}
+
 // Initialize websocket connection
 const cleanup = await websocketClientHandling({
     async handle({ input, type }) {
         switch (type) {
             case 'getNodeXml': {
-                const node = await framer.getNode(input.nodeId)
-                if (!node) {
+                const xml = await getNodeXml(input.nodeId)
+                if (!xml) {
                     return `Node with ID ${input.nodeId} not found.`
                 }
+                return `Node xml:\n${xml}`
+            }
+            case 'getSelectedNodesXml': {
+                const selectedNodes = await framer.getSelection()
+                if (!selectedNodes || selectedNodes.length === 0) {
+                    return 'No nodes are currently selected.'
+                }
+                
                 const tree = await getFramerTree({
-                    rootNodes: [node],
+                    rootNodes: selectedNodes,
                     recursive: false,
                 })
                 const xml = framerLayersTreeToXml(tree, {
                     shouldAddNodeIdAlways: true,
                 })
-                return `Node xml:\n` + xml
+                return `Selected nodes XML:\n${xml}`
             }
             case 'getProjectXml': {
                 const pages = await framer.getNodesWithType('WebPageNode')
@@ -78,6 +102,56 @@ const cleanup = await websocketClientHandling({
                     shouldAddNodeIdAlways: true,
                 })
                 return `Project structure:\n` + xml
+            }
+            case 'updateXmlForNode': {
+                const { nodeId, xml } = input
+                
+                // Extract nodes from the provided XML
+                const extractedNodes = extractObjectsFromXmlContent(xml)
+                
+                const results: string[] = []
+                const updatedNodeIds: string[] = []
+                
+                for (const extractedNode of extractedNodes) {
+                    const targetNodeId = extractedNode.nodeId || nodeId
+                    const node = await framer.getNode(targetNodeId)
+                    
+                    if (!node) {
+                        results.push(`Node with ID ${targetNodeId} not found.`)
+                        continue
+                    }
+                    
+                    let wasUpdated = false
+                    
+                    // Update text if it's a text node and new content is provided
+                    if (extractedNode.newContent && isTextNode(node)) {
+                        await node.setText(extractedNode.newContent)
+                        results.push(`Updated text for node ${targetNodeId}`)
+                        wasUpdated = true
+                    }
+                    
+                    // Apply attributes if any
+                    if (extractedNode.attributes && Object.keys(extractedNode.attributes).length > 0) {
+                        await applyAttributes(node, extractedNode.attributes)
+                        results.push(`Updated attributes for node ${targetNodeId}`)
+                        wasUpdated = true
+                    }
+                    
+                    if (wasUpdated) {
+                        updatedNodeIds.push(targetNodeId)
+                    }
+                }
+                
+                // Get the updated XML for the primary node
+                const updatedXml = await getNodeXml(nodeId)
+                
+                const resultMessage = results.length > 0 
+                    ? `Successfully updated:\n${results.join('\n')}` 
+                    : 'No updates were made.'
+                    
+                return updatedXml 
+                    ? `${resultMessage}\n\nUpdated XML:\n${updatedXml}`
+                    : resultMessage
             }
             default:
                 throw new Error(`Unknown tool type: ${type}`)
