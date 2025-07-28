@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import dedent from 'string-dedent'
 
+export const codeComponentsResourceUri = 'framer-code-component.md'
+
 /* ──────────────────────────── Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
 const Role = z.enum(['background', 'text', 'border'])
@@ -351,7 +353,7 @@ export const mcpTools = {
         description: dedent`
             Create a new code file in the Framer project. Code files can export either code components or overrides.
 
-            The file name should end with .tsx extension.
+            ALWAYS read the MCP resource file ${codeComponentsResourceUri} to see how to create code components and overrides.
 
             You can use typescript and React. You can also import components in the project by using getComponentImportUrl to get their import url.
 
