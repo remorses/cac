@@ -167,8 +167,6 @@ const cleanup = await websocketClientHandling({
 
                 // Return color styles with available properties
                 return colorStyles.map(style => ({
-                    id: style.id,
-                    name: style.name,
                     path: style.path,
                     light: style.light,
                     dark: style.dark,
@@ -178,8 +176,6 @@ const cleanup = await websocketClientHandling({
                 const textStyles = await framer.getTextStyles()
 
                 return textStyles.map(style => ({
-                    id: style.id,
-                    name: style.name,
                     path: style.path,
                     fontSize: style.fontSize,
                     lineHeight: style.lineHeight,
@@ -296,18 +292,18 @@ const cleanup = await websocketClientHandling({
             }
             case 'searchFonts': {
                 const { query } = input
-                
+
                 // Get all fonts from Framer
                 const allFonts = await framer.getFonts()
-                
+
                 // Filter fonts that contain the query substring in their selector
-                const matchingFonts = allFonts.filter(font => 
+                const matchingFonts = allFonts.filter(font =>
                     font.selector.toLowerCase().includes(query.toLowerCase())
                 )
-                
+
                 // Limit to 20 results
                 const limitedFonts = matchingFonts.slice(0, 20)
-                
+
                 // Return formatted results
                 const results = limitedFonts.map(font => ({
                     family: font.family,
@@ -315,11 +311,13 @@ const cleanup = await websocketClientHandling({
                     weight: font.weight,
                     style: font.style,
                 }))
-                
-                const message = matchingFonts.length > 20 
+
+                const baseMessage = matchingFonts.length > 20
                     ? `Found ${matchingFonts.length} fonts matching "${query}". Showing first 20. Use a more specific search term to narrow results.`
                     : `Found ${matchingFonts.length} fonts matching "${query}".`
-                
+
+                const message = `${baseMessage}\n\nTo use a font: <Text font="selector">Text</Text>\nNote: font and inlineTextStyle attributes are mutually exclusive`
+
                 return {
                     message,
                     results,
