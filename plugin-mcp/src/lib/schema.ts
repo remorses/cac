@@ -333,7 +333,8 @@ export const mcpTools = {
         description: dedent`
             Export selected Framer components as React code. This creates a React project with the components and their dependencies.
 
-            Only component nodes can be exported. The tool will validate that all provided node IDs are components.
+            Only component nodes can be exported. Use getProjectXml to find available component node IDs.
+
             Returns a URL where the exported React code can be accessed.
         `,
         input: z.object({
@@ -345,6 +346,65 @@ export const mcpTools = {
                 ),
         }),
         output: z.any(),
+    },
+    createCodeFile: {
+        description: dedent`
+            Create a new code file in the Framer project. Code files can export either code components or overrides.
+
+            The file name should end with .tsx extension.
+
+            You can use typescript and React. You can also import components in the project by using getComponentImportUrl to get their import url.
+
+            When creating a code component you should also define its property controls via Framer addPropertyControls.
+
+            Returns the ID and path of the created code file.
+        `,
+        input: z.object({
+            name: z.string().describe('The name of the code file (e.g., "MyComponent.tsx")'),
+            content: z.string().describe('The TypeScript/React code content for the file'),
+        }),
+        output: z.any(),
+    },
+    readCodeFile: {
+        description: dedent`
+            Read the content of a code file by its ID. Available code files are listed in getProjectXml.
+
+            Returns the current content, name, path, and available exports of the code file.
+        `,
+        input: z.object({
+            codeFileId: z.string().describe('The ID of the code file to read'),
+        }),
+        output: z.any(),
+    },
+    updateCodeFile: {
+        description: dedent`
+            Update the content of an existing code file.
+
+            This will replace the entire content of the file.
+            The file will be automatically linted and type-checked after update.
+        `,
+        input: z.object({
+            codeFileId: z.string().describe('The ID of the code file to update'),
+            content: z.string().describe('The new TypeScript/React code content'),
+        }),
+        output: z.any(),
+    },
+    getComponentImportUrl: {
+        description: dedent`
+            Get the import statement and prop types documentation for a component node. Use getProjectXml to see available component nodes.
+
+            Use this tool when you want to use an existing component in a code file.
+
+            returns a markdown-formatted string with:
+            - The import statement for the component
+            - JSDoc documentation of the component's props
+
+
+        `,
+        input: z.object({
+            nodeId: NodeId.describe('The ID of the component node to get import information for'),
+        }),
+        output: z.string(),
     },
 } as const
 

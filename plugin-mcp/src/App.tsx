@@ -16,6 +16,8 @@ import {
 import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
 import { getFramerTree, applyAttributes } from './lib/framer'
 import { processReactExportData } from './lib/react-export'
+import { propControlsToTypedocComments, componentCamelCase } from 'unframer/src/typescript'
+import { getComponentPropertyControls } from './lib/framer'
 import {
     createBrowserRouter,
     RouterProvider,
@@ -117,6 +119,16 @@ async function websocketHandler({
         case 'getProjectXml': {
             const pages = await framer.getNodesWithType('WebPageNode')
             const components = await framer.getNodesWithType('ComponentNode')
+            const codeFiles = await framer.getCodeFiles()
+
+            // Separate code files by export type
+            const codeComponents = codeFiles.filter(file =>
+                file.exports.some(exp => exp.type === 'component')
+            )
+            const codeOverrides = codeFiles.filter(file =>
+                file.exports.some(exp => exp.type === 'override')
+            )
+
             const tree: FramerLayersTree = [
                 {
                     name: 'Project', //
@@ -143,6 +155,34 @@ async function websocketHandler({
                                     type: 'ComponentNode',
                                     nodeId: component.id,
                                     name: component.componentName || '',
+                                },
+                                children: [],
+                            })),
+                        },
+                        {
+                            name: 'CodeComponents',
+                            children: codeComponents.map((file) => ({
+                                name: file.name,
+                                id: file.id,
+                                attributes: {
+                                    type: 'CodeFile',
+                                    codeFileId: file.id,
+                                    path: file.path,
+                                    exports: file.exports.map(e => e.name).join(', '),
+                                },
+                                children: [],
+                            })),
+                        },
+                        {
+                            name: 'CodeOverrides',
+                            children: codeOverrides.map((file) => ({
+                                name: file.name,
+                                id: file.id,
+                                attributes: {
+                                    type: 'CodeFile',
+                                    codeFileId: file.id,
+                                    path: file.path,
+                                    exports: file.exports.map(e => e.name).join(', '),
                                 },
                                 children: [],
                             })),
@@ -341,10 +381,10 @@ async function websocketHandler({
             }
 
             // Get color styles once if needed
-            const needsColorStyles = 
+            const needsColorStyles =
                 (typeof updates.color === 'string' && updates.color.startsWith('/')) ||
                 (typeof updates.decorationColor === 'string' && updates.decorationColor.startsWith('/'))
-            
+
             const colorStyles = needsColorStyles ? await framer.getColorStyles() : []
 
             // Prepare the attributes with proper types
@@ -426,10 +466,10 @@ async function websocketHandler({
             }
 
             // Get color styles once if needed
-            const needsColorStyles = 
+            const needsColorStyles =
                 (typeof properties.color === 'string' && properties.color.startsWith('/')) ||
                 (typeof properties.decorationColor === 'string' && properties.decorationColor.startsWith('/'))
-            
+
             const colorStyles = needsColorStyles ? await framer.getColorStyles() : []
 
             // Prepare the attributes with proper types
@@ -644,6 +684,142 @@ async function websocketHandler({
                 return `Failed to export components: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
+        case 'createCodeFile': {
+            const { name, content } = input
+
+            // Validate file name
+            if (!name.endsWith('.tsx')) {
+                return `Code file name must end with .tsx extension. Got: ${name}`
+            }
+
+            try {
+                const codeFile = await framer.createCodeFile(name, content)
+
+                if (!codeFile) {
+                    return `Failed to create code file ${name}.`
+                }
+
+                // Run initial lint and typecheck
+                const lintResult = await codeFile.lint({ "forbid-browser-apis": "warning" })
+                const typecheckResult = await codeFile.typecheck()
+
+                return {
+                    message: `Successfully created code file: ${codeFile.name}`,
+                    codeFile: {
+                        id: codeFile.id,
+                        name: codeFile.name,
+                        path: codeFile.path,
+                        exports: codeFile.exports,
+                    },
+                    lint: lintResult,
+                    typecheck: typecheckResult,
+                }
+            } catch (error) {
+                return `Failed to create code file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'readCodeFile': {
+            const { codeFileId } = input
+
+            try {
+                const codeFile = await framer.getCodeFile(codeFileId)
+
+                if (!codeFile) {
+                    return `Code file with ID ${codeFileId} not found.`
+                }
+
+                return {
+                    id: codeFile.id,
+                    name: codeFile.name,
+                    path: codeFile.path,
+                    content: codeFile.content,
+                    exports: codeFile.exports,
+                }
+            } catch (error) {
+                return `Failed to read code file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'updateCodeFile': {
+            const { codeFileId, content } = input
+
+            try {
+                const codeFile = await framer.getCodeFile(codeFileId)
+
+                if (!codeFile) {
+                    return `Code file with ID ${codeFileId} not found.`
+                }
+
+                // Update the content
+                await codeFile.setFileContent(content)
+
+                // Run lint and typecheck after update
+                const lintResult = await codeFile.lint({ "forbid-browser-apis": "warning" })
+                const typecheckResult = await codeFile.typecheck()
+
+                return {
+                    message: `Successfully updated code file: ${codeFile.name}`,
+                    codeFile: {
+                        id: codeFile.id,
+                        name: codeFile.name,
+                        path: codeFile.path,
+                        exports: codeFile.exports,
+                    },
+                    lint: lintResult,
+                    typecheck: typecheckResult,
+                }
+            } catch (error) {
+                return `Failed to update code file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'getComponentImportUrl': {
+            const { nodeId } = input
+
+            try {
+                const node = await framer.getNode(nodeId)
+
+                if (!node) {
+                    return `Node with ID ${nodeId} not found.`
+                }
+
+                // Check if it's a component node
+                if (!isComponentNode(node)) {
+                    return `Node ${nodeId} is not a component node. This tool only works with component nodes.`
+                }
+
+                // Get the component's insert URL
+                const insertUrl = node.insertURL
+
+                if (!insertUrl) {
+                    return `Component ${node.name || nodeId} does not have an insert URL. It may not be properly configured for import.`
+                }
+
+                // Get the component's import name using componentCamelCase
+                const importName = componentCamelCase(node.componentName || node.name || 'Component')
+                const propsType = `${importName}Props`
+
+                // Get property controls and generate TypeScript documentation
+                let message = ''
+                const { propertyControls } = await getComponentPropertyControls(insertUrl)
+                
+                // Create the import statement
+                const importStatement = `import ${importName} from "${insertUrl}"`
+                message = `\`\`\`js\n${importStatement}\n\`\`\``
+                
+                if (propertyControls) {
+                    const typedocComments = propControlsToTypedocComments({
+                        propertyControls,
+                        componentImportedName: importName
+                    })
+                    if (typedocComments.headerComment) {
+                        message += `\n\n**Props:**\n\`\`\`js\n${typedocComments.headerComment}\`\`\``
+                    }
+                }
+
+                return message
+            } catch (error) {
+                return `Failed to get component import URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
         default:
             throw new Error(`Unknown tool type: ${type}`)
     }
@@ -792,7 +968,7 @@ async function rootLoader({}: LoaderFunctionArgs) {
     if (!sessionKey) {
         throw redirect(withMode(Paths.login))
     }
-    
+
     // Also save to localStorage for access in the component
     localStorage.setItem('framer-mcp-session-id', sessionKey)
 

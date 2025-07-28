@@ -1,5 +1,43 @@
 # Changelog
 
+## 2025-01-28 21:55
+
+- Fixed `getComponentImportUrl` to return markdown string instead of object
+- Updated schema to specify string output type
+- Returns markdown with JS code blocks for import statement and JSDoc prop types
+
+## 2025-01-28 21:50
+
+- Updated `getComponentImportUrl` to return markdown-formatted message with JavaScript code blocks
+- Uses JSDoc comments from `propControlsToTypedocComments` for prop type documentation
+- Returns import statement and prop types in a readable markdown format
+
+## 2025-01-28 21:45
+
+- Fixed `getComponentImportUrl` to use `getComponentPropertyControls` to fetch prop controls from component URL
+- Properly pass required parameters to `propControlsToTypedocComments` including componentImportedName
+- Import TypeScript utilities from correct unframer package path
+
+## 2025-01-28 21:30
+
+- Enhanced `getComponentImportUrl` to return complete import statement with proper component name casing
+- Added TypeScript prop types documentation generated from prop controls using `propControlsToTypedocComments`
+- Returns formatted import statement like `import ComponentName from "url"`
+
+## 2025-01-28 21:15
+
+- Added `getComponentImportUrl` MCP tool to retrieve import URL and TypeScript props type for component nodes
+- Validates that the provided node is a component node before returning import information
+- Returns insertUrl, component name, and inferred props type name
+
+## 2025-01-28 21:00
+
+- Added `createCodeFile` MCP tool to create new code files with TypeScript/React content
+- Added `readCodeFile` MCP tool to read code file content and exports
+- Added `updateCodeFile` MCP tool to update existing code file content
+- Updated `getProjectXml` to include CodeComponents and CodeOverrides sections
+- All code file operations include automatic linting and type checking
+
 ## 2025-01-28 20:40
 
 - Optimized `updateTextStyle` and `createTextStyle` to call `getColorStyles` only once

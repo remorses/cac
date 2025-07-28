@@ -415,7 +415,7 @@ export async function processReactExportData({
             }
         }),
         components: componentsWithBreakpoints.map(({ component }) => {
-            const { name, id, insertURL, componentIdentifier } = component
+            const { name, id, insertURL, componentName, componentIdentifier } = component
 
             return {
                 name: name ?? '',
