@@ -720,6 +720,9 @@ importers:
       unframer:
         specifier: workspace:*
         version: link:../unframer/unframer
+      unframer-workspace:
+        specifier: link:../unframer/unframer
+        version: link:../unframer/unframer
       website:
         specifier: workspace:*
         version: link:../website

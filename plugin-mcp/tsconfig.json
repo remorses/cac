@@ -9,7 +9,7 @@
         "composite": true,
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
         "types": ["@cloudflare/workers-types", "node", "vite/client"],
-
+        "jsx": "react-jsx",
         "skipLibCheck": true,
         "lib": ["esnext", "dom"],
         "paths": {
