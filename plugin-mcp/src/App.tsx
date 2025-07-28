@@ -2,7 +2,7 @@ import { framer, isTextNode } from 'framer-plugin'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/plugin-websocket'
-import { FramerLayersTree, McpToolNames } from './lib/types'
+import { FramerLayersTree, McpToolNames } from './lib/schema'
 import './lib/framer'
 import { useStore } from './lib/store'
 import {

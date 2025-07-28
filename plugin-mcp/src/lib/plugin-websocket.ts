@@ -1,6 +1,6 @@
 import { WebsocketMessage } from './mcp-websocket'
 import { useStore } from './store'
-import { McpToolWebsocketPayload } from './types'
+import { McpToolWebsocketPayload } from './schema'
 
 // Function for handling websocket connection based on session cookie
 export async function websocketClientHandling({

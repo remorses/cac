@@ -1,4 +1,4 @@
-import { McpToolWebsocketPayload } from './types'
+import { McpToolWebsocketPayload } from './schema'
 
 export type WebsocketMessage = {
     id: string

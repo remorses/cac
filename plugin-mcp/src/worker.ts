@@ -12,7 +12,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { McpAgent } from 'agents/mcp'
 import { toJSONSchema } from 'zod'
-import { mcpTools } from './lib/types'
+import { mcpTools } from './lib/schema'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket'
 
 export class MyMCP extends McpAgent<Env> {
