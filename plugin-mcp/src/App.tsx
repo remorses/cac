@@ -2,10 +2,11 @@ import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/client-websocket'
-import { McpToolNames } from './lib/types'
+import { FramerLayersTree, McpToolNames } from './lib/types'
 import './lib/framer'
 import { useStore } from './lib/store'
 import { CopyIcon, CheckIcon, MaximizeIcon, CircleIcon } from 'lucide-react'
+import { framerLayersTreeToXml } from './lib/xml'
 
 globalThis.framer = framer
 
@@ -21,7 +22,44 @@ const { websocketId } = useStore.getState()
 const cleanup = await websocketClientHandling({
     async handle({ input, type }) {
         switch (type) {
-            // Handle MCP tool requests here
+            case 'getProjectXml': {
+                const pages = await framer.getNodesWithType('WebPageNode')
+                const components =
+                    await framer.getNodesWithType('ComponentNode')
+                const tree: FramerLayersTree = [
+                    {
+                        name: 'Project', //
+                        children: [
+                            {
+                                name: 'Pages',
+                                children: pages.map((page) => ({
+                                    name: page.path || 'Page',
+                                    id: page.id,
+                                    attributes: {
+                                        type: 'WebPageNode',
+                                        path: page.path || '',
+                                    },
+                                    children: [],
+                                })),
+                            },
+                            {
+                                name: 'Components',
+                                children: components.map((component) => ({
+                                    name: component.name || 'Component',
+                                    id: component.id,
+                                    attributes: {
+                                        type: 'ComponentNode',
+                                        name: component.componentName || '',
+                                    },
+                                    children: [],
+                                })),
+                            },
+                        ],
+                    },
+                ]
+                const xml = framerLayersTreeToXml(tree)
+                return `Project structure:\n` + xml
+            }
             default:
                 throw new Error(`Unknown tool type: ${type}`)
         }

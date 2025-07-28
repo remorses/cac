@@ -1,22 +1,19 @@
 import { expect, test } from 'vitest'
+
+import dedent from 'string-dedent'
+import fs from 'fs'
+import path from 'path'
 import {
     bfsFramerLayersTree,
     cleanupTreeFromEmptyNodes,
-    framerLayersTreeToXml,
-} from 'website/src/lib/utils'
-
-import { ITEMS_PER_ITERATION, splitTreeInChunks } from 'website/src/lib/rewrite'
-import fs from 'fs'
-import dedent from 'dedent'
-import { default as domSerializer } from 'dom-serializer'
-import { DomHandler } from 'domhandler'
-import { ElementType, Parser } from 'htmlparser2'
-import {
     extractObjectsFromXmlContent,
+    framerLayersTreeToXml,
     rewriteXmlContentForTests,
+    splitTreeInChunks,
     xmlToFramerLayersTree,
 } from 'plugin-mcp'
-import path from 'path'
+
+let ITEMS_PER_ITERATION = 10
 
 test('splitTreeInChunks long', () => {
     let folder = path.resolve(__dirname, 'evaluation/xml/')
