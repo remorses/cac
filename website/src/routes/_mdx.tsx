@@ -1,12 +1,24 @@
 // import "@code-hike/mdx/styles"
 import { Outlet, useSearchParams } from 'react-router'
 import { CopyIcon, CheckIcon } from 'lucide-react'
-import { useState } from 'react'
-
+import { useState, useEffect } from 'react'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism-tomorrow.css'
+import 'prismjs/components/prism-json'
+import 'prismjs/components/prism-bash'
+import 'prismjs/components/prism-typescript'
 import { MDXProvider } from '@mdx-js/react'
 import { MDXComponents } from 'mdx/types'
 
-export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
+export const CodeBlock = ({
+    children,
+    language,
+    title
+}: {
+    children: React.ReactNode
+    language?: string
+    title?: string
+}) => {
     const [searchParams] = useSearchParams()
     const [copied, setCopied] = useState(false)
 
@@ -22,6 +34,15 @@ export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
         content = content.replaceAll(placeholder, value)
     })
 
+    useEffect(() => {
+        const loadPrismAndHighlight = async () => {
+
+            Prism.highlightAll()
+        }
+
+        loadPrismAndHighlight()
+    }, [content])
+
     const handleCopy = async () => {
         await navigator.clipboard.writeText(content)
         setCopied(true)
@@ -31,10 +52,15 @@ export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
     }
 
     return (
-        <div className='relative group my-4'>
+        <div className='relative flex flex-col not-prose group my-4'>
+            {title && (
+                <div className='bg-neutral-800 text-neutral-300 text-sm px-4 py-2 rounded-t-lg font-mono'>
+                    {title}
+                </div>
+            )}
             <button
                 onClick={handleCopy}
-                className='absolute top-2 right-2 p-2 rounded-md bg-neutral-800 hover:bg-neutral-700 opacity-0 group-hover:opacity-100 transition-opacity'
+                className='absolute top-2 right-2 p-2 rounded-md bg-neutral-800 hover:bg-neutral-700 opacity-0 group-hover:opacity-100 transition-opacity z-10'
                 title='Copy to clipboard'
             >
                 {copied ? (
@@ -43,8 +69,10 @@ export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
                     <CopyIcon className='size-4 text-neutral-300' />
                 )}
             </button>
-            <pre className='dark:bg-neutral-900 text-white rounded-lg p-4 overflow-x-auto'>
-                <code>{content}</code>
+            <pre className={`dark:bg-neutral-900 !mt-0 text-white ${title ? 'rounded-b-lg' : 'rounded-lg'} p-4 overflow-x-auto`}>
+                <code className={language ? `language-${language}` : ''}>
+                    {content}
+                </code>
             </pre>
         </div>
     )
