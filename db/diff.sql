@@ -1,3 +1,2 @@
--- AlterTable
-ALTER TABLE "public"."FramerLoginSession" ADD COLUMN     "framerUserId" TEXT;
+-- This is an empty migration.
 
