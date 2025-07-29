@@ -160,7 +160,7 @@ export const mcpTools = {
     },
     zoomIntoView: {
         description:
-            'Zooms the canvas to center on the given node ID. It will navigate to the right page or component first.',
+            'Zooms the canvas to center on the given node ID. Code file nodes are not supported.',
         input: z.object({
             nodeId: NodeId.describe('The ID of the node to zoom into view'),
         }),

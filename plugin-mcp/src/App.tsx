@@ -256,7 +256,7 @@ async function websocketHandler({
             if (!node) {
                 return `Node with ID ${nodeId} not found.`
             }
-            await framer.zoomIntoView(nodeId)
+            await framer.zoomIntoView(nodeId, { maxZoom: 0.9 })
             return `Zoomed into view for node ${nodeId}`
         }
         case 'getProjectColorStyles': {
@@ -704,6 +704,7 @@ async function websocketHandler({
             try {
                 const codeFile = await framer.createCodeFile(name, content)
 
+
                 if (!codeFile) {
                     return `Failed to create code file ${name}.`
                 }
@@ -921,14 +922,6 @@ function MainComponent() {
                         <p className='text-xs text-red-500'>{error}</p>
                     </div>
                 )}
-                {sessionId && (
-                    <div className='p-2 bg-orange-500/2 rounded border border-orange-500/30'>
-                        <p className='text-xs text-orange-600'>
-                            Never share this URL with anyone, it contains
-                            yourpersonal session key
-                        </p>
-                    </div>
-                )}
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='flex gap-2'>
@@ -950,7 +943,14 @@ function MainComponent() {
                     </button>
                 </div>
             </div>
-
+            {sessionId && (
+                <div className='p-2 bg-orange-500/2 rounded border border-orange-500/30'>
+                    <p className='text-xs text-orange-600'>
+                        Never share this URL with anyone, it contains
+                        yourpersonal session key
+                    </p>
+                </div>
+            )}
             <div className='flex items-center justify-between pt-2 border-t border-framer-divider'>
                 <span className='text-xs text-framer-tertiary truncate'>
                     {data?.email}

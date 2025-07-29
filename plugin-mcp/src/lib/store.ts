@@ -8,6 +8,6 @@ interface PluginState {
 
 export const useStore = create<PluginState>((set) => ({
     isConnected: false,
-    isExpanded: false,
+    isExpanded: true,
     error: undefined,
 }))
