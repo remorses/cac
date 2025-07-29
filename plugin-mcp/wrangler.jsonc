@@ -31,6 +31,14 @@
             "custom_domain": true,
         },
     ],
+    "rules": [
+        {
+            "type": "Text",
+            "globs": ["src/**/*.md"],
+
+            "fallthrough": true,
+        },
+    ],
 
     "observability": {
         "enabled": true,

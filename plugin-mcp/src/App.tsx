@@ -30,20 +30,16 @@ import {
 } from 'react-router'
 import { LoginPage } from './routes/Login'
 import {
-    PluginDataKeys,
     Paths,
     withMode,
     LoaderReturnType,
     pluginApiClient,
+    LocalStorageKeys,
 } from './lib/utils'
 
 globalThis.framer = framer
 
-framer.showUI({
-    position: 'top left',
-    width: 140,
-    height: 44,
-})
+
 
 // Helper function to get XML for a node
 async function getNodeXml(
@@ -909,7 +905,7 @@ function MainComponent() {
                 {sessionId && (
                     <div className='p-2 bg-orange-500/10 rounded border border-orange-500/30'>
                         <p className='text-xs text-orange-600'>
-                            ⚠️ Never share this URL with anyone - it contains your personal session
+                            Never share this URL with anyone - it contains your personal session
                         </p>
                     </div>
                 )}
@@ -940,12 +936,8 @@ function MainComponent() {
                     {data?.email}
                 </span>
                 <button
-                    onClick={async () => {
-                        await framer.setPluginData(
-                            PluginDataKeys.sessionKey,
-                            null,
-                        )
-                        localStorage.removeItem('framer-mcp-session-id')
+                    onClick={() => {
+                        localStorage.removeItem(LocalStorageKeys.sessionId)
                         navigate(Paths.login)
                     }}
                     className='!text-xs text-framer-tertiary  transition-colors w-auto bg-transparent'
@@ -965,13 +957,10 @@ function MainComponent() {
 
 // Root loader to check authentication
 async function rootLoader({}: LoaderFunctionArgs) {
-    const sessionKey = await framer.getPluginData(PluginDataKeys.sessionKey)
+    const sessionKey = localStorage.getItem(LocalStorageKeys.sessionId)
     if (!sessionKey) {
         throw redirect(withMode(Paths.login))
     }
-
-    // Also save to localStorage for access in the component
-    localStorage.setItem('framer-mcp-session-id', sessionKey)
 
     // Get current user info
 
@@ -980,8 +969,7 @@ async function rootLoader({}: LoaderFunctionArgs) {
     if (error) {
         console.error('Failed to get current org:', error)
         // Clear session on error
-        await framer.setPluginData(PluginDataKeys.sessionKey, null)
-        localStorage.removeItem('framer-mcp-session-id')
+        localStorage.removeItem(LocalStorageKeys.sessionId)
         throw redirect(withMode(Paths.login))
     }
 

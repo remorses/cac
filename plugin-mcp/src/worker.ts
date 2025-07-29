@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import codeComponentsResourceMarkdown from './lib/workshop.md?raw'
+import codeComponentsResourceMarkdown from './lib/workshop.md'
 import {
     CallToolRequest,
     CallToolRequestSchema,
