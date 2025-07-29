@@ -1,0 +1,88 @@
+Framer MCP
+
+Bridge your Framer designs with AI assistants like Claude and Cursor. Edit text, update styles, create components, and export React code—all through natural language commands. One connection works across all your projects.
+
+Connect your Framer projects to AI assistants using the Model Context Protocol (MCP). This plugin enables Claude, Cursor, and other MCP-compatible tools to directly interact with your Framer designs through a secure tunnel connection.
+
+• Ask Claude to rewrite your landing page copy based on SEO research
+• Create custom code components and insert them directly into your canvas
+• Update color styles across your entire project with a single command
+• Export Framer components as production-ready React code
+• Automate design updates using AI-generated content
+
+## How It Works
+
+The plugin creates a secure WebSocket tunnel between your Framer project and MCP-compatible AI assistants. Your Framer user ID serves as a unique identifier, ensuring the connection remains consistent across all your projects.
+
+When you make a request through Claude or another MCP client, it travels through a Cloudflare Worker to your open Framer plugin, where it executes using Framer's Plugin API. The response then returns through the same secure channel.
+
+The MCP URL includes your user ID and an optional session secret for enhanced security. This URL remains the same across all your Framer projects, so you only need to configure it once.
+
+## Available Tools
+
+• Project Structure - Get XML representation of pages, components, and code files
+• Node Selection - Read and manipulate currently selected elements
+• XML Updates - Modify node attributes, text content, and structure
+• Color Styles - Create, update, and apply project color styles
+• Text Styles - Manage typography styles with full property control
+• Font Search - Find and apply fonts from Framer's font library
+• Node Operations - Duplicate, delete, or zoom to specific nodes
+• React Export - Convert Framer components to React code with unframer CLI (integrates with React Export plugin, shares subscription)
+• Code Files - Create, read, and update TypeScript/React code components
+• Component Insertion - Add components to canvas with proper positioning
+
+## Connecting to AI Assistants
+
+Claude Desktop App:
+1. Open Claude Desktop settings (menu bar > Settings)
+2. Navigate to Developer tab > Edit config
+3. Add the MCP server URL from the plugin to your configuration
+4. Restart Claude Desktop to activate the connection
+
+Cursor IDE:
+1. Open command palette (Cmd/Ctrl + Shift + P)
+2. Search for "Cursor Settings" and select MCP option
+3. Add the server configuration to ~/.cursor/mcp.json
+4. Refresh MCP servers in settings
+5. Use Cursor in agent mode to access MCP tools
+
+Claude Code:
+1. Install Claude Code CLI (without sudo)
+2. Run: claude mcp add "framer-mcp" <your-mcp-url>
+3. The server will be available in all Claude Code sessions
+
+## Technical Details
+
+The system uses three components working together:
+
+• Framer Plugin - Runs inside Framer, handles API calls and maintains WebSocket connection
+• MCP Server - Cloudflare Worker implementing the MCP protocol at mcp.unframer.co
+• WebSocket Tunnel - Bidirectional connection using your Framer user ID as identifier
+
+Only one plugin instance can connect per user to prevent conflicts. Multiple MCP clients can connect simultaneously to the same plugin. All requests include a 5-second timeout for reliability.
+
+The plugin supports request/response correlation via message IDs and implements automatic reconnection with exponential backoff. All tool operations are validated before execution to ensure design integrity.
+
+## Security Considerations
+
+• Never share your MCP URL containing the session secret
+• The connection is tied to your Framer user account
+• All operations require explicit approval in your MCP client
+• The plugin only has access to the currently open project
+
+## Example Workflows
+
+Landing Page Optimization:
+Use Claude to research keywords, then ask it to update your page headings and meta descriptions with SEO-optimized content.
+
+Design System Updates:
+Ask Claude to create a consistent color palette and apply it across all components using color styles.
+
+Component Development:
+Build custom React components with Claude Code and insert them directly into your Framer project.
+
+Content Migration:
+Export existing components as React code and integrate them into your production application. The React Export feature integrates with the Framer React Export plugin—if you have an existing subscription, you can use it seamlessly with MCP.
+
+Automated Testing:
+Use MCP tools to verify all text styles follow accessibility guidelines and update non-compliant elements.

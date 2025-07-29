@@ -149,8 +149,7 @@ export const mcpTools = {
 
         Each element in the XML is usually referred as a "node" but the user could also refer to it as a "layer" or "element". The XML structure is similar to Framer's XML layers tree, names are extracted from the layers names given by the user.
 
-
-
+        To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.
         `,
         input: z.object({}),
         output: z.any(),
@@ -237,6 +236,9 @@ export const mcpTools = {
             Creates a new color style in the project with the specified properties.
 
             The style path must start with "/" and can include folder structure (e.g., "/Brand/Primary").
+            The display name will be automatically derived from the last segment of the path.
+            For example, "/Brand/Primary" will create a style named "Primary" in the "Brand" folder.
+            
             If a style already exists at the given path, this operation will fail.
 
             After creating, you can reference this style in XML nodes using color="/path/to/style".
@@ -245,11 +247,12 @@ export const mcpTools = {
             stylePath: z
                 .string()
                 .describe(
-                    'The path for the new color style. Must start with / and be unique',
+                    'The path for the new color style. Must start with / and be unique. The name is derived from the last path segment.',
                 ),
             properties: colorStylePropertiesSchema
-                .required({ name: true, light: true })
-                .describe('Properties for the new color style. Name and light color are required.'),
+                .required({ light: true })
+                .omit({ name: true })
+                .describe('Properties for the new color style. Light color is required. Name is derived from the path.'),
         }),
         output: z.any(),
     },
@@ -277,6 +280,9 @@ export const mcpTools = {
             Creates a new text style in the project with the specified properties.
 
             The style path must start with "/" and can include folder structure (e.g., "/Typography/Headings/H1").
+            The display name will be automatically derived from the last segment of the path.
+            For example, "/Typography/Headings/H1" will create a style named "H1" in the "Typography/Headings" folder.
+            
             If a style already exists at the given path, this operation will fail.
 
             After creating, you can reference this style in XML nodes using inlineTextStyle="/path/to/style".
@@ -285,11 +291,11 @@ export const mcpTools = {
             stylePath: z
                 .string()
                 .describe(
-                    'The path for the new text style. Must start with / and be unique',
+                    'The path for the new text style. Must start with / and be unique. The name is derived from the last path segment.',
                 ),
             properties: textStylePropertiesSchema
-                .required({ name: true })
-                .describe('Properties for the new text style. Name is required.'),
+                .omit({ name: true })
+                .describe('Properties for the new text style. Name is derived from the path.'),
         }),
         output: z.any(),
     },
@@ -372,11 +378,11 @@ export const mcpTools = {
 
             ALWAYS read the MCP resource file ${codeComponentsResourceUri} to see how to create code components and overrides.
 
-            You can use typescript and React. You can also import components in the project by using getComponentImportUrl to get their import url.
+            You can use typescript and React. You can also import components in the project by using getComponentInsertUrlAndTypes to get their import url.
 
             When creating a code component you should also define its property controls via Framer addPropertyControls.
 
-            Returns the ID, path, and insertUrl of the created code file. The insertUrl can be used with insertComponentInCanvas to place the component in the canvas.
+            Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with the insertUrl to add the component to the canvas.
         `,
         input: z.object({
             name: z.string().describe('The name of the code file (e.g., "MyComponent.tsx")'),
@@ -408,28 +414,31 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    getComponentImportUrl: {
+    getComponentInsertUrlAndTypes: {
         description: dedent`
-            Get the import statement and prop types documentation for a component node. Use getProjectXml to see available component nodes.
+            Get the insert URL, import statement and prop types documentation for components. This must be called before using insertComponentInCanvas.
 
-            Use this tool when you want to use an existing component in a code file.
+            The id parameter can be either:
+            - A component node ID (from getProjectXml Components section)
+            - A code file ID (from getProjectXml CodeComponents section)
 
-            returns a markdown-formatted string with:
-            - The import statement for the component
-            - JSDoc documentation of the component's props
-
-
+            Use this tool when you want to:
+            - Insert a component into the canvas (get the insertUrl for insertComponentInCanvas)
+            - Use an existing component in a code file (get the import statement)
+            - See what props/attributes are available for a component, to use them in XML
         `,
         input: z.object({
-            nodeId: NodeId.describe('The ID of the component node to get import information for'),
+            id: z.string().describe('The ID of the component node or code file to get information for'),
         }),
         output: z.string(),
     },
     insertComponentInCanvas: {
         description: dedent`
-            Insert a component into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
+            Creates a component instance and inserts it into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
 
-            Use getProjectXml to find insertUrl values for components and code components.
+            This tool can be used with both regular components and code file components.
+
+            Before using this tool, call getComponentInsertUrlAndTypes to get the insertUrl for the component you want to insert.
 
             Returns markdown with:
             - The ID of the newly created node
@@ -438,9 +447,24 @@ export const mcpTools = {
             - Instructions for positioning the node using updateXmlForNode
         `,
         input: z.object({
-            insertUrl: z.string().describe('The insert URL of the component to insert (e.g., "/components/Button.tsx#default")'),
+            insertUrl: z.string().describe('The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes'),
         }),
         output: z.string(),
+    },
+    getProjectWebsiteUrl: {
+        description: dedent`
+            Get the published website URLs for the current Framer project.
+
+            This tool retrieves both staging and production URLs if the project has been published.
+            
+            Use this tool when you need to:
+            - Check if the project is published
+            - Get the live website URL
+            - Get the staging/preview URL
+            - Share the project's public URL
+        `,
+        input: z.object({}),
+        output: z.any(),
     },
 } as const
 

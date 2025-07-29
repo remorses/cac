@@ -1,5 +1,61 @@
 # Changelog
 
+## 2025-01-29 21:35
+
+- Simplified `getProjectWebsiteUrl` to return the raw PublishInfo object
+- Returns `{ production: null, staging: null }` if project is not published
+- Each publish object contains url, currentPageUrl, deploymentTime, and optimizationStatus
+- Updated test to expect object response
+
+## 2025-01-29 21:30
+
+- Added `getProjectWebsiteUrl` tool to retrieve published website URLs
+- Uses `framer.getPublishInfo()` to get production URL, staging URL, custom domains, and last published date
+- Returns helpful instructions if project is not published
+- Added test coverage for the new tool
+
+## 2025-01-29 21:25
+
+- Simplified `getComponentInsertUrlAndTypes` implementation in App.tsx
+- Created unified approach using array of component objects (name, insertUrl, importName)
+- Consolidated markdown generation logic to eliminate code duplication
+- Single loop processes all components with consistent formatting
+- Cleaner code structure with better separation of concerns
+
+## 2025-01-29 17:20
+
+- Fixed createColorStyle and createTextStyle API to work with Framer's limitation that doesn't allow both name and path attributes
+- Updated schema to remove name requirement from style creation - name is now automatically derived from the path
+- Updated implementation to filter out any name property before calling Framer API
+- Fixed failing tests to handle dynamic style path changes and improved JSON response parsing
+- Added documentation explaining that style names are derived from the last segment of the path
+
+## 2025-01-29 21:15
+
+- Added tests for `getComponentInsertUrlAndTypes` tool with file snapshots (.md extension)
+- Test coverage for both regular component nodes and code file components
+- Snapshots capture the markdown-formatted output including insert URLs, import statements, and prop documentation
+
+## 2025-01-29 21:10
+
+- Updated `getComponentInsertUrlAndTypes` to use single `id` parameter instead of separate nodeId/codeFileId
+- Tool now returns all components when given a code file ID with multiple component exports
+- Added clarification that TypeDoc props can be used as XML attributes in updateXmlForNode
+- Improved output formatting with clear sections for each component
+
+## 2025-01-29 21:00
+
+- Created plugin.txt with comprehensive marketplace description
+
+## 2025-01-29 19:50
+
+- Renamed `getComponentImportUrl` to `getComponentInsertUrlAndTypes` for clarity
+- Extended tool to support both regular components (via nodeId) and code file components (via codeFileId)
+- Tool now returns insert URL as first item, which must be used with `insertComponentInCanvas`
+- Removed insertUrl from `getProjectXml` output to avoid confusion - use `getComponentInsertUrlAndTypes` instead
+- Updated `createCodeFile` description to mention using `insertComponentInCanvas` to add component to canvas
+- Updated `insertComponentInCanvas` description to clarify it works with both regular and code file components
+
 ## 2025-01-29 17:40
 
 - Optimized Framer tree XML generation to reduce token usage by skipping default attribute values

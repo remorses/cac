@@ -3,6 +3,8 @@ before any chat in the plugin-mcp folder run the commands
 - read src/schema.ts to understand the MCP tools schema
 
 
+when writing a description for an mcp tool you should never describe the output of the tool, instead describe the inputs and the use cases and what the flow for this tool should be.
+
 to run tests only do `pnpm test`. to run tests for a specific test name use `pnpm test -t "test name"`. the test command already passes `--run -u` so never specify those again.
 
 # Framer MCP Plugin Architecture
