@@ -1,12 +1,14 @@
 // import "@code-hike/mdx/styles"
 import { Outlet, useSearchParams } from 'react-router'
-
+import { CopyIcon, CheckIcon } from 'lucide-react'
+import { useState } from 'react'
 
 import { MDXProvider } from '@mdx-js/react'
 import { MDXComponents } from 'mdx/types'
 
 export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
     const [searchParams] = useSearchParams()
+    const [copied, setCopied] = useState(false)
 
     let content = String(children)
 
@@ -20,10 +22,31 @@ export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
         content = content.replaceAll(placeholder, value)
     })
 
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(content)
+        setCopied(true)
+        setTimeout(() => {
+            setCopied(false)
+        }, 2000)
+    }
+
     return (
-        <pre className='dark:bg-neutral-900 text-white rounded-lg p-4 overflow-x-auto my-4'>
-            <code>{content}</code>
-        </pre>
+        <div className='relative group my-4'>
+            <button
+                onClick={handleCopy}
+                className='absolute top-2 right-2 p-2 rounded-md bg-neutral-800 hover:bg-neutral-700 opacity-0 group-hover:opacity-100 transition-opacity'
+                title='Copy to clipboard'
+            >
+                {copied ? (
+                    <CheckIcon className='size-4 text-green-400' />
+                ) : (
+                    <CopyIcon className='size-4 text-neutral-300' />
+                )}
+            </button>
+            <pre className='dark:bg-neutral-900 text-white rounded-lg p-4 overflow-x-auto'>
+                <code>{content}</code>
+            </pre>
+        </div>
     )
 }
 
