@@ -2,11 +2,11 @@
 
 This code file exports 1 component(s):
 
-**Insert URL:** `https://framer.com/m/TextScrambler-Nv3j.js@YmIQkI1MbwB2Sc4QKsDu`
+**Insert URL:** `https://framer.com/m/TextScrambler-Nv3j.js`
 
 **Import Statement:**
 ```js
-import TextScrambler from "https://framer.com/m/TextScrambler-Nv3j.js@YmIQkI1MbwB2Sc4QKsDu"
+import TextScrambler from "https://framer.com/m/TextScrambler-Nv3j.js"
 ```
 
 **Props (can be used as XML attributes):**

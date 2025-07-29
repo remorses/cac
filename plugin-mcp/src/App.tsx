@@ -46,6 +46,14 @@ import {
 
 globalThis.framer = framer
 
+// Helper function to strip version hash from insert URLs
+function stripVersionFromUrl(url: string | undefined): string | undefined {
+    if (!url) return url
+    // Remove @ and everything after it
+    const atIndex = url.indexOf('@')
+    return atIndex !== -1 ? url.substring(0, atIndex) : url
+}
+
 // Helper function to get XML for a node
 async function getNodeXml(
     nodeId: string,
@@ -835,7 +843,7 @@ async function websocketHandler({
                 //         attributes: {},
                 //     })
                 // }
-                const insertUrl = componentExport?.insertURL
+                const insertUrl = stripVersionFromUrl(componentExport?.insertURL)
 
                 // Run initial lint and typecheck
                 const lintResult = await codeFile.lint({
@@ -946,7 +954,7 @@ async function websocketHandler({
 
                     components.push({
                         name: node.name || 'Component',
-                        insertUrl: node.insertURL || undefined,
+                        insertUrl: stripVersionFromUrl(node.insertURL),
                         importName: componentCamelCase(
                             node.componentName || node.name || 'Component',
                         ),
@@ -967,7 +975,7 @@ async function websocketHandler({
                         for (const componentExport of componentExports) {
                             components.push({
                                 name: componentExport.name,
-                                insertUrl: componentExport.insertURL,
+                                insertUrl: stripVersionFromUrl(componentExport.insertURL),
                                 importName: componentExport.name,
                                 isCodeFile: true,
                             })

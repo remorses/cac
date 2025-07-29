@@ -1,8 +1,8 @@
 [
   {
     "dark": null,
-    "light": "rgb(58, 100, 150)",
-    "path": "/undefined - Test 58",
+    "light": "rgb(28, 100, 150)",
+    "path": "/undefined - Test 28",
   },
   {
     "dark": null,
@@ -88,5 +88,15 @@
     "dark": "rgb(193, 50, 100)",
     "light": "rgb(193, 100, 200)",
     "path": "/Test-Color-448",
+  },
+  {
+    "dark": "rgb(97, 50, 100)",
+    "light": "rgb(97, 100, 200)",
+    "path": "/Test-Color-97",
+  },
+  {
+    "dark": "rgb(244, 50, 100)",
+    "light": "rgb(244, 100, 200)",
+    "path": "/Test-Color-499",
   },
 ]

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-01-29 21:40
+
+- Strip version hash (@ part) from all insert URLs everywhere
+- URLs are now stripped immediately when storing them in component objects
+- All Framer API calls now use the clean URLs without version hash
+- Updated getComponentInsertUrlAndTypes and createCodeFile to use clean URLs
+- Updated test snapshots to reflect the new URL format without @ version
+
 ## 2025-01-29 21:35
 
 - Simplified `getProjectWebsiteUrl` to return the raw PublishInfo object
