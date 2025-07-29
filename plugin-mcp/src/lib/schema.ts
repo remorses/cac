@@ -333,11 +333,18 @@ export const mcpTools = {
     },
     exportReactComponents: {
         description: dedent`
-            Export selected Framer components as React code. This creates a React project with the components and their dependencies.
+            Export selected Framer components as React code. This tool will return a cli command you can run to download your Framer components as React code.
+
+            This tool uses the same logic implemented in the Framer React Export plugin: https://www.framer.com/marketplace/plugins/react-export/
+
+            You should login with the same Google account you used in Framer React Export plugin if you want to reuse your existing subscription.
 
             Only component nodes can be exported. Use getProjectXml to find available component node IDs.
 
-            Returns a URL where the exported React code can be accessed.
+            The React code will be composed of .jsx files and .css styles. it is machine generated so it is recommended to use Framer variables to customize the components. Framer variables will be available as React component props.
+
+            You can read more documentation on how to use React Export (and the unframer cli, which downloads the components on your codebase) in the open source GitHub repository: https://github.com/remorses/unframer
+
         `,
         input: z.object({
             nodeIds: z
