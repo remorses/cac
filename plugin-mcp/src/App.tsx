@@ -704,7 +704,6 @@ async function websocketHandler({
             try {
                 const codeFile = await framer.createCodeFile(name, content)
 
-
                 if (!codeFile) {
                     return `Failed to create code file ${name}.`
                 }
@@ -902,27 +901,20 @@ function MainComponent() {
 
     return (
         <div className='flex flex-col gap-3 bg-framer-primary'>
-            <div className='flex flex-col gap-2'>
+            <p className='text-xs text-framer-secondary'>
+                Copy the MCP server URL below and add it to your MCP client
+                (Claude Desktop, Cursor, etc.)
+            </p>
+
+            <div className='flex items-center justify-start gap-2'>
                 <p className='text-xs text-framer-secondary'>
-                    Copy the MCP server URL below and add it to your MCP client
-                    (Claude Desktop, Cursor, etc.)
+                    Keep this plugin open while using MCP
                 </p>
+                <CircleIcon
+                    className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
+                />
             </div>
-            <div className='flex flex-col gap-3 '>
-                <div className='flex items-center justify-start gap-2'>
-                    <p className='text-xs text-framer-secondary'>
-                        Keep this plugin open while using MCP
-                    </p>
-                    <CircleIcon
-                        className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
-                    />
-                </div>
-                {error && (
-                    <div className='p-2 bg-framer-tertiary rounded border border-framer-divider'>
-                        <p className='text-xs text-red-500'>{error}</p>
-                    </div>
-                )}
-            </div>
+
             <div className='flex flex-col gap-2'>
                 <div className='flex gap-2'>
                     <input
@@ -943,16 +935,21 @@ function MainComponent() {
                     </button>
                 </div>
             </div>
-            {sessionId && (
+            {error && (
+                <div className='p-2 bg-framer-tertiary rounded border border-framer-divider'>
+                    <p className='text-xs text-red-500'>{error}</p>
+                </div>
+            )}
+            {!error && sessionId && (
                 <div className='p-2 bg-orange-500/2 rounded border border-orange-500/30'>
                     <p className='text-xs text-orange-600'>
-                        Never share this URL with anyone, it contains
-                        yourpersonal session key
+                        Never share this URL with anyone, it contains your
+                        personal session key
                     </p>
                 </div>
             )}
-            <div className='flex items-center justify-between pt-2 border-t border-framer-divider'>
-                <span className='text-xs text-framer-tertiary truncate'>
+            <div className='flex items-center -mt-px justify-between border-framer-divider'>
+                <span className='text-xs grow text-framer-tertiary truncate'>
                     {data?.email}
                 </span>
                 <button
@@ -1022,7 +1019,7 @@ function RootLayout() {
     }, [height, isExpanded])
 
     return (
-        <div ref={ref} className='flex flex-col p-4 pt-0'>
+        <div ref={ref} className='flex flex-col p-3 pb-2 pt-0'>
             <Outlet />
         </div>
     )
