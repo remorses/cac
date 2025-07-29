@@ -800,14 +800,15 @@ async function websocketHandler({
                 // Get property controls and generate TypeScript documentation
                 let message = ''
                 const { propertyControls } = await getComponentPropertyControls(insertUrl)
-                
+
                 // Create the import statement
                 const importStatement = `import ${importName} from "${insertUrl}"`
                 message = `\`\`\`js\n${importStatement}\n\`\`\``
-                
+
                 if (propertyControls) {
                     const typedocComments = propControlsToTypedocComments({
                         propertyControls,
+                        logger: console,
                         componentImportedName: importName
                     })
                     if (typedocComments.headerComment) {

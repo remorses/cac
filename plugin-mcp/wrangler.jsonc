@@ -31,9 +31,6 @@
             "custom_domain": true,
         },
     ],
-    "text_blobs": {
-        "WORKSHOP_MD": "./src/lib/workshop.md",
-    },
 
     "observability": {
         "enabled": true,
