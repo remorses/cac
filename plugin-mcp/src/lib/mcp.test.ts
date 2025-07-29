@@ -197,8 +197,8 @@ describe(
               [
                 {
                   "dark": null,
-                  "light": "rgb(222, 100, 150)",
-                  "path": "/undefined - Test 222",
+                  "light": "rgb(61, 100, 150)",
+                  "path": "/undefined - Test 61",
                 },
                 {
                   "dark": null,
@@ -284,6 +284,16 @@ describe(
                   "dark": "rgb(193, 50, 100)",
                   "light": "rgb(193, 100, 200)",
                   "path": "/Test-Color-448",
+                },
+                {
+                  "dark": "rgb(97, 50, 100)",
+                  "light": "rgb(97, 100, 200)",
+                  "path": "/Test-Color-97",
+                },
+                {
+                  "dark": "rgb(244, 50, 100)",
+                  "light": "rgb(244, 100, 200)",
+                  "path": "/Test-Color-499",
                 },
               ]
             `)
@@ -497,11 +507,11 @@ describe(
                   "alignment": "center",
                   "balance": false,
                   "decoration": "none",
-                  "fontSize": "44px",
+                  "fontSize": "99px",
                   "letterSpacing": "0px",
                   "lineHeight": "72px",
                   "paragraphSpacing": 40,
-                  "path": "/undefined - Test 44",
+                  "path": "/undefined - Test 99",
                   "tag": "h1",
                   "transform": "none",
                 },

@@ -1,10 +1,10 @@
 ## Component: Navigations/Mobile menu
 
-**Insert URL:** `https://framer.com/m/Navigations-Mobile-menu-pHGK.js@cP7CEhBKZHn9WDbQXmlm`
+**Insert URL:** `https://framer.com/m/Navigations-Mobile-menu-pHGK.js`
 
 **Import Statement:**
 ```js
-import MobileMenuFramerComponent from "https://framer.com/m/Navigations-Mobile-menu-pHGK.js@cP7CEhBKZHn9WDbQXmlm"
+import MobileMenuFramerComponent from "https://framer.com/m/Navigations-Mobile-menu-pHGK.js"
 ```
 
 **Props (can be used as XML attributes):**
