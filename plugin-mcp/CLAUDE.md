@@ -13,7 +13,7 @@ The most important code is in `src/App.tsx` in the `websocketClientHandling` `ha
 
 To understand framer-plugin package api read `plugin-mcp/node_modules/framer-plugin/dist/index.d.ts`
 
-After making MCP API changes always update `src/prompt.md` with the new API. try to keep it short.
+After making MCP API changes always update `src/prompts/how-to-use-mcp-server.md` with the new API. try to keep it short.
 
 When running tests always run them with `-u` to update snapshot, then see what are the differences of the snapshots with `git diff src/lib/snapshots` and make sure they are what you expect. If not, fix the code to make sure the tests output are what you expect.
 

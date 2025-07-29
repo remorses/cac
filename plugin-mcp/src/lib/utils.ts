@@ -8,7 +8,7 @@ export type LoaderReturnType<T extends (...args: any) => any> = Awaited<
     ReturnType<T>
 >
 
-const PUBLIC_URL = import.meta.env.PUBLIC_URL || 'https://unframer.co'
+const PUBLIC_URL = import.meta.env?.PUBLIC_URL || 'https://unframer.co'
 
 export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(PUBLIC_URL, {
     async onResponse(response) {
