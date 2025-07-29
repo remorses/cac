@@ -81,6 +81,9 @@ export type NewExtractedNode = {
     nodeId: string
     newContent: string
     attributes: Record<string, string>
+    parentId?: string
+    beforeNodeId?: string
+    afterNodeId?: string
 }
 
 export function extractObjectsFromXmlContent(xml: string) {
@@ -90,7 +93,9 @@ export function extractObjectsFromXmlContent(xml: string) {
         if (error) {
             console.error('error', error)
         } else {
-            const dfs = (node) => {
+            const dfs = (node: any, lastParentWithId?: string) => {
+                let currentParentId = lastParentWithId
+                
                 if (
                     node.type === ElementType.Tag &&
                     node.attribs &&
@@ -99,32 +104,67 @@ export function extractObjectsFromXmlContent(xml: string) {
                     const nodeId = node.attribs.nodeId
                     let text = ''
 
-                    const getTextContent = (n) => {
-                        if (n.type === 'text') {
-                            text += n.data
-                        }
-                        if (n.children) {
-                            n.children.forEach(getTextContent)
-                        }
+                    // Only get direct text children, not all descendants
+                    if (node.children) {
+                        node.children.forEach((child: any) => {
+                            if (child.type === 'text') {
+                                text += child.data
+                            }
+                        })
                     }
-                    getTextContent(node)
 
                     const attributes = { ...node.attribs }
                     delete attributes.nodeId
 
-                    results.push({
+                    const extractedNode: NewExtractedNode = {
                         nodeId,
                         newContent: deIndent(text).trim(),
                         attributes,
-                    })
+                    }
+
+                    // Add parent information if available
+                    if (lastParentWithId) {
+                        extractedNode.parentId = lastParentWithId
+                    }
+                    
+                    // This node becomes the parent for its children
+                    currentParentId = nodeId
+
+                    results.push(extractedNode)
                 }
 
                 if (node.children) {
-                    node.children.forEach(dfs)
+                    // Pass the current parent ID (either this node's ID or the last parent with ID)
+                    node.children.forEach((child: any) => dfs(child, currentParentId))
                 }
             }
 
-            dom.forEach(dfs)
+            dom.forEach((node: any) => dfs(node))
+
+            // Group nodes by their parent
+            const nodesByParent = new Map<string | undefined, NewExtractedNode[]>()
+            results.forEach(node => {
+                const parentId = node.parentId
+                if (!nodesByParent.has(parentId)) {
+                    nodesByParent.set(parentId, [])
+                }
+                nodesByParent.get(parentId)!.push(node)
+            })
+
+            // Calculate siblings for each group
+            nodesByParent.forEach((siblings) => {
+                siblings.forEach((node, index) => {
+                    // Set beforeNodeId if there's a previous sibling
+                    if (index > 0) {
+                        node.beforeNodeId = siblings[index - 1].nodeId
+                    }
+
+                    // Set afterNodeId if there's a next sibling
+                    if (index < siblings.length - 1) {
+                        node.afterNodeId = siblings[index + 1].nodeId
+                    }
+                })
+            })
         }
     })
 

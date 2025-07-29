@@ -1,5 +1,18 @@
 # Changelog
 
+## 2025-01-29 17:40
+
+- Optimized Framer tree XML generation to reduce token usage by skipping default attribute values
+- Added `ATTRIBUTE_DEFAULTS` constant to define common default values (opacity: 1, visible: true, locked: false, rotation: 0, position: 'relative', width: '1fr', height: 'fit-content')
+- Modified `getNodeAttributesForXml` to only include attributes that differ from defaults
+
+## 2025-01-29 13:05
+
+- Added `insertComponentInCanvas` MCP tool to insert components into the canvas using their insertUrl
+- Enhanced `getProjectXml` to include insertUrl for components and code files  
+- Updated `getProjectXml` to show currently focused page/component ID
+- Updated `createCodeFile` description to mention insertUrl in return value
+
 ## 2025-01-29 12:00
 
 - Removed PluginDataKeys.sessionKey enum and switched to using localStorage for session storage
