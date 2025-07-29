@@ -1,5 +1,12 @@
 # Changelog
 
+## 2025-01-29 12:00
+
+- Removed PluginDataKeys.sessionKey enum and switched to using localStorage for session storage
+- Session key now stored directly in localStorage instead of framer.setPluginData
+- Simplified authentication flow by using only localStorage for session persistence
+- Added LocalStorageKeys enum to avoid hardcoding localStorage key strings
+
 ## 2025-01-28 21:55
 
 - Fixed `getComponentImportUrl` to return markdown string instead of object

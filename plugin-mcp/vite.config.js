@@ -19,14 +19,16 @@ export default defineConfig({
             },
         },
     },
+
     plugins: [
-        cloudflare(),
+        // cloudflare({}),
         react(),
         mkcert(),
         framer(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         tsconfigPaths(),
+
     ],
     build: {
         assetsInlineLimit: 30720,

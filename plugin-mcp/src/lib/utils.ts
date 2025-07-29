@@ -14,12 +14,12 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflo
     async onResponse(response) {
         if (response.status === 401) {
             console.log('clearing session because api returned 401')
-            await framer.setPluginData(PluginDataKeys.sessionKey, null)
+            localStorage.removeItem(LocalStorageKeys.sessionId)
             throw redirect(withMode(Paths.login))
         }
     },
     async onRequest() {
-        const { sessionKey } = await getMcpPluginData()
+        const { sessionKey } = getMcpPluginData()
         return {
             headers: {
                 sessionKey,
@@ -44,12 +44,12 @@ export enum RouteIds {
 
 export const globalState = {}
 
-export enum PluginDataKeys {
-    sessionKey = 'sessionKey',
+export enum LocalStorageKeys {
+    sessionId = 'framer-mcp-session-id',
 }
 
-export async function getMcpPluginData() {
-    const sessionKey = await framer.getPluginData(PluginDataKeys.sessionKey)
+export function getMcpPluginData() {
+    const sessionKey = localStorage.getItem(LocalStorageKeys.sessionId)
     return {
         sessionKey: sessionKey || '',
     }

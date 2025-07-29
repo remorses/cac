@@ -3,8 +3,8 @@ import {
     LoaderReturnType,
     Paths,
     pluginApiClient,
-    PluginDataKeys,
     withMode,
+    LocalStorageKeys,
 } from 'plugin-mcp/src/lib/utils'
 import { framer } from 'framer-plugin'
 import { useState, useEffect } from 'react'
@@ -119,16 +119,19 @@ function LoginComponent() {
 }
 
 async function loader({}: LoaderFunctionArgs) {
-    console.log('login loader')
+    console.log('login loader, checking session')
 
-    // Get Framer user ID to pass to login
-    const user = await framer.getCurrentUser()
+    console.time('login loader')
+    const [user, sessionResponse, projectInfo] = await Promise.all([
+        framer.getCurrentUser(),
+        pluginApiClient.api.plugins.getSessionForKey.post({ key }),
+        framer.getProjectInfo(),
+    ])
+    console.timeEnd('login loader')
+
     const framerUserId = user.id
+    const { data, error } = sessionResponse
 
-    const { data, error } =
-        await pluginApiClient.api.plugins.getSessionForKey.post({
-            key,
-        })
     if (error) {
         notifyError(error, 'Error logging in for framer')
         throw error
@@ -136,8 +139,7 @@ async function loader({}: LoaderFunctionArgs) {
     if (data.key) {
         console.log('login was completed, got session', data)
 
-        await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
-        localStorage.setItem('framer-mcp-session-id', data.key)
+        localStorage.setItem(LocalStorageKeys.sessionId, data.key)
 
         loginCompleted = true
         key = generateSecurePassword()
@@ -145,7 +147,7 @@ async function loader({}: LoaderFunctionArgs) {
     } else {
         console.log(data)
     }
-    const { id: projectId, name: projectName } = await framer.getProjectInfo()
+    const { id: projectId, name: projectName } = projectInfo
     return { projectId, projectName, framerUserId }
 }
 
