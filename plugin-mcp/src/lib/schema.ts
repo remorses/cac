@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import dedent from 'string-dedent'
 
-export const codeComponentsResourceUri = 'https://mcp.unframer.co/prompts/how-to-write-framer-code-files.md'
+export const codeComponentsResourceUri = 'mcp://mcp.unframer.co/prompts/how-to-write-framer-code-files.md'
 
 /* ──────────────────────────── Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
