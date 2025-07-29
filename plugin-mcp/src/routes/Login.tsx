@@ -1,4 +1,5 @@
 import { notifyError } from 'plugin-mcp/src/lib/errors'
+
 import {
     LoaderReturnType,
     Paths,
@@ -16,7 +17,7 @@ import {
     useNavigation,
     useRevalidator,
 } from 'react-router'
-import { useRefreshOnVisible } from 'plugin-mcp/src/lib/hooks'
+
 import { Button } from 'plugin-mcp/src/components/Button'
 import {
     framerLoginUrl,
@@ -25,6 +26,7 @@ import {
     PluginNames,
     sleep,
 } from 'website/src/lib/utils'
+import { useRefreshOnVisible } from 'plugin-mcp/lib/hooks'
 
 let key = generateSecurePassword()
 let code = generateShortOtpCode()

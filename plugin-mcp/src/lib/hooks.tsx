@@ -1,19 +1,53 @@
-import { useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
+import { useRevalidator, useNavigation } from 'react-router'
 
-export function useRefreshOnVisible({ enabled }: { enabled: boolean }) {
+export function usePrevious(value) {
+    const ref = useRef(null)
     useEffect(() => {
-        if (!enabled) return
+        ref.current = value
+    })
+    return ref.current
+}
 
-        function handleVisibilityChange() {
-            if (document.visibilityState === 'visible') {
-                window.location.reload()
-            }
+export function useIsDocumentVisibile() {
+    const [isVisible, setIsVisible] = useState(true)
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            console.log('visibility changed')
+            setIsVisible(document.visibilityState === 'visible')
         }
 
         document.addEventListener('visibilitychange', handleVisibilityChange)
-        
         return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            document.removeEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            )
         }
-    }, [enabled])
+    }, [])
+
+    return isVisible
+}
+export function useRefreshOnVisible({ enabled = true }) {
+    const documentVisible = useIsDocumentVisibile()
+    const revalidator = useRevalidator()
+
+    const navigation = useNavigation()
+    const previousVisible = usePrevious(documentVisible)
+    useEffect(() => {
+        if (!enabled) {
+            return
+        }
+        if (navigation.state !== 'idle') {
+            return
+        }
+        if (revalidator.state !== 'idle') {
+            return
+        }
+        if (documentVisible && previousVisible === false) {
+            console.log(`document visible again, revalidating`)
+            revalidator.revalidate()
+        }
+    }, [documentVisible, enabled, navigation.state, previousVisible])
 }

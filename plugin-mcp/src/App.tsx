@@ -16,7 +16,10 @@ import {
 import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
 import { getFramerTree, applyAttributes } from './lib/framer'
 import { processReactExportData } from './lib/react-export'
-import { propControlsToTypedocComments, componentCamelCase } from 'unframer/src/typescript'
+import {
+    propControlsToTypedocComments,
+    componentCamelCase,
+} from 'unframer/src/typescript'
 import { getComponentPropertyControls } from './lib/framer'
 import {
     createBrowserRouter,
@@ -38,8 +41,6 @@ import {
 } from './lib/utils'
 
 globalThis.framer = framer
-
-
 
 // Helper function to get XML for a node
 async function getNodeXml(
@@ -118,11 +119,11 @@ async function websocketHandler({
             const codeFiles = await framer.getCodeFiles()
 
             // Separate code files by export type
-            const codeComponents = codeFiles.filter(file =>
-                file.exports.some(exp => exp.type === 'component')
+            const codeComponents = codeFiles.filter((file) =>
+                file.exports.some((exp) => exp.type === 'component'),
             )
-            const codeOverrides = codeFiles.filter(file =>
-                file.exports.some(exp => exp.type === 'override')
+            const codeOverrides = codeFiles.filter((file) =>
+                file.exports.some((exp) => exp.type === 'override'),
             )
 
             const tree: FramerLayersTree = [
@@ -164,7 +165,9 @@ async function websocketHandler({
                                     type: 'CodeFile',
                                     codeFileId: file.id,
                                     path: file.path,
-                                    exports: file.exports.map(e => e.name).join(', '),
+                                    exports: file.exports
+                                        .map((e) => e.name)
+                                        .join(', '),
                                 },
                                 children: [],
                             })),
@@ -178,7 +181,9 @@ async function websocketHandler({
                                     type: 'CodeFile',
                                     codeFileId: file.id,
                                     path: file.path,
-                                    exports: file.exports.map(e => e.name).join(', '),
+                                    exports: file.exports
+                                        .map((e) => e.name)
+                                        .join(', '),
                                 },
                                 children: [],
                             })),
@@ -378,10 +383,14 @@ async function websocketHandler({
 
             // Get color styles once if needed
             const needsColorStyles =
-                (typeof updates.color === 'string' && updates.color.startsWith('/')) ||
-                (typeof updates.decorationColor === 'string' && updates.decorationColor.startsWith('/'))
+                (typeof updates.color === 'string' &&
+                    updates.color.startsWith('/')) ||
+                (typeof updates.decorationColor === 'string' &&
+                    updates.decorationColor.startsWith('/'))
 
-            const colorStyles = needsColorStyles ? await framer.getColorStyles() : []
+            const colorStyles = needsColorStyles
+                ? await framer.getColorStyles()
+                : []
 
             // Prepare the attributes with proper types
             type TextStyleAttributes = Parameters<TextStyle['setAttributes']>[0]
@@ -463,10 +472,14 @@ async function websocketHandler({
 
             // Get color styles once if needed
             const needsColorStyles =
-                (typeof properties.color === 'string' && properties.color.startsWith('/')) ||
-                (typeof properties.decorationColor === 'string' && properties.decorationColor.startsWith('/'))
+                (typeof properties.color === 'string' &&
+                    properties.color.startsWith('/')) ||
+                (typeof properties.decorationColor === 'string' &&
+                    properties.decorationColor.startsWith('/'))
 
-            const colorStyles = needsColorStyles ? await framer.getColorStyles() : []
+            const colorStyles = needsColorStyles
+                ? await framer.getColorStyles()
+                : []
 
             // Prepare the attributes with proper types
             type TextStyleAttributes = Parameters<
@@ -696,7 +709,9 @@ async function websocketHandler({
                 }
 
                 // Run initial lint and typecheck
-                const lintResult = await codeFile.lint({ "forbid-browser-apis": "warning" })
+                const lintResult = await codeFile.lint({
+                    'forbid-browser-apis': 'warning',
+                })
                 const typecheckResult = await codeFile.typecheck()
 
                 return {
@@ -749,7 +764,9 @@ async function websocketHandler({
                 await codeFile.setFileContent(content)
 
                 // Run lint and typecheck after update
-                const lintResult = await codeFile.lint({ "forbid-browser-apis": "warning" })
+                const lintResult = await codeFile.lint({
+                    'forbid-browser-apis': 'warning',
+                })
                 const typecheckResult = await codeFile.typecheck()
 
                 return {
@@ -790,12 +807,15 @@ async function websocketHandler({
                 }
 
                 // Get the component's import name using componentCamelCase
-                const importName = componentCamelCase(node.componentName || node.name || 'Component')
+                const importName = componentCamelCase(
+                    node.componentName || node.name || 'Component',
+                )
                 const propsType = `${importName}Props`
 
                 // Get property controls and generate TypeScript documentation
                 let message = ''
-                const { propertyControls } = await getComponentPropertyControls(insertUrl)
+                const { propertyControls } =
+                    await getComponentPropertyControls(insertUrl)
 
                 // Create the import statement
                 const importStatement = `import ${importName} from "${insertUrl}"`
@@ -805,7 +825,7 @@ async function websocketHandler({
                     const typedocComments = propControlsToTypedocComments({
                         propertyControls,
                         logger: console,
-                        componentImportedName: importName
+                        componentImportedName: importName,
                     })
                     if (typedocComments.headerComment) {
                         message += `\n\n**Props:**\n\`\`\`js\n${typedocComments.headerComment}\`\`\``
@@ -876,19 +896,14 @@ function MainComponent() {
     }
 
     return (
-        <div className='flex flex-col gap-4 bg-framer-primary'>
-            <div className='flex items-center justify-between'>
-                <h2 className='text-sm font-medium text-framer-primary'>
-                    {/* Framer MCP Installation */}
-                </h2>
-            </div>
+        <div className='flex flex-col gap-3 bg-framer-primary'>
             <div className='flex flex-col gap-2'>
                 <p className='text-xs text-framer-secondary'>
                     Copy the MCP server URL below and add it to your MCP client
                     (Claude Desktop, Cursor, etc.)
                 </p>
             </div>
-            <div className='flex flex-col gap-2 mt-auto'>
+            <div className='flex flex-col gap-3 '>
                 <div className='flex items-center justify-start gap-2'>
                     <p className='text-xs text-framer-secondary'>
                         Keep this plugin open while using MCP
@@ -905,7 +920,8 @@ function MainComponent() {
                 {sessionId && (
                     <div className='p-2 bg-orange-500/10 rounded border border-orange-500/30'>
                         <p className='text-xs text-orange-600'>
-                            Never share this URL with anyone - it contains your personal session
+                            Never share this URL with anyone - it contains your
+                            personal session
                         </p>
                     </div>
                 )}
