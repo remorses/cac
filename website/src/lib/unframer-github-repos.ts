@@ -8,7 +8,7 @@ import { Sema } from 'sema4'
 import { unframerDemoUrl } from 'unframer-deploy-demo/src/utils'
 import { Config, configFromFetch } from 'unframer-workspace/src/cli'
 import {
-    componentCamelCase,
+
     createExampleComponentCode,
 } from 'unframer-workspace/src/exporter'
 import { kebabCase } from 'unframer-workspace/src/utils'
@@ -28,6 +28,7 @@ import { Biome, Distribution } from '@biomejs/js-api'
 import { createAiCacheMiddleware } from 'ai-cache'
 import { createFallback } from 'ai-fallback'
 import { z } from 'zod'
+import { componentCamelCase } from 'unframer-workspace/src/typescript'
 
 let biome: Biome
 export function generateRepoName({ projectId, projectTitle }) {

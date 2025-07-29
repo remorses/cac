@@ -4,7 +4,7 @@
  */
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "workers_dev": true,         // <— this forces a Worker deploy to workers.dev
+    "workers_dev": true, // <— this forces a Worker deploy to workers.dev
 
     "name": "framer-mcp-preview",
     "main": "src/worker.ts",
@@ -31,6 +31,9 @@
             "custom_domain": true,
         },
     ],
+    "text_blobs": {
+        "WORKSHOP_MD": "./src/lib/workshop.md",
+    },
 
     "observability": {
         "enabled": true,
