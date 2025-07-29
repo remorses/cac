@@ -137,21 +137,22 @@ A control that displays an on/off checkbox. The associated property will be `tru
 - `disabledTitle`: Customize the label when disabled
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Frame size={"100%"}>{props.showText ? "Hello World" : null}</Frame>
+    return <Frame size={'100%'}>{props.showText ? 'Hello World' : null}</Frame>
 }
 
 addPropertyControls(MyComponent, {
-showText: {
-type: ControlType.Boolean,
-title: "Show Text",
-defaultValue: true,
-enabledTitle: "On",
-disabledTitle: "Off",
-},
+    showText: {
+        type: ControlType.Boolean,
+        title: 'Show Text',
+        defaultValue: true,
+        enabledTitle: 'On',
+        disabledTitle: 'Off',
+    },
 })
-`
+```
 
 ## Number
 
@@ -167,23 +168,28 @@ A control that accepts any numeric value. This will be provided directly as a pr
 - `displayStepper`: Enable to show a stepper control instead
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Frame rotateZ={props.rotation} size={"100%"}>{rotation}</Frame>
+    return (
+        <Frame rotateZ={props.rotation} size={'100%'}>
+            {rotation}
+        </Frame>
+    )
 }
 
 addPropertyControls(MyComponent, {
-rotation: {
-type: ControlType.Number,
-defaultValue: 0,
-min: 0,
-max: 360,
-unit: "deg",
-step: 0.1,
-displayStepper: true,
-},
+    rotation: {
+        type: ControlType.Number,
+        defaultValue: 0,
+        min: 0,
+        max: 360,
+        unit: 'deg',
+        step: 0.1,
+        displayStepper: true,
+    },
 })
-`
+```
 
 ## String
 
@@ -198,25 +204,30 @@ A control that accepts plain text values. Displays an input field with an option
 - `preventLocalization`: Prevents automatic translation of the text
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Frame>{props.title} — {props.body}</Frame>
+    return (
+        <Frame>
+            {props.title} — {props.body}
+        </Frame>
+    )
 }
 
 addPropertyControls(MyComponent, {
-title: {
-type: ControlType.String,
-defaultValue: "Framer",
-placeholder: "Type something…",
-},
-body: {
-type: ControlType.String,
-defaultValue: "Lorem ipsum dolor sit amet.",
-placeholder: "Type something…",
-displayTextArea: true,
-},
+    title: {
+        type: ControlType.String,
+        defaultValue: 'Framer',
+        placeholder: 'Type something…',
+    },
+    body: {
+        type: ControlType.String,
+        defaultValue: 'Lorem ipsum dolor sit amet.',
+        placeholder: 'Type something…',
+        displayTextArea: true,
+    },
 })
-`
+```
 
 ## Enum
 
@@ -231,22 +242,27 @@ A property control that represents a list of options. The selected option will b
 - `segmentedControlDirection`: Direction of the segmented control ('horizontal' or 'vertical')
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-const value = props.value || "a"
-const colors = { a: "red", b: "green", c: "blue" }
-return <Frame background={colors[value]} size={"100%"}>{value}</Frame>
+    const value = props.value || 'a'
+    const colors = { a: 'red', b: 'green', c: 'blue' }
+    return (
+        <Frame background={colors[value]} size={'100%'}>
+            {value}
+        </Frame>
+    )
 }
 
 addPropertyControls(MyComponent, {
-value: {
-type: ControlType.Enum,
-defaultValue: "a",
-options: ["a", "b", "c"],
-optionTitles: ["Option A", "Option B", "Option C"],
-},
+    value: {
+        type: ControlType.Enum,
+        defaultValue: 'a',
+        options: ['a', 'b', 'c'],
+        optionTitles: ['Option A', 'Option B', 'Option C'],
+    },
 })
-`
+```
 
 ## Color
 
@@ -258,18 +274,19 @@ A control that represents a color value. The selected color is provided as a str
 - `optional`: Whether the color is optional
 
 **Example:**
-`javascript
+
+```javascript
 function MyComponent(props) {
-return <Frame background={props.background} size={"100%"} />
+    return <Frame background={props.background} size={'100%'} />
 }
 
 addPropertyControls(MyComponent, {
-background: {
-type: ControlType.Color,
-defaultValue: "#fff",
-},
+    background: {
+        type: ControlType.Color,
+        defaultValue: '#fff',
+    },
 })
-`
+```
 
 ## ResponsiveImage
 
@@ -282,17 +299,24 @@ A control that allows the user to pick an image resource. Displayed as an image 
 - `alt`: Optional description of the image
 
 **Example:**
-`javascript
+
+```javascript
 function MyComponent(props) {
-return <img src={props.image.src} srcSet={props.image.srcSet} alt={props.image.alt} />
+    return (
+        <img
+            src={props.image.src}
+            srcSet={props.image.srcSet}
+            alt={props.image.alt}
+        />
+    )
 }
 
 addPropertyControls(MyComponent, {
-image: {
-type: ControlType.ResponsiveImage,
-}
+    image: {
+        type: ControlType.ResponsiveImage,
+    },
 })
-`
+```
 
 ## File
 
@@ -303,26 +327,27 @@ A control that allows the user to pick a file resource. The selected file will b
 - `allowedFileTypes`: Array specifying acceptable file types
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return (
-<Frame size={"100%"}>
-<video
-style={{ objectFit: "contain", props.width, props.height }}
-src={props.filepath}
-controls
-/>
-</Frame>
-)
+  return (
+    <Frame size={"100%"}>
+      <video
+        style={{ objectFit: "contain", props.width, props.height }}
+        src={props.filepath}
+        controls
+      />
+    </Frame>
+  )
 }
 
 addPropertyControls(MyComponent, {
-filepath: {
-type: ControlType.File,
-allowedFileTypes: ["mov"],
-},
+  filepath: {
+    type: ControlType.File,
+    allowedFileTypes: ["mov"],
+  },
 })
-`
+```
 
 ## Array
 
@@ -335,55 +360,57 @@ A control that allows multiple values per `ControlType`, provided as an array vi
 - `defaultValue`: Default array values
 
 **Example with Images:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-const frames = props.images.map(image => <Frame image={image} width={"1fr"} height={"1fr"} />)
-return <Stack size={"100%"}>{frames}</Stack>
+    const frames = props.images.map((image) => (
+        <Frame image={image} width={'1fr'} height={'1fr'} />
+    ))
+    return <Stack size={'100%'}>{frames}</Stack>
 }
 
 addPropertyControls(MyComponent, {
-images: {
-type: ControlType.Array,
-control: {
-type: ControlType.Image
-},
-maxCount: 5,
-},
+    images: {
+        type: ControlType.Array,
+        control: {
+            type: ControlType.Image,
+        },
+        maxCount: 5,
+    },
 })
-`
+```
 
 **Example with ComponentInstance:**
-`javascript
+
+```javascript
 addPropertyControls(MyComponent, {
-  children: {
-    type: ControlType.Array,
-    control: {
-      type: ControlType.ComponentInstance
+    children: {
+        type: ControlType.Array,
+        control: {
+            type: ControlType.ComponentInstance,
+        },
+        maxCount: 5,
     },
-    maxCount: 5,
-  },
 })
-`
+```
 
 **Example with Objects:**
-`javascript
+
+```javascript
 addPropertyControls(MyComponent, {
-  myArray: {
-    type: ControlType.Array,
-    control: {
-      type: ControlType.Object,
-      controls: {
-        title: { type: ControlType.String, defaultValue: "Employee" },
-        avatar: { type: ControlType.Image },
-      },
+    myArray: {
+        type: ControlType.Array,
+        control: {
+            type: ControlType.Object,
+            controls: {
+                title: { type: ControlType.String, defaultValue: 'Employee' },
+                avatar: { type: ControlType.Image },
+            },
+        },
+        defaultValue: [{ title: 'Jorn' }, { title: 'Koen' }],
     },
-    defaultValue: [
-      { title: "Jorn" },
-      { title: "Koen" },
-    ],
-  },
 })
-`
+```
 
 ## Slot
 
@@ -394,35 +421,37 @@ A control that references one or more other components on the canvas, included i
 - `maxCount`: Maximum number of components to be linked
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Stack size={"100%"}>{props.children}</Stack>
+    return <Stack size={'100%'}>{props.children}</Stack>
 }
 
 addPropertyControls(MyComponent, {
-children: {
-type: ControlType.Slot,
-maxCount: 5,
-},
+    children: {
+        type: ControlType.Slot,
+        maxCount: 5,
+    },
 })
-`
+```
 
 ## EventHandler
 
 A control that exposes events in the prototyping panel within the Framer UI.
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Frame onTap={props.onTap} size={"100%"} />
+    return <Frame onTap={props.onTap} size={'100%'} />
 }
 
 addPropertyControls(MyComponent, {
-onTap: {
-type: ControlType.EventHandler,
-},
+    onTap: {
+        type: ControlType.EventHandler,
+    },
 })
-`
+```
 
 ## Font
 
@@ -437,65 +466,63 @@ A control that allows for selecting a font to be used in the component.
 - `displayFontSize`: Whether to display font size options
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Frame style={props.customFont} />
+    return <Frame style={props.customFont} />
 }
 
 addPropertyControls(MyComponent, {
-customFont: {
-type: ControlType.Font,
-defaultValue: {
-fontSize: "16px",
-variant: "Bold", // Controls font-weight and font-style
-letterSpacing: "-0.01em",
-lineHeight: "1.2em",
-textAlign: "right",
-},
-controls: "extended",
-defaultFontType: "sans-serif",
-}
+    customFont: {
+        type: ControlType.Font,
+        defaultValue: {
+            fontSize: '16px',
+            variant: 'Bold', // Controls font-weight and font-style
+            letterSpacing: '-0.01em',
+            lineHeight: '1.2em',
+            textAlign: 'right',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
 })
-`
+```
 
 ## Transition
 
 A control that allows for editing Framer Motion transition options within the Framer UI.
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return (
-<Frame
-animate={{ scale: 2 }}
-transition={props.transition}
-/>
-)
+    return <Frame animate={{ scale: 2 }} transition={props.transition} />
 }
 
 addPropertyControls(MyComponent, {
-transition: {
-type: ControlType.Transition,
-},
+    transition: {
+        type: ControlType.Transition,
+    },
 })
-`
+```
 
 ## BoxShadow
 
 A control that allows for exposing shadows. The value will be provided as a string with valid CSS box-shadow values.
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <motion.div style={{boxShadow: props.shadow}} />
+    return <motion.div style={{ boxShadow: props.shadow }} />
 }
 
 addPropertyControls(MyComponent, {
-shadow: {
-type: ControlType.BoxShadow,
-}
+    shadow: {
+        type: ControlType.BoxShadow,
+    },
 })
-`
+```
 
 ## Link
 
@@ -506,17 +533,18 @@ A control that allows for exposing web links.
 - `defaultValue`: Default URL as string
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <a href={props.link}>My Link</a>
+    return <a href={props.link}>My Link</a>
 }
 
 addPropertyControls(MyComponent, {
-link: {
-type: ControlType.Link,
-}
+    link: {
+        type: ControlType.Link,
+    },
 })
-`
+```
 
 ## Date
 
@@ -527,21 +555,22 @@ A control that allows for exposing dates. The value will be provided in toJSON()
 - `displayTime`: Whether to include time selection
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-const formattedDate = React.useMemo(() => {
-return new Date(props.date).toLocaleDateString()
-}, [props.date])
-return <div>{formattedDate}</div>
+    const formattedDate = React.useMemo(() => {
+        return new Date(props.date).toLocaleDateString()
+    }, [props.date])
+    return <div>{formattedDate}</div>
 }
 
 addPropertyControls(MyComponent, {
-date: {
-type: ControlType.Date,
-displayTime: true
-}
+    date: {
+        type: ControlType.Date,
+        displayTime: true,
+    },
 })
-`
+```
 
 ## Object
 
@@ -556,21 +585,27 @@ A control that allows for grouping multiple properties as an object.
 - `icon`: Icon to display ('object', 'effect', 'color', 'interaction', or 'boolean')
 
 **Example:**
-`javascript
+
+```javascript
 export function MyComponent(props) {
-return <Frame opacity={props.myObject.opacity} background={props.myObject.tint} />
+    return (
+        <Frame
+            opacity={props.myObject.opacity}
+            background={props.myObject.tint}
+        />
+    )
 }
 
 addPropertyControls(MyComponent, {
-myObject: {
-type: ControlType.Object,
-controls: {
-opacity: { type: ControlType.Number },
-tint: { type: ControlType.Color },
-}
-}
+    myObject: {
+        type: ControlType.Object,
+        controls: {
+            opacity: { type: ControlType.Number },
+            tint: { type: ControlType.Color },
+        },
+    },
 })
-`
+```
 
 ## Border
 
@@ -582,22 +617,23 @@ A control that represents a border.
 - `optional`: Whether the border is optional
 
 **Example:**
-`javascript
+
+```javascript
 function MyComponent(props) {
-return <div style={props.border} />
+    return <div style={props.border} />
 }
 
 addPropertyControls(MyComponent, {
-border: {
-type: ControlType.Border,
-defaultValue: {
-borderWidth: 1,
-borderStyle: "solid",
-borderColor: "rgba(0, 0, 0, 0.5)",
-},
-}
+    border: {
+        type: ControlType.Border,
+        defaultValue: {
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: 'rgba(0, 0, 0, 0.5)',
+        },
+    },
 })
-`
+```
 
 ## Cursor
 
@@ -612,18 +648,19 @@ A control that represents CSS padding.
 - `defaultValue`: Default padding value
 
 **Example:**
-`javascript
+
+```javascript
 function MyComponent({ padding }) {
-return <div style={{ padding }} />
+    return <div style={{ padding }} />
 }
 
 addPropertyControls(MyComponent, {
-padding: {
-type: ControlType.Padding,
-defaultValue: "8px",
-}
+    padding: {
+        type: ControlType.Padding,
+        defaultValue: '8px',
+    },
 })
-`
+```
 
 ## BorderRadius
 
@@ -635,19 +672,20 @@ A control that represents CSS border radius.
 - `title`: Custom title for the control
 
 **Example:**
-`javascript
+
+```javascript
 function MyComponent({ borderRadius }) {
-return <div style={{ borderRadius }} />
+    return <div style={{ borderRadius }} />
 }
 
 addPropertyControls(MyComponent, {
-borderRadius: {
-type: ControlType.BorderRadius,
-defaultValue: "16px",
-title: "Radius",
-}
+    borderRadius: {
+        type: ControlType.BorderRadius,
+        defaultValue: '16px',
+        title: 'Radius',
+    },
 })
-`
+```
 
 ## TypeScript Interfaces
 
@@ -658,306 +696,326 @@ Below are the TypeScript interfaces that define the structure of each control ty
 All control descriptions extend this base interface:
 
 ```typescript
-/\*\*
+/**
  * Base control description interface
- _/
+ */
 export declare interface BaseControlDescription<P = any> {
- title?: string
- description?: string
- hidden?(props: P, rootProps: any): boolean
+    title?: string
+    description?: string
+    hidden?(props: P, rootProps: any): boolean
 }
-`
+```
 
 ### Boolean Control
 
-`typescript
-/\*\*
- _ Boolean control description
- _/
-export declare interface BooleanControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Boolean
- defaultValue?: boolean
- disabledTitle?: string
- enabledTitle?: string
+```typescript
+/**
+ * Boolean control description
+ */
+export declare interface BooleanControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Boolean
+    defaultValue?: boolean
+    disabledTitle?: string
+    enabledTitle?: string
 }
-`
+```
 
 ### Number Control
 
-`typescript
-/\*\*
- _ Number control description
- _/
-export declare interface NumberControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Number
- defaultValue?: number
- max?: number
- min?: number
- unit?: string
- step?: number
- displayStepper?: boolean
+```typescript
+/**
+ * Number control description
+ */
+export declare interface NumberControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Number
+    defaultValue?: number
+    max?: number
+    min?: number
+    unit?: string
+    step?: number
+    displayStepper?: boolean
 }
-`
+```
 
 ### String Control
 
-`typescript
-/\*\*
- _ String control description
- _/
-export declare interface StringControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.String
- defaultValue?: string
- placeholder?: string
- obscured?: boolean
- displayTextArea?: boolean
- preventLocalization?: boolean
+```typescript
+/**
+ * String control description
+ */
+export declare interface StringControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.String
+    defaultValue?: string
+    placeholder?: string
+    obscured?: boolean
+    displayTextArea?: boolean
+    preventLocalization?: boolean
 }
-`
+```
 
 ### Enum Control
 
-`typescript
-/\*\*
- _ Enum control description
- _/
-export declare interface EnumControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Enum
- defaultValue?: string | boolean | number | undefined | null
- options: (string | boolean | number | undefined | null)[]
- optionTitles?: string[]
- displaySegmentedControl?: boolean
- segmentedControlDirection?: "horizontal" | "vertical"
+```typescript
+/**
+ * Enum control description
+ */
+export declare interface EnumControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Enum
+    defaultValue?: string | boolean | number | undefined | null
+    options: (string | boolean | number | undefined | null)[]
+    optionTitles?: string[]
+    displaySegmentedControl?: boolean
+    segmentedControlDirection?: 'horizontal' | 'vertical'
 }
-`
+```
 
 ### Color Control
 
-`typescript
-/\*\*
- _ Color control description
- _/
-export declare interface ColorControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Color
- defaultValue?: string
- optional?: boolean
+```typescript
+/**
+ * Color control description
+ */
+export declare interface ColorControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Color
+    defaultValue?: string
+    optional?: boolean
 }
-`
+```
 
 ### ResponsiveImage Control
 
-`typescript
-/\*\*
- _ Responsive image control description
- _/
-export declare interface ResponsiveImageControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.ResponsiveImage
+```typescript
+/**
+ * Responsive image control description
+ */
+export declare interface ResponsiveImageControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.ResponsiveImage
 }
-`
+```
 
 ### File Control
 
-`typescript
-/\*\*
- _ File control description
- _/
-export declare interface FileControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.File
- allowedFileTypes: string[]
+```typescript
+/**
+ * File control description
+ */
+export declare interface FileControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.File
+    allowedFileTypes: string[]
 }
-`
+```
 
 ### Component Instance Control
 
-`typescript
-/\*\*
- _ Component instance description
- _/
-export declare interface ComponentInstanceDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.ComponentInstance
+```typescript
+/**
+ * Component instance description
+ */
+export declare interface ComponentInstanceDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.ComponentInstance
 }
-`
+```
 
 ### Array Control
 
-`typescript
-/\*\*
- _ Array control description
- _/
-export declare interface ArrayControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Array
- control: ArrayItemControlDescription<P>
- maxCount?: number
- defaultValue?: any[]
+```typescript
+/**
+ * Array control description
+ */
+export declare interface ArrayControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Array
+    control: ArrayItemControlDescription<P>
+    maxCount?: number
+    defaultValue?: any[]
 }
-`
+```
 
 ### Object Control
 
-`typescript
-/\*\*
- _ Object control description
- _/
-export declare interface ObjectControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Object
- controls: {
- [key: string]: ObjectPropertyControlDescription
- }
- defaultValue?: {
- [key: string]: any
- }
- buttonTitle?: string
- optional?: boolean
- icon?: "object" | "effect" | "color" | "interaction" | "boolean"
+```typescript
+/**
+ * Object control description
+ */
+export declare interface ObjectControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Object
+    controls: {
+        [key: string]: ObjectPropertyControlDescription
+    }
+    defaultValue?: {
+        [key: string]: any
+    }
+    buttonTitle?: string
+    optional?: boolean
+    icon?: 'object' | 'effect' | 'color' | 'interaction' | 'boolean'
 }
-`
+```
 
 ### Link Control
 
-`typescript
-/\*\*
- _ Link control description
- _/
-export declare interface LinkControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Link
- defaultValue?: string
+```typescript
+/**
+ * Link control description
+ */
+export declare interface LinkControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Link
+    defaultValue?: string
 }
-`
+```
 
 ### Border Control
 
-`typescript
-/\*\*
- _ Border control description
- _/
-export declare interface BorderControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Border
- defaultValue?: Border
- optional?: boolean
+```typescript
+/**
+ * Border control description
+ */
+export declare interface BorderControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Border
+    defaultValue?: Border
+    optional?: boolean
 }
-`
+```
 
 ### Padding Control
 
-`typescript
-/\*\*
- _ Padding control description
- _/
-export declare interface PaddingControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.Padding
- defaultValue?: string
+```typescript
+/**
+ * Padding control description
+ */
+export declare interface PaddingControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Padding
+    defaultValue?: string
 }
-`
+```
 
 ### Border Radius Control
 
-`typescript
-/\*\*
- _ Border radius control description
- _/
-export declare interface BorderRadiusControlDescription<P = any> extends BaseControlDescription<P> {
- type: ControlType.BorderRadius
- defaultValue?: string
+```typescript
+/**
+ * Border radius control description
+ */
+export declare interface BorderRadiusControlDescription<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.BorderRadius
+    defaultValue?: string
 }
-`
+```
 
 ### Font Control
 
-`typescript
-/\*\*
- _ Font control descriptions
- _/
-interface FontControlDescriptionBase<P = any> extends BaseControlDescription<P> {
- type: ControlType.Font
- controls?: "basic" | "extended"
- displayTextAlignment?: boolean
- displayFontSize?: boolean
+```typescript
+/**
+ * Font control descriptions
+ */
+interface FontControlDescriptionBase<P = any>
+    extends BaseControlDescription<P> {
+    type: ControlType.Font
+    controls?: 'basic' | 'extended'
+    displayTextAlignment?: boolean
+    displayFontSize?: boolean
 }
 
-interface FontControlDescriptionSansSerif<P = any> extends FontControlDescriptionBase<P> {
- defaultFontType?: "sans-serif"
- defaultValue?: FontControlDefaultValueWithVariant
+interface FontControlDescriptionSansSerif<P = any>
+    extends FontControlDescriptionBase<P> {
+    defaultFontType?: 'sans-serif'
+    defaultValue?: FontControlDefaultValueWithVariant
 }
 
-interface FontControlDescriptionMonospace<P = any> extends FontControlDescriptionBase<P> {
- defaultFontType?: "monospace"
- defaultValue?: FontControlDefaultValueBase
+interface FontControlDescriptionMonospace<P = any>
+    extends FontControlDescriptionBase<P> {
+    defaultFontType?: 'monospace'
+    defaultValue?: FontControlDefaultValueBase
 }
 
-export type FontControlDescription<P = any> = FontControlDescriptionSansSerif<P> | FontControlDescriptionMonospace<P>
+export type FontControlDescription<P = any> =
+    | FontControlDescriptionSansSerif<P>
+    | FontControlDescriptionMonospace<P>
 
 interface FontControlDefaultValueBase {
- textAlign?: "left" | "right" | "center"
- fontSize?: string | number
- letterSpacing?: string | number
- lineHeight?: string | number
+    textAlign?: 'left' | 'right' | 'center'
+    fontSize?: string | number
+    letterSpacing?: string | number
+    lineHeight?: string | number
 }
 
-interface FontControlDefaultValueWithVariant extends FontControlDefaultValueBase {
- variant?: FramerFontVariant
+interface FontControlDefaultValueWithVariant
+    extends FontControlDefaultValueBase {
+    variant?: FramerFontVariant
 }
 
 export const framerFontVariants = [
- "Regular",
- "Thin",
- "Extra Light",
- "Light",
- "Medium",
- "Semibold",
- "Bold",
- "Extra Bold",
- "Black",
- "Thin Italic",
- "Extra Light Italic",
- "Light Italic",
- "Italic",
- "Medium Italic",
- "Semibold Italic",
- "Bold Italic",
- "Extra Bold Italic",
- "Black Italic",
- "Regular Italic",
- "Variable",
- "Variable Italic",
+    'Regular',
+    'Thin',
+    'Extra Light',
+    'Light',
+    'Medium',
+    'Semibold',
+    'Bold',
+    'Extra Bold',
+    'Black',
+    'Thin Italic',
+    'Extra Light Italic',
+    'Light Italic',
+    'Italic',
+    'Medium Italic',
+    'Semibold Italic',
+    'Bold Italic',
+    'Extra Bold Italic',
+    'Black Italic',
+    'Regular Italic',
+    'Variable',
+    'Variable Italic',
 ] as const
 
 export type FramerFontVariant = (typeof framerFontVariants)[number]
-`
+```
 
 ### All Control Types
 
-`typescript
-/\*\*
- _ Type for all possible control descriptions
- _/
+```typescript
+/**
+ * Type for all possible control descriptions
+ */
 export declare type ControlDescription<P = any> =
- | NumberControlDescription<P>
- | EnumControlDescription<P>
- | BooleanControlDescription<P>
- | StringControlDescription<P>
- | ColorControlDescription<P>
- | ResponsiveImageControlDescription<P>
- | FileControlDescription<P>
- | ComponentInstanceDescription<P>
- | ArrayControlDescription<P>
- | ObjectControlDescription<P>
- | LinkControlDescription<P>
- | BorderControlDescription<P>
- | PaddingControlDescription<P>
- | BorderRadiusControlDescription<P>
- | FontControlDescription<P>
-`
+    | NumberControlDescription<P>
+    | EnumControlDescription<P>
+    | BooleanControlDescription<P>
+    | StringControlDescription<P>
+    | ColorControlDescription<P>
+    | ResponsiveImageControlDescription<P>
+    | FileControlDescription<P>
+    | ComponentInstanceDescription<P>
+    | ArrayControlDescription<P>
+    | ObjectControlDescription<P>
+    | LinkControlDescription<P>
+    | BorderControlDescription<P>
+    | PaddingControlDescription<P>
+    | BorderRadiusControlDescription<P>
+    | FontControlDescription<P>
+```
 
 ### Property Controls
 
-`typescript
-/\*\*
- _ Property controls for components
- _/
+```typescript
+/**
+ * Property controls for components
+ */
 export declare type PropertyControls<ComponentProps = any, ArrayTypes = any> = {
- [K in keyof ComponentProps]?: ControlDescription<Partial<ComponentProps>>
+    [K in keyof ComponentProps]?: ControlDescription<Partial<ComponentProps>>
 }
-`
+```
 
 ## Associated Methods and Types
 
@@ -965,131 +1023,134 @@ Below are essential functions and types that are used alongside the control type
 
 ### addPropertyControls
 
-`typescript
-/\*\*
- _ Adds property controls to a component
- _/
+```typescript
+/**
+ * Adds property controls to a component
+ */
 export declare function addPropertyControls<Props = any>(
- component: React.ComponentType<Props> | React.ForwardRefExoticComponent<Props>,
- propertyControls: PropertyControls<Props>
-): void;
-`
+    component:
+        | React.ComponentType<Props>
+        | React.ForwardRefExoticComponent<Props>,
+    propertyControls: PropertyControls<Props>,
+): void
+```
 
 ### addFonts
 
-`typescript
-/\*\*
- _ Adds fonts to a component
- _/
+```typescript
+/**
+ * Adds fonts to a component
+ */
 export declare function addFonts(
- component: React.ComponentType<unknown>,
- fonts: any[],
- flags?: { supportsExplicitInterCodegen?: boolean }
-): void;
-`
+    component: React.ComponentType<unknown>,
+    fonts: any[],
+    flags?: { supportsExplicitInterCodegen?: boolean },
+): void
+```
 
 ### Data API
 
-`typescript
-/\*\*
- _ Data API for state management
- _/
+```typescript
+/**
+ * Data API for state management
+ */
 export declare const Data: {
- <T extends object = object>(initial?: Partial<T> | object): T;
-};
-`
+    <T extends object = object>(initial?: Partial<T> | object): T
+}
+```
 
 ### Renderer Detection APIs
 
-`typescript
-/\*\*
- _ Renderer detection APIs
- _/
-export declare type RenderTarget = RenderTargetName;
+```typescript
+/**
+ * Renderer detection APIs
+ */
+export declare type RenderTarget = RenderTargetName
 
 export declare const RenderTarget: {
- canvas: RenderTargetName;
- export: RenderTargetName;
- thumbnail: RenderTargetName;
- preview: RenderTargetName;
- current: () => RenderTargetName;
- hasRestrictions: () => boolean;
-};
+    canvas: RenderTargetName
+    export: RenderTargetName
+    thumbnail: RenderTargetName
+    preview: RenderTargetName
+    current: () => RenderTargetName
+    hasRestrictions: () => boolean
+}
 
-/\*\*
- _ Check if the caller is executed in a Framer Canvas or Export Canvas environment
- _/
-export declare function isStaticRenderer(): boolean;
+/**
+ * Check if the caller is executed in a Framer Canvas or Export Canvas environment
+ */
+export declare function isStaticRenderer(): boolean
 
-/\*\*
- _ Hook to check if in a static renderer (Canvas or Export)
- _/
-export declare function useIsStaticRenderer(): boolean;
+/**
+ * Hook to check if in a static renderer (Canvas or Export)
+ */
+export declare function useIsStaticRenderer(): boolean
 
-/\*\*
- _ Hook to observe data changes
- _/
-export declare function useObserveData(): boolean;
-`
+/**
+ * Hook to observe data changes
+ */
+export declare function useObserveData(): boolean
+```
 
 ### Border Interface
 
-`typescript
-/\*\*
- _ Border interface
- _/
+```typescript
+/**
+ * Border interface
+ */
 export declare interface Border {
- borderColor?: string;
- borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double';
- borderWidth?: number;
- borderTopWidth?: number;
- borderLeftWidth?: number;
- borderRightWidth?: number;
- borderBottomWidth?: number;
+    borderColor?: string
+    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double'
+    borderWidth?: number
+    borderTopWidth?: number
+    borderLeftWidth?: number
+    borderRightWidth?: number
+    borderBottomWidth?: number
 }
-`
+```
 
 ### Color Interface and Utilities
 
-`typescript
-/\*\*
- _ Color interface and utilities
- _/
+```typescript
+/**
+ * Color interface and utilities
+ */
 export declare interface Color {
- r: number;
- g: number;
- b: number;
- h: number;
- s: number;
- l: number;
- a: number;
- roundA: number;
- format: ColorFormat;
- initialValue?: string;
- isValid?: boolean;
- mix: any;
- toValue: () => string;
+    r: number
+    g: number
+    b: number
+    h: number
+    s: number
+    l: number
+    a: number
+    roundA: number
+    format: ColorFormat
+    initialValue?: string
+    isValid?: boolean
+    mix: any
+    toValue: () => string
 }
 
 export declare enum ColorFormat {
- RGB = 'rgb',
- HSL = 'hsl',
- HSV = 'hsv',
- HEX = 'hex',
- NAME = 'name',
+    RGB = 'rgb',
+    HSL = 'hsl',
+    HSV = 'hsv',
+    HEX = 'hex',
+    NAME = 'name',
 }
-`
+```
 
 ### Version
 
-`typescript
-/\*\*
- _ Version of the library
- _/
-export declare const version: string;
-``
+```typescript
+/**
+ * Version of the library
+ */
+export declare const version: string
+```
 
 ## How to use Property Controls
+
 **MANDATORY**: EVERY component MUST have property controls. This is non-negotiable regardless of whether you're creating from scratch or replicating an image.
 
 - NEVER EVER USE \"ComponentName.defaultProps\". ALWAYS use "defaultValue" on the property control instead.
@@ -1110,6 +1171,7 @@ export declare const version: string;
 #### Styling of text elements
 
 When using Control Properties on text elements, do not introduce any new control properties for styles which can be applied with `ControlType.Font` and `FontControlDescription` respectively. Specifically:
+
 - `FontControlDescription.defaultValue.fontSize` for `font-size`
 - `FontControlDescription.defaultValue.textAlignment` for `text-alignment`
 - `FontControlDescription.defaultValue.letterSpacing` for `letter-spacing`
@@ -1118,6 +1180,7 @@ When using Control Properties on text elements, do not introduce any new control
 - `FontControlDescription.defaultValue.variant` can be set only if `FontControlDescription.defaultFontType` is set to `"sans-serif"`
 
 Remarks:
+
 - `FontControlDescription.defaultValue.fontFamily` is not a valid default value
 - You are not allowed to set default value for the font family.
 - If you have been asked to set the font family, you must reply that the font family can be set only by the user on the font control
@@ -1126,49 +1189,50 @@ Remarks:
 When you need to use font weight you should use `FontControlDescription.defaultValue.variant`.
 The variant encapsulates both the font weight and style together. Refer to the following object to determine the correct variant for a given font weight:
 
-``ts
+```ts
 interface ResolvedFontVariant {
- fontStyle: "normal" | "italic"
- weight: number
+    fontStyle: 'normal' | 'italic'
+    weight: number
 }
 
-const variantNameToFontWeight: Record<FramerFontVariant, ResolvedFontVariant> = {
- Regular: { fontStyle: "normal", fontWeight: 400 },
- Thin: { fontStyle: "normal", fontWeight: 100 },
- "Extra Light": { fontStyle: "normal", fontWeight: 200 },
- Light: { fontStyle: "normal", fontWeight: 300 },
- Medium: { fontStyle: "normal", fontWeight: 500 },
- Semibold: { fontStyle: "normal", fontWeight: 600 },
- Bold: { fontStyle: "normal", fontWeight: 700 },
- "Extra Bold": { fontStyle: "normal", fontWeight: 800 },
- Black: { fontStyle: "normal", fontWeight: 900 },
- "Thin Italic": { fontStyle: "italic", fontWeight: 100 },
- "Extra Light Italic": { fontStyle: "italic", fontWeight: 200 },
- "Light Italic": { fontStyle: "italic", fontWeight: 300 },
- Italic: { fontStyle: "italic", fontWeight: 400 },
- "Medium Italic": { fontStyle: "italic", fontWeight: 500 },
- "Semibold Italic": { fontStyle: "italic", fontWeight: 600 },
- "Bold Italic": { fontStyle: "italic", fontWeight: 700 },
- "Extra Bold Italic": { fontStyle: "italic", fontWeight: 800 },
- "Black Italic": { fontStyle: "italic", fontWeight: 900 },
- "Regular Italic": { fontStyle: "italic", fontWeight: 400 },
-}
-``
+const variantNameToFontWeight: Record<FramerFontVariant, ResolvedFontVariant> =
+    {
+        Regular: { fontStyle: 'normal', fontWeight: 400 },
+        Thin: { fontStyle: 'normal', fontWeight: 100 },
+        'Extra Light': { fontStyle: 'normal', fontWeight: 200 },
+        Light: { fontStyle: 'normal', fontWeight: 300 },
+        Medium: { fontStyle: 'normal', fontWeight: 500 },
+        Semibold: { fontStyle: 'normal', fontWeight: 600 },
+        Bold: { fontStyle: 'normal', fontWeight: 700 },
+        'Extra Bold': { fontStyle: 'normal', fontWeight: 800 },
+        Black: { fontStyle: 'normal', fontWeight: 900 },
+        'Thin Italic': { fontStyle: 'italic', fontWeight: 100 },
+        'Extra Light Italic': { fontStyle: 'italic', fontWeight: 200 },
+        'Light Italic': { fontStyle: 'italic', fontWeight: 300 },
+        Italic: { fontStyle: 'italic', fontWeight: 400 },
+        'Medium Italic': { fontStyle: 'italic', fontWeight: 500 },
+        'Semibold Italic': { fontStyle: 'italic', fontWeight: 600 },
+        'Bold Italic': { fontStyle: 'italic', fontWeight: 700 },
+        'Extra Bold Italic': { fontStyle: 'italic', fontWeight: 800 },
+        'Black Italic': { fontStyle: 'italic', fontWeight: 900 },
+        'Regular Italic': { fontStyle: 'italic', fontWeight: 400 },
+    }
+```
 
 Example of a simple text component in Framer which demonstrates how to use Property Control of type `ControlType.Font`.
 
-``tsx
-import { addPropertyControls, ControlType } from "framer"
+```tsx
+import { addPropertyControls, ControlType } from 'framer'
 
-/\*\*
- _ @framerSupportedLayoutWidth auto
- _ @framerSupportedLayoutHeight auto
- _/
+/**
+ * @framerSupportedLayoutWidth auto
+ * @framerSupportedLayoutHeight auto
+ */
 export default function SimpleText(props) {
- const { label, heading } = props
- return (
- <span
- style={{
+    const { label, heading } = props
+    return (
+        <span
+            style={{
                 fontSize: heading.fontSize,
                 textAlign: heading.textAlign,
                 fontWeight: heading.fontWeight,
@@ -1177,33 +1241,33 @@ export default function SimpleText(props) {
                 letterSpacing: heading.letterSpacing,
                 fontStyle: heading.fontStyle,
             }}
- >
- {label}
- </span>
- )
+        >
+            {label}
+        </span>
+    )
 }
 
 addPropertyControls(SimpleText, {
- heading: {
- type: ControlType.Font,
- title: "Heading 2 Font",
- defaultValue: {
- textAlign: "right",
- fontSize: 40,
- variant: "Extra Bold",
- letterSpacing: "-0.03em",
- lineHeight: "1em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
- label: {
- title: "Label",
- type: ControlType.String,
- defaultValue: "Hello",
- },
+    heading: {
+        type: ControlType.Font,
+        title: 'Heading 2 Font',
+        defaultValue: {
+            textAlign: 'right',
+            fontSize: 40,
+            variant: 'Extra Bold',
+            letterSpacing: '-0.03em',
+            lineHeight: '1em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
+    label: {
+        title: 'Label',
+        type: ControlType.String,
+        defaultValue: 'Hello',
+    },
 })
-`
+```
 
 ### Default Control Values
 
@@ -1213,35 +1277,35 @@ Below are the recommended default values for some control types. Always use thes
 
 Use these exact values for all color controls
 
-`typescript
+```typescript
 const colors: Record<string, ColorControlDescription> = {
- /** Use for main container backgrounds, cards, and primary surfaces \*/
- background: {
- type: ControlType.Color,
- defaultValue: "#FFFFFF", // White: backgrounds
- },
- /** Use for secondary backgrounds, input fields, and subtle visual elements _/
- subtleBackground: {
- type: ControlType.Color,
- defaultValue: "#F5F5F5", // Very light gray: subtle backgrounds, placeholders
- },
- /\*\* Use for borders, dividers, and visual separators _/
- darkBackground: {
- type: ControlType.Color,
- defaultValue: "#EEEEEE", // Light gray: borders, separators
- },
- /** Use for secondary text, icons, and less prominent UI elements \*/
- tertiary: {
- type: ControlType.Color,
- defaultValue: "#CCCCCC", // Medium gray: text, icons
- },
- /** Use for primary text, icons, and key UI elements that need emphasis _/
- primary: {
- type: ControlType.Color,
- defaultValue: "#000000", // Black: text, icons
- },
+    /** Use for main container backgrounds, cards, and primary surfaces */
+    background: {
+        type: ControlType.Color,
+        defaultValue: '#FFFFFF', // White: backgrounds
+    },
+    /** Use for secondary backgrounds, input fields, and subtle visual elements */
+    subtleBackground: {
+        type: ControlType.Color,
+        defaultValue: '#F5F5F5', // Very light gray: subtle backgrounds, placeholders
+    },
+    /** Use for borders, dividers, and visual separators */
+    darkBackground: {
+        type: ControlType.Color,
+        defaultValue: '#EEEEEE', // Light gray: borders, separators
+    },
+    /** Use for secondary text, icons, and less prominent UI elements */
+    tertiary: {
+        type: ControlType.Color,
+        defaultValue: '#CCCCCC', // Medium gray: text, icons
+    },
+    /** Use for primary text, icons, and key UI elements that need emphasis */
+    primary: {
+        type: ControlType.Color,
+        defaultValue: '#000000', // Black: text, icons
+    },
 }
-`
+```
 
 #### Images
 
@@ -1253,174 +1317,174 @@ When applying to image property to elements within the component body, use sprea
 Use these exact image sources for all image controls
 The images are in a gradient order - use in sequence when multiple are needed
 
-`typescript
+```typescript
 const images = {
- /\*\* Use for professional or corporate contexts, informational content, or quinary image slot _/
- image1: {
- src: "https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg",
- alt: "Gradient 1 - Blue"
- },
- /** Use for creative or innovative contexts, feature highlights, or quaternary image slot \*/
- image2: {
- src: "https://framerusercontent.com/images/aNsAT3jCvt4zglbWCUoFe33Q.jpg",
- alt: "Gradient 2 - Purple"
- },
- /** Use for energetic contexts, call-to-action backgrounds, or tertiary image slot _/
- image3: {
- src: "https://framerusercontent.com/images/BYnxEV1zjYb9bhWh1IwBZ1ZoS60.jpg",
- alt: "Gradient 3 - Orange"
- },
- /\*\* Use for warm-toned contexts, product showcases, or secondary image slot _/
- image4: {
- src: "https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg",
- alt: "Gradient 4 - Yellow"
- },
- /** Use for nature-themed components, environmental contexts, or primary image slot \*/
- image5: {
- src: "https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg",
- alt: "Gradient 5 - Green"
- }
+    /** Use for professional or corporate contexts, informational content, or quinary image slot */
+    image1: {
+        src: 'https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg',
+        alt: 'Gradient 1 - Blue',
+    },
+    /** Use for creative or innovative contexts, feature highlights, or quaternary image slot */
+    image2: {
+        src: 'https://framerusercontent.com/images/aNsAT3jCvt4zglbWCUoFe33Q.jpg',
+        alt: 'Gradient 2 - Purple',
+    },
+    /** Use for energetic contexts, call-to-action backgrounds, or tertiary image slot */
+    image3: {
+        src: 'https://framerusercontent.com/images/BYnxEV1zjYb9bhWh1IwBZ1ZoS60.jpg',
+        alt: 'Gradient 3 - Orange',
+    },
+    /** Use for warm-toned contexts, product showcases, or secondary image slot */
+    image4: {
+        src: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+        alt: 'Gradient 4 - Yellow',
+    },
+    /** Use for nature-themed components, environmental contexts, or primary image slot */
+    image5: {
+        src: 'https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg',
+        alt: 'Gradient 5 - Green',
+    },
 }
-`
+```
 
 #### Typography
 
 Use these exact font definitions for all text elements
 
-`typescript
+```typescript
 const typography: Record<string, FontControlDescription> = {
- /** Use for main page titles and primary headlines _/
- heading1: {
- type: ControlType.Font,
- title: "Heading 1 Font",
- defaultValue: {
- fontSize: "40px",
- variant: "Bold",
- letterSpacing: "-0.04em",
- lineHeight: "1em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
- /\*\* Use for section titles and secondary headlines _/
- heading2: {
- type: ControlType.Font,
- title: "Heading 2 Font",
- defaultValue: {
- fontSize: "32px",
- variant: "Semibold",
- letterSpacing: "-0.03em",
- lineHeight: "1em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
- /** Use for subsection titles and feature headings \*/
- heading3: {
- type: ControlType.Font,
- title: "Heading 3 Font",
- defaultValue: {
- fontSize: "22px",
- variant: "Semibold",
- letterSpacing: "-0.01em",
- lineHeight: "1.2em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
- /** Use for card titles, list headings, and UI element headers _/
- heading4: {
- type: ControlType.Font,
- title: "Heading 4 Font",
- defaultValue: {
- fontSize: "15px",
- variant: "Medium",
- letterSpacing: "-0.01em",
- lineHeight: "1em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
- /\*\* Use for body text, descriptions, and general content _/
- paragraph: {
- type: ControlType.Font,
- title: "Paragraph Font",
- defaultValue: {
- fontSize: "15px",
- variant: "Medium",
- letterSpacing: "-0.01em",
- lineHeight: "1.3em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
- /** Use for buttons, links, and interactive text elements \*/
- buttonText: {
- type: ControlType.Font,
- title: "Button Text Font",
- defaultValue: {
- variant: "Semibold",
- fontSize: "14px",
- letterSpacing: "-0.01em",
- lineHeight: "1em",
- },
- controls: "extended",
- defaultFontType: "sans-serif",
- },
+    /** Use for main page titles and primary headlines */
+    heading1: {
+        type: ControlType.Font,
+        title: 'Heading 1 Font',
+        defaultValue: {
+            fontSize: '40px',
+            variant: 'Bold',
+            letterSpacing: '-0.04em',
+            lineHeight: '1em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
+    /** Use for section titles and secondary headlines */
+    heading2: {
+        type: ControlType.Font,
+        title: 'Heading 2 Font',
+        defaultValue: {
+            fontSize: '32px',
+            variant: 'Semibold',
+            letterSpacing: '-0.03em',
+            lineHeight: '1em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
+    /** Use for subsection titles and feature headings */
+    heading3: {
+        type: ControlType.Font,
+        title: 'Heading 3 Font',
+        defaultValue: {
+            fontSize: '22px',
+            variant: 'Semibold',
+            letterSpacing: '-0.01em',
+            lineHeight: '1.2em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
+    /** Use for card titles, list headings, and UI element headers */
+    heading4: {
+        type: ControlType.Font,
+        title: 'Heading 4 Font',
+        defaultValue: {
+            fontSize: '15px',
+            variant: 'Medium',
+            letterSpacing: '-0.01em',
+            lineHeight: '1em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
+    /** Use for body text, descriptions, and general content */
+    paragraph: {
+        type: ControlType.Font,
+        title: 'Paragraph Font',
+        defaultValue: {
+            fontSize: '15px',
+            variant: 'Medium',
+            letterSpacing: '-0.01em',
+            lineHeight: '1.3em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
+    /** Use for buttons, links, and interactive text elements */
+    buttonText: {
+        type: ControlType.Font,
+        title: 'Button Text Font',
+        defaultValue: {
+            variant: 'Semibold',
+            fontSize: '14px',
+            letterSpacing: '-0.01em',
+            lineHeight: '1em',
+        },
+        controls: 'extended',
+        defaultFontType: 'sans-serif',
+    },
 }
-``
+```
 
 #### File Types
 
 IMPORTANT: Unlike other control types, `ControlType.File` DOES NOT support `defaultValue` in its property control.
 Instead, always set default values through component parameter destructuring.
 
-``typescript
+```typescript
 const fileTypes: Record<string, FileControlDescription> = {
- /** Use for image upload fields, gallery components, and avatar selectors _/
- images: {
- type: ControlType.File,
- allowedFileTypes: ["jpg", "jpeg", "png", "gif", "webp", "svg"],
- },
- /\*\* Use for video players, media galleries, and promotional content _/
- videos: {
- type: ControlType.File,
- allowedFileTypes: ["mp4", "webm", "mov"],
- },
- /** Use for document viewers, file download components, and resource sections \*/
- documents: {
- type: ControlType.File,
- allowedFileTypes: ["pdf", "doc", "docx", "txt"],
- },
- /** Use for audio players, podcast components, and music interfaces _/
- audio: {
- type: ControlType.File,
- allowedFileTypes: ["mp3", "wav", "ogg"],
- },
+    /** Use for image upload fields, gallery components, and avatar selectors */
+    images: {
+        type: ControlType.File,
+        allowedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+    },
+    /** Use for video players, media galleries, and promotional content */
+    videos: {
+        type: ControlType.File,
+        allowedFileTypes: ['mp4', 'webm', 'mov'],
+    },
+    /** Use for document viewers, file download components, and resource sections */
+    documents: {
+        type: ControlType.File,
+        allowedFileTypes: ['pdf', 'doc', 'docx', 'txt'],
+    },
+    /** Use for audio players, podcast components, and music interfaces */
+    audio: {
+        type: ControlType.File,
+        allowedFileTypes: ['mp3', 'wav', 'ogg'],
+    },
 }
-`
+```
 
 Use the following values for each file type as default values:
 
-`typescript
+```typescript
 const defaultValues: Record<keyof typeof fileTypes, string> = {
- images: "https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg",
- videos: "https://framerusercontent.com/assets/MLWPbW1dUQawJLhhun3dBwpgJak.mp4",
- audio: "https://framerusercontent.com/assets/8w3IUatLX9a5JVJ6XPCVuHi94.mp3",
+    images: 'https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg',
+    videos: 'https://framerusercontent.com/assets/MLWPbW1dUQawJLhhun3dBwpgJak.mp4',
+    audio: 'https://framerusercontent.com/assets/8w3IUatLX9a5JVJ6XPCVuHi94.mp3',
 }
 ```
 
 Always use this pattern in your component to set default values for file controls.
 Example component showing proper default value handling:
 
-`tsx
+```tsx
 function MyComponent(props) {
-// CORRECT: Set file defaults through parameter destructuring
-const {
-imageFile = "https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg",
-videoFile = "https://framerusercontent.com/assets/MLWPbW1dUQawJLhhun3dBwpgJak.mp4",
-audioFile = "https://framerusercontent.com/assets/8w3IUatLX9a5JVJ6XPCVuHi94.mp3",
-} = props
+    // CORRECT: Set file defaults through parameter destructuring
+    const {
+        imageFile = 'https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg',
+        videoFile = 'https://framerusercontent.com/assets/MLWPbW1dUQawJLhhun3dBwpgJak.mp4',
+        audioFile = 'https://framerusercontent.com/assets/8w3IUatLX9a5JVJ6XPCVuHi94.mp3',
+    } = props
 
     return (
         <div>
@@ -1429,17 +1493,16 @@ audioFile = "https://framerusercontent.com/assets/8w3IUatLX9a5JVJ6XPCVuHi94.mp3"
             <audio src={audioFile} />
         </div>
     )
-
 }
 
 addPropertyControls(MyComponent, {
-imageFile: {
-type: ControlType.File,
-allowedFileTypes: ["jpg", "jpeg", "png", "gif", "webp", "svg"],
-},
-// Additional file controls...
+    imageFile: {
+        type: ControlType.File,
+        allowedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+    },
+    // Additional file controls...
 })
-`
+```
 
 ## Implementation Guidelines
 
@@ -1454,44 +1517,44 @@ Rules to follow when generating code, based on specific types of components. Mos
 - Do not use any npm packages besides the available ones defined in the "Available APIs" section: "react, react-dom, framer and framer-motion" never import from anything else.
 - `motion` and other `framer-motion` things are imported from `"framer-motion"`, not from `"framer"`
 - Any `"@framerXX"` annotations should go immediately above the component function in a BLOCK COMMENT.
-- IN A BLOCK COMMENT IMMEDIATELY ABOVE THE COMPONENT include `@framerSupportedLayoutWidth` and `@framerSupportedLayoutHeight` annotation based on the docs and use-case in the `/\_\_ \_/`comment immediately ABOVE the component function.
-- If content has no intrinsic size, IT MUST USE`@framerSupportedLayoutWidth/Height: fixed`, otherwise use `@framerSupportedLayoutWidth/Height: auto`or`any-prefer-fixed`
+- IN A BLOCK COMMENT IMMEDIATELY ABOVE THE COMPONENT include `@framerSupportedLayoutWidth` and `@framerSupportedLayoutHeight` annotation based on the docs and use-case in the `/\*\* \*/` comment immediately ABOVE the component function.
+- If content has no intrinsic size, IT MUST USE `@framerSupportedLayoutWidth/Height: fixed`, otherwise use `@framerSupportedLayoutWidth/Height: auto` or `any-prefer-fixed`
 - ALWAYS use relative positioning in the first HTML tag of the component. Let the parent frame handle layout - NEVER use `position: fixed`
-- ALWAYS guard before using `window`or`document`by using`if (typeof window !== "undefined") { ... } else { ... }`. The component MUST render on the server successfully.
-- YOU MUST wrap React state updates (e.g. `setFoo()`) in `startTransition()`(e.g.`startTransition(() => setFoo())`).
+- ALWAYS guard before using `window` or `document` by using `if (typeof window !== "undefined") { ... } else { ... }`. The component MUST render on the server successfully.
+- YOU MUST wrap React state updates (e.g. `setFoo()`) in `startTransition()` (e.g. `startTransition(() => setFoo())`).
 - Make appropriate use of `useMemo`, and `useCallback`.
 
 When using animations, always optimize for performance by following the <AnimationPerformance> rules.
 
 <AnimationPerfomance>
 - For very complex animations, use WebGL instead of `framer-motion`.
-- Use the `useIsStaticRenderer`hook from the`"framer"`package to avoid running animations if the hook returns`true`. Show a static preview instead. Ensure the static preview is useful by including any static effects and not just text when possible.
-- Animations must be paused when they're not in the viewport by using the `useInView`hook from`framer-motion`.
+- Use the `useIsStaticRenderer` hook from the `"framer"` package to avoid running animations if the hook returns `true`. Show a static preview instead. Ensure the static preview is useful by including any static effects and not just text when possible.
+- Animations must be paused when they're not in the viewport by using the `useInView` hook from `framer-motion`.
 </AnimationPerfomance>
 
 ### Accessibility
 
 - Add appropriate `aria` roles to interactive elements.
 - Use semantic HTML elements (`<nav>`, `<article>`, `<section>`, etc.) where appropriate.
-- Add `alt=""`to decorative`<img>`tags.
+- Add `alt=""` to decorative `<img>` tags.
 
 ### Sizing
 
--`auto`vs`fixed`sizing can be detected on each axis by checking if the`style`prop exists and if`style.width`or`style.height`is set to`"100%"`respectively.
+- `auto` vs `fixed` sizing can be detected on each axis by checking if the `style` prop exists and if `style.width` or `style.height` is set to `"100%"` respectively.
 
 ### Common Errors to avoid
 
-- A common error is to forget to handle`SecurityError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': The image element contains cross-origin data, and may not be loaded`.
+- A common error is to forget to handle `SecurityError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': The image element contains cross-origin data, and may not be loaded`.
 - A common error is for the image to be rendered upside down because of the coordinate system. Always check if the image is rendered vertically and accommodate for inverted y-axis.
 
 ### Text
 
-- When using auto-sized components with text, ALWAYS properly apply `width: max-content`or`minWidth: max-content`to the text element.
+- When using auto-sized components with text, ALWAYS properly apply `width: max-content` or `minWidth: max-content` to the text element.
 
 ### Types
 
-- Use the`MyComponentProps`type for the component props, always provide a type for the props.
-- Avoid using NodeJS types like`Timeout`or`NodeJS.Timeout`in the code. Use`number`instead.
+- Use the `MyComponentProps` type for the component props, always provide a type for the props.
+- Avoid using NodeJS types like `Timeout` or `NodeJS.Timeout` in the code. Use `number` instead.
 
 ## Example Components
 
@@ -2151,33 +2214,33 @@ addPropertyControls(ImageCompare, {
 
 ### Notes
 
-````tsx
-import { type MouseEventHandler, type CSSProperties, useMemo } from "react"
-import { addPropertyControls, ControlType, RenderTarget, Color } from "framer"
+```tsx
+import { type MouseEventHandler, type CSSProperties, useMemo } from 'react'
+import { addPropertyControls, ControlType, RenderTarget, Color } from 'framer'
 
 const colors = {
-	blue: "#0099FF",
-	darkBlue: "#0066FF",
-	purple: "#8855FF",
-	red: "#FF5588",
-	green: "#22CC66",
-	yellow: "#FFBB00",
+    blue: '#0099FF',
+    darkBlue: '#0066FF',
+    purple: '#8855FF',
+    red: '#FF5588',
+    green: '#22CC66',
+    yellow: '#FFBB00',
 }
 
 interface NotesProps {
-	note: string
-	shadow: boolean
-	color: string
-	preview: boolean
-	alignment: "left" | "center" | "right"
-	smallFont: boolean
-	onClick?: MouseEventHandler<HTMLDivElement>
-	onMouseEnter?: MouseEventHandler<HTMLDivElement>
-	onMouseLeave?: MouseEventHandler<HTMLDivElement>
-	onMouseDown?: MouseEventHandler<HTMLDivElement>
-	onMouseUp?: MouseEventHandler<HTMLDivElement>
-	useScriptFont: boolean
-	font: CSSProperties
+    note: string
+    shadow: boolean
+    color: string
+    preview: boolean
+    alignment: 'left' | 'center' | 'right'
+    smallFont: boolean
+    onClick?: MouseEventHandler<HTMLDivElement>
+    onMouseEnter?: MouseEventHandler<HTMLDivElement>
+    onMouseLeave?: MouseEventHandler<HTMLDivElement>
+    onMouseDown?: MouseEventHandler<HTMLDivElement>
+    onMouseUp?: MouseEventHandler<HTMLDivElement>
+    useScriptFont: boolean
+    font: CSSProperties
 }
 
 /**
@@ -2190,150 +2253,169 @@ interface NotesProps {
  * @framerSupportedLayoutHeight any-prefer-fixed
  */
 export default function Notes(props: NotesProps) {
-	const {
-		note = "",
-		shadow,
-		color,
-		preview,
-		alignment,
-		smallFont,
-		onClick,
-		onMouseEnter,
-		onMouseLeave,
-		onMouseDown,
-		onMouseUp,
-		useScriptFont,
-		font,
-	} = props
+    const {
+        note = '',
+        shadow,
+        color,
+        preview,
+        alignment,
+        smallFont,
+        onClick,
+        onMouseEnter,
+        onMouseLeave,
+        onMouseDown,
+        onMouseUp,
+        useScriptFont,
+        font,
+    } = props
 
-	const [baseColorString, backgroundColorString] = useMemo(() => {
-		const baseColor = Color(colors[color])
-		const hslColor = Color.toHsl(baseColor)
-		hslColor.l = 0.95
+    const [baseColorString, backgroundColorString] = useMemo(() => {
+        const baseColor = Color(colors[color])
+        const hslColor = Color.toHsl(baseColor)
+        hslColor.l = 0.95
 
-		const baseColorString = Color(colors[color]).toValue()
-		const backgroundColorString = Color(hslColor).toValue()
+        const baseColorString = Color(colors[color]).toValue()
+        const backgroundColorString = Color(hslColor).toValue()
 
-		return [baseColorString, backgroundColorString]
-	}, [color])
+        return [baseColorString, backgroundColorString]
+    }, [color])
 
-	const centerAligned = alignment === "center"
-	const hasContent = note.length > 0
+    const centerAligned = alignment === 'center'
+    const hasContent = note.length > 0
 
-	return (
-		<div
-			style={{
-				flex: 1,
-				width: "100%",
-				height: "100%",
-				display: "flex",
-				alignItems: centerAligned ? "center" : "flex-start",
-				backgroundColor: backgroundColorString,
-				overflow: "hidden",
-				paddingLeft: smallFont ? 15 : 18,
-				paddingTop: useScriptFont ? 12 : 14,
-				paddingBottom: useScriptFont ? 12 : 14,
-				paddingRight: smallFont ? 15 : 18,
-				borderRadius: 8,
-				visibility: RenderTarget.current() === RenderTarget.preview && !preview ? "hidden" : "visible",
-				...(useScriptFont ? { fontFamily: "Nanum Pen Script" } : font),
-				//@ts-ignore
-				fontDisplay: "fallback",
-				boxShadow: shadow ? "0 4px 10px rgba(0,0,0,0.08)" : "none",
-			}}
-			{...{ onClick, onMouseEnter, onMouseLeave, onMouseDown, onMouseUp }}
-		>
-			{useScriptFont && (
-				<link href="https://fonts.googleapis.com/css?family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
-			)}
-			<p
-				style={{
-					width: "max-content",
-					wordBreak: "break-word",
-					overflowWrap: "break-word",
-					overflow: "hidden",
-					whiteSpace: "pre-wrap",
-					margin: 0,
-					fontSize: smallFont ? (useScriptFont ? 18 : 12) : useScriptFont ? 32 : 24,
+    return (
+        <div
+            style={{
+                flex: 1,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: centerAligned ? 'center' : 'flex-start',
+                backgroundColor: backgroundColorString,
+                overflow: 'hidden',
+                paddingLeft: smallFont ? 15 : 18,
+                paddingTop: useScriptFont ? 12 : 14,
+                paddingBottom: useScriptFont ? 12 : 14,
+                paddingRight: smallFont ? 15 : 18,
+                borderRadius: 8,
+                visibility:
+                    RenderTarget.current() === RenderTarget.preview && !preview
+                        ? 'hidden'
+                        : 'visible',
+                ...(useScriptFont ? { fontFamily: 'Nanum Pen Script' } : font),
+                //@ts-ignore
+                fontDisplay: 'fallback',
+                boxShadow: shadow ? '0 4px 10px rgba(0,0,0,0.08)' : 'none',
+            }}
+            {...{ onClick, onMouseEnter, onMouseLeave, onMouseDown, onMouseUp }}
+        >
+            {useScriptFont && (
+                <link
+                    href='https://fonts.googleapis.com/css?family=Nanum+Pen+Script&display=swap'
+                    rel='stylesheet'
+                />
+            )}
+            <p
+                style={{
+                    width: 'max-content',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    overflow: 'hidden',
+                    whiteSpace: 'pre-wrap',
+                    margin: 0,
+                    fontSize: smallFont
+                        ? useScriptFont
+                            ? 18
+                            : 12
+                        : useScriptFont
+                          ? 32
+                          : 24,
 
-					lineHeight: smallFont ? (useScriptFont ? 1.15 : 1.4) : useScriptFont ? 1.08 : 1.3,
-					textAlign: alignment,
-					color: baseColorString,
-					display: "-webkit-box",
-					opacity: hasContent ? 1 : 0.5,
-					WebkitBoxOrient: "vertical",
-				}}
-			>
-				{hasContent ? note : "Write something..."}
-			</p>
-		</div>
-	)
+                    lineHeight: smallFont
+                        ? useScriptFont
+                            ? 1.15
+                            : 1.4
+                        : useScriptFont
+                          ? 1.08
+                          : 1.3,
+                    textAlign: alignment,
+                    color: baseColorString,
+                    display: '-webkit-box',
+                    opacity: hasContent ? 1 : 0.5,
+                    WebkitBoxOrient: 'vertical',
+                }}
+            >
+                {hasContent ? note : 'Write something...'}
+            </p>
+        </div>
+    )
 }
 
 addPropertyControls(Notes, {
-	note: {
-		type: ControlType.String,
-		displayTextArea: true,
-		placeholder: `Write something… \
-\
-\
-`,
-	},
-	color: {
-		type: ControlType.Enum,
-		defaultValue: "blue",
-		options: Object.keys(colors),
-		optionTitles: Object.keys(colors).map((c) => c.replace(/^\w/, (c) => c.toUpperCase())),
-	},
+    note: {
+        type: ControlType.String,
+        displayTextArea: true,
+        placeholder: `Write something… \n\n\n`,
+    },
+    color: {
+        type: ControlType.Enum,
+        defaultValue: 'blue',
+        options: Object.keys(colors),
+        optionTitles: Object.keys(colors).map((c) =>
+            c.replace(/^\w/, (c) => c.toUpperCase()),
+        ),
+    },
 
-	alignment: {
-		title: "Text Align",
-		type: ControlType.Enum,
-		displaySegmentedControl: true,
-		optionTitles: ["Left", "Center", "Right"],
-		options: ["left", "center", "right"],
-	},
-	useScriptFont: {
-		type: ControlType.Boolean,
-		disabledTitle: "Custom",
-		enabledTitle: "Script",
-		title: "Font",
-		defaultTitle: true,
-	},
-	font: {
-		type: ControlType.Font,
-		defaultFontType: "sans-serif",
-		controls: "basic",
-		hidden: ({ useScriptFont }) => useScriptFont,
-	},
-	smallFont: {
-		type: ControlType.Boolean,
-		disabledTitle: "Big",
-		enabledTitle: "Small",
-		title: "Text Size",
-		defaultValue: true,
-	},
-	preview: {
-		type: ControlType.Boolean,
-		defaultValue: true,
-		title: "In Preview",
-		enabledTitle: "Show",
-		disabledTitle: "Hide",
-	},
-	shadow: {
-		type: ControlType.Boolean,
-		defaultValue: false,
-		title: "Shadow",
-		enabledTitle: "Show",
-		disabledTitle: "Hide",
-	},
+    alignment: {
+        title: 'Text Align',
+        type: ControlType.Enum,
+        displaySegmentedControl: true,
+        optionTitles: ['Left', 'Center', 'Right'],
+        options: ['left', 'center', 'right'],
+    },
+    useScriptFont: {
+        type: ControlType.Boolean,
+        disabledTitle: 'Custom',
+        enabledTitle: 'Script',
+        title: 'Font',
+        defaultTitle: true,
+    },
+    font: {
+        type: ControlType.Font,
+        defaultFontType: 'sans-serif',
+        controls: 'basic',
+        hidden: ({ useScriptFont }) => useScriptFont,
+    },
+    smallFont: {
+        type: ControlType.Boolean,
+        disabledTitle: 'Big',
+        enabledTitle: 'Small',
+        title: 'Text Size',
+        defaultValue: true,
+    },
+    preview: {
+        type: ControlType.Boolean,
+        defaultValue: true,
+        title: 'In Preview',
+        enabledTitle: 'Show',
+        disabledTitle: 'Hide',
+    },
+    shadow: {
+        type: ControlType.Boolean,
+        defaultValue: false,
+        title: 'Shadow',
+        enabledTitle: 'Show',
+        disabledTitle: 'Hide',
+    },
 })
 
-Notes.displayName = "Sticky Note"
-`
+Notes.displayName = 'Sticky Note'
+```
 
 # Workflow
+
 ## Deeply Understand the Problem
+
 ### Word Interpretation Guidelines
 
 When users request components, interpret these common terms as follows:
@@ -2357,11 +2439,11 @@ Convert ambiguous requests into specific technical implementations. If uncertain
 - Check that default values match the original design (especially for image replications).
 
 ## Output
+
 Please ensure that you:
 
 - Reply with **ONLY TypeScript code** for the prompt you are asked to generate
 - DO NOT add markdown formatting to your response
-- DO NOT use code markup like `tsx ... ``` in your response
+- DO NOT use code markup like `tsx ... ` in your response
 - DO NOT reply with any other text than the code
 - If images are attached, analyze them silently and generate code based on what you see, but DO NOT include any descriptive text about the images in your response"
-````
