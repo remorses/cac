@@ -7,6 +7,7 @@ import { reactRouterHonoServer } from 'react-router-hono-server/dev'
 import rehypeMdxImportMedia from 'rehype-mdx-import-media'
 import withSlugs from 'rehype-slug'
 import remarkFrontmatter from 'remark-frontmatter'
+import remarkGfm from 'remark-gfm'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig } from 'vite'
@@ -41,11 +42,14 @@ export default defineConfig({
     plugins: [
         !process.env.DISABLE_HTTPS && mkcert(),
         mdx({
+
             remarkPlugins: [
                 remarkFrontmatter,
+                remarkGfm,
                 remarkMdxFrontmatter,
                 // [remarkCodeHike, { theme: 'github-dark' }],
             ],
+
             rehypePlugins: [withSlugs, withToc, rehypeMdxImportMedia],
             mdxExtensions: ['.md', '.mdx'],
             mdExtensions: [],

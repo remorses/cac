@@ -1,9 +1,35 @@
 // import "@code-hike/mdx/styles"
-import { MetaFunction, Outlet } from 'react-router';
+import { Outlet, useSearchParams } from 'react-router'
+
+
 import { MDXProvider } from '@mdx-js/react'
 import { MDXComponents } from 'mdx/types'
 
-const components: MDXComponents = {}
+export const CodeBlock = ({ children }: { children: React.ReactNode }) => {
+    const [searchParams] = useSearchParams()
+
+    let content = String(children)
+
+    // Replace placeholders with query params
+    const replacements: Record<string, string> = {
+        $userId: searchParams.get('userId') || 'xxx',
+        $secret: searchParams.get('secret') || 'xxx',
+    }
+
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+        content = content.replaceAll(placeholder, value)
+    })
+
+    return (
+        <pre className='dark:bg-neutral-900 text-white rounded-lg p-4 overflow-x-auto my-4'>
+            <code>{content}</code>
+        </pre>
+    )
+}
+
+const components: MDXComponents = {
+    CodeBlock,
+}
 
 export default function Page() {
     return (
@@ -13,7 +39,7 @@ export default function Page() {
                     style={{
                         contentVisibility: 'auto',
                     }}
-                    className='prose dark:prose-invert prose-quoteless items-start min-w-0 w-full max-w-[800px] lg:prose-img:max-w-[500px] prose-img:mx-auto'
+                    className='prose  prose-neutral dark:prose-invert prose-quoteless items-start min-w-0 w-full max-w-[800px] lg:prose-img:max-w-[500px] prose-img:mx-auto'
                 >
                     <Outlet />
                 </div>
