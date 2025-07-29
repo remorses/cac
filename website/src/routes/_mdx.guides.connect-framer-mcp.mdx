@@ -1,0 +1,195 @@
+---
+title: 'Connecting Framer MCP Server across Developer Tools'
+url: 'https://localhost:8040/guides/connect-framer-mcp'
+description: 'Quick reference for integrating https://mcp.unframer.co/sse with popular AI‑assisted editors and the OpenAI Responses API.'
+---
+
+import { CodeBlock } from './_mdx'
+
+export const userId = '$userId'
+export const secret = '$secret'
+
+> **⚠️ Important:** Using **Framer MCP** requires that the _Framer MCP plugin is open inside the Framer app_. Only one MCP plugin can be open at any time—the server will control whichever Framer project currently has the plugin open.
+
+## Cursor
+
+export const cursorCode = `{
+  "mcpServers": {
+    "framer": {
+      "type": "sse",
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+    }
+  }
+}`
+
+<CodeBlock title=".cursor/mcp.json" language="json">
+{cursorCode}
+</CodeBlock>
+
+1. Save to project root (or `~/.cursor/mcp.json`).
+2. Restart Cursor → _Agent_ mode detects the tool.
+3. Invoke with `/tools framer`.
+
+{/* Auth: Supported (query‑param secret). Requires **Pro** for Agent mode. */}
+
+---
+
+## Claude Code
+
+export const claudeCliCommand = `claude mcp add --transport sse framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret" -s project`
+
+<CodeBlock title='CLI' language='bash'>
+{claudeCliCommand}
+</CodeBlock>
+
+This generates:
+
+export const claudeMcpConfig = `{
+  "mcpServers": {
+    "framer": {
+      "type": "sse",
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+    }
+  }
+}`
+
+<CodeBlock title='.mcp.json' language='json'>
+{claudeMcpConfig}
+</CodeBlock>
+
+{/* Auth: Supported via URL or `/mcp` OAuth. */}
+
+---
+
+## Claude Website (UI)
+
+1. **Settings → Connectors** → **Create**.
+2. Name: _Framer_.
+3. URL: `https://mcp.unframer.co/sse?id=$userId&secret=$secret`.
+4. **Save** → **Enable**.
+
+{/* Auth: Supported. Steps done entirely in UI. */}
+
+---
+
+## ChatGPT
+
+> Remote MCP is **beta‑only** (Enterprise / Edu → _Deep Research_). Full rollout TBD.
+
+_Admin path_: **Admin → Connectors → Add → Custom** and paste the URL.
+
+{/* Auth: Supported but gated to beta. */}
+
+---
+
+## Zed
+
+export const zedConfig = `{
+  "context_servers": {
+    "framer": {
+      "source": "custom",
+      "type": "sse",
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+    }
+  }
+}`
+
+<CodeBlock title='~/.config/zed/settings.json' language='json'>
+{zedConfig}
+</CodeBlock>
+
+Reload the Agent panel; green dot == connected.
+
+{/* Auth: Supported (header / query). */}
+
+---
+
+## VS Code + GitHub Copilot
+
+1. Ensure VS Code ≥ 1.102 & Copilot subscription.
+2. **⌘⇧P / Ctrl+Shift+P** → **MCP: Add Server**.
+3. Paste the SSE URL. A `.vscode/mcp.json` is created:
+
+export const vscodeConfig = `{
+  "servers": {
+    "framer": {
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+    }
+  }
+}`
+
+<CodeBlock title='.vscode/mcp.json' language='json'>
+{vscodeConfig}
+</CodeBlock>
+
+4. Switch Copilot Chat to _Agent_ mode to invoke tools.
+
+{/* Auth: OAuth or PAT, preview tier. */}
+
+---
+
+## Claude Desktop
+
+export const claudeDesktopConfig = `{
+  "mcpServers": {
+    "framer": {
+      "type": "sse",
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+    }
+  }
+}`
+
+<CodeBlock title='claude_desktop_config.json' language='json'>
+{claudeDesktopConfig}
+</CodeBlock>
+
+Restart Claude Desktop ➜ Use `/tools framer`.
+
+{/* Auth: Supported. */}
+
+---
+
+## Programmatic control via OpenAI JS SDK (Responses API)
+
+export const agentCode = `import { Agent, hostedMcpTool } from "@openai/agents";
+
+const framerTool = hostedMcpTool({
+  name: "framer",
+  serverUrl: \`https://mcp.unframer.co/sse?id=\${process.env.USER_ID}&secret=\${process.env.SECRET}\`,
+});
+
+const agent = new Agent({
+  model: "gpt-4o-responses",
+  tools: [framerTool],
+});
+
+const result = await agent.run("Publish the current page to production");
+console.log(result.output.text);`
+
+<CodeBlock title="agent.ts" language="ts">
+{agentCode}
+</CodeBlock>
+
+> The agent streams _tool calls_ to Framer’s MCP server and returns status when complete.
+
+{/* Auth: Provided via query parameters. */}
+
+---
+
+## Troubleshooting Cheatsheet
+
+| Symptom                     | Quick Fix                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| 403 / Unauthorized          | Verify `secret`; regenerate if expired                                          |
+| Time‑outs / Very Slow       | Ensure the **Framer MCP plugin is open**. If hung, close and reopen the plugin. |
+| Switch projects             | Close the MCP plugin in the current project and open it in the target project   |
+| Cursor can’t see server     | Ensure _Agent mode_ enabled and Pro subscription active                         |
+| Copilot doesn’t list server | Update to VS Code 1.102+ and enable preview flag                                |
+
+---
+
+## Roadmap Snapshot
+
+- **ChatGPT (consumer)** – slated Q4 2025.
+- **VS Code Copilot GA** – when Copilot Chat exits preview.
+- **Zed OAuth flows** – pending (header‑based auth today).
