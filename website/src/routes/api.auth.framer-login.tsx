@@ -23,6 +23,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+            queryParams: {
+                prompt: 'select_account',
+            },
             skipBrowserRedirect: true,
             redirectTo: loginRedirectUrl({
                 next: afterFramerLogin({

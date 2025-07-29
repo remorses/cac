@@ -14,6 +14,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
         provider: 'google',
         options: {
             skipBrowserRedirect: true,
+            queryParams: {
+                prompt: 'select_account',
+            },
             redirectTo: loginRedirectUrl({
                 next: '/subscriptions',
             }),
