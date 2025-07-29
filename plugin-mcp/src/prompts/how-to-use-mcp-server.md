@@ -16,6 +16,8 @@ The MCP tools allow you to:
 
 Always begin by calling `getProjectXml` to understand the project structure. This returns an XML tree showing all pages and components with their IDs, which you'll use for subsequent operations.
 
+To check if the project is published and get its public URL, use `getProjectWebsiteUrl`.
+
 ## Working with Nodes
 
 Framer projects consist of nodes (pages, components, frames, text, etc.) that can be inspected and modified through XML. Each node has a unique `nodeId` that identifies it throughout the system.
@@ -61,6 +63,13 @@ Component instances are references to reusable components. They have:
 - Control attributes that can be customized per instance
 - Standard node attributes (width, height, position, etc.)
 
+### Inserting Components
+
+To add a component to the canvas:
+1. Use `getComponentInsertUrlAndTypes` with an ID (either a component node ID or code file ID) to get the insertUrl and available props
+2. Use `insertComponentInCanvas` with the insertUrl to add the component to the currently focused page/component
+3. Use `updateXmlForNode` to position and configure the newly inserted component instance, using the props from step 1 as XML attributes
+
 ### Updating Components vs Instances
 
 **Instance updates**: Modify the specific instance's attributes or control values. Changes affect only that instance.
@@ -105,6 +114,36 @@ Project styles provide consistent design tokens across your project:
 - Can be updated globally using `updateTextStyle`
 
 Use `getProjectColorStyles` and `getProjectTextStyles` to discover available styles.
+
+### Creating New Styles
+
+When creating styles, the display name is automatically derived from the path:
+
+```typescript
+// Create a color style
+// Path "/Brand/Primary" creates a style named "Primary" in the "Brand" folder
+await mcp.createColorStyle({
+  stylePath: "/Brand/Primary",
+  properties: {
+    light: "rgb(45, 123, 255)",
+    dark: "rgb(23, 87, 214)"
+  }
+})
+
+// Create a text style
+// Path "/Typography/Heading/H1" creates a style named "H1" in the "Typography/Heading" folder
+await mcp.createTextStyle({
+  stylePath: "/Typography/Heading/H1",
+  properties: {
+    fontSize: "32px",
+    lineHeight: "40px",
+    letterSpacing: "-0.02em",
+    font: "GF;Inter-700"
+  }
+})
+```
+
+**Note**: The Framer API derives the style name from the last segment of the path. You cannot specify a custom name separately.
 
 ## Node Operations
 

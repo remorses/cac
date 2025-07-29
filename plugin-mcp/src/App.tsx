@@ -156,7 +156,6 @@ async function websocketHandler({
                                     type: 'ComponentNode',
                                     nodeId: component.id,
                                     name: component.componentName || '',
-                                    insertUrl: component.insertURL || '',
                                 },
                                 children: [],
                             })),
@@ -177,8 +176,6 @@ async function websocketHandler({
                                         exports: file.exports
                                             .map((e) => e.name)
                                             .join(', '),
-                                        insertUrl:
-                                            componentExport?.insertURL || '',
                                     },
                                     children: [],
                                 }
@@ -451,8 +448,13 @@ async function websocketHandler({
             type ColorStyleAttributes = Parameters<
                 typeof framer.createColorStyle
             >[0]
+
+            // Filter out name property as Framer derives it from the path
+            // The Framer API doesn't allow both name and path to be set
+            const { name, ...propertiesWithoutName } = properties
+
             const attributes: ColorStyleAttributes = {
-                ...properties,
+                ...propertiesWithoutName,
                 path: stylePath,
             }
 
@@ -597,8 +599,13 @@ async function websocketHandler({
             type TextStyleAttributes = Parameters<
                 typeof framer.createTextStyle
             >[0]
+
+            // Filter out name property as Framer derives it from the path
+            // The Framer API doesn't allow both name and path to be set
+            const { name, ...propertiesWithoutName } = properties
+
             const attributes: TextStyleAttributes = {
-                ...properties,
+                ...propertiesWithoutName,
                 path: stylePath,
             }
 
@@ -846,7 +853,7 @@ async function websocketHandler({
                 - **Path:** \`${codeFile.path}\`
                 - **Component Insert URL:** \`${insertUrl}\`
 
-                Use \`${insertUrl}\` to place the component in the canvas, after placing the component in the canvas you can get
+                ${insertUrl ? `Use insertComponentInCanvas with insertUrl: \`${insertUrl}\` to add this component to the canvas.` : 'No component export found in this code file.'}
 
                 **Lint result:**
                 \`\`\`json
@@ -917,57 +924,113 @@ async function websocketHandler({
                 return `Failed to update code file: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
-        case 'getComponentImportUrl': {
-            const { nodeId } = input
+        case 'getComponentInsertUrlAndTypes': {
+            const { id } = input
 
             try {
-                const node = await framer.getNode(nodeId)
+                // Build array of component info objects
+                const components: Array<{
+                    name: string
+                    insertUrl: string | undefined
+                    importName: string
+                    isCodeFile?: boolean
+                }> = []
 
-                if (!node) {
-                    return `Node with ID ${nodeId} not found.`
-                }
+                // First try as component node
+                const node = await framer.getNode(id)
+                if (node) {
+                    // Check if it's a component node
+                    if (!isComponentNode(node)) {
+                        return `Node ${id} is not a component node. This tool only works with component nodes.`
+                    }
 
-                // Check if it's a component node
-                if (!isComponentNode(node)) {
-                    return `Node ${nodeId} is not a component node. This tool only works with component nodes.`
-                }
-
-                // Get the component's insert URL
-                const insertUrl = node.insertURL
-
-                if (!insertUrl) {
-                    return `Component ${node.name || nodeId} does not have an insert URL. It may not be properly configured for import.`
-                }
-
-                // Get the component's import name using componentCamelCase
-                const importName = componentCamelCase(
-                    node.componentName || node.name || 'Component',
-                )
-                const propsType = `${importName}Props`
-
-                // Get property controls and generate TypeScript documentation
-                let message = ''
-                const { propertyControls } =
-                    await getComponentPropertyControls(insertUrl)
-
-                // Create the import statement
-                const importStatement = `import ${importName} from "${insertUrl}"`
-                message = `\`\`\`js\n${importStatement}\n\`\`\``
-
-                if (propertyControls) {
-                    const typedocComments = propControlsToTypedocComments({
-                        propertyControls,
-                        logger: console,
-                        componentImportedName: importName,
+                    components.push({
+                        name: node.name || 'Component',
+                        insertUrl: node.insertURL || undefined,
+                        importName: componentCamelCase(
+                            node.componentName || node.name || 'Component',
+                        ),
                     })
-                    if (typedocComments.headerComment) {
-                        message += `\n\n**Props:**\n\`\`\`js\n${typedocComments.headerComment}\`\`\``
+                } else {
+                    // Try as code file
+                    const codeFile = await framer.getCodeFile(id)
+                    if (codeFile) {
+                        const componentExports = codeFile.exports.filter(
+                            (exp) => exp.type === 'component',
+                        )
+
+                        if (componentExports.length === 0) {
+                            return `Code file ${codeFile.name} does not export any components.`
+                        }
+
+                        // Add all component exports
+                        for (const componentExport of componentExports) {
+                            components.push({
+                                name: componentExport.name,
+                                insertUrl: componentExport.insertURL,
+                                importName: componentExport.name,
+                                isCodeFile: true,
+                            })
+                        }
+                    } else {
+                        return `ID ${id} not found. Make sure it's a valid component node ID or code file ID from getProjectXml.`
                     }
                 }
 
+                // Generate unified markdown output
+                let message = ''
+
+                // Add header based on type
+                if (components[0]?.isCodeFile) {
+                    const codeFile = await framer.getCodeFile(id)
+                    message = `## Code File: ${codeFile!.name}\n\n`
+                    message += `This code file exports ${components.length} component(s):\n\n`
+                } else {
+                    message = `## Component: ${components[0].name}\n\n`
+                }
+
+                // Process each component with property controls
+                for (const component of components) {
+                    if (components.length > 1) {
+                        message += `### ${component.name}\n\n`
+                    }
+
+                    if (!component.insertUrl) {
+                        message += `⚠️ No insert URL available for this component.\n\n`
+                        continue
+                    }
+
+                    message += `**Insert URL:** \`${component.insertUrl}\`\n\n`
+
+                    // Get property controls and generate TypeScript documentation
+                    const { propertyControls } = await getComponentPropertyControls(component.insertUrl)
+
+                    // Create the import statement
+                    const importStatement = `import ${component.importName} from "${component.insertUrl}"`
+                    message += `**Import Statement:**\n\`\`\`js\n${importStatement}\n\`\`\``
+
+                    if (propertyControls) {
+                        const typedocComments = propControlsToTypedocComments({
+                            propertyControls,
+                            logger: console,
+                            componentImportedName: component.importName,
+                        })
+                        if (typedocComments.headerComment) {
+                            message += `\n\n**Props (can be used as XML attributes):**\n\`\`\`js\n${typedocComments.headerComment}\`\`\``
+                        }
+                    }
+
+                    if (components.length > 1) {
+                        message += `\n\n`
+                    }
+                }
+
+                // Add footer note
+                message += `\n\nThese props can be used as attributes when updating ${components.length > 1 ? 'component instances' : 'the component instance'} with \`updateXmlForNode\`.`
+
                 return message
             } catch (error) {
-                return `Failed to get component import URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+                return `Failed to get component insert URL and types: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
         case 'insertComponentInCanvas': {
@@ -1029,7 +1092,7 @@ async function websocketHandler({
                    \`\`\`
 
                 3. To customize the component instance:
-                   - Use \`getComponentImportUrl\` with the component's nodeId to see available props/attributes
+                   - Use \`getComponentInsertUrlAndTypes\` with the component's nodeId to see available props/attributes
                    - Add standard attributes: width, height, position, opacity, etc.
                    - Add component-specific attributes based on its property controls
                    - Example: For a Button component, you might add \`text="Click me"\` \`variant="primary"\`
@@ -1043,6 +1106,14 @@ async function websocketHandler({
                 `
             } catch (error) {
                 return `Failed to insert component: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'getProjectWebsiteUrl': {
+            try {
+                const publishInfo = await framer.getPublishInfo()
+                return publishInfo || { production: null, staging: null }
+            } catch (error) {
+                return `Failed to get project website URL: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
         default:
@@ -1149,8 +1220,8 @@ function MainComponent() {
                 </div>
             )}
             {!error && sessionId && (
-                <div className='p-2 bg-orange-500/2 rounded border border-orange-500/30'>
-                    <p className='text-xs text-orange-600'>
+                <div className='p-2 bg-orange-500/2 rounded border border-yellow-500/30'>
+                    <p className='text-xs text-yellow-500'>
                         Never share this URL with anyone, it contains your
                         personal session key
                     </p>

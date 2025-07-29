@@ -22,6 +22,7 @@ export class MyMCP extends McpAgent<Env> {
         {
             name: 'Framer MCP',
             version: '1.6.0',
+            title: `Framer MCP, created by https://unframer.co`
         },
         {
             capabilities: {
