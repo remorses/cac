@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-
+import codeComponentsResourceMarkdown from './lib/workshop.md?raw'
 import {
     CallToolRequest,
     CallToolRequestSchema,
@@ -298,7 +298,7 @@ export class MyMCP extends McpAgent<Env> {
                         content: [
                             {
                                 type: 'text',
-                                text: this.env.WORKSHOP_MD,
+                                text: codeComponentsResourceMarkdown,
                             },
                         ],
                     }
