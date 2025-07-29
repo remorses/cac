@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import codeComponentsResourceMarkdown from './workshop.md?raw'
+
 import {
     CallToolRequest,
     CallToolRequestSchema,
@@ -298,7 +298,7 @@ export class MyMCP extends McpAgent<Env> {
                         content: [
                             {
                                 type: 'text',
-                                text: codeComponentsResourceMarkdown,
+                                text: this.env.WORKSHOP_MD,
                             },
                         ],
                     }
@@ -320,9 +320,6 @@ export class MyMCP extends McpAgent<Env> {
     }
 }
 
-type Env = {
-    MY_MCP: MyMCP
-}
 
 export default {
     fetch(request: Request, env: Env, ctx: ExecutionContext) {
