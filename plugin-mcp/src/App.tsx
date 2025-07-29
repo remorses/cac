@@ -918,10 +918,10 @@ function MainComponent() {
                     </div>
                 )}
                 {sessionId && (
-                    <div className='p-2 bg-orange-500/10 rounded border border-orange-500/30'>
+                    <div className='p-2 bg-orange-500/2 rounded border border-orange-500/30'>
                         <p className='text-xs text-orange-600'>
-                            Never share this URL with anyone - it contains your
-                            personal session
+                            Never share this URL with anyone, it contains
+                            yourpersonal session key
                         </p>
                     </div>
                 )}
