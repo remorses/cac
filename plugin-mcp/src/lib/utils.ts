@@ -59,3 +59,7 @@ export function withMode(path: string, params?: Record<string, string>) {
     const searchParams = new URLSearchParams(params)
     return `${path}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 }
+
+export function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}

@@ -876,20 +876,24 @@ function MainComponent() {
 
     if (!isExpanded) {
         return (
-            <div className='flex items-center justify-between px-3 py-3 bg-framer-primary'>
-                <div className='flex items-center gap-2'>
+            <div className='flex items-center justify-between ml-1 -mr-2 bg-framer-primary'>
+                <div className='flex items-center truncate gap-2'>
                     <CircleIcon
-                        className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
+                        className={`size-2 shrink-0 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
                     />
-                    <span className='text-xs truncate font-medium text-framer-primary'>
-                        Framer MCP
-                    </span>
+                    <div className='truncate'>
+                        {error
+                            ? 'Error'
+                            : isConnected
+                              ? 'Connected'
+                              : 'Not Connected'}
+                    </div>
                 </div>
                 <button
                     onClick={toggleExpanded}
-                    className='w-auto p-1 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
+                    className='w-auto p-1 shrink-0 bg-transparent hover:bg-framer-tertiary rounded transition-colors'
                 >
-                    <ChevronDownIcon className='size-4 text-framer-secondary' />
+                    <ChevronDownIcon className='size-4  text-framer-secondary' />
                 </button>
             </div>
         )
@@ -1012,7 +1016,7 @@ function RootLayout() {
     useLayoutEffect(() => {
         void framer.showUI({
             position: 'top left',
-            width: isExpanded ? 300 : 180,
+            width: isExpanded ? 300 : 160,
             height: height || 400,
         })
     }, [height, isExpanded])
