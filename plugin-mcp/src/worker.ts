@@ -15,6 +15,7 @@ import { McpAgent } from 'agents/mcp'
 import { toJSONSchema } from 'zod'
 import { codeComponentsResourceUri, mcpTools } from './lib/schema'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket'
+import { sleep } from './lib/utils'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(
@@ -234,8 +235,30 @@ export class MyMCP extends McpAgent<Env> {
             CallToolRequestSchema,
             async (request: CallToolRequest) => {
                 try {
-                    const rpc = await clientConnectedPromise
+                    // Create a timeout promise that returns an error after 2 seconds
+                    const timeoutPromise = sleep(2000).then(() => {
+                        return new Error('Connection timeout: Make sure the Framer plugin is open in one of your projects')
+                    })
 
+                    // Race between the connection promise and timeout
+                    const result = await Promise.race([
+                        clientConnectedPromise,
+                        timeoutPromise
+                    ])
+
+                    // Check if the result is an error
+                    if (result instanceof Error) {
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: result.message,
+                                },
+                            ],
+                        }
+                    }
+
+                    const rpc = result as WebsocketRpc
                     const { name, arguments: args = {} } = request.params
                     const reply = await rpc.send({
                         payload: { type: name as any, input: args as any },
