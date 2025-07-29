@@ -34,8 +34,7 @@
     "rules": [
         {
             "type": "Text",
-            "globs": ["src/**/*.md"],
-
+            "globs": ["*.md"],
             "fallthrough": true,
         },
     ],

@@ -720,9 +720,6 @@ importers:
       unframer:
         specifier: workspace:*
         version: link:../unframer/unframer
-      unframer-workspace:
-        specifier: link:../unframer/unframer
-        version: link:../unframer/unframer
       website:
         specifier: workspace:*
         version: link:../website
@@ -733,12 +730,6 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
     devDependencies:
-      '@cloudflare/vite-plugin':
-        specifier: ^1.7.2
-        version: 1.7.2(rollup@4.46.1)(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))(workerd@1.20250712.0)(wrangler@4.26.0(@cloudflare/workers-types@4.20250726.0))
-      '@cloudflare/workers-types':
-        specifier: ^4.20250712.0
-        version: 4.20250726.0
       '@types/node':
         specifier: ^20
         version: 20.19.9
@@ -13210,25 +13201,6 @@ snapshots:
       unenv: 2.0.0-rc.17
     optionalDependencies:
       workerd: 1.20250712.0
-
-  '@cloudflare/vite-plugin@1.7.2(rollup@4.46.1)(vite@6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))(workerd@1.20250712.0)(wrangler@4.26.0(@cloudflare/workers-types@4.20250726.0))':
-    dependencies:
-      '@cloudflare/unenv-preset': 2.3.3(unenv@2.0.0-rc.17)(workerd@1.20250712.0)
-      '@mjackson/node-fetch-server': 0.6.1
-      '@rollup/plugin-replace': 6.0.2(rollup@4.46.1)
-      get-port: 7.1.0
-      miniflare: 4.20250617.1
-      picocolors: 1.1.1
-      tinyglobby: 0.2.14
-      unenv: 2.0.0-rc.17
-      vite: 6.3.5(@types/node@20.19.9)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
-      wrangler: 4.26.0(@cloudflare/workers-types@4.20250726.0)
-      ws: 8.18.0
-    transitivePeerDependencies:
-      - bufferutil
-      - rollup
-      - utf-8-validate
-      - workerd
 
   '@cloudflare/vite-plugin@1.7.2(rollup@4.46.1)(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1))(workerd@1.20250712.0)(wrangler@4.26.0(@cloudflare/workers-types@4.20250726.0))':
     dependencies:

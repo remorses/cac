@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import codeComponentsResourceMarkdown from './lib/workshop.md'
+import codeComponentsResourceMarkdown from './prompts/how-to-write-framer-code-files.md'
 import {
     CallToolRequest,
     CallToolRequestSchema,
@@ -237,13 +237,15 @@ export class MyMCP extends McpAgent<Env> {
                 try {
                     // Create a timeout promise that returns an error after 2 seconds
                     const timeoutPromise = sleep(2000).then(() => {
-                        return new Error('Connection timeout: Make sure the Framer plugin is open in one of your projects')
+                        return new Error(
+                            'Connection timeout: Make sure the Framer plugin is open in one of your projects',
+                        )
                     })
 
                     // Race between the connection promise and timeout
                     const result = await Promise.race([
                         clientConnectedPromise,
-                        timeoutPromise
+                        timeoutPromise,
                     ])
 
                     // Check if the result is an error
@@ -300,7 +302,6 @@ export class MyMCP extends McpAgent<Env> {
             },
         )
 
-
         // Resources handlers - return empty array
         server.setRequestHandler(ListResourcesRequestSchema, async () => ({
             resources: [
@@ -343,7 +344,6 @@ export class MyMCP extends McpAgent<Env> {
     }
 }
 
-
 export default {
     fetch(request: Request, env: Env, ctx: ExecutionContext) {
         const url = new URL(request.url)
@@ -362,6 +362,12 @@ export default {
 
         if (url.pathname === '/mcp') {
             return MyMCP.serve('/mcp').fetch(request, env, ctx)
+        }
+
+        if (url.pathname === new URL(codeComponentsResourceUri).pathname) {
+            return new Response(codeComponentsResourceMarkdown, {
+                headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
+            })
         }
 
         return new Response('Not found', { status: 404 })
