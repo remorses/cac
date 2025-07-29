@@ -156,25 +156,33 @@ async function websocketHandler({
                                     type: 'ComponentNode',
                                     nodeId: component.id,
                                     name: component.componentName || '',
+                                    insertUrl: component.insertURL || '',
                                 },
                                 children: [],
                             })),
                         },
                         {
                             name: 'CodeComponents',
-                            children: codeComponents.map((file) => ({
-                                name: file.name,
-                                id: file.id,
-                                attributes: {
-                                    type: 'CodeFile',
-                                    codeFileId: file.id,
-                                    path: file.path,
-                                    exports: file.exports
-                                        .map((e) => e.name)
-                                        .join(', '),
-                                },
-                                children: [],
-                            })),
+                            children: codeComponents.map((file) => {
+                                const componentExport = file.exports.find(
+                                    (exp) => exp.type === 'component',
+                                )
+                                return {
+                                    name: file.name,
+                                    id: file.id,
+                                    attributes: {
+                                        type: 'CodeFile',
+                                        codeFileId: file.id,
+                                        path: file.path,
+                                        exports: file.exports
+                                            .map((e) => e.name)
+                                            .join(', '),
+                                        insertUrl:
+                                            componentExport?.insertURL || '',
+                                    },
+                                    children: [],
+                                }
+                            }),
                         },
                         {
                             name: 'CodeOverrides',
@@ -198,10 +206,21 @@ async function websocketHandler({
             const xml = framerLayersTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
             })
+
+            // Get current root node (focused page or component)
+            const rootNode = await framer.getCanvasRoot()
+            const rootNodeInfo = rootNode
+                ? `The currently focused ${rootNode.__class === 'WebPageNode' ? 'page' : 'component'} ID is: \`${rootNode.id}\`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.`
+                : 'No page or component is currently focused'
+
             return dedent`
             Project structure:
 
             ${xml}
+
+            ${rootNodeInfo}
+
+            When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
 
             If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.
             `
@@ -211,40 +230,123 @@ async function websocketHandler({
 
             // Extract nodes from the provided XML
             const extractedNodes = extractObjectsFromXmlContent(xml)
-
             const results: string[] = []
-            const updatedNodeIds: string[] = []
+            const nodesToReorder: Array<{
+                nodeId: string
+                parentId: string
+                beforeNodeId?: string
+                afterNodeId?: string
+            }> = []
 
+            // Phase 1: Update content, attributes, and move nodes to correct parents
             for (const extractedNode of extractedNodes) {
                 const targetNodeId = extractedNode.nodeId || nodeId
-                const node = await framer.getNode(targetNodeId)
 
-                if (!node) {
-                    results.push(`Node with ID ${targetNodeId} not found.`)
-                    continue
+                try {
+                    const node = await framer.getNode(targetNodeId)
+                    if (!node) {
+                        results.push(`Node with ID ${targetNodeId} not found.`)
+                        continue
+                    }
+
+                    // Update text content for text nodes
+                    if (extractedNode.newContent && isTextNode(node)) {
+                        await node.setText(extractedNode.newContent)
+                        results.push(`Updated text for node ${targetNodeId}`)
+                    }
+
+                    // Apply attributes
+                    if (
+                        extractedNode.attributes &&
+                        Object.keys(extractedNode.attributes).length > 0
+                    ) {
+                        await applyAttributes(node, extractedNode.attributes)
+                        results.push(
+                            `Updated attributes for node ${targetNodeId}`,
+                        )
+                    }
+
+                    // Check if parent needs to change
+                    if (extractedNode.parentId && node.getParent) {
+                        const currentParent = await node.getParent()
+                        const currentParentId = currentParent?.id
+
+                        if (currentParentId !== extractedNode.parentId) {
+                            // Move to new parent without specifying position yet
+                            await framer.setParent(targetNodeId, extractedNode.parentId)
+                            results.push(
+                                `Moved node ${targetNodeId} from parent ${currentParentId || 'none'} to ${extractedNode.parentId}`
+                            )
+                        }
+
+                        // Queue for reordering if sibling info is provided
+                        if (extractedNode.beforeNodeId || extractedNode.afterNodeId) {
+                            nodesToReorder.push({
+                                nodeId: targetNodeId,
+                                parentId: extractedNode.parentId,
+                                beforeNodeId: extractedNode.beforeNodeId,
+                                afterNodeId: extractedNode.afterNodeId
+                            })
+                        }
+                    }
+                } catch (error) {
+                    results.push(
+                        `Failed to process node ${targetNodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    )
                 }
+            }
 
-                let wasUpdated = false
+            // Phase 2: Reorder nodes within their parents
+            // This must be done in a separate pass to ensure all nodes are in their correct parents first.
+            // Otherwise, sibling references (beforeNodeId/afterNodeId) might not be found if they haven't
+            // been moved yet, and index calculations would be incorrect during the moving process.
+            for (const reorderInfo of nodesToReorder) {
+                try {
+                    const parent = await framer.getNode(reorderInfo.parentId)
+                    if (!parent) continue
 
-                // Update text if it's a text node and new content is provided
-                if (extractedNode.newContent && isTextNode(node)) {
-                    await node.setText(extractedNode.newContent)
-                    results.push(`Updated text for node ${targetNodeId}`)
-                    wasUpdated = true
-                }
+                    const siblings = await parent.getChildren()
+                    let targetIndex: number | undefined
 
-                // Apply attributes if any
-                if (
-                    extractedNode.attributes &&
-                    Object.keys(extractedNode.attributes).length > 0
-                ) {
-                    await applyAttributes(node, extractedNode.attributes)
-                    results.push(`Updated attributes for node ${targetNodeId}`)
-                    wasUpdated = true
-                }
+                    if (reorderInfo.beforeNodeId) {
+                        // Place after the beforeNode
+                        const beforeIndex = siblings.findIndex(s => s.id === reorderInfo.beforeNodeId)
+                        if (beforeIndex !== -1) {
+                            targetIndex = beforeIndex + 1
+                        }
+                    } else if (reorderInfo.afterNodeId) {
+                        // Place before the afterNode
+                        const afterIndex = siblings.findIndex(s => s.id === reorderInfo.afterNodeId)
+                        if (afterIndex !== -1) {
+                            targetIndex = afterIndex
+                        }
+                    }
 
-                if (wasUpdated) {
-                    updatedNodeIds.push(targetNodeId)
+                    if (targetIndex !== undefined) {
+                        // Get current index
+                        const currentIndex = siblings.findIndex(s => s.id === reorderInfo.nodeId)
+
+                        // Only reorder if position needs to change
+                        if (currentIndex !== -1 && currentIndex !== targetIndex) {
+                            // When reordering within the same parent (moving a node forward), we need to adjust the target index.
+                            // This is because setParent internally removes the node first, then inserts it.
+                            // Example: Moving node from index 1 to index 3 in array [A, B, C, D]:
+                            // - After removal: [A, C, D] (B is removed)
+                            // - Original index 3 is now index 2
+                            // - So we need to insert at index 2, not 3
+                            // Note: This only applies when reordering within the same parent, not when moving between parents
+                            if (currentIndex < targetIndex) {
+                                targetIndex -= 1
+                            }
+
+                            await framer.setParent(reorderInfo.nodeId, reorderInfo.parentId, targetIndex)
+                            results.push(`Reordered node ${reorderInfo.nodeId} within parent ${reorderInfo.parentId} to index ${targetIndex}`)
+                        }
+                    }
+                } catch (error) {
+                    results.push(
+                        `Failed to reorder node ${reorderInfo.nodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    )
                 }
             }
 
@@ -866,6 +968,81 @@ async function websocketHandler({
                 return message
             } catch (error) {
                 return `Failed to get component import URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'insertComponentInCanvas': {
+            const { insertUrl } = input
+
+            try {
+                // Get the current root node (page or component)
+                const rootNode = await framer.getCanvasRoot()
+                if (!rootNode) {
+                    return `No page or component is currently focused. Please open a page or component in Framer first.`
+                }
+
+                // Insert the component
+                const newNode = await framer.addComponentInstance({
+                    url: insertUrl,
+                    attributes: {},
+                })
+
+                if (!newNode) {
+                    return `Failed to insert component with URL: ${insertUrl}`
+                }
+
+                // Get the XML for the new node
+                const nodeXml = await getNodeXml(newNode.id)
+                if (!nodeXml) {
+                    return `Component inserted but failed to get XML for node ${newNode.id}`
+                }
+
+                return dedent`
+                ## Component Successfully Inserted
+
+                **New Node ID:** \`${newNode.id}\`
+
+                **Current Root:** ${rootNode.__class} \`${rootNode.id}\`
+
+                **Component XML:**
+                \`\`\`xml
+                ${nodeXml.xml}
+                \`\`\`
+
+                ### IMPORTANT: Component Placement Required
+
+                The component has been inserted into the canvas but is NOT yet inside the page/component content. You MUST use \`updateXmlForNode\` to place it inside the ${rootNode.__class} structure.
+
+                1. First, use \`getNodeXml\` on the root node ID \`${rootNode.id}\` to see the current structure
+
+                2. Then use \`updateXmlForNode\` with the root node ID to add the component as a child with styling attributes:
+                   \`\`\`xml
+                   <${rootNode.__class} nodeId="${rootNode.id}">
+                       <!-- existing children -->
+                       <ComponentInstance
+                           nodeId="${newNode.id}"
+                           width="200px"
+                           height="100px"
+                           position="relative"
+                           <!-- add component-specific props here -->
+                       />
+                   </${rootNode.__class}>
+                   \`\`\`
+
+                3. To customize the component instance:
+                   - Use \`getComponentImportUrl\` with the component's nodeId to see available props/attributes
+                   - Add standard attributes: width, height, position, opacity, etc.
+                   - Add component-specific attributes based on its property controls
+                   - Example: For a Button component, you might add \`text="Click me"\` \`variant="primary"\`
+
+                4. The component can be placed:
+                   - As a direct child of the root
+                   - Inside a specific Frame or Stack
+                   - At any position among siblings
+
+                Without this placement step, the component will not be visible in the canvas.
+                `
+            } catch (error) {
+                return `Failed to insert component: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
         default:

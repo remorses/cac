@@ -1,6 +1,15 @@
 [
   {
-    "description": "Gets the project pages and components XML, with information of the currently focused page or component. These referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.",
+    "description": "Gets the project pages and components XML, with information of the currently focused page or component.
+
+This tool also returns the ID of the currently focused page or component node. When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
+
+The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
+
+Each element in the XML is usually referred as a "node" but the user could also refer to it as a "layer" or "element". The XML structure is similar to Framer's XML layers tree, names are extracted from the layers names given by the user.
+
+
+",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -20,7 +29,7 @@
     "name": "getSelectedNodesXml",
   },
   {
-    "description": "Zooms the canvas to center on the given node ID.",
+    "description": "Zooms the canvas to center on the given node ID. Code file nodes are not supported.",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -39,7 +48,7 @@
     "name": "zoomIntoView",
   },
   {
-    "description": "Get a specific Framer node as XML. You first need to get a node id via getProjectXml or getSelectedNode.",
+    "description": "Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call getSelectedNodesXml instead",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -58,7 +67,9 @@
     "name": "getNodeXml",
   },
   {
-    "description": "Gets all project-level color styles, grouped by their style role, if available.",
+    "description": "Gets all project-level color styles.
+XML nodes can use these color styles by setting attributes like backgroundColor to their path, e.g. color="/Primary".
+You can also use color styles when setting the color attribute of a text style with updateTextStyle.",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -68,7 +79,7 @@
     "name": "getProjectColorStyles",
   },
   {
-    "description": "Gets all project-level text styles, if available.",
+    "description": "Gets all project-level text styles. XML nodes can use these text styles by setting the inlineTextStyle attribute to their path, e.g. inlineTextStyle="/Heading xl".",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -78,7 +89,20 @@
     "name": "getProjectTextStyles",
   },
   {
-    "description": "Updates the XML for a specific node using its nodeId and the provided new XML string. It can be used to update nodes text or attributes.",
+    "description": "Update the XML for a specific node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes.
+
+If a node id changes its parent, it will be moved in the layers tree.
+
+This tool is generally called using a component or page nodeId and passing a portion of the XML tree. To delete nodes you should use deleteNode instead. If a node is omitted it will not be deleted.
+
+You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will not be updated. You can also omit attributes, omitted attributes will not be updated and will be ignored.
+
+You can use this tool to
+- Update text for one or multiple text nodes
+- Update attributes of existing nodes
+
+This tool cannot duplicate or delete nodes.
+",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -132,7 +156,7 @@
               "type": "string",
             },
             "name": {
-              "description": "New name for the color style",
+              "description": "The display name of the color style",
               "type": "string",
             },
           },
@@ -148,7 +172,65 @@
     "name": "updateColorStyle",
   },
   {
-    "description": "Updates a text style by its path. Can modify various typography properties.",
+    "description": "Creates a new color style in the project with the specified properties.
+
+The style path must start with "/" and can include folder structure (e.g., "/Brand/Primary").
+If a style already exists at the given path, this operation will fail.
+
+After creating, you can reference this style in XML nodes using color="/path/to/style".",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "properties": {
+          "additionalProperties": false,
+          "description": "Properties for the new color style. Name and light color are required.",
+          "properties": {
+            "dark": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Dark theme color in any CSS color format, or null to remove dark variant",
+            },
+            "light": {
+              "description": "Light theme color in any CSS color format (e.g., "rgb(255, 0, 0)", "#FF0000", "red")",
+              "type": "string",
+            },
+            "name": {
+              "description": "The display name of the color style",
+              "type": "string",
+            },
+          },
+          "required": [
+            "name",
+            "light",
+          ],
+          "type": "object",
+        },
+        "stylePath": {
+          "description": "The path for the new color style. Must start with / and be unique",
+          "type": "string",
+        },
+      },
+      "required": [
+        "stylePath",
+        "properties",
+      ],
+      "type": "object",
+    },
+    "name": "createColorStyle",
+  },
+  {
+    "description": "Updates a text style by its path. Can modify various typography properties.
+
+Updating a text style will update all the nodes that use it in the project.
+
+If you only want to update a single node instead, create a new text style and update the XML to reference its new path instead.",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -175,6 +257,32 @@
               "description": "Enable balanced text wrapping for better legibility",
               "type": "boolean",
             },
+            "boldFont": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Bold variant font selector or null to remove",
+            },
+            "boldItalicFont": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Bold italic variant font selector or null to remove",
+            },
+            "color": {
+              "description": "Color as hex, rgba, or color style path (e.g., "#FF0000", "rgb(255, 0, 0)", "/Primary")",
+              "type": "string",
+            },
             "decoration": {
               "description": "Text decoration",
               "enum": [
@@ -184,9 +292,56 @@
               ],
               "type": "string",
             },
+            "decorationColor": {
+              "description": "Decoration color as hex, rgba, or color style path",
+              "type": "string",
+            },
+            "decorationOffset": {
+              "description": "Decoration offset (e.g., "auto", "2px", "0.1em")",
+              "type": "string",
+            },
+            "decorationSkipInk": {
+              "description": "Text decoration skip ink behavior",
+              "enum": [
+                "auto",
+                "none",
+                "all",
+              ],
+              "type": "string",
+            },
+            "decorationStyle": {
+              "description": "Text decoration style",
+              "enum": [
+                "solid",
+                "double",
+                "dotted",
+                "dashed",
+                "wavy",
+              ],
+              "type": "string",
+            },
+            "decorationThickness": {
+              "description": "Decoration thickness (e.g., "auto", "2px", "0.1em")",
+              "type": "string",
+            },
+            "font": {
+              "description": "Font selector (e.g., "GF;Inter-600")",
+              "type": "string",
+            },
             "fontSize": {
               "description": "Font size with units (e.g., "16px", "1.5rem")",
               "type": "string",
+            },
+            "italicFont": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Italic variant font selector or null to remove",
             },
             "letterSpacing": {
               "description": "Letter spacing with units (e.g., "0px", "0.05em")",
@@ -197,12 +352,25 @@
               "type": "string",
             },
             "name": {
-              "description": "New name for the text style",
+              "description": "The display name of the text style",
               "type": "string",
             },
             "paragraphSpacing": {
               "description": "Space between paragraphs in pixels",
               "type": "number",
+            },
+            "tag": {
+              "description": "HTML tag associated with the text style",
+              "enum": [
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "h6",
+                "p",
+              ],
+              "type": "string",
             },
             "transform": {
               "description": "Text transformation",
@@ -225,6 +393,179 @@
       "type": "object",
     },
     "name": "updateTextStyle",
+  },
+  {
+    "description": "Creates a new text style in the project with the specified properties.
+
+The style path must start with "/" and can include folder structure (e.g., "/Typography/Headings/H1").
+If a style already exists at the given path, this operation will fail.
+
+After creating, you can reference this style in XML nodes using inlineTextStyle="/path/to/style".",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "properties": {
+          "additionalProperties": false,
+          "description": "Properties for the new text style. Name is required.",
+          "properties": {
+            "alignment": {
+              "description": "Text alignment",
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify",
+              ],
+              "type": "string",
+            },
+            "balance": {
+              "description": "Enable balanced text wrapping for better legibility",
+              "type": "boolean",
+            },
+            "boldFont": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Bold variant font selector or null to remove",
+            },
+            "boldItalicFont": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Bold italic variant font selector or null to remove",
+            },
+            "color": {
+              "description": "Color as hex, rgba, or color style path (e.g., "#FF0000", "rgb(255, 0, 0)", "/Primary")",
+              "type": "string",
+            },
+            "decoration": {
+              "description": "Text decoration",
+              "enum": [
+                "none",
+                "underline",
+                "line-through",
+              ],
+              "type": "string",
+            },
+            "decorationColor": {
+              "description": "Decoration color as hex, rgba, or color style path",
+              "type": "string",
+            },
+            "decorationOffset": {
+              "description": "Decoration offset (e.g., "auto", "2px", "0.1em")",
+              "type": "string",
+            },
+            "decorationSkipInk": {
+              "description": "Text decoration skip ink behavior",
+              "enum": [
+                "auto",
+                "none",
+                "all",
+              ],
+              "type": "string",
+            },
+            "decorationStyle": {
+              "description": "Text decoration style",
+              "enum": [
+                "solid",
+                "double",
+                "dotted",
+                "dashed",
+                "wavy",
+              ],
+              "type": "string",
+            },
+            "decorationThickness": {
+              "description": "Decoration thickness (e.g., "auto", "2px", "0.1em")",
+              "type": "string",
+            },
+            "font": {
+              "description": "Font selector (e.g., "GF;Inter-600")",
+              "type": "string",
+            },
+            "fontSize": {
+              "description": "Font size with units (e.g., "16px", "1.5rem")",
+              "type": "string",
+            },
+            "italicFont": {
+              "anyOf": [
+                {
+                  "type": "string",
+                },
+                {
+                  "type": "null",
+                },
+              ],
+              "description": "Italic variant font selector or null to remove",
+            },
+            "letterSpacing": {
+              "description": "Letter spacing with units (e.g., "0px", "0.05em")",
+              "type": "string",
+            },
+            "lineHeight": {
+              "description": "Line height with units (e.g., "24px", "1.5em", "150%")",
+              "type": "string",
+            },
+            "name": {
+              "description": "The display name of the text style",
+              "type": "string",
+            },
+            "paragraphSpacing": {
+              "description": "Space between paragraphs in pixels",
+              "type": "number",
+            },
+            "tag": {
+              "description": "HTML tag associated with the text style",
+              "enum": [
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "h6",
+                "p",
+              ],
+              "type": "string",
+            },
+            "transform": {
+              "description": "Text transformation",
+              "enum": [
+                "none",
+                "uppercase",
+                "lowercase",
+                "capitalize",
+              ],
+              "type": "string",
+            },
+          },
+          "required": [
+            "name",
+          ],
+          "type": "object",
+        },
+        "stylePath": {
+          "description": "The path for the new text style. Must start with / and be unique",
+          "type": "string",
+        },
+      },
+      "required": [
+        "stylePath",
+        "properties",
+      ],
+      "type": "object",
+    },
+    "name": "createTextStyle",
   },
   {
     "description": "Search for fonts by selector substring. Returns max 20 results. Use specific search terms for better results.
@@ -251,5 +592,216 @@ Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom f
       "type": "object",
     },
     "name": "searchFonts",
+  },
+  {
+    "description": "Deletes a Framer node, removing it from the page or component. This permanently removes the node and all its children.
+
+NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
+",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "description": "The ID of the node to delete",
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+      ],
+      "type": "object",
+    },
+    "name": "deleteNode",
+  },
+  {
+    "description": "Duplicate a node in the Framer project. Creates an exact copy of the node and all its children.
+
+The duplicated node will be placed at the end of the original node parent.
+
+Returns the ID of the newly created duplicate node. It will have same attributes, content and children.
+
+DO NOT USE this tool to move a node to a different place or ordering. Instead use updateXmlForNode to change the parent of a node or its position in the layers tree.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "description": "The ID of the node to duplicate",
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+      ],
+      "type": "object",
+    },
+    "name": "duplicateNode",
+  },
+  {
+    "description": "Export selected Framer components as React code. This tool will return a cli command you can run to download your Framer components as React code.
+
+This tool uses the same logic implemented in the Framer React Export plugin: https://www.framer.com/marketplace/plugins/react-export/
+
+You should login with the same Google account you used in Framer React Export plugin if you want to reuse your existing subscription.
+
+Only component nodes can be exported. Use getProjectXml to find available component node IDs.
+
+The React code will be composed of .jsx files and .css styles. it is machine generated so it is recommended to use Framer variables to customize the components. Framer variables will be available as React component props.
+
+You can read more documentation on how to use React Export (and the unframer cli, which downloads the components on your codebase) in the open source GitHub repository: https://github.com/remorses/unframer
+",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeIds": {
+          "description": "Array of component node IDs to export as React code",
+          "items": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "minItems": 1,
+          "type": "array",
+        },
+      },
+      "required": [
+        "nodeIds",
+      ],
+      "type": "object",
+    },
+    "name": "exportReactComponents",
+  },
+  {
+    "description": "Create a new code file in the Framer project. Code files can export either code components or overrides.
+
+ALWAYS read the MCP resource file mcp://mcp.unframer.co/prompts/how-to-write-framer-code-files.md to see how to create code components and overrides.
+
+You can use typescript and React. You can also import components in the project by using getComponentImportUrl to get their import url.
+
+When creating a code component you should also define its property controls via Framer addPropertyControls.
+
+Returns the ID, path, and insertUrl of the created code file. The insertUrl can be used with insertComponentInCanvas to place the component in the canvas.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "description": "The TypeScript/React code content for the file",
+          "type": "string",
+        },
+        "name": {
+          "description": "The name of the code file (e.g., "MyComponent.tsx")",
+          "type": "string",
+        },
+      },
+      "required": [
+        "name",
+        "content",
+      ],
+      "type": "object",
+    },
+    "name": "createCodeFile",
+  },
+  {
+    "description": "Read the content of a code file by its ID. Available code files are listed in getProjectXml.
+
+Returns the current content, name, path, and available exports of the code file.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "codeFileId": {
+          "description": "The ID of the code file to read",
+          "type": "string",
+        },
+      },
+      "required": [
+        "codeFileId",
+      ],
+      "type": "object",
+    },
+    "name": "readCodeFile",
+  },
+  {
+    "description": "Update the content of an existing code file.
+
+This will replace the entire content of the file.
+The file will be automatically linted and type-checked after update.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "codeFileId": {
+          "description": "The ID of the code file to update",
+          "type": "string",
+        },
+        "content": {
+          "description": "The new TypeScript/React code content",
+          "type": "string",
+        },
+      },
+      "required": [
+        "codeFileId",
+        "content",
+      ],
+      "type": "object",
+    },
+    "name": "updateCodeFile",
+  },
+  {
+    "description": "Get the import statement and prop types documentation for a component node. Use getProjectXml to see available component nodes.
+
+Use this tool when you want to use an existing component in a code file.
+
+returns a markdown-formatted string with:
+- The import statement for the component
+- JSDoc documentation of the component's props
+
+",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "description": "The ID of the component node to get import information for",
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+      ],
+      "type": "object",
+    },
+    "name": "getComponentImportUrl",
+  },
+  {
+    "description": "Insert a component into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
+
+Use getProjectXml to find insertUrl values for components and code components.
+
+Returns markdown with:
+- The ID of the newly created node
+- XML of the new node
+- The current root node ID (page or component)
+- Instructions for positioning the node using updateXmlForNode",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "insertUrl": {
+          "description": "The insert URL of the component to insert (e.g., "/components/Button.tsx#default")",
+          "type": "string",
+        },
+      },
+      "required": [
+        "insertUrl",
+      ],
+      "type": "object",
+    },
+    "name": "insertComponentInCanvas",
   },
 ]

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createMCPClient } from './mcp-client.js'
 
-const mcpUrl = 'https://mcp.unframer.co/sse?id=x8v9d9x1ool'
+const mcpUrl = 'https://mcp.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=du1SMfMxF9jeNC4ASSVtJfjjsV7PdkkP'
 
 describe(
     'Framer MCP Server Tests',
@@ -189,8 +189,8 @@ describe(
               [
                 {
                   "dark": null,
-                  "light": "rgb(231, 100, 150)",
-                  "path": "/undefined - Test 231",
+                  "light": "rgb(165, 100, 150)",
+                  "path": "/undefined - Test 165",
                 },
                 {
                   "dark": null,
@@ -279,7 +279,7 @@ describe(
         it('should create a new color style', async () => {
             const randomNum = Math.floor(Math.random() * 1000)
             const newStylePath = `/Test-Color-${randomNum}`
-            
+
             // Create a new color style
             const result = await callTool({
                 name: 'createColorStyle',
@@ -295,7 +295,7 @@ describe(
 
             const content = getTextContent(result.content)
             expect(content).toBeDefined()
-            
+
             // Check if creation was successful
             if (typeof content === 'object' && content.message) {
                 expect(content.message).toContain('Successfully created color style')
@@ -347,14 +347,8 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Found 40 fonts matching \\"Inter\\". Showing first 20. Use a more specific search term to narrow results.\\n\\nTo use a font: <Text font=\\"selector\\">Text</Text>\\nNote: font and inlineTextStyle attributes are mutually exclusive",
+                "message": "Found 2 fonts matching \\"Inter-200\\".\\n\\nTo use a font: <Text font=\\"selector\\">Text</Text>\\nNote: font and inlineTextStyle attributes are mutually exclusive",
                 "results": [
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-100",
-                    "weight": 100,
-                    "style": "normal"
-                  },
                   {
                     "family": "Inter",
                     "selector": "GF;Inter-200",
@@ -363,114 +357,12 @@ describe(
                   },
                   {
                     "family": "Inter",
-                    "selector": "GF;Inter-300",
-                    "weight": 300,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-regular",
-                    "weight": 400,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-500",
-                    "weight": 500,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-600",
-                    "weight": 600,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-700",
-                    "weight": 700,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-800",
-                    "weight": 800,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-900",
-                    "weight": 900,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-100italic",
-                    "weight": 100,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
                     "selector": "GF;Inter-200italic",
                     "weight": 200,
                     "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-300italic",
-                    "weight": 300,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-italic",
-                    "weight": 400,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-500italic",
-                    "weight": 500,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-600italic",
-                    "weight": 600,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-700italic",
-                    "weight": 700,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-800italic",
-                    "weight": 800,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-900italic",
-                    "weight": 900,
-                    "style": "italic"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-variable-regular",
-                    "weight": 400,
-                    "style": "normal"
-                  },
-                  {
-                    "family": "Inter",
-                    "selector": "GF;Inter-variable-italic",
-                    "weight": 400,
-                    "style": "italic"
                   }
                 ],
-                "totalMatches": 40
+                "totalMatches": 2
               }"
             `)
             expect(content).toBeDefined()
@@ -512,11 +404,11 @@ describe(
                   "alignment": "center",
                   "balance": false,
                   "decoration": "none",
-                  "fontSize": "90px",
+                  "fontSize": "73px",
                   "letterSpacing": "0px",
                   "lineHeight": "72px",
                   "paragraphSpacing": 40,
-                  "path": "/undefined - Test 90",
+                  "path": "/undefined - Test 73",
                   "tag": "h1",
                   "transform": "none",
                 },

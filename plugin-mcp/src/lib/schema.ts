@@ -143,6 +143,8 @@ export const mcpTools = {
         description: dedent`
         Gets the project pages and components XML, with information of the currently focused page or component.
 
+        This tool also returns the ID of the currently focused page or component node. When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
+
         The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
 
         Each element in the XML is usually referred as a "node" but the user could also refer to it as a "layer" or "element". The XML structure is similar to Framer's XML layers tree, names are extracted from the layers names given by the user.
@@ -191,6 +193,10 @@ export const mcpTools = {
     updateXmlForNode: {
         description: dedent`
               Update the XML for a specific node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes.
+
+              If a node id changes its parent, it will be moved in the layers tree.
+
+              This tool is generally called using a component or page nodeId and passing a portion of the XML tree. To delete nodes you should use deleteNode instead. If a node is omitted it will not be deleted.
 
               You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will not be updated. You can also omit attributes, omitted attributes will not be updated and will be ignored.
 
@@ -310,7 +316,9 @@ export const mcpTools = {
     },
     deleteNode: {
         description: dedent`
-            Deletes a Framer node, removing it from the page or component. This permanently removes the node and all its children.
+        Deletes a Framer node, removing it from the page or component. This permanently removes the node and all its children.
+
+        NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
 
         `,
         input: z.object({
@@ -322,9 +330,11 @@ export const mcpTools = {
         description: dedent`
             Duplicate a node in the Framer project. Creates an exact copy of the node and all its children.
 
-            The duplicated node will be placed as a sibling of the original node.
+            The duplicated node will be placed at the end of the original node parent.
 
             Returns the ID of the newly created duplicate node. It will have same attributes, content and children.
+
+            DO NOT USE this tool to move a node to a different place or ordering. Instead use updateXmlForNode to change the parent of a node or its position in the layers tree.
         `,
         input: z.object({
             nodeId: NodeId.describe('The ID of the node to duplicate'),
@@ -366,7 +376,7 @@ export const mcpTools = {
 
             When creating a code component you should also define its property controls via Framer addPropertyControls.
 
-            Returns the ID and path of the created code file.
+            Returns the ID, path, and insertUrl of the created code file. The insertUrl can be used with insertComponentInCanvas to place the component in the canvas.
         `,
         input: z.object({
             name: z.string().describe('The name of the code file (e.g., "MyComponent.tsx")'),
@@ -412,6 +422,23 @@ export const mcpTools = {
         `,
         input: z.object({
             nodeId: NodeId.describe('The ID of the component node to get import information for'),
+        }),
+        output: z.string(),
+    },
+    insertComponentInCanvas: {
+        description: dedent`
+            Insert a component into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
+
+            Use getProjectXml to find insertUrl values for components and code components.
+
+            Returns markdown with:
+            - The ID of the newly created node
+            - XML of the new node
+            - The current root node ID (page or component)
+            - Instructions for positioning the node using updateXmlForNode
+        `,
+        input: z.object({
+            insertUrl: z.string().describe('The insert URL of the component to insert (e.g., "/components/Button.tsx#default")'),
         }),
         output: z.string(),
     },

@@ -599,13 +599,29 @@ export async function discardFramerChanges({
 // Note: inlineTextStyle attributes are now handled with dot notation
 // e.g., inlineTextStyle.fontSize, inlineTextStyle.color, etc.
 
+// Default values for common attributes to reduce XML verbosity
+export const ATTRIBUTE_DEFAULTS = {
+    opacity: 1,
+    visible: true,
+    locked: false,
+    rotation: 0,
+    position: 'relative',
+    // width: '1fr',
+    // height: 'fit-content',
+} as const
+
 async function getNodeAttributesForXml(node: AnyNode) {
     let attributes = {} as Record<string, any>
 
-    // Helper to add attribute if it exists
+    // Helper to add attribute only if it differs from default
     const addAttribute = (key: string, value: any) => {
         if (value !== undefined && value !== null) {
-            attributes[key] = value
+            // Check if this attribute has a default value
+            const defaultValue = ATTRIBUTE_DEFAULTS[key as keyof typeof ATTRIBUTE_DEFAULTS]
+            // Only add if value differs from default
+            if (defaultValue === undefined || value !== defaultValue) {
+                attributes[key] = value
+            }
         }
     }
 
