@@ -21,7 +21,7 @@ export class MyMCP extends McpAgent<Env> {
     server = new Server(
         {
             name: 'Framer MCP',
-            version: '1.2.0',
+            version: '1.4.0',
         },
         {
             capabilities: {
@@ -236,7 +236,7 @@ export class MyMCP extends McpAgent<Env> {
             async (request: CallToolRequest) => {
                 try {
                     // Create a timeout promise that returns an error after 2 seconds
-                    const timeoutPromise = sleep(2000).then(() => {
+                    const timeoutPromise = sleep(3000).then(() => {
                         return new Error(
                             'Connection timeout: Make sure the Framer plugin is open in one of your projects',
                         )
@@ -261,6 +261,10 @@ export class MyMCP extends McpAgent<Env> {
                     }
 
                     const rpc = result as WebsocketRpc
+                    if (!rpc)
+                        throw new Error(
+                            'Framer plugin failed to connect to MCP, no websocket client available',
+                        )
                     const { name, arguments: args = {} } = request.params
                     const reply = await rpc.send({
                         payload: { type: name as any, input: args as any },
@@ -283,7 +287,9 @@ export class MyMCP extends McpAgent<Env> {
                         content: [
                             {
                                 type: 'text',
-                                text: 'The Framer app plugin is not connected. Please ensure the Framer plugin is open and connected.',
+                                text:
+                                    `Encountered an error: ` +
+                                    (error?.message || String(error)),
                             },
                         ],
                     }
@@ -307,7 +313,8 @@ export class MyMCP extends McpAgent<Env> {
             resources: [
                 {
                     title: `How to write Framer code components files in TypeScript`,
-                    // name: 'framer-code-component',
+                    name: 'How to write Framer code components files in TypeScript',
+
                     uri: codeComponentsResourceUri,
                     description: `Prompt explaining how to write code components for Framer. ALWAYS read this resource before calling createCodeFile or updateCodeFile`,
                 },

@@ -3,7 +3,11 @@ import dedent from 'string-dedent'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/plugin-websocket'
-import { FramerLayersTree, McpToolNames } from './lib/schema'
+import {
+    codeComponentsResourceUri,
+    FramerLayersTree,
+    McpToolNames,
+} from './lib/schema'
 import './lib/framer'
 import { useStore } from './lib/store'
 import {
@@ -194,7 +198,13 @@ async function websocketHandler({
             const xml = framerLayersTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
             })
-            return `Project structure:\n` + xml
+            return dedent`
+            Project structure:
+
+            ${xml}
+
+            If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.
+            `
         }
         case 'updateXmlForNode': {
             const { nodeId, xml } = input
@@ -707,6 +717,16 @@ async function websocketHandler({
                 if (!codeFile) {
                     return `Failed to create code file ${name}.`
                 }
+                const componentExport = codeFile.exports.find(
+                    (x) => x.type === 'component',
+                )
+                // if (componentExport) {
+                //     await framer.addComponentInstance({
+                //         url: componentExport.insertURL,
+                //         attributes: {},
+                //     })
+                // }
+                const insertUrl = componentExport?.insertURL
 
                 // Run initial lint and typecheck
                 const lintResult = await codeFile.lint({
@@ -714,17 +734,28 @@ async function websocketHandler({
                 })
                 const typecheckResult = await codeFile.typecheck()
 
-                return {
-                    message: `Successfully created code file: ${codeFile.name}`,
-                    codeFile: {
-                        id: codeFile.id,
-                        name: codeFile.name,
-                        path: codeFile.path,
-                        exports: codeFile.exports,
-                    },
-                    lint: lintResult,
-                    typecheck: typecheckResult,
-                }
+                return dedent`
+                ## Successfully created code file: \`${codeFile.path}\`
+
+                **Code file details:**
+
+                - **ID:** \`${codeFile.id}\`
+                - **Name:** \`${codeFile.name}\`
+                - **Path:** \`${codeFile.path}\`
+                - **Component Insert URL:** \`${insertUrl}\`
+
+                Use \`${insertUrl}\` to place the component in the canvas, after placing the component in the canvas you can get
+
+                **Lint result:**
+                \`\`\`json
+                ${JSON.stringify(lintResult, null, 2)}
+                \`\`\`
+
+                **Typecheck result:**
+                \`\`\`json
+                ${JSON.stringify(typecheckResult, null, 2)}
+                \`\`\`
+                `
             } catch (error) {
                 return `Failed to create code file: ${error instanceof Error ? error.message : 'Unknown error'}`
             }

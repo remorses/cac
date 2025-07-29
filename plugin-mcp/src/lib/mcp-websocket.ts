@@ -18,7 +18,7 @@ export interface WebsocketRpc {
 
 export function createWebsocketHandling({
     ws,
-    defaultTimeout = 1000 * 5,
+    defaultTimeout = 1000 * 10,
 }: {
     ws: WebSocket
     defaultTimeout?: number
