@@ -97,7 +97,7 @@ In the XML, replica nodes will have a special comment in their attributes:
 
 ```xml
 <ReplicaNode
-    <!-- To see these nodes values and override some of them for this variant, call getNodeXml on this nodeId -->
+    <!-- This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId. -->
     nodeId="xyz456">
 </ReplicaNode>
 ```
