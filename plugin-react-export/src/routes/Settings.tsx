@@ -84,6 +84,10 @@ function Component() {
                     onClick={async () => {
                         setIsLoading(true)
                         try {
+                            // Check permission before setting plugin data
+                            if (!framer.isAllowedTo('setPluginData')) {
+                                throw new Error('Permission denied: cannot set plugin data')
+                            }
                             await framer.setPluginData(
                                 PluginDataKeys.sessionKey,
                                 null,

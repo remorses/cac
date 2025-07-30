@@ -20,6 +20,10 @@ import { framer } from 'framer-plugin'
 import { feedbackUrl } from 'website/src/lib/env'
 
 async function action({}: LoaderFunctionArgs) {
+    // Check permission before setting plugin data
+    if (!framer.isAllowedTo('setPluginData')) {
+        throw new Error('Permission denied: cannot set plugin data')
+    }
     await framer.setPluginData(PluginDataKeys.sessionKey, null)
     throw redirect(withMode(Paths.login))
 }

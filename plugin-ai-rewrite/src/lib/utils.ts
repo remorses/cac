@@ -21,6 +21,10 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
         async onResponse(response) {
             if (response.status === 401) {
                 console.log('clearing session because api returned 401')
+                // Check permission before setting plugin data
+                if (!framer.isAllowedTo('setPluginData')) {
+                    throw new Error('Permission denied: cannot set plugin data')
+                }
                 await framer.setPluginData(PluginDataKeys.sessionKey, null)
                 await localStorage.setItem(PluginDataKeys.sessionKey, '')
                 throw redirect(withMode(Paths.login))

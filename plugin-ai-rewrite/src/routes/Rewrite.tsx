@@ -270,9 +270,12 @@ function SimplePromptComponent({}) {
             }
             // console.log(`nextItemId is ${nextItemId} ${node?.name}`)
 
-            await prevNode?.setAttributes({
-                backgroundColor: prevBackground,
-            })
+            // Check permission before setting attributes
+            if (prevNode && framer.isAllowedTo('setAttributes')) {
+                await prevNode.setAttributes({
+                    backgroundColor: prevBackground,
+                })
+            }
             // prevNode = undefined
             // prevBackground = null
             let currentParent = (await node.getParent()) || undefined
@@ -293,7 +296,10 @@ function SimplePromptComponent({}) {
             }
 
             prevBackground = currentParent?.backgroundColor || null
-            await currentParent?.setAttributes({ backgroundColor })
+            // Check permission before setting attributes
+            if (currentParent && framer.isAllowedTo('setAttributes')) {
+                await currentParent.setAttributes({ backgroundColor })
+            }
 
             prevNode = currentParent
         }
@@ -317,6 +323,10 @@ function SimplePromptComponent({}) {
                     try {
                         if (item.toolName === 'delete') {
                             for (let nodeId of item.nodeIds) {
+                                // Check permission before removing node
+                                if (!framer.isAllowedTo('removeNode')) {
+                                    throw new Error('Permission denied: cannot remove nodes')
+                                }
                                 await framer.removeNode(nodeId)
                             }
                         } else if (item.toolName === 'duplicate') {
@@ -332,9 +342,17 @@ function SimplePromptComponent({}) {
                                 if (!parent) {
                                     throw new Error('No parent found for node')
                                 }
+                                // Check permission before cloning node
+                                if (!framer.isAllowedTo('cloneNode')) {
+                                    throw new Error('Permission denied: cannot clone nodes')
+                                }
                                 let cloned = await node.clone()
                                 if (!cloned) {
                                     throw new Error('No new node cloned found')
+                                }
+                                // Check permission before setting parent
+                                if (!framer.isAllowedTo('setParent')) {
+                                    throw new Error('Permission denied: cannot set parent')
                                 }
                                 await framer.setParent(cloned.id, parent?.id)
                             }
@@ -371,6 +389,10 @@ function SimplePromptComponent({}) {
                             console.log('no text found in chunk', partialItem)
                             continue
                         }
+                        // Check permission before setting text
+                        if (!framer.isAllowedTo('setText')) {
+                            throw new Error('Permission denied: cannot set text')
+                        }
                         await node.setText(partialItem.newContent)
                     } else if (isComponentInstanceNode(node)) {
                     } else {
@@ -391,7 +413,10 @@ function SimplePromptComponent({}) {
 
             await rootNodes[0]?.zoomIntoView({ maxZoom: 1 })
         } finally {
-            await prevNode?.setAttributes({ backgroundColor: prevBackground })
+            // Check permission before setting attributes
+            if (prevNode && framer.isAllowedTo('setAttributes')) {
+                await prevNode.setAttributes({ backgroundColor: prevBackground })
+            }
         }
     }
     useRefreshOnVisible({ enabled: !isLoading })
