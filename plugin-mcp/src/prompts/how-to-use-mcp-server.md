@@ -14,7 +14,7 @@ The MCP tools allow you to:
 
 ## Getting Started
 
-Always begin by calling `getProjectXml` to understand the project structure. This returns an XML tree showing all pages and components with their IDs, which you'll use for subsequent operations.
+Always begin by calling `getProjectXml` to understand the project structure. This returns an XML tree showing all pages, components, code files, color styles, and text styles with their IDs and properties, which you'll use for subsequent operations.
 
 To check if the project is published and get its public URL, use `getProjectWebsiteUrl`.
 
@@ -113,7 +113,7 @@ Project styles provide consistent design tokens across your project:
 - Include typography properties (size, line height, spacing, etc.)
 - Can be created or updated globally using `manageTextStyle`
 
-Use `getProjectColorStyles` and `getProjectTextStyles` to discover available styles.
+Color and text styles are listed in the `getProjectXml` output under `<ColorStyles>` and `<TextStyles>` sections.
 
 ### Managing Styles
 
