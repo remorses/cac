@@ -1,5 +1,9 @@
 # Changelog
 
+## 2025-01-30 11:50
+
+- Bumped MCP server version to 1.7.0
+
 ## 2025-01-30 11:45
 
 - Added validation to `getNodeXml` to prevent misuse with code files and style paths
