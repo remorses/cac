@@ -27,6 +27,11 @@ To work with nodes:
 2. Modify the XML with desired changes
 3. Apply changes using `updateXmlForNode`
 
+**Important**: `updateXmlForNode` can only be used for regular Framer nodes (pages, components, frames, text, etc.). For other resources, use the appropriate specialized tools:
+- **Code files**: Use `updateCodeFile` to modify code
+- **Color styles**: Use `manageColorStyle` with `type: "update"`
+- **Text styles**: Use `manageTextStyle` with `type: "update"`
+
 ## XML Attribute Formats
 
 ### Dimensions and Units

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2025-01-30 11:40
+
+- Added validation to `updateXmlForNode` to prevent misuse with code files and styles
+- Tool now returns helpful error messages directing users to appropriate tools:
+  - Code files → use `updateCodeFile`
+  - Color styles → use `manageColorStyle` with type: 'update'
+  - Text styles → use `manageTextStyle` with type: 'update'
+- Updated tool description to clearly state what it cannot be used for
+
 ## 2025-01-30 11:35
 
 - Fixed TypeScript type errors in tests and App.tsx

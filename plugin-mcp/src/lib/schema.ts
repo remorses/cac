@@ -185,11 +185,15 @@ export const mcpTools = {
 
               You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will not be updated. You can also omit attributes, omitted attributes will not be updated and will be ignored.
 
-              You can use this tool to
+              You can use this tool to:
               - Update text for one or multiple text nodes
               - Update attributes of existing nodes
 
-              This tool cannot duplicate or delete nodes.
+              This tool CANNOT be used for:
+              - Code files (use 'updateCodeFile' instead)
+              - Color styles (use 'manageColorStyle' with type: 'update' instead)  
+              - Text styles (use 'manageTextStyle' with type: 'update' instead)
+              - Duplicating or deleting nodes
 
               `,
         input: z.object({
