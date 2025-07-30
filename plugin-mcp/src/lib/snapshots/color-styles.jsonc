@@ -1,8 +1,8 @@
 [
   {
     "dark": null,
-    "light": "rgb(28, 100, 150)",
-    "path": "/undefined - Test 28",
+    "light": "rgb(197, 100, 150)",
+    "path": "/undefined - Test 197",
   },
   {
     "dark": null,
@@ -98,5 +98,25 @@
     "dark": "rgb(244, 50, 100)",
     "light": "rgb(244, 100, 200)",
     "path": "/Test-Color-499",
+  },
+  {
+    "dark": "rgb(177, 50, 100)",
+    "light": "rgb(177, 100, 200)",
+    "path": "/Test-Color-432",
+  },
+  {
+    "dark": "rgb(40, 50, 100)",
+    "light": "rgb(40, 100, 200)",
+    "path": "/Test-Color-40",
+  },
+  {
+    "dark": "rgb(109, 50, 100)",
+    "light": "rgb(109, 100, 200)",
+    "path": "/Test-Color-619",
+  },
+  {
+    "dark": "rgb(208, 50, 100)",
+    "light": "rgb(208, 100, 200)",
+    "path": "/Test-Color-208",
   },
 ]

@@ -1,5 +1,34 @@
 # Changelog
 
+## 2025-01-30 11:25
+
+- Text nodes now always use non-self-closing XML tags
+- Added `disableSelfClosing` property to FramerLayersTree type
+- Text nodes set `disableSelfClosing: true` to ensure they render as `<TextNode></TextNode>` even when empty
+
+## 2025-01-30 11:20
+
+- Use generic node names ('Page', 'Component', 'CodeComponent', 'CodeOverride') in project XML instead of actual names
+- Project XML now shows consistent generic names for better structure understanding
+
+## 2025-01-30 11:15
+
+- Added comment field to FramerLayersTree for better documentation in XML output
+- Enhanced getProjectXml to include descriptive comments only at root level sections
+- Removed redundant `type` field from project XML nodes
+- Removed `exports` field from code component nodes in project XML
+- Added comments for replica nodes explaining that children are hidden and getNodeXml should be called
+- Comments now appear as XML comments above nodes in the generated output
+- Added support for self-closing XML tags when nodes have no children or content
+
+## 2025-01-30 10:45
+
+- Unified color and text style tools into single `manageColorStyle` and `manageTextStyle` tools
+- Added `type` parameter with values "create" or "update" to specify the operation
+- Improved error messages to guide users when style exists/doesn't exist
+- Updated documentation to show examples of both create and update operations
+- Simplified API by having consistent parameter structure for both operations
+
 ## 2025-01-29 21:40
 
 - Strip version hash (@ part) from all insert URLs everywhere

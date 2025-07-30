@@ -314,20 +314,34 @@ export function framerLayersTreeToXml(
                     : ' ' + attributes.join(' ')
                 : ''
 
-        xml += `${indent}<${nodeName}${attributesString}>\n`
-
-        if (node.content) {
-            xml += `${indent}  ${escapeXml(node.content)}\n`
+        // Add node comment before the element if present
+        if (node.comment) {
+            xml += `${indent}<!-- ${node.comment} -->\n`
         }
 
-        if (node.children && node.children.length > 0) {
-            xml += framerLayersTreeToXml(node.children, {
-                shouldAddNodeIdAlways,
-                indent: indent + '  ',
-            })
-        }
+        // Check if this should be a self-closing tag
+        const hasContent = node.content && node.content.trim() !== ''
+        const hasChildren = node.children && node.children.length > 0
+        const isSelfClosing = !hasContent && !hasChildren && !node.disableSelfClosing
 
-        xml += `${indent}</${nodeName}>\n`
+        if (isSelfClosing) {
+            xml += `${indent}<${nodeName}${attributesString} />\n`
+        } else {
+            xml += `${indent}<${nodeName}${attributesString}>\n`
+
+            if (node.content) {
+                xml += `${indent}  ${escapeXml(node.content)}\n`
+            }
+
+            if (node.children && node.children.length > 0) {
+                xml += framerLayersTreeToXml(node.children, {
+                    shouldAddNodeIdAlways,
+                    indent: indent + '  ',
+                })
+            }
+
+            xml += `${indent}</${nodeName}>\n`
+        }
     }
 
     return xml

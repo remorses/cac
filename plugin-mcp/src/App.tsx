@@ -140,15 +140,18 @@ async function websocketHandler({
 
             const tree: FramerLayersTree = [
                 {
-                    name: 'Project', //
+                    name: 'Project',
+                    comment:
+                        'Root node containing all pages, components, and code files in the project',
                     children: [
                         {
                             name: 'Pages',
+                            comment:
+                                'All pages in the project. Use getNodeXml with a page nodeId to see its contents',
                             children: pages.map((page) => ({
-                                name: page.path || 'Page',
+                                name: 'Page',
                                 id: page.id,
                                 attributes: {
-                                    type: 'WebPageNode',
                                     nodeId: page.id,
                                     path: page.path || '',
                                 },
@@ -157,11 +160,12 @@ async function websocketHandler({
                         },
                         {
                             name: 'Components',
+                            comment:
+                                'Reusable components. Use getNodeXml with a component nodeId to see its structure',
                             children: components.map((component) => ({
-                                name: component.name || 'Component',
+                                name: 'Component',
                                 id: component.id,
                                 attributes: {
-                                    type: 'ComponentNode',
                                     nodeId: component.id,
                                     name: component.componentName || '',
                                 },
@@ -170,20 +174,18 @@ async function websocketHandler({
                         },
                         {
                             name: 'CodeComponents',
+                            comment:
+                                'Code components written in React/TypeScript. Use readCodeFile to see the code',
                             children: codeComponents.map((file) => {
                                 const componentExport = file.exports.find(
                                     (exp) => exp.type === 'component',
                                 )
                                 return {
-                                    name: file.name,
+                                    name: 'CodeComponent',
                                     id: file.id,
                                     attributes: {
-                                        type: 'CodeFile',
                                         codeFileId: file.id,
                                         path: file.path,
-                                        exports: file.exports
-                                            .map((e) => e.name)
-                                            .join(', '),
                                     },
                                     children: [],
                                 }
@@ -191,16 +193,14 @@ async function websocketHandler({
                         },
                         {
                             name: 'CodeOverrides',
+                            comment:
+                                'Code override files that modify component behavior. Use readCodeFile to see the code',
                             children: codeOverrides.map((file) => ({
-                                name: file.name,
+                                name: 'CodeOverride',
                                 id: file.id,
                                 attributes: {
-                                    type: 'CodeFile',
                                     codeFileId: file.id,
                                     path: file.path,
-                                    exports: file.exports
-                                        .map((e) => e.name)
-                                        .join(', '),
                                 },
                                 children: [],
                             })),
@@ -278,19 +278,25 @@ async function websocketHandler({
 
                         if (currentParentId !== extractedNode.parentId) {
                             // Move to new parent without specifying position yet
-                            await framer.setParent(targetNodeId, extractedNode.parentId)
+                            await framer.setParent(
+                                targetNodeId,
+                                extractedNode.parentId,
+                            )
                             results.push(
-                                `Moved node ${targetNodeId} from parent ${currentParentId || 'none'} to ${extractedNode.parentId}`
+                                `Moved node ${targetNodeId} from parent ${currentParentId || 'none'} to ${extractedNode.parentId}`,
                             )
                         }
 
                         // Queue for reordering if sibling info is provided
-                        if (extractedNode.beforeNodeId || extractedNode.afterNodeId) {
+                        if (
+                            extractedNode.beforeNodeId ||
+                            extractedNode.afterNodeId
+                        ) {
                             nodesToReorder.push({
                                 nodeId: targetNodeId,
                                 parentId: extractedNode.parentId,
                                 beforeNodeId: extractedNode.beforeNodeId,
-                                afterNodeId: extractedNode.afterNodeId
+                                afterNodeId: extractedNode.afterNodeId,
                             })
                         }
                     }
@@ -315,13 +321,17 @@ async function websocketHandler({
 
                     if (reorderInfo.beforeNodeId) {
                         // Place after the beforeNode
-                        const beforeIndex = siblings.findIndex(s => s.id === reorderInfo.beforeNodeId)
+                        const beforeIndex = siblings.findIndex(
+                            (s) => s.id === reorderInfo.beforeNodeId,
+                        )
                         if (beforeIndex !== -1) {
                             targetIndex = beforeIndex + 1
                         }
                     } else if (reorderInfo.afterNodeId) {
                         // Place before the afterNode
-                        const afterIndex = siblings.findIndex(s => s.id === reorderInfo.afterNodeId)
+                        const afterIndex = siblings.findIndex(
+                            (s) => s.id === reorderInfo.afterNodeId,
+                        )
                         if (afterIndex !== -1) {
                             targetIndex = afterIndex
                         }
@@ -329,10 +339,15 @@ async function websocketHandler({
 
                     if (targetIndex !== undefined) {
                         // Get current index
-                        const currentIndex = siblings.findIndex(s => s.id === reorderInfo.nodeId)
+                        const currentIndex = siblings.findIndex(
+                            (s) => s.id === reorderInfo.nodeId,
+                        )
 
                         // Only reorder if position needs to change
-                        if (currentIndex !== -1 && currentIndex !== targetIndex) {
+                        if (
+                            currentIndex !== -1 &&
+                            currentIndex !== targetIndex
+                        ) {
                             // When reordering within the same parent (moving a node forward), we need to adjust the target index.
                             // This is because setParent internally removes the node first, then inserts it.
                             // Example: Moving node from index 1 to index 3 in array [A, B, C, D]:
@@ -344,8 +359,14 @@ async function websocketHandler({
                                 targetIndex -= 1
                             }
 
-                            await framer.setParent(reorderInfo.nodeId, reorderInfo.parentId, targetIndex)
-                            results.push(`Reordered node ${reorderInfo.nodeId} within parent ${reorderInfo.parentId} to index ${targetIndex}`)
+                            await framer.setParent(
+                                reorderInfo.nodeId,
+                                reorderInfo.parentId,
+                                targetIndex,
+                            )
+                            results.push(
+                                `Reordered node ${reorderInfo.nodeId} within parent ${reorderInfo.parentId} to index ${targetIndex}`,
+                            )
                         }
                     }
                 } catch (error) {
@@ -402,195 +423,95 @@ async function websocketHandler({
                 tag: style.tag,
             }))
         }
-        case 'updateColorStyle': {
-            const { stylePath, updates } = input
+        case 'manageColorStyle': {
+            const { type, stylePath, properties } = input
 
             if (!stylePath.startsWith('/')) {
                 return `Color style path must start with /. Got: ${stylePath}`
             }
 
-            // Get all color styles and find by path
-            const colorStyles = await framer.getColorStyles()
-            const colorStyle = colorStyles.find(
-                (style) => style.path === stylePath,
-            )
-
-            if (!colorStyle) {
-                return `Color style with path ${stylePath} not found.`
-            }
-
-            const result = await colorStyle.setAttributes(updates)
-
-            if (!result) {
-                return `Failed to update color style ${stylePath}.`
-            }
-
-            return {
-                message: `Successfully updated color style: ${result.name}`,
-                style: {
-                    path: result.path,
-
-                    light: result.light,
-                    dark: result.dark,
-                },
-            }
-        }
-        case 'createColorStyle': {
-            const { stylePath, properties } = input
-
-            if (!stylePath.startsWith('/')) {
-                return `Color style path must start with /. Got: ${stylePath}`
-            }
-
-            // Check if style already exists
+            // Get all color styles and check if it exists
             const colorStyles = await framer.getColorStyles()
             const existingStyle = colorStyles.find(
                 (style) => style.path === stylePath,
             )
 
-            if (existingStyle) {
-                return `Color style with path ${stylePath} already exists.`
-            }
+            if (type === 'create') {
+                if (existingStyle) {
+                    return `Color style with path ${stylePath} already exists. Use type: "update" to modify it.`
+                }
 
-            // Prepare the attributes with proper types
-            type ColorStyleAttributes = Parameters<
-                typeof framer.createColorStyle
-            >[0]
+                // Validate required fields for create
+                if (!properties.light) {
+                    return `Light color is required when creating a new color style.`
+                }
 
-            // Filter out name property as Framer derives it from the path
-            // The Framer API doesn't allow both name and path to be set
-            const { name, ...propertiesWithoutName } = properties
+                // Prepare the attributes with proper types
+                type ColorStyleAttributes = Parameters<
+                    typeof framer.createColorStyle
+                >[0]
 
-            const attributes: ColorStyleAttributes = {
-                ...propertiesWithoutName,
-                path: stylePath,
-            }
+                // Filter out name property as Framer derives it from the path
+                const { name, ...propertiesWithoutName } = properties
 
-            try {
-                const result = await framer.createColorStyle(attributes)
+                const attributes: ColorStyleAttributes = {
+                    ...propertiesWithoutName,
+                    path: stylePath,
+                }
+
+                try {
+                    const result = await framer.createColorStyle(attributes)
+
+                    if (!result) {
+                        return `Failed to create color style at ${stylePath}.`
+                    }
+
+                    return {
+                        message: `Successfully created color style: ${result.name}`,
+                        style: {
+                            path: result.path,
+                            name: result.name,
+                            light: result.light,
+                            dark: result.dark,
+                        },
+                    }
+                } catch (error) {
+                    return `Failed to create color style: ${error instanceof Error ? error.message : 'Unknown error'}`
+                }
+            } else {
+                // type === 'update'
+                if (!existingStyle) {
+                    return `Color style with path ${stylePath} not found. Use type: "create" to make a new style.`
+                }
+
+                const result = await existingStyle.setAttributes(properties)
 
                 if (!result) {
-                    return `Failed to create color style at ${stylePath}.`
+                    return `Failed to update color style ${stylePath}.`
                 }
 
                 return {
-                    message: `Successfully created color style: ${result.name}`,
+                    message: `Successfully updated color style: ${result.name}`,
                     style: {
                         path: result.path,
-                        name: result.name,
                         light: result.light,
                         dark: result.dark,
                     },
                 }
-            } catch (error) {
-                return `Failed to create color style: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
-        case 'updateTextStyle': {
-            const { stylePath, updates } = input
+        case 'manageTextStyle': {
+            const { type, stylePath, properties } = input
 
             if (!stylePath.startsWith('/')) {
                 return `Text style path must start with /. Got: ${stylePath}`
             }
 
-            // Get all text styles and find by path
-            const textStyles = await framer.getTextStyles()
-            const textStyle = textStyles.find(
-                (style) => style.path === stylePath,
-            )
-
-            if (!textStyle) {
-                return `Text style with path ${stylePath} not found.`
-            }
-
-            // Get color styles once if needed
-            const needsColorStyles =
-                (typeof updates.color === 'string' &&
-                    updates.color.startsWith('/')) ||
-                (typeof updates.decorationColor === 'string' &&
-                    updates.decorationColor.startsWith('/'))
-
-            const colorStyles = needsColorStyles
-                ? await framer.getColorStyles()
-                : []
-
-            // Prepare the attributes with proper types
-            type TextStyleAttributes = Parameters<TextStyle['setAttributes']>[0]
-            const attributes: TextStyleAttributes = { ...updates }
-
-            // Handle color style paths for color field
-            if (
-                typeof updates.color === 'string' &&
-                updates.color.startsWith('/')
-            ) {
-                const colorStyle = colorStyles.find(
-                    (style) => style.path === updates.color,
-                )
-
-                if (!colorStyle) {
-                    return `Color style with path ${updates.color} not found.`
-                }
-
-                // Use the color style object instead of the path string
-                attributes.color = colorStyle as any
-            }
-
-            // Handle color style paths for decorationColor field
-            if (
-                typeof updates.decorationColor === 'string' &&
-                updates.decorationColor.startsWith('/')
-            ) {
-                const colorStyle = colorStyles.find(
-                    (style) => style.path === updates.decorationColor,
-                )
-
-                if (!colorStyle) {
-                    return `Color style with path ${updates.decorationColor} not found.`
-                }
-
-                // Use the color style object instead of the path string
-                attributes.decorationColor = colorStyle as any
-            }
-
-            const result = await textStyle.setAttributes(attributes)
-
-            if (!result) {
-                return `Failed to update text style ${stylePath}.`
-            }
-
-            return {
-                message: `Successfully updated text style: ${result.name}`,
-                style: {
-                    path: result.path,
-                    name: result.name,
-                    fontSize: result.fontSize,
-                    lineHeight: result.lineHeight,
-                    letterSpacing: result.letterSpacing,
-                    paragraphSpacing: result.paragraphSpacing,
-                    transform: result.transform,
-                    alignment: result.alignment,
-                    decoration: result.decoration,
-                    balance: result.balance,
-                    tag: result.tag,
-                },
-            }
-        }
-        case 'createTextStyle': {
-            const { stylePath, properties } = input
-
-            if (!stylePath.startsWith('/')) {
-                return `Text style path must start with /. Got: ${stylePath}`
-            }
-
-            // Check if style already exists
+            // Get all text styles and check if it exists
             const textStyles = await framer.getTextStyles()
             const existingStyle = textStyles.find(
                 (style) => style.path === stylePath,
             )
-
-            if (existingStyle) {
-                return `Text style with path ${stylePath} already exists.`
-            }
 
             // Get color styles once if needed
             const needsColorStyles =
@@ -603,63 +524,138 @@ async function websocketHandler({
                 ? await framer.getColorStyles()
                 : []
 
-            // Prepare the attributes with proper types
-            type TextStyleAttributes = Parameters<
-                typeof framer.createTextStyle
-            >[0]
-
-            // Filter out name property as Framer derives it from the path
-            // The Framer API doesn't allow both name and path to be set
-            const { name, ...propertiesWithoutName } = properties
-
-            const attributes: TextStyleAttributes = {
-                ...propertiesWithoutName,
-                path: stylePath,
-            }
-
-            // Handle color style paths for color field
-            if (
-                typeof properties.color === 'string' &&
-                properties.color.startsWith('/')
-            ) {
-                const colorStyle = colorStyles.find(
-                    (style) => style.path === properties.color,
-                )
-
-                if (!colorStyle) {
-                    return `Color style with path ${properties.color} not found.`
+            if (type === 'create') {
+                if (existingStyle) {
+                    return `Text style with path ${stylePath} already exists. Use type: "update" to modify it.`
                 }
 
-                // Use the color style object instead of the path string
-                attributes.color = colorStyle as any
-            }
+                // Prepare the attributes with proper types
+                type TextStyleAttributes = Parameters<
+                    typeof framer.createTextStyle
+                >[0]
 
-            // Handle color style paths for decorationColor field
-            if (
-                typeof properties.decorationColor === 'string' &&
-                properties.decorationColor.startsWith('/')
-            ) {
-                const colorStyle = colorStyles.find(
-                    (style) => style.path === properties.decorationColor,
-                )
+                // Filter out name property as Framer derives it from the path
+                const { name, ...propertiesWithoutName } = properties
 
-                if (!colorStyle) {
-                    return `Color style with path ${properties.decorationColor} not found.`
+                const attributes: TextStyleAttributes = {
+                    ...propertiesWithoutName,
+                    path: stylePath,
                 }
 
-                // Use the color style object instead of the path string
-                attributes.decorationColor = colorStyle as any
-            }
+                // Handle color style paths for color field
+                if (
+                    typeof properties.color === 'string' &&
+                    properties.color.startsWith('/')
+                ) {
+                    const colorStyle = colorStyles.find(
+                        (style) => style.path === properties.color,
+                    )
 
-            try {
-                const result = await framer.createTextStyle(attributes)
+                    if (!colorStyle) {
+                        return `Color style with path ${properties.color} not found.`
+                    }
+
+                    // Use the color style object instead of the path string
+                    attributes.color = colorStyle as any
+                }
+
+                // Handle color style paths for decorationColor field
+                if (
+                    typeof properties.decorationColor === 'string' &&
+                    properties.decorationColor.startsWith('/')
+                ) {
+                    const colorStyle = colorStyles.find(
+                        (style) => style.path === properties.decorationColor,
+                    )
+
+                    if (!colorStyle) {
+                        return `Color style with path ${properties.decorationColor} not found.`
+                    }
+
+                    // Use the color style object instead of the path string
+                    attributes.decorationColor = colorStyle as any
+                }
+
+                try {
+                    const result = await framer.createTextStyle(attributes)
+
+                    if (!result) {
+                        return `Failed to create text style at ${stylePath}.`
+                    }
+
+                    return {
+                        message: `Successfully created text style: ${result.name}`,
+                        style: {
+                            path: result.path,
+                            name: result.name,
+                            fontSize: result.fontSize,
+                            lineHeight: result.lineHeight,
+                            letterSpacing: result.letterSpacing,
+                            paragraphSpacing: result.paragraphSpacing,
+                            transform: result.transform,
+                            alignment: result.alignment,
+                            decoration: result.decoration,
+                            balance: result.balance,
+                            tag: result.tag,
+                        },
+                    }
+                } catch (error) {
+                    return `Failed to create text style: ${error instanceof Error ? error.message : 'Unknown error'}`
+                }
+            } else {
+                // type === 'update'
+                if (!existingStyle) {
+                    return `Text style with path ${stylePath} not found. Use type: "create" to make a new style.`
+                }
+
+                // Prepare the attributes with proper types
+                type TextStyleAttributes = Parameters<
+                    TextStyle['setAttributes']
+                >[0]
+                const attributes: TextStyleAttributes = { ...properties }
+
+                // Handle color style paths for color field
+                if (
+                    typeof properties.color === 'string' &&
+                    properties.color.startsWith('/')
+                ) {
+                    const colorStyle = colorStyles.find(
+                        (style) => style.path === properties.color,
+                    )
+
+                    if (!colorStyle) {
+                        return `Color style with path ${properties.color} not found.`
+                    }
+
+                    // Use the color style object instead of the path string
+                    attributes.color = colorStyle as any
+                }
+
+                // Handle color style paths for decorationColor field
+                if (
+                    typeof properties.decorationColor === 'string' &&
+                    properties.decorationColor.startsWith('/')
+                ) {
+                    const colorStyle = colorStyles.find(
+                        (style) => style.path === properties.decorationColor,
+                    )
+
+                    if (!colorStyle) {
+                        return `Color style with path ${properties.decorationColor} not found.`
+                    }
+
+                    // Use the color style object instead of the path string
+                    attributes.decorationColor = colorStyle as any
+                }
+
+                const result = await existingStyle.setAttributes(attributes)
 
                 if (!result) {
-                    return `Failed to create text style at ${stylePath}.`
+                    return `Failed to update text style ${stylePath}.`
                 }
 
                 return {
-                    message: `Successfully created text style: ${result.name}`,
+                    message: `Successfully updated text style: ${result.name}`,
                     style: {
                         path: result.path,
                         name: result.name,
@@ -674,8 +670,6 @@ async function websocketHandler({
                         tag: result.tag,
                     },
                 }
-            } catch (error) {
-                return `Failed to create text style: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
         case 'searchFonts': {
@@ -843,7 +837,9 @@ async function websocketHandler({
                 //         attributes: {},
                 //     })
                 // }
-                const insertUrl = stripVersionFromUrl(componentExport?.insertURL)
+                const insertUrl = stripVersionFromUrl(
+                    componentExport?.insertURL,
+                )
 
                 // Run initial lint and typecheck
                 const lintResult = await codeFile.lint({
@@ -975,7 +971,9 @@ async function websocketHandler({
                         for (const componentExport of componentExports) {
                             components.push({
                                 name: componentExport.name,
-                                insertUrl: stripVersionFromUrl(componentExport.insertURL),
+                                insertUrl: stripVersionFromUrl(
+                                    componentExport.insertURL,
+                                ),
                                 importName: componentExport.name,
                                 isCodeFile: true,
                             })
@@ -1011,7 +1009,8 @@ async function websocketHandler({
                     message += `**Insert URL:** \`${component.insertUrl}\`\n\n`
 
                     // Get property controls and generate TypeScript documentation
-                    const { propertyControls } = await getComponentPropertyControls(component.insertUrl)
+                    const { propertyControls } =
+                        await getComponentPropertyControls(component.insertUrl)
 
                     // Create the import statement
                     const importStatement = `import ${component.importName} from "${component.insertUrl}"`

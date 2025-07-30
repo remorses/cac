@@ -381,6 +381,7 @@ async function push({
                 name: supportsName(parent) ? parent.name || '' : '',
                 isReplica: parent.isReplica,
                 children: [],
+                comment: parent.isReplica ? 'Replica node (variant). Children are hidden. Call getNodeXml on this nodeId to see overrides' : undefined,
             }
             currentLevel.push(existingNode)
 
@@ -423,6 +424,7 @@ async function push({
         attrControlsComments,
         children: [],
         isReplica: node.isReplica,
+        disableSelfClosing: isTextNode(node) ? true : undefined,
     }
 
     currentLevel.push(nodeEntry)
