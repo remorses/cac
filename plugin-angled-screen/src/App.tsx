@@ -271,6 +271,10 @@ function RotationsImage() {
             formatBytes(resultFile.size || 0),
         )
         const start = performance.now()
+        // Check permission before setting image
+        if (!framer.isAllowedTo('setImage')) {
+            throw new Error('Permission denied: cannot set image')
+        }
         await Promise.all([
             framer.setImage({
                 image: resultFile,

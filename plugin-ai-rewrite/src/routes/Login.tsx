@@ -141,6 +141,10 @@ async function loader({}: LoaderFunctionArgs) {
         console.log('login was completed, got session', data)
 
         await localStorage.setItem(PluginDataKeys.sessionKey, data.key)
+        // Check permission before setting plugin data
+        if (!framer.isAllowedTo('setPluginData')) {
+            throw new Error('Permission denied: cannot set plugin data')
+        }
         await framer.setPluginData(PluginDataKeys.sessionKey, data.key)
 
         loginCompleted = true
