@@ -84,7 +84,7 @@ function LoginComponent() {
         <div style={containerStyle} className='flex flex-col justify-end gap-3'>
             <div className='flex flex-col min-h-[140px]'>
                 <div className='text-center mx-auto my-8 mt-10 grow gap-2 flex flex-col max-w-xs'>
-                    <div className='font-semibold text-balance max-w-[300px] self-center text-center'>
+                    <div className='font-semibold text-balance text-lg max-w-[300px] self-center text-center'>
                         Control Framer with MCP
                     </div>
                     <div className='opacity-70 text-center text-balance'></div>

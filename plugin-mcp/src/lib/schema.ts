@@ -229,17 +229,22 @@ export const mcpTools = {
 
     updateXmlForNode: {
         description: dedent`
-              Update the XML for a specific node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes.
+              Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes or reorder nodes in the XML tree.
 
-              If a node id changes its parent, it will be moved in the layers tree.
+              If a node id changes its parent, it will be moved in the tree.
+
+              Do not pass a string too large in this tool, instead call this tool multiple times and pass only the nodes you want to update, omit attributes or nodes that you don't need to update.
+
+              Call this tool multiple times instead of batching all the updates in one tool call. This way the user will be able to see your changes in real-time in the Framer canvas.
 
               This tool is generally called using a component or page nodeId and passing a portion of the XML tree. To delete nodes you should use deleteNode instead. If a node is omitted it will not be deleted.
 
-              You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will not be updated. You can also omit attributes, omitted attributes will not be updated and will be ignored.
+              You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will be ignored. You can also omit attributes, omitted attributes will be ignored.
 
               You can use this tool to:
-              - Update text for one or multiple text nodes
+              - Update text content for one or multiple nodes
               - Update attributes of existing nodes
+              - Reorder nodes in the tree by changing their parent or position
 
               This tool CANNOT be used for:
               - Code files (use 'updateCodeFile' instead)
