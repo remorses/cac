@@ -232,7 +232,9 @@ async function websocketHandler({
                                     fontSize: style.fontSize || '',
                                     lineHeight: style.lineHeight || '',
                                     letterSpacing: style.letterSpacing || '',
-                                    paragraphSpacing: String(style.paragraphSpacing || 0),
+                                    paragraphSpacing: String(
+                                        style.paragraphSpacing || 0,
+                                    ),
                                     transform: style.transform || 'none',
                                     alignment: style.alignment || 'left',
                                     decoration: style.decoration || 'none',
@@ -269,6 +271,18 @@ async function websocketHandler({
         }
         case 'updateXmlForNode': {
             const { nodeId, xml } = input
+
+            // Check if this is a code file ID
+            const codeFiles = await framer.getCodeFiles()
+            const isCodeFile = codeFiles.some((file) => file.id === nodeId)
+            if (isCodeFile) {
+                return `Cannot use updateXmlForNode with code files. Use 'updateCodeFile' tool instead to modify code file with ID: ${nodeId}`
+            }
+
+            // Check if this looks like a style path
+            if (nodeId.startsWith('/')) {
+                return `Node ID cannot start with a slash. It should be a valid node ID, not a color style or text path. To update styles use 'manageColorStyle' or 'manageTextStyle' tools.`
+            }
 
             // Extract nodes from the provided XML
             const extractedNodes = extractObjectsFromXmlContent(xml)
@@ -961,7 +975,9 @@ async function websocketHandler({
 
                     components.push({
                         name: node.name || 'Component',
-                        insertUrl: stripVersionFromUrl(node.insertURL || undefined),
+                        insertUrl: stripVersionFromUrl(
+                            node.insertURL || undefined,
+                        ),
                         importName: componentCamelCase(
                             node.componentName || node.name || 'Component',
                         ),
