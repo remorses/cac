@@ -118,7 +118,7 @@ async function websocketHandler({
             }
             let response = `Node xml:\n${result.xml}`
             if (result.isReplica) {
-                response = `WARNING: This is a replica node (variant). It's recommended to update the original component instead to maintain consistency.\n\n${response}`
+                response = `WARNING: This is a replica node (variant). It's recommended to update the original component instead to maintain consistency. Only update a few attributes on variants. These attributes will no longer inherit the primary variant values.\n\n${response}`
             }
             return response
         }

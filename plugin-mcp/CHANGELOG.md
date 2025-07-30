@@ -1,5 +1,14 @@
 # Changelog
 
+## 2025-01-30 12:10
+
+- Fixed replica node comment placement in XML output
+- Comments for replica nodes (variants) now appear correctly as XML comments above the nodes
+- Comments only appear on leaf replica nodes where children are actually skipped
+- Removed redundant comments from parent replica nodes in the tree structure
+- Updated comment text to clearly state "This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId."
+- Updated documentation to use the clearer comment text
+
 ## 2025-01-30 12:05
 
 - Improved permission error messages to clearly indicate the current Framer user lacks permissions for this project

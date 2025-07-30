@@ -381,7 +381,6 @@ async function push({
                 name: supportsName(parent) ? parent.name || '' : '',
                 isReplica: parent.isReplica,
                 children: [],
-                comment: parent.isReplica ? 'Replica node (variant). Children are hidden. Call getNodeXml on this nodeId to see overrides' : undefined,
             }
             currentLevel.push(existingNode)
 
@@ -412,7 +411,7 @@ async function push({
     if (isRootNode && node.isReplica) {
         attrControlsComments = {
             ...attrControlsComments,
-            nodeId: 'To see these nodes values and override some of them for this variant, call getNodeXml on this nodeId',
+            nodeId: 'This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId.',
         }
     }
 
@@ -425,6 +424,8 @@ async function push({
         children: [],
         isReplica: node.isReplica,
         disableSelfClosing: isTextNode(node) ? true : undefined,
+        // Add comment for replica nodes (variants) where children are skipped
+        comment: node.isReplica && !isRootNode ? 'This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId.' : undefined,
     }
 
     currentLevel.push(nodeEntry)
