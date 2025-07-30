@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-01-30 14:45
+
+- Added comprehensive XML attributes documentation to how-to-use-mcp-server.md
+- Documented all available attributes by node type (common, layout, positioning, frame-specific, text, link, SVG, component instance)
+- Included default values and examples for each attribute type
+- Clarified which attributes work with which node types
+- Updated MCP guide URL to include userId and secret query parameters using URL API
+
 ## 2025-01-30 12:10
 
 - Fixed replica node comment placement in XML output

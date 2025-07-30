@@ -1,17 +1,15 @@
 import { z } from 'zod'
 import dedent from 'string-dedent'
 
-export const codeComponentsResourceUri = 'mcp://mcp.unframer.co/prompts/how-to-write-framer-code-files.md'
+export const codeComponentsResourceUri =
+    'mcp://mcp.unframer.co/prompts/how-to-write-framer-code-files.md'
 
 /* ──────────────────────────── Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
 const Role = z.enum(['background', 'text', 'border'])
 
 const colorStylePropertiesSchema = z.object({
-    name: z
-        .string()
-        .optional()
-        .describe('The display name of the color style'),
+    name: z.string().optional().describe('The display name of the color style'),
     light: z
         .string()
         .optional()
@@ -28,10 +26,7 @@ const colorStylePropertiesSchema = z.object({
 })
 
 const textStylePropertiesSchema = z.object({
-    name: z
-        .string()
-        .optional()
-        .describe('The display name of the text style'),
+    name: z.string().optional().describe('The display name of the text style'),
     tag: z
         .enum(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'])
         .optional()
@@ -39,21 +34,15 @@ const textStylePropertiesSchema = z.object({
     fontSize: z
         .string()
         .optional()
-        .describe(
-            'Font size with units (e.g., "16px", "1.5rem")',
-        ),
+        .describe('Font size with units (e.g., "16px", "1.5rem")'),
     lineHeight: z
         .string()
         .optional()
-        .describe(
-            'Line height with units (e.g., "24px", "1.5em", "150%")',
-        ),
+        .describe('Line height with units (e.g., "24px", "1.5em", "150%")'),
     letterSpacing: z
         .string()
         .optional()
-        .describe(
-            'Letter spacing with units (e.g., "0px", "0.05em")',
-        ),
+        .describe('Letter spacing with units (e.g., "0px", "0.05em")'),
     paragraphSpacing: z
         .number()
         .optional()
@@ -73,9 +62,7 @@ const textStylePropertiesSchema = z.object({
     balance: z
         .boolean()
         .optional()
-        .describe(
-            'Enable balanced text wrapping for better legibility',
-        ),
+        .describe('Enable balanced text wrapping for better legibility'),
     color: z
         .string()
         .optional()
@@ -85,42 +72,30 @@ const textStylePropertiesSchema = z.object({
     font: z
         .string()
         .optional()
-        .describe(
-            'Font selector (e.g., "GF;Inter-600")',
-        ),
+        .describe('Font selector (e.g., "GF;Inter-600")'),
     boldFont: z
         .string()
         .nullable()
         .optional()
-        .describe(
-            'Bold variant font selector or null to remove',
-        ),
+        .describe('Bold variant font selector or null to remove'),
     italicFont: z
         .string()
         .nullable()
         .optional()
-        .describe(
-            'Italic variant font selector or null to remove',
-        ),
+        .describe('Italic variant font selector or null to remove'),
     boldItalicFont: z
         .string()
         .nullable()
         .optional()
-        .describe(
-            'Bold italic variant font selector or null to remove',
-        ),
+        .describe('Bold italic variant font selector or null to remove'),
     decorationColor: z
         .string()
         .optional()
-        .describe(
-            'Decoration color as hex, rgba, or color style path',
-        ),
+        .describe('Decoration color as hex, rgba, or color style path'),
     decorationThickness: z
         .string()
         .optional()
-        .describe(
-            'Decoration thickness (e.g., "auto", "2px", "0.1em")',
-        ),
+        .describe('Decoration thickness (e.g., "auto", "2px", "0.1em")'),
     decorationStyle: z
         .enum(['solid', 'double', 'dotted', 'dashed', 'wavy'])
         .optional()
@@ -132,9 +107,7 @@ const textStylePropertiesSchema = z.object({
     decorationOffset: z
         .string()
         .optional()
-        .describe(
-            'Decoration offset (e.g., "auto", "2px", "0.1em")',
-        ),
+        .describe('Decoration offset (e.g., "auto", "2px", "0.1em")'),
 })
 
 /* ──────────────────────────── Tool Definitions ─────────────────────────── */
@@ -168,13 +141,92 @@ export const mcpTools = {
         output: z.any(),
     },
     getNodeXml: {
-        description:
-            'Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call getSelectedNodesXml instead',
+        description: dedent`
+            Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call getSelectedNodesXml instead
+
+            ## Attributes of layers in XML
+
+            ### Common Attributes (All Drawable Nodes)
+
+            These attributes are available on most visual nodes:
+
+            - **opacity**: Number between 0-1 (default: 1)
+            - **visible**: Boolean true/false (default: true)
+            - **locked**: Boolean true/false (default: false)
+            - **rotation**: Number in degrees (default: 0)
+            - **position**: "relative" | "absolute" | "fixed" | "sticky" (default: "relative")
+
+            ### Size and Layout Attributes
+
+            For nodes that support sizing:
+
+            - **width**: CSS units like "100px", "50%", "100vw", "1fr", "fit-content", "1.5rem"
+            - **height**: CSS units like "100px", "50%", "100vh", "1fr", "fit-content", "2em"
+            - **minWidth**: Pixels only (e.g., "100px")
+            - **maxWidth**: Pixels only (e.g., "500px")
+            - **minHeight**: Pixels only (e.g., "50px")
+            - **maxHeight**: Pixels only (e.g., "300px")
+            - **aspectRatio**: Number (e.g., 1.5 for 3:2 ratio)
+
+            ### Positioning Attributes (Pins)
+
+            For absolute/fixed positioned nodes:
+
+            - **top**: Pixels (e.g., "10px")
+            - **right**: Pixels (e.g., "20px")
+            - **bottom**: Pixels (e.g., "10px")
+            - **left**: Pixels (e.g., "20px")
+            - **centerX**: Percentage (e.g., "50%")
+            - **centerY**: Percentage (e.g., "50%")
+
+            > Note: root level nodes are always absolute positioned, if you add a new root screen or layer to a canvas always use absolute positioning
+
+            ### Frame-Specific Attributes
+
+            For Frame, Stack, and similar container nodes:
+
+            - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
+            - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
+            - **backgroundImage**: Image URL (will be uploaded to Framer if external)
+            - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
+
+            ### Text Node Attributes
+
+            For Text nodes:
+
+            - **font**: Font selector (e.g., "GF;Inter-400", "GF;Roboto-700")
+            - **inlineTextStyle**: Project text style path (e.g., "/Heading xl", "/Body md")
+
+            **Note**: A text node can use EITHER \`font\` OR \`inlineTextStyle\`, not both.
+
+            ### Link Attributes
+
+            For nodes that support links:
+
+            - **link**: URL (e.g., "https://example.com") or page path (e.g., "/about")
+            - **linkOpenInNewTab**: Boolean true/false
+
+            ### SVG Node Attributes
+
+            For SVG nodes:
+
+            - **svg**: SVG content as a string
+
+            ### Component Instance Attributes
+
+            For component instances:
+
+            - **componentId**: The ID of the component definition (read-only, set during creation)
+            - Plus any custom control properties defined by the component
+
+            Component instances also support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius.
+        `,
         input: z.object({
             nodeId: NodeId.describe('The ID of the node to get as XML'),
         }),
         output: z.any(),
     },
+
     updateXmlForNode: {
         description: dedent`
               Update the XML for a specific node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes.
@@ -191,7 +243,7 @@ export const mcpTools = {
 
               This tool CANNOT be used for:
               - Code files (use 'updateCodeFile' instead)
-              - Color styles (use 'manageColorStyle' with type: 'update' instead)  
+              - Color styles (use 'manageColorStyle' with type: 'update' instead)
               - Text styles (use 'manageTextStyle' with type: 'update' instead)
               - Duplicating or deleting nodes
 
@@ -231,10 +283,9 @@ export const mcpTools = {
                 .describe(
                     'The path of the color style. Must start with /. The name is derived from the last path segment.',
                 ),
-            properties: colorStylePropertiesSchema
-                .describe(
-                    'Properties for the color style. For create, light color is required. For update, only specified properties will be changed.',
-                ),
+            properties: colorStylePropertiesSchema.describe(
+                'Properties for the color style. For create, light color is required. For update, only specified properties will be changed.',
+            ),
         }),
         output: z.any(),
     },
@@ -264,10 +315,9 @@ export const mcpTools = {
                 .describe(
                     'The path of the text style. Must start with /. The name is derived from the last path segment.',
                 ),
-            properties: textStylePropertiesSchema
-                .describe(
-                    'Properties for the text style. For update, only specified properties will be changed.',
-                ),
+            properties: textStylePropertiesSchema.describe(
+                'Properties for the text style. For update, only specified properties will be changed.',
+            ),
         }),
         output: z.any(),
     },
@@ -357,8 +407,14 @@ export const mcpTools = {
             Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with the insertUrl to add the component to the canvas.
         `,
         input: z.object({
-            name: z.string().describe('The name of the code file (e.g., "MyComponent.tsx")'),
-            content: z.string().describe('The TypeScript/React code content for the file'),
+            name: z
+                .string()
+                .describe(
+                    'The name of the code file (e.g., "MyComponent.tsx")',
+                ),
+            content: z
+                .string()
+                .describe('The TypeScript/React code content for the file'),
         }),
         output: z.any(),
     },
@@ -381,8 +437,12 @@ export const mcpTools = {
             The file will be automatically linted and type-checked after update.
         `,
         input: z.object({
-            codeFileId: z.string().describe('The ID of the code file to update'),
-            content: z.string().describe('The new TypeScript/React code content'),
+            codeFileId: z
+                .string()
+                .describe('The ID of the code file to update'),
+            content: z
+                .string()
+                .describe('The new TypeScript/React code content'),
         }),
         output: z.any(),
     },
@@ -400,7 +460,11 @@ export const mcpTools = {
             - See what props/attributes are available for a component, to use them in XML
         `,
         input: z.object({
-            id: z.string().describe('The ID of the component node or code file to get information for'),
+            id: z
+                .string()
+                .describe(
+                    'The ID of the component node or code file to get information for',
+                ),
         }),
         output: z.string(),
     },
@@ -419,7 +483,11 @@ export const mcpTools = {
             - Instructions for positioning the node using updateXmlForNode
         `,
         input: z.object({
-            insertUrl: z.string().describe('The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes'),
+            insertUrl: z
+                .string()
+                .describe(
+                    'The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes',
+                ),
         }),
         output: z.string(),
     },
@@ -428,7 +496,7 @@ export const mcpTools = {
             Get the published website URLs for the current Framer project.
 
             This tool retrieves both staging and production URLs if the project has been published.
-            
+
             Use this tool when you need to:
             - Check if the project is published
             - Get the live website URL

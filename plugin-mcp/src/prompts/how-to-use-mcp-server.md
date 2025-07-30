@@ -1,6 +1,8 @@
-# Framer MCP Tools Guide
+
 
 This guide explains how to interact with Framer projects using MCP (Model Context Protocol) tools.
+
+
 
 ## Overview
 
@@ -91,7 +93,7 @@ This distinction is crucial - updating a component definition is a powerful oper
 
 ### Replica Nodes (Variants)
 
-When calling `getNodeXml` on a replica node (variant), children are automatically hidden to avoid confusion. The tool will also return a warning message recommending to update the original component instead. 
+When calling `getNodeXml` on a replica node (variant), children are automatically hidden to avoid confusion. The tool will also return a warning message recommending to update the original component instead.
 
 In the XML, replica nodes will have a special comment in their attributes:
 
@@ -174,7 +176,7 @@ await mcp.manageTextStyle({
 })
 ```
 
-**Notes**: 
+**Notes**:
 - The Framer API derives the style name from the last segment of the path. You cannot specify a custom name separately.
 - When creating color styles, the `light` property is required.
 - When updating styles, only include the properties you want to change.
