@@ -1,4 +1,4 @@
-import { framer, isTextNode, isComponentNode, TextStyle } from 'framer-plugin'
+import { framer, isTextNode, isComponentNode, TextStyle, ProtectedMethod } from 'framer-plugin'
 import dedent from 'string-dedent'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
@@ -74,6 +74,21 @@ async function getNodeXml(
 
 // Initialize websocket connection (will be moved to authenticated component)
 let cleanup: (() => void) | undefined
+
+// Helper function to check permissions and return error message if not allowed
+function checkPermissions(...methods: ProtectedMethod[]): string | null {
+    // Cast to the expected tuple type for isAllowedTo
+    const [first, ...rest] = methods
+    if (!first) return null
+
+    if (!framer.isAllowedTo(first, ...rest)) {
+        const methodList = methods.length > 1
+            ? `Your Framer user account lacks the following permissions for this project: ${methods.join(', ')}`
+            : `Your Framer user account lacks the "${methods[0]}" permission for this project.`
+        return `Permission denied. ${methodList}\n\nPlease ask the project owner to grant you the necessary permissions.`
+    }
+    return null
+}
 
 // Websocket handler function
 async function websocketHandler({
@@ -284,6 +299,14 @@ async function websocketHandler({
         case 'updateXmlForNode': {
             const { nodeId, xml } = input
 
+            // Check all required permissions at once
+            const permissionError = checkPermissions(
+                'Node.setAttributes',
+                'TextNode.setText',
+                'setParent'
+            )
+            if (permissionError) return permissionError
+
             // Check if this is a code file ID
             const codeFiles = await framer.getCodeFiles()
             const isCodeFile = codeFiles.some((file) => file.id === nodeId)
@@ -463,6 +486,12 @@ async function websocketHandler({
         case 'manageColorStyle': {
             const { type, stylePath, properties } = input
 
+            // Check permissions based on type
+            const permissionError = checkPermissions(
+                type === 'create' ? 'createColorStyle' : 'ColorStyle.setAttributes'
+            )
+            if (permissionError) return permissionError
+
             if (!stylePath.startsWith('/')) {
                 return `Color style path must start with /. Got: ${stylePath}`
             }
@@ -539,6 +568,12 @@ async function websocketHandler({
         }
         case 'manageTextStyle': {
             const { type, stylePath, properties } = input
+
+            // Check permissions based on type
+            const permissionError = checkPermissions(
+                type === 'create' ? 'createTextStyle' : 'TextStyle.setAttributes'
+            )
+            if (permissionError) return permissionError
 
             if (!stylePath.startsWith('/')) {
                 return `Text style path must start with /. Got: ${stylePath}`
@@ -746,6 +781,11 @@ async function websocketHandler({
         }
         case 'deleteNode': {
             const { nodeId } = input
+
+            // Check permission
+            const permissionError = checkPermissions('Node.remove')
+            if (permissionError) return permissionError
+
             const node = await framer.getNode(nodeId)
 
             if (!node) {
@@ -761,6 +801,11 @@ async function websocketHandler({
         }
         case 'duplicateNode': {
             const { nodeId } = input
+
+            // Check permissions
+            const permissionError = checkPermissions('Node.clone', 'setParent')
+            if (permissionError) return permissionError
+
             const node = await framer.getNode(nodeId)
 
             if (!node) {
@@ -854,6 +899,10 @@ async function websocketHandler({
         case 'createCodeFile': {
             const { name, content } = input
 
+            // Check permission
+            const permissionError = checkPermissions('createCodeFile')
+            if (permissionError) return permissionError
+
             // Validate file name
             if (!name.endsWith('.tsx')) {
                 return `Code file name must end with .tsx extension. Got: ${name}`
@@ -933,6 +982,10 @@ async function websocketHandler({
         }
         case 'updateCodeFile': {
             const { codeFileId, content } = input
+
+            // Check permission
+            const permissionError = checkPermissions('CodeFile.setFileContent')
+            if (permissionError) return permissionError
 
             try {
                 const codeFile = await framer.getCodeFile(codeFileId)
@@ -1081,6 +1134,10 @@ async function websocketHandler({
         }
         case 'insertComponentInCanvas': {
             const { insertUrl } = input
+
+            // Check permission
+            const permissionError = checkPermissions('addComponentInstance')
+            if (permissionError) return permissionError
 
             try {
                 // Get the current root node (page or component)

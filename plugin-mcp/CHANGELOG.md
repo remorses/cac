@@ -1,5 +1,19 @@
 # Changelog
 
+## 2025-01-30 12:05
+
+- Improved permission error messages to clearly indicate the current Framer user lacks permissions for this project
+- Error messages now suggest asking the project owner for necessary permissions
+
+## 2025-01-30 12:00
+
+- Added comprehensive permission checks to all MCP tools that modify Framer projects
+- Tools now return helpful error messages when users lack required permissions
+- Permission checks use the proper `ProtectedMethod` type from framer-plugin
+- Multiple permissions are checked at once for better performance
+- Updated helper function to `checkPermissions` that accepts multiple methods
+- Bumped MCP server version to 1.8.0
+
 ## 2025-01-30 11:50
 
 - Bumped MCP server version to 1.7.0
