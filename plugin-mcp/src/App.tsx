@@ -50,8 +50,6 @@ import {
     LocalStorageKeys,
 } from './lib/utils'
 
-const connectFramerMcpGuide = 'https://unframer.co/guides/connect-framer-mcp'
-
 globalThis.framer = framer
 
 // Helper function to strip version hash from insert URLs
@@ -1255,6 +1253,15 @@ function MainComponent() {
     const mcpServerUrl = sessionId
         ? `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
         : `https://mcp.unframer.co/sse?id=${data.userId}`
+
+    const connectFramerMcpGuide = (() => {
+        const url = new URL('https://unframer.co/guides/connect-framer-mcp')
+        url.searchParams.set('userId', data.userId)
+        if (sessionId) {
+            url.searchParams.set('secret', sessionId)
+        }
+        return url.toString()
+    })()
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(mcpServerUrl)
