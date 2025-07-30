@@ -1,5 +1,5 @@
 // import "@code-hike/mdx/styles"
-import { Outlet, useSearchParams } from 'react-router'
+import { Outlet, redirect } from 'react-router'
 import { CopyIcon, CheckIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Prism from 'prismjs'
@@ -9,6 +9,39 @@ import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-typescript'
 import { MDXProvider } from '@mdx-js/react'
 import { MDXComponents } from 'mdx/types'
+import { serialize, parse } from 'cookie'
+import type { Route } from './+types/_mdx'
+
+export async function loader({ request }: Route.LoaderArgs) {
+    const url = new URL(request.url)
+    const userId = url.searchParams.get('userId')
+    const secret = url.searchParams.get('secret')
+
+    if (userId && secret) {
+        const mcpUrlInfo = {
+            userId: userId || undefined,
+            secret: secret || undefined
+        }
+
+        // Remove the query params
+        url.searchParams.delete('userId')
+        url.searchParams.delete('secret')
+
+        // Set the cookie and redirect
+        return redirect(url.pathname + url.search, {
+            headers: {
+                'Set-Cookie': serialize('mcpUrlInfo', encodeURIComponent(JSON.stringify(mcpUrlInfo)), {
+                    path: '/',
+                    httpOnly: false, // Allow JS access
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30 // 30 days
+                })
+            }
+        })
+    }
+
+    return null
+}
 
 export const CodeBlock = ({
     children,
@@ -19,15 +52,25 @@ export const CodeBlock = ({
     language?: string
     title?: string
 }) => {
-    const [searchParams] = useSearchParams()
     const [copied, setCopied] = useState(false)
+    const [mcpUrlInfo, setMcpUrlInfo] = useState<{ userId?: string; secret?: string }>({})
+
+    useEffect(() => {
+        const cookies = parse(document.cookie)
+        if (cookies.mcpUrlInfo) {
+            try {
+                const info = JSON.parse(decodeURIComponent(cookies.mcpUrlInfo))
+                setMcpUrlInfo(info)
+            } catch {}
+        }
+    }, [])
 
     let content = String(children)
 
-    // Replace placeholders with query params
+    // Replace placeholders with cookie values
     const replacements: Record<string, string> = {
-        $userId: searchParams.get('userId') || 'xxx',
-        $secret: searchParams.get('secret') || 'xxx',
+        $userId: mcpUrlInfo.userId || 'xxx',
+        $secret: mcpUrlInfo.secret || 'xxx',
     }
 
     Object.entries(replacements).forEach(([placeholder, value]) => {

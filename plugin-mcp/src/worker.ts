@@ -22,7 +22,7 @@ export class MyMCP extends McpAgent<Env> {
         {
             name: 'Framer MCP',
             version: '1.8.0',
-            title: `Framer MCP, created by https://unframer.co`
+            title: `Framer MCP, created by https://unframer.co`,
         },
         {
             capabilities: {
@@ -362,14 +362,21 @@ export default {
             websocketId: id,
             secret,
         }
-        if (url.pathname === '/sse' || url.pathname === '/sse/message') {
-            const mcp = MyMCP.serveSSE('/sse')
+        try {
+            if (url.pathname === '/sse' || url.pathname === '/sse/message') {
+                const mcp = MyMCP.serveSSE('/sse')
 
-            return mcp.fetch(request, env, ctx)
-        }
+                return mcp.fetch(request, env, ctx)
+            }
 
-        if (url.pathname === '/mcp') {
-            return MyMCP.serve('/mcp').fetch(request, env, ctx)
+            if (url.pathname === '/mcp') {
+                return MyMCP.serve('/mcp').fetch(request, env, ctx)
+            }
+        } catch (error) {
+            return new Response(
+                `Error initializing MCP: ${error instanceof Error ? error.message : String(error)}`,
+                { status: 500 },
+            )
         }
 
         if (url.pathname === new URL(codeComponentsResourceUri).pathname) {
