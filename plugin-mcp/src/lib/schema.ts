@@ -175,20 +175,6 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    getProjectColorStyles: {
-        description: dedent`
-          Gets all project-level color styles.
-          XML nodes can use these color styles by setting attributes like backgroundColor to their path, e.g. color="/Primary".
-          You can also use color styles when setting the color attribute of a text style with updateTextStyle.
-      `,
-        input: z.object({}),
-    },
-    getProjectTextStyles: {
-        description:
-            'Gets all project-level text styles. XML nodes can use these text styles by setting the inlineTextStyle attribute to their path, e.g. inlineTextStyle="/Heading xl".',
-        input: z.object({}),
-        output: z.any(),
-    },
     updateXmlForNode: {
         description: dedent`
               Update the XML for a specific node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes.

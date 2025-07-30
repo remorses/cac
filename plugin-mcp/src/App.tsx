@@ -129,6 +129,8 @@ async function websocketHandler({
             const pages = await framer.getNodesWithType('WebPageNode')
             const components = await framer.getNodesWithType('ComponentNode')
             const codeFiles = await framer.getCodeFiles()
+            const colorStyles = await framer.getColorStyles()
+            const textStyles = await framer.getTextStyles()
 
             // Separate code files by export type
             const codeComponents = codeFiles.filter((file) =>
@@ -201,6 +203,41 @@ async function websocketHandler({
                                 attributes: {
                                     codeFileId: file.id,
                                     path: file.path,
+                                },
+                                children: [],
+                            })),
+                        },
+                        {
+                            name: 'ColorStyles',
+                            comment:
+                                'Project color styles. Reference these in XML attributes like backgroundColor="/StylePath"',
+                            children: colorStyles.map((style) => ({
+                                name: 'ColorStyle',
+                                attributes: {
+                                    path: style.path,
+                                    light: style.light,
+                                    dark: style.dark || '',
+                                },
+                                children: [],
+                            })),
+                        },
+                        {
+                            name: 'TextStyles',
+                            comment:
+                                'Project text styles. Reference these in XML attributes like inlineTextStyle="/StylePath"',
+                            children: textStyles.map((style) => ({
+                                name: 'TextStyle',
+                                attributes: {
+                                    path: style.path,
+                                    fontSize: style.fontSize || '',
+                                    lineHeight: style.lineHeight || '',
+                                    letterSpacing: style.letterSpacing || '',
+                                    paragraphSpacing: String(style.paragraphSpacing || 0),
+                                    transform: style.transform || 'none',
+                                    alignment: style.alignment || 'left',
+                                    decoration: style.decoration || 'none',
+                                    balance: String(style.balance || false),
+                                    tag: style.tag || 'p',
                                 },
                                 children: [],
                             })),
@@ -396,32 +433,6 @@ async function websocketHandler({
             }
             await framer.zoomIntoView(nodeId, { maxZoom: 0.9 })
             return `Zoomed into view for node ${nodeId}`
-        }
-        case 'getProjectColorStyles': {
-            const colorStyles = await framer.getColorStyles()
-
-            // Return color styles with available properties
-            return colorStyles.map((style) => ({
-                path: style.path,
-                light: style.light,
-                dark: style.dark,
-            }))
-        }
-        case 'getProjectTextStyles': {
-            const textStyles = await framer.getTextStyles()
-
-            return textStyles.map((style) => ({
-                path: style.path,
-                fontSize: style.fontSize,
-                lineHeight: style.lineHeight,
-                letterSpacing: style.letterSpacing,
-                paragraphSpacing: style.paragraphSpacing,
-                transform: style.transform,
-                alignment: style.alignment,
-                decoration: style.decoration,
-                balance: style.balance,
-                tag: style.tag,
-            }))
         }
         case 'manageColorStyle': {
             const { type, stylePath, properties } = input
@@ -950,7 +961,7 @@ async function websocketHandler({
 
                     components.push({
                         name: node.name || 'Component',
-                        insertUrl: stripVersionFromUrl(node.insertURL),
+                        insertUrl: stripVersionFromUrl(node.insertURL || undefined),
                         importName: componentCamelCase(
                             node.componentName || node.name || 'Component',
                         ),

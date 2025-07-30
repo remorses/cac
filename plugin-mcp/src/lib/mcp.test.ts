@@ -106,49 +106,27 @@ describe(
             expect(verifyXml).toContain(`Updated text ${randomNum}`)
         })
 
-        it('should get project color styles', async () => {
-            const result = await callTool({
-                name: 'getProjectColorStyles',
-                args: undefined,
-            })
 
-            expect(result.content).toBeDefined()
-            const content = Array.isArray(result.content) && result.content[0]?.text
-                ? JSON.parse(result.content[0].text)
-                : result.content
-            await expect(content).toMatchFileSnapshot(
-                `snapshots/color-styles.jsonc`,
-            )
-        })
-
-        it('should get project text styles', async () => {
-            const result = await callTool({
-                name: 'getProjectTextStyles',
-                args: undefined,
-            })
-
-            expect(result.content).toBeDefined()
-            const content = Array.isArray(result.content) && result.content[0]?.text
-                ? JSON.parse(result.content[0].text)
-                : result.content
-            await expect(content).toMatchFileSnapshot(
-                `snapshots/text-styles.jsonc`,
-            )
-        })
 
         it('should update a color style', async () => {
-            // First get color styles to find one to update
-            const colorStylesResult = await callTool({
-                name: 'getProjectColorStyles',
+            // First get project XML to find color styles
+            const projectResult = await callTool({
+                name: 'getProjectXml',
                 args: undefined,
             })
 
-            const colorStyles = Array.isArray(colorStylesResult.content) && colorStylesResult.content[0]?.text
-                ? JSON.parse(colorStylesResult.content[0].text)
-                : colorStylesResult.content
+            const projectXml = getTextContent(projectResult.content)
+            expect(projectXml).toBeDefined()
 
-            expect(colorStyles.length).toBeGreaterThan(0)
-            const firstColorStyle = colorStyles[0]
+            // Extract color styles from project XML using regex
+            const colorStyleMatch = projectXml.match(/<ColorStyle\s+path="([^"]+)"\s+light="([^"]+)"\s+dark="([^"]*)"/)
+            expect(colorStyleMatch).toBeTruthy()
+
+            const firstColorStyle = {
+                path: colorStyleMatch[1],
+                light: colorStyleMatch[2],
+                dark: colorStyleMatch[3] || null
+            }
 
             // Update the color style
             const randomNum = Math.floor(Math.random() * 255)
@@ -158,7 +136,6 @@ describe(
                     type: 'update',
                     stylePath: firstColorStyle.path ||'test-style',
                     properties: {
-                        name: `${firstColorStyle.name} - Test ${randomNum}`,
                         light: `rgb(${randomNum}, 100, 150)`,
                     }
                 },
@@ -168,7 +145,7 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{') 
+            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
                 ? tryJsonParse(content)
                 : content
 
@@ -184,153 +161,27 @@ describe(
                 expect(content).toContain(`Test ${randomNum}`)
             }
 
-            // Verify the update by getting color styles again
+            // Verify the update by getting project XML again
             const verifyResult = await callTool({
-                name: 'getProjectColorStyles',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
-            const updatedColorStyles = Array.isArray(verifyResult.content) && verifyResult.content[0]?.text
-                ? JSON.parse(verifyResult.content[0].text)
-                : verifyResult.content
+            const verifyXml = getTextContent(verifyResult.content)
+            expect(verifyXml).toBeDefined()
 
-            expect(updatedColorStyles).toMatchInlineSnapshot(`
-              [
-                {
-                  "dark": null,
-                  "light": "rgb(242, 100, 150)",
-                  "path": "/undefined - Test 242",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(13, 13, 23)",
-                  "path": "/Gray-900",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(27, 27, 37)",
-                  "path": "/Gray-800",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(39, 39, 49)",
-                  "path": "/Gray-700",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(69, 69, 79)",
-                  "path": "/Gray-600",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(97, 97, 107)",
-                  "path": "/Gray-500",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(148, 148, 158)",
-                  "path": "/Gray-400",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(201, 201, 210)",
-                  "path": "/Gray-300",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(224, 224, 230)",
-                  "path": "/Gray-200",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(241, 241, 244)",
-                  "path": "/Gray-100",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(247, 247, 248)",
-                  "path": "/Gray-50",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(93, 58, 234)",
-                  "path": "/Royal blue-600",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(114, 92, 247)",
-                  "path": "/Royal blue-500",
-                },
-                {
-                  "dark": null,
-                  "light": "rgb(184, 181, 254)",
-                  "path": "/Royal blue-300",
-                },
-                {
-                  "dark": "rgb(137, 50, 100)",
-                  "light": "rgb(137, 100, 200)",
-                  "path": "/Test-Color-902",
-                },
-                {
-                  "dark": "rgb(177, 50, 100)",
-                  "light": "rgb(177, 100, 200)",
-                  "path": "/Test-Color-942",
-                },
-                {
-                  "dark": "rgb(88, 50, 100)",
-                  "light": "rgb(88, 100, 200)",
-                  "path": "/Test-Color-598",
-                },
-                {
-                  "dark": "rgb(193, 50, 100)",
-                  "light": "rgb(193, 100, 200)",
-                  "path": "/Test-Color-448",
-                },
-                {
-                  "dark": "rgb(97, 50, 100)",
-                  "light": "rgb(97, 100, 200)",
-                  "path": "/Test-Color-97",
-                },
-                {
-                  "dark": "rgb(244, 50, 100)",
-                  "light": "rgb(244, 100, 200)",
-                  "path": "/Test-Color-499",
-                },
-                {
-                  "dark": "rgb(177, 50, 100)",
-                  "light": "rgb(177, 100, 200)",
-                  "path": "/Test-Color-432",
-                },
-                {
-                  "dark": "rgb(40, 50, 100)",
-                  "light": "rgb(40, 100, 200)",
-                  "path": "/Test-Color-40",
-                },
-                {
-                  "dark": "rgb(109, 50, 100)",
-                  "light": "rgb(109, 100, 200)",
-                  "path": "/Test-Color-619",
-                },
-                {
-                  "dark": "rgb(208, 50, 100)",
-                  "light": "rgb(208, 100, 200)",
-                  "path": "/Test-Color-208",
-                },
-              ]
-            `)
-            // The path might have changed due to the name update, so search by the test number instead
-            const updatedStyle = updatedColorStyles.find(s => s.path.includes(`Test ${randomNum}`))
-            expect(updatedStyle).toBeDefined()
-            expect(updatedStyle.light).toBe(`rgb(${randomNum}, 100, 150)`)
+            // Check if the updated style is in the XML
+            const escapedPath = firstColorStyle.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const updatedStyleRegex = new RegExp(`<ColorStyle\\s+path="${escapedPath}"\\s+light="rgb\\(${randomNum}, 100, 150\\)"`)
+            expect(verifyXml).toMatch(updatedStyleRegex)
 
-            // Restore original name
+            // Restore original value
             await callTool({
                 name: 'manageColorStyle',
                 args: {
                     type: 'update',
                     stylePath: firstColorStyle.path,
                     properties: {
-                        name: firstColorStyle.name,
                         light: firstColorStyle.light,
                     }
                 },
@@ -358,7 +209,7 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{') 
+            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
                 ? tryJsonParse(content)
                 : content
 
@@ -375,20 +226,18 @@ describe(
                 expect(content).toContain(`Test-Color-${randomNum}`)
             }
 
-            // Verify the style exists by getting all color styles
+            // Verify the style exists by getting project XML
             const verifyResult = await callTool({
-                name: 'getProjectColorStyles',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
-            const colorStyles = Array.isArray(verifyResult.content) && verifyResult.content[0]?.text
-                ? JSON.parse(verifyResult.content[0].text)
-                : verifyResult.content
+            const verifyXml = getTextContent(verifyResult.content)
+            expect(verifyXml).toBeDefined()
 
-            const createdStyle = colorStyles.find(s => s.path === newStylePath)
-            expect(createdStyle).toBeDefined()
-            expect(createdStyle.light).toBe(`rgb(${randomNum % 255}, 100, 200)`)
-            expect(createdStyle.dark).toBe(`rgb(${randomNum % 255}, 50, 100)`)
+            // Check if the created style is in the XML
+            const createdStyleRegex = new RegExp(`<ColorStyle\\s+path="${newStylePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\s+light="rgb\\(${randomNum % 255}, 100, 200\\)"\\s+dark="rgb\\(${randomNum % 255}, 50, 100\\)"`)
+            expect(verifyXml).toMatch(createdStyleRegex)
 
             // Test creating duplicate should fail
             const duplicateResult = await callTool({
@@ -436,9 +285,9 @@ describe(
               }"
             `)
             expect(content).toBeDefined()
-            
+
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{') 
+            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
                 ? tryJsonParse(content)
                 : content
 
@@ -503,143 +352,35 @@ describe(
 
             const content = getTextContent(result.content)
             expect(content).toBeDefined()
-            
+
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{') 
+            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
                 ? tryJsonParse(content)
                 : content
-            
+
             // The response should be an object with production and staging properties
             expect(parsedContent).toHaveProperty('production')
             expect(parsedContent).toHaveProperty('staging')
         })
 
         it('should update a text style', async () => {
-            // First get text styles to find one to update
-            const textStylesResult = await callTool({
-                name: 'getProjectTextStyles',
+            // First get project XML to find text styles
+            const projectResult = await callTool({
+                name: 'getProjectXml',
                 args: undefined,
             })
 
-            const textStyles = Array.isArray(textStylesResult.content) && textStylesResult.content[0]?.text
-                ? JSON.parse(textStylesResult.content[0].text)
-                : textStylesResult.content
+            const projectXml = getTextContent(projectResult.content)
+            expect(projectXml).toBeDefined()
 
-            expect(textStyles).toMatchInlineSnapshot(`
-              [
-                {
-                  "alignment": "center",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "98px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "72px",
-                  "paragraphSpacing": 40,
-                  "path": "/undefined - Test 98",
-                  "tag": "h1",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "36px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "44px",
-                  "paragraphSpacing": 40,
-                  "path": "/Heading 2xl",
-                  "tag": "h2",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "30px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "38px",
-                  "paragraphSpacing": 38,
-                  "path": "/Heading xl",
-                  "tag": "h2",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "18px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "28px",
-                  "paragraphSpacing": 40,
-                  "path": "/Heading lg",
-                  "tag": "h5",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "16px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "24px",
-                  "paragraphSpacing": 40,
-                  "path": "/Heading md",
-                  "tag": "h6",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "14px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "20px",
-                  "paragraphSpacing": 40,
-                  "path": "/Heading sm",
-                  "tag": "h6",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "18px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "28px",
-                  "paragraphSpacing": 20,
-                  "path": "/Body lg",
-                  "tag": "p",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "16px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "24px",
-                  "paragraphSpacing": 0,
-                  "path": "/Body md",
-                  "tag": "p",
-                  "transform": "none",
-                },
-                {
-                  "alignment": "left",
-                  "balance": false,
-                  "decoration": "none",
-                  "fontSize": "14px",
-                  "letterSpacing": "0px",
-                  "lineHeight": "20px",
-                  "paragraphSpacing": 20,
-                  "path": "/Body sm",
-                  "tag": "p",
-                  "transform": "none",
-                },
-              ]
-            `)
+            // Extract text styles from project XML using regex
+            const textStyleMatch = projectXml.match(/<TextStyle\s+path="([^"]+)"[^>]*>/)
+            expect(textStyleMatch).toBeTruthy()
 
-            expect(textStyles.length).toBeGreaterThan(0)
-            const firstTextStyle = textStyles[0] || 'test-style'
+            const firstTextStyle = {
+                path: textStyleMatch[1]
+            }
+
 
             // Update the text style
             const randomNum = Math.floor(Math.random() * 100)
@@ -649,7 +390,6 @@ describe(
                     type: 'update',
                     stylePath: firstTextStyle.path,
                     properties: {
-                        name: `${firstTextStyle.name} - Test ${randomNum}`,
                         fontSize: `${randomNum}px`,
                         alignment: 'center',
                     }
@@ -660,7 +400,7 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{') 
+            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
                 ? tryJsonParse(content)
                 : content
 
@@ -668,27 +408,25 @@ describe(
             if (typeof parsedContent === 'object' && parsedContent.message) {
                 expect(parsedContent.message).toContain('Successfully updated text style')
                 expect(parsedContent.style).toBeDefined()
-                expect(parsedContent.style.name).toContain(`Test ${randomNum}`)
+                // Style path should be returned, not name
+                expect(parsedContent.style.path).toBe(firstTextStyle.path)
             } else if (typeof content === 'string') {
                 expect(content).toContain('Successfully updated text style')
-                expect(content).toContain(`Test ${randomNum}`)
             }
 
-            // Verify the update by getting text styles again
+            // Verify the update by getting project XML again
             const verifyResult = await callTool({
-                name: 'getProjectTextStyles',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
-            const updatedTextStyles = Array.isArray(verifyResult.content) && verifyResult.content[0]?.text
-                ? JSON.parse(verifyResult.content[0].text)
-                : verifyResult.content
+            const verifyXml = getTextContent(verifyResult.content)
+            expect(verifyXml).toBeDefined()
 
-            // The path might have changed due to the name update, so search by the test number instead
-            const updatedStyle = updatedTextStyles.find(s => s.path.includes(`Test ${randomNum}`))
-            expect(updatedStyle).toBeDefined()
-            expect(updatedStyle.fontSize).toBe(`${randomNum}px`)
-            expect(updatedStyle.alignment).toBe('center')
+            // Check if the updated style is in the XML
+            const escapedPath = firstTextStyle.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const updatedStyleRegex = new RegExp(`<TextStyle\\s+path="${escapedPath}"[^>]*fontSize="${randomNum}px"[^>]*alignment="center"`)
+            expect(verifyXml).toMatch(updatedStyleRegex)
 
             // Restore original values
             await callTool({
@@ -697,9 +435,8 @@ describe(
                     type: 'update',
                     stylePath: firstTextStyle.path,
                     properties: {
-                        name: firstTextStyle.name,
-                        fontSize: firstTextStyle.fontSize,
-                        alignment: firstTextStyle.alignment,
+                        fontSize: '72px',  // Reset to default
+                        alignment: 'left',  // Reset to default
                     }
                 },
             })
