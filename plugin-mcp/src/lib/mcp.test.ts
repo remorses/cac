@@ -153,10 +153,11 @@ describe(
             // Update the color style
             const randomNum = Math.floor(Math.random() * 255)
             const result = await callTool({
-                name: 'updateColorStyle',
+                name: 'manageColorStyle',
                 args: {
+                    type: 'update',
                     stylePath: firstColorStyle.path ||'test-style',
-                    updates: {
+                    properties: {
                         name: `${firstColorStyle.name} - Test ${randomNum}`,
                         light: `rgb(${randomNum}, 100, 150)`,
                     }
@@ -197,8 +198,8 @@ describe(
               [
                 {
                   "dark": null,
-                  "light": "rgb(61, 100, 150)",
-                  "path": "/undefined - Test 61",
+                  "light": "rgb(242, 100, 150)",
+                  "path": "/undefined - Test 242",
                 },
                 {
                   "dark": null,
@@ -295,6 +296,26 @@ describe(
                   "light": "rgb(244, 100, 200)",
                   "path": "/Test-Color-499",
                 },
+                {
+                  "dark": "rgb(177, 50, 100)",
+                  "light": "rgb(177, 100, 200)",
+                  "path": "/Test-Color-432",
+                },
+                {
+                  "dark": "rgb(40, 50, 100)",
+                  "light": "rgb(40, 100, 200)",
+                  "path": "/Test-Color-40",
+                },
+                {
+                  "dark": "rgb(109, 50, 100)",
+                  "light": "rgb(109, 100, 200)",
+                  "path": "/Test-Color-619",
+                },
+                {
+                  "dark": "rgb(208, 50, 100)",
+                  "light": "rgb(208, 100, 200)",
+                  "path": "/Test-Color-208",
+                },
               ]
             `)
             // The path might have changed due to the name update, so search by the test number instead
@@ -304,10 +325,11 @@ describe(
 
             // Restore original name
             await callTool({
-                name: 'updateColorStyle',
+                name: 'manageColorStyle',
                 args: {
+                    type: 'update',
                     stylePath: firstColorStyle.path,
-                    updates: {
+                    properties: {
                         name: firstColorStyle.name,
                         light: firstColorStyle.light,
                     }
@@ -321,8 +343,9 @@ describe(
 
             // Create a new color style (name is derived from path)
             const result = await callTool({
-                name: 'createColorStyle',
+                name: 'manageColorStyle',
                 args: {
+                    type: 'create',
                     stylePath: newStylePath,
                     properties: {
                         light: `rgb(${randomNum % 255}, 100, 200)`,
@@ -369,8 +392,9 @@ describe(
 
             // Test creating duplicate should fail
             const duplicateResult = await callTool({
-                name: 'createColorStyle',
+                name: 'manageColorStyle',
                 args: {
+                    type: 'create',
                     stylePath: newStylePath,
                     properties: {
                         light: `rgb(255, 0, 0)`,
@@ -507,11 +531,11 @@ describe(
                   "alignment": "center",
                   "balance": false,
                   "decoration": "none",
-                  "fontSize": "99px",
+                  "fontSize": "98px",
                   "letterSpacing": "0px",
                   "lineHeight": "72px",
                   "paragraphSpacing": 40,
-                  "path": "/undefined - Test 99",
+                  "path": "/undefined - Test 98",
                   "tag": "h1",
                   "transform": "none",
                 },
@@ -620,10 +644,11 @@ describe(
             // Update the text style
             const randomNum = Math.floor(Math.random() * 100)
             const result = await callTool({
-                name: 'updateTextStyle',
+                name: 'manageTextStyle',
                 args: {
+                    type: 'update',
                     stylePath: firstTextStyle.path,
-                    updates: {
+                    properties: {
                         name: `${firstTextStyle.name} - Test ${randomNum}`,
                         fontSize: `${randomNum}px`,
                         alignment: 'center',
@@ -667,10 +692,11 @@ describe(
 
             // Restore original values
             await callTool({
-                name: 'updateTextStyle',
+                name: 'manageTextStyle',
                 args: {
+                    type: 'update',
                     stylePath: firstTextStyle.path,
-                    updates: {
+                    properties: {
                         name: firstTextStyle.name,
                         fontSize: firstTextStyle.fontSize,
                         alignment: firstTextStyle.alignment,

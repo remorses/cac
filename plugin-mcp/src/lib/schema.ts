@@ -217,85 +217,67 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    updateColorStyle: {
-        description:
-            'Updates a color style by its path. Can modify the name, light color, and dark color.',
-        input: z.object({
-            stylePath: z
-                .string()
-                .describe(
-                    'The path of the color style to update. Must start with /',
-                ),
-            updates: colorStylePropertiesSchema
-                .describe('Properties to update on the color style'),
-        }),
-        output: z.any(),
-    },
-    createColorStyle: {
+    manageColorStyle: {
         description: dedent`
-            Creates a new color style in the project with the specified properties.
+            Creates or updates a color style in the project.
 
             The style path must start with "/" and can include folder structure (e.g., "/Brand/Primary").
             The display name will be automatically derived from the last segment of the path.
             For example, "/Brand/Primary" will create a style named "Primary" in the "Brand" folder.
-            
-            If a style already exists at the given path, this operation will fail.
+
+            - When type is "create": Creates a new color style. Will fail if style already exists.
+            - When type is "update": Updates an existing color style. Will fail if style doesn't exist.
 
             After creating, you can reference this style in XML nodes using color="/path/to/style".
         `,
         input: z.object({
+            type: z
+                .enum(['create', 'update'])
+                .describe(
+                    'Operation type: "create" to make a new style, "update" to modify an existing style',
+                ),
             stylePath: z
                 .string()
                 .describe(
-                    'The path for the new color style. Must start with / and be unique. The name is derived from the last path segment.',
+                    'The path of the color style. Must start with /. The name is derived from the last path segment.',
                 ),
             properties: colorStylePropertiesSchema
-                .required({ light: true })
-                .omit({ name: true })
-                .describe('Properties for the new color style. Light color is required. Name is derived from the path.'),
-        }),
-        output: z.any(),
-    },
-    updateTextStyle: {
-      description: dedent`
-          Updates a text style by its path. Can modify various typography properties.
-
-          Updating a text style will update all the nodes that use it in the project.
-
-          If you only want to update a single node instead, create a new text style and update the XML to reference its new path instead.
-      `,
-        input: z.object({
-            stylePath: z
-                .string()
                 .describe(
-                    'The path of the text style to update. Must start with /',
+                    'Properties for the color style. For create, light color is required. For update, only specified properties will be changed.',
                 ),
-            updates: textStylePropertiesSchema
-                .describe('Properties to update on the text style'),
         }),
         output: z.any(),
     },
-    createTextStyle: {
+    manageTextStyle: {
         description: dedent`
-            Creates a new text style in the project with the specified properties.
+            Creates or updates a text style in the project.
 
             The style path must start with "/" and can include folder structure (e.g., "/Typography/Headings/H1").
             The display name will be automatically derived from the last segment of the path.
             For example, "/Typography/Headings/H1" will create a style named "H1" in the "Typography/Headings" folder.
-            
-            If a style already exists at the given path, this operation will fail.
+
+            - When type is "create": Creates a new text style. Will fail if style already exists.
+            - When type is "update": Updates an existing text style. Will fail if style doesn't exist.
+                Note: Updating a text style will update all nodes that use it in the project.
+                If you only want to update a single node, create a new text style and update the XML to reference its new path instead.
 
             After creating, you can reference this style in XML nodes using inlineTextStyle="/path/to/style".
         `,
         input: z.object({
+            type: z
+                .enum(['create', 'update'])
+                .describe(
+                    'Operation type: "create" to make a new style, "update" to modify an existing style',
+                ),
             stylePath: z
                 .string()
                 .describe(
-                    'The path for the new text style. Must start with / and be unique. The name is derived from the last path segment.',
+                    'The path of the text style. Must start with /. The name is derived from the last path segment.',
                 ),
             properties: textStylePropertiesSchema
-                .omit({ name: true })
-                .describe('Properties for the new text style. Name is derived from the path.'),
+                .describe(
+                    'Properties for the text style. For update, only specified properties will be changed.',
+                ),
         }),
         output: z.any(),
     },
@@ -494,6 +476,14 @@ export type FramerLayersTree = Array<{
     attributes?: Record<string, string>
     attrControlsComments?: Record<string, string>
     count?: number
+    /**
+     * Additional comment to explain what this node represents
+     */
+    comment?: string
+    /**
+     * Disable self-closing tag syntax for this node
+     */
+    disableSelfClosing?: boolean
 }>
 
 export type McpCallParam = {

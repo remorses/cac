@@ -106,23 +106,24 @@ Project styles provide consistent design tokens across your project:
 ### Color Styles
 - Referenced by paths like `/Primary/Blue`
 - Support light and dark theme variants
-- Can be updated globally using `updateColorStyle`
+- Can be created or updated globally using `manageColorStyle`
 
 ### Text Styles
 - Referenced by paths like `/Heading xl`
 - Include typography properties (size, line height, spacing, etc.)
-- Can be updated globally using `updateTextStyle`
+- Can be created or updated globally using `manageTextStyle`
 
 Use `getProjectColorStyles` and `getProjectTextStyles` to discover available styles.
 
-### Creating New Styles
+### Managing Styles
 
-When creating styles, the display name is automatically derived from the path:
+Use `manageColorStyle` and `manageTextStyle` to create or update styles. The display name is automatically derived from the path:
 
 ```typescript
 // Create a color style
 // Path "/Brand/Primary" creates a style named "Primary" in the "Brand" folder
-await mcp.createColorStyle({
+await mcp.manageColorStyle({
+  type: "create",
   stylePath: "/Brand/Primary",
   properties: {
     light: "rgb(45, 123, 255)",
@@ -130,9 +131,19 @@ await mcp.createColorStyle({
   }
 })
 
+// Update an existing color style
+await mcp.manageColorStyle({
+  type: "update",
+  stylePath: "/Brand/Primary",
+  properties: {
+    dark: "rgb(30, 90, 200)"  // Only update the dark variant
+  }
+})
+
 // Create a text style
 // Path "/Typography/Heading/H1" creates a style named "H1" in the "Typography/Heading" folder
-await mcp.createTextStyle({
+await mcp.manageTextStyle({
+  type: "create",
   stylePath: "/Typography/Heading/H1",
   properties: {
     fontSize: "32px",
@@ -141,9 +152,21 @@ await mcp.createTextStyle({
     font: "GF;Inter-700"
   }
 })
+
+// Update an existing text style
+await mcp.manageTextStyle({
+  type: "update",
+  stylePath: "/Typography/Heading/H1",
+  properties: {
+    fontSize: "36px"  // Only update the font size
+  }
+})
 ```
 
-**Note**: The Framer API derives the style name from the last segment of the path. You cannot specify a custom name separately.
+**Notes**: 
+- The Framer API derives the style name from the last segment of the path. You cannot specify a custom name separately.
+- When creating color styles, the `light` property is required.
+- When updating styles, only include the properties you want to change.
 
 ## Node Operations
 

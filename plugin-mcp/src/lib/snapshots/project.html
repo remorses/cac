@@ -1,233 +1,53 @@
 Project structure:
 
+<!-- Root node containing all pages, components, and code files in the project -->
 <Project>
+  <!-- All pages in the project. Use getNodeXml with a page nodeId to see its contents -->
   <Pages>
-    <404
-        type="WebPageNode"
-        nodeId="vN6zkojot"
-        path="/404"
-    >
-    </404>
-    <Node
-        type="WebPageNode"
-        nodeId="CpFAHygNJ"
-        path="/"
-    >
-    </Node>
+    <Page nodeId="vN6zkojot" path="/404" />
+    <Page nodeId="CpFAHygNJ" path="/" />
   </Pages>
+  <!-- Reusable components. Use getNodeXml with a component nodeId to see its structure -->
   <Components>
-    <Button
-        type="ComponentNode"
-        nodeId="zQ4rhDKqX"
-        name="Button"
-    >
-    </Button>
-    <ElementsBadge
-        type="ComponentNode"
-        nodeId="z0J_SV8Dz"
-        name="Elements/Badge"
-    >
-    </ElementsBadge>
-    <NavigationLinkBase
-        type="ComponentNode"
-        nodeId="mcS7E1YDs"
-        name="Navigation link (Base)"
-    >
-    </NavigationLinkBase>
-    <ElementsMenuButton
-        type="ComponentNode"
-        nodeId="rB3G34C1R"
-        name="Elements/Menu button"
-    >
-    </ElementsMenuButton>
-    <ElementsBrand
-        type="ComponentNode"
-        nodeId="ffMgUGIoc"
-        name="Elements/Brand"
-    >
-    </ElementsBrand>
-    <ElementsSocialIcon
-        type="ComponentNode"
-        nodeId="v2RzCDQ0w"
-        name="Elements/Social icon"
-    >
-    </ElementsSocialIcon>
-    <LandingOneTestimonialCard
-        type="ComponentNode"
-        nodeId="eKRgOK5qL"
-        name="Landing one/Testimonial card"
-    >
-    </LandingOneTestimonialCard>
-    <NavigationLinkGroupBase
-        type="ComponentNode"
-        nodeId="fJQVGYOs7"
-        name="Navigation link group (Base)"
-    >
-    </NavigationLinkGroupBase>
-    <Accordion
-        type="ComponentNode"
-        nodeId="k3BAcovqj"
-        name="Accordion"
-    >
-    </Accordion>
-    <ElementsListItem
-        type="ComponentNode"
-        nodeId="VugzjWbib"
-        name="Elements/List item"
-    >
-    </ElementsListItem>
-    <NavigationsMobileMenu
-        type="ComponentNode"
-        nodeId="zW4H90vyr"
-        name="Navigations/Mobile menu"
-    >
-    </NavigationsMobileMenu>
-    <NavigationNavigation
-        type="ComponentNode"
-        nodeId="sCy40XUNu"
-        name="Navigation/Navigation"
-    >
-    </NavigationNavigation>
-    <PricingContentTab
-        type="ComponentNode"
-        nodeId="m9lpSXt04"
-        name="Pricing content tab"
-    >
-    </PricingContentTab>
-    <CardsServiceCard
-        type="ComponentNode"
-        nodeId="CskAHfjD2"
-        name="Cards/Service card"
-    >
-    </CardsServiceCard>
-    <CardsBenefitsCard
-        type="ComponentNode"
-        nodeId="daU92puF9"
-        name="Cards/Benefits card"
-    >
-    </CardsBenefitsCard>
-    <CardsPortfolioCard
-        type="ComponentNode"
-        nodeId="i4_q8dFVV"
-        name="Cards/Portfolio card"
-    >
-    </CardsPortfolioCard>
-    <ElementsIconButton
-        type="ComponentNode"
-        nodeId="kzzqCUqa6"
-        name="Elements/Icon button"
-    >
-    </ElementsIconButton>
-    <CardsStepCard
-        type="ComponentNode"
-        nodeId="Pn2UNvdjw"
-        name="Cards/Step card"
-    >
-    </CardsStepCard>
-    <NavigationFooter
-        type="ComponentNode"
-        nodeId="EjzI8XskF"
-        name="Navigation/Footer"
-    >
-    </NavigationFooter>
-    <CardsMemberCard
-        type="ComponentNode"
-        nodeId="hE7AVgMDH"
-        name="Cards/Member card"
-    >
-    </CardsMemberCard>
-    <Accordions
-        type="ComponentNode"
-        nodeId="kojOPVURG"
-        name="Accordions"
-    >
-    </Accordions>
-    <CardsPricingFeature
-        type="ComponentNode"
-        nodeId="wUId_7nXO"
-        name="Cards/Pricing feature"
-    >
-    </CardsPricingFeature>
-    <Memoji
-        type="ComponentNode"
-        nodeId="YGyZnk3Uk"
-        name="Memoji"
-    >
-    </Memoji>
-    <Memoji2
-        type="ComponentNode"
-        nodeId="hXOuGnrH3"
-        name="Memoji 2"
-    >
-    </Memoji2>
+    <Component nodeId="zQ4rhDKqX" name="Button" />
+    <Component nodeId="z0J_SV8Dz" name="Elements/Badge" />
+    <Component nodeId="mcS7E1YDs" name="Navigation link (Base)" />
+    <Component nodeId="rB3G34C1R" name="Elements/Menu button" />
+    <Component nodeId="ffMgUGIoc" name="Elements/Brand" />
+    <Component nodeId="v2RzCDQ0w" name="Elements/Social icon" />
+    <Component nodeId="eKRgOK5qL" name="Landing one/Testimonial card" />
+    <Component nodeId="fJQVGYOs7" name="Navigation link group (Base)" />
+    <Component nodeId="k3BAcovqj" name="Accordion" />
+    <Component nodeId="VugzjWbib" name="Elements/List item" />
+    <Component nodeId="zW4H90vyr" name="Navigations/Mobile menu" />
+    <Component nodeId="sCy40XUNu" name="Navigation/Navigation" />
+    <Component nodeId="m9lpSXt04" name="Pricing content tab" />
+    <Component nodeId="CskAHfjD2" name="Cards/Service card" />
+    <Component nodeId="daU92puF9" name="Cards/Benefits card" />
+    <Component nodeId="i4_q8dFVV" name="Cards/Portfolio card" />
+    <Component nodeId="kzzqCUqa6" name="Elements/Icon button" />
+    <Component nodeId="Pn2UNvdjw" name="Cards/Step card" />
+    <Component nodeId="EjzI8XskF" name="Navigation/Footer" />
+    <Component nodeId="hE7AVgMDH" name="Cards/Member card" />
+    <Component nodeId="kojOPVURG" name="Accordions" />
+    <Component nodeId="wUId_7nXO" name="Cards/Pricing feature" />
+    <Component nodeId="YGyZnk3Uk" name="Memoji" />
+    <Component nodeId="hXOuGnrH3" name="Memoji 2" />
   </Components>
+  <!-- Code components written in React/TypeScript. Use readCodeFile to see the code -->
   <CodeComponents>
-    <TestTsx
-        type="CodeFile"
-        codeFileId="Th86gFY"
-        path="Test.tsx"
-        exports="Test"
-    >
-    </TestTsx>
-    <TextScramblerTsx
-        type="CodeFile"
-        codeFileId="eZvzSVQ"
-        path="Workshop/TextScrambler.tsx"
-        exports="TextScrambler"
-    >
-    </TextScramblerTsx>
-    <ScrambleTextTsx
-        type="CodeFile"
-        codeFileId="LLhzE7I"
-        path="ScrambleText.tsx"
-        exports="ScrambleText"
-    >
-    </ScrambleTextTsx>
-    <AdvancedTextScramblerTsx
-        type="CodeFile"
-        codeFileId="jeOxCcZ"
-        path="AdvancedTextScrambler.tsx"
-        exports="AdvancedTextScrambler"
-    >
-    </AdvancedTextScramblerTsx>
-    <PricingSliderTsx
-        type="CodeFile"
-        codeFileId="rnvBA4o"
-        path="PricingSlider.tsx"
-        exports="PricingSlider"
-    >
-    </PricingSliderTsx>
-    <BlueRectangleTsx
-        type="CodeFile"
-        codeFileId="sYxO4jj"
-        path="Workshop/BlueRectangle.tsx"
-        exports="BlueRectangle"
-    >
-    </BlueRectangleTsx>
-    <BlueRectangle1Tsx
-        type="CodeFile"
-        codeFileId="B0ptZV9"
-        path="Workshop/BlueRectangle_1.tsx"
-        exports="BlueRectangle"
-    >
-    </BlueRectangle1Tsx>
-    <TiltCardTsx
-        type="CodeFile"
-        codeFileId="jgyH8RA"
-        path="Workshop/TiltCard.tsx"
-        exports="TiltCard"
-    >
-    </TiltCardTsx>
-    <PoemRectangleTsx
-        type="CodeFile"
-        codeFileId="wGSFmvV"
-        path="Workshop/PoemRectangle.tsx"
-        exports="PoemRectangle"
-    >
-    </PoemRectangleTsx>
+    <CodeComponent codeFileId="Th86gFY" path="Test.tsx" />
+    <CodeComponent codeFileId="eZvzSVQ" path="Workshop/TextScrambler.tsx" />
+    <CodeComponent codeFileId="LLhzE7I" path="ScrambleText.tsx" />
+    <CodeComponent codeFileId="jeOxCcZ" path="AdvancedTextScrambler.tsx" />
+    <CodeComponent codeFileId="rnvBA4o" path="PricingSlider.tsx" />
+    <CodeComponent codeFileId="sYxO4jj" path="Workshop/BlueRectangle.tsx" />
+    <CodeComponent codeFileId="B0ptZV9" path="Workshop/BlueRectangle_1.tsx" />
+    <CodeComponent codeFileId="jgyH8RA" path="Workshop/TiltCard.tsx" />
+    <CodeComponent codeFileId="wGSFmvV" path="Workshop/PoemRectangle.tsx" />
   </CodeComponents>
-  <CodeOverrides>
-  </CodeOverrides>
+  <!-- Code override files that modify component behavior. Use readCodeFile to see the code -->
+  <CodeOverrides />
 </Project>
 
 
