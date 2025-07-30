@@ -1,4 +1,10 @@
-import { framer, isTextNode, isComponentNode, TextStyle, ProtectedMethod } from 'framer-plugin'
+import {
+    framer,
+    isTextNode,
+    isComponentNode,
+    TextStyle,
+    ProtectedMethod,
+} from 'framer-plugin'
 import dedent from 'string-dedent'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
@@ -44,6 +50,8 @@ import {
     LocalStorageKeys,
 } from './lib/utils'
 
+const connectFramerMcpGuide = 'https://unframer.co/guides/connect-framer-mcp'
+
 globalThis.framer = framer
 
 // Helper function to strip version hash from insert URLs
@@ -82,9 +90,10 @@ function checkPermissions(...methods: ProtectedMethod[]): string | null {
     if (!first) return null
 
     if (!framer.isAllowedTo(first, ...rest)) {
-        const methodList = methods.length > 1
-            ? `Your Framer user account lacks the following permissions for this project: ${methods.join(', ')}`
-            : `Your Framer user account lacks the "${methods[0]}" permission for this project.`
+        const methodList =
+            methods.length > 1
+                ? `Your Framer user account lacks the following permissions for this project: ${methods.join(', ')}`
+                : `Your Framer user account lacks the "${methods[0]}" permission for this project.`
         return `Permission denied. ${methodList}\n\nPlease ask the project owner to grant you the necessary permissions.`
     }
     return null
@@ -303,7 +312,7 @@ async function websocketHandler({
             const permissionError = checkPermissions(
                 'Node.setAttributes',
                 'TextNode.setText',
-                'setParent'
+                'setParent',
             )
             if (permissionError) return permissionError
 
@@ -488,7 +497,9 @@ async function websocketHandler({
 
             // Check permissions based on type
             const permissionError = checkPermissions(
-                type === 'create' ? 'createColorStyle' : 'ColorStyle.setAttributes'
+                type === 'create'
+                    ? 'createColorStyle'
+                    : 'ColorStyle.setAttributes',
             )
             if (permissionError) return permissionError
 
@@ -571,7 +582,9 @@ async function websocketHandler({
 
             // Check permissions based on type
             const permissionError = checkPermissions(
-                type === 'create' ? 'createTextStyle' : 'TextStyle.setAttributes'
+                type === 'create'
+                    ? 'createTextStyle'
+                    : 'TextStyle.setAttributes',
             )
             if (permissionError) return permissionError
 
@@ -1284,13 +1297,16 @@ function MainComponent() {
     return (
         <div className='flex flex-col gap-3 bg-framer-primary'>
             <p className='text-xs text-framer-secondary'>
-                Copy the MCP server URL below and add it to your MCP client
-                (Claude Desktop, Cursor, etc.)
+                Copy the MCP server URL below and{' '}
+                <a href={connectFramerMcpGuide} target='_blank'>
+                    add it to your MCP client{' '}
+                </a>
+                (Claude Desktop, Cursor, etc.).
             </p>
 
             <div className='flex items-center justify-start gap-2'>
                 <p className='text-xs text-framer-secondary'>
-                    Keep this plugin open while using MCP
+                    Keep this plugin open while using MCP.
                 </p>
                 <CircleIcon
                     className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
