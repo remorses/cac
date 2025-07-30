@@ -85,9 +85,21 @@ async function websocketHandler({
 }) {
     switch (type) {
         case 'getNodeXml': {
-            const result = await getNodeXml(input.nodeId)
+            const { nodeId } = input
+
+            // Check if this looks like a style path
+            if (nodeId.startsWith('/')) {
+                return `Cannot use getNodeXml with style paths. Style data is displayed in 'getProjectXml' under the <ColorStyles> and <TextStyles> sections. Use that tool to view all styles.`
+            }
+            const isCodeFile = await framer.getCodeFile(nodeId)
+
+            if (isCodeFile) {
+                return `Cannot use getNodeXml with code files. Use 'readCodeFile' tool instead to read code file with ID: ${nodeId}`
+            }
+
+            const result = await getNodeXml(nodeId)
             if (!result) {
-                return `Node with ID ${input.nodeId} not found.`
+                return `Node with ID ${nodeId} not found.`
             }
             let response = `Node xml:\n${result.xml}`
             if (result.isReplica) {

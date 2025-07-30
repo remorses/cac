@@ -27,10 +27,16 @@ To work with nodes:
 2. Modify the XML with desired changes
 3. Apply changes using `updateXmlForNode`
 
-**Important**: `updateXmlForNode` can only be used for regular Framer nodes (pages, components, frames, text, etc.). For other resources, use the appropriate specialized tools:
+**Note**: `getNodeXml` also validates the node type and will return helpful error messages if you try to use it with:
+- **Style paths** (starting with `/`): Style data is displayed in `getProjectXml` under the `<ColorStyles>` and `<TextStyles>` sections
+- **Code file IDs**: Use `readCodeFile` to read code file content
+
+**Important**: `updateXmlForNode` can only be used for regular Framer nodes (pages, components, frames, text, etc.). It cannot be used for:
 - **Code files**: Use `updateCodeFile` to modify code
 - **Color styles**: Use `manageColorStyle` with `type: "update"`
 - **Text styles**: Use `manageTextStyle` with `type: "update"`
+
+If you try to use `updateXmlForNode` with these resources, you'll receive an error message directing you to the appropriate tool.
 
 ## XML Attribute Formats
 
@@ -118,7 +124,7 @@ Project styles provide consistent design tokens across your project:
 - Include typography properties (size, line height, spacing, etc.)
 - Can be created or updated globally using `manageTextStyle`
 
-Color and text styles are listed in the `getProjectXml` output under `<ColorStyles>` and `<TextStyles>` sections.
+Color and text styles are listed in the `getProjectXml` output under `<ColorStyles>` and `<TextStyles>` sections. There are no separate tools to fetch only styles - use `getProjectXml` to see all available styles in your project.
 
 ### Managing Styles
 
