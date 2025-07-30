@@ -66,28 +66,6 @@ To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.",
     "name": "getNodeXml",
   },
   {
-    "description": "Gets all project-level color styles.
-XML nodes can use these color styles by setting attributes like backgroundColor to their path, e.g. color="/Primary".
-You can also use color styles when setting the color attribute of a text style with updateTextStyle.",
-    "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {},
-      "type": "object",
-    },
-    "name": "getProjectColorStyles",
-  },
-  {
-    "description": "Gets all project-level text styles. XML nodes can use these text styles by setting the inlineTextStyle attribute to their path, e.g. inlineTextStyle="/Heading xl".",
-    "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {},
-      "type": "object",
-    },
-    "name": "getProjectTextStyles",
-  },
-  {
     "description": "Update the XML for a specific node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes.
 
 If a node id changes its parent, it will be moved in the layers tree.
@@ -96,11 +74,15 @@ This tool is generally called using a component or page nodeId and passing a por
 
 You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will not be updated. You can also omit attributes, omitted attributes will not be updated and will be ignored.
 
-You can use this tool to
+You can use this tool to:
 - Update text for one or multiple text nodes
 - Update attributes of existing nodes
 
-This tool cannot duplicate or delete nodes.
+This tool CANNOT be used for:
+- Code files (use 'updateCodeFile' instead)
+- Color styles (use 'manageColorStyle' with type: 'update' instead)  
+- Text styles (use 'manageTextStyle' with type: 'update' instead)
+- Duplicating or deleting nodes
 ",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -126,18 +108,23 @@ This tool cannot duplicate or delete nodes.
     "name": "updateXmlForNode",
   },
   {
-    "description": "Updates a color style by its path. Can modify the name, light color, and dark color.",
+    "description": "Creates or updates a color style in the project.
+
+The style path must start with "/" and can include folder structure (e.g., "/Brand/Primary").
+The display name will be automatically derived from the last segment of the path.
+For example, "/Brand/Primary" will create a style named "Primary" in the "Brand" folder.
+
+- When type is "create": Creates a new color style. Will fail if style already exists.
+- When type is "update": Updates an existing color style. Will fail if style doesn't exist.
+
+After creating, you can reference this style in XML nodes using color="/path/to/style".",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {
-        "stylePath": {
-          "description": "The path of the color style to update. Must start with /",
-          "type": "string",
-        },
-        "updates": {
+        "properties": {
           "additionalProperties": false,
-          "description": "Properties to update on the color style",
+          "description": "Properties for the color style. For create, light color is required. For update, only specified properties will be changed.",
           "properties": {
             "dark": {
               "anyOf": [
@@ -161,84 +148,48 @@ This tool cannot duplicate or delete nodes.
           },
           "type": "object",
         },
+        "stylePath": {
+          "description": "The path of the color style. Must start with /. The name is derived from the last path segment.",
+          "type": "string",
+        },
+        "type": {
+          "description": "Operation type: "create" to make a new style, "update" to modify an existing style",
+          "enum": [
+            "create",
+            "update",
+          ],
+          "type": "string",
+        },
       },
       "required": [
+        "type",
         "stylePath",
-        "updates",
+        "properties",
       ],
       "type": "object",
     },
-    "name": "updateColorStyle",
+    "name": "manageColorStyle",
   },
   {
-    "description": "Creates a new color style in the project with the specified properties.
+    "description": "Creates or updates a text style in the project.
 
-The style path must start with "/" and can include folder structure (e.g., "/Brand/Primary").
+The style path must start with "/" and can include folder structure (e.g., "/Typography/Headings/H1").
 The display name will be automatically derived from the last segment of the path.
-For example, "/Brand/Primary" will create a style named "Primary" in the "Brand" folder.
+For example, "/Typography/Headings/H1" will create a style named "H1" in the "Typography/Headings" folder.
 
-If a style already exists at the given path, this operation will fail.
+- When type is "create": Creates a new text style. Will fail if style already exists.
+- When type is "update": Updates an existing text style. Will fail if style doesn't exist.
+    Note: Updating a text style will update all nodes that use it in the project.
+    If you only want to update a single node, create a new text style and update the XML to reference its new path instead.
 
-After creating, you can reference this style in XML nodes using color="/path/to/style".",
+After creating, you can reference this style in XML nodes using inlineTextStyle="/path/to/style".",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {
         "properties": {
           "additionalProperties": false,
-          "description": "Properties for the new color style. Light color is required. Name is derived from the path.",
-          "properties": {
-            "dark": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-              "description": "Dark theme color in any CSS color format, or null to remove dark variant",
-            },
-            "light": {
-              "description": "Light theme color in any CSS color format (e.g., "rgb(255, 0, 0)", "#FF0000", "red")",
-              "type": "string",
-            },
-          },
-          "required": [
-            "light",
-          ],
-          "type": "object",
-        },
-        "stylePath": {
-          "description": "The path for the new color style. Must start with / and be unique. The name is derived from the last path segment.",
-          "type": "string",
-        },
-      },
-      "required": [
-        "stylePath",
-        "properties",
-      ],
-      "type": "object",
-    },
-    "name": "createColorStyle",
-  },
-  {
-    "description": "Updates a text style by its path. Can modify various typography properties.
-
-Updating a text style will update all the nodes that use it in the project.
-
-If you only want to update a single node instead, create a new text style and update the XML to reference its new path instead.",
-    "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "stylePath": {
-          "description": "The path of the text style to update. Must start with /",
-          "type": "string",
-        },
-        "updates": {
-          "additionalProperties": false,
-          "description": "Properties to update on the text style",
+          "description": "Properties for the text style. For update, only specified properties will be changed.",
           "properties": {
             "alignment": {
               "description": "Text alignment",
@@ -382,183 +333,27 @@ If you only want to update a single node instead, create a new text style and up
           },
           "type": "object",
         },
-      },
-      "required": [
-        "stylePath",
-        "updates",
-      ],
-      "type": "object",
-    },
-    "name": "updateTextStyle",
-  },
-  {
-    "description": "Creates a new text style in the project with the specified properties.
-
-The style path must start with "/" and can include folder structure (e.g., "/Typography/Headings/H1").
-The display name will be automatically derived from the last segment of the path.
-For example, "/Typography/Headings/H1" will create a style named "H1" in the "Typography/Headings" folder.
-
-If a style already exists at the given path, this operation will fail.
-
-After creating, you can reference this style in XML nodes using inlineTextStyle="/path/to/style".",
-    "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "properties": {
-          "additionalProperties": false,
-          "description": "Properties for the new text style. Name is derived from the path.",
-          "properties": {
-            "alignment": {
-              "description": "Text alignment",
-              "enum": [
-                "left",
-                "center",
-                "right",
-                "justify",
-              ],
-              "type": "string",
-            },
-            "balance": {
-              "description": "Enable balanced text wrapping for better legibility",
-              "type": "boolean",
-            },
-            "boldFont": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-              "description": "Bold variant font selector or null to remove",
-            },
-            "boldItalicFont": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-              "description": "Bold italic variant font selector or null to remove",
-            },
-            "color": {
-              "description": "Color as hex, rgba, or color style path (e.g., "#FF0000", "rgb(255, 0, 0)", "/Primary")",
-              "type": "string",
-            },
-            "decoration": {
-              "description": "Text decoration",
-              "enum": [
-                "none",
-                "underline",
-                "line-through",
-              ],
-              "type": "string",
-            },
-            "decorationColor": {
-              "description": "Decoration color as hex, rgba, or color style path",
-              "type": "string",
-            },
-            "decorationOffset": {
-              "description": "Decoration offset (e.g., "auto", "2px", "0.1em")",
-              "type": "string",
-            },
-            "decorationSkipInk": {
-              "description": "Text decoration skip ink behavior",
-              "enum": [
-                "auto",
-                "none",
-                "all",
-              ],
-              "type": "string",
-            },
-            "decorationStyle": {
-              "description": "Text decoration style",
-              "enum": [
-                "solid",
-                "double",
-                "dotted",
-                "dashed",
-                "wavy",
-              ],
-              "type": "string",
-            },
-            "decorationThickness": {
-              "description": "Decoration thickness (e.g., "auto", "2px", "0.1em")",
-              "type": "string",
-            },
-            "font": {
-              "description": "Font selector (e.g., "GF;Inter-600")",
-              "type": "string",
-            },
-            "fontSize": {
-              "description": "Font size with units (e.g., "16px", "1.5rem")",
-              "type": "string",
-            },
-            "italicFont": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-              "description": "Italic variant font selector or null to remove",
-            },
-            "letterSpacing": {
-              "description": "Letter spacing with units (e.g., "0px", "0.05em")",
-              "type": "string",
-            },
-            "lineHeight": {
-              "description": "Line height with units (e.g., "24px", "1.5em", "150%")",
-              "type": "string",
-            },
-            "paragraphSpacing": {
-              "description": "Space between paragraphs in pixels",
-              "type": "number",
-            },
-            "tag": {
-              "description": "HTML tag associated with the text style",
-              "enum": [
-                "h1",
-                "h2",
-                "h3",
-                "h4",
-                "h5",
-                "h6",
-                "p",
-              ],
-              "type": "string",
-            },
-            "transform": {
-              "description": "Text transformation",
-              "enum": [
-                "none",
-                "uppercase",
-                "lowercase",
-                "capitalize",
-              ],
-              "type": "string",
-            },
-          },
-          "type": "object",
-        },
         "stylePath": {
-          "description": "The path for the new text style. Must start with / and be unique. The name is derived from the last path segment.",
+          "description": "The path of the text style. Must start with /. The name is derived from the last path segment.",
+          "type": "string",
+        },
+        "type": {
+          "description": "Operation type: "create" to make a new style, "update" to modify an existing style",
+          "enum": [
+            "create",
+            "update",
+          ],
           "type": "string",
         },
       },
       "required": [
+        "type",
         "stylePath",
         "properties",
       ],
       "type": "object",
     },
-    "name": "createTextStyle",
+    "name": "manageTextStyle",
   },
   {
     "description": "Search for fonts by selector substring. Returns max 20 results. Use specific search terms for better results.
