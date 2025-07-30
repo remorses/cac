@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-01-30 11:45
+
+- Added validation to `getNodeXml` to prevent misuse with code files and style paths
+- Tool now returns helpful error messages:
+  - Style paths → directs to use `getProjectXml` to see styles in ColorStyles/TextStyles sections
+  - Code file IDs → directs to use `readCodeFile` instead
+- Updated documentation to clarify validation behavior for both `updateXmlForNode` and `getNodeXml`
+
 ## 2025-01-30 11:40
 
 - Added validation to `updateXmlForNode` to prevent misuse with code files and styles
