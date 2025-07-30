@@ -21,7 +21,7 @@ export class MyMCP extends McpAgent<Env> {
     server = new Server(
         {
             name: 'Framer MCP',
-            version: '1.6.0',
+            version: '1.7.0',
             title: `Framer MCP, created by https://unframer.co`
         },
         {
