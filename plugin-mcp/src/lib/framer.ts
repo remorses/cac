@@ -24,7 +24,8 @@ import {
     supportsSizeConstraints,
     supportsSVG,
     supportsVisible,
-    type ImageAsset
+    type ImageAsset,
+    ProtectedMethod
 } from 'framer-plugin'
 import { Sema } from 'sema4'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
@@ -33,6 +34,17 @@ import { bfsFramerLayersTree, } from './tree-utils'
 import { FramerLayersTree } from './schema'
 
 let cachedPagePaths: string[] = []
+
+// Helper function to check permissions and throw error if not allowed
+function checkPermissions(...methods: ProtectedMethod[]): void {
+    // Cast to the expected tuple type for isAllowedTo
+    const [first, ...rest] = methods
+    if (!first) return
+
+    if (!framer.isAllowedTo(first, ...rest)) {
+        throw new Error(`Missing permissions: ${methods.join(', ')}`)
+    }
+}
 
 // Generic utility function to sort an array based on the order of IDs in a reference array
 function sortArrayLike<T>(
@@ -577,6 +589,9 @@ export async function discardFramerChanges({
 }: {
     previousTree: FramerLayersTree
 }) {
+    // Check permissions before proceeding
+    checkPermissions('Node.setAttributes', 'TextNode.setText')
+    
     const allNodes = bfsFramerLayersTree(previousTree).filter((x) => x?.nodeId)
     const promises = allNodes.map(async (oldNodeObj) => {
         const { nodeId, content: oldContent, attributes } = oldNodeObj
@@ -853,6 +868,9 @@ export async function applyAttributes(
     if (!node || !_attributes || !Object.keys(_attributes).length) {
         return
     }
+
+    // Check permissions before proceeding
+    checkPermissions('Node.setAttributes')
 
     // Decode all attribute values
     const decodedAttrs: Record<string, any> = {}

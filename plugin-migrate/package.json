@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "dev": "doppler run -- vite",
+        "dev:prod": "doppler run -c production -- vite",
         "check": "pnpm tsc --incremental",
         "start": "vite preview --port 5173",
         "typecheck": "pnpm tsc --noEmit --incremental",

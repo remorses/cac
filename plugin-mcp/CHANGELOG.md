@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-01-30 15:00
+
+- Added permission checks to lib/framer.ts functions that mutate Framer data
+- applyAttributes now checks for 'Node.setAttributes' permission before proceeding
+- discardFramerChanges now checks for 'Node.setAttributes' and 'TextNode.setText' permissions
+- Added reusable checkPermissions helper function that throws descriptive errors
+- Consistent error messages directing users to ask project owners for permissions
+
 ## 2025-01-30 14:45
 
 - Added comprehensive XML attributes documentation to how-to-use-mcp-server.md
