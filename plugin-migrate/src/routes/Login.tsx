@@ -1,7 +1,7 @@
 import { Button } from 'plugin-migrate/src/components/Button'
 // @ts-ignore
 import logo from 'plugin-migrate/public/gradient-icon@2x.png'
-import { notifyError } from 'plugin-mcp'
+import { notifyError } from 'plugin-mcp/src/lib/errors'
 import { useRefreshOnVisible } from 'plugin-migrate/src/lib/hooks'
 import {
     LoaderReturnType,
