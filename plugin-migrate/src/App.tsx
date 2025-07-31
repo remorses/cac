@@ -5,7 +5,7 @@ import { framer } from 'framer-plugin'
 import { useEffect, useLayoutEffect } from 'react'
 
 import { NProgressComponent } from 'plugin-migrate/src/components/nprogress'
-import { notifyError } from 'plugin-mcp'
+import { notifyError } from 'plugin-mcp/src/lib/errors'
 
 import {
     LoaderReturnType,

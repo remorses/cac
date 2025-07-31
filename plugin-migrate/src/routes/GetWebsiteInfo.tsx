@@ -14,7 +14,7 @@ import {
     useNavigation,
     useActionData,
 } from 'react-router-dom'
-import { notifyError } from 'plugin-mcp'
+import { notifyError } from 'plugin-mcp/src/lib/errors'
 
 export function WebsiteInfo() {
     return {

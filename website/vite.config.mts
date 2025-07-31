@@ -24,6 +24,17 @@ export default defineConfig({
     define: {
         'process.env.NODE_ENV': NODE_ENV,
     },
+    esbuild: {
+        target: 'es2022',
+        supported: {
+            'top-level-await': true, //browsers can handle top-level-await features
+        },
+    },
+    optimizeDeps: {
+        esbuildOptions: {
+            target: 'es2022',
+        },
+    },
     server: {
         proxy: {},
 
@@ -42,7 +53,6 @@ export default defineConfig({
     plugins: [
         !process.env.DISABLE_HTTPS && mkcert(),
         mdx({
-
             remarkPlugins: [
                 remarkFrontmatter,
                 remarkGfm,
@@ -83,7 +93,7 @@ export default defineConfig({
 
     build: {
         // sourcemap: true,
-        target: 'esnext',
+        target: 'es2022',
         commonjsOptions: {
             transformMixedEsModules: true,
         },

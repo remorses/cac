@@ -1,5 +1,5 @@
 import { Button } from 'plugin-migrate/src/components/Button'
-import { notifyError } from 'plugin-mcp'
+import { notifyError } from 'plugin-mcp/src/lib/errors'
 import {
     useHistoryNavigation,
     useLatestFunction,
@@ -44,7 +44,7 @@ import {
     discardFramerChanges,
     getFramerTree,
     isNodeZoomable,
-} from 'plugin-mcp'
+} from 'plugin-mcp/src/lib/framer'
 import { bfsFramerLayersTree, framerLayersTreeToXml } from 'plugin-mcp'
 import { sleep } from 'website/src/lib/utils'
 import { createBuyMigrateUrl } from 'website/src/lib/env'

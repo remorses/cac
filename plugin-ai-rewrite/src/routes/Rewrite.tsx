@@ -33,7 +33,7 @@ import { FramerLayersTree } from 'website/src/lib/rewrite'
 
 import { Paths, pluginApiClient } from '@/lib/utils'
 import { StarReview } from 'plugin-migrate/src/components/StarReview'
-import { applyAttributes, getFramerTree, isNodeZoomable } from 'plugin-mcp'
+import { applyAttributes, getFramerTree, isNodeZoomable } from 'plugin-mcp/src/lib/framer'
 import { getBuyLLMPluginUrl } from 'website/src/lib/env'
 import { bfsFramerLayersTree, framerLayersTreeToXml, sleep } from 'website/src/lib/utils'
 import { flushSync } from 'react-dom'

@@ -1,7 +1,7 @@
 import { Button } from 'plugin-migrate/src/components/Button'
 import {
     processReactExportData,
-} from 'plugin-mcp'
+} from 'plugin-mcp/src/lib/react-export'
 
 import {
     isTruthy,
@@ -185,7 +185,7 @@ async function getInstancesWithOrderAndDepth({
 async function action({ request }: LoaderFunctionArgs) {
     const formData = await request.formData()
     const selectedComponentIds = new Set(formData.keys())
-    
+
     const data = await processReactExportData({
         selectedComponentIds,
     })

@@ -1,12 +1,7 @@
-import sdk from '@stackblitz/sdk'
-
-
 import { PluginName } from 'db'
 import dedent from 'dedent'
 import { env } from './env'
-export {
-    bfsFramerLayersTree, framerLayersTreeToXml
-} from 'plugin-mcp'
+export { bfsFramerLayersTree, framerLayersTreeToXml } from 'plugin-mcp/'
 
 export function loginRedirectUrl({ next = '' }) {
     const u = new URL('/api/auth/callback', env.PUBLIC_URL)
@@ -364,6 +359,7 @@ export function generateStackblitzFiles({
 }
 
 export async function generateStackblitzProject({ projectId, title = '' }) {
+    const sdk = (await import('@stackblitz/sdk')).default
     const files = generateStackblitzFiles({ projectId, title })
 
     const filesObject = files.reduce((acc, { relativePath, contents }) => {
@@ -371,7 +367,7 @@ export async function generateStackblitzProject({ projectId, title = '' }) {
         return acc
     }, {})
 
-    return sdk.openProject(
+    return await sdk.openProject(
         {
             title: `Unframer - ${title}`,
             description: `${title} demo for Unframer`,
