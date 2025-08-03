@@ -7,10 +7,7 @@ import { Octokit } from 'octokit'
 import { Sema } from 'sema4'
 import { unframerDemoUrl } from 'unframer-deploy-demo/src/utils'
 import { Config, configFromFetch } from 'unframer-workspace/src/cli'
-import {
-
-    createExampleComponentCode,
-} from 'unframer-workspace/src/exporter'
+import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { kebabCase } from 'unframer-workspace/src/utils'
 import { env } from './env'
 import {
@@ -358,10 +355,8 @@ const model = wrapLanguageModel({
     ),
     model: createFallback({
         models: [
-            openai('gpt-4.1', { structuredOutputs: true }), //
-            google('gemini-2.0-flash', {
-                structuredOutputs: true,
-            }),
+            openai('gpt-4.1'), //
+            google('gemini-2.0-flash'),
         ],
     }),
 })
@@ -432,11 +427,11 @@ export async function createExampleComponentCodeWithAI({
     let outputCode = exampleCode
     console.time(`ai generate code for project ${config.projectId}`)
     const { text } = await generateText({
-        maxSteps: 4,
+        stopWhen: (state) => state.steps?.length >= 30,
         providerOptions: {},
         tools: {
             generate_code: tool({
-                parameters: z.object({
+                inputSchema: z.object({
                     code: z.string(),
                 }),
                 description: `This tool needs to ALWAYS be called with the generated code.`,

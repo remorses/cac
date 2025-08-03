@@ -164,7 +164,7 @@ export async function getWebsiteDescription({ html, user, url, signal }) {
         middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
             isTruthy,
         ),
-        model: openai('gpt-4.1-mini', { user }),
+        model: openai('gpt-4.1-mini',),
     })
     console.time('getWebsiteDescription ' + html.length)
     const result = await generateText({
@@ -172,7 +172,8 @@ export async function getWebsiteDescription({ html, user, url, signal }) {
         messages: [
             {
                 role: 'user',
-                content: makeDescriptionPrompt({ html: html }),
+
+                content: makeDescriptionPrompt({ html: html })
             },
         ],
 

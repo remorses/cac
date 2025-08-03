@@ -307,6 +307,11 @@ function SimplePromptComponent({}) {
                         console.log('no text found in chunk', partialItem)
                         continue
                     }
+                    if (!framer.isAllowedTo('setText')) {
+                        throw new Error(
+                            `Not allowed to set text on node ${node.id}`,
+                        )
+                    }
                     await node.setText(partialItem.newContent)
                 } else if (isComponentInstanceNode(node)) {
                 } else {

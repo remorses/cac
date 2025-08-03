@@ -43,24 +43,23 @@ describe.skip('screenshot', () => {
 
             const buffers = await splitImage({ imageBuffer: image })
 
-            const stream = await streamText({
+            const stream = streamText({
                 model: anthropic('claude-3-haiku-20240307'),
                 messages: [
                     {
-                        content: `Give me back all the text from these images. each image is a viewport from a website. For each piece of text, add also the section of the page it is part of. return ndjson output`,
-                        role: 'user',
-                    },
-                    {
                         role: 'user',
                         content: [
+                            {
+                                type: 'text',
+                                text: `Give me back all the text from these images. each image is a viewport from a website. For each piece of text, add also the section of the page it is part of. return ndjson output`
+                            },
                             ...buffers.map((buffer) => {
                                 return {
                                     type: 'image' as const,
-                                    mimeType: 'image/jpeg',
                                     image: buffer,
                                 }
                             }),
-                        ],
+                        ]
                     },
                 ],
             })
