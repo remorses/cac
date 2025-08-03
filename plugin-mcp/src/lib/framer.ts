@@ -499,6 +499,8 @@ export async function getFramerTree({
                     isRootNode: rootNodeIds.has(node.id),
                 })
             }
+            // Return early for text nodes to avoid duplicate push
+            return
         }
 
         const isVisible = await isNodeVisible(node)
