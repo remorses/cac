@@ -5,16 +5,16 @@ import { google, GoogleGenerativeAIProviderOptions } from '@ai-sdk/google'
 import dedent from 'string-dedent'
 import { DOMParser, XMLSerializer } from 'xmldom'
 import { z } from 'zod'
-import { openai } from '@ai-sdk/openai'
+import { openai, OpenAIProviderSettings } from '@ai-sdk/openai'
 import {
-    CoreMessage,
+    ModelMessage,
     generateObject,
     smoothStream,
     streamText,
     wrapLanguageModel,
 } from 'ai'
 
-import { anthropic } from '@ai-sdk/anthropic'
+import { anthropic, AnthropicProviderOptions } from '@ai-sdk/anthropic'
 
 import { createArrayItemsYielder } from 'website/src/lib/ndjson'
 import { isTruthy, framerLayersTreeToXml, safeUrl } from 'website/src/lib/utils'
@@ -29,7 +29,6 @@ export const ITEMS_PER_ITERATION = 30
 
 import type { FramerLayersTree } from 'plugin-mcp'
 export type { FramerLayersTree }
-
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
@@ -239,7 +238,7 @@ export async function* rewriteTemplateChunk({
 }) {
     const host =
         safeUrl(url || 'http://IgnoreMeNoUrlGivenByUser.com')?.host || url
-    let messages: CoreMessage[] = [
+    let messages: ModelMessage[] = [
         {
             role: 'system',
             content: generateMigrationPrompt({
@@ -247,12 +246,12 @@ export async function* rewriteTemplateChunk({
                 sourceHtml,
                 url,
             }),
-            experimental_providerMetadata: {
+            providerOptions: {
                 anthropic: {
-                    cache_control: {
-                        type: 'ephemeral',
-                    },
-                },
+                    // cache_control: {
+                    //     type: 'ephemeral',
+                    // },
+                } satisfies AnthropicProviderOptions,
             },
         },
 
@@ -278,7 +277,7 @@ export async function* rewriteTemplateChunk({
         messages,
         model,
         temperature: 0.5,
-        experimental_providerMetadata: {
+        providerOptions: {
             google: {
                 thinkingConfig: { thinkingBudget: 0 },
             } satisfies GoogleGenerativeAIProviderOptions,
@@ -393,7 +392,7 @@ export async function extractExternalLinks({
         middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
             isTruthy,
         ),
-        model: openai('gpt-4o-2024-08-06', { user, structuredOutputs: true }),
+        model: openai('gpt-4o-2024-08-06'),
     })
 
     const res = await generateObject({
@@ -404,6 +403,12 @@ export async function extractExternalLinks({
                 content: prompt,
             },
         ],
+        providerOptions: {
+            openai: {
+                // user,
+                structuredOutputs: true,
+            },
+        },
         schema: LinkSchema,
     })
 
@@ -420,7 +425,7 @@ const LinkSchema = z.object({
                 .describe(
                     "The nodeId of the text element, it is always a 9 letters string, you can find it in the nodeId attribute in the template xml, not all elements have it, you have to skip those that don't have it",
                 ),
-            reasoning: z.string().describe(
+            reasoningText: z.string().describe(
                 dedent`
             A detailed reasoning to decide the new url for the link, extracted from the HTML document anchor tags, it should always answer the following questions:
             - *section and role*: what is the section of the document the link is part of? for example footer link, a header nav, a feature link item, etc.

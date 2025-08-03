@@ -4,7 +4,7 @@
     "scripts": {
         "test": "NODE_ENV=test pnpm -r --filter='!*spiceflow*' test",
         "bootstrap": "pnpm --parallel --filter spiceflow build && pnpm --filter db gen",
-        "typecheck": "pnpm --filter spiceflow build && pnpm -r --filter '!spiceflow' --parallel typecheck",
+        "typecheck": "pnpm --filter spiceflow build && pnpm -r --filter '!spiceflow' --parallel --no-bail typecheck",
         "build": "pnpm -r build",
         "release": "git merge main && git checkout main && git merge preview && git push && git checkout preview"
     },

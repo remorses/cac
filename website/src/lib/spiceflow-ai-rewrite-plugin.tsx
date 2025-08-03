@@ -227,11 +227,11 @@ export const llmPluginApp = new Spiceflow({
                     model,
                     // toolChoice: 'required',
                     abortSignal: request.signal,
-                    maxSteps: 40,
+                    stopWhen: (state) => state.steps.length >= 30,
                     experimental_transform: smoothStream({
                         chunking: 'line',
                     }),
-                    experimental_providerMetadata: {
+                    providerOptions: {
                         google: {
                             thinkingConfig: { thinkingBudget: 0 },
                         } satisfies GoogleGenerativeAIProviderOptions,
@@ -239,7 +239,7 @@ export const llmPluginApp = new Spiceflow({
 
                     tools: {
                         fetch: tool({
-                            parameters: z.object({
+                            inputSchema: z.object({
                                 url: z.string(),
                             }),
                             description: dedent`
@@ -261,7 +261,7 @@ export const llmPluginApp = new Spiceflow({
                             },
                         }),
                         duplicate: tool({
-                            parameters: z.object({
+                            inputSchema: z.object({
                                 nodeIds: z.array(z.string()),
                             }),
                             description: dedent`
@@ -289,7 +289,7 @@ export const llmPluginApp = new Spiceflow({
                             },
                         }),
                         delete: tool({
-                            parameters: z.object({
+                            inputSchema: z.object({
                                 nodeIds: z.array(z.string()),
                             }),
                             description: dedent`
@@ -320,31 +320,31 @@ export const llmPluginApp = new Spiceflow({
                         {
                             role: 'system',
                             content: `
-                            You are an expert copywriter tasked with updating a Framer website content by mutating the website xml tree.
+                                You are an expert copywriter tasked with updating a Framer website content by mutating the website xml tree.
 
-                            You have access to two tools:
-                            - "duplicate" - Creates a copy of some specified xml nodes and returns the new nodeIds in the diff
-                            - "delete" - Removes some specified xml nodes
+                                You have access to two tools:
+                                - "duplicate" - Creates a copy of some specified xml nodes and returns the new nodeIds in the diff
+                                - "delete" - Removes some specified xml nodes
 
-                            First, analyze if any duplications or deletions are needed for the requested changes, do this in XML comments above the elements:
-                            1. Plan out quickly the needed structural changes first
-                            2. Execute the needed "duplicate" call, noting the new nodeIds from the diffs. Group many nodeIds into one call.
-                            3. Execute the needed "delete" call. Group many nodeIds into one call.
-                            4. Only after completing structural changes, output the final xml with content and attributes changes
+                                First, analyze if any duplications or deletions are needed for the requested changes, do this in XML comments above the elements:
+                                1. Plan out quickly the needed structural changes first
+                                2. Execute the needed "duplicate" call, noting the new nodeIds from the diffs. Group many nodeIds into one call.
+                                3. Execute the needed "delete" call. Group many nodeIds into one call.
+                                4. Only after completing structural changes, output the final xml with content and attributes changes
 
-                            Important rules for the final xml output:
-                            - Do not include any xml tags for deleted nodes or unchanged nodes
-                            - The output xml should be partial, no need to include the full xml from the input. Only show the parts you want to rewrite content or attributes for and add comments for skipped sections, like this:
-                                \`\`\`xml
-                                <!-- skipped nodes -->
-                                <text nodeId="Xy01EPyOT" updatedTag="updated">Updated heading text</text>
-                                <!-- skipped nodes -->
-                                \`\`\`
+                                Important rules for the final xml output:
+                                - Do not include any xml tags for deleted nodes or unchanged nodes
+                                - The output xml should be partial, no need to include the full xml from the input. Only show the parts you want to rewrite content or attributes for and add comments for skipped sections, like this:
+                                    \`\`\`xml
+                                    <!-- skipped nodes -->
+                                    <text nodeId="Xy01EPyOT" updatedTag="updated">Updated heading text</text>
+                                    <!-- skipped nodes -->
+                                    \`\`\`
 
-                            You MUST skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
+                                You MUST skip attributes that you do not plan to update, other than nodeId, which is required to identify the node. Feel free to reorder attributes.
 
-                            Do not say anything after returning the code snippet, no need to make a summary.
-                            `,
+                                Do not say anything after returning the code snippet, no need to make a summary.
+                                `,
                         },
 
                         {
@@ -358,38 +358,20 @@ export const llmPluginApp = new Spiceflow({
                         {
                             role: 'assistant',
                             content: dedent`
+                                <!-- Tool call: duplicate with nodeIds: ['UyBbEMyfT'] -->
+                                <!-- Tool result: Added new FAQ node -->
 
-
-                            \`\`\`xml
-                            <!-- Duplicating existing FAQ tag and modifying node ${addedFaqNodeId} to add pricing FAQ section -->
-                            ${exampleAddedFaqSection}
-                            <-- other tags -->
-                            \`\`\`
-                            `,
-                            toolInvocations: [
-                                {
-                                    toolCallId: 'exampleFunctionCallId',
-                                    toolName: 'duplicate',
-                                    args: {
-                                        nodeIds: ['UyBbEMyfT'],
-                                    },
-                                    state: 'result',
-                                    result: createTwoFilesPatch(
-                                        'original',
-                                        'modified',
-                                        formatExampleXml({}), // Handle potential undefined
-                                        formatExampleXml({
-                                            duplicateLatest: true,
-                                        }), // Handle potential undefined
-                                        '',
-                                        '',
-                                    ),
-                                },
-                            ],
+                                \`\`\`xml
+                                <!-- Duplicating existing FAQ tag and modifying node ${addedFaqNodeId} to add pricing FAQ section -->
+                                ${exampleAddedFaqSection}
+                                <-- other tags -->
+                                \`\`\`
+                                `,
                         },
 
                         {
                             role: 'user',
+
                             content: formatUserMessage({
                                 initialXml,
                                 description,
@@ -403,8 +385,8 @@ export const llmPluginApp = new Spiceflow({
                 const yielder = createArrayItemsYielder<NewExtractedNode>()
                 for await (const part of result.fullStream) {
                     if (part.type === 'text-delta') {
-                        fullAnswer += part.textDelta
-                        fullText += part.textDelta
+                        fullAnswer += part.text
+                        fullText += part.text
 
                         allObjects = extractObjectsFromXmlContent(fullText)
                         for (const obj of yielder.yieldNewItems(allObjects)) {
@@ -429,17 +411,17 @@ export const llmPluginApp = new Spiceflow({
                             toolName: part.toolName,
                             callId: part.toolCallId,
                             nodeIds: [],
-                            ...part.args,
+                            ...part.input,
                         }
                         fullAnswer += '\n---\n'
                         fullAnswer += `Tool call: ${part.toolName}\n`
-                        fullAnswer += `Args: ${JSON.stringify(part.args)}\n`
+                        fullAnswer += `Args: ${JSON.stringify(part.input)}\n`
                         fullAnswer += '\n'
                         fullAnswer += '---\n'
                     }
                     if (part.type === 'tool-result') {
                         fullAnswer += '\nresult ---\n'
-                        fullAnswer += part.result
+                        fullAnswer += part.output
                         fullAnswer += '\n---\n'
                     }
                 }
