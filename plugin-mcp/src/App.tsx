@@ -1373,7 +1373,7 @@ function MainComponent() {
                 </div>
             )}
             <div className='flex items-center -mt-px justify-between border-framer-divider'>
-                <span className='text-xs grow text-framer-tertiary truncate'>
+                <span className='text-[11px] grow text-framer-tertiary truncate'>
                     {data?.email}
                 </span>
                 <button
