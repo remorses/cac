@@ -347,6 +347,7 @@ model FramerLoginSession {
   framerUserId String?
   projectId    String?
   projectName  String?
+  pluginName   PluginName?
   org          Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")

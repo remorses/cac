@@ -1,6 +1,11 @@
-import { Button } from "@heroui/react"
-import { LoaderFunctionArgs } from 'react-router';
-import { Form, useActionData, useNavigation, useSearchParams } from 'react-router';
+import { Button } from '@heroui/react'
+import { LoaderFunctionArgs } from 'react-router'
+import {
+    Form,
+    useActionData,
+    useNavigation,
+    useSearchParams,
+} from 'react-router'
 import { db } from 'db/kysely'
 import { prisma } from 'db'
 import { safeJsonParse } from 'website/src/lib/utils'
@@ -100,6 +105,7 @@ async function confirmLogin({
     projectId,
     requestData,
     userId,
+    pluginName,
     framerUserId,
 }: {
     key: string
@@ -107,6 +113,7 @@ async function confirmLogin({
     projectId: string
     requestData: any
     userId: string
+    pluginName?: PluginName
     framerUserId: string
 }) {
     if (!key) {
@@ -123,6 +130,10 @@ async function confirmLogin({
         })
         .execute()
 
+    if (pluginName !== undefined && !PluginName[pluginName]) {
+        pluginName = undefined
+    }
+
     const [framerRequest, authUser] = await Promise.all([
         prisma.framerLoginSession.upsert({
             where: { key },
@@ -133,6 +144,7 @@ async function confirmLogin({
                 data: requestData,
                 projectId,
                 projectName,
+                pluginName,
                 orgId,
                 framerUserId,
             },
@@ -167,6 +179,7 @@ export async function action({ request }: LoaderFunctionArgs) {
     const key = url.searchParams.get('key') || ''
     const projectName = url.searchParams.get('projectName') || ''
     const projectId = url.searchParams.get('projectId') || ''
+    const pluginName: any = url.searchParams.get('pluginName') || ''
     const framerUserId = url.searchParams.get('framerUserId') || ''
     let requestData = safeJsonParse(url.searchParams.get('data') || '{}')
 
@@ -175,6 +188,7 @@ export async function action({ request }: LoaderFunctionArgs) {
         projectName,
         projectId,
         requestData,
+        pluginName,
         userId,
         framerUserId,
     })
