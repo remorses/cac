@@ -1249,6 +1249,25 @@ function MainComponent() {
         const storedSessionId = localStorage.getItem('framer-mcp-session-id')
         setSessionId(storedSessionId)
     }, [])
+    useEffect(() => {
+        framer.setMenu([
+            {
+                label: 'Sign Out',
+                async onAction() {
+                    localStorage.removeItem(LocalStorageKeys.sessionId)
+                    await navigate(Paths.login)
+                },
+            },
+            {
+                label: !isExpanded
+                    ? 'Increase Window Size'
+                    : 'Reduce Window Size',
+                onAction() {
+                    useStore.setState({ isExpanded: !isExpanded })
+                },
+            },
+        ])
+    }, [isExpanded])
 
     const mcpServerUrl = sessionId
         ? `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
@@ -1357,15 +1376,6 @@ function MainComponent() {
                 <span className='text-xs grow text-framer-tertiary truncate'>
                     {data?.email}
                 </span>
-                <button
-                    onClick={() => {
-                        localStorage.removeItem(LocalStorageKeys.sessionId)
-                        navigate(Paths.login)
-                    }}
-                    className='!text-xs text-framer-tertiary  transition-colors w-auto bg-transparent'
-                >
-                    sign out
-                </button>
                 <button
                     onClick={toggleExpanded}
                     className='w-auto p-1 bg-transparent hover:bg-framer-secondary rounded transition-colors'
