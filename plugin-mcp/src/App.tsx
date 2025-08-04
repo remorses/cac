@@ -1332,7 +1332,7 @@ function MainComponent() {
 
             <div className='flex items-center justify-start gap-2'>
                 <p className='text-xs text-framer-secondary'>
-                    Keep this plugin open while using MCP.
+                    Keep this plugin open while using MCP
                 </p>
                 <CircleIcon
                     className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
