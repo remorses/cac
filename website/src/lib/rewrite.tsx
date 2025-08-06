@@ -4,7 +4,7 @@ import { createFallback } from 'ai-fallback'
 import { google, GoogleGenerativeAIProviderOptions } from '@ai-sdk/google'
 import dedent from 'string-dedent'
 import { DOMParser, XMLSerializer } from 'xmldom'
-import { z } from 'zod'
+import { z, ZodType } from 'zod'
 import { openai, OpenAIProviderSettings } from '@ai-sdk/openai'
 import {
     ModelMessage,
@@ -32,7 +32,7 @@ export type { FramerLayersTree }
 
 export const RewriteSchema = z.object({
     description: z.string().optional().nullable(),
-    oldText: z.custom<FramerLayersTree>(),
+    oldText: z.any() as ZodType<FramerLayersTree>,
     sourceHtml: z.string().nullable(),
     url: z.string(),
     projectName: z.string().optional(),

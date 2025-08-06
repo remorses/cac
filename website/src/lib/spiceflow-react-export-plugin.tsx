@@ -27,7 +27,7 @@ import { AppError, notifyError } from 'website/src/lib/errors'
 import { qstash } from 'website/src/lib/qstash'
 import { defaultResendOptions, resend } from 'website/src/lib/resend'
 import { deduplicateByKey, isTruthy } from 'website/src/lib/utils'
-import { z } from 'zod'
+import { z, ZodType } from 'zod'
 import { email } from 'zod/v4'
 import { generateUnframerRepo } from './unframer-github-repos'
 
@@ -102,7 +102,7 @@ export const reactPluginApp = new Spiceflow({
         },
         {
             body: z.object({
-                components: z.array(z.custom<ReactExportComponent>()),
+                components: z.array(z.any() as ZodType<ReactExportComponent>),
             }),
         },
     )
@@ -645,22 +645,22 @@ export const reactPluginApp = new Spiceflow({
         },
         {
             body: z.object({
-                components: z.array(z.custom<ReactExportComponent>()),
+                components: z.array(z.any() as ZodType<ReactExportComponent>),
                 breakpoints: z
-                    .array(z.custom<ReactExportComponentBreakpoint>())
+                    .array(z.any() as ZodType<ReactExportComponentBreakpoint>)
                     .optional(),
-                pages: z.array(z.custom<ReactExportWebPage>()).optional(),
+                pages: z.array(z.any() as ZodType<ReactExportWebPage>).optional(),
                 fullFramerProjectId: z.string().optional(),
                 websiteUrl: z.string().optional(),
-                locales: z.array(z.custom<ReactExportLocale>()).optional(),
+                locales: z.array(z.any() as ZodType<ReactExportLocale>).optional(),
                 projectId: z.string(),
                 projectName: z.string().optional().nullable(),
-                colorStyles: z.array(z.custom<ReactExportColorStyle>()),
+                colorStyles: z.array(z.any() as ZodType<ReactExportColorStyle>),
                 framerUserId: z.string().optional(),
                 pageBackgroundColor: z.string().optional(),
                 componentInstances: z
                     .array(
-                        z.custom<Prisma.ReactExportComponentInstanceUncheckedCreateInput>(),
+                        z.any() as ZodType<Prisma.ReactExportComponentInstanceUncheckedCreateInput>,
                     )
                     .optional(),
             }),

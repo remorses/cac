@@ -23,7 +23,7 @@ import {
     upsertGithubFile,
 } from 'website/src/lib/github.server'
 import { generateSecurePassword, sortByKey } from 'website/src/lib/utils'
-import { z } from 'zod'
+import { z, ZodType } from 'zod'
 import { ReactExportProject } from 'db/kysely.types'
 
 const unauthorizedResponse = new Response('Unauthorized', {
@@ -132,10 +132,10 @@ export const reactPluginApp = new Spiceflow({
         },
         {
             body: z.object({
-                components: z.array(z.custom<ReactExportComponent>()),
+                components: z.array(z.any() as ZodType<ReactExportComponent>),
                 projectId: z.string(),
                 projectName: z.string().optional(),
-                colorStyles: z.array(z.custom<ReactExportColorStyle>()),
+                colorStyles: z.array(z.any() as ZodType<ReactExportColorStyle>),
             }),
         },
     )
