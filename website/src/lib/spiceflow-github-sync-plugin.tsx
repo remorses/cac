@@ -23,7 +23,7 @@ import {
 } from 'website/src/lib/github.server'
 import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
 import { canHaveFreePlugin, isTruthy } from 'website/src/lib/utils'
-import { z } from 'zod'
+import { z, ZodType } from 'zod'
 import type { ManagedCollectionField } from 'framer-plugin'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
@@ -656,7 +656,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                 githubAccountLogin: z.string(),
                 projectId: z.string(),
                 projectName: z.string(),
-                mapFieldsConfig: z.custom<ManagedCollectionField[]>().optional(),
+                mapFieldsConfig: (z.any() as ZodType<ManagedCollectionField[]>).optional(),
                 onlyGetFrontmatter: z.boolean().optional(), // TODO remove this
                 enablePartialUpdate: z.boolean().optional(),
             }),

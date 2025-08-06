@@ -23,7 +23,7 @@ import {
     NewExtractedNode,
     framerLayersTreeToXml,
 } from 'plugin-mcp'
-import { z } from 'zod'
+import { z, ZodType } from 'zod'
 import { fetchFormattedHtml } from './htmlrewrite.server'
 import { isTruthy } from './utils'
 
@@ -139,7 +139,7 @@ export const llmPluginApp = new Spiceflow({
             body: z.object({
                 randomId: z.string(),
                 callId: z.string(),
-                tree: z.custom<FramerLayersTree>(),
+                tree: z.any() as ZodType<FramerLayersTree>,
             }),
         },
     )
@@ -468,7 +468,7 @@ export const llmPluginApp = new Spiceflow({
                 projectName: z.string().optional(),
                 randomId: z.string(),
                 description: z.string(),
-                tree: z.custom<FramerLayersTree>(),
+                tree: z.any() as ZodType<FramerLayersTree>,
             }),
         },
     )
