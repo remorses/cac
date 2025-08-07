@@ -5,7 +5,7 @@ export const env = {
     PUBLIC_URL: process.env.PUBLIC_URL,
     PUBLIC_SUPABASE_ANON_KEY: process.env.PUBLIC_SUPABASE_ANON_KEY,
     PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    // SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
     PORT: process.env.PORT || 8040,
     SECRET: process.env.SECRET,

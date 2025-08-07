@@ -1,41 +1,52 @@
-import { deployFly, getDopplerEnv, shell } from '@xmorse/deployment-utils'
+import {
+    deployFly,
+    getCurrentStage,
+    getDopplerEnv,
+    shell,
+} from '@xmorse/deployment-utils'
 import './openapi'
 
 async function main() {
-    // const stage = getCurrentStage()
-    const env = await getDopplerEnv({ stage: 'production', project: 'website' })
+    const stage = getCurrentStage()
+    const env = await getDopplerEnv({ stage, project: 'website' })
     env.FORCE_COLOR = '1'
 
-    await Promise.all([
-        shell(`pnpm --filter spiceflow build`, {
+    if (!process.env.SKIP_BUILD) {
+        await Promise.all([
+            shell(`pnpm --filter spiceflow build`, {
+                env,
+            }),
+        ])
+
+        await shell(`pnpm tsc --incremental`, {
             env,
-        }),
-    ])
+        })
 
-    await shell(`pnpm tsc --incremental`, {
-        env,
-    })
-
-    await Promise.all([
-        shell(`pnpm build`, {
-            env,
-        }),
-    ])
-
+        await Promise.all([
+            shell(`pnpm build`, {
+                env,
+            }),
+        ])
+    }
     const port = 8040
+    const appName =
+        stage === 'production'
+            ? `unframer-website-prod`
+            : `unframer-website-${stage}`
     await deployFly({
-        appName: 'unframer-website-prod',
+        appName,
         port,
         buildRemotely: true,
 
+        strategy: stage === 'production' ? 'bluegreen' : 'immediate',
         dockerfile: 'Dockerfile',
-        minInstances: 1,
         forceHttps: false,
 
-        maxInstances: 3,
-        healthCheckPath: '/api/health',
-        memorySize: '1gb',
+        // healthCheckPath: '/api/health',
         machineType: 'shared-cpu-2x',
+        memorySize: stage === 'production' ? '1gb' : '512mb',
+        maxInstances: stage === 'production' ? 3 : 1,
+        minInstances: stage === 'production' ? 1 : 0,
         depot: true,
 
         env: {

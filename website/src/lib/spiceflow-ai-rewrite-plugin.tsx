@@ -411,7 +411,7 @@ export const llmPluginApp = new Spiceflow({
                             toolName: part.toolName,
                             callId: part.toolCallId,
                             nodeIds: [],
-                            ...part.input,
+                            ...(part.input || {}),
                         }
                         fullAnswer += '\n---\n'
                         fullAnswer += `Tool call: ${part.toolName}\n`

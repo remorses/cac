@@ -7,7 +7,8 @@
         "typecheck": "pnpm react-router typegen && pnpm tsc --noEmit --incremental",
         "build": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=8192' doppler run -c production -- pnpm concurrently 'pnpm react-router build' 'pnpm tsc'",
         "prebuild": "pnpm --filter spiceflow build",
-        "fly": "fly --app unframer-website-prod",
+        "fly:prod": "fly --app unframer-website-prod",
+        "fly:preview": "fly --app unframer-website-preview",
         "deployment": "doppler run -- pnpm vite-node scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
         "typegen": "pnpm react-router typegen",
@@ -22,7 +23,7 @@
         "dev": "doppler run -- react-router dev -p 8040",
         "serve-plugin": "serve public --cors --ssl-cert localhost.pem --ssl-key localhost-key.pem",
         "dev:prod": "doppler run -c production -- react-router dev -p 8040",
-        "start": "PORT=8040 doppler run --command 'node ./build/server/index.js'"
+        "start": "PORT=8040 doppler run --command 'node ./build/server/server.js'"
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^2.0.0",
@@ -37,7 +38,7 @@
         "@mdx-js/react": "^3.1.0",
         "@mdx-js/rollup": "^3.1.0",
         "@octokit/webhooks": "^13.4.2",
-        "@prisma/client": "^6.11.1",
+        "@prisma/client": "^6.13.0",
         "@react-router/fs-routes": "^7.6.3",
         "@react-router/node": "^7.6.3",
         "@react-router/serve": "^7.6.3",
@@ -62,7 +63,7 @@
         "@types/xmldom": "^0.1.34",
         "@upstash/qstash": "^2.8.1",
         "@xmldom/xmldom": "^0.9.7",
-        "@xmorse/deployment-utils": "^0.4.2",
+        "@xmorse/deployment-utils": "file:../../notaku/deployment-utils",
         "ai": "^5.0.0",
         "ai-cache": "workspace:*",
         "ai-fallback": "^1.0.2",
@@ -114,7 +115,7 @@
         "react-dom": "19.1.0",
         "react-hot-toast": "^2.5.2",
         "react-router": "^7.6.3",
-        "react-router-hono-server": "^2.13.0",
+        "react-router-hono-server": "2.13.0",
         "rehype-mdx-import-media": "^1.2.0",
         "rehype-slug": "^6.0.0",
         "rehype-stringify": "^10.0.1",
@@ -140,7 +141,7 @@
         "type-fest": "^4.33.0",
         "unframer": "2.26.0",
         "unframer-deploy-demo": "workspace:*",
-        "unframer-workspace": "link:../unframer/unframer",
+        "unframer-workspace": "file:../unframer/unframer",
         "unified": "^11.0.5",
         "unist-util-visit": "^5.0.0",
         "unplugin-jsx-string": "^0.8.0",
@@ -149,7 +150,7 @@
         "xmldom": "^0.6.0",
         "zod": "^4.0.14",
         "zod-form-data": "^2.0.5",
-        "zod-validation-error": "^3.4.0"
+        "zod-validation-error": "^4.0.1"
     },
     "devDependencies": {
         "@react-router/dev": "^7.6.2",

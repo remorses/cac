@@ -2,7 +2,10 @@
 import mdx from '@mdx-js/rollup'
 import { reactRouter } from '@react-router/dev/vite'
 import withToc from '@stefanprobst/rehype-extract-toc'
-import { viteExternalsPlugin } from '@xmorse/deployment-utils/dist/vite-externals-plugin'
+import {
+    viteExternalsPlugin,
+    reactRouterServerPlugin,
+} from '@xmorse/deployment-utils'
 import { reactRouterHonoServer } from 'react-router-hono-server/dev'
 import rehypeMdxImportMedia from 'rehype-mdx-import-media'
 import withSlugs from 'rehype-slug'
@@ -66,7 +69,6 @@ export default defineConfig({
         }),
         // TODO vitest breaks with opentelemetry invalid esm output, react router makes vitest import the module package.json file
         !process.env.VITEST && reactRouter(),
-        reactRouterHonoServer(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
         // Inspect(),
@@ -80,6 +82,7 @@ export default defineConfig({
                 'pg',
             ],
         }),
+        reactRouterServerPlugin({ port: '8040' }),
         {
             apply(config, env) {
                 if (env.isSsrBuild) {

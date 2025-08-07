@@ -14,8 +14,9 @@ async function checkDatabaseConnection() {
             },
         })
     } catch (error) {
+        console.error(error)
         console.timeEnd(label);
-        return new Response('Database health check failed', {
+        return new Response(error?.message, {
             status: 503,
             headers: {
                 'Content-Type': 'text/plain',
