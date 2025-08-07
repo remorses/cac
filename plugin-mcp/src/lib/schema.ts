@@ -328,7 +328,7 @@ export const mcpTools = {
     },
     searchFonts: {
         description: dedent`
-            Search for fonts by selector substring. Returns max 20 results. Use specific search terms for better results.
+            Search for Framer available fonts by selector substring. This tool searches among  all available fonts on Framer. Returns max 20 results. Use specific search terms for better results.
 
             IMPORTANT: The returned 'selector' field is what you use in XML font attributes:
             <Text font="GF;Inter-600">Bold text</Text>
