@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:22-slim
+FROM --platform=linux/amd64 node:24-slim
 
 WORKDIR /app
 
@@ -13,6 +13,6 @@ COPY ./public /app/public
 
 ENV PORT=8040
 
-EXPOSE $PORT
+EXPOSE 8040
 
-CMD ["node", "./build/server/index.js"]
+CMD ["node", "./build/server/server.js"]

@@ -49,11 +49,12 @@ export async function action({ request }: ActionFunctionArgs) {
         }
         return redirect(next || '/subscriptions', { headers })
     } catch (error: any) {
+        let message = error.message
         if (error instanceof z.ZodError) {
-            error = fromZodError(error)
+            message = z.prettifyError(error)
         }
         notifyError(error, 'Error verifying OTP')
-        return json({ error: error.message }, { status: 400 })
+        return json({ error: message }, { status: 400 })
     }
 }
 

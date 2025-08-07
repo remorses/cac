@@ -6,20 +6,6 @@ import { createServerClient, parse, serialize } from '@supabase/ssr'
 import { env } from './env'
 import { notifyError } from './errors'
 
-export function createSupabaseAdmin() {
-    return createClient<any>(
-        env.PUBLIC_SUPABASE_URL!,
-        env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-            auth: {
-                persistSession: false,
-
-                autoRefreshToken: false,
-                detectSessionInUrl: false,
-            }, //
-        },
-    )
-}
 
 export function createSupabaseAnon() {
     return createClient<any>(

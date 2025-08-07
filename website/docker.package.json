@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {},
   "dependencies": {
-    "@prisma/client": "^6.11.1",
+    "@prisma/client": "^6.13.0",
     "@sentry/node": "^9.30.0",
     "htmlrewriter": "^0.0.12",
     "pg": "^8.16.3",

@@ -15,3 +15,4 @@ prisma-generated
 .prisma
 .prisma/**
 .wrangler
+generated
