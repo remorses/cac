@@ -8,7 +8,8 @@ import {
     framerLayersTreeToXml,
     rewriteXmlContentForTests,
     splitTreeInChunks,
-    xmlToFramerLayersTree
+    xmlToFramerLayersTree,
+    type FramerLayersTree
 } from 'plugin-mcp'
 import dedent from 'string-dedent'
 
@@ -555,6 +556,312 @@ test('oldTextTreeToXml', async () => {
       </AiKitNav>
       "
     `)
+})
+
+test('maxCharacters limit truncates deep nodes', () => {
+    // Create a tree where depth-1 nodes will get truncated
+    const tree: FramerLayersTree = [
+        {
+            name: 'Container1',
+            nodeId: 'container1',
+            attributes: {
+                width: '100px',
+                height: '200px',
+            },
+            content: 'Container with lots of content that will push us over the character limit quickly',
+            children: [
+                {
+                    name: 'Child1',
+                    nodeId: 'child1',
+                    content: 'This child should be truncated',
+                    children: [
+                        {
+                            name: 'GrandChild1',
+                            nodeId: 'grandchild1',
+                            content: 'This grandchild should definitely not appear',
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            name: 'Container2',
+            nodeId: 'container2',
+            content: 'Second container',
+            children: [
+                {
+                    name: 'Child2',
+                    nodeId: 'child2',
+                    content: 'This should also be truncated',
+                    children: [],
+                },
+            ],
+        },
+    ]
+
+    // Test with a limit that truncates at depth 1
+    const result = framerLayersTreeToXml(tree, { maxCharacters: 150 })
+    
+    expect(result).toMatchInlineSnapshot(`
+      "<Container1 width="100px" height="200px">
+        Container with lots of content that will push us over the character limit quickly
+        <Child1>
+          This child should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Child1>
+      </Container1>
+      <Container2>
+        Second container
+        <Child2 nodeId="child2">
+          This should also be truncated
+        </Child2>
+      </Container2>
+      "
+    `)
+})
+
+test('maxCharacters with small limit', () => {
+    const tree: FramerLayersTree = [
+        {
+            name: 'Container',
+            children: [
+                {
+                    name: 'Child',
+                    children: [
+                        {
+                            name: 'GrandChild',
+                            content: 'Deep content',
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        },
+    ]
+
+    // Test with limit of 50 - should render first level then truncate
+    const result = framerLayersTreeToXml(tree, { maxCharacters: 50 })
+    
+    expect(result).toMatchInlineSnapshot(`
+      "<Container>
+        <Child>
+          <GrandChild>
+            Deep content
+          </GrandChild>
+        </Child>
+      </Container>
+      "
+    `)
+})
+
+test('maxCharacters with many deep nodes', () => {
+    // Create a tree where second depth-1 container will be truncated
+    const tree: FramerLayersTree = [
+        {
+            name: 'SmallContainer',  // This depth-1 will render fully
+            content: 'First small container',
+            children: [
+                {
+                    name: 'Child1',
+                    content: 'Small child 1',
+                    children: [],
+                },
+                {
+                    name: 'Child2',
+                    content: 'Small child 2',
+                    children: [],
+                },
+            ],
+        },
+        {
+            name: 'LargeContainer',  // This depth-1 should get truncated
+            content: 'Second large container that should trigger truncation',
+            children: Array.from({ length: 10 }, (_, i) => ({
+                name: `Node${i}`,
+                content: `Node ${i} content that should be truncated`,
+                children: Array.from({ length: 3 }, (_, j) => ({
+                    name: `Deep${i}_${j}`,
+                    content: `Deep content ${i}-${j}`,
+                    children: [],
+                })),
+            })),
+        },
+        {
+            name: 'ThirdContainer',  // This depth-1 should also be truncated
+            children: [
+                {
+                    name: 'ChildA',
+                    content: 'This should also be truncated',
+                    children: [],
+                },
+            ],
+        },
+    ]
+
+    // With a limit that allows first container but truncates second
+    const result = framerLayersTreeToXml(tree, { maxCharacters: 200 })
+    
+    expect(result).toMatchInlineSnapshot(`
+      "<SmallContainer>
+        First small container
+        <Child1>
+          Small child 1
+        </Child1>
+        <Child2>
+          Small child 2
+        </Child2>
+      </SmallContainer>
+      <LargeContainer>
+        Second large container that should trigger truncation
+        <Node0>
+          Node 0 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node0>
+        <Node1>
+          Node 1 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node1>
+        <Node2>
+          Node 2 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node2>
+        <Node3>
+          Node 3 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node3>
+        <Node4>
+          Node 4 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node4>
+        <Node5>
+          Node 5 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node5>
+        <Node6>
+          Node 6 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node6>
+        <Node7>
+          Node 7 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node7>
+        <Node8>
+          Node 8 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node8>
+        <Node9>
+          Node 9 content that should be truncated
+          <!-- Call getNodeXml on this node to get more details, character limit was reached -->
+        </Node9>
+      </LargeContainer>
+      <ThirdContainer>
+        <ChildA>
+          This should also be truncated
+        </ChildA>
+      </ThirdContainer>
+      "
+    `)
+})
+
+test('componentId deduplication of attribute comments', () => {
+    const tree: FramerLayersTree = [
+        {
+            name: 'Root',
+            children: [
+                {
+                    name: 'ComponentInstance',
+                    nodeId: 'instance1',
+                    attributes: {
+                        componentId: 'comp123',
+                        customProp: 'value1',
+                        width: '100px',
+                    },
+                    attrControlsComments: {
+                        componentId: 'the component id this instance uses',
+                        customProp: 'A custom property for this component',
+                        width: 'Width of the component',
+                    },
+                    children: [],
+                },
+                {
+                    name: 'ComponentInstance',
+                    nodeId: 'instance2',
+                    attributes: {
+                        componentId: 'comp123',  // Same componentId
+                        customProp: 'value2',
+                        height: '200px',
+                    },
+                    attrControlsComments: {
+                        componentId: 'the component id this instance uses',
+                        customProp: 'A custom property for this component',
+                        height: 'Height of the component',
+                    },
+                    children: [],
+                },
+                {
+                    name: 'ComponentInstance',
+                    nodeId: 'instance3',
+                    attributes: {
+                        componentId: 'comp456',  // Different componentId
+                        customProp: 'value3',
+                    },
+                    attrControlsComments: {
+                        componentId: 'the component id this instance uses',
+                        customProp: 'Another custom property',
+                    },
+                    children: [],
+                },
+            ],
+        },
+    ]
+
+    const result = framerLayersTreeToXml(tree, { shouldAddNodeIdAlways: true })
+    
+    // Add inline snapshot to see the actual output
+    expect(result).toMatchInlineSnapshot(`
+      "<Root>
+        <ComponentInstance
+            nodeId="instance1"
+            <!-- the component id this instance uses -->
+            componentId="comp123"
+            <!-- A custom property for this component -->
+            customProp="value1"
+            <!-- Width of the component -->
+            width="100px"
+         />
+        <ComponentInstance
+            nodeId="instance2"
+            <!-- the component id this instance uses -->
+            componentId="comp123"
+            customProp="value2"
+            height="200px"
+         />
+        <ComponentInstance
+            nodeId="instance3"
+            <!-- the component id this instance uses -->
+            componentId="comp456"
+            <!-- Another custom property -->
+            customProp="value3"
+         />
+      </Root>
+      "
+    `)
+    
+    // First instance should have all comments
+    expect(result).toContain('<!-- A custom property for this component -->')
+    
+    // Count occurrences of the custom property comment
+    const customPropCommentCount = (result.match(/<!-- A custom property for this component -->/g) || []).length
+    // Should only appear once (for the first instance with comp123)
+    expect(customPropCommentCount).toBe(1)
+    
+    // The componentId comment should appear for all instances (it's a non-component-specific comment)
+    const componentIdCommentCount = (result.match(/<!-- the component id this instance uses -->/g) || []).length
+    expect(componentIdCommentCount).toBe(3)
+    
+    // Different component should have its own comment
+    expect(result).toContain('<!-- Another custom property -->')
 })
 
 test('splitTreeInChunks', () => {

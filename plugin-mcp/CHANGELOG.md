@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-01-30 19:40
+
+- Added maxCharacters parameter to XML tree serialization with 50k default limit
+- When character limit is exceeded, stops rendering children of depth-1 nodes (direct children of root)
+- Adds comment "Call getNodeXml on this node to get more details, character limit was reached" for truncated nodes
+- Optimized attribute comments to show only once per componentId to reduce token usage
+- Component-specific attribute comments are now deduplicated across instances with same componentId
+
 ## 2025-01-30 15:00
 
 - Added permission checks to lib/framer.ts functions that mutate Framer data

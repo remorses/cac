@@ -240,11 +240,23 @@ export function framerLayersTreeToXml(
         shouldAddNodeIdAlways?: boolean
         indent?: string
         showReplicaChildren?: boolean
+        maxCharacters?: number
+        currentDepth?: number
+        currentCharCount?: number
     } = {},
 ): string {
-    const { shouldAddNodeIdAlways = false, indent = '' } = options
+    const { 
+        shouldAddNodeIdAlways = false, 
+        indent = '', 
+        maxCharacters = 50000,
+        currentDepth = 0,
+        currentCharCount = 0
+    } = options
+    
     let xml = ''
-
+    let charCount = currentCharCount
+    const seenComponentIds = new Set<string>()
+    
     for (const node of tree) {
         if (!node) {
             continue
@@ -252,13 +264,20 @@ export function framerLayersTreeToXml(
 
         if (node.name === '') {
             if (node.content) {
-                xml += `${indent}${escapeXml(node.content)}\n`
+                const line = `${indent}${escapeXml(node.content)}\n`
+                xml += line
+                charCount += line.length
             }
             if (node.children && node.children.length > 0) {
-                xml += framerLayersTreeToXml(node.children, {
+                const childXml = framerLayersTreeToXml(node.children, {
                     shouldAddNodeIdAlways,
                     indent,
+                    maxCharacters,
+                    currentDepth: currentDepth + 1,
+                    currentCharCount: charCount,
                 })
+                xml += childXml
+                charCount += childXml.length
             }
             continue
         }
@@ -284,13 +303,23 @@ export function framerLayersTreeToXml(
         if (shouldAddNodeId && node.nodeId) {
             attributes.push(`nodeId="${node.nodeId}"`)
         }
+        
+        // Track componentId to avoid duplicate comments
+        const componentId = node.attributes?.componentId
+        const shouldShowComments = !componentId || !seenComponentIds.has(componentId)
+        if (componentId && shouldShowComments) {
+            seenComponentIds.add(componentId)
+        }
 
         let hasComments = false
         if (node.attributes) {
             for (const [key, value] of Object.entries(node.attributes)) {
                 if (value !== undefined && value !== null) {
                     const comment = node.attrControlsComments?.[key]
-                    if (comment != null && comment) {
+                    // Only show comments if this is the first instance of this componentId
+                    // or if it's not a component-specific attribute comment
+                    const isComponentSpecificComment = comment && !['componentId', 'inlineTextStyle', 'backgroundImage', 'backgroundColor'].includes(key)
+                    if (comment != null && comment && (shouldShowComments || !isComponentSpecificComment)) {
                         hasComments = true
                         attributes.push(
                             `<!-- ${comment} -->\n${indent}    ${key}="${value}"`,
@@ -325,22 +354,43 @@ export function framerLayersTreeToXml(
         const isSelfClosing = !hasContent && !hasChildren && !node.disableSelfClosing
 
         if (isSelfClosing) {
-            xml += `${indent}<${nodeName}${attributesString} />\n`
+            const line = `${indent}<${nodeName}${attributesString} />\n`
+            xml += line
+            charCount += line.length
         } else {
-            xml += `${indent}<${nodeName}${attributesString}>\n`
+            const openTag = `${indent}<${nodeName}${attributesString}>\n`
+            xml += openTag
+            charCount += openTag.length
 
             if (node.content) {
-                xml += `${indent}  ${escapeXml(node.content)}\n`
+                const contentLine = `${indent}  ${escapeXml(node.content)}\n`
+                xml += contentLine
+                charCount += contentLine.length
             }
 
             if (node.children && node.children.length > 0) {
-                xml += framerLayersTreeToXml(node.children, {
-                    shouldAddNodeIdAlways,
-                    indent: indent + '  ',
-                })
+                // If we're at depth 1 and we've already exceeded the limit, add comment instead of rendering children
+                if (currentDepth === 1 && charCount > maxCharacters) {
+                    const comment = `${indent}  <!-- Call getNodeXml on this node to get more details, character limit was reached -->\n`
+                    xml += comment
+                    charCount += comment.length
+                } else {
+                    // Otherwise render children normally
+                    const childXml = framerLayersTreeToXml(node.children, {
+                        shouldAddNodeIdAlways,
+                        indent: indent + '  ',
+                        maxCharacters,
+                        currentDepth: currentDepth + 1,
+                        currentCharCount: charCount,
+                    })
+                    xml += childXml
+                    charCount += childXml.length
+                }
             }
 
-            xml += `${indent}</${nodeName}>\n`
+            const closeTag = `${indent}</${nodeName}>\n`
+            xml += closeTag
+            charCount += closeTag.length
         }
     }
 
