@@ -368,6 +368,7 @@ async function push({
     text,
     nodeId,
     isRootNode = false,
+    visitedComponents,
 }: {
     tree: FramerLayersTree
     node: AnyNode
@@ -375,6 +376,7 @@ async function push({
     nodeId: string
     isReplica?: boolean
     isRootNode?: boolean
+    visitedComponents?: Set<string>
 }) {
     const parents = (await collectGenerator(getParentNodes(node))).reverse()
     let currentLevel = tree
@@ -417,7 +419,7 @@ async function push({
     }
 
     let { attributes, attrControlsComments } =
-        await getNodeAttributesForXml(node)
+        await getNodeAttributesForXml(node, visitedComponents)
 
     // Add comment for root replica nodes
     if (isRootNode && node.isReplica) {
@@ -475,6 +477,7 @@ export async function getFramerTree({
 
     let componentInstanceChildrenSeen = new Set<string>()
     let rootNodeIds = new Set<string>(rootNodes.map((n) => n.id))
+    let visitedComponents = new Set<string>()
 
     async function handleNode(node: AnyNode) {
         if (isTextNode(node)) {
@@ -497,6 +500,7 @@ export async function getFramerTree({
                     nodeId: node.id,
                     isReplica: node.isReplica,
                     isRootNode: rootNodeIds.has(node.id),
+                    visitedComponents,
                 })
             }
             // Return early for text nodes to avoid duplicate push
@@ -516,6 +520,7 @@ export async function getFramerTree({
             nodeId: node.id,
             isReplica: node.isReplica,
             isRootNode: rootNodeIds.has(node.id),
+            visitedComponents,
         })
     }
 
@@ -593,7 +598,7 @@ export async function discardFramerChanges({
 }) {
     // Check permissions before proceeding
     checkPermissions('Node.setAttributes', 'TextNode.setText')
-    
+
     const allNodes = bfsFramerLayersTree(previousTree).filter((x) => x?.nodeId)
     const promises = allNodes.map(async (oldNodeObj) => {
         const { nodeId, content: oldContent, attributes } = oldNodeObj
@@ -630,7 +635,7 @@ export const ATTRIBUTE_DEFAULTS = {
     // height: 'fit-content',
 } as const
 
-async function getNodeAttributesForXml(node: AnyNode) {
+async function getNodeAttributesForXml(node: AnyNode, visitedComponents?: Set<string>) {
     let attributes = {} as Record<string, any>
 
     // Helper to add attribute only if it differs from default
@@ -762,15 +767,21 @@ async function getNodeAttributesForXml(node: AnyNode) {
             attrComments.componentId = 'the component id this instance uses'
         }
 
-        if (!node.insertURL) {
-            console.log(`no node.insertURL for component instance ${node.name}`)
-        }
-        const { comments: controlComments } =
-            await getComponentPropertyControls(node.insertURL || undefined)
 
-        // Merge control comments into the main comments object
-        if (controlComments) {
-            Object.assign(attrComments, controlComments)
+
+        if (!visitedComponents?.has(componentId || node.id)) {
+            if (!node.insertURL) {
+                console.log(`no node.insertURL for component instance ${node.name}`)
+            }
+            const { comments: controlComments,  } =
+                await getComponentPropertyControls(node.insertURL || undefined)
+
+            if (controlComments) {
+                Object.assign(attrComments, controlComments)
+                if (visitedComponents && componentId) {
+                    visitedComponents.add(componentId)
+                }
+            }
         }
 
         // Add all controls as top-level attributes
