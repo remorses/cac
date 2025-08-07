@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createMCPClient } from './mcp-client.js'
 
-const mcpUrl = 'https://mcp.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=du1SMfMxF9jeNC4ASSVtJfjjsV7PdkkP'
+const mcpUrl = 'https://mcp.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
 
 describe(
     'Framer MCP Server Tests',
