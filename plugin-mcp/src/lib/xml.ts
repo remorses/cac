@@ -95,7 +95,7 @@ export function extractObjectsFromXmlContent(xml: string) {
         } else {
             const dfs = (node: any, lastParentWithId?: string) => {
                 let currentParentId = lastParentWithId
-                
+
                 if (
                     node.type === ElementType.Tag &&
                     node.attribs &&
@@ -126,7 +126,7 @@ export function extractObjectsFromXmlContent(xml: string) {
                     if (lastParentWithId) {
                         extractedNode.parentId = lastParentWithId
                     }
-                    
+
                     // This node becomes the parent for its children
                     currentParentId = nodeId
 
@@ -245,18 +245,18 @@ export function framerLayersTreeToXml(
         currentCharCount?: number
     } = {},
 ): string {
-    const { 
-        shouldAddNodeIdAlways = false, 
-        indent = '', 
-        maxCharacters = 50000,
+    const {
+        shouldAddNodeIdAlways = false,
+        indent = '',
+        maxCharacters = 20000,
         currentDepth = 0,
         currentCharCount = 0
     } = options
-    
+
     let xml = ''
     let charCount = currentCharCount
     const seenComponentIds = new Set<string>()
-    
+
     for (const node of tree) {
         if (!node) {
             continue
@@ -303,7 +303,7 @@ export function framerLayersTreeToXml(
         if (shouldAddNodeId && node.nodeId) {
             attributes.push(`nodeId="${node.nodeId}"`)
         }
-        
+
         // Track componentId to avoid duplicate comments
         const componentId = node.attributes?.componentId
         const shouldShowComments = !componentId || !seenComponentIds.has(componentId)
