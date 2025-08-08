@@ -33,12 +33,12 @@ export class MyMCP extends McpAgent<Env> {
         },
     )
 
-    // onError(error: Error): { status: number; message: string } {
-    //     return {
-    //         status: 500,
-    //         message: `Error initializing MCP: ${error instanceof Error ? error.message : String(error)}`,
-    //     }
-    // }
+    onError(error: Error): { status: number; message: string } {
+        return {
+            status: 500,
+            message: `Error initializing MCP: ${error instanceof Error ? error.message : String(error)}`,
+        }
+    }
 
     async init() {
         const server = this.server

@@ -682,8 +682,8 @@ importers:
         specifier: ^9.22.0
         version: 9.30.0
       agents:
-        specifier: 0.0.0-2ef5f99
-        version: 0.0.0-2ef5f99(@cloudflare/workers-types@4.20250806.0)(react@19.1.0)
+        specifier: 0.0.111
+        version: 0.0.111(@cloudflare/workers-types@4.20250806.0)(react@19.1.0)
       camelcase:
         specifier: ^8.0.0
         version: 8.0.0
@@ -6243,8 +6243,8 @@ packages:
     resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
     engines: {node: '>= 8.0.0'}
 
-  agents@0.0.0-2ef5f99:
-    resolution: {integrity: sha512-n1CUoSdlAmWKbQmwbM9hWwxcFN9eYMTP9a4oRH8JNYpEfACdMGJRG/T7w+G9WIFSVQOcOMeIoiWt+Y911bN/gQ==}
+  agents@0.0.111:
+    resolution: {integrity: sha512-olF3ke0svv/BxI1fHAuUGOfztHpwAYkJOMGmAAmNRUPH8zAit1VDgfOi8JC1uoulC8ICqk9Y0K1G+lkxW1eNUw==}
     peerDependencies:
       react: '*'
 
@@ -17576,7 +17576,7 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  agents@0.0.0-2ef5f99(@cloudflare/workers-types@4.20250806.0)(react@19.1.0):
+  agents@0.0.111(@cloudflare/workers-types@4.20250806.0)(react@19.1.0):
     dependencies:
       '@modelcontextprotocol/sdk': 1.17.2
       ai: 4.3.19(react@19.1.0)(zod@3.25.76)
