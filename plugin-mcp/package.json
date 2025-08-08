@@ -18,7 +18,7 @@
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.17.0",
         "@sentry/browser": "^9.22.0",
-        "agents": "^0.0.109",
+        "agents": "^0.0.111",
         "camelcase": "^8.0.0",
         "dom-serializer": "^2.0.0",
         "framer-plugin": "^3.5.2",
