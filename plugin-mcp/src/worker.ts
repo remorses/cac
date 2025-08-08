@@ -33,6 +33,13 @@ export class MyMCP extends McpAgent<Env> {
         },
     )
 
+    // onError(error: Error): { status: number; message: string } {
+    //     return {
+    //         status: 500,
+    //         message: `Error initializing MCP: ${error instanceof Error ? error.message : String(error)}`,
+    //     }
+    // }
+
     async init() {
         const server = this.server
         const websocketId = this.props?.websocketId as string
@@ -362,21 +369,15 @@ export default {
             websocketId: id,
             secret,
         }
-        try {
-            if (url.pathname === '/sse' || url.pathname === '/sse/message') {
-                const mcp = MyMCP.serveSSE('/sse')
 
-                return mcp.fetch(request, env, ctx)
-            }
+        if (url.pathname === '/sse' || url.pathname === '/sse/message') {
+            const mcp = MyMCP.serveSSE('/sse')
 
-            if (url.pathname === '/mcp') {
-                return MyMCP.serve('/mcp').fetch(request, env, ctx)
-            }
-        } catch (error) {
-            return new Response(
-                `Error initializing MCP: ${error instanceof Error ? error.message : String(error)}`,
-                { status: 500 },
-            )
+            return mcp.fetch(request, env, ctx)
+        }
+
+        if (url.pathname === '/mcp') {
+            return MyMCP.serve('/mcp').fetch(request, env, ctx)
         }
 
         if (url.pathname === new URL(codeComponentsResourceUri).pathname) {
