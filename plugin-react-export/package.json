@@ -8,6 +8,7 @@
         "dev:prod": "doppler run -c production -- vite",
         "check": "pnpm tsc --incremental",
         "typecheck": "pnpm tsc --noEmit --incremental",
+        "pack": "npx -y framer-plugin-tools@latest pack && open -R plugin.zip",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
         "start": "vite preview --port 5173"
     },
