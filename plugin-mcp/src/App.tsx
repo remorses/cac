@@ -14,6 +14,7 @@ import {
     FramerLayersTree,
     McpToolNames,
 } from './lib/schema'
+import type { TextStyleProperties } from './lib/schema'
 import './lib/framer'
 import { useStore } from './lib/store'
 import {
@@ -263,6 +264,7 @@ async function websocketHandler({
                                 name: 'TextStyle',
                                 attributes: {
                                     path: style.path,
+                                    font: style.font?.selector || '',
                                     fontSize: style.fontSize || '',
                                     lineHeight: style.lineHeight || '',
                                     letterSpacing: style.letterSpacing || '',
@@ -596,6 +598,9 @@ async function websocketHandler({
                 (style) => style.path === stylePath,
             )
 
+            // Get fonts if font property is provided
+            const fonts = properties.font ? await framer.getFonts() : []
+
             // Get color styles once if needed
             const needsColorStyles =
                 (typeof properties.color === 'string' &&
@@ -607,59 +612,69 @@ async function websocketHandler({
                 ? await framer.getColorStyles()
                 : []
 
+            // Type for both create and update text style attributes
+            type TextStyleAttributes =  Parameters<TextStyle['setAttributes']>[0]
+
+            // Helper function to process attributes
+            const processAttributes = (attrs: TextStyleProperties): TextStyleAttributes => {
+                const processed: TextStyleAttributes = { ...attrs } as any
+
+                // Convert font selector string to Font instance
+                if (attrs.font && typeof attrs.font === 'string') {
+                    const font = fonts.find(
+                        (f) => f.selector === attrs.font,
+                    )
+                    if (!font) {
+                        throw new Error(`Font with selector "${attrs.font}" not found. Use searchFonts tool to find available fonts.`)
+                    }
+                    processed.font = font
+                }
+
+                // Handle color style paths for color field
+                if (
+                    typeof attrs.color === 'string' &&
+                    attrs.color.startsWith('/')
+                ) {
+                    const colorStyle = colorStyles.find(
+                        (style) => style.path === attrs.color,
+                    )
+                    if (!colorStyle) {
+                        throw new Error(`Color style with path ${attrs.color} not found.`)
+                    }
+                    processed.color = colorStyle
+                }
+
+                // Handle color style paths for decorationColor field
+                if (
+                    typeof attrs.decorationColor === 'string' &&
+                    attrs.decorationColor.startsWith('/')
+                ) {
+                    const colorStyle = colorStyles.find(
+                        (style) => style.path === attrs.decorationColor,
+                    )
+                    if (!colorStyle) {
+                        throw new Error(`Color style with path ${attrs.decorationColor} not found.`)
+                    }
+                    processed.decorationColor = colorStyle as any // TODO weirdly decorationColor needs ColorStyleData but ColorStyleData is not something frame API exposes
+                }
+
+                return processed
+            }
+
             if (type === 'create') {
                 if (existingStyle) {
                     return `Text style with path ${stylePath} already exists. Use type: "update" to modify it.`
                 }
 
-                // Prepare the attributes with proper types
-                type TextStyleAttributes = Parameters<
-                    typeof framer.createTextStyle
-                >[0]
-
                 // Filter out name property as Framer derives it from the path
                 const { name, ...propertiesWithoutName } = properties
 
-                const attributes: TextStyleAttributes = {
-                    ...propertiesWithoutName,
-                    path: stylePath,
-                }
-
-                // Handle color style paths for color field
-                if (
-                    typeof properties.color === 'string' &&
-                    properties.color.startsWith('/')
-                ) {
-                    const colorStyle = colorStyles.find(
-                        (style) => style.path === properties.color,
-                    )
-
-                    if (!colorStyle) {
-                        return `Color style with path ${properties.color} not found.`
-                    }
-
-                    // Use the color style object instead of the path string
-                    attributes.color = colorStyle as any
-                }
-
-                // Handle color style paths for decorationColor field
-                if (
-                    typeof properties.decorationColor === 'string' &&
-                    properties.decorationColor.startsWith('/')
-                ) {
-                    const colorStyle = colorStyles.find(
-                        (style) => style.path === properties.decorationColor,
-                    )
-
-                    if (!colorStyle) {
-                        return `Color style with path ${properties.decorationColor} not found.`
-                    }
-
-                    // Use the color style object instead of the path string
-                    attributes.decorationColor = colorStyle as any
-                }
-
                 try {
+                    const attributes = {
+                        ...processAttributes(propertiesWithoutName),
+                        path: stylePath,
+                    }
+
                     const result = await framer.createTextStyle(attributes)
 
                     if (!result) {
@@ -691,67 +706,33 @@ async function websocketHandler({
                     return `Text style with path ${stylePath} not found. Use type: "create" to make a new style.`
                 }
 
-                // Prepare the attributes with proper types
-                type TextStyleAttributes = Parameters<
-                    TextStyle['setAttributes']
-                >[0]
-                const attributes: TextStyleAttributes = { ...properties }
+                try {
+                    const attributes = processAttributes(properties)
 
-                // Handle color style paths for color field
-                if (
-                    typeof properties.color === 'string' &&
-                    properties.color.startsWith('/')
-                ) {
-                    const colorStyle = colorStyles.find(
-                        (style) => style.path === properties.color,
-                    )
+                    const result = await existingStyle.setAttributes(attributes)
 
-                    if (!colorStyle) {
-                        return `Color style with path ${properties.color} not found.`
+                    if (!result) {
+                        return `Failed to update text style ${stylePath}.`
                     }
 
-                    // Use the color style object instead of the path string
-                    attributes.color = colorStyle as any
-                }
-
-                // Handle color style paths for decorationColor field
-                if (
-                    typeof properties.decorationColor === 'string' &&
-                    properties.decorationColor.startsWith('/')
-                ) {
-                    const colorStyle = colorStyles.find(
-                        (style) => style.path === properties.decorationColor,
-                    )
-
-                    if (!colorStyle) {
-                        return `Color style with path ${properties.decorationColor} not found.`
+                    return {
+                        message: `Successfully updated text style: ${result.name}`,
+                        style: {
+                            path: result.path,
+                            name: result.name,
+                            fontSize: result.fontSize,
+                            lineHeight: result.lineHeight,
+                            letterSpacing: result.letterSpacing,
+                            paragraphSpacing: result.paragraphSpacing,
+                            transform: result.transform,
+                            alignment: result.alignment,
+                            decoration: result.decoration,
+                            balance: result.balance,
+                            tag: result.tag,
+                        },
                     }
-
-                    // Use the color style object instead of the path string
-                    attributes.decorationColor = colorStyle as any
-                }
-
-                const result = await existingStyle.setAttributes(attributes)
-
-                if (!result) {
-                    return `Failed to update text style ${stylePath}.`
-                }
-
-                return {
-                    message: `Successfully updated text style: ${result.name}`,
-                    style: {
-                        path: result.path,
-                        name: result.name,
-                        fontSize: result.fontSize,
-                        lineHeight: result.lineHeight,
-                        letterSpacing: result.letterSpacing,
-                        paragraphSpacing: result.paragraphSpacing,
-                        transform: result.transform,
-                        alignment: result.alignment,
-                        decoration: result.decoration,
-                        balance: result.balance,
-                        tag: result.tag,
-                    },
+                } catch (error) {
+                    return `Failed to update text style: ${error instanceof Error ? error.message : 'Unknown error'}`
                 }
             }
         }
