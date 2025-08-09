@@ -26,7 +26,6 @@ const colorStylePropertiesSchema = z.object({
 })
 
 const textStylePropertiesSchema = z.object({
-    name: z.string().optional().describe('The display name of the text style'),
     tag: z
         .enum(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'])
         .optional()
@@ -515,6 +514,7 @@ export const mcpTools = {
 
 /* ──────────────────────────── Types ─────────────────────────── */
 export type McpToolNames = keyof typeof mcpTools
+export type TextStyleProperties = z.infer<typeof textStylePropertiesSchema>
 
 type McpToolMsg<T extends McpToolNames> = {
     type: T
