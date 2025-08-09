@@ -403,7 +403,7 @@ export const reactPluginApp = new Spiceflow({
                     projectEmail = legacyUserPerOrg?.email || ''
                 }
                 const message = `This Framer project belongs to another user account (${projectEmail}). Please log out and log in with the correct account to access this project. If you need to transfer ownership, please contact support.`
-                console.log(message)
+
                 throw Response.json(
                     {
                         message,

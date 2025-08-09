@@ -30,8 +30,9 @@ import {} from 'react-router'
 import { Form, Link } from 'react-router-dom'
 
 async function loader({}: LoaderFunctionArgs) {
-    const [components] = await Promise.all([
+    const [components, codeFiles] = await Promise.all([
         framer.getNodesWithType('ComponentNode'),
+        framer.getCodeFiles(),
     ])
 
     let { id: projectId } = await framer.getProjectInfo()
@@ -58,12 +59,40 @@ async function loader({}: LoaderFunctionArgs) {
     ])
 
     const { email, orgId } = org
+
+    // Map regular components
     let componentsData = components.map((component) => {
-
         const { name, id, insertURL, componentIdentifier } = component
-
-        return { name, id, insertURL, componentIdentifier, node: component }
+        return {
+            name,
+            id,
+            insertURL,
+            componentIdentifier: componentIdentifier as string | null,
+            node: component as any,
+            isCodeFile: false
+        }
     })
+
+    // Add code files that export components
+    const codeComponentsData = codeFiles
+        .filter((file) => file.exports.some((exp) => exp.type === 'component'))
+        .map((file) => {
+            // Get the first component export (most code files have just one)
+            const componentExport = file.exports.find((exp) => exp.type === 'component')
+            const name = file.name.replace(/\.(jsx?|tsx?)$/, '') // Remove extension for display
+            return {
+                name,
+                id: file.id,
+                insertURL: componentExport?.insertURL ?? null,
+                componentIdentifier: '',
+                node: file,
+                isCodeFile: true
+            }
+        })
+
+    // Combine both types
+    componentsData = [...componentsData, ...codeComponentsData]
+
     const componentIds = reactExportProject?.components?.map((x) => x.id) || []
     return { componentIds, email, orgId, componentsData }
 }
@@ -318,6 +347,7 @@ function Component() {
                             checked={selected.includes(component.id)}
                             key={component.id}
                             {...component}
+                            isCodeFile={component.isCodeFile}
                         />
                     )
                 })}
@@ -395,7 +425,7 @@ function EyeIcon({ className }: { className?: string }) {
     )
 }
 
-function Item({ id, name, onChange, checked, style, node }) {
+function Item({ id, name, onChange, checked, style, isCodeFile }) {
     const ref = useRef<any>(null)
     return (
         <div
@@ -426,8 +456,13 @@ function Item({ id, name, onChange, checked, style, node }) {
                     onChange={onChange}
                 />
             </div>
-            <div className='flex-1'>
+            <div className='flex-1 flex items-center gap-2'>
                 <h3>{name}</h3>
+                {isCodeFile && (
+                    <span className='text-[10px] px-1.5 py-0.5 bg-framer-tertiary text-framer-secondary rounded'>
+                        CODE
+                    </span>
+                )}
             </div>
             <button
                 type='button'

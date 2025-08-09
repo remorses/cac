@@ -393,7 +393,7 @@ export const mcpTools = {
                 .array(NodeId)
                 .min(1)
                 .describe(
-                    'Array of component node IDs to export as React code',
+                    'Array of component node IDs or code file IDs to export as React code',
                 ),
         }),
         output: z.any(),

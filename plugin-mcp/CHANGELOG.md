@@ -1,5 +1,12 @@
 # Changelog
 
+## 2025-01-09 10:35
+
+- Updated processReactExportData to handle code files in addition to component nodes
+- Separate code file IDs from component node IDs in selectedComponentIds
+- Include code file components in the exported components array
+- Extract insertURL from code file component exports
+
 ## 2025-01-30 19:40
 
 - Added maxCharacters parameter to XML tree serialization with 50k default limit

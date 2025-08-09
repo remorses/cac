@@ -337,6 +337,7 @@ export async function processReactExportData({
         locales,
         allInstances,
         { id: framerUserId },
+        codeFiles,
     ] = await Promise.all([
         framer.getPublishInfo().catch((e) => null),
         framer.getNodesWithType('ComponentNode'),
@@ -349,6 +350,7 @@ export async function processReactExportData({
         }),
         framer.getNodesWithType('ComponentInstanceNode'),
         framer.getCurrentUser(),
+        framer.getCodeFiles(),
     ])
 
     const { id: fullFramerProjectId, name: projectName } = projectInfo
@@ -356,8 +358,22 @@ export async function processReactExportData({
         throw new Error('No project id found')
     }
 
+    // Separate code file IDs from component node IDs
+    const codeFileIds = new Set<string>()
+    const componentNodeIds = new Set<string>()
+    
+    for (const id of selectedComponentIds) {
+        // Check if it's a code file
+        const isCodeFile = codeFiles.some(file => file.id === id)
+        if (isCodeFile) {
+            codeFileIds.add(id)
+        } else {
+            componentNodeIds.add(id)
+        }
+    }
+
     const componentsWithBreakpoints = await getComponentsWithBreakpoints({
-        selectedComponentIds,
+        selectedComponentIds: componentNodeIds,
         components,
         allInstances,
     })
@@ -414,17 +430,36 @@ export async function processReactExportData({
                 darkColor: dark ?? light,
             }
         }),
-        components: componentsWithBreakpoints.map(({ component }) => {
-            const { name, id, insertURL, componentName, componentIdentifier } = component
+        components: [
+            // Regular component nodes
+            ...componentsWithBreakpoints.map(({ component }) => {
+                const { name, id, insertURL, componentName, componentIdentifier } = component
 
-            return {
-                name: name ?? '',
-                id,
-                url: insertURL ?? '',
-                projectId: fullFramerProjectId!,
-                componentIdentifier,
-            }
-        }),
+                return {
+                    name: name ?? '',
+                    id,
+                    url: insertURL ?? '',
+                    projectId: fullFramerProjectId!,
+                    componentIdentifier,
+                }
+            }),
+            // Code file components
+            ...codeFiles
+                .filter(file => codeFileIds.has(file.id))
+                .filter(file => file.exports.some(exp => exp.type === 'component'))
+                .map(file => {
+                    const componentExport = file.exports.find(exp => exp.type === 'component')
+                    const name = file.name.replace(/\.(jsx?|tsx?)$/, '')
+                    
+                    return {
+                        name,
+                        id: file.id,
+                        url: componentExport?.insertURL ?? '',
+                        projectId: fullFramerProjectId!,
+                        componentIdentifier: '',
+                    }
+                })
+        ],
         breakpoints: componentsWithBreakpoints.flatMap(
             ({ breakpoints, component }) => {
                 return (
