@@ -1,5 +1,5 @@
-import { FramerLayersTree } from './schema'
-import { addNodeCount } from './xml'
+import { FramerLayersTree } from './schema.js'
+import { addNodeCount } from './xml.js'
 
 export const ITEMS_PER_ITERATION = 30
 
@@ -20,8 +20,6 @@ export function bfsFramerLayersTree(tree: FramerLayersTree) {
 
     return result
 }
-
-
 
 export function mergeCloseChunks(
     chunks: FramerLayersTree[],

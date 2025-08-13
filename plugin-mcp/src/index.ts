@@ -1,7 +1,5 @@
+export * from './lib/xml.js'
 
+export * from './lib/tree-utils.js'
 
-export * from './lib/xml'
-
-export * from './lib/tree-utils'
-
-export type { FramerLayersTree } from './lib/schema'
+export type { FramerLayersTree } from './lib/schema.js'

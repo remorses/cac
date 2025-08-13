@@ -9,7 +9,7 @@ import {
     rewriteXmlContentForTests,
     splitTreeInChunks,
     xmlToFramerLayersTree,
-    type FramerLayersTree
+    type FramerLayersTree,
 } from 'plugin-mcp'
 import dedent from 'string-dedent'
 
@@ -167,31 +167,31 @@ test('extractObjectsFromXmlContent - complex page structure', ({ expect }) => {
     const results = extractObjectsFromXmlContent(xml)
 
     // Add explicit checks for critical relationships
-    const nav1 = results.find(n => n.nodeId === 'nav1')
-    const hero1 = results.find(n => n.nodeId === 'hero1')
-    const badge1 = results.find(n => n.nodeId === 'badge1')
-    const heading1 = results.find(n => n.nodeId === 'heading1')
-    const lead1 = results.find(n => n.nodeId === 'lead1')
-    const trail1 = results.find(n => n.nodeId === 'trail1')
-    
+    const nav1 = results.find((n) => n.nodeId === 'nav1')
+    const hero1 = results.find((n) => n.nodeId === 'hero1')
+    const badge1 = results.find((n) => n.nodeId === 'badge1')
+    const heading1 = results.find((n) => n.nodeId === 'heading1')
+    const lead1 = results.find((n) => n.nodeId === 'lead1')
+    const trail1 = results.find((n) => n.nodeId === 'trail1')
+
     // Check nav1 and hero1 are siblings under desktop1
     expect(nav1?.parentId).toBe('desktop1')
     expect(hero1?.parentId).toBe('desktop1')
     expect(nav1?.afterNodeId).toBe('hero1')
     expect(hero1?.beforeNodeId).toBe('nav1')
-    
+
     // Check badge1 and heading1 are siblings under header1
     expect(badge1?.parentId).toBe('header1')
     expect(heading1?.parentId).toBe('header1')
     expect(badge1?.afterNodeId).toBe('heading1')
     expect(heading1?.beforeNodeId).toBe('badge1')
-    
+
     // Check lead1 and trail1 are siblings under text1
     expect(lead1?.parentId).toBe('text1')
     expect(trail1?.parentId).toBe('text1')
     expect(lead1?.afterNodeId).toBe('trail1')
     expect(trail1?.beforeNodeId).toBe('lead1')
-    
+
     // Check text content is correct
     expect(lead1?.newContent).toBe('4000+')
     expect(trail1?.newContent).toBe('Users trust us')
@@ -305,14 +305,14 @@ test('extractObjectsFromXmlContent - node movement scenarios', ({ expect }) => {
     const results = extractObjectsFromXmlContent(xml)
 
     // Verify parent relationships
-    const item1 = results.find(n => n.nodeId === 'item1')
-    const item2 = results.find(n => n.nodeId === 'item2')
-    const item3 = results.find(n => n.nodeId === 'item3')
-    
+    const item1 = results.find((n) => n.nodeId === 'item1')
+    const item2 = results.find((n) => n.nodeId === 'item2')
+    const item3 = results.find((n) => n.nodeId === 'item3')
+
     expect(item1?.parentId).toBe('containerA')
     expect(item2?.parentId).toBe('containerA')
     expect(item3?.parentId).toBe('containerB')
-    
+
     // Verify sibling relationships
     expect(item1?.afterNodeId).toBe('item2')
     expect(item2?.beforeNodeId).toBe('item1')
@@ -320,7 +320,9 @@ test('extractObjectsFromXmlContent - node movement scenarios', ({ expect }) => {
     expect(item3?.afterNodeId).toBeUndefined()
 })
 
-test('extractObjectsFromXmlContent - deeply nested with missing nodeIds', ({ expect }) => {
+test('extractObjectsFromXmlContent - deeply nested with missing nodeIds', ({
+    expect,
+}) => {
     const xml = dedent`
         <Page nodeId="page1">
             <Section nodeId="section1">
@@ -341,16 +343,18 @@ test('extractObjectsFromXmlContent - deeply nested with missing nodeIds', ({ exp
     `
 
     const results = extractObjectsFromXmlContent(xml)
-    
-    const text1 = results.find(n => n.nodeId === 'text1')
-    const text2 = results.find(n => n.nodeId === 'text2')
-    
+
+    const text1 = results.find((n) => n.nodeId === 'text1')
+    const text2 = results.find((n) => n.nodeId === 'text2')
+
     // text1 should have content1 as parent (skipping intermediate divs/spans without nodeIds)
     expect(text1?.parentId).toBe('content1')
     expect(text2?.parentId).toBe('section2')
 })
 
-test('extractObjectsFromXmlContent - single children have no siblings', ({ expect }) => {
+test('extractObjectsFromXmlContent - single children have no siblings', ({
+    expect,
+}) => {
     const xml = dedent`
         <Page nodeId="page1">
             <Container nodeId="container1">
@@ -365,24 +369,24 @@ test('extractObjectsFromXmlContent - single children have no siblings', ({ expec
     `
 
     const results = extractObjectsFromXmlContent(xml)
-    
-    const child1 = results.find(n => n.nodeId === 'child1')
-    const child2 = results.find(n => n.nodeId === 'child2')
-    const child3 = results.find(n => n.nodeId === 'child3')
-    const child4 = results.find(n => n.nodeId === 'child4')
-    
+
+    const child1 = results.find((n) => n.nodeId === 'child1')
+    const child2 = results.find((n) => n.nodeId === 'child2')
+    const child3 = results.find((n) => n.nodeId === 'child3')
+    const child4 = results.find((n) => n.nodeId === 'child4')
+
     // Single child has no siblings
     expect(child1?.parentId).toBe('container1')
     expect(child1?.beforeNodeId).toBeUndefined()
     expect(child1?.afterNodeId).toBeUndefined()
-    
+
     // Multiple children have correct siblings
     expect(child2?.beforeNodeId).toBeUndefined()
     expect(child2?.afterNodeId).toBe('child3')
-    
+
     expect(child3?.beforeNodeId).toBe('child2')
     expect(child3?.afterNodeId).toBe('child4')
-    
+
     expect(child4?.beforeNodeId).toBe('child3')
     expect(child4?.afterNodeId).toBeUndefined()
 })
@@ -568,7 +572,8 @@ test('maxCharacters limit truncates deep nodes', () => {
                 width: '100px',
                 height: '200px',
             },
-            content: 'Container with lots of content that will push us over the character limit quickly',
+            content:
+                'Container with lots of content that will push us over the character limit quickly',
             children: [
                 {
                     name: 'Child1',
@@ -578,7 +583,8 @@ test('maxCharacters limit truncates deep nodes', () => {
                         {
                             name: 'GrandChild1',
                             nodeId: 'grandchild1',
-                            content: 'This grandchild should definitely not appear',
+                            content:
+                                'This grandchild should definitely not appear',
                             children: [],
                         },
                     ],
@@ -602,7 +608,7 @@ test('maxCharacters limit truncates deep nodes', () => {
 
     // Test with a limit that truncates at depth 1
     const result = framerLayersTreeToXml(tree, { maxCharacters: 150 })
-    
+
     expect(result).toMatchInlineSnapshot(`
       "<Container1 width="100px" height="200px">
         Container with lots of content that will push us over the character limit quickly
@@ -642,7 +648,7 @@ test('maxCharacters with small limit', () => {
 
     // Test with limit of 50 - should render first level then truncate
     const result = framerLayersTreeToXml(tree, { maxCharacters: 50 })
-    
+
     expect(result).toMatchInlineSnapshot(`
       "<Container>
         <Child>
@@ -659,7 +665,7 @@ test('maxCharacters with many deep nodes', () => {
     // Create a tree where second depth-1 container will be truncated
     const tree: FramerLayersTree = [
         {
-            name: 'SmallContainer',  // This depth-1 will render fully
+            name: 'SmallContainer', // This depth-1 will render fully
             content: 'First small container',
             children: [
                 {
@@ -675,7 +681,7 @@ test('maxCharacters with many deep nodes', () => {
             ],
         },
         {
-            name: 'LargeContainer',  // This depth-1 should get truncated
+            name: 'LargeContainer', // This depth-1 should get truncated
             content: 'Second large container that should trigger truncation',
             children: Array.from({ length: 10 }, (_, i) => ({
                 name: `Node${i}`,
@@ -688,7 +694,7 @@ test('maxCharacters with many deep nodes', () => {
             })),
         },
         {
-            name: 'ThirdContainer',  // This depth-1 should also be truncated
+            name: 'ThirdContainer', // This depth-1 should also be truncated
             children: [
                 {
                     name: 'ChildA',
@@ -701,7 +707,7 @@ test('maxCharacters with many deep nodes', () => {
 
     // With a limit that allows first container but truncates second
     const result = framerLayersTreeToXml(tree, { maxCharacters: 200 })
-    
+
     expect(result).toMatchInlineSnapshot(`
       "<SmallContainer>
         First small container
@@ -788,7 +794,7 @@ test('componentId deduplication of attribute comments', () => {
                     name: 'ComponentInstance',
                     nodeId: 'instance2',
                     attributes: {
-                        componentId: 'comp123',  // Same componentId
+                        componentId: 'comp123', // Same componentId
                         customProp: 'value2',
                         height: '200px',
                     },
@@ -803,7 +809,7 @@ test('componentId deduplication of attribute comments', () => {
                     name: 'ComponentInstance',
                     nodeId: 'instance3',
                     attributes: {
-                        componentId: 'comp456',  // Different componentId
+                        componentId: 'comp456', // Different componentId
                         customProp: 'value3',
                     },
                     attrControlsComments: {
@@ -817,7 +823,7 @@ test('componentId deduplication of attribute comments', () => {
     ]
 
     const result = framerLayersTreeToXml(tree, { shouldAddNodeIdAlways: true })
-    
+
     // Add inline snapshot to see the actual output
     expect(result).toMatchInlineSnapshot(`
       "<Root>
@@ -847,19 +853,23 @@ test('componentId deduplication of attribute comments', () => {
       </Root>
       "
     `)
-    
+
     // First instance should have all comments
     expect(result).toContain('<!-- A custom property for this component -->')
-    
+
     // Count occurrences of the custom property comment
-    const customPropCommentCount = (result.match(/<!-- A custom property for this component -->/g) || []).length
+    const customPropCommentCount = (
+        result.match(/<!-- A custom property for this component -->/g) || []
+    ).length
     // Should only appear once (for the first instance with comp123)
     expect(customPropCommentCount).toBe(1)
-    
+
     // The componentId comment should appear for all instances (it's a non-component-specific comment)
-    const componentIdCommentCount = (result.match(/<!-- the component id this instance uses -->/g) || []).length
+    const componentIdCommentCount = (
+        result.match(/<!-- the component id this instance uses -->/g) || []
+    ).length
     expect(componentIdCommentCount).toBe(3)
-    
+
     // Different component should have its own comment
     expect(result).toContain('<!-- Another custom property -->')
 })

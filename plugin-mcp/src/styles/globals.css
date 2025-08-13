@@ -42,7 +42,6 @@ html,
     display: none !important;
 }
 
-
 @layer components {
     .show-focus button:focus-visible {
         @apply outline-none ring-2 ring-framer-tint;
@@ -55,12 +54,12 @@ html,
 
 /* Hide scrollbar */
 .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; /* Chrome, Safari and Opera */
 }
 
 /* main {

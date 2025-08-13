@@ -1,4 +1,4 @@
-import { Spinner } from './Spinner'
+import { Spinner } from './Spinner.js'
 
 export type ButtonProps = React.ComponentProps<'button'> & {
     isLoading?: boolean

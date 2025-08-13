@@ -2,7 +2,7 @@ import { framer } from 'framer-plugin'
 import { init, captureException } from '@sentry/browser'
 
 init({
-      dsn: "https://d6ad60582fec2961afffe60e5a189844@o4508014272446464.ingest.de.sentry.io/4508014275985488",
+    dsn: 'https://d6ad60582fec2961afffe60e5a189844@o4508014272446464.ingest.de.sentry.io/4508014275985488',
 
     integrations: [],
 
