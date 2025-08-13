@@ -1,6 +1,6 @@
-import { WebsocketMessage } from './mcp-websocket'
-import { useStore } from './store'
-import { McpToolWebsocketPayload } from './schema'
+import { WebsocketMessage } from './mcp-websocket.js'
+import { useStore } from './store.js'
+import { McpToolWebsocketPayload } from './schema.js'
 
 // Function for handling websocket connection based on session cookie
 export async function websocketClientHandling({
@@ -99,11 +99,14 @@ export async function websocketClientHandling({
         ws.onclose = (event) => {
             // Check for specific error code 4009 - another plugin already connected
             if (event.code === 4009) {
-                const errorMessage = 'Another plugin is already connected. Please close the other plugin and keep only one plugin open.'
-                console.error('Another plugin is already connected for this user')
+                const errorMessage =
+                    'Another plugin is already connected. Please close the other plugin and keep only one plugin open.'
+                console.error(
+                    'Another plugin is already connected for this user',
+                )
                 useStore.setState({
                     isConnected: false,
-                    error: errorMessage
+                    error: errorMessage,
                 })
                 shouldReconnect = false
                 if (pingInterval) {

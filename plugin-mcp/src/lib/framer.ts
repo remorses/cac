@@ -25,13 +25,13 @@ import {
     supportsSVG,
     supportsVisible,
     type ImageAsset,
-    ProtectedMethod
+    ProtectedMethod,
 } from 'framer-plugin'
 import { Sema } from 'sema4'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'
-import { bfsFramerLayersTree, } from './tree-utils'
-import { FramerLayersTree } from './schema'
+import { bfsFramerLayersTree } from './tree-utils.js'
+import { FramerLayersTree } from './schema.js'
 
 let cachedPagePaths: string[] = []
 
@@ -418,8 +418,10 @@ async function push({
         currentLevel = existingNode.children
     }
 
-    let { attributes, attrControlsComments } =
-        await getNodeAttributesForXml(node, visitedComponents)
+    let { attributes, attrControlsComments } = await getNodeAttributesForXml(
+        node,
+        visitedComponents,
+    )
 
     // Add comment for root replica nodes
     if (isRootNode && node.isReplica) {
@@ -439,7 +441,10 @@ async function push({
         isReplica: node.isReplica,
         disableSelfClosing: isTextNode(node) ? true : undefined,
         // Add comment for replica nodes (variants) where children are skipped
-        comment: node.isReplica && !isRootNode ? 'This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId.' : undefined,
+        comment:
+            node.isReplica && !isRootNode
+                ? 'This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId.'
+                : undefined,
     }
 
     currentLevel.push(nodeEntry)
@@ -543,13 +548,17 @@ export async function getFramerTree({
 
             // Skip children if this is a root replica node
             if (isRoot && isRootReplica) {
-                console.log(`Skipping children of root replica node ${node.id} (${'name' in node ? node.name : 'unknown'})`)
+                console.log(
+                    `Skipping children of root replica node ${node.id} (${'name' in node ? node.name : 'unknown'})`,
+                )
                 return
             }
 
             // Also skip children if this node itself is a replica (not just root replicas)
             if (!isRoot && node.isReplica) {
-                console.log(`Skipping children of replica node ${node.id} (${'name' in node ? node.name : 'unknown'})`)
+                console.log(
+                    `Skipping children of replica node ${node.id} (${'name' in node ? node.name : 'unknown'})`,
+                )
                 return
             }
 
@@ -585,7 +594,6 @@ export async function getFramerTree({
 
     // Wait for all nodes to be processed
     await Promise.all(processingPromises)
-
 
     console.timeEnd(timeId)
     return tree
@@ -635,14 +643,18 @@ export const ATTRIBUTE_DEFAULTS = {
     // height: 'fit-content',
 } as const
 
-async function getNodeAttributesForXml(node: AnyNode, visitedComponents?: Set<string>) {
+async function getNodeAttributesForXml(
+    node: AnyNode,
+    visitedComponents?: Set<string>,
+) {
     let attributes = {} as Record<string, any>
 
     // Helper to add attribute only if it differs from default
     const addAttribute = (key: string, value: any) => {
         if (value !== undefined && value !== null) {
             // Check if this attribute has a default value
-            const defaultValue = ATTRIBUTE_DEFAULTS[key as keyof typeof ATTRIBUTE_DEFAULTS]
+            const defaultValue =
+                ATTRIBUTE_DEFAULTS[key as keyof typeof ATTRIBUTE_DEFAULTS]
             // Only add if value differs from default
             if (defaultValue === undefined || value !== defaultValue) {
                 attributes[key] = value
@@ -767,13 +779,13 @@ async function getNodeAttributesForXml(node: AnyNode, visitedComponents?: Set<st
             attrComments.componentId = 'the component id this instance uses'
         }
 
-
-
         if (!visitedComponents?.has(componentId || node.id)) {
             if (!node.insertURL) {
-                console.log(`no node.insertURL for component instance ${node.name}`)
+                console.log(
+                    `no node.insertURL for component instance ${node.name}`,
+                )
             }
-            const { comments: controlComments,  } =
+            const { comments: controlComments } =
                 await getComponentPropertyControls(node.insertURL || undefined)
 
             if (controlComments) {

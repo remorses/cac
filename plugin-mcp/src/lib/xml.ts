@@ -1,7 +1,7 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 import camelCase from 'camelcase'
-import type { FramerLayersTree } from './schema'
+import type { FramerLayersTree } from './schema.js'
 
 export function rewriteXmlContentForTests({
     xml: xml,
@@ -135,15 +135,20 @@ export function extractObjectsFromXmlContent(xml: string) {
 
                 if (node.children) {
                     // Pass the current parent ID (either this node's ID or the last parent with ID)
-                    node.children.forEach((child: any) => dfs(child, currentParentId))
+                    node.children.forEach((child: any) =>
+                        dfs(child, currentParentId),
+                    )
                 }
             }
 
             dom.forEach((node: any) => dfs(node))
 
             // Group nodes by their parent
-            const nodesByParent = new Map<string | undefined, NewExtractedNode[]>()
-            results.forEach(node => {
+            const nodesByParent = new Map<
+                string | undefined,
+                NewExtractedNode[]
+            >()
+            results.forEach((node) => {
                 const parentId = node.parentId
                 if (!nodesByParent.has(parentId)) {
                     nodesByParent.set(parentId, [])
@@ -250,7 +255,7 @@ export function framerLayersTreeToXml(
         indent = '',
         maxCharacters = 20000,
         currentDepth = 0,
-        currentCharCount = 0
+        currentCharCount = 0,
     } = options
 
     let xml = ''
@@ -306,7 +311,8 @@ export function framerLayersTreeToXml(
 
         // Track componentId to avoid duplicate comments
         const componentId = node.attributes?.componentId
-        const shouldShowComments = !componentId || !seenComponentIds.has(componentId)
+        const shouldShowComments =
+            !componentId || !seenComponentIds.has(componentId)
         if (componentId && shouldShowComments) {
             seenComponentIds.add(componentId)
         }
@@ -318,8 +324,19 @@ export function framerLayersTreeToXml(
                     const comment = node.attrControlsComments?.[key]
                     // Only show comments if this is the first instance of this componentId
                     // or if it's not a component-specific attribute comment
-                    const isComponentSpecificComment = comment && !['componentId', 'inlineTextStyle', 'backgroundImage', 'backgroundColor'].includes(key)
-                    if (comment != null && comment && (shouldShowComments || !isComponentSpecificComment)) {
+                    const isComponentSpecificComment =
+                        comment &&
+                        ![
+                            'componentId',
+                            'inlineTextStyle',
+                            'backgroundImage',
+                            'backgroundColor',
+                        ].includes(key)
+                    if (
+                        comment != null &&
+                        comment &&
+                        (shouldShowComments || !isComponentSpecificComment)
+                    ) {
                         hasComments = true
                         attributes.push(
                             `<!-- ${comment} -->\n${indent}    ${key}="${value}"`,
@@ -351,7 +368,8 @@ export function framerLayersTreeToXml(
         // Check if this should be a self-closing tag
         const hasContent = node.content && node.content.trim() !== ''
         const hasChildren = node.children && node.children.length > 0
-        const isSelfClosing = !hasContent && !hasChildren && !node.disableSelfClosing
+        const isSelfClosing =
+            !hasContent && !hasChildren && !node.disableSelfClosing
 
         if (isSelfClosing) {
             const line = `${indent}<${nodeName}${attributesString} />\n`

@@ -8,15 +8,15 @@ import {
 import dedent from 'string-dedent'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import useMeasure from 'react-use-measure'
-import { websocketClientHandling } from './lib/plugin-websocket'
+import { websocketClientHandling } from './lib/plugin-websocket.js'
 import {
     codeComponentsResourceUri,
     FramerLayersTree,
     McpToolNames,
-} from './lib/schema'
-import type { TextStyleProperties } from './lib/schema'
-import './lib/framer'
-import { useStore } from './lib/store'
+} from './lib/schema.js'
+import type { TextStyleProperties } from './lib/schema.js'
+import './lib/framer.js'
+import { useStore } from './lib/store.js'
 import {
     CopyIcon,
     CheckIcon,
@@ -24,14 +24,17 @@ import {
     ChevronUpIcon,
     CircleIcon,
 } from 'lucide-react'
-import { framerLayersTreeToXml, extractObjectsFromXmlContent } from './lib/xml'
-import { getFramerTree, applyAttributes } from './lib/framer'
-import { processReactExportData } from './lib/react-export'
+import {
+    framerLayersTreeToXml,
+    extractObjectsFromXmlContent,
+} from './lib/xml.js'
+import { getFramerTree, applyAttributes } from './lib/framer.js'
+import { processReactExportData } from './lib/react-export.js'
 import {
     propControlsToTypedocComments,
     componentCamelCase,
 } from 'unframer/src/typescript'
-import { getComponentPropertyControls } from './lib/framer'
+import { getComponentPropertyControls } from './lib/framer.js'
 import {
     createBrowserRouter,
     RouterProvider,
@@ -42,14 +45,14 @@ import {
     useLoaderData,
     useNavigate,
 } from 'react-router'
-import { LoginPage } from './routes/Login'
+import { LoginPage } from './routes/Login.js'
 import {
     Paths,
     withMode,
     LoaderReturnType,
     pluginApiClient,
     LocalStorageKeys,
-} from './lib/utils'
+} from './lib/utils.js'
 
 globalThis.framer = framer
 
@@ -613,19 +616,21 @@ async function websocketHandler({
                 : []
 
             // Type for both create and update text style attributes
-            type TextStyleAttributes =  Parameters<TextStyle['setAttributes']>[0]
+            type TextStyleAttributes = Parameters<TextStyle['setAttributes']>[0]
 
             // Helper function to process attributes
-            const processAttributes = (attrs: TextStyleProperties): TextStyleAttributes => {
+            const processAttributes = (
+                attrs: TextStyleProperties,
+            ): TextStyleAttributes => {
                 const processed: TextStyleAttributes = { ...attrs } as any
 
                 // Convert font selector string to Font instance
                 if (attrs.font && typeof attrs.font === 'string') {
-                    const font = fonts.find(
-                        (f) => f.selector === attrs.font,
-                    )
+                    const font = fonts.find((f) => f.selector === attrs.font)
                     if (!font) {
-                        throw new Error(`Font with selector "${attrs.font}" not found. Use searchFonts tool to find available fonts.`)
+                        throw new Error(
+                            `Font with selector "${attrs.font}" not found. Use searchFonts tool to find available fonts.`,
+                        )
                     }
                     processed.font = font
                 }
@@ -639,7 +644,9 @@ async function websocketHandler({
                         (style) => style.path === attrs.color,
                     )
                     if (!colorStyle) {
-                        throw new Error(`Color style with path ${attrs.color} not found.`)
+                        throw new Error(
+                            `Color style with path ${attrs.color} not found.`,
+                        )
                     }
                     processed.color = colorStyle
                 }
@@ -653,7 +660,9 @@ async function websocketHandler({
                         (style) => style.path === attrs.decorationColor,
                     )
                     if (!colorStyle) {
-                        throw new Error(`Color style with path ${attrs.decorationColor} not found.`)
+                        throw new Error(
+                            `Color style with path ${attrs.decorationColor} not found.`,
+                        )
                     }
                     processed.decorationColor = colorStyle as any // TODO weirdly decorationColor needs ColorStyleData but ColorStyleData is not something frame API exposes
                 }

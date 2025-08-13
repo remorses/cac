@@ -13,9 +13,9 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { McpAgent } from 'agents/mcp'
 import { toJSONSchema } from 'zod'
-import { codeComponentsResourceUri, mcpTools } from './lib/schema'
-import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket'
-import { sleep } from './lib/utils'
+import { codeComponentsResourceUri, mcpTools } from './lib/schema.js'
+import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
+import { sleep } from './lib/utils.js'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(

@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
-import type { McpCallParam, McpToolNames, mcpTools } from './schema'
+import type { McpCallParam, McpToolNames, mcpTools } from './schema.js'
 import z from 'zod'
 
 export interface CreateTransportOptions {

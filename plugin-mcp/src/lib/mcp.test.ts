@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createMCPClient } from './mcp-client.js'
 
-const mcpUrl = 'https://mcp.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
+const mcpUrl =
+    'https://mcp.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
 
 describe(
     'Framer MCP Server Tests',
@@ -106,8 +107,6 @@ describe(
             expect(verifyXml).toContain(`Updated text ${randomNum}`)
         })
 
-
-
         it('should update a color style', async () => {
             // First get project XML to find color styles
             const projectResult = await callTool({
@@ -119,13 +118,15 @@ describe(
             expect(projectXml).toBeDefined()
 
             // Extract color styles from project XML using regex
-            const colorStyleMatch = projectXml.match(/<ColorStyle\s+path="([^"]+)"\s+light="([^"]+)"\s+dark="([^"]*)"/)
+            const colorStyleMatch = projectXml.match(
+                /<ColorStyle\s+path="([^"]+)"\s+light="([^"]+)"\s+dark="([^"]*)"/,
+            )
             expect(colorStyleMatch).toBeTruthy()
 
             const firstColorStyle = {
                 path: colorStyleMatch[1],
                 light: colorStyleMatch[2],
-                dark: colorStyleMatch[3] || null
+                dark: colorStyleMatch[3] || null,
             }
 
             // Update the color style
@@ -134,10 +135,10 @@ describe(
                 name: 'manageColorStyle',
                 args: {
                     type: 'update',
-                    stylePath: firstColorStyle.path ||'test-style',
+                    stylePath: firstColorStyle.path || 'test-style',
                     properties: {
                         light: `rgb(${randomNum}, 100, 150)`,
-                    }
+                    },
                 },
             })
 
@@ -145,16 +146,21 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
-                ? tryJsonParse(content)
-                : content
+            const parsedContent =
+                typeof content === 'string' && content.trim().startsWith('{')
+                    ? tryJsonParse(content)
+                    : content
 
             // Check if content is an object or string
             if (typeof parsedContent === 'object' && parsedContent.message) {
-                expect(parsedContent.message).toContain('Successfully updated color style')
+                expect(parsedContent.message).toContain(
+                    'Successfully updated color style',
+                )
                 // The response might not include the full style object
                 if (parsedContent.style && parsedContent.style.name) {
-                    expect(parsedContent.style.name).toContain(`Test ${randomNum}`)
+                    expect(parsedContent.style.name).toContain(
+                        `Test ${randomNum}`,
+                    )
                 }
             } else if (typeof content === 'string') {
                 expect(content).toContain('Successfully updated color style')
@@ -171,8 +177,13 @@ describe(
             expect(verifyXml).toBeDefined()
 
             // Check if the updated style is in the XML
-            const escapedPath = firstColorStyle.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            const updatedStyleRegex = new RegExp(`<ColorStyle\\s+path="${escapedPath}"\\s+light="rgb\\(${randomNum}, 100, 150\\)"`)
+            const escapedPath = firstColorStyle.path.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                '\\$&',
+            )
+            const updatedStyleRegex = new RegExp(
+                `<ColorStyle\\s+path="${escapedPath}"\\s+light="rgb\\(${randomNum}, 100, 150\\)"`,
+            )
             expect(verifyXml).toMatch(updatedStyleRegex)
 
             // Restore original value
@@ -183,7 +194,7 @@ describe(
                     stylePath: firstColorStyle.path,
                     properties: {
                         light: firstColorStyle.light,
-                    }
+                    },
                 },
             })
         })
@@ -201,7 +212,7 @@ describe(
                     properties: {
                         light: `rgb(${randomNum % 255}, 100, 200)`,
                         dark: `rgb(${randomNum % 255}, 50, 100)`,
-                    }
+                    },
                 },
             })
 
@@ -209,18 +220,25 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
-                ? tryJsonParse(content)
-                : content
+            const parsedContent =
+                typeof content === 'string' && content.trim().startsWith('{')
+                    ? tryJsonParse(content)
+                    : content
 
             // Check if creation was successful
             if (typeof parsedContent === 'object' && parsedContent.message) {
-                expect(parsedContent.message).toContain('Successfully created color style')
+                expect(parsedContent.message).toContain(
+                    'Successfully created color style',
+                )
                 expect(parsedContent.style.path).toBe(newStylePath)
                 // Name is derived from the last segment of the path
                 expect(parsedContent.style.name).toBe(`Test-Color-${randomNum}`)
-                expect(parsedContent.style.light).toBe(`rgb(${randomNum % 255}, 100, 200)`)
-                expect(parsedContent.style.dark).toBe(`rgb(${randomNum % 255}, 50, 100)`)
+                expect(parsedContent.style.light).toBe(
+                    `rgb(${randomNum % 255}, 100, 200)`,
+                )
+                expect(parsedContent.style.dark).toBe(
+                    `rgb(${randomNum % 255}, 50, 100)`,
+                )
             } else if (typeof content === 'string') {
                 expect(content).toContain('Successfully created color style')
                 expect(content).toContain(`Test-Color-${randomNum}`)
@@ -236,7 +254,9 @@ describe(
             expect(verifyXml).toBeDefined()
 
             // Check if the created style is in the XML
-            const createdStyleRegex = new RegExp(`<ColorStyle\\s+path="${newStylePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\s+light="rgb\\(${randomNum % 255}, 100, 200\\)"\\s+dark="rgb\\(${randomNum % 255}, 50, 100\\)"`)
+            const createdStyleRegex = new RegExp(
+                `<ColorStyle\\s+path="${newStylePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\s+light="rgb\\(${randomNum % 255}, 100, 200\\)"\\s+dark="rgb\\(${randomNum % 255}, 50, 100\\)"`,
+            )
             expect(verifyXml).toMatch(createdStyleRegex)
 
             // Test creating duplicate should fail
@@ -247,7 +267,7 @@ describe(
                     stylePath: newStylePath,
                     properties: {
                         light: `rgb(255, 0, 0)`,
-                    }
+                    },
                 },
             })
 
@@ -287,9 +307,10 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
-                ? tryJsonParse(content)
-                : content
+            const parsedContent =
+                typeof content === 'string' && content.trim().startsWith('{')
+                    ? tryJsonParse(content)
+                    : content
 
             expect(parsedContent.message).toBeDefined()
             expect(parsedContent.results).toBeDefined()
@@ -354,9 +375,10 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
-                ? tryJsonParse(content)
-                : content
+            const parsedContent =
+                typeof content === 'string' && content.trim().startsWith('{')
+                    ? tryJsonParse(content)
+                    : content
 
             // The response should be an object with production and staging properties
             expect(parsedContent).toHaveProperty('production')
@@ -374,13 +396,14 @@ describe(
             expect(projectXml).toBeDefined()
 
             // Extract text styles from project XML using regex
-            const textStyleMatch = projectXml.match(/<TextStyle\s+path="([^"]+)"[^>]*>/)
+            const textStyleMatch = projectXml.match(
+                /<TextStyle\s+path="([^"]+)"[^>]*>/,
+            )
             expect(textStyleMatch).toBeTruthy()
 
             const firstTextStyle = {
-                path: textStyleMatch[1]
+                path: textStyleMatch[1],
             }
-
 
             // Update the text style
             const randomNum = Math.floor(Math.random() * 100)
@@ -392,7 +415,7 @@ describe(
                     properties: {
                         fontSize: `${randomNum}px`,
                         alignment: 'center',
-                    }
+                    },
                 },
             })
 
@@ -400,13 +423,16 @@ describe(
             expect(content).toBeDefined()
 
             // Parse the content if it's a JSON string
-            const parsedContent = typeof content === 'string' && content.trim().startsWith('{')
-                ? tryJsonParse(content)
-                : content
+            const parsedContent =
+                typeof content === 'string' && content.trim().startsWith('{')
+                    ? tryJsonParse(content)
+                    : content
 
             // Check if content is an object or string
             if (typeof parsedContent === 'object' && parsedContent.message) {
-                expect(parsedContent.message).toContain('Successfully updated text style')
+                expect(parsedContent.message).toContain(
+                    'Successfully updated text style',
+                )
                 expect(parsedContent.style).toBeDefined()
                 // Style path should be returned, not name
                 expect(parsedContent.style.path).toBe(firstTextStyle.path)
@@ -424,8 +450,13 @@ describe(
             expect(verifyXml).toBeDefined()
 
             // Check if the updated style is in the XML
-            const escapedPath = firstTextStyle.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            const updatedStyleRegex = new RegExp(`<TextStyle\\s+path="${escapedPath}"[^>]*fontSize="${randomNum}px"[^>]*alignment="center"`)
+            const escapedPath = firstTextStyle.path.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                '\\$&',
+            )
+            const updatedStyleRegex = new RegExp(
+                `<TextStyle\\s+path="${escapedPath}"[^>]*fontSize="${randomNum}px"[^>]*alignment="center"`,
+            )
             expect(verifyXml).toMatch(updatedStyleRegex)
 
             // Restore original values
@@ -435,9 +466,9 @@ describe(
                     type: 'update',
                     stylePath: firstTextStyle.path,
                     properties: {
-                        fontSize: '72px',  // Reset to default
-                        alignment: 'left',  // Reset to default
-                    }
+                        fontSize: '72px', // Reset to default
+                        alignment: 'left', // Reset to default
+                    },
                 },
             })
         })
@@ -445,7 +476,9 @@ describe(
     1000 * 20,
 )
 
-function getTextContent(arr: Array<{ type?: string; text?: string } | any> | any) {
+function getTextContent(
+    arr: Array<{ type?: string; text?: string } | any> | any,
+) {
     if (!Array.isArray(arr)) return arr
     for (const item of arr) {
         if (

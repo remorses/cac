@@ -11,8 +11,8 @@ import {
     getComponentPropertyControls,
     getInstanceComponentId,
     replaceEnumIdsForControls,
-} from './framer'
-import { isTruthy } from './utils'
+} from './framer.js'
+import { isTruthy } from './utils.js'
 
 // Type definitions
 export interface ReactExportComponentInstance {
@@ -121,7 +121,6 @@ async function getParentNodesWithOrdering(node: any) {
 
     return result
 }
-
 
 function deduplicateByKey<T>(
     items: T[],
@@ -361,10 +360,10 @@ export async function processReactExportData({
     // Separate code file IDs from component node IDs
     const codeFileIds = new Set<string>()
     const componentNodeIds = new Set<string>()
-    
+
     for (const id of selectedComponentIds) {
         // Check if it's a code file
-        const isCodeFile = codeFiles.some(file => file.id === id)
+        const isCodeFile = codeFiles.some((file) => file.id === id)
         if (isCodeFile) {
             codeFileIds.add(id)
         } else {
@@ -433,7 +432,13 @@ export async function processReactExportData({
         components: [
             // Regular component nodes
             ...componentsWithBreakpoints.map(({ component }) => {
-                const { name, id, insertURL, componentName, componentIdentifier } = component
+                const {
+                    name,
+                    id,
+                    insertURL,
+                    componentName,
+                    componentIdentifier,
+                } = component
 
                 return {
                     name: name ?? '',
@@ -445,12 +450,16 @@ export async function processReactExportData({
             }),
             // Code file components
             ...codeFiles
-                .filter(file => codeFileIds.has(file.id))
-                .filter(file => file.exports.some(exp => exp.type === 'component'))
-                .map(file => {
-                    const componentExport = file.exports.find(exp => exp.type === 'component')
+                .filter((file) => codeFileIds.has(file.id))
+                .filter((file) =>
+                    file.exports.some((exp) => exp.type === 'component'),
+                )
+                .map((file) => {
+                    const componentExport = file.exports.find(
+                        (exp) => exp.type === 'component',
+                    )
                     const name = file.name.replace(/\.(jsx?|tsx?)$/, '')
-                    
+
                     return {
                         name,
                         id: file.id,
@@ -458,14 +467,13 @@ export async function processReactExportData({
                         projectId: fullFramerProjectId!,
                         componentIdentifier: '',
                     }
-                })
+                }),
         ],
         breakpoints: componentsWithBreakpoints.flatMap(
             ({ breakpoints, component }) => {
                 return (
                     breakpoints?.map((breakpoint) => {
-                        const { variantId, width, breakpointName } =
-                            breakpoint!
+                        const { variantId, width, breakpointName } = breakpoint!
                         return {
                             variantId: variantId!,
                             width: width || 0,

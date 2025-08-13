@@ -1,12 +1,9 @@
-
-
 This guide explains how to interact with Framer projects using MCP (Model Context Protocol) tools.
-
-
 
 ## Overview
 
 The MCP tools allow you to:
+
 - Navigate and inspect Framer project structure
 - Read and modify node properties via XML
 - Update text content and styling
@@ -25,15 +22,18 @@ To check if the project is published and get its public URL, use `getProjectWebs
 Framer projects consist of nodes (pages, components, frames, text, etc.) that can be inspected and modified through XML. Each node has a unique `nodeId` that identifies it throughout the system.
 
 To work with nodes:
+
 1. Get the current state using `getNodeXml` or `getSelectedNodesXml`
 2. Modify the XML with desired changes
 3. Apply changes using `updateXmlForNode`
 
 **Note**: `getNodeXml` also validates the node type and will return helpful error messages if you try to use it with:
+
 - **Style paths** (starting with `/`): Style data is displayed in `getProjectXml` under the `<ColorStyles>` and `<TextStyles>` sections
 - **Code file IDs**: Use `readCodeFile` to read code file content
 
 **Important**: `updateXmlForNode` can only be used for regular Framer nodes (pages, components, frames, text, etc.). It cannot be used for:
+
 - **Code files**: Use `updateCodeFile` to modify code
 - **Color styles**: Use `manageColorStyle` with `type: "update"`
 - **Text styles**: Use `manageTextStyle` with `type: "update"`
@@ -45,6 +45,7 @@ If you try to use `updateXmlForNode` with these resources, you'll receive an err
 ### Dimensions and Units
 
 Dimension values use CSS units:
+
 - **Pixels**: `"100px"` - Fixed sizes
 - **Percentage**: `"50%"` - Relative to parent
 - **Viewport**: `"100vh"` or `"100vw"` - Viewport units
@@ -55,6 +56,7 @@ Dimension values use CSS units:
 ### Common Attributes
 
 Nodes support various attributes:
+
 - **Visibility**: opacity (0-1), visible (true/false), locked (true/false)
 - **Positioning**: position (relative/absolute/fixed), top/right/bottom/left (pixels), centerX/centerY (percentage)
 - **Sizing**: width/height (various units), min/max constraints (pixels), aspectRatio (number)
@@ -65,12 +67,14 @@ Nodes support various attributes:
 ### Style References
 
 Project styles are referenced by paths starting with `/`:
+
 - Text Styles: `"/Heading xl"`, `"/Body md"`
 - Color Styles: `"/Primary/Blue"`, `"/Background/Secondary"`
 
 ## Component Instances
 
 Component instances are references to reusable components. They have:
+
 - A `nodeId` identifying the specific instance
 - A `componentId` linking to the component definition
 - Control attributes that can be customized per instance
@@ -79,6 +83,7 @@ Component instances are references to reusable components. They have:
 ### Inserting Components
 
 To add a component to the canvas:
+
 1. Use `getComponentInsertUrlAndTypes` with an ID (either a component node ID or code file ID) to get the insertUrl and available props
 2. Use `insertComponentInCanvas` with the insertUrl to add the component to the currently focused page/component
 3. Use `updateXmlForNode` to position and configure the newly inserted component instance, using the props from step 1 as XML attributes
@@ -117,11 +122,13 @@ Framer provides access to over 8000 fonts. Use `searchFonts` to find fonts by se
 Project styles provide consistent design tokens across your project:
 
 ### Color Styles
+
 - Referenced by paths like `/Primary/Blue`
 - Support light and dark theme variants
 - Can be created or updated globally using `manageColorStyle`
 
 ### Text Styles
+
 - Referenced by paths like `/Heading xl`
 - Include typography properties (size, line height, spacing, etc.)
 - Can be created or updated globally using `manageTextStyle`
@@ -136,47 +143,48 @@ Use `manageColorStyle` and `manageTextStyle` to create or update styles. The dis
 // Create a color style
 // Path "/Brand/Primary" creates a style named "Primary" in the "Brand" folder
 await mcp.manageColorStyle({
-  type: "create",
-  stylePath: "/Brand/Primary",
-  properties: {
-    light: "rgb(45, 123, 255)",
-    dark: "rgb(23, 87, 214)"
-  }
+    type: 'create',
+    stylePath: '/Brand/Primary',
+    properties: {
+        light: 'rgb(45, 123, 255)',
+        dark: 'rgb(23, 87, 214)',
+    },
 })
 
 // Update an existing color style
 await mcp.manageColorStyle({
-  type: "update",
-  stylePath: "/Brand/Primary",
-  properties: {
-    dark: "rgb(30, 90, 200)"  // Only update the dark variant
-  }
+    type: 'update',
+    stylePath: '/Brand/Primary',
+    properties: {
+        dark: 'rgb(30, 90, 200)', // Only update the dark variant
+    },
 })
 
 // Create a text style
 // Path "/Typography/Heading/H1" creates a style named "H1" in the "Typography/Heading" folder
 await mcp.manageTextStyle({
-  type: "create",
-  stylePath: "/Typography/Heading/H1",
-  properties: {
-    fontSize: "32px",
-    lineHeight: "40px",
-    letterSpacing: "-0.02em",
-    font: "GF;Inter-700"
-  }
+    type: 'create',
+    stylePath: '/Typography/Heading/H1',
+    properties: {
+        fontSize: '32px',
+        lineHeight: '40px',
+        letterSpacing: '-0.02em',
+        font: 'GF;Inter-700',
+    },
 })
 
 // Update an existing text style
 await mcp.manageTextStyle({
-  type: "update",
-  stylePath: "/Typography/Heading/H1",
-  properties: {
-    fontSize: "36px"  // Only update the font size
-  }
+    type: 'update',
+    stylePath: '/Typography/Heading/H1',
+    properties: {
+        fontSize: '36px', // Only update the font size
+    },
 })
 ```
 
 **Notes**:
+
 - The Framer API derives the style name from the last segment of the path. You cannot specify a custom name separately.
 - When creating color styles, the `light` property is required.
 - When updating styles, only include the properties you want to change.
@@ -186,6 +194,7 @@ await mcp.manageTextStyle({
 ### Deleting Nodes
 
 Use `deleteNode` to permanently remove a node and all its children from the project:
+
 - **Irreversible**: This action cannot be undone
 - **Protected nodes**: Cannot delete root frames of components or pages
 - **Cascading**: Deletes the node and ALL child nodes
@@ -193,6 +202,7 @@ Use `deleteNode` to permanently remove a node and all its children from the proj
 ### Duplicating Nodes
 
 Use `duplicateNode` to create an exact copy of a node:
+
 - **Complete copy**: Duplicates the node and all its children
 - **Positioning**: Duplicated nodes are placed as siblings, slightly offset if visual
 - **Returns new ID**: The tool returns the ID of the newly created node
@@ -211,12 +221,14 @@ Use `duplicateNode` to create an exact copy of a node:
 ## Key Concepts
 
 ### XML Structure
+
 - Nodes are represented as XML elements with attributes
 - Text content goes inside text nodes
 - The `nodeId` attribute identifies specific nodes
 - Only include attributes you want to change - others are preserved
 
 ### Common Patterns
+
 - **Responsive sizing**: Use percentages, max-width constraints, or viewport units
 - **Positioning**: Combine position type with directional attributes
 - **Typography**: Use either project text styles or custom fonts (not both)

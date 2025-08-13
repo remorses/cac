@@ -1,7 +1,7 @@
 import { createSpiceflowClient, SpiceflowClient } from 'spiceflow/client'
 import { framer } from 'framer-plugin'
 import { redirect } from 'react-router'
-import { createClient } from '../generated/api-client'
+import { createClient } from '../generated/api-client.js'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 export type LoaderReturnType<T extends (...args: any) => any> = Awaited<
@@ -10,23 +10,24 @@ export type LoaderReturnType<T extends (...args: any) => any> = Awaited<
 
 const PUBLIC_URL = process.env.PUBLIC_URL || 'https://unframer.co'
 
-export const pluginApiClient: SpiceflowClient.Create<RouteType> = createSpiceflowClient<RouteType>(PUBLIC_URL, {
-    async onResponse(response) {
-        if (response.status === 401) {
-            console.log('clearing session because api returned 401')
-            localStorage.removeItem(LocalStorageKeys.sessionId)
-            throw redirect(withMode(Paths.login))
-        }
-    },
-    async onRequest() {
-        const { sessionKey } = getMcpPluginData()
-        return {
-            headers: {
-                sessionKey,
-            },
-        }
-    },
-})
+export const pluginApiClient: SpiceflowClient.Create<RouteType> =
+    createSpiceflowClient<RouteType>(PUBLIC_URL, {
+        async onResponse(response) {
+            if (response.status === 401) {
+                console.log('clearing session because api returned 401')
+                localStorage.removeItem(LocalStorageKeys.sessionId)
+                throw redirect(withMode(Paths.login))
+            }
+        },
+        async onRequest() {
+            const { sessionKey } = getMcpPluginData()
+            return {
+                headers: {
+                    sessionKey,
+                },
+            }
+        },
+    })
 export const noop: any = () => {}
 
 export function isTruthy<T>(val: T | undefined | null | false): val is T {
@@ -61,5 +62,5 @@ export function withMode(path: string, params?: Record<string, string>) {
 }
 
 export function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
 }
