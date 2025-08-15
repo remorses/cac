@@ -347,6 +347,21 @@ export function generateStackblitzFiles({
             relativePath: 'package.json',
             contents: JSON.stringify(packageJson, null, 2),
         },
+        {
+            relativePath: '.gitignore',
+            contents: dedent`
+                node_modules
+                dist
+                .DS_Store
+                .env
+                .env.*
+                .stackblitzrc
+                npm-debug.log*
+                yarn-debug.log*
+                yarn-error.log*
+                *.log
+            `,
+        },
         { relativePath: 'vite.config.ts', contents: viteConfig },
         { relativePath: 'postcss.config.js', contents: postcssConfig },
         { relativePath: 'tailwind.config.js', contents: tailwindConfig },
