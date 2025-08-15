@@ -170,7 +170,6 @@ export async function generateUnframerRepo({
       concurrency:
         group: \${{ github.workflow }}-\${{ github.event.pull_request.number || github.ref }}
         cancel-in-progress: true
-
       jobs:
         ci:
           timeout-minutes: 10
@@ -185,7 +184,22 @@ export async function generateUnframerRepo({
             - run: bun run framer
             - run: bun run build
             - run: bunx unframer-deploy-demo@latest --secret ${projectSecret} --slug ${repo} --dir ./dist
+            - name: Commit & push (if changed)
+              run: |
+                git config user.name  "github-actions[bot]"
+                git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+                git add -A
+                if git diff --staged --quiet; then
+                  echo "No changes to commit."
+                  exit 0
+                fi
+
+                # Optional: avoid non-fast-forward errors if something landed meanwhile
+                git pull --rebase origin "\${{ github.ref_name }}" || true
+
+                git commit -m "chore: automated update"
+                git push origin HEAD:"\${{ github.ref_name }}"
       `,
     })
 
