@@ -20,7 +20,7 @@ import {
 import { generateStackblitzFiles, isTruthy } from './utils'
 
 import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
+import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { Biome, Distribution } from '@biomejs/js-api'
 import { createAiCacheMiddleware } from 'ai-cache'
 import { createFallback } from 'ai-fallback'
@@ -373,7 +373,7 @@ const model = wrapLanguageModel({
     ),
     model: createFallback({
         models: [
-            openai('gpt-4.1'), //
+            openai.responses('gpt-5-mini'), //
             google('gemini-2.0-flash'),
         ],
     }),
@@ -425,7 +425,7 @@ export async function createExampleComponentCodeWithAI({
     ${imports.join('\n')}
     \`\`\`
 
-    > IMPORTANT! if a variable starts with a number fix it! in javascript variables and import names cannot start with a number! the example code may be wrong.
+    if the example code imports files that are not in the list of available components files you may need to remove them.
 
     BEFORE calling the generate_code tool, you MUST respond to these questions in a bullet list:
 
@@ -445,8 +445,12 @@ export async function createExampleComponentCodeWithAI({
     let outputCode = exampleCode
     console.time(`ai generate code for project ${config.projectId}`)
     const { text } = await generateText({
+        model,
         stopWhen: (state) => state.steps?.length >= 30,
-        providerOptions: {},
+        providerOptions: {
+          openai: {reasoningEffort: 'low'} satisfies OpenAIResponsesProviderOptions
+        },
+
         tools: {
             generate_code: tool({
                 inputSchema: z.object({
@@ -476,7 +480,6 @@ export async function createExampleComponentCodeWithAI({
             }),
         },
         prompt,
-        model,
     })
     console.timeEnd(`ai generate code for project ${config.projectId}`)
 

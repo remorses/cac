@@ -21,12 +21,12 @@
     "license": "",
     "dependencies": {
         "@ai-sdk/provider": "^2.0.0",
-        "ai": "^5.0.0",
+        "ai": "^5.0.14",
         "fast-json-stable-stringify": "^2.1.0",
         "flat-cache": "^6.1.9"
     },
     "devDependencies": {
-        "@ai-sdk/openai": "^2.0.0",
+        "@ai-sdk/openai": "^2.0.14",
         "@types/node": "^22.15.29",
         "zod": "^4.0.14"
     }

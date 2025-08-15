@@ -9,8 +9,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@ai-sdk/anthropic": "^2.0.0",
-        "@ai-sdk/openai": "^2.0.0",
+        "@ai-sdk/anthropic": "^2.0.4",
+        "@ai-sdk/openai": "^2.0.14",
         "@crxjs/vite-plugin": "2.0.0-beta.26",
         "@headlessui/tailwindcss": "^0.2.1",
         "@sentry/browser": "^9.22.0",
@@ -19,7 +19,7 @@
         "@supabase/supabase-js": "^2.48.1",
         "@tailwindcss/forms": "^0.5.10",
         "@testing-library/user-event": "^14.6.1",
-        "ai": "^5.0.0",
+        "ai": "^5.0.14",
         "classnames": "^2.5.1",
         "db": "workspace:^",
         "dedent": "^1.5.3",

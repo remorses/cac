@@ -27,9 +27,9 @@
         "start": "PORT=8040 doppler run --command 'node ./build/server/server.js'"
     },
     "dependencies": {
-        "@ai-sdk/anthropic": "^2.0.0",
-        "@ai-sdk/google": "^2.0.0",
-        "@ai-sdk/openai": "^2.0.0",
+        "@ai-sdk/anthropic": "^2.0.4",
+        "@ai-sdk/google": "^2.0.6",
+        "@ai-sdk/openai": "^2.0.14",
         "@biomejs/js-api": "^0.7.1",
         "@code-hike/mdx": "^0.9.0",
         "@heroui/react": "2.7.8",
@@ -65,7 +65,7 @@
         "@upstash/qstash": "^2.8.1",
         "@xmldom/xmldom": "^0.9.7",
         "@xmorse/deployment-utils": "file:../../notaku/deployment-utils",
-        "ai": "^5.0.0",
+        "ai": "^5.0.14",
         "ai-cache": "workspace:*",
         "ai-fallback": "^1.0.2",
         "async-sema": "^3.1.1",
