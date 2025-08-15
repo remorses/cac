@@ -165,6 +165,10 @@ export async function generateUnframerRepo({
         relativePath: '.github/workflows/ci.yml',
         contents: dedent`
       name: Build and release preview
+
+      permissions:
+        contents: write
+
       on:
         push:
       concurrency:
