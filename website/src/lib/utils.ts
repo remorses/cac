@@ -353,7 +353,7 @@ export function generateStackblitzFiles({
         { relativePath: 'index.html', contents: indexHtml },
         { relativePath: 'src/App.tsx', contents: app },
         { relativePath: 'src/index.css', contents: css },
-        { relativePath: 'pnpm-lock.yaml', contents: '\n' },
+        // { relativePath: 'pnpm-lock.yaml', contents: '\n' },
         { relativePath: 'src/main.tsx', contents: main },
     ]
 }
