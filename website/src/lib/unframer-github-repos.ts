@@ -165,7 +165,6 @@ export async function generateUnframerRepo({
         relativePath: '.github/workflows/ci.yml',
         contents: dedent`
       name: Build and release preview
-
       permissions:
         contents: write
 
@@ -202,7 +201,8 @@ export async function generateUnframerRepo({
                 # Optional: avoid non-fast-forward errors if something landed meanwhile
                 git pull --rebase origin "\${{ github.ref_name }}" || true
 
-                git commit -m "chore: automated update"
+                # Add [skip ci] to the commit message to skip ci runs on this commit
+                git commit -m "chore: automated update [skip ci]"
                 git push origin HEAD:"\${{ github.ref_name }}"
       `,
     })

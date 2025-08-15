@@ -1832,8 +1832,8 @@ importers:
         specifier: ^0.9.7
         version: 0.9.8
       '@xmorse/deployment-utils':
-        specifier: file:../../notaku/deployment-utils
-        version: file:../notaku/deployment-utils(@types/node@22.15.32)(jiti@2.5.1)(tsx@4.20.3)(yaml@2.7.1)
+        specifier: latest
+        version: 0.6.0(@types/node@22.15.32)(jiti@2.5.1)(tsx@4.20.3)(yaml@2.7.1)
       ai:
         specifier: ^5.0.14
         version: 5.0.14(zod@4.0.14)
@@ -6178,8 +6178,8 @@ packages:
   '@xmorse/deployment-utils@0.4.3':
     resolution: {integrity: sha512-WvZOWb88QG6bK3rjGrWGDWiq4uh3DMgHRpfV18BWAcQGLaUUfhVRiB084K0BvMoqMB2nSLLQpLUQcN3xvZqOhQ==}
 
-  '@xmorse/deployment-utils@file:../notaku/deployment-utils':
-    resolution: {directory: ../notaku/deployment-utils, type: directory}
+  '@xmorse/deployment-utils@0.6.0':
+    resolution: {integrity: sha512-C/WatuOAw+4UIz6rvSEXkQhc9+DcuwtqEP93qmG5lRidroYp7sSMFM/R+Op6ovu10U17b/GIYEfcErT70z7Y2A==}
 
   '@zxing/text-encoding@0.9.0':
     resolution: {integrity: sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==}
@@ -17492,7 +17492,7 @@ snapshots:
       - tsx
       - yaml
 
-  '@xmorse/deployment-utils@file:../notaku/deployment-utils(@types/node@22.15.32)(jiti@2.5.1)(tsx@4.20.3)(yaml@2.7.1)':
+  '@xmorse/deployment-utils@0.6.0(@types/node@22.15.32)(jiti@2.5.1)(tsx@4.20.3)(yaml@2.7.1)':
     dependencies:
       '@actions/cache': 3.3.0
       '@iarna/toml': 2.2.5
