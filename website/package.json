@@ -64,7 +64,7 @@
         "@types/xmldom": "^0.1.34",
         "@upstash/qstash": "^2.8.1",
         "@xmldom/xmldom": "^0.9.7",
-        "@xmorse/deployment-utils": "file:../../notaku/deployment-utils",
+        "@xmorse/deployment-utils": "latest",
         "ai": "^5.0.14",
         "ai-cache": "workspace:*",
         "ai-fallback": "^1.0.2",
