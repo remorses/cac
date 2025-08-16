@@ -304,32 +304,32 @@ export async function upsertUnframerRepoWithFiles({
         }),
     )
     const sema = new Sema(20)
-    await Promise.all(
-        existingFiles
-            .filter((x) => {
-                return x.sha && !filePathsRelative.has(x.githubPath)
-            })
-            .map(async (x) => {
-                await sema.acquire()
-                try {
-                    console.log('deleting file', x.pagePath)
-                    let githubPath = x.pagePath
-                    if (githubPath.startsWith('/')) {
-                        githubPath = githubPath.slice(1)
-                    }
-                    return octokit.rest.repos.deleteFile({
-                        owner,
-                        repo,
-                        path: githubPath,
-                        message: `Deleting file ${x.pagePath}`,
-                        sha: x.sha!,
-                        branch: githubBranch,
-                    })
-                } finally {
-                    sema.release()
-                }
-            }),
-    )
+    // await Promise.all(
+    //     existingFiles
+    //         .filter((x) => {
+    //             return x.sha && !filePathsRelative.has(x.githubPath)
+    //         })
+    //         .map(async (x) => {
+    //             await sema.acquire()
+    //             try {
+    //                 console.log('deleting file', x.pagePath)
+    //                 let githubPath = x.pagePath
+    //                 if (githubPath.startsWith('/')) {
+    //                     githubPath = githubPath.slice(1)
+    //                 }
+    //                 return octokit.rest.repos.deleteFile({
+    //                     owner,
+    //                     repo,
+    //                     path: githubPath,
+    //                     message: `Deleting file ${x.pagePath}`,
+    //                     sha: x.sha!,
+    //                     branch: githubBranch,
+    //                 })
+    //             } finally {
+    //                 sema.release()
+    //             }
+    //         }),
+    // )
 
     await Promise.all([
         (title || homepage) &&
