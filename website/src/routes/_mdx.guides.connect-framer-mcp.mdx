@@ -8,7 +8,6 @@ import { CodeBlock } from './_mdx'
 
 # How to connect Framer MCP server
 
-
 > **⚠️ Important:** Using **Framer MCP** requires that the _Framer MCP plugin is open inside the Framer app_. Only one MCP plugin can be open at any time—the server will control whichever Framer project currently has the plugin open.
 
 ## Cursor
@@ -22,8 +21,8 @@ export const cursorCode = `{
   }
 }`
 
-<CodeBlock title=".cursor/mcp.json" language="json">
-{cursorCode}
+<CodeBlock title='.cursor/mcp.json' language='json'>
+    {cursorCode}
 </CodeBlock>
 
 1. Save to project root (or `~/.cursor/mcp.json`).
@@ -40,7 +39,7 @@ export const cursorCode = `{
 export const claudeCliCommand = `claude mcp add --transport sse framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret" -s project`
 
 <CodeBlock title='CLI' language='bash'>
-{claudeCliCommand}
+    {claudeCliCommand}
 </CodeBlock>
 
 This generates:
@@ -55,7 +54,7 @@ export const claudeMcpConfig = `{
 }`
 
 <CodeBlock title='.mcp.json' language='json'>
-{claudeMcpConfig}
+    {claudeMcpConfig}
 </CodeBlock>
 
 {/* Auth: Supported via URL or `/mcp` OAuth. */}
@@ -66,7 +65,10 @@ export const claudeMcpConfig = `{
 
 1. **Settings → Connectors** → **Create**.
 2. Name: _Framer_.
-3. URL: `https://mcp.unframer.co/sse?id=$userId&secret=$secret`.
+3. Copy paste the URL below
+    <CodeBlock title='' language='text'>
+        {`https://mcp.unframer.co/sse?id=$userId&secret=$secret`}
+    </CodeBlock>
 4. **Save** → **Enable**.
 
 {/* Auth: Supported. Steps done entirely in UI. */}
@@ -96,7 +98,7 @@ export const zedConfig = `{
 }`
 
 <CodeBlock title='~/.config/zed/settings.json' language='json'>
-{zedConfig}
+    {zedConfig}
 </CodeBlock>
 
 Reload the Agent panel; green dot == connected.
@@ -120,7 +122,7 @@ export const vscodeConfig = `{
 }`
 
 <CodeBlock title='.vscode/mcp.json' language='json'>
-{vscodeConfig}
+    {vscodeConfig}
 </CodeBlock>
 
 4. Switch Copilot Chat to _Agent_ mode to invoke tools.
@@ -141,7 +143,7 @@ export const claudeDesktopConfig = `{
 }`
 
 <CodeBlock title='claude_desktop_config.json' language='json'>
-{claudeDesktopConfig}
+    {claudeDesktopConfig}
 </CodeBlock>
 
 Restart Claude Desktop ➜ Use `/tools framer`.
@@ -155,20 +157,20 @@ Restart Claude Desktop ➜ Use `/tools framer`.
 export const agentCode = `import { Agent, hostedMcpTool } from "@openai/agents";
 
 const framerTool = hostedMcpTool({
-  name: "framer",
-  serverUrl: \`https://mcp.unframer.co/sse?id=\${process.env.USER_ID}&secret=\${process.env.SECRET}\`,
+name: "framer",
+serverUrl: \`https://mcp.unframer.co/sse?id=\${process.env.USER_ID}&secret=\${process.env.SECRET}\`,
 });
 
 const agent = new Agent({
-  model: "gpt-4o-responses",
-  tools: [framerTool],
+model: "gpt-4o-responses",
+tools: [framerTool],
 });
 
 const result = await agent.run("Publish the current page to production");
 console.log(result.output.text);`
 
-<CodeBlock title="agent.ts" language="ts">
-{agentCode}
+<CodeBlock title='agent.ts' language='ts'>
+    {agentCode}
 </CodeBlock>
 
 > The agent streams _tool calls_ to Framer’s MCP server and returns status when complete.
@@ -184,16 +186,16 @@ You can check if the Framer MCP server is connected and accessible from your AI 
 1. **Ask directly:**
    Try prompting your assistant with a question like:
 
-   > _Do you have access to the Framer MCP tool?_
+    > _Do you have access to the Framer MCP tool?_
 
-   The assistant should confirm if the tool is available. If not, review your configuration above.
+    The assistant should confirm if the tool is available. If not, review your configuration above.
 
 2. **Try a simple action:**
    Ask the assistant to perform a basic operation using the Framer MCP tool. For example:
 
-   > _Rewrite the current page text_
+    > _Rewrite the current page text_
 
-   If the integration is successful, the tool should respond or attempt the requested action. If you receive an error about tool access, double‑check that the Framer MCP plugin is open and your configuration matches the appropriate section above.
+    If the integration is successful, the tool should respond or attempt the requested action. If you receive an error about tool access, double‑check that the Framer MCP plugin is open and your configuration matches the appropriate section above.
 
 ---
 
