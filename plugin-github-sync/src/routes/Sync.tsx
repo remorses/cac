@@ -7,6 +7,7 @@ import {
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
 import classNames from 'classnames'
+import { mapValueToFieldValue } from 'plugin-mcp/src/lib/cms'
 import { FieldDataEntryInput, framer } from 'framer-plugin'
 import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
 import { Sema } from 'sema4'
@@ -202,57 +203,6 @@ function Component() {
             )}
         </div>
     )
-}
-function mapValueToFieldValue(
-    value: any,
-    field: CollectionFieldConfig,
-): FieldDataEntryInput | null {
-    if (!field?.type) {
-        return null
-    }
-    if (value == null) {
-        return {
-            type: field.type,
-            value,
-        }
-    }
-    if (field.type === 'string') {
-        return { type: 'string', value: String(value) || '' }
-    }
-    if (field.type === 'number') {
-        return { type: 'number', value: Number(value) ?? null }
-    }
-    if (field.type === 'boolean') {
-        return { type: 'boolean', value: Boolean(value) }
-    }
-    if (field.type === 'date') {
-        try {
-            if (!value) return null
-            const date = new Date(value)
-            return { type: 'date', value: date.toISOString() }
-        } catch (e) {
-            return null
-        }
-    }
-    if (field.type === 'enum') {
-        return { type: 'enum', value: String(value) || '' }
-    }
-    if (field.type === 'formattedText') {
-        return { type: 'formattedText', value: String(value) || '' }
-    }
-    if (field.type === 'color') {
-        return { type: 'color', value: String(value) || '' }
-    }
-    if (field.type === 'link') {
-        return { type: 'link', value: String(value) || '' }
-    }
-    if (field.type === 'image') {
-        return { type: 'image', value: String(value) || '' }
-    }
-    return {
-        type: field.type,
-        value,
-    }
 }
 
 function getFieldsForFrontMatter(
