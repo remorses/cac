@@ -499,24 +499,28 @@ describe(
                         "id": "j11rZL4rT",
                         "name": "Title",
                         "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
                         "required": false
                       },
                       {
                         "id": "HY_qtN8iD",
                         "name": "Date",
                         "type": "date",
+                        "comment": "JSON string - ISO 8601 date (e.g., \\"2025-08-20T10:00:00.000Z\\")",
                         "required": false
                       },
                       {
                         "id": "A45uGylg5",
                         "name": "Image",
                         "type": "image",
+                        "comment": "JSON string or null - Image URL (e.g., \\"https://example.com/image.jpg\\")",
                         "required": false
                       },
                       {
                         "id": "rwkNj3aug",
                         "name": "Categories",
                         "type": "multiCollectionReference",
+                        "comment": "JSON array - Array of item IDs from the \\"Categories\\" collection (e.g., [\\"id1\\", \\"id2\\"])",
                         "required": false,
                         "collectionId": "Bj1a1PDAT"
                       },
@@ -524,6 +528,7 @@ describe(
                         "id": "kp5xnuF29",
                         "name": "Content",
                         "type": "formattedText",
+                        "comment": "JSON string - HTML content (e.g., \\"<p>Rich text</p>\\")",
                         "required": false
                       }
                     ]
@@ -538,6 +543,7 @@ describe(
                         "id": "zqE_0b8PU",
                         "name": "Title",
                         "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
                         "required": false
                       }
                     ]
