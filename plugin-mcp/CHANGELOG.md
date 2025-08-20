@@ -1,5 +1,15 @@
 # Changelog
 
+## 2025-01-30 22:30
+
+- Added 4 new CMS MCP tools for managing Framer CMS collections and items
+- `getCMSCollections` - Returns all collections with their field definitions and management status
+- `getCMSItems` - Retrieves items with pagination (skip/limit) and optional filtering by query, field, or draft status
+- `upsertCMSItem` - Creates new items or updates existing ones using itemId presence for operation determination
+- `deleteCMSItem` - Permanently removes items from collections with proper validation
+- Field data uses structured format matching Framer's internal structure with type and value properties
+- Added comprehensive permission checks for all mutation operations
+
 ## 2025-01-09 10:35
 
 - Updated processReactExportData to handle code files in addition to component nodes

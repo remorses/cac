@@ -1220,6 +1220,243 @@ async function websocketHandler({
                 return `Failed to get project website URL: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
+        case 'getCMSCollections': {
+            try {
+                const collections = await framer.getCollections()
+
+                // For each collection, get its field definitions
+                const collectionsWithFields = await Promise.all(
+                    collections.map(async (collection) => {
+                        const canEdit = collection.managedBy === 'thisPlugin'
+                        const fields = await collection.getFields()
+
+                        return {
+                            id: collection.id,
+                            name: collection.name,
+                            managedBy: collection.managedBy,
+                            readonly: collection.readonly,
+                            fields: fields.map((field) => ({
+                                ...field,
+                            })),
+                        }
+                    }),
+                )
+
+                return {
+                    message: `Found ${collections.length} CMS collection(s)`,
+                    collections: collectionsWithFields,
+                }
+            } catch (error) {
+                return `Failed to get CMS collections: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'getCMSItems': {
+            const { collectionId, skip = 0, limit = 100, filter } = input
+
+            const collection = await framer.getCollection(collectionId)
+            if (!collection) {
+                return `CMS collection with ID ${collectionId} not found`
+            }
+
+            // Get all items from the collection
+            let items = await collection.getItems()
+
+            // Apply filtering if provided
+            if (filter) {
+                if (filter.query) {
+                    const query = filter.query.toLowerCase()
+                    items = items.filter((item) => {
+                        // Search in slug
+                        if (item.slug.toLowerCase().includes(query)) {
+                            return true
+                        }
+
+                        // Search in specific field or all text fields
+                        if (filter.fieldName) {
+                            const fieldValue = item.fieldData[filter.fieldName]
+                            if (
+                                fieldValue &&
+                                typeof fieldValue === 'object' &&
+                                'value' in fieldValue
+                            ) {
+                                const value = String(
+                                    fieldValue.value,
+                                ).toLowerCase()
+                                return value.includes(query)
+                            }
+                        } else {
+                            // Search in all string/text fields
+                            for (const [
+                                fieldName,
+                                fieldValue,
+                            ] of Object.entries(item.fieldData)) {
+                                if (
+                                    fieldValue &&
+                                    typeof fieldValue === 'object' &&
+                                    'value' in fieldValue
+                                ) {
+                                    const value = fieldValue.value
+                                    if (
+                                        typeof value === 'string' &&
+                                        value.toLowerCase().includes(query)
+                                    ) {
+                                        return true
+                                    }
+                                }
+                            }
+                        }
+                        return false
+                    })
+                }
+            }
+
+            // Apply pagination
+            const totalItems = items.length
+            const paginatedItems = items.slice(skip, skip + limit)
+
+            return {
+                message: `Retrieved ${paginatedItems.length} of ${totalItems} item(s) from collection "${collection.name}"`,
+                pagination: {
+                    total: totalItems,
+                    skip,
+                    limit,
+                    returned: paginatedItems.length,
+                },
+                items: paginatedItems.map((item) => ({
+                    id: item.id,
+                    slug: item.slug,
+                    draft: item.draft,
+                    fieldData: item.fieldData,
+                })),
+            }
+        }
+        case 'upsertCMSItem': {
+            const {
+                collectionId,
+                itemId,
+                slug,
+                fieldData,
+                draft = false,
+            } = input
+
+            // Check permissions
+            const permissionError = checkPermissions('Collection.addItems')
+            if (permissionError) return permissionError
+
+            const collection = await framer.getCollection(collectionId)
+            if (!collection) {
+                return `CMS collection with ID ${collectionId} not found`
+            }
+
+            // Prepare the item data
+            const itemData: any = {
+                draft,
+                fieldData: fieldData || {},
+            }
+
+            if (itemId) {
+                // Update existing item
+                itemData.id = itemId
+                if (slug !== undefined) {
+                    itemData.slug = slug
+                }
+
+                // Get the existing item to merge field data
+                const existingItems = await collection.getItems()
+                const existingItem = existingItems.find(
+                    (item) => item.id === itemId,
+                )
+
+                if (!existingItem) {
+                    return `CMS item with ID ${itemId} not found in collection ${collectionId}`
+                }
+
+                // For updates, merge with existing field data (partial update support)
+                if (fieldData) {
+                    itemData.fieldData = {
+                        ...existingItem.fieldData,
+                        ...fieldData,
+                    }
+                } else {
+                    itemData.fieldData = existingItem.fieldData
+                }
+
+                await collection.addItems([itemData])
+
+                return {
+                    message: `Successfully updated CMS item "${existingItem.slug}" in collection "${collection.name}"`,
+                    item: {
+                        id: itemId,
+                        slug: slug || existingItem.slug,
+                        draft,
+                        fieldData: itemData.fieldData,
+                    },
+                }
+            } else {
+                // Create new item
+                if (!slug) {
+                    return `Slug is required when creating a new CMS item`
+                }
+
+                itemData.slug = slug
+
+                // Check if slug already exists
+                const existingItems = await collection.getItems()
+                const existingItem = existingItems.find(
+                    (item) => item.slug === slug,
+                )
+
+                if (existingItem) {
+                    return `CMS item with slug "${slug}" already exists in collection ${collectionId}. Use itemId to update it instead.`
+                }
+
+                await collection.addItems([itemData])
+
+                // Get the newly created item to return its ID
+                const updatedItems = await collection.getItems()
+                const newItem = updatedItems.find((item) => item.slug === slug)
+
+                return {
+                    message: `Successfully created new CMS item "${slug}" in collection "${collection.name}"`,
+                    item: {
+                        id: newItem?.id,
+                        slug,
+                        draft,
+                        fieldData: itemData.fieldData,
+                    },
+                }
+            }
+        }
+        case 'deleteCMSItem': {
+            const { collectionId, itemId } = input
+
+            // Check permission
+            const permissionError = checkPermissions('Collection.removeItems')
+            if (permissionError) return permissionError
+
+            const collection = await framer.getCollection(collectionId)
+            if (!collection) {
+                return `CMS collection with ID ${collectionId} not found`
+            }
+
+            // Verify the item exists
+            const items = await collection.getItems()
+            const itemToDelete = items.find((item) => item.id === itemId)
+
+            if (!itemToDelete) {
+                return `CMS item with ID ${itemId} not found in collection ${collectionId}`
+            }
+
+            await collection.removeItems([itemId])
+
+            return {
+                message: `Successfully deleted CMS item "${itemToDelete.slug}" from collection "${collection.name}"`,
+                deletedItem: {
+                    id: itemId,
+                    slug: itemToDelete.slug,
+                },
+            }
+        }
         default:
             throw new Error(`Unknown tool type: ${type}`)
     }

@@ -13,33 +13,55 @@
     "migrations": [
         {
             "new_sqlite_classes": ["MyMCP"],
-            "tag": "v1",
-        },
+            "tag": "v1"
+        }
     ],
     "durable_objects": {
         "bindings": [
             {
                 "class_name": "MyMCP",
-                "name": "MCP_OBJECT",
-            },
-        ],
+                "name": "MCP_OBJECT"
+            }
+        ]
     },
     "routes": [
         {
             "zone_name": "unframer.co",
             "pattern": "mcp.unframer.co",
-            "custom_domain": true,
-        },
+            "custom_domain": true
+        }
     ],
     "rules": [
         {
             "type": "Text",
             "globs": ["*.md"],
-            "fallthrough": true,
-        },
+            "fallthrough": true
+        }
     ],
 
     "observability": {
-        "enabled": true,
+        "enabled": true
     },
+
+    // Preview environment configuration
+    "env": {
+        "preview": {
+            "name": "framer-mcp-preview-preview",
+            "routes": [
+                {
+                    "zone_name": "unframer.co",
+                    "pattern": "mcp.preview.unframer.co",
+                    "custom_domain": true
+                }
+            ],
+            "durable_objects": {
+                "bindings": [
+                    {
+                        "class_name": "MyMCP",
+                        "name": "MCP_OBJECT",
+                    }
+                ]
+            }
+        }
+    }
 }

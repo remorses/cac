@@ -510,6 +510,87 @@ export const mcpTools = {
         input: z.object({}),
         output: z.any(),
     },
+    getCMSCollections: {
+        description: dedent`
+            Gets all CMS collections in the project with their field definitions.
+            
+            Returns collections with:
+            - ID, name, and management status (user-managed or plugin-managed)
+            - Field definitions showing the structure of items in each collection
+            - Field types include: string, number, boolean, color, date, image, link, formattedText, file, enum, collectionReference, multiCollectionReference
+            
+            Use this to discover available collections and understand their structure before working with items.
+        `,
+        input: z.object({}),
+        output: z.any(),
+    },
+    getCMSItems: {
+        description: dedent`
+            Gets items from a specific CMS collection, with optional text search filtering.
+            
+            Returns items with their IDs, slugs, draft status, and field data.
+            Field data contains the actual content for each field defined in the collection.
+            
+            If no filters are provided, returns all items in the collection.
+            When filters are used, only matching items are returned based on text search.
+            
+            Pagination: Use skip and limit to paginate through large collections.
+        `,
+        input: z.object({
+            collectionId: z.string().describe('The ID of the CMS collection to get items from'),
+            skip: z.number().optional().describe('Number of items to skip for pagination (default: 0)'),
+            limit: z.number().optional().describe('Maximum number of items to return (default: 100)'),
+            filter: z.object({
+                query: z.string().optional().describe('Search query to match against slugs and text fields'),
+                fieldName: z.string().optional().describe('Specific field name to search within'),
+            }).optional().describe('Optional filters to search/filter items instead of getting all'),
+        }),
+        output: z.any(),
+    },
+    upsertCMSItem: {
+        description: dedent`
+            Creates a new CMS item or updates an existing one.
+            
+            For creating a new item:
+            - Provide slug and fieldData (itemId should be omitted)
+            - The slug must be unique within the collection
+            
+            For updating an existing item:
+            - Provide itemId and any fields to update
+            - Only included fields will be changed (partial updates supported)
+            
+            Field data format:
+            {
+                "title": { "type": "string", "value": "My Title" },
+                "description": { "type": "formattedText", "value": "<p>Description</p>" },
+                "price": { "type": "number", "value": 29.99 },
+                "featured": { "type": "boolean", "value": true }
+            }
+            
+            The field structure must match the collection's field definitions from getCMSCollections.
+        `,
+        input: z.object({
+            collectionId: z.string().describe('The ID of the CMS collection'),
+            itemId: z.string().optional().describe('ID of existing item to update (omit to create new)'),
+            slug: z.string().optional().describe('URL-friendly identifier (required for new items, optional for updates)'),
+            fieldData: z.record(z.string(), z.any()).optional().describe('Field values as an object matching the collection field structure'),
+            draft: z.boolean().optional().describe('Draft status (default: false for new items)'),
+        }),
+        output: z.any(),
+    },
+    deleteCMSItem: {
+        description: dedent`
+            Deletes an item from a CMS collection.
+            
+            This permanently removes the item and cannot be undone.
+            The item ID must exist in the specified collection.
+        `,
+        input: z.object({
+            collectionId: z.string().describe('The ID of the CMS collection containing the item'),
+            itemId: z.string().describe('The ID of the item to delete'),
+        }),
+        output: z.any(),
+    },
 } as const
 
 /* ──────────────────────────── Types ─────────────────────────── */
