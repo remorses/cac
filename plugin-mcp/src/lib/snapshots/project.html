@@ -7,6 +7,9 @@ Project structure:
     <Page nodeId="vN6zkojot" path="/404" />
     <Page nodeId="CpFAHygNJ" path="/" />
     <Page nodeId="RgcdfXRS5" path="/page" />
+    <Page nodeId="CuCqPj7i9" path="/page-2" />
+    <Page nodeId="oBHEiJUrU" path="/blog" />
+    <Page nodeId="cyYCWZOM9" path="/blog/:slug" />
   </Pages>
   <!-- Reusable components. Use getNodeXml with a component nodeId to see its structure -->
   <Components>
@@ -266,6 +269,11 @@ Project structure:
         light="rgb(44, 100, 200)"
         dark="rgb(44, 50, 100)"
      />
+    <ColorStyle
+        path="/Test-Color-305"
+        light="rgb(50, 100, 200)"
+        dark="rgb(50, 50, 100)"
+     />
   </ColorStyles>
   <!-- Project text styles. Reference these in XML attributes like inlineTextStyle="/StylePath" -->
   <TextStyles>
@@ -307,6 +315,32 @@ Project structure:
         decoration="none"
         balance="false"
         tag="h2"
+     />
+    <TextStyle
+        path="/"
+        font="Inter-Bold"
+        fontSize="26px"
+        lineHeight="1.4em"
+        letterSpacing="-0.04em"
+        paragraphSpacing="40"
+        transform="none"
+        alignment="left"
+        decoration="none"
+        balance="false"
+        tag="h3"
+     />
+    <TextStyle
+        path="/"
+        font="Inter-Bold"
+        fontSize="22px"
+        lineHeight="1.4em"
+        letterSpacing="-0.04em"
+        paragraphSpacing="40"
+        transform="none"
+        alignment="left"
+        decoration="none"
+        balance="false"
+        tag="h4"
      />
     <TextStyle
         path="/Heading lg"
@@ -390,7 +424,7 @@ Project structure:
 </Project>
 
 
-The currently focused page ID is: `CpFAHygNJ`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.
+The currently focused page ID is: `oBHEiJUrU`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.
 
 When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
 

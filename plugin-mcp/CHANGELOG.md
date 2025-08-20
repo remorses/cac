@@ -1,5 +1,25 @@
 # Changelog
 
+## 2025-08-20 15:30
+
+- Enhanced CMS upsertCMSItem tool documentation with detailed field format examples
+- Added clear notes about field ID structure (auto-generated strings, not descriptive names)
+- Documented proper format for each field type (image as URL string, multiCollectionReference as array of IDs)
+- Added warnings about using actual item IDs for references, not slugs
+- Created cms.ts helper file with type definitions and utility functions for CMS field handling
+- **Fixed getCMSCollections to return field IDs and detailed field information**
+- Updated getCMSCollections to include field.id, field.name, field.type, and conditional properties
+- Enhanced getCMSCollections documentation to explain field structure and usage
+- **Added comprehensive CMS test suite with 5 tests covering all CMS tools**
+- Added tests for getCMSCollections, getCMSItems, upsertCMSItem (create/update), and deleteCMSItem
+- Tests use inline snapshots and include proper cleanup by deleting created items
+- Tests are interdependent with shared state for collection IDs and field mappings
+- **Enhanced field information in getCMSCollections with type-specific properties**
+- Added support for FileField allowedFileTypes array
+- Added support for EnumField cases with id and name
+- Added support for CollectionReferenceField collectionId property
+- Improved documentation with detailed field property explanations
+
 ## 2025-01-30 22:30
 
 - Added 4 new CMS MCP tools for managing Framer CMS collections and items

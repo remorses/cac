@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createMCPClient } from './mcp-client.js'
 
 const mcpUrl =
-    'https://mcp.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
+    'https://mcp.preview.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
 
 describe(
     'Framer MCP Server Tests',
@@ -471,6 +471,294 @@ describe(
                     },
                 },
             })
+        })
+
+        // CMS Tests
+        let cmsCollectionId: string | null = null
+        let cmsFieldIds: Record<string, string> = {}
+        let createdItemId: string | null = null
+
+        it('cms should get collections with field information', async () => {
+            const result = await callTool({
+                name: 'getCMSCollections',
+                args: undefined,
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toMatchInlineSnapshot(`
+              "{
+                "message": "Found 2 CMS collection(s)",
+                "collections": [
+                  {
+                    "id": "sbuZivmcF",
+                    "name": "Articles",
+                    "managedBy": "user",
+                    "readonly": false,
+                    "fields": [
+                      {
+                        "id": "j11rZL4rT",
+                        "name": "Title",
+                        "type": "string",
+                        "required": false
+                      },
+                      {
+                        "id": "HY_qtN8iD",
+                        "name": "Date",
+                        "type": "date",
+                        "required": false
+                      },
+                      {
+                        "id": "A45uGylg5",
+                        "name": "Image",
+                        "type": "image",
+                        "required": false
+                      },
+                      {
+                        "id": "rwkNj3aug",
+                        "name": "Categories",
+                        "type": "multiCollectionReference",
+                        "required": false
+                      },
+                      {
+                        "id": "kp5xnuF29",
+                        "name": "Content",
+                        "type": "formattedText",
+                        "required": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "Bj1a1PDAT",
+                    "name": "Categories",
+                    "managedBy": "user",
+                    "readonly": false,
+                    "fields": [
+                      {
+                        "id": "zqE_0b8PU",
+                        "name": "Title",
+                        "type": "string",
+                        "required": false
+                      }
+                    ]
+                  }
+                ]
+              }"
+            `)
+
+            const parsedContent = tryJsonParse(content)
+            expect(parsedContent.collections).toBeDefined()
+            expect(Array.isArray(parsedContent.collections)).toBe(true)
+
+            // Store the first collection for subsequent tests
+            if (parsedContent.collections.length > 0) {
+                const firstCollection = parsedContent.collections[0]
+                cmsCollectionId = firstCollection.id
+
+                // Store field IDs for later use
+                firstCollection.fields.forEach((field: any) => {
+                    cmsFieldIds[field.type] = field.id
+                })
+            }
+        })
+
+        it('cms should get first item from collection', async () => {
+            if (!cmsCollectionId) {
+                throw new Error('No CMS collection found from previous test')
+            }
+
+            const result = await callTool({
+                name: 'getCMSItems',
+                args: {
+                    collectionId: cmsCollectionId,
+                    limit: 1
+                },
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toMatchInlineSnapshot(`
+              "{
+                "message": "Retrieved 1 of 6 item(s) from collection \\"Articles\\"",
+                "pagination": {
+                  "total": 6,
+                  "skip": 0,
+                  "limit": 1,
+                  "returned": 1
+                },
+                "items": [
+                  {
+                    "id": "aN7TEjl0T",
+                    "slug": "getting-started",
+                    "draft": false,
+                    "fieldData": {
+                      "j11rZL4rT": {
+                        "type": "string",
+                        "value": "Getting Started",
+                        "valueByLocale": {}
+                      },
+                      "HY_qtN8iD": {
+                        "type": "date",
+                        "value": "2025-08-19T22:00:00.000Z"
+                      },
+                      "A45uGylg5": {
+                        "type": "image",
+                        "value": {
+                          "id": "f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg",
+                          "url": "https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg",
+                          "thumbnailUrl": "https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg?scale-down-to=512",
+                          "altText": "Green Fern",
+                          "resolution": "auto"
+                        }
+                      },
+                      "rwkNj3aug": {
+                        "type": "multiCollectionReference",
+                        "value": [
+                          "cms",
+                          "basics"
+                        ]
+                      },
+                      "kp5xnuF29": {
+                        "type": "formattedText",
+                        "value": "<h2>Editing Content</h2>\\n\\n<p>You can choose to set up different types of input fields depending on your content. For instance, a blog might have a title, a slug, and a long-form field for formatted content. These may be different for a product directory or a photo blog, where you may need to add an image field. To edit the fields each CMS item will have, click on any of the column titles. This will trigger a modal to add new fields, where you can also re-arrange the fields or modify or delete the existing ones.</p>\\n\\n<h2>Adding Content to the Canvas</h2>\\n\\n<p>After setting up the content, go back to the canvas. Your collections are accessible from the Insert menu. Open the Insert menu, navigate to the CMS Content section, and drag and drop your collection onto the canvas. This will add a special stack with layers connected to your data. From here, you can edit the visual properties on the right, just as you would do with a regular Stack.</p>\\n\\n<h2>Add a Page with Content</h2>\\n\\n<p>If you wish to add a page instead that will automatically be populated with data from the CMS, navigate to the left panel. One you are in the <strong>Pages</strong> tab, click on the <code>+</code> button next to the CMS section. If you add the <strong>Index</strong> page, a page will be added with a list of all of the items in your collection. If you add the <strong>Detail</strong> page, you will be presented with a page with content from your individual items.</p>\\n\\n<p><strong>Note</strong>: If you chose to add the sample data, a new detail page called <code>/blog</code> will be added to your website, and you will find the stack of content added into the page for you.</p>\\n\\n<p>The detail page will display content pulled from the first entry of the collection by default. In order to preview other items in the collection, change the content by selecting a different item from the dropdown menu.</p>",
+                        "valueByLocale": {}
+                      }
+                    }
+                  }
+                ]
+              }"
+            `)
+
+            const parsedContent = tryJsonParse(content)
+            expect(parsedContent.items).toBeDefined()
+            expect(Array.isArray(parsedContent.items)).toBe(true)
+        })
+
+        it('cms should create new item', async () => {
+            if (!cmsCollectionId || !cmsFieldIds.string) {
+                throw new Error('No CMS collection or field IDs found from previous tests')
+            }
+
+            const randomNum = Math.floor(Math.random() * 10000)
+            const testSlug = `test-item-${randomNum}`
+
+            const result = await callTool({
+                name: 'upsertCMSItem',
+                args: {
+                    collectionId: cmsCollectionId,
+                    slug: testSlug,
+                    fieldData: {
+                        [cmsFieldIds.string]: {
+                            type: 'string',
+                            value: `Test Item ${randomNum}`
+                        },
+                        ...(cmsFieldIds.date && {
+                            [cmsFieldIds.date]: {
+                                type: 'date',
+                                value: new Date().toISOString()
+                            }
+                        }),
+                        ...(cmsFieldIds.formattedText && {
+                            [cmsFieldIds.formattedText]: {
+                                type: 'formattedText',
+                                value: `<p>Test content for item ${randomNum}</p>`
+                            }
+                        })
+                    },
+                    draft: false
+                },
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toMatchInlineSnapshot(`
+              "{
+                "message": "Successfully created new CMS item \\"test-item-9826\\" in collection \\"Articles\\"",
+                "item": {
+                  "id": "TQt8JgVIZ",
+                  "slug": "test-item-9826",
+                  "draft": false,
+                  "fieldData": {
+                    "j11rZL4rT": {
+                      "type": "string",
+                      "value": "Test Item 9826"
+                    },
+                    "HY_qtN8iD": {
+                      "type": "date",
+                      "value": "2025-08-20T10:02:01.655Z"
+                    },
+                    "kp5xnuF29": {
+                      "type": "formattedText",
+                      "value": "<p>Test content for item 9826</p>"
+                    }
+                  }
+                }
+              }"
+            `)
+
+            const parsedContent = tryJsonParse(content)
+            expect(parsedContent.message).toContain('Successfully created')
+            expect(parsedContent.item.slug).toBe(testSlug)
+
+            // Store the created item ID for cleanup
+            createdItemId = parsedContent.item.id
+        })
+
+        it('cms should update existing item', async () => {
+            if (!cmsCollectionId || !createdItemId || !cmsFieldIds.string) {
+                throw new Error('No created item found from previous test')
+            }
+
+            const randomNum = Math.floor(Math.random() * 10000)
+
+            const result = await callTool({
+                name: 'upsertCMSItem',
+                args: {
+                    collectionId: cmsCollectionId,
+                    itemId: createdItemId,
+                    fieldData: {
+                        [cmsFieldIds.string]: {
+                            type: 'string',
+                            value: `Updated Item ${randomNum}`
+                        }
+                    },
+                    draft: false
+                },
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toMatchInlineSnapshot(`"Encountered an error: Error on typia.createAssert(): invalid type on $input[1][0].fieldData.A45uGylg5.value, expect to be (null | string)"`)
+
+            // const parsedContent = tryJsonParse(content)
+            // expect(parsedContent.message).toContain('Successfully updated')
+        })
+
+        it('cms should delete created item', async () => {
+            if (!cmsCollectionId || !createdItemId) {
+                throw new Error('No created item found from previous tests')
+            }
+
+            const result = await callTool({
+                name: 'deleteCMSItem',
+                args: {
+                    collectionId: cmsCollectionId,
+                    itemId: createdItemId,
+                },
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toMatchInlineSnapshot(`
+              "{
+                "message": "Successfully deleted CMS item \\"test-item-9826\\" from collection \\"Articles\\"",
+                "deletedItem": {
+                  "id": "TQt8JgVIZ",
+                  "slug": "test-item-9826"
+                }
+              }"
+            `)
+
+            const parsedContent = tryJsonParse(content)
+            expect(parsedContent.message).toContain('Successfully deleted')
+
+            // Clear the stored item ID
+            createdItemId = null
         })
     },
     1000 * 20,

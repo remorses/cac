@@ -1235,9 +1235,40 @@ async function websocketHandler({
                             name: collection.name,
                             managedBy: collection.managedBy,
                             readonly: collection.readonly,
-                            fields: fields.map((field) => ({
-                                ...field,
-                            })),
+                            fields: fields.map((field) => {
+                                const baseField = {
+                                    id: field.id,
+                                    name: field.name,
+                                    type: field.type,
+                                }
+                                
+                                // Add field-specific properties if they exist
+                                const result: any = { ...baseField }
+                                
+                                // Common properties
+                                if ('required' in field) result.required = field.required || false
+                                
+                                // FileField specific properties
+                                if ('allowedFileTypes' in field && field.allowedFileTypes) result.allowedFileTypes = field.allowedFileTypes
+                                
+                                // EnumField specific properties  
+                                if ('cases' in field && field.cases) {
+                                    result.cases = field.cases.map((enumCase: any) => ({
+                                        id: enumCase.id,
+                                        name: enumCase.name
+                                    }))
+                                }
+                                
+                                // CollectionReferenceField and MultiCollectionReferenceField specific properties
+                                if ('collectionId' in field) result.collectionId = field.collectionId
+                                
+                                // Legacy support for generic options/defaultValue/multiline properties
+                                if ('options' in field && field.options) result.options = field.options
+                                if ('defaultValue' in field && field.defaultValue !== undefined) result.defaultValue = field.defaultValue
+                                if ('multiline' in field && field.multiline !== undefined) result.multiline = field.multiline
+                                
+                                return result
+                            }),
                         }
                     }),
                 )
