@@ -12,6 +12,7 @@
         "check": "pnpm tsc --incremental",
         "typecheck": "pnpm tsc --noEmit --incremental",
         "deployment": "pnpm typecheck && pnpm wrangler deploy",
+        "deployment:preview": "pnpm typecheck && pnpm wrangler deploy --env preview",
         "start": "vite preview --port 5173",
         "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"
     },
