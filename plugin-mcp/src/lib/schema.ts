@@ -516,10 +516,21 @@ export const mcpTools = {
             
             Returns collections with:
             - ID, name, and management status (user-managed or plugin-managed)
-            - Field definitions showing the structure of items in each collection
+            - Field definitions with field IDs, names, types, and requirements
             - Field types include: string, number, boolean, color, date, image, link, formattedText, file, enum, collectionReference, multiCollectionReference
             
+            Each field includes:
+            - id: The field identifier (e.g., "j11rZL4rT") - use this as the key in fieldData
+            - name: Human-readable field name
+            - type: The data type for this field
+            - required: Whether the field is mandatory (when applicable)
+            - allowedFileTypes: Array of allowed file extensions for file fields (e.g., ["pdf", "txt"])
+            - cases: Array of enum options with id and name for enum fields
+            - collectionId: Referenced collection ID for reference fields
+            - Additional legacy properties like options, defaultValue, multiline when applicable
+            
             Use this to discover available collections and understand their structure before working with items.
+            The field IDs returned here are what you need to use as keys in upsertCMSItem fieldData.
         `,
         input: z.object({}),
         output: z.any(),
@@ -559,13 +570,29 @@ export const mcpTools = {
             - Provide itemId and any fields to update
             - Only included fields will be changed (partial updates supported)
             
-            Field data format:
+            Field data format - each field is an object with type and value:
             {
-                "title": { "type": "string", "value": "My Title" },
-                "description": { "type": "formattedText", "value": "<p>Description</p>" },
-                "price": { "type": "number", "value": 29.99 },
-                "featured": { "type": "boolean", "value": true }
+                "fieldId": { "type": "string", "value": "My Title" },
+                "fieldId": { "type": "formattedText", "value": "<p>HTML content</p>" },
+                "fieldId": { "type": "number", "value": 29.99 },
+                "fieldId": { "type": "boolean", "value": true },
+                "fieldId": { "type": "date", "value": "2025-08-21T10:00:00.000Z" },
+                "fieldId": { "type": "image", "value": "https://url.to/image.jpg" },
+                "fieldId": { "type": "color", "value": "#FF0000" },
+                "fieldId": { "type": "link", "value": "https://example.com" },
+                "fieldId": { "type": "file", "value": "https://url.to/file.pdf" },
+                "fieldId": { "type": "enum", "value": "option1" },
+                "fieldId": { "type": "collectionReference", "value": "itemId" },
+                "fieldId": { "type": "multiCollectionReference", "value": ["itemId1", "itemId2"] }
             }
+            
+            IMPORTANT NOTES:
+            - Field IDs are auto-generated strings (e.g., "j11rZL4rT"), NOT descriptive names
+            - Get field IDs from getCMSItems response to see existing field structure
+            - For image fields: provide URL string directly as value, NOT an object
+            - For multiCollectionReference: provide array of item IDs from the referenced collection
+            - For collectionReference: when referencing items, use their actual item IDs (not slugs)
+            - Date values must be ISO 8601 format strings
             
             The field structure must match the collection's field definitions from getCMSCollections.
         `,

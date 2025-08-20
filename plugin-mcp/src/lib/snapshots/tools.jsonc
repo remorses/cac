@@ -381,10 +381,6 @@ After creating, you can reference this style in XML nodes using inlineTextStyle=
               "description": "Line height with units (e.g., "24px", "1.5em", "150%")",
               "type": "string",
             },
-            "name": {
-              "description": "The display name of the text style",
-              "type": "string",
-            },
             "paragraphSpacing": {
               "description": "Space between paragraphs in pixels",
               "type": "number",
@@ -528,7 +524,7 @@ You can read more documentation on how to use React Export (and the unframer cli
       "additionalProperties": false,
       "properties": {
         "nodeIds": {
-          "description": "Array of component node IDs to export as React code",
+          "description": "Array of component node IDs or code file IDs to export as React code",
           "items": {
             "minLength": 1,
             "type": "string",
@@ -693,5 +689,153 @@ Use this tool when you need to:
       "type": "object",
     },
     "name": "getProjectWebsiteUrl",
+  },
+  {
+    "description": "Gets all CMS collections in the project with their field definitions.
+
+Returns collections with:
+- ID, name, and management status (user-managed or plugin-managed)
+- Field definitions showing the structure of items in each collection
+- Field types include: string, number, boolean, color, date, image, link, formattedText, file, enum, collectionReference, multiCollectionReference
+
+Use this to discover available collections and understand their structure before working with items.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+    "name": "getCMSCollections",
+  },
+  {
+    "description": "Gets items from a specific CMS collection, with optional text search filtering.
+
+Returns items with their IDs, slugs, draft status, and field data.
+Field data contains the actual content for each field defined in the collection.
+
+If no filters are provided, returns all items in the collection.
+When filters are used, only matching items are returned based on text search.
+
+Pagination: Use skip and limit to paginate through large collections.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "collectionId": {
+          "description": "The ID of the CMS collection to get items from",
+          "type": "string",
+        },
+        "filter": {
+          "additionalProperties": false,
+          "description": "Optional filters to search/filter items instead of getting all",
+          "properties": {
+            "fieldName": {
+              "description": "Specific field name to search within",
+              "type": "string",
+            },
+            "query": {
+              "description": "Search query to match against slugs and text fields",
+              "type": "string",
+            },
+          },
+          "type": "object",
+        },
+        "limit": {
+          "description": "Maximum number of items to return (default: 100)",
+          "type": "number",
+        },
+        "skip": {
+          "description": "Number of items to skip for pagination (default: 0)",
+          "type": "number",
+        },
+      },
+      "required": [
+        "collectionId",
+      ],
+      "type": "object",
+    },
+    "name": "getCMSItems",
+  },
+  {
+    "description": "Creates a new CMS item or updates an existing one.
+
+For creating a new item:
+- Provide slug and fieldData (itemId should be omitted)
+- The slug must be unique within the collection
+
+For updating an existing item:
+- Provide itemId and any fields to update
+- Only included fields will be changed (partial updates supported)
+
+Field data format:
+{
+    "title": { "type": "string", "value": "My Title" },
+    "description": { "type": "formattedText", "value": "<p>Description</p>" },
+    "price": { "type": "number", "value": 29.99 },
+    "featured": { "type": "boolean", "value": true }
+}
+
+The field structure must match the collection's field definitions from getCMSCollections.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "collectionId": {
+          "description": "The ID of the CMS collection",
+          "type": "string",
+        },
+        "draft": {
+          "description": "Draft status (default: false for new items)",
+          "type": "boolean",
+        },
+        "fieldData": {
+          "additionalProperties": {},
+          "description": "Field values as an object matching the collection field structure",
+          "propertyNames": {
+            "type": "string",
+          },
+          "type": "object",
+        },
+        "itemId": {
+          "description": "ID of existing item to update (omit to create new)",
+          "type": "string",
+        },
+        "slug": {
+          "description": "URL-friendly identifier (required for new items, optional for updates)",
+          "type": "string",
+        },
+      },
+      "required": [
+        "collectionId",
+      ],
+      "type": "object",
+    },
+    "name": "upsertCMSItem",
+  },
+  {
+    "description": "Deletes an item from a CMS collection.
+
+This permanently removes the item and cannot be undone.
+The item ID must exist in the specified collection.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "collectionId": {
+          "description": "The ID of the CMS collection containing the item",
+          "type": "string",
+        },
+        "itemId": {
+          "description": "The ID of the item to delete",
+          "type": "string",
+        },
+      },
+      "required": [
+        "collectionId",
+        "itemId",
+      ],
+      "type": "object",
+    },
+    "name": "deleteCMSItem",
   },
 ]
