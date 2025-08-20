@@ -533,6 +533,10 @@ export const mcpTools = {
 
             Use this to discover available collections and understand their structure before working with items.
             The field IDs returned here are what you need to use as keys in upsertCMSItem fieldData.
+
+            IMPORTANT: Notice that you cannot create a CMS collection yourself. Instead you should ask the user to create it, then you can add CMS items to it after using this tool to get the collection id.
+
+            You also cannot update or add collection fields types, ask the user to do so.
         `,
         input: z.object({}),
         output: z.any(),
