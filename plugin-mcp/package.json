@@ -11,7 +11,7 @@
         "pack": "npx -y framer-plugin-tools@latest pack && open -R plugin.zip",
         "check": "pnpm tsc --incremental",
         "typecheck": "pnpm tsc --noEmit --incremental",
-        "deployment": "pnpm typecheck && pnpm wrangler deploy",
+        "deployment": "pnpm typecheck && pnpm wrangler deploy && pnpm wrangler deploy --env preview",
         "deployment:preview": "pnpm typecheck && pnpm wrangler deploy --env preview",
         "start": "vite preview --port 5173",
         "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"
@@ -19,7 +19,7 @@
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.17.2",
         "@sentry/browser": "^9.22.0",
-        "agents": "0.0.111",
+        "agents": "0.0.113",
         "camelcase": "^8.0.0",
         "dom-serializer": "^2.0.0",
         "framer-plugin": "^3.5.2",
