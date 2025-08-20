@@ -1,5 +1,14 @@
 # Changelog
 
+## 2025-08-20 16:00
+
+- **Added comprehensive field documentation to `getCMSCollections` tool**
+- Each field now includes a `comment` property explaining the expected JSON value type
+- Comments specify JSON data types (string, number, boolean, array) with examples
+- Enhanced comments for enum fields to show available case IDs
+- Reference fields show which collection they reference with example format
+- Helps users understand exactly what value format to provide for each field type
+
 ## 2025-08-20 15:55
 
 - **Applied `cleanCMSFieldValue` to `getCMSItems` tool for consistent output**

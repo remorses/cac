@@ -30,6 +30,23 @@ import {
     CircleIcon,
 } from 'lucide-react'
 
+// Field type documentation for CMS collections
+const CMS_FIELD_TYPE_COMMENTS: Record<string, string> = {
+    string: 'JSON string - Plain text value (e.g., "Hello World")',
+    number: 'JSON number - Numeric value without quotes (e.g., 42 or 3.14)',
+    boolean: 'JSON boolean - true or false without quotes',
+    color: 'JSON string - Hex color (e.g., "#FF0000") or color style path (e.g., "/Primary")',
+    date: 'JSON string - ISO 8601 date (e.g., "2025-08-20T10:00:00.000Z")',
+    image: 'JSON string or null - Image URL (e.g., "https://example.com/image.jpg")',
+    link: 'JSON string or null - URL (e.g., "https://example.com" or "/page-path")',
+    formattedText: 'JSON string - HTML content (e.g., "<p>Rich text</p>")',
+    file: 'JSON string or null - File URL (e.g., "https://example.com/file.pdf")',
+    enum: 'JSON string - One of the predefined enum case IDs',
+    collectionReference: 'JSON string or null - ID of an item from the referenced collection',
+    multiCollectionReference: 'JSON array - Array of item ID strings (e.g., ["id1", "id2"])',
+    array: 'JSON array - Array of objects with nested field data'
+}
+
 // Type-safe utility function to clean field values for API compatibility
 // Converts FieldDataEntry (from existing data) to FieldDataEntryInput (for API)
 function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
@@ -1335,6 +1352,12 @@ async function websocketHandler({
                                 // Add field-specific properties if they exist
                                 const result: any = { ...baseField }
 
+                                // Add comment explaining what value type is expected
+                                const comment = CMS_FIELD_TYPE_COMMENTS[field.type]
+                                if (comment) {
+                                    result.comment = comment
+                                }
+
                                 // Common properties
                                 if ('required' in field) result.required = field.required || false
 
@@ -1347,10 +1370,26 @@ async function websocketHandler({
                                         id: enumCase.id,
                                         name: enumCase.name
                                     }))
+                                    // Update comment for enum to be more specific
+                                    if (result.cases.length > 0) {
+                                        const caseIds = result.cases.map((c: any) => `"${c.id}"`).join(', ')
+                                        result.comment = `JSON string - One of: ${caseIds}`
+                                    }
                                 }
 
                                 // CollectionReferenceField and MultiCollectionReferenceField specific properties
-                                if ('collectionId' in field) result.collectionId = field.collectionId
+                                if ('collectionId' in field) {
+                                    result.collectionId = field.collectionId
+                                    // Make comment more specific for references
+                                    const collectionName = collections.find(c => c.id === field.collectionId)?.name
+                                    if (collectionName) {
+                                        if (field.type === 'collectionReference') {
+                                            result.comment = `JSON string or null - ID of an item from the "${collectionName}" collection`
+                                        } else if (field.type === 'multiCollectionReference') {
+                                            result.comment = `JSON array - Array of item IDs from the "${collectionName}" collection (e.g., ["id1", "id2"])`
+                                        }
+                                    }
+                                }
 
                                 // Legacy support for generic options/defaultValue/multiline properties
                                 if ('options' in field && field.options) result.options = field.options
