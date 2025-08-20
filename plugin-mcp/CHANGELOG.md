@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-08-20 16:05
+
+- **Created `cleanFieldData` helper function for consistent field data cleaning**
+- Refactored to use Object.fromEntries for cleaner iteration over field data
+- Applied `cleanFieldData` to `upsertCMSItem` return values for consistency
+- Both create and update operations now return cleaned field data
+- Simplified code by replacing manual loops with functional approach
+
 ## 2025-08-20 16:00
 
 - **Added comprehensive field documentation to `getCMSCollections` tool**
