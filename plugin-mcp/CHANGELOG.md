@@ -1,5 +1,45 @@
 # Changelog
 
+## 2025-08-20 15:55
+
+- **Applied `cleanCMSFieldValue` to `getCMSItems` tool for consistent output**
+- Now returns cleaned field data with simplified values (e.g., image URLs instead of ImageAsset objects)
+- Ensures consistent data format between reading and writing CMS items
+- Makes API responses more predictable and easier to work with
+
+## 2025-08-20 15:50
+
+- **Extended `cleanCMSFieldValue` to handle all CMS field types comprehensively**
+- Added proper handling for `ColorStyle` objects extracting the `light` value
+- Used `isColorStyle`, `isImageAsset`, and `isFileAsset` type guards from framer-plugin
+- Added support for `array` field type with nested image field cleaning
+- Properly handle fields with `valueByLocale` (formattedText, string, link)
+- Used switch statement for better type narrowing and readability
+- Ensures all field types are correctly converted from `FieldDataEntry` to `FieldDataEntryInput`
+
+## 2025-08-20 15:45
+
+- **Simplified `cleanCMSFieldValue` to leverage TypeScript discriminated unions**
+- Removed unnecessary `typeof` and `in` checks, relying on TypeScript's type narrowing
+- Used optional chaining and nullish coalescing for cleaner value extraction
+- Reduced function from 22 lines to 10 lines while maintaining full type safety
+
+## 2025-08-20 15:40
+
+- **Replaced custom CMS types with official framer-plugin types**
+- Used `FieldDataEntry` and `FieldDataEntryInput` types from framer-plugin package
+- Improved type safety by properly converting between entry types (read) and input types (write)
+- Removed custom type definitions in favor of library-provided types
+- Enhanced `cleanCMSFieldValue` function to properly handle ImageAsset and FileAsset conversions
+
+## 2025-08-20 15:35
+
+- **Refactored field value cleaning into type-safe utility function**
+- Created `cleanCMSFieldValue` utility with proper TypeScript typing using discriminated unions
+- Replaced inline field cleaning loop in upsertCMSItem with reusable function
+- Enhanced type safety with `CMSFieldValue` and `ImageFileFieldValue` interfaces
+- Maintained backward compatibility and existing functionality
+
 ## 2025-08-20 15:30
 
 - Enhanced CMS upsertCMSItem tool documentation with detailed field format examples
@@ -19,6 +59,13 @@
 - Added support for EnumField cases with id and name
 - Added support for CollectionReferenceField collectionId property
 - Improved documentation with detailed field property explanations
+- **Fixed CMS test suite to handle all field types properly**
+- Updated create and update tests to include image and multiCollectionReference fields
+- Fixed validation errors by providing all required field types in test data
+- **Fixed upsertCMSItem field data merging for partial updates**
+- Enhanced field cleaning logic to handle complex field values from existing items
+- Fixed image/file field validation by extracting URL from object values
+- Proper handling of partial updates without requiring all fields in input
 
 ## 2025-01-30 22:30
 

@@ -517,7 +517,8 @@ describe(
                         "id": "rwkNj3aug",
                         "name": "Categories",
                         "type": "multiCollectionReference",
-                        "required": false
+                        "required": false,
+                        "collectionId": "Bj1a1PDAT"
                       },
                       {
                         "id": "kp5xnuF29",
@@ -592,8 +593,7 @@ describe(
                     "fieldData": {
                       "j11rZL4rT": {
                         "type": "string",
-                        "value": "Getting Started",
-                        "valueByLocale": {}
+                        "value": "Getting Started"
                       },
                       "HY_qtN8iD": {
                         "type": "date",
@@ -601,13 +601,7 @@ describe(
                       },
                       "A45uGylg5": {
                         "type": "image",
-                        "value": {
-                          "id": "f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg",
-                          "url": "https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg",
-                          "thumbnailUrl": "https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg?scale-down-to=512",
-                          "altText": "Green Fern",
-                          "resolution": "auto"
-                        }
+                        "value": "https://framerusercontent.com/images/f9RiWoNpmlCMqVRIHz8l8wYfeI.jpg"
                       },
                       "rwkNj3aug": {
                         "type": "multiCollectionReference",
@@ -618,8 +612,7 @@ describe(
                       },
                       "kp5xnuF29": {
                         "type": "formattedText",
-                        "value": "<h2>Editing Content</h2>\\n\\n<p>You can choose to set up different types of input fields depending on your content. For instance, a blog might have a title, a slug, and a long-form field for formatted content. These may be different for a product directory or a photo blog, where you may need to add an image field. To edit the fields each CMS item will have, click on any of the column titles. This will trigger a modal to add new fields, where you can also re-arrange the fields or modify or delete the existing ones.</p>\\n\\n<h2>Adding Content to the Canvas</h2>\\n\\n<p>After setting up the content, go back to the canvas. Your collections are accessible from the Insert menu. Open the Insert menu, navigate to the CMS Content section, and drag and drop your collection onto the canvas. This will add a special stack with layers connected to your data. From here, you can edit the visual properties on the right, just as you would do with a regular Stack.</p>\\n\\n<h2>Add a Page with Content</h2>\\n\\n<p>If you wish to add a page instead that will automatically be populated with data from the CMS, navigate to the left panel. One you are in the <strong>Pages</strong> tab, click on the <code>+</code> button next to the CMS section. If you add the <strong>Index</strong> page, a page will be added with a list of all of the items in your collection. If you add the <strong>Detail</strong> page, you will be presented with a page with content from your individual items.</p>\\n\\n<p><strong>Note</strong>: If you chose to add the sample data, a new detail page called <code>/blog</code> will be added to your website, and you will find the stack of content added into the page for you.</p>\\n\\n<p>The detail page will display content pulled from the first entry of the collection by default. In order to preview other items in the collection, change the content by selecting a different item from the dropdown menu.</p>",
-                        "valueByLocale": {}
+                        "value": "<h2>Editing Content</h2>\\n\\n<p>You can choose to set up different types of input fields depending on your content. For instance, a blog might have a title, a slug, and a long-form field for formatted content. These may be different for a product directory or a photo blog, where you may need to add an image field. To edit the fields each CMS item will have, click on any of the column titles. This will trigger a modal to add new fields, where you can also re-arrange the fields or modify or delete the existing ones.</p>\\n\\n<h2>Adding Content to the Canvas</h2>\\n\\n<p>After setting up the content, go back to the canvas. Your collections are accessible from the Insert menu. Open the Insert menu, navigate to the CMS Content section, and drag and drop your collection onto the canvas. This will add a special stack with layers connected to your data. From here, you can edit the visual properties on the right, just as you would do with a regular Stack.</p>\\n\\n<h2>Add a Page with Content</h2>\\n\\n<p>If you wish to add a page instead that will automatically be populated with data from the CMS, navigate to the left panel. One you are in the <strong>Pages</strong> tab, click on the <code>+</code> button next to the CMS section. If you add the <strong>Index</strong> page, a page will be added with a list of all of the items in your collection. If you add the <strong>Detail</strong> page, you will be presented with a page with content from your individual items.</p>\\n\\n<p><strong>Note</strong>: If you chose to add the sample data, a new detail page called <code>/blog</code> will be added to your website, and you will find the stack of content added into the page for you.</p>\\n\\n<p>The detail page will display content pulled from the first entry of the collection by default. In order to preview other items in the collection, change the content by selecting a different item from the dropdown menu.</p>"
                       }
                     }
                   }
@@ -661,6 +654,18 @@ describe(
                                 type: 'formattedText',
                                 value: `<p>Test content for item ${randomNum}</p>`
                             }
+                        }),
+                        ...(cmsFieldIds.image && {
+                            [cmsFieldIds.image]: {
+                                type: 'image',
+                                value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg'
+                            }
+                        }),
+                        ...(cmsFieldIds.multiCollectionReference && {
+                            [cmsFieldIds.multiCollectionReference]: {
+                                type: 'multiCollectionReference',
+                                value: []
+                            }
                         })
                     },
                     draft: false
@@ -670,23 +675,31 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-9826\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-7646\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "TQt8JgVIZ",
-                  "slug": "test-item-9826",
+                  "id": "AfpiOQalw",
+                  "slug": "test-item-7646",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 9826"
+                      "value": "Test Item 7646"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-08-20T10:02:01.655Z"
+                      "value": "2025-08-20T10:36:25.584Z"
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 9826</p>"
+                      "value": "<p>Test content for item 7646</p>"
+                    },
+                    "A45uGylg5": {
+                      "type": "image",
+                      "value": "https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg"
+                    },
+                    "rwkNj3aug": {
+                      "type": "multiCollectionReference",
+                      "value": []
                     }
                   }
                 }
@@ -724,10 +737,41 @@ describe(
             })
 
             const content = getTextContent(result.content)
-            expect(content).toMatchInlineSnapshot(`"Encountered an error: Error on typia.createAssert(): invalid type on $input[1][0].fieldData.A45uGylg5.value, expect to be (null | string)"`)
+            expect(content).toMatchInlineSnapshot(`
+              "{
+                "message": "Successfully updated CMS item \\"test-item-7646\\" in collection \\"Articles\\"",
+                "item": {
+                  "id": "AfpiOQalw",
+                  "slug": "test-item-7646",
+                  "draft": false,
+                  "fieldData": {
+                    "j11rZL4rT": {
+                      "type": "string",
+                      "value": "Updated Item 223"
+                    },
+                    "HY_qtN8iD": {
+                      "type": "date",
+                      "value": "2025-08-20T00:00:00.000Z"
+                    },
+                    "A45uGylg5": {
+                      "type": "image",
+                      "value": "https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg"
+                    },
+                    "rwkNj3aug": {
+                      "type": "multiCollectionReference",
+                      "value": []
+                    },
+                    "kp5xnuF29": {
+                      "type": "formattedText",
+                      "value": "<p>Test content for item 7646</p>"
+                    }
+                  }
+                }
+              }"
+            `)
 
-            // const parsedContent = tryJsonParse(content)
-            // expect(parsedContent.message).toContain('Successfully updated')
+            const parsedContent = tryJsonParse(content)
+            expect(parsedContent.message).toContain('Successfully updated')
         })
 
         it('cms should delete created item', async () => {
@@ -746,10 +790,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-9826\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-7646\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "TQt8JgVIZ",
-                  "slug": "test-item-9826"
+                  "id": "AfpiOQalw",
+                  "slug": "test-item-7646"
                 }
               }"
             `)

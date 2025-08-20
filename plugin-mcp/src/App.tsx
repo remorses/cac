@@ -4,6 +4,11 @@ import {
     isComponentNode,
     TextStyle,
     ProtectedMethod,
+    FieldDataEntry,
+    FieldDataEntryInput,
+    isColorStyle,
+    isImageAsset,
+    isFileAsset,
 } from 'framer-plugin'
 import dedent from 'string-dedent'
 import { useEffect, useLayoutEffect, useState } from 'react'
@@ -24,6 +29,91 @@ import {
     ChevronUpIcon,
     CircleIcon,
 } from 'lucide-react'
+
+// Type-safe utility function to clean field values for API compatibility
+// Converts FieldDataEntry (from existing data) to FieldDataEntryInput (for API)
+function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
+    // Handle field types that need special cleaning
+    switch (fieldValue.type) {
+        case 'image':
+            // ImageAsset -> string | null
+            return {
+                type: fieldValue.type,
+                value: isImageAsset(fieldValue.value) ? fieldValue.value.url : fieldValue.value ?? null
+            }
+
+        case 'file':
+            // FileAsset -> string | null
+            return {
+                type: fieldValue.type,
+                value: isFileAsset(fieldValue.value) ? fieldValue.value.url : fieldValue.value ?? null
+            }
+
+        case 'color':
+            // ColorStyle | string -> string | null
+            // If it's a ColorStyle object, extract the light value
+            if (isColorStyle(fieldValue.value)) {
+                return {
+                    type: fieldValue.type,
+                    value: fieldValue.value.light
+                }
+            }
+            // It's already a string
+            return {
+                type: fieldValue.type,
+                value: fieldValue.value
+            }
+
+        case 'array':
+            // ArrayItem[] -> ArrayItemInput[]
+            // Array items only support image fields
+            return {
+                type: fieldValue.type,
+                value: fieldValue.value.map(item => ({
+                    id: item.id,
+                    fieldData: Object.fromEntries(
+                        Object.entries(item.fieldData).map(([key, imgField]) => {
+
+                            const imageField = imgField
+                            return [
+                                key,
+                                {
+                                    type: 'image' as const,
+                                    value: isImageAsset(imageField.value) ? imageField.value.url : null
+                                }
+                            ]
+                        })
+                    )
+                }))
+            }
+
+        case 'formattedText':
+            // FormattedText has valueByLocale which we can drop for input
+            return {
+                type: fieldValue.type,
+                value: fieldValue.value
+            }
+
+        case 'string':
+            // String has valueByLocale which we can drop for input
+            return {
+                type: fieldValue.type,
+                value: fieldValue.value
+            }
+
+        case 'link':
+            // Link has valueByLocale which we can drop for input
+            return {
+                type: fieldValue.type,
+                value: fieldValue.value ?? null
+            }
+
+        default:
+            // For other field types (boolean, number, date, enum, collectionReference, multiCollectionReference)
+            // they should be compatible as-is
+            return fieldValue as FieldDataEntryInput
+    }
+}
 import {
     framerLayersTreeToXml,
     extractObjectsFromXmlContent,
@@ -1241,32 +1331,32 @@ async function websocketHandler({
                                     name: field.name,
                                     type: field.type,
                                 }
-                                
+
                                 // Add field-specific properties if they exist
                                 const result: any = { ...baseField }
-                                
+
                                 // Common properties
                                 if ('required' in field) result.required = field.required || false
-                                
+
                                 // FileField specific properties
                                 if ('allowedFileTypes' in field && field.allowedFileTypes) result.allowedFileTypes = field.allowedFileTypes
-                                
-                                // EnumField specific properties  
+
+                                // EnumField specific properties
                                 if ('cases' in field && field.cases) {
                                     result.cases = field.cases.map((enumCase: any) => ({
                                         id: enumCase.id,
                                         name: enumCase.name
                                     }))
                                 }
-                                
+
                                 // CollectionReferenceField and MultiCollectionReferenceField specific properties
                                 if ('collectionId' in field) result.collectionId = field.collectionId
-                                
+
                                 // Legacy support for generic options/defaultValue/multiline properties
                                 if ('options' in field && field.options) result.options = field.options
                                 if ('defaultValue' in field && field.defaultValue !== undefined) result.defaultValue = field.defaultValue
                                 if ('multiline' in field && field.multiline !== undefined) result.multiline = field.multiline
-                                
+
                                 return result
                             }),
                         }
@@ -1353,12 +1443,20 @@ async function websocketHandler({
                     limit,
                     returned: paginatedItems.length,
                 },
-                items: paginatedItems.map((item) => ({
-                    id: item.id,
-                    slug: item.slug,
-                    draft: item.draft,
-                    fieldData: item.fieldData,
-                })),
+                items: paginatedItems.map((item) => {
+                    // Clean field data to ensure consistent format
+                    const cleanedFieldData: Record<string, FieldDataEntryInput> = {}
+                    for (const [fieldId, fieldValue] of Object.entries(item.fieldData)) {
+                        cleanedFieldData[fieldId] = cleanCMSFieldValue(fieldValue)
+                    }
+                    
+                    return {
+                        id: item.id,
+                        slug: item.slug,
+                        draft: item.draft,
+                        fieldData: cleanedFieldData,
+                    }
+                }),
             }
         }
         case 'upsertCMSItem': {
@@ -1404,8 +1502,14 @@ async function websocketHandler({
 
                 // For updates, merge with existing field data (partial update support)
                 if (fieldData) {
+                    // Clean existing field data to ensure proper format for API validation
+                    const cleanedExistingFieldData: Record<string, FieldDataEntryInput> = {}
+                    for (const [fieldId, fieldValue] of Object.entries(existingItem.fieldData)) {
+                        cleanedExistingFieldData[fieldId] = cleanCMSFieldValue(fieldValue)
+                    }
+
                     itemData.fieldData = {
-                        ...existingItem.fieldData,
+                        ...cleanedExistingFieldData,
                         ...fieldData,
                     }
                 } else {
