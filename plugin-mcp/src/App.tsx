@@ -47,6 +47,16 @@ const CMS_FIELD_TYPE_COMMENTS: Record<string, string> = {
     array: 'JSON array - Array of objects with nested field data'
 }
 
+// Helper function to clean all field data in an object
+function cleanFieldData(fieldData: Record<string, FieldDataEntry>): Record<string, FieldDataEntryInput> {
+    return Object.fromEntries(
+        Object.entries(fieldData).map(([fieldId, fieldValue]) => [
+            fieldId,
+            cleanCMSFieldValue(fieldValue)
+        ])
+    )
+}
+
 // Type-safe utility function to clean field values for API compatibility
 // Converts FieldDataEntry (from existing data) to FieldDataEntryInput (for API)
 function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
@@ -1482,20 +1492,12 @@ async function websocketHandler({
                     limit,
                     returned: paginatedItems.length,
                 },
-                items: paginatedItems.map((item) => {
-                    // Clean field data to ensure consistent format
-                    const cleanedFieldData: Record<string, FieldDataEntryInput> = {}
-                    for (const [fieldId, fieldValue] of Object.entries(item.fieldData)) {
-                        cleanedFieldData[fieldId] = cleanCMSFieldValue(fieldValue)
-                    }
-                    
-                    return {
-                        id: item.id,
-                        slug: item.slug,
-                        draft: item.draft,
-                        fieldData: cleanedFieldData,
-                    }
-                }),
+                items: paginatedItems.map((item) => ({
+                    id: item.id,
+                    slug: item.slug,
+                    draft: item.draft,
+                    fieldData: cleanFieldData(item.fieldData),
+                })),
             }
         }
         case 'upsertCMSItem': {
@@ -1542,13 +1544,8 @@ async function websocketHandler({
                 // For updates, merge with existing field data (partial update support)
                 if (fieldData) {
                     // Clean existing field data to ensure proper format for API validation
-                    const cleanedExistingFieldData: Record<string, FieldDataEntryInput> = {}
-                    for (const [fieldId, fieldValue] of Object.entries(existingItem.fieldData)) {
-                        cleanedExistingFieldData[fieldId] = cleanCMSFieldValue(fieldValue)
-                    }
-
                     itemData.fieldData = {
-                        ...cleanedExistingFieldData,
+                        ...cleanFieldData(existingItem.fieldData),
                         ...fieldData,
                     }
                 } else {
@@ -1557,13 +1554,17 @@ async function websocketHandler({
 
                 await collection.addItems([itemData])
 
+                // Get the updated item to return cleaned field data
+                const updatedItems = await collection.getItems()
+                const updatedItem = updatedItems.find((item) => item.id === itemId)
+
                 return {
                     message: `Successfully updated CMS item "${existingItem.slug}" in collection "${collection.name}"`,
                     item: {
                         id: itemId,
                         slug: slug || existingItem.slug,
                         draft,
-                        fieldData: itemData.fieldData,
+                        fieldData: updatedItem ? cleanFieldData(updatedItem.fieldData) : itemData.fieldData,
                     },
                 }
             } else {
@@ -1596,7 +1597,7 @@ async function websocketHandler({
                         id: newItem?.id,
                         slug,
                         draft,
-                        fieldData: itemData.fieldData,
+                        fieldData: newItem ? cleanFieldData(newItem.fieldData) : itemData.fieldData,
                     },
                 }
             }
