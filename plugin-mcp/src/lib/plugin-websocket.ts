@@ -100,7 +100,7 @@ export async function websocketClientHandling({
             // Check for specific error code 4009 - another plugin already connected
             if (event.code === 4009) {
                 const errorMessage =
-                    'Another plugin is already connected. Please close the other plugin and keep only one plugin open.'
+                    'Another MCP plugin is already connected. Please close the other plugin and keep only one plugin open.'
                 console.error(
                     'Another plugin is already connected for this user',
                 )
