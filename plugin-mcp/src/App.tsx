@@ -11,7 +11,7 @@ import {
     isFileAsset,
 } from 'framer-plugin'
 import dedent from 'string-dedent'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/plugin-websocket.js'
 import {
@@ -42,18 +42,22 @@ const CMS_FIELD_TYPE_COMMENTS: Record<string, string> = {
     formattedText: 'JSON string - HTML content (e.g., "<p>Rich text</p>")',
     file: 'JSON string or null - File URL (e.g., "https://example.com/file.pdf")',
     enum: 'JSON string - One of the predefined enum case IDs',
-    collectionReference: 'JSON string or null - ID of an item from the referenced collection',
-    multiCollectionReference: 'JSON array - Array of item ID strings (e.g., ["id1", "id2"])',
-    array: 'JSON array - Array of objects with nested field data'
+    collectionReference:
+        'JSON string or null - ID of an item from the referenced collection',
+    multiCollectionReference:
+        'JSON array - Array of item ID strings (e.g., ["id1", "id2"])',
+    array: 'JSON array - Array of objects with nested field data',
 }
 
 // Helper function to clean all field data in an object
-function cleanFieldData(fieldData: Record<string, FieldDataEntry>): Record<string, FieldDataEntryInput> {
+function cleanFieldData(
+    fieldData: Record<string, FieldDataEntry>,
+): Record<string, FieldDataEntryInput> {
     return Object.fromEntries(
         Object.entries(fieldData).map(([fieldId, fieldValue]) => [
             fieldId,
-            cleanCMSFieldValue(fieldValue)
-        ])
+            cleanCMSFieldValue(fieldValue),
+        ]),
     )
 }
 
@@ -66,14 +70,18 @@ function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
             // ImageAsset -> string | null
             return {
                 type: fieldValue.type,
-                value: isImageAsset(fieldValue.value) ? fieldValue.value.url : fieldValue.value ?? null
+                value: isImageAsset(fieldValue.value)
+                    ? fieldValue.value.url
+                    : (fieldValue.value ?? null),
             }
 
         case 'file':
             // FileAsset -> string | null
             return {
                 type: fieldValue.type,
-                value: isFileAsset(fieldValue.value) ? fieldValue.value.url : fieldValue.value ?? null
+                value: isFileAsset(fieldValue.value)
+                    ? fieldValue.value.url
+                    : (fieldValue.value ?? null),
             }
 
         case 'color':
@@ -82,13 +90,13 @@ function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
             if (isColorStyle(fieldValue.value)) {
                 return {
                     type: fieldValue.type,
-                    value: fieldValue.value.light
+                    value: fieldValue.value.light,
                 }
             }
             // It's already a string
             return {
                 type: fieldValue.type,
-                value: fieldValue.value
+                value: fieldValue.value,
             }
 
         case 'array':
@@ -96,43 +104,46 @@ function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
             // Array items only support image fields
             return {
                 type: fieldValue.type,
-                value: fieldValue.value.map(item => ({
+                value: fieldValue.value.map((item) => ({
                     id: item.id,
                     fieldData: Object.fromEntries(
-                        Object.entries(item.fieldData).map(([key, imgField]) => {
-
-                            const imageField = imgField
-                            return [
-                                key,
-                                {
-                                    type: 'image' as const,
-                                    value: isImageAsset(imageField.value) ? imageField.value.url : null
-                                }
-                            ]
-                        })
-                    )
-                }))
+                        Object.entries(item.fieldData).map(
+                            ([key, imgField]) => {
+                                const imageField = imgField
+                                return [
+                                    key,
+                                    {
+                                        type: 'image' as const,
+                                        value: isImageAsset(imageField.value)
+                                            ? imageField.value.url
+                                            : null,
+                                    },
+                                ]
+                            },
+                        ),
+                    ),
+                })),
             }
 
         case 'formattedText':
             // FormattedText has valueByLocale which we can drop for input
             return {
                 type: fieldValue.type,
-                value: fieldValue.value
+                value: fieldValue.value,
             }
 
         case 'string':
             // String has valueByLocale which we can drop for input
             return {
                 type: fieldValue.type,
-                value: fieldValue.value
+                value: fieldValue.value,
             }
 
         case 'link':
             // Link has valueByLocale which we can drop for input
             return {
                 type: fieldValue.type,
-                value: fieldValue.value ?? null
+                value: fieldValue.value ?? null,
             }
 
         default:
@@ -1363,26 +1374,37 @@ async function websocketHandler({
                                 const result: any = { ...baseField }
 
                                 // Add comment explaining what value type is expected
-                                const comment = CMS_FIELD_TYPE_COMMENTS[field.type]
+                                const comment =
+                                    CMS_FIELD_TYPE_COMMENTS[field.type]
                                 if (comment) {
                                     result.comment = comment
                                 }
 
                                 // Common properties
-                                if ('required' in field) result.required = field.required || false
+                                if ('required' in field)
+                                    result.required = field.required || false
 
                                 // FileField specific properties
-                                if ('allowedFileTypes' in field && field.allowedFileTypes) result.allowedFileTypes = field.allowedFileTypes
+                                if (
+                                    'allowedFileTypes' in field &&
+                                    field.allowedFileTypes
+                                )
+                                    result.allowedFileTypes =
+                                        field.allowedFileTypes
 
                                 // EnumField specific properties
                                 if ('cases' in field && field.cases) {
-                                    result.cases = field.cases.map((enumCase: any) => ({
-                                        id: enumCase.id,
-                                        name: enumCase.name
-                                    }))
+                                    result.cases = field.cases.map(
+                                        (enumCase: any) => ({
+                                            id: enumCase.id,
+                                            name: enumCase.name,
+                                        }),
+                                    )
                                     // Update comment for enum to be more specific
                                     if (result.cases.length > 0) {
-                                        const caseIds = result.cases.map((c: any) => `"${c.id}"`).join(', ')
+                                        const caseIds = result.cases
+                                            .map((c: any) => `"${c.id}"`)
+                                            .join(', ')
                                         result.comment = `JSON string - One of: ${caseIds}`
                                     }
                                 }
@@ -1391,20 +1413,36 @@ async function websocketHandler({
                                 if ('collectionId' in field) {
                                     result.collectionId = field.collectionId
                                     // Make comment more specific for references
-                                    const collectionName = collections.find(c => c.id === field.collectionId)?.name
+                                    const collectionName = collections.find(
+                                        (c) => c.id === field.collectionId,
+                                    )?.name
                                     if (collectionName) {
-                                        if (field.type === 'collectionReference') {
+                                        if (
+                                            field.type === 'collectionReference'
+                                        ) {
                                             result.comment = `JSON string or null - ID of an item from the "${collectionName}" collection`
-                                        } else if (field.type === 'multiCollectionReference') {
+                                        } else if (
+                                            field.type ===
+                                            'multiCollectionReference'
+                                        ) {
                                             result.comment = `JSON array - Array of item IDs from the "${collectionName}" collection (e.g., ["id1", "id2"])`
                                         }
                                     }
                                 }
 
                                 // Legacy support for generic options/defaultValue/multiline properties
-                                if ('options' in field && field.options) result.options = field.options
-                                if ('defaultValue' in field && field.defaultValue !== undefined) result.defaultValue = field.defaultValue
-                                if ('multiline' in field && field.multiline !== undefined) result.multiline = field.multiline
+                                if ('options' in field && field.options)
+                                    result.options = field.options
+                                if (
+                                    'defaultValue' in field &&
+                                    field.defaultValue !== undefined
+                                )
+                                    result.defaultValue = field.defaultValue
+                                if (
+                                    'multiline' in field &&
+                                    field.multiline !== undefined
+                                )
+                                    result.multiline = field.multiline
 
                                 return result
                             }),
@@ -1556,7 +1594,9 @@ async function websocketHandler({
 
                 // Get the updated item to return cleaned field data
                 const updatedItems = await collection.getItems()
-                const updatedItem = updatedItems.find((item) => item.id === itemId)
+                const updatedItem = updatedItems.find(
+                    (item) => item.id === itemId,
+                )
 
                 return {
                     message: `Successfully updated CMS item "${existingItem.slug}" in collection "${collection.name}"`,
@@ -1564,7 +1604,9 @@ async function websocketHandler({
                         id: itemId,
                         slug: slug || existingItem.slug,
                         draft,
-                        fieldData: updatedItem ? cleanFieldData(updatedItem.fieldData) : itemData.fieldData,
+                        fieldData: updatedItem
+                            ? cleanFieldData(updatedItem.fieldData)
+                            : itemData.fieldData,
                     },
                 }
             } else {
@@ -1597,7 +1639,9 @@ async function websocketHandler({
                         id: newItem?.id,
                         slug,
                         draft,
-                        fieldData: newItem ? cleanFieldData(newItem.fieldData) : itemData.fieldData,
+                        fieldData: newItem
+                            ? cleanFieldData(newItem.fieldData)
+                            : itemData.fieldData,
                     },
                 }
             }
@@ -1645,12 +1689,11 @@ function MainComponent() {
     const data = useLoaderData() as LoaderReturnType<typeof rootLoader>
     const navigate = useNavigate()
 
-    // Get session ID from localStorage
-    const [sessionId, setSessionId] = useState<string | null>(null)
-    useEffect(() => {
-        const storedSessionId = localStorage.getItem('framer-mcp-session-id')
-        setSessionId(storedSessionId)
-    }, [])
+    const sessionId = useMemo(
+        () => localStorage.getItem(LocalStorageKeys.sessionId) || '',
+        [],
+    )
+
     useEffect(() => {
         framer.setMenu([
             {
@@ -1671,16 +1714,14 @@ function MainComponent() {
         ])
     }, [isExpanded])
 
-    const mcpServerUrl = sessionId
-        ? `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
-        : `https://mcp.unframer.co/sse?id=${data.userId}`
+    const mcpServerUrl = `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
 
     const connectFramerMcpGuide = (() => {
         const url = new URL('https://unframer.co/guides/connect-framer-mcp')
         url.searchParams.set('userId', data.userId)
-        if (sessionId) {
-            url.searchParams.set('secret', sessionId)
-        }
+
+        url.searchParams.set('secret', sessionId)
+
         return url.toString()
     })()
 
