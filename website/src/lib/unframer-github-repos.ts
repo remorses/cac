@@ -40,6 +40,7 @@ export async function generateUnframerRepo({
     addCollaboratorUsername = '',
     useAI = true,
 }) {
+    repo ||= generateRepoName({ projectId, projectTitle })
     const [project] = await Promise.all([
         prisma.reactExportProject.findFirst({
             where: { projectId },
@@ -89,7 +90,6 @@ export async function generateUnframerRepo({
     }
 
     projectTitle = projectTitle || project?.projectName || 'untitled'
-    repo ||= generateRepoName({ projectId, projectTitle })
 
     const { config } = await configFromFetch({ projectId })
 
@@ -448,7 +448,9 @@ export async function createExampleComponentCodeWithAI({
         model,
         stopWhen: (state) => state.steps?.length >= 30,
         providerOptions: {
-          openai: {reasoningEffort: 'low'} satisfies OpenAIResponsesProviderOptions
+            openai: {
+                reasoningEffort: 'low',
+            } satisfies OpenAIResponsesProviderOptions,
         },
 
         tools: {
