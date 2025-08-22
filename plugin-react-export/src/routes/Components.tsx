@@ -73,17 +73,17 @@ async function loader({}: LoaderFunctionArgs) {
         }
     })
 
-    // Add code files that export components
+    // Add code files that export components as default export
     const codeComponentsData = codeFiles
-        .filter((file) => file.exports.some((exp) => exp.type === 'component'))
+        .filter((file) => file.exports.some((exp) => exp.type === 'component' && exp.isDefaultExport))
         .map((file) => {
-            // Get the first component export (most code files have just one)
-            const componentExport = file.exports.find((exp) => exp.type === 'component')
+            // Get the default component export
+            const componentExport = file.exports.find((exp) => exp.type === 'component' && exp.isDefaultExport)
             const name = file.name.replace(/\.(jsx?|tsx?)$/, '') // Remove extension for display
             return {
                 name,
                 id: file.id,
-                insertURL: componentExport?.insertURL ?? null,
+                insertURL: componentExport && 'insertURL' in componentExport ? componentExport.insertURL : null,
                 componentIdentifier: '',
                 node: file,
                 isCodeFile: true
