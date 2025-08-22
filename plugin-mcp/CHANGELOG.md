@@ -5,6 +5,7 @@
 - **Added `componentType` field to React Export components**
 - Components now include `componentType: 'component'` for regular Framer components
 - Code file components include `componentType: 'codeFile'` for distinction
+- Code files filtered to only include default export components
 - Enables better tracking and handling of different component types in exports
 
 ## 2025-08-20 16:05

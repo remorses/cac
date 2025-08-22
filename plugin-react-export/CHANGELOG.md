@@ -4,6 +4,8 @@
 
 - **Added `componentType` field to component publishing**
 - Components published to server now include `componentType: 'component'`
+- Code files now only included if they have a default export component
+- Filters out named exports to focus on primary component exports
 - Ensures compatibility with updated database schema
 
 ## 2025-01-09 10:30

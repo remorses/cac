@@ -449,22 +449,22 @@ export async function processReactExportData({
                     componentType: 'component' as const,
                 }
             }),
-            // Code file components
+            // Code file components (only default exports)
             ...codeFiles
                 .filter((file) => codeFileIds.has(file.id))
                 .filter((file) =>
-                    file.exports.some((exp) => exp.type === 'component'),
+                    file.exports.some((exp) => exp.type === 'component' && exp.isDefaultExport),
                 )
                 .map((file) => {
                     const componentExport = file.exports.find(
-                        (exp) => exp.type === 'component',
+                        (exp) => exp.type === 'component' && exp.isDefaultExport,
                     )
                     const name = file.name.replace(/\.(jsx?|tsx?)$/, '')
 
                     return {
                         name,
                         id: file.id,
-                        url: componentExport?.insertURL ?? '',
+                        url: componentExport && 'insertURL' in componentExport ? componentExport.insertURL : '',
                         projectId: fullFramerProjectId!,
                         componentIdentifier: '',
                         componentType: 'codeFile' as const,
