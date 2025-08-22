@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-08-22
+
+- **Added `componentType` field to component publishing**
+- Components published to server now include `componentType: 'component'`
+- Ensures compatibility with updated database schema
+
 ## 2025-01-09 10:30
 
 - Add support for exporting code files in the React export component

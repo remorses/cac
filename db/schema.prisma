@@ -501,7 +501,16 @@ model ReactExportComponent {
   breakpoints         ReactExportComponentBreakpoint[]
   foundInPages        ReactExportComponentInstance[]
 
+  componentType ReactExportComponentType @default(component)
+
   @@id([id, projectId])
+  @@schema("public")
+}
+
+enum ReactExportComponentType {
+  codeFile
+  component
+
   @@schema("public")
 }
 

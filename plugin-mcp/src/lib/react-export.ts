@@ -446,6 +446,7 @@ export async function processReactExportData({
                     url: insertURL ?? '',
                     projectId: fullFramerProjectId!,
                     componentIdentifier,
+                    componentType: 'component' as const,
                 }
             }),
             // Code file components
@@ -466,6 +467,7 @@ export async function processReactExportData({
                         url: componentExport?.insertURL ?? '',
                         projectId: fullFramerProjectId!,
                         componentIdentifier: '',
+                        componentType: 'codeFile' as const,
                     }
                 }),
         ],

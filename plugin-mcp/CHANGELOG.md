@@ -1,5 +1,12 @@
 # Changelog
 
+## 2025-08-22
+
+- **Added `componentType` field to React Export components**
+- Components now include `componentType: 'component'` for regular Framer components
+- Code file components include `componentType: 'codeFile'` for distinction
+- Enables better tracking and handling of different component types in exports
+
 ## 2025-08-20 16:05
 
 - **Created `cleanFieldData` helper function for consistent field data cleaning**
