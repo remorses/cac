@@ -149,7 +149,7 @@
         "vite-plugin-inspect": "^10.1.0",
         "website": "workspace:*",
         "xmldom": "^0.6.0",
-        "zod": "^4.0.14",
+        "zod": "^4.0.17",
         "zod-form-data": "^2.0.5",
         "zod-validation-error": "^4.0.1"
     },

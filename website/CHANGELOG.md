@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-08-22
+
+- **Added support for `componentType` field in React Export API**
+- Database now accepts and stores component type information
+- Distinguishes between regular Framer components and code file components
+
 ## 2025-01-28 14:45
 
 - Fixed build errors by setting Vite build target to `esnext` to support top-level await

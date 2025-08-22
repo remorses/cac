@@ -133,6 +133,7 @@ function useNotifier() {
                         url: insertURL!,
                         projectId: shortId,
                         componentIdentifier,
+                        componentType: 'component',
                     }
                     return c
                 })
