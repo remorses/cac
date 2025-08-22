@@ -1,17 +1,16 @@
 generator client {
   provider        = "prisma-client"
   output          = "generated"
+  previewFeatures = ["driverAdapters", "multiSchema", "postgresqlExtensions", "queryCompiler"]
   binaryTargets   = ["native", "debian-openssl-3.0.x"]
   moduleFormat    = "esm"
-  previewFeatures = ["multiSchema", "postgresqlExtensions", "queryCompiler", "driverAdapters"]
 }
 
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
-
-  schemas = ["auth", "public"]
+  schemas    = ["auth", "public"]
 }
 
 model audit_log_entries {
@@ -202,11 +201,13 @@ model sso_providers {
   resource_id       String?
   created_at        DateTime?           @db.Timestamptz(6)
   updated_at        DateTime?           @db.Timestamptz(6)
+  disabled          Boolean?
   saml_providers    saml_providers[]
   saml_relay_states saml_relay_states[]
   sso_domains       sso_domains[]
   org               Org?
 
+  @@index([resource_id], map: "sso_providers_resource_id_pattern_idx")
   @@schema("auth")
 }
 
@@ -311,17 +312,16 @@ model Org {
   updatedAt        DateTime             @default(now()) @updatedAt
   stripeCustomerId String?
   ssoProviderId    String?              @unique @db.Uuid
+  loginReasons     String[]
   framerSessions   FramerLoginSession[]
   generations      Generation[]
-  loginReasons     String[]
-
-  ssoProvider     sso_providers?       @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
-  invitationLinks OrgInviteLink[]
-  users           OrgsUsers[]
-  payments        PaymentForCredits[]
-  scrapedUrls     ScrapedWebsitePage[]
-  subscriptions   Subscription[]
-  reactProjects   ReactExportProject[]
+  ssoProvider      sso_providers?       @relation(fields: [ssoProviderId], references: [id], onDelete: Cascade)
+  invitationLinks  OrgInviteLink[]
+  users            OrgsUsers[]
+  payments         PaymentForCredits[]
+  reactProjects    ReactExportProject[]
+  scrapedUrls      ScrapedWebsitePage[]
+  subscriptions    Subscription[]
 
   @@schema("public")
 }
@@ -339,16 +339,16 @@ model ScrapedWebsitePage {
 }
 
 model FramerLoginSession {
-  key          String   @id
-  createdAt    DateTime @default(now())
-  usedByUserId String   @db.Uuid
+  key          String      @id
+  createdAt    DateTime    @default(now())
+  usedByUserId String      @db.Uuid
   orgId        String
-  data         Json     @default("{}")
-  framerUserId String?
+  data         Json        @default("{}")
   projectId    String?
   projectName  String?
+  framerUserId String?
   pluginName   PluginName?
-  org          Org      @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  org          Org         @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@schema("public")
 }
@@ -381,11 +381,11 @@ model PaymentForCredits {
   email          String?         @db.VarChar(255)
   orgId          String
   subscriptionId String?
-  org            Org             @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
   pluginName     PluginName?
   metadata       Json?
   provider       PaymentProvider @default(lemonsqueezy)
   customerId     String?
+  org            Org             @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@index([orgId])
   @@index([orderId])
@@ -406,9 +406,8 @@ model Generation {
   pagePath    String?
   projectName String?
   starsReview Int?
+  pluginName  PluginName       @default(migrate)
   org         Org              @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-
-  pluginName PluginName @default(migrate)
 
   @@index([orgId])
   @@schema("public")
@@ -427,11 +426,11 @@ model Subscription {
   endsAt         DateTime?
   email          String?            @db.VarChar(255)
   orgId          String
-  metadata       Json?
   provider       PaymentProvider    @default(lemonsqueezy)
-  org            Org                @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  metadata       Json?
   pluginName     PluginName?
   customerId     String?
+  org            Org                @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
 
   @@id([subscriptionId, variantId])
   @@index([orgId])
@@ -453,6 +452,138 @@ model one_time_tokens {
   @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
   @@index([token_hash], map: "one_time_tokens_token_hash_hash_idx", type: Hash)
   @@schema("auth")
+}
+
+model GitHubSync {
+  id                Int                 @id @default(autoincrement())
+  repoUrl           String
+  filesSynced       Int                 @default(0)
+  createdAt         DateTime            @default(now())
+  orgId             String
+  projectId         String              @default("")
+  projectName       String              @default("")
+  durationInSeconds Float?
+  installationId    Int?
+  installation      GithubInstallation? @relation(fields: [installationId, orgId], references: [installationId, orgId], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model ReactExportProject {
+  orgId                     String
+  projectId                 String                  @id
+  projectName               String?
+  createdAt                 DateTime                @default(now())
+  fullFramerProjectId       String?
+  websiteUrl                String?
+  framerUserId              String?
+  pageBackgroundColor       String?
+  connectedGitHubRepoAt     DateTime?
+  connectedGitHubRepoName   String?
+  invitedGitHubRepoUsername String?
+  lastGitHubSyncAt          DateTime?
+  colorStyles               ReactExportColorStyle[]
+  components                ReactExportComponent[]
+  locales                   ReactExportLocale[]
+  org                       Org                     @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  pages                     ReactExportWebPage[]
+
+  @@schema("public")
+}
+
+model ReactExportComponent {
+  id                  String
+  url                 String
+  name                String
+  projectId           String
+  componentIdentifier String?
+  project             ReactExportProject               @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  breakpoints         ReactExportComponentBreakpoint[]
+  foundInPages        ReactExportComponentInstance[]
+
+  @@id([id, projectId])
+  @@schema("public")
+}
+
+model ReactExportComponentBreakpoint {
+  componentId    String
+  projectId      String
+  variantId      String
+  width          Int
+  breakpointName String
+  component      ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
+
+  @@id([componentId, projectId, variantId])
+  @@schema("public")
+}
+
+model ReactExportComponentInstance {
+  webPageId    String
+  componentId  String
+  projectId    String
+  pageOrdering Int
+  nodeDepth    Int
+  controls     Json                 @default("{}")
+  component    ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
+  webPage      ReactExportWebPage   @relation(fields: [webPageId, projectId], references: [webPageId, projectId], onDelete: Cascade)
+
+  @@id([webPageId, componentId, projectId])
+  @@schema("public")
+}
+
+model ReactExportWebPage {
+  webPageId  String
+  path       String
+  projectId  String
+  components ReactExportComponentInstance[]
+  project    ReactExportProject             @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@id([webPageId, projectId])
+  @@schema("public")
+}
+
+model ReactExportLocale {
+  id        String
+  name      String             @default("")
+  slug      String
+  code      String
+  projectId String
+  project   ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@id([id, projectId])
+  @@schema("public")
+}
+
+model ReactExportColorStyle {
+  id         String
+  name       String?
+  projectId  String
+  lightColor String
+  darkColor  String
+  project    ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@id([id, projectId])
+  @@schema("public")
+}
+
+model GitHubSyncedFile {
+  sha            String
+  orgId          String
+  installationId Int
+  pagePath       String             @default("")
+  github         GithubInstallation @relation(fields: [installationId, orgId], references: [installationId, orgId], onDelete: Cascade)
+
+  @@id([installationId, pagePath])
+  @@schema("public")
+}
+
+model AngledScreenImagesGenerated {
+  framerUserId String  @id
+  generations  Int     @default(0)
+  licenseKey   String?
+  userName     String?
+
+  @@schema("public")
 }
 
 enum GenerationStatus {
@@ -485,155 +616,6 @@ enum PaymentProvider {
   @@schema("public")
 }
 
-model GitHubSync {
-  id                Int      @id @default(autoincrement())
-  repoUrl           String
-  filesSynced       Int      @default(0)
-  createdAt         DateTime @default(now())
-  // userId      String   @db.Uuid
-  orgId             String
-  projectId         String   @default("")
-  projectName       String   @default("")
-  durationInSeconds Float?
-
-  installationId Int?
-
-  installation GithubInstallation? @relation(fields: [installationId, orgId], references: [installationId, orgId], onDelete: Cascade)
-
-  @@schema("public")
-}
-
-model ReactExportProject {
-  orgId               String
-  projectId           String                     @id
-  fullFramerProjectId String?
-  pageBackgroundColor String?
-  projectName         String?
-  framerUserId        String?
-  websiteUrl          String?
-  createdAt           DateTime                   @default(now())
-  components          ReactExportComponent[]
-  colorStyles         ReactExportColorStyle[]
-  pages               ReactExportWebPage[]
-  locales             ReactExportLocale[]
-  // codeFiles           ReactExportCodeComponent[]
-
-  connectedGitHubRepoName     String?
-  invitedGitHubRepoUsername   String?
-  connectedGitHubRepoAt       DateTime?
-  lastGitHubSyncAt            DateTime?
-
-  org Org @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-
-  @@schema("public")
-}
-
-model ReactExportComponent {
-  id                  String
-  url                 String
-  name                String
-  projectId           String
-  componentIdentifier String?
-
-  project     ReactExportProject               @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  breakpoints ReactExportComponentBreakpoint[]
-
-  foundInPages ReactExportComponentInstance[]
-
-  @@id([id, projectId])
-  @@schema("public")
-}
-
-// model ReactExportCodeComponent {
-//   id        String
-//   path      String
-//   projectId String
-//   url       String
-//   versionId String
-//   project   ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-
-//   @@id([id, projectId])
-//   @@schema("public")
-// }
-
-model ReactExportComponentBreakpoint {
-  componentId    String
-  projectId      String
-  variantId      String
-  width          Int
-  breakpointName String
-
-  component ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
-
-  @@id([componentId, projectId, variantId])
-  @@schema("public")
-}
-
-model ReactExportComponentInstance {
-  webPageId   String
-  componentId String
-  projectId   String
-
-  pageOrdering Int
-  nodeDepth    Int
-  controls     Json                 @default("{}")
-  webPage      ReactExportWebPage   @relation(fields: [webPageId, projectId], references: [webPageId, projectId], onDelete: Cascade)
-  component    ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
-
-  @@id([webPageId, componentId, projectId])
-  @@schema("public")
-}
-
-model ReactExportWebPage {
-  webPageId String
-  // name      String
-  path      String
-  projectId String
-
-  project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-
-  components ReactExportComponentInstance[]
-
-  @@id([webPageId, projectId])
-  @@schema("public")
-}
-
-model ReactExportLocale {
-  id        String
-  name      String @default("")
-  slug      String
-  code      String
-  projectId String
-
-  project ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-
-  @@id([id, projectId])
-  @@schema("public")
-}
-
-model ReactExportColorStyle {
-  id         String
-  name       String?
-  projectId  String
-  lightColor String
-  darkColor  String
-  project    ReactExportProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-
-  @@id([id, projectId])
-  @@schema("public")
-}
-
-model GitHubSyncedFile {
-  sha            String
-  orgId          String
-  pagePath       String             @default("")
-  installationId Int
-  github         GithubInstallation @relation(fields: [installationId, orgId], references: [installationId, orgId], onDelete: Cascade)
-
-  @@id([installationId, pagePath])
-  @@schema("public")
-}
-
 enum SubscriptionStatus {
   on_trial
   active
@@ -643,8 +625,6 @@ enum SubscriptionStatus {
   cancelled
   expired
   incomplete
-
-  // stripe ones
   canceled
   incomplete_expired
   trialing
@@ -699,15 +679,6 @@ enum PluginName {
   reactExport
   llm
   angledScreen
-
-  @@schema("public")
-}
-
-model AngledScreenImagesGenerated {
-  framerUserId String  @id
-  generations  Int     @default(0)
-  userName     String?
-  licenseKey   String?
 
   @@schema("public")
 }
