@@ -11,6 +11,7 @@ import {
     isFileAsset,
 } from 'framer-plugin'
 import dedent from 'string-dedent'
+import { createPatch } from 'diff'
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/plugin-websocket.js'
@@ -155,6 +156,9 @@ function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
 import {
     framerLayersTreeToXml,
     extractObjectsFromXmlContent,
+    TEMP_NODE_ID_PREFIX,
+    type NewExtractedNode,
+    type NodeType,
 } from './lib/xml.js'
 import { getFramerTree, applyAttributes } from './lib/framer.js'
 import { processReactExportData } from './lib/react-export.js'
@@ -208,6 +212,119 @@ async function getNodeXml(
         shouldAddNodeIdAlways: true,
     })
     return { xml, isReplica: node.isReplica }
+}
+
+// Helper function to create a new Framer node based on its type
+async function createFramerNode({
+    extractedNode,
+    parentId,
+}: {
+    extractedNode: NewExtractedNode
+    parentId: string
+}): Promise<{ id: string; type: NodeType } | null> {
+    const { nodeType, attributes, newContent } = extractedNode
+
+    switch (nodeType) {
+        case 'Frame': {
+            const newFrame = await framer.createFrameNode(attributes, parentId)
+            return newFrame ? { id: newFrame.id, type: 'Frame' } : null
+        }
+
+        case 'Text': {
+            // Text nodes need special handling
+            const text = newContent || ''
+            await framer.addText(text, { tag: 'p' })
+
+            // Get the newly created node from selection
+            const selection = await framer.getSelection()
+            const newNodeId = selection[0]?.id
+
+            if (newNodeId) {
+                // Move to correct parent
+                await framer.setParent(newNodeId, parentId)
+
+                // Apply attributes if any
+                if (Object.keys(attributes).length > 0) {
+                    const node = await framer.getNode(newNodeId)
+                    await applyAttributes(node, attributes)
+                }
+                return { id: newNodeId, type: 'Text' }
+            }
+            return null
+        }
+
+        case 'SVG': {
+            const svg = attributes.svg || '<svg></svg>'
+            const name = attributes.name
+            await framer.addSVG({ svg, name })
+
+            // Get the newly created node from selection
+            const selection = await framer.getSelection()
+            const newNodeId = selection[0]?.id
+
+            if (newNodeId) {
+                // Move to correct parent
+                await framer.setParent(newNodeId, parentId)
+
+                // Apply remaining attributes
+                const remainingAttrs = { ...attributes }
+                delete remainingAttrs.svg
+                delete remainingAttrs.name
+
+                if (Object.keys(remainingAttrs).length > 0) {
+                    const node = await framer.getNode(newNodeId)
+                    await applyAttributes(node, remainingAttrs)
+                }
+                return { id: newNodeId, type: 'SVG' }
+            }
+            return null
+        }
+
+        case 'ComponentInstance': {
+            let insertUrl = attributes.insertUrl
+
+            // If no insertUrl, try to find it from componentId
+            if (!insertUrl && attributes.componentId) {
+                // First try to get it as a component node
+                const node = await framer.getNode(attributes.componentId)
+                if (node && isComponentNode(node) && node.insertURL) {
+                    insertUrl = node.insertURL
+                }
+
+                // If still not found, try to get it as a code file
+                if (!insertUrl) {
+                    const codeFiles = await framer.getCodeFiles()
+                    const codeFile = codeFiles.find(f => f.id === attributes.componentId)
+                    if (codeFile) {
+                        // Check if the default export is a component
+                        const defaultExport = codeFile.exports.find(e => e.name === 'default')
+                        if (defaultExport && defaultExport.type === 'component') {
+                            insertUrl = defaultExport.insertURL
+                        }
+                    }
+                }
+            }
+
+            if (!insertUrl) {
+                throw new Error('Cannot create component instance without insertUrl or valid componentId attributes')
+            }
+
+            const instance = await framer.addComponentInstance({
+                url: insertUrl,
+                attributes: attributes,
+            })
+
+            if (instance?.id) {
+                // Move to correct parent (addComponentInstance doesn't take parent param)
+                await framer.setParent(instance.id, parentId)
+                return { id: instance.id, type: 'ComponentInstance' }
+            }
+            return null
+        }
+
+        default:
+            return null
+    }
 }
 
 // Initialize websocket connection (will be moved to authenticated component)
@@ -437,30 +554,40 @@ async function websocketHandler({
             `
         }
         case 'updateXmlForNode': {
-            const { nodeId, xml } = input
+            const { nodeId: rootNodeId, xml } = input
 
             // Check all required permissions at once
             const permissionError = checkPermissions(
                 'Node.setAttributes',
                 'TextNode.setText',
                 'setParent',
+                'createFrameNode',
+                'addText',
+                'addSVG',
+                'addComponentInstance',
             )
             if (permissionError) return permissionError
 
             // Check if this is a code file ID
             const codeFiles = await framer.getCodeFiles()
-            const isCodeFile = codeFiles.some((file) => file.id === nodeId)
+            const isCodeFile = codeFiles.some((file) => file.id === rootNodeId)
             if (isCodeFile) {
-                return `Cannot use updateXmlForNode with code files. Use 'updateCodeFile' tool instead to modify code file with ID: ${nodeId}`
+                return `Cannot use updateXmlForNode with code files. Use 'updateCodeFile' tool instead to modify code file with ID: ${rootNodeId}`
             }
 
             // Check if this looks like a style path
-            if (nodeId.startsWith('/')) {
+            if (rootNodeId.startsWith('/')) {
                 return `Node ID cannot start with a slash. It should be a valid node ID, not a color style or text path. To update styles use 'manageColorStyle' or 'manageTextStyle' tools.`
             }
 
-            // Extract nodes from the provided XML
-            const extractedNodes = extractObjectsFromXmlContent(xml)
+            // Get the original XML before making changes
+            const originalResult = await getNodeXml(rootNodeId)
+            const originalXml = originalResult?.xml || ''
+
+            // Extract nodes from the provided XML with node creation enabled
+            const extractedNodes = extractObjectsFromXmlContent(xml, {
+                enableNodeCreation: true,
+            })
             const results: string[] = []
             const nodesToReorder: Array<{
                 nodeId: string
@@ -469,9 +596,86 @@ async function websocketHandler({
                 afterNodeId?: string
             }> = []
 
+            // Phase 0: Create new nodes (nodes with temp IDs)
+            const tempIdToRealId = new Map<string, string>()
+
+            for (const extractedNode of extractedNodes) {
+                // Check if this is a new node (has temp ID)
+                if (extractedNode.nodeId.startsWith(TEMP_NODE_ID_PREFIX)) {
+                    try {
+                        // Resolve parent ID (might be a temp ID that needs mapping)
+                        let parentId: string =
+                            extractedNode.parentId || rootNodeId
+                        if (parentId.startsWith(TEMP_NODE_ID_PREFIX)) {
+                            parentId =
+                                tempIdToRealId.get(parentId) || rootNodeId
+                        }
+
+                        // Create the node based on its type
+                        const newNode = await createFramerNode({
+                            extractedNode,
+                            parentId,
+                        })
+
+                        if (newNode) {
+                            // Map temp ID to real ID
+                            tempIdToRealId.set(extractedNode.nodeId, newNode.id)
+
+                            // Update the extractedNode with real ID for later phases
+                            const oldTempId = extractedNode.nodeId
+                            extractedNode.nodeId = newNode.id
+
+                            // Update parent references for other nodes
+                            extractedNodes.forEach((node) => {
+                                if (node.parentId === oldTempId) {
+                                    node.parentId = newNode.id
+                                }
+                                // Update sibling references
+                                if (node.beforeNodeId === oldTempId) {
+                                    node.beforeNodeId = newNode.id
+                                }
+                                if (node.afterNodeId === oldTempId) {
+                                    node.afterNodeId = newNode.id
+                                }
+                            })
+
+                            results.push(
+                                `Created ${newNode.type} node ${newNode.id}`,
+                            )
+                        }
+                    } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
+                        // Notify user of the error
+                        await framer.notify(`Failed to create ${extractedNode.nodeType || 'node'}: ${errorMessage}`, {
+                            variant: 'error',
+                        })
+
+                        // Rollback all created nodes using tempIdToRealId values
+                        for (const nodeId of tempIdToRealId.values()) {
+                            try {
+                                const node = await framer.getNode(nodeId)
+                                if (node) {
+                                    await node.remove()
+                                }
+                            } catch (rollbackError) {
+                                console.error(`Failed to rollback node ${nodeId}:`, rollbackError)
+                            }
+                        }
+
+                        // Throw error to stop execution
+                        throw new Error(`Node creation failed: ${errorMessage}`)
+                    }
+                }
+            }
+
             // Phase 1: Update content, attributes, and move nodes to correct parents
             for (const extractedNode of extractedNodes) {
-                const targetNodeId = extractedNode.nodeId || nodeId
+                // Skip temp nodes that weren't successfully created
+                if (extractedNode.nodeId.startsWith(TEMP_NODE_ID_PREFIX)) {
+                    continue
+                }
+                const targetNodeId = extractedNode.nodeId || rootNodeId
 
                 try {
                     const node = await framer.getNode(targetNodeId)
@@ -603,15 +807,26 @@ async function websocketHandler({
             }
 
             // Get the updated XML for the primary node
-            const updatedResult = await getNodeXml(nodeId)
+            const updatedResult = await getNodeXml(rootNodeId)
+            const updatedXml = updatedResult?.xml || ''
 
             const resultMessage =
                 results.length > 0
                     ? `Successfully updated:\n${results.join('\n')}`
                     : 'No updates were made.'
 
+            // Create a diff patch showing the changes with more context
+            const patch = createPatch(
+                'node.xml',
+                originalXml,
+                updatedXml,
+                'Before',
+                'After',
+                { context: 10 }
+            )
+
             return updatedResult
-                ? `${resultMessage}\n\nUpdated XML:\n${updatedResult.xml}`
+                ? `${resultMessage}\n\nXML Changes:\n${patch}`
                 : resultMessage
         }
         case 'zoomIntoView': {

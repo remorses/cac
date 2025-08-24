@@ -1,0 +1,66 @@
+Successfully updated:
+Created Frame node OraDMN_7X
+Created Frame node YLVpuCBk5
+Created Frame node ebj_8RTsv
+Updated attributes for node OraDMN_7X
+Updated attributes for node YLVpuCBk5
+Updated attributes for node ebj_8RTsv
+Reordered node YLVpuCBk5 within parent OraDMN_7X to index 0
+
+XML Changes:
+Index: node.xml
+===================================================================
+--- node.xml	Before
++++ node.xml	After
+@@ -244,20 +244,51 @@
+           <Description
+               nodeId="yK6cCeTUB"
+               width="1fr"
+               height="fit-content"
+               maxWidth="520px"
+               <!-- project text style path, always starts with / -->
+               inlineTextStyle="/Body lg"
+           >
+             Updated text 5748
+           </Description>
++          <Stack
++              nodeId="OraDMN_7X"
++              width="100%"
++              height="200px"
++              <!-- background color string or project color style path (if starts with /) -->
++              backgroundColor="rgb(50, 100, 200)"
++              borderRadius="12px"
++              layout="stack"
++              gap="20px"
++              padding="24px"
++              stackDirection="horizontal"
++              stackDistribution="center"
++              stackAlignment="center"
++          >
++            <Frame
++                nodeId="YLVpuCBk5"
++                width="100px"
++                height="100px"
++                <!-- background color string or project color style path (if starts with /) -->
++                backgroundColor="rgb(255, 255, 255)"
++                borderRadius="8px"
++             />
++            <Frame
++                nodeId="ebj_8RTsv"
++                width="150px"
++                height="80px"
++                <!-- background color string or project color style path (if starts with /) -->
++                backgroundColor="rgb(200, 200, 200)"
++                borderRadius="4px"
++             />
++          </Stack>
+         </Header>
+         <Actions
+             nodeId="XQhemvRcY"
+             width="fit-content"
+             height="fit-content"
+             layout="stack"
+             gap="12px"
+             stackDirection="horizontal"
+             stackDistribution="center"
+             stackAlignment="center"

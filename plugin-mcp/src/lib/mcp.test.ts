@@ -95,7 +95,7 @@ describe(
             expect(updatedContent).toBeDefined()
             expect(updatedContent).toContain(`Updated text ${randomNum}`)
             expect(updatedContent).toContain('Successfully updated')
-            expect(updatedContent).toContain('Updated XML:')
+            expect(updatedContent).toContain('XML Changes:')
 
             // Verify the update by getting the node again
             const verifyResult = await callTool({
@@ -105,6 +105,118 @@ describe(
             const verifyXml = getTextContent(verifyResult.content)
             expect(verifyXml).toBeDefined()
             expect(verifyXml).toContain(`Updated text ${randomNum}`)
+        })
+
+        it('should create nodes with layout and children', async () => {
+            // Create a parent frame with stack layout and children
+            const createXml = `
+                <Frame width="400px" height="300px" backgroundColor="rgb(240, 240, 240)" layout="stack" stackDirection="vertical" gap="16px" padding="20px">
+                    <Frame width="100%" height="60px" backgroundColor="rgb(100, 150, 200)" borderRadius="8px">
+                        <Text fontSize="24px" font="GF;Inter-600">Header Text</Text>
+                    </Frame>
+                    <Text fontSize="16px" font="GF;Inter-400">Body content goes here</Text>
+                    <Frame width="100%" height="1fr" backgroundColor="rgb(255, 255, 255)" borderRadius="4px" />
+                </Frame>
+            `
+
+            // Create the nodes
+            const createResult = await callTool({
+                name: 'updateXmlForNode',
+                args: {
+                    nodeId: 'CpFAHygNJ', // Using the page as root
+                    xml: createXml,
+                },
+            })
+
+            const content = getTextContent(createResult.content)
+            await expect(content).toMatchFileSnapshot(
+                `snapshots/create-nodes-with-layout.patch`
+            )
+
+            // Extract the created node IDs from the result
+            const nodeIdMatches = [...content.matchAll(/Created \w+ node ([a-zA-Z0-9_]+)/g)]
+            const createdNodeIds = nodeIdMatches.map(m => m[1])
+            expect(createdNodeIds.length).toBe(3) // Should have created 3 Frame nodes
+
+            // Clean up: delete the root created node (which will delete children too)
+            if (createdNodeIds.length > 0) {
+                const rootNodeId = createdNodeIds[0] // First created node is the parent
+                const deleteResult = await callTool({
+                    name: 'deleteNode',
+                    args: { nodeId: rootNodeId },
+                })
+
+                const deleteContent = getTextContent(deleteResult.content)
+                expect(deleteContent).toContain('Successfully deleted node')
+            }
+        })
+
+        it('should add frame node inside existing section', async () => {
+            // First get the page to find the section
+            const pageResult = await callTool({
+                name: 'getNodeXml',
+                args: { nodeId: 'CpFAHygNJ' },
+            })
+            const pageXml = getTextContent(pageResult.content)
+            expect(pageXml).toBeDefined()
+
+            // Using a known node from the test project
+            const targetNodeId = 'l1PBjp21T'
+
+            // Create XML that wraps new content inside the target node
+            const updateXml = `
+                <Container nodeId="${targetNodeId}">
+                    <Frame
+                        width="100%"
+                        height="200px"
+                        backgroundColor="rgb(50, 100, 200)"
+                        borderRadius="12px"
+                        layout="stack"
+                        stackDirection="horizontal"
+                        stackAlignment="center"
+                        stackDistribution="center"
+                        gap="20px"
+                        padding="24px"
+                    >
+                        <Frame width="100px" height="100px" backgroundColor="rgb(255, 255, 255)" borderRadius="8px" />
+                        <Frame width="150px" height="80px" backgroundColor="rgb(200, 200, 200)" borderRadius="4px" />
+                    </Frame>
+                </Container>
+            `
+
+            // Update the page with the new frame inside the container
+            const updateResult = await callTool({
+                name: 'updateXmlForNode',
+                args: {
+                    nodeId: 'CpFAHygNJ', // Page node ID
+                    xml: updateXml,
+                },
+            })
+
+            const content = getTextContent(updateResult.content)
+            await expect(content).toMatchFileSnapshot(
+                `snapshots/add-frame-to-section.patch`
+            )
+
+            // Verify that frames were created
+            expect(content).toContain('Created Frame node')
+            expect(content).toContain('XML Changes:')
+
+            // Extract created node IDs for cleanup
+            const nodeIdMatches = [...content.matchAll(/Created Frame node ([a-zA-Z0-9_]+)/g)]
+            const createdNodeIds = nodeIdMatches.map(m => m[1])
+
+            // Clean up: delete the created nodes
+            if (createdNodeIds.length > 0) {
+                const rootNodeId = createdNodeIds[0] // First created node is the parent
+                const deleteResult = await callTool({
+                    name: 'deleteNode',
+                    args: { nodeId: rootNodeId },
+                })
+
+                const deleteContent = getTextContent(deleteResult.content)
+                expect(deleteContent).toContain('Successfully deleted node')
+            }
         })
 
         it('should update a color style', async () => {
@@ -681,15 +793,15 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-8195\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-9244\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "dDg6_uYM1",
-                  "slug": "test-item-8195",
+                  "id": "rWbxbbbBN",
+                  "slug": "test-item-9244",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 8195"
+                      "value": "Test Item 9244"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
@@ -705,7 +817,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 8195</p>"
+                      "value": "<p>Test content for item 9244</p>"
                     }
                   }
                 }
@@ -745,15 +857,15 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-8195\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-9244\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "dDg6_uYM1",
-                  "slug": "test-item-8195",
+                  "id": "rWbxbbbBN",
+                  "slug": "test-item-9244",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 7089"
+                      "value": "Updated Item 2963"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
@@ -769,7 +881,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 8195</p>"
+                      "value": "<p>Test content for item 9244</p>"
                     }
                   }
                 }
@@ -796,10 +908,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-8195\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-9244\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "dDg6_uYM1",
-                  "slug": "test-item-8195"
+                  "id": "rWbxbbbBN",
+                  "slug": "test-item-9244"
                 }
               }"
             `)

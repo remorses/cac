@@ -352,6 +352,107 @@ test('extractObjectsFromXmlContent - deeply nested with missing nodeIds', ({
     expect(text2?.parentId).toBe('section2')
 })
 
+test('extractObjectsFromXmlContent - creates temp IDs when enableNodeCreation is true', ({
+    expect,
+}) => {
+    const xml = dedent`
+        <Frame nodeId="root">
+            <Frame width="200px" height="100px">
+                <Text>New text content</Text>
+            </Frame>
+            <SVG svg="<svg></svg>" />
+            <ComponentInstance componentId="comp123" />
+        </Frame>
+    `
+
+    const results = extractObjectsFromXmlContent(xml, { enableNodeCreation: true })
+
+    // Check that temp IDs were created
+    const tempNodes = results.filter(n => n.nodeId.startsWith('_temp_'))
+    expect(tempNodes).toHaveLength(4) // Frame, Text, SVG, ComponentInstance
+
+    // Check node types are detected correctly
+    expect(tempNodes[0].nodeType).toBe('Frame')
+    expect(tempNodes[1].nodeType).toBe('Text')
+    expect(tempNodes[2].nodeType).toBe('SVG')
+    expect(tempNodes[3].nodeType).toBe('ComponentInstance')
+
+    expect(results).toMatchInlineSnapshot(`
+      [
+        {
+          "attributes": {},
+          "newContent": "",
+          "nodeId": "root",
+        },
+        {
+          "afterNodeId": "_temp_3",
+          "attributes": {
+            "height": "100px",
+            "width": "200px",
+          },
+          "newContent": "",
+          "nodeId": "_temp_1",
+          "nodeType": "Frame",
+          "parentId": "root",
+        },
+        {
+          "attributes": {},
+          "newContent": "New text content",
+          "nodeId": "_temp_2",
+          "nodeType": "Text",
+          "parentId": "_temp_1",
+        },
+        {
+          "afterNodeId": "_temp_4",
+          "attributes": {
+            "svg": "<svg></svg>",
+          },
+          "beforeNodeId": "_temp_1",
+          "newContent": "",
+          "nodeId": "_temp_3",
+          "nodeType": "SVG",
+          "parentId": "root",
+        },
+        {
+          "attributes": {
+            "componentId": "comp123",
+          },
+          "beforeNodeId": "_temp_3",
+          "newContent": "",
+          "nodeId": "_temp_4",
+          "nodeType": "ComponentInstance",
+          "parentId": "root",
+        },
+      ]
+    `)
+})
+
+test('extractObjectsFromXmlContent - detects node types based on attributes', ({
+    expect,
+}) => {
+    const xml = dedent`
+        <Container nodeId="root">
+            <Something>Text content here</Something>
+            <Element svg="<svg></svg>" />
+            <Node layout="stack" />
+            <Item componentId="abc" />
+            <Thing insertUrl="some-url" />
+        </Container>
+    `
+
+    const results = extractObjectsFromXmlContent(xml, { enableNodeCreation: true })
+
+    // Filter out the root node
+    const newNodes = results.filter(n => n.nodeId !== 'root')
+
+    // Check node types
+    expect(newNodes[0].nodeType).toBe('Text') // has text content
+    expect(newNodes[1].nodeType).toBe('SVG') // has svg attribute
+    expect(newNodes[2].nodeType).toBe('Frame') // has layout attribute
+    expect(newNodes[3].nodeType).toBe('ComponentInstance') // has componentId
+    expect(newNodes[4].nodeType).toBe('ComponentInstance') // has insertUrl
+})
+
 test('extractObjectsFromXmlContent - single children have no siblings', ({
     expect,
 }) => {

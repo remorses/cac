@@ -1,0 +1,64 @@
+Successfully updated:
+Created Frame node qgeo1fkQL
+Created Frame node anm2LEbIl
+Created Frame node oxmGGi70O
+Updated attributes for node qgeo1fkQL
+Updated attributes for node anm2LEbIl
+Updated attributes for node oxmGGi70O
+
+XML Changes:
+Index: node.xml
+===================================================================
+--- node.xml	Before
++++ node.xml	After
+@@ -2539,10 +2539,50 @@
+     nodeId="mcCQxfXuS"
+     position="absolute"
+     width="fit-content"
+     height="fit-content"
+     top="0px"
+     left="0px"
+     font="Inter"
+ >
+   Body content goes here
+ </BodyContentGoesHere>
++<Stack
++    nodeId="qgeo1fkQL"
++    position="absolute"
++    width="400px"
++    height="300px"
++    top="0px"
++    left="0px"
++    <!-- background color string or project color style path (if starts with /) -->
++    backgroundColor="rgb(240, 240, 240)"
++    layout="stack"
++    gap="16px"
++    padding="20px"
++    stackDirection="vertical"
++    stackDistribution="center"
++    stackAlignment="center"
++>
++  <!-- Call getNodeXml on this node to get more details, character limit was reached -->
++</Stack>
++<HeaderText
++    nodeId="IBGU96vMl"
++    position="absolute"
++    width="fit-content"
++    height="fit-content"
++    top="0px"
++    left="0px"
++    font="Inter"
++>
++  Header Text
++</HeaderText>
++<BodyContentGoesHere
++    nodeId="Jl7stVCTH"
++    position="absolute"
++    width="fit-content"
++    height="fit-content"
++    top="0px"
++    left="0px"
++    font="Inter"
++>
++  Body content goes here
++</BodyContentGoesHere>
