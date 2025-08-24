@@ -838,24 +838,28 @@ async function websocketHandler({
             const updatedResult = await getNodeXml(rootNodeId, Infinity)
             const updatedXml = updatedResult?.xml || ''
 
-            const resultMessage =
-                results.length > 0
-                    ? `Successfully updated:\n${results.join('\n')}`
-                    : 'No updates were made.'
+            // Check if there were actual changes by comparing XML
+            const hasChanges = originalXml.trim() !== updatedXml.trim()
 
-            // Create a diff patch showing the changes with more context
-            const patch = createPatch(
-                'node.xml',
-                originalXml,
-                updatedXml,
-                'Before',
-                'After',
-                { context: 10 }
-            )
+            if (hasChanges && updatedResult) {
+                const resultMessage =
+                    results.length > 0
+                        ? `Successfully updated:\n${results.join('\n')}`
+                        : 'Successfully updated'
 
-            return updatedResult
-                ? `${resultMessage}\n\nXML Changes:\n${patch}`
-                : resultMessage
+                // Create a diff patch showing the changes with more context
+                const patch = createPatch(
+                    'node.xml',
+                    originalXml,
+                    updatedXml,
+                    'Before',
+                    'After',
+                    { context: 20 }
+                )
+                return `${resultMessage}\n\nXML Changes:\n${patch}`
+            }
+
+            return 'No changes were made! Make sure you are not using made up attributes, follow the outlined attributes only.'
         }
         case 'zoomIntoView': {
             const { nodeId } = input
