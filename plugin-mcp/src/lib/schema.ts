@@ -328,7 +328,7 @@ export const mcpTools = {
 
             For SVG nodes:
 
-            - **svg**: SVG content as a string
+            - **svg**: SVG content as a string. This cannot use text styles or other features, it is plain svg code.
 
             ### Component Instance Attributes
 
