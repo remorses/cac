@@ -13,6 +13,7 @@ import {
     supportsFont,
     supportsImageRendering,
     supportsInlineTextStyle,
+    supportsLayout,
     supportsLink,
     supportsLocked,
     supportsName,
@@ -639,6 +640,13 @@ export const ATTRIBUTE_DEFAULTS = {
     locked: false,
     rotation: 0,
     position: 'relative',
+    // Layout defaults
+    gap: '0px',
+    padding: '0px',
+    stackWrap: false,
+    // Grid item defaults
+    gridFillWidth: true,
+    gridFillHeight: true,
     // width: '1fr',
     // height: 'fit-content',
 } as const
@@ -759,6 +767,47 @@ async function getNodeAttributesForXml(
     // SVG-specific attributes
     if (supportsSVG(node) && node.svg) {
         addAttribute('svg', node.svg)
+    }
+
+    // Layout attributes (Frame nodes only)
+    if (supportsLayout(node)) {
+        // Layout type
+        addAttribute('layout', node.layout)
+        
+        // Common layout attributes
+        addAttribute('gap', node.gap)
+        addAttribute('padding', node.padding)
+        
+        // Stack-specific attributes
+        if (node.layout === 'stack') {
+            addAttribute('stackDirection', node.stackDirection)
+            addAttribute('stackDistribution', node.stackDistribution)
+            addAttribute('stackAlignment', node.stackAlignment)
+            addAttribute('stackWrap', node.stackWrapEnabled)
+        }
+        
+        // Grid-specific attributes
+        if (node.layout === 'grid') {
+            addAttribute('gridColumns', node.gridColumnCount)
+            addAttribute('gridRows', node.gridRowCount)
+            addAttribute('gridAlignment', node.gridAlignment)
+            addAttribute('gridColumnWidthType', node.gridColumnWidthType)
+            addAttribute('gridColumnWidth', node.gridColumnWidth)
+            addAttribute('gridColumnMinWidth', node.gridColumnMinWidth)
+            addAttribute('gridRowHeightType', node.gridRowHeightType)
+            addAttribute('gridRowHeight', node.gridRowHeight)
+        }
+    }
+
+    // Grid item attributes (for children of grid containers)
+    // Check if parent is a grid container
+    if ('gridItemFillCellWidth' in node) {
+        addAttribute('gridFillWidth', node.gridItemFillCellWidth)
+        addAttribute('gridFillHeight', node.gridItemFillCellHeight)
+        addAttribute('gridAlignX', node.gridItemHorizontalAlignment)
+        addAttribute('gridAlignY', node.gridItemVerticalAlignment)
+        addAttribute('gridColumnSpan', node.gridItemColumnSpan)
+        addAttribute('gridRowSpan', node.gridItemRowSpan)
     }
 
     // Create base comments object
@@ -970,6 +1019,25 @@ export async function applyAttributes(
             decodedAttrs.backgroundImage = imageAsset
         }
         // If it's already on framerusercontent.com, leave it as-is for Framer to handle
+    }
+
+    // Map XML attribute names to Framer API names for layout attributes
+    const attributeMapping: Record<string, string> = {
+        'stackWrap': 'stackWrapEnabled',
+        'gridColumns': 'gridColumnCount',
+        'gridRows': 'gridRowCount',
+        'gridFillWidth': 'gridItemFillCellWidth',
+        'gridFillHeight': 'gridItemFillCellHeight',
+        'gridAlignX': 'gridItemHorizontalAlignment',
+        'gridAlignY': 'gridItemVerticalAlignment',
+    }
+
+    // Apply the mapping
+    for (const [xmlName, framerName] of Object.entries(attributeMapping)) {
+        if (xmlName in decodedAttrs) {
+            decodedAttrs[framerName] = decodedAttrs[xmlName]
+            delete decodedAttrs[xmlName]
+        }
     }
 
     // For component instances, separate controls from other attributes
