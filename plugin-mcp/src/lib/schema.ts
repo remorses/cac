@@ -353,13 +353,15 @@ export const mcpTools = {
               - Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
               - Nodes with svg attribute become SVG nodes
               - Nodes with componentId or insertUrl attributes become ComponentInstance nodes (omit nodeId to create new component instances)
-              - Nodes with only text content (no special attributes) become Text nodes
+              - Nodes with text content become Text nodes. To add a text node you must create a new wrapping element too and omit its nodeId, you CANNOT add text to an existing element that does not already contain text
 
               The tag name of new nodes will be used for the new node title in Framer, it has no semantic meaning
 
               When creating a new node ALWAYS mention the node before and after it so that it can be put in the right place. Also ALWAYS wrap it with a known nodeId wrapper node (usually the same nodeId used in the tool params).
 
               The tool output will contain the newly created node ids, in following calls you MUST use those nodeIds to reference the newly created nodes.
+
+              IMPORTANT! You cannot add text content to an existing element with an existing nodeId it if does not already contain text! Instead put the new text inside a wrapper Text element
 
               ## Node Updates
 
