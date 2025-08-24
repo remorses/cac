@@ -85,7 +85,7 @@
         "evt": "^2.5.9",
         "fast-glob": "^3.3.3",
         "flat-cache": "^6.1.9",
-        "framer-plugin": "3.5.2",
+        "framer-plugin": "3.6.0",
         "github-slugger": "^2.0.0",
         "gray-matter": "^4.0.3",
         "hono": "^4.8.3",
@@ -149,7 +149,7 @@
         "vite-plugin-inspect": "^10.1.0",
         "website": "workspace:*",
         "xmldom": "^0.6.0",
-        "zod": "^4.0.17",
+        "zod": "^4.1.1",
         "zod-form-data": "^2.0.5",
         "zod-validation-error": "^4.0.1"
     },
