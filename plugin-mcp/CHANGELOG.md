@@ -1,5 +1,16 @@
 # Changelog
 
+## 2025-08-24 12:30
+
+- **Added support for Framer 3.6.0 layout attributes**
+- Frame nodes now support `layout` attribute ("stack" | "grid")
+- Stack layout: `stackDirection`, `stackDistribution`, `stackAlignment`, `stackWrap`
+- Grid layout: `gridColumns`, `gridRows`, `gridAlignment`, `gridColumnWidth`, `gridRowHeight`
+- Grid items: `gridFillWidth`, `gridFillHeight`, `gridAlignX`, `gridAlignY`, `gridColumnSpan`, `gridRowSpan`
+- Updated XML schema documentation with all new layout attributes
+- Added proper attribute mapping between XML names and Framer API properties
+- Set smart defaults to reduce XML clutter: `gap="0px"`, `padding="0px"`, `stackWrap=false`, `gridFillWidth=true`, `gridFillHeight=true`
+
 ## 2025-08-22
 
 - **Added `componentType` field to React Export components**

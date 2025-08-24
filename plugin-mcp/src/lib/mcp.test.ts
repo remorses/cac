@@ -584,9 +584,9 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Retrieved 1 of 6 item(s) from collection \\"Articles\\"",
+                "message": "Retrieved 1 of 7 item(s) from collection \\"Articles\\"",
                 "pagination": {
-                  "total": 6,
+                  "total": 7,
                   "skip": 0,
                   "limit": 1,
                   "returned": 1
@@ -681,19 +681,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-1934\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-8195\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "evdf_OP5E",
-                  "slug": "test-item-1934",
+                  "id": "dDg6_uYM1",
+                  "slug": "test-item-8195",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 1934"
+                      "value": "Test Item 8195"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-08-20T00:00:00.000Z"
+                      "value": "2025-08-24T00:00:00.000Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -705,7 +705,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 1934</p>"
+                      "value": "<p>Test content for item 8195</p>"
                     }
                   }
                 }
@@ -745,19 +745,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-1934\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-8195\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "evdf_OP5E",
-                  "slug": "test-item-1934",
+                  "id": "dDg6_uYM1",
+                  "slug": "test-item-8195",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 5139"
+                      "value": "Updated Item 7089"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-08-20T00:00:00.000Z"
+                      "value": "2025-08-24T00:00:00.000Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -769,7 +769,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 1934</p>"
+                      "value": "<p>Test content for item 8195</p>"
                     }
                   }
                 }
@@ -796,10 +796,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-1934\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-8195\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "evdf_OP5E",
-                  "slug": "test-item-1934"
+                  "id": "dDg6_uYM1",
+                  "slug": "test-item-8195"
                 }
               }"
             `)
