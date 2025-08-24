@@ -36,6 +36,8 @@ export const cursorCode = `{
 
 ## Claude Code
 
+Use the following command to add Framer MCP when calling Claude in the current working directory
+
 export const claudeCliCommand = `claude mcp add --transport sse framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret" -s project`
 
 <CodeBlock title='CLI' language='bash'>
@@ -57,7 +59,8 @@ export const claudeMcpConfig = `{
     {claudeMcpConfig}
 </CodeBlock>
 
-{/* Auth: Supported via URL or `/mcp` OAuth. */}
+> IMPORTANT! Notice that the above config and command will only make the Framer MCP available when you call `claude` cli in the same directory as the `.mcp.json` file.
+> If you want to make the MCP always available you can omit the `-s project` from the command, this is usually not best practice because it makes it more difficult to manage currently available MCPs
 
 ---
 
