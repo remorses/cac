@@ -22,6 +22,7 @@ import {
 } from './lib/schema.js'
 import type { TextStyleProperties } from './lib/schema.js'
 import './lib/framer.js'
+import type { CanvasNode } from 'framer-plugin'
 import { useStore } from './lib/store.js'
 import {
     CopyIcon,
@@ -199,6 +200,7 @@ function stripVersionFromUrl(url: string | undefined): string | undefined {
 // Helper function to get XML for a node
 async function getNodeXml(
     nodeId: string,
+    maxCharacters=20000
 ): Promise<{ xml: string; isReplica: boolean } | null> {
     const node = await framer.getNode(nodeId)
     if (!node) {
@@ -207,11 +209,37 @@ async function getNodeXml(
     const tree = await getFramerTree({
         rootNodes: [node],
         recursive: false,
+
     })
     const xml = framerLayersTreeToXml(tree, {
         shouldAddNodeIdAlways: true,
+        maxCharacters
     })
     return { xml, isReplica: node.isReplica }
+}
+
+// Helper function to detect nodes added during an operation
+async function getAddedNodesDuring(
+    callback: () => Promise<void>
+): Promise<CanvasNode[]> {
+    // Clear selection first
+    await framer.setSelection([])
+
+    // Get canvas root and its children before operation
+    const canvasRoot = await framer.getCanvasRoot()
+    const childrenBefore = await canvasRoot.getChildren()
+    const idsBefore = new Set(childrenBefore.map(child => child.id))
+
+    // Execute the callback
+    await callback()
+
+    // Get children after operation
+    const childrenAfter = await canvasRoot.getChildren()
+
+    // Find new nodes (those that weren't in the before set)
+    const newNodes = childrenAfter.filter(child => !idsBefore.has(child.id))
+
+    return newNodes
 }
 
 // Helper function to create a new Framer node based on its type
@@ -233,11 +261,11 @@ async function createFramerNode({
         case 'Text': {
             // Text nodes need special handling
             const text = newContent || ''
-            await framer.addText(text, { tag: 'p' })
+            const newNodes = await getAddedNodesDuring(async () => {
+                await framer.addText(text, { tag: 'p' })
+            })
 
-            // Get the newly created node from selection
-            const selection = await framer.getSelection()
-            const newNodeId = selection[0]?.id
+            const newNodeId = newNodes[0]?.id
 
             if (newNodeId) {
                 // Move to correct parent
@@ -256,11 +284,11 @@ async function createFramerNode({
         case 'SVG': {
             const svg = attributes.svg || '<svg></svg>'
             const name = attributes.name
-            await framer.addSVG({ svg, name })
+            const newNodes = await getAddedNodesDuring(async () => {
+                await framer.addSVG({ svg, name })
+            })
 
-            // Get the newly created node from selection
-            const selection = await framer.getSelection()
-            const newNodeId = selection[0]?.id
+            const newNodeId = newNodes[0]?.id
 
             if (newNodeId) {
                 // Move to correct parent
@@ -581,7 +609,7 @@ async function websocketHandler({
             }
 
             // Get the original XML before making changes
-            const originalResult = await getNodeXml(rootNodeId)
+            const originalResult = await getNodeXml(rootNodeId, Infinity)
             const originalXml = originalResult?.xml || ''
 
             // Extract nodes from the provided XML with node creation enabled
@@ -807,7 +835,7 @@ async function websocketHandler({
             }
 
             // Get the updated XML for the primary node
-            const updatedResult = await getNodeXml(rootNodeId)
+            const updatedResult = await getNodeXml(rootNodeId, Infinity)
             const updatedXml = updatedResult?.xml || ''
 
             const resultMessage =
@@ -1126,7 +1154,42 @@ async function websocketHandler({
         case 'deleteNode': {
             const { nodeId } = input
 
-            // Check permission
+            // First check if this is a style path (starts with /)
+            if (nodeId.startsWith('/')) {
+                // Try to delete as color style first
+                const colorStyles = await framer.getColorStyles()
+                const colorStyle = colorStyles.find(style => style.path === nodeId)
+                if (colorStyle) {
+                    const permissionError = checkPermissions('ColorStyle.remove')
+                    if (permissionError) return permissionError
+                    await colorStyle.remove()
+                    return `Successfully deleted color style ${nodeId}.`
+                }
+
+                // Try to delete as text style
+                const textStyles = await framer.getTextStyles()
+                const textStyle = textStyles.find(style => style.path === nodeId)
+                if (textStyle) {
+                    const permissionError = checkPermissions('TextStyle.remove')
+                    if (permissionError) return permissionError
+                    await textStyle.remove()
+                    return `Successfully deleted text style ${nodeId}.`
+                }
+
+                return `Style with path ${nodeId} not found.`
+            }
+
+            // Check if this is a code file ID
+            const codeFiles = await framer.getCodeFiles()
+            const codeFile = codeFiles.find(file => file.id === nodeId)
+            if (codeFile) {
+                const permissionError = checkPermissions('CodeFile.remove')
+                if (permissionError) return permissionError
+                await codeFile.remove()
+                return `Successfully deleted code file ${nodeId}.`
+            }
+
+            // Regular node deletion
             const permissionError = checkPermissions('Node.remove')
             if (permissionError) return permissionError
 
@@ -1136,12 +1199,8 @@ async function websocketHandler({
                 return `Node with ID ${nodeId} not found.`
             }
 
-            try {
-                await node.remove()
-                return `Successfully deleted node ${nodeId}.`
-            } catch (error) {
-                return `Failed to delete node ${nodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-            }
+            await node.remove()
+            return `Successfully deleted node ${nodeId}.`
         }
         case 'duplicateNode': {
             const { nodeId } = input

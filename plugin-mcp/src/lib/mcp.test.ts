@@ -10,6 +10,9 @@ describe(
         let callTool: Awaited<ReturnType<typeof createMCPClient>>['callTool']
         let cleanup: (() => Promise<void>) | null = null
         let client: Awaited<ReturnType<typeof createMCPClient>>['client']
+        
+        // Track created styles for cleanup
+        const createdStyles = new Set<string>()
 
         beforeAll(async () => {
             const result = await createMCPClient({
@@ -22,6 +25,19 @@ describe(
         })
 
         afterAll(async () => {
+            // Clean up all created test styles
+            for (const stylePath of createdStyles) {
+                try {
+                    await callTool({
+                        name: 'deleteNode',
+                        args: { nodeId: stylePath },
+                    })
+                    console.log(`Cleaned up style: ${stylePath}`)
+                } catch (error) {
+                    console.error(`Failed to clean up style ${stylePath}:`, error)
+                }
+            }
+            
             if (cleanup) {
                 await cleanup()
                 cleanup = null
@@ -112,9 +128,9 @@ describe(
             const createXml = `
                 <Frame width="400px" height="300px" backgroundColor="rgb(240, 240, 240)" layout="stack" stackDirection="vertical" gap="16px" padding="20px">
                     <Frame width="100%" height="60px" backgroundColor="rgb(100, 150, 200)" borderRadius="8px">
-                        <Text fontSize="24px" font="GF;Inter-600">Header Text</Text>
+                        <Text fontSize="24px">Header Text</Text>
                     </Frame>
-                    <Text fontSize="16px" font="GF;Inter-400">Body content goes here</Text>
+                    <Text fontSize="16px">Body content goes here</Text>
                     <Frame width="100%" height="1fr" backgroundColor="rgb(255, 255, 255)" borderRadius="4px" />
                 </Frame>
             `
@@ -136,7 +152,7 @@ describe(
             // Extract the created node IDs from the result
             const nodeIdMatches = [...content.matchAll(/Created \w+ node ([a-zA-Z0-9_]+)/g)]
             const createdNodeIds = nodeIdMatches.map(m => m[1])
-            expect(createdNodeIds.length).toBe(3) // Should have created 3 Frame nodes
+            expect(createdNodeIds.length).toBe(5) // Should have created 3 Frame nodes + 2 Text nodes
 
             // Clean up: delete the root created node (which will delete children too)
             if (createdNodeIds.length > 0) {
@@ -314,6 +330,9 @@ describe(
         it('should create a new color style', async () => {
             const randomNum = Math.floor(Math.random() * 1000)
             const newStylePath = `/Test-Color-${randomNum}`
+            
+            // Track for cleanup
+            createdStyles.add(newStylePath)
 
             // Create a new color style (name is derived from path)
             const result = await callTool({
@@ -586,6 +605,44 @@ describe(
         })
 
         // CMS Tests
+        it('should create a new text style', async () => {
+            const randomNum = Math.floor(Math.random() * 1000)
+            const newStylePath = `/Test-Text-${randomNum}`
+            
+            // Track for cleanup
+            createdStyles.add(newStylePath)
+            
+            // Create a new text style
+            const createResult = await callTool({
+                name: 'manageTextStyle',
+                args: {
+                    type: 'create',
+                    stylePath: newStylePath,
+                    properties: {
+                        fontSize: '24px',
+                        lineHeight: '1.5em',
+                        alignment: 'center',
+                        color: '#333333',
+                    },
+                },
+            })
+            
+            const createContent = getTextContent(createResult.content)
+            expect(createContent).toBeDefined()
+            
+            // Check if creation succeeded
+            expect(createContent).toContain('Successfully created text style')
+            
+            // Verify it's in the project
+            const verifyResult = await callTool({
+                name: 'getProjectXml',
+                args: undefined,
+            })
+            
+            const verifyXml = getTextContent(verifyResult.content)
+            expect(verifyXml).toContain(newStylePath)
+        })
+
         let cmsCollectionId: string | null = null
         let cmsFieldIds: Record<string, string> = {}
         let createdItemId: string | null = null
@@ -793,15 +850,15 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-9244\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-7698\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "rWbxbbbBN",
-                  "slug": "test-item-9244",
+                  "id": "UxvnBHMli",
+                  "slug": "test-item-7698",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 9244"
+                      "value": "Test Item 7698"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
@@ -817,7 +874,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 9244</p>"
+                      "value": "<p>Test content for item 7698</p>"
                     }
                   }
                 }
@@ -857,15 +914,15 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-9244\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-7698\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "rWbxbbbBN",
-                  "slug": "test-item-9244",
+                  "id": "UxvnBHMli",
+                  "slug": "test-item-7698",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 2963"
+                      "value": "Updated Item 7309"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
@@ -881,7 +938,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 9244</p>"
+                      "value": "<p>Test content for item 7698</p>"
                     }
                   }
                 }
@@ -908,10 +965,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-9244\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-7698\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "rWbxbbbBN",
-                  "slug": "test-item-9244"
+                  "id": "UxvnBHMli",
+                  "slug": "test-item-7698"
                 }
               }"
             `)
