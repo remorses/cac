@@ -315,6 +315,8 @@ export const mcpTools = {
 
             **Note**: A text node can use EITHER \`font\` OR \`inlineTextStyle\`, not both.
 
+            IMPORTANT: to change color of a text node you MUST use a text style to do so. You can either use an existing text style or create a new text style for a specific text node.
+
             ### Link Attributes
 
             For nodes that support links:
