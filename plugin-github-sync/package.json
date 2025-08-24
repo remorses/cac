@@ -22,7 +22,7 @@
         "db": "workspace:^",
         "eventsource-parser": "^3.0.0",
         "framer-motion": "^12.23.12",
-        "framer-plugin": "^3.5.2",
+        "framer-plugin": "^3.6.0",
         "isbot": "^5.1.21",
         "nextjs-progressbar": "^0.0.16",
         "nprogress": "^0.2.0",
