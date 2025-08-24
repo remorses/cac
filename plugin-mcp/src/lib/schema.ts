@@ -345,7 +345,19 @@ export const mcpTools = {
 
     updateXmlForNode: {
         description: dedent`
-              Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes or reorder nodes in the XML tree.
+              Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
+
+              ## Node Creation
+              
+              Nodes without a nodeId attribute will be created as new nodes. The node type is determined by the content and attributes:
+              - Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
+              - Nodes with svg attribute become SVG nodes  
+              - Nodes with componentId or insertUrl attributes become ComponentInstance nodes
+              - Nodes with only text content (no special attributes) become Text nodes (Note: Text node creation currently has limitations)
+              
+              When creating nodes, they will be added as children of their parent element in the XML. If you pass an existing node with a nodeId inside a newly created node, that existing node will be moved to become a child of the new node, effectively creating a wrapper layer.
+
+              ## Node Updates
 
               If a node id changes its parent, it will be moved in the tree.
 
@@ -357,16 +369,24 @@ export const mcpTools = {
 
               You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will be ignored. You can also omit attributes, omitted attributes will be ignored.
 
+              ## Capabilities
+
               You can use this tool to:
+              - Create new nodes by omitting nodeId attribute
               - Update text content for one or multiple nodes
               - Update attributes of existing nodes
               - Reorder nodes in the tree by changing their parent or position
+              - Create wrapper layers by placing existing nodes inside new nodes
 
               This tool CANNOT be used for:
               - Code files (use 'updateCodeFile' instead)
               - Color styles (use 'manageColorStyle' with type: 'update' instead)
               - Text styles (use 'manageTextStyle' with type: 'update' instead)
-              - Duplicating or deleting nodes
+              - Deleting nodes (use 'deleteNode' instead)
+
+              ## Return Value
+              
+              Returns a summary of changes made, followed by a diff patch showing the XML changes in unified diff format.
 
               `,
         input: z.object({

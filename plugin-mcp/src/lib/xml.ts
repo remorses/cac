@@ -77,8 +77,14 @@ function deIndent(str: string) {
     return lines.map((line) => line.slice(minIndent)).join('\n')
 }
 
+// Constant for temporary node ID prefix
+export const TEMP_NODE_ID_PREFIX = '_temp_'
+
+export type NodeType = 'Frame' | 'Text' | 'SVG' | 'ComponentInstance'
+
 export type NewExtractedNode = {
     nodeId: string
+    nodeType?: NodeType
     newContent: string
     attributes: Record<string, string>
     parentId?: string
@@ -86,8 +92,44 @@ export type NewExtractedNode = {
     afterNodeId?: string
 }
 
-export function extractObjectsFromXmlContent(xml: string) {
+function determineNodeType(
+    node: any,
+    attributes: Record<string, string>,
+): NodeType {
+    // Check if it has direct text content (Text node)
+    if (node.children) {
+        const hasDirectText = node.children.some(
+            (child: any) => child.type === 'text' && child.data.trim(),
+        )
+        // If it has text content and no other identifying attributes, it's a Text node
+        if (
+            hasDirectText &&
+            !attributes.layout &&
+            !attributes.svg &&
+            !attributes.componentId
+        ) {
+            return 'Text'
+        }
+    }
+
+    // Check for component instance
+    if (attributes.componentId || attributes.insertUrl) {
+        return 'ComponentInstance'
+    }
+
+    // Check for SVG
+    if (attributes.svg) {
+        return 'SVG'
+    }
+
+    // Otherwise it's a Frame (including those with layout="stack" or layout="grid")
+    return 'Frame'
+}
+
+export function extractObjectsFromXmlContent(xml: string, options?: { enableNodeCreation?: boolean }) {
     const results: NewExtractedNode[] = []
+    let tempIdCounter = 0
+    const enableNodeCreation = options?.enableNodeCreation ?? false
 
     const handler = new DomHandler((error, dom) => {
         if (error) {
@@ -96,12 +138,26 @@ export function extractObjectsFromXmlContent(xml: string) {
             const dfs = (node: any, lastParentWithId?: string) => {
                 let currentParentId = lastParentWithId
 
-                if (
-                    node.type === ElementType.Tag &&
-                    node.attribs &&
-                    node.attribs.nodeId
-                ) {
-                    const nodeId = node.attribs.nodeId
+                if (node.type === ElementType.Tag) {
+                    let nodeId = node.attribs?.nodeId
+                    const hasExistingId = !!nodeId
+                    
+                    // Only process nodes that have an ID or when node creation is enabled
+                    if (!hasExistingId && !enableNodeCreation) {
+                        // Skip this node but continue processing children
+                        if (node.children) {
+                            node.children.forEach((child: any) =>
+                                dfs(child, lastParentWithId),
+                            )
+                        }
+                        return
+                    }
+                    
+                    // Assign temporary ID for new nodes when creation is enabled
+                    if (!nodeId && enableNodeCreation) {
+                        nodeId = `${TEMP_NODE_ID_PREFIX}${++tempIdCounter}`
+                    }
+
                     let text = ''
 
                     // Only get direct text children, not all descendants
@@ -117,9 +173,14 @@ export function extractObjectsFromXmlContent(xml: string) {
                     delete attributes.nodeId
 
                     const extractedNode: NewExtractedNode = {
-                        nodeId,
+                        nodeId: nodeId!,
                         newContent: deIndent(text).trim(),
                         attributes,
+                    }
+
+                    // Determine node type for new nodes
+                    if (!hasExistingId && enableNodeCreation) {
+                        extractedNode.nodeType = determineNodeType(node, attributes)
                     }
 
                     // Add parent information if available
@@ -128,7 +189,7 @@ export function extractObjectsFromXmlContent(xml: string) {
                     }
 
                     // This node becomes the parent for its children
-                    currentParentId = nodeId
+                    currentParentId = nodeId!
 
                     results.push(extractedNode)
                 }

@@ -1,5 +1,33 @@
 # Changelog
 
+## 2025-08-24 14:20
+
+- **Enhanced updateXmlForNode with diff output**
+- Returns XML changes as unified diff patch instead of full XML
+- Added `diff` package for generating readable change patches
+- Improved schema documentation with node creation details
+- Added test with file snapshot for node creation with layout
+
+## 2025-08-24 13:25
+
+- **Implemented node creation in updateXmlForNode**
+- Added Phase 0 to create nodes with temporary IDs before updating
+- Supports creating Frame, Text, SVG, and ComponentInstance nodes
+- Text/SVG creation uses workaround via addText/addSVG + selection API
+- Maps temporary IDs to real IDs for parent-child relationships
+- Updates parent references throughout extracted nodes after creation
+- Added rollback mechanism with framer.notify on errors
+- ComponentInstance creation supports finding insertUrl from componentId
+
+## 2025-08-24 13:15
+
+- **Prepared XML extraction for node creation support**
+- Added `TEMP_NODE_ID_PREFIX` constant for temporary node IDs
+- Added `NodeType` detection based on node attributes (Text, Frame, SVG, ComponentInstance)
+- Extended `extractObjectsFromXmlContent` with `enableNodeCreation` option
+- Node type determination uses context: text content → Text, layout prop → Frame, svg prop → SVG, componentId → ComponentInstance
+- Maintains backward compatibility by default (node creation disabled)
+
 ## 2025-08-24 12:30
 
 - **Added support for Framer 3.6.0 layout attributes**
