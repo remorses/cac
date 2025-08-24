@@ -1,5 +1,21 @@
 # Changelog
 
+## 2025-08-24 16:03
+
+- **Extended deleteNode to support styles and code files**
+- deleteNode now deletes color styles, text styles, and code files
+- Simplified error handling by removing unnecessary try-catch blocks
+- Fixed updateXmlForNode to use Infinity for XML character limit
+- Added automatic cleanup of test-created styles using afterAll hook
+
+## 2025-08-24 15:47
+
+- **Improved Text/SVG node creation with getAddedNodesDuring**
+- Added `getAddedNodesDuring` function to detect newly created nodes
+- Compares canvas children before/after operation to find new nodes
+- Replaces unreliable selection-based detection for Text/SVG nodes
+- Text nodes now work properly without font attribute requirements
+
 ## 2025-08-24 14:20
 
 - **Enhanced updateXmlForNode with diff output**

@@ -485,13 +485,17 @@ export const mcpTools = {
     },
     deleteNode: {
         description: dedent`
-        Deletes a Framer node, removing it from the page or component. This permanently removes the node and all its children.
-
+        Deletes a Framer node, color style, text style, or code file.
+        
+        - For nodes: Pass the node ID to remove it from the page/component (also removes all children)
+        - For color/text styles: Pass the style path (e.g., "/Primary", "/Heading xl") 
+        - For code files: Pass the code file ID
+        
         NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
 
         `,
         input: z.object({
-            nodeId: NodeId.describe('The ID of the node to delete'),
+            nodeId: NodeId.describe('The ID of the node/style/code file to delete'),
         }),
         output: z.any(),
     },
