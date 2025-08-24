@@ -197,12 +197,12 @@ export const mcpTools = {
               - "stack": Flexbox-like layout, items flow in one direction
               - "grid": CSS Grid-like layout, items arranged in rows and columns
               - null/omitted: No layout system, children use absolute positioning
-            
+
             - **gap**: Pixels, supports 1 or 2 values
               - Single value (e.g., "10px"): Same gap between all items
               - Two values (e.g., "10px 20px"): First is row gap, second is column gap
               - Default: "0px" (no gap between items)
-            
+
             - **padding**: Pixels, supports 1 or 4 values
               - Single value (e.g., "10px"): Same padding on all sides
               - Four values (e.g., "10px 20px 15px 25px"): top, right, bottom, left
@@ -213,7 +213,7 @@ export const mcpTools = {
             - **stackDirection**: "horizontal" | "vertical"
               - "horizontal": Items flow left to right (row direction)
               - "vertical": Items flow top to bottom (column direction)
-            
+
             - **stackDistribution**: "start" | "center" | "end" | "space-between" | "space-around" | "space-evenly"
               - Controls spacing along the main axis (horizontal for row, vertical for column)
               - "start": Pack items at the start (left for horizontal, top for vertical)
@@ -222,7 +222,7 @@ export const mcpTools = {
               - "space-between": Distribute items evenly, first at start, last at end
               - "space-around": Distribute items evenly with equal space around each
               - "space-evenly": Distribute items with equal space between and around
-            
+
             - **stackAlignment**: "start" | "center" | "end"
               - Controls alignment on the cross axis (vertical for row, horizontal for column)
               - When stackDirection="horizontal": controls vertical alignment (top/center/bottom)
@@ -230,7 +230,7 @@ export const mcpTools = {
               - "start": Align to start of cross axis
               - "center": Center on cross axis
               - "end": Align to end of cross axis
-            
+
             - **stackWrap**: Boolean true/false
               - true: Items wrap to next line when they exceed container width/height
               - false: Items stay on single line (default)
@@ -241,34 +241,34 @@ export const mcpTools = {
               - Number (e.g., 3): Fixed number of columns
               - "auto-fill": Automatically create columns based on gridColumnWidth
               - Example: gridColumns="3" creates a 3-column grid
-            
+
             - **gridRows**: Number
               - Sets fixed number of rows (e.g., 2 for 2 rows)
               - Items flow into columns first, then wrap to next row
-            
+
             - **gridAlignment**: "start" | "center" | "end"
               - Controls alignment of the entire grid within its container
               - "start": Align grid to top-left
               - "center": Center the grid
               - "end": Align grid to bottom-right
-            
+
             - **gridColumnWidthType**: "fixed" | "minmax"
               - "fixed": All columns have the same fixed width (gridColumnWidth)
               - "minmax": Columns have minimum width (gridColumnMinWidth) and can grow
-            
+
             - **gridColumnWidth**: Pixels (number only, e.g., 200)
               - Width of each column when gridColumnWidthType="fixed"
               - Used with gridColumns="auto-fill" to determine how many columns fit
-            
+
             - **gridColumnMinWidth**: Pixels (number only, e.g., 150)
               - Minimum width of columns when gridColumnWidthType="minmax"
               - Columns will grow to fill available space but won't shrink below this
-            
+
             - **gridRowHeightType**: "fixed" | "auto" | "fit"
               - "fixed": All rows have same height (gridRowHeight)
               - "auto": Row height determined by content
               - "fit": Rows stretch to fill container height
-            
+
             - **gridRowHeight**: Pixels (number only, e.g., 100)
               - Height of each row when gridRowHeightType="fixed"
               - Ignored for "auto" or "fit" types
@@ -280,28 +280,28 @@ export const mcpTools = {
             - **gridFillWidth**: Boolean true/false
               - true: Item stretches to fill full width of its grid cell(s) (default)
               - false: Item uses its natural width
-            
+
             - **gridFillHeight**: Boolean true/false
               - true: Item stretches to fill full height of its grid cell(s) (default)
               - false: Item uses its natural height
-            
+
             - **gridAlignX**: "start" | "center" | "end"
               - Horizontal alignment within the grid cell (when gridFillWidth=false)
               - "start": Align to left edge of cell
               - "center": Center horizontally in cell
               - "end": Align to right edge of cell
-            
+
             - **gridAlignY**: "start" | "center" | "end"
               - Vertical alignment within the grid cell (when gridFillHeight=false)
               - "start": Align to top edge of cell
               - "center": Center vertically in cell
               - "end": Align to bottom edge of cell
-            
+
             - **gridColumnSpan**: Number or "all"
               - Number (e.g., 2): Item spans this many columns
               - "all": Item spans all columns in the grid
               - Example: gridColumnSpan="2" makes item 2 columns wide
-            
+
             - **gridRowSpan**: Number
               - Number of rows the item should span (e.g., 2 for 2 rows)
               - Example: gridRowSpan="3" makes item 3 rows tall
@@ -348,14 +348,14 @@ export const mcpTools = {
               Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
 
               ## Node Creation
-              
-              Nodes without a nodeId attribute will be created as new nodes. The node type is determined by the content and attributes:
+
+              Nodes without a nodeId attribute will be created as new nodes. To create a new node, simply omit the nodeId attribute. The node type is determined by the content and attributes:
               - Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
-              - Nodes with svg attribute become SVG nodes  
-              - Nodes with componentId or insertUrl attributes become ComponentInstance nodes
-              - Nodes with only text content (no special attributes) become Text nodes (Note: Text node creation currently has limitations)
-              
-              When creating nodes, they will be added as children of their parent element in the XML. If you pass an existing node with a nodeId inside a newly created node, that existing node will be moved to become a child of the new node, effectively creating a wrapper layer.
+              - Nodes with svg attribute become SVG nodes
+              - Nodes with componentId or insertUrl attributes become ComponentInstance nodes (omit nodeId to create new component instances)
+              - Nodes with only text content (no special attributes) become Text nodes
+
+              When creating a new node ALWAYS mention the node before and after it so that it can be put in the right place. Also ALWAYS wrap it with a known nodeId wrapper node (usually the same nodeId used in the tool params).
 
               ## Node Updates
 
@@ -385,7 +385,7 @@ export const mcpTools = {
               - Deleting nodes (use 'deleteNode' instead)
 
               ## Return Value
-              
+
               Returns a summary of changes made, followed by a diff patch showing the XML changes in unified diff format.
 
               `,
@@ -486,11 +486,11 @@ export const mcpTools = {
     deleteNode: {
         description: dedent`
         Deletes a Framer node, color style, text style, or code file.
-        
+
         - For nodes: Pass the node ID to remove it from the page/component (also removes all children)
-        - For color/text styles: Pass the style path (e.g., "/Primary", "/Heading xl") 
+        - For color/text styles: Pass the style path (e.g., "/Primary", "/Heading xl")
         - For code files: Pass the code file ID
-        
+
         NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
 
         `,
