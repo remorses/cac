@@ -64,7 +64,32 @@ export const claudeMcpConfig = `{
 
 ---
 
-## Claude Website (UI)
+## Claude Desktop app **without** a Max subscription
+
+Without a Max subscription you won't be able to connect remote MCP currently in Claude. You can instead add the following config in the Claude Desktop app MCP settings instead:
+
+export const claudeAppMcpConfig = `{
+  "mcpServers": {
+    "framer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.unframer.co/sse?id=$userId&secret=$secret",
+        "--transport",
+        "sse-only"
+      ]
+    }
+  }
+}`
+
+<CodeBlock title='claude_desktop_config.json' language='json'>
+    {claudeAppMcpConfig}
+</CodeBlock>
+
+---
+
+## Claude Website with a Max subscription
 
 1. **Settings → Connectors** → **Create**.
 2. Name: _Framer_.
@@ -78,13 +103,9 @@ export const claudeMcpConfig = `{
 
 ---
 
-## ChatGPT
+## Claude Desktop app with a Max subscription
 
-> Remote MCP is **beta‑only** (Enterprise / Edu → _Deep Research_). Full rollout TBD.
-
-_Admin path_: **Admin → Connectors → Add → Custom** and paste the URL.
-
-{/* Auth: Supported but gated to beta. */}
+If you have a Max subscription you can follow the steps above to add the MCP in the website, the same MCPs will also be available in the Desktop App
 
 ---
 
@@ -131,27 +152,6 @@ export const vscodeConfig = `{
 4. Switch Copilot Chat to _Agent_ mode to invoke tools.
 
 {/* Auth: OAuth or PAT, preview tier. */}
-
----
-
-## Claude Desktop
-
-export const claudeDesktopConfig = `{
-  "mcpServers": {
-    "framer": {
-      "type": "sse",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
-    }
-  }
-}`
-
-<CodeBlock title='claude_desktop_config.json' language='json'>
-    {claudeDesktopConfig}
-</CodeBlock>
-
-Restart Claude Desktop ➜ Use `/tools framer`.
-
-{/* Auth: Supported. */}
 
 ---
 
