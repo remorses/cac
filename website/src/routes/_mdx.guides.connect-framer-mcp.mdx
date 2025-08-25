@@ -40,6 +40,8 @@ Use the following command to add Framer MCP when calling Claude cli from the cur
 
 export const claudeCliCommand = `claude mcp add --transport sse -s project framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
 
+> IMPORTANT! You MUST use the quotes around the url or Claude will incorrectly miss some query params!
+
 <CodeBlock title='CLI' language='bash'>
     {claudeCliCommand}
 </CodeBlock>
@@ -204,12 +206,13 @@ You can check if the Framer MCP server is connected and accessible from your AI 
 
 ## Troubleshooting Cheatsheet
 
-| Symptom                     | Quick Fix                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------- |
-| Time‑outs / Very Slow       | Ensure the **Framer MCP plugin is open**. If hung, close and reopen the plugin. |
-| Switch projects             | Close the MCP plugin in the current project and open it in the target project   |
-| Cursor can’t see server     | Ensure _Agent mode_ enabled and Pro subscription active                         |
-| Copilot doesn’t list server | Update to VS Code 1.102+ and enable preview flag                                |
+| Symptom                          | Quick Fix                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| Time‑outs / Very Slow            | Ensure the **Framer MCP plugin is open**. If hung, close and reopen the plugin. |
+| MCP loading fails in Claude Code | Make sure you used quotes " around the url in the `claude mcp add` command      |
+| Switch projects                  | Close the MCP plugin in the current project and open it in the target project   |
+| Cursor can’t see server          | Ensure _Agent mode_ enabled and Pro subscription active                         |
+| Copilot doesn’t list server      | Update to VS Code 1.102+ and enable preview flag                                |
 
 ---
 
