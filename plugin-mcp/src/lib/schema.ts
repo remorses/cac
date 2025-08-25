@@ -342,7 +342,7 @@ export const mcpTools = {
             Component instances also support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius.
         `,
         input: z.object({
-            nodeId: NodeId.describe('The ID of the node to get as XML'),
+            nodeId: NodeId.describe('The ID of the node to get as XML for, can be a page nodeId, a component componentId or any other XML layer found in a page or component'),
         }),
         output: z.any(),
     },
