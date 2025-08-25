@@ -143,7 +143,7 @@ export const mcpTools = {
         description: dedent`
             Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call getSelectedNodesXml instead
 
-            > IMPORTANT. If you need to recursively read all xml in the Framer project you should first read all pages xml, then read all components xml for the components that appear in the page. Components are a way to encapsulate layers, you still need to call getNodeXml on each instance componentId to see the actual component implementation.
+            > IMPORTANT. If you need to recursively read all xml in the Framer project you should first read all pages xml, then read all components xml for the components that appear in the pages. Components are a way to encapsulate layers, you still need to call getNodeXml on each instance componentId to see the actual component implementation.
 
             ## Attributes of layers in XML
 
