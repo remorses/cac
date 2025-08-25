@@ -582,7 +582,7 @@ async function websocketHandler({
             `
         }
         case 'updateXmlForNode': {
-            const { nodeId: rootNodeId, xml } = input
+            const { nodeId: rootNodeId, xml, zoomIntoView = true } = input
 
             // Check all required permissions at once
             const permissionError = checkPermissions(
@@ -606,6 +606,16 @@ async function websocketHandler({
             // Check if this looks like a style path
             if (rootNodeId.startsWith('/')) {
                 return `Node ID cannot start with a slash. It should be a valid node ID, not a color style or text path. To update styles use 'manageColorStyle' or 'manageTextStyle' tools.`
+            }
+
+            // Zoom into the node before making changes if requested
+            if (zoomIntoView) {
+                try {
+                    await framer.zoomIntoView(rootNodeId, { maxZoom: 0.9 })
+                } catch (error) {
+                    // Don't fail the entire operation if zooming fails
+                    console.warn('Failed to zoom into view:', error)
+                }
             }
 
             // Get the original XML before making changes
@@ -856,7 +866,13 @@ async function websocketHandler({
                     'After',
                     { context: 20 }
                 )
-                return `${resultMessage}\n\nXML Changes:\n${patch}`
+                
+                // Add note about disabling zoom if enabled
+                const zoomNote = zoomIntoView 
+                    ? '\n\nNote: Set zoomIntoView=false if you want to use Framer app while MCP is working.'
+                    : ''
+                
+                return `${resultMessage}\n\nXML Changes:\n${patch}${zoomNote}`
             }
 
             return 'No changes were made! Make sure you are not using made up attributes, follow the outlined attributes only.'

@@ -95,6 +95,123 @@ For Frame, Stack, and similar container nodes:
 - **backgroundImage**: Image URL (will be uploaded to Framer if external)
 - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
 
+### Layout Attributes (Frame nodes only)
+
+For controlling layout behavior:
+
+- **layout**: "stack" | "grid"
+  - "stack": Flexbox-like layout, items flow in one direction
+  - "grid": CSS Grid-like layout, items arranged in rows and columns
+  - null/omitted: No layout system, children use absolute positioning
+
+- **gap**: Pixels, supports 1 or 2 values
+  - Single value (e.g., "10px"): Same gap between all items
+  - Two values (e.g., "10px 20px"): First is row gap, second is column gap
+  - Default: "0px" (no gap between items)
+
+- **padding**: Pixels, supports 1 or 4 values
+  - Single value (e.g., "10px"): Same padding on all sides
+  - Four values (e.g., "10px 20px 15px 25px"): top, right, bottom, left
+  - Default: "0px" (no padding)
+
+### Stack Layout Attributes (when layout="stack")
+
+- **stackDirection**: "horizontal" | "vertical"
+  - "horizontal": Items flow left to right (row direction)
+  - "vertical": Items flow top to bottom (column direction)
+
+- **stackDistribution**: "start" | "center" | "end" | "space-between" | "space-around" | "space-evenly"
+  - Controls spacing along the main axis (horizontal for row, vertical for column)
+  - "start": Pack items at the start (left for horizontal, top for vertical)
+  - "center": Center items along the main axis
+  - "end": Pack items at the end (right for horizontal, bottom for vertical)
+  - "space-between": Distribute items evenly, first at start, last at end
+  - "space-around": Distribute items evenly with equal space around each
+  - "space-evenly": Distribute items with equal space between and around
+
+- **stackAlignment**: "start" | "center" | "end"
+  - Controls alignment on the cross axis (vertical for row, horizontal for column)
+  - When stackDirection="horizontal": controls vertical alignment (top/center/bottom)
+  - When stackDirection="vertical": controls horizontal alignment (left/center/right)
+  - "start": Align to start of cross axis
+  - "center": Center on cross axis
+  - "end": Align to end of cross axis
+
+- **stackWrap**: Boolean true/false
+  - true: Items wrap to next line when they exceed container width/height
+  - false: Items stay on single line (default)
+
+### Grid Layout Attributes (when layout="grid")
+
+- **gridColumns**: Number or "auto-fill"
+  - Number (e.g., 3): Fixed number of columns
+  - "auto-fill": Automatically create columns based on gridColumnWidth
+  - Example: gridColumns="3" creates a 3-column grid
+
+- **gridRows**: Number
+  - Sets fixed number of rows (e.g., 2 for 2 rows)
+  - Items flow into columns first, then wrap to next row
+
+- **gridAlignment**: "start" | "center" | "end"
+  - Controls alignment of the entire grid within its container
+  - "start": Align grid to top-left
+  - "center": Center the grid
+  - "end": Align grid to bottom-right
+
+- **gridColumnWidthType**: "fixed" | "minmax"
+  - "fixed": All columns have the same fixed width (gridColumnWidth)
+  - "minmax": Columns have minimum width (gridColumnMinWidth) and can grow
+
+- **gridColumnWidth**: Pixels (number only, e.g., 200)
+  - Width of each column when gridColumnWidthType="fixed"
+  - Used with gridColumns="auto-fill" to determine how many columns fit
+
+- **gridColumnMinWidth**: Pixels (number only, e.g., 150)
+  - Minimum width of columns when gridColumnWidthType="minmax"
+  - Columns will grow to fill available space but won't shrink below this
+
+- **gridRowHeightType**: "fixed" | "auto" | "fit"
+  - "fixed": All rows have same height (gridRowHeight)
+  - "auto": Row height determined by content
+  - "fit": Rows stretch to fill container height
+
+- **gridRowHeight**: Pixels (number only, e.g., 100)
+  - Height of each row when gridRowHeightType="fixed"
+  - Ignored for "auto" or "fit" types
+
+### Grid Item Attributes (for children of grid containers)
+
+For nodes that are children of a grid container:
+
+- **gridFillWidth**: Boolean true/false
+  - true: Item stretches to fill full width of its grid cell(s) (default)
+  - false: Item uses its natural width
+
+- **gridFillHeight**: Boolean true/false
+  - true: Item stretches to fill full height of its grid cell(s) (default)
+  - false: Item uses its natural height
+
+- **gridAlignX**: "start" | "center" | "end"
+  - Horizontal alignment within the grid cell (when gridFillWidth=false)
+  - "start": Align to left edge of cell
+  - "center": Center horizontally in cell
+  - "end": Align to right edge of cell
+
+- **gridAlignY**: "start" | "center" | "end"
+  - Vertical alignment within the grid cell (when gridFillHeight=false)
+  - "start": Align to top edge of cell
+  - "center": Center vertically in cell
+  - "end": Align to bottom edge of cell
+
+- **gridColumnSpan**: Number or "all"
+  - Number (e.g., 2): Item spans this many columns
+  - "all": Item spans all columns in the grid
+  - Example: gridColumnSpan="2" makes item 2 columns wide
+
+- **gridRowSpan**: Number
+  - Number of rows the item should span (e.g., 2 for 2 rows)
+  - Example: gridRowSpan="3" makes item 3 rows tall
+
 ### Text Node Attributes
 
 For Text nodes:
@@ -103,6 +220,8 @@ For Text nodes:
 - **inlineTextStyle**: Project text style path (e.g., "/Heading xl", "/Body md")
 
 **Note**: A text node can use EITHER `font` OR `inlineTextStyle`, not both.
+
+IMPORTANT: to change color of a text node you MUST use a text style to do so. You can either use an existing text style or create a new text style for a specific text node.
 
 ### Link Attributes
 
@@ -115,7 +234,7 @@ For nodes that support links:
 
 For SVG nodes:
 
-- **svg**: SVG content as a string
+- **svg**: SVG content as a string. This cannot use text styles or other features, it is plain svg code.
 
 ### Component Instance Attributes
 
@@ -143,7 +262,25 @@ Component instances also support all common node attributes (opacity, visible, l
     "name": "getNodeXml",
   },
   {
-    "description": "Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes or reorder nodes in the XML tree.
+    "description": "Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
+
+## Node Creation
+
+Nodes without a nodeId attribute will be created as new nodes. To create a new node, simply omit the nodeId attribute. The node type is determined by the content and attributes:
+- Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
+- Nodes with svg attribute become SVG nodes
+- Nodes with componentId or insertUrl attributes become ComponentInstance nodes (omit nodeId to create new component instances)
+- Nodes with text content become Text nodes. To add a text node you must create a new wrapping element too and omit its nodeId, you CANNOT add text to an existing element that does not already contain text
+
+The tag name of new nodes will be used for the new node title in Framer, it has no semantic meaning
+
+When creating a new node ALWAYS mention the node before and after it so that it can be put in the right place. Also ALWAYS wrap it with a known nodeId wrapper node (usually the same nodeId used in the tool params).
+
+The tool output will contain the newly created node ids, in following calls you MUST use those nodeIds to reference the newly created nodes.
+
+IMPORTANT! You cannot add text content to an existing element with an existing nodeId it if does not already contain text! Instead put the new text inside a wrapper Text element
+
+## Node Updates
 
 If a node id changes its parent, it will be moved in the tree.
 
@@ -155,16 +292,24 @@ This tool is generally called using a component or page nodeId and passing a por
 
 You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will be ignored. You can also omit attributes, omitted attributes will be ignored.
 
+## Capabilities
+
 You can use this tool to:
+- Create new nodes by omitting nodeId attribute
 - Update text content for one or multiple nodes
 - Update attributes of existing nodes
 - Reorder nodes in the tree by changing their parent or position
+- Create wrapper layers by placing existing nodes inside new nodes
 
 This tool CANNOT be used for:
 - Code files (use 'updateCodeFile' instead)
 - Color styles (use 'manageColorStyle' with type: 'update' instead)
 - Text styles (use 'manageTextStyle' with type: 'update' instead)
-- Duplicating or deleting nodes
+- Deleting nodes (use 'deleteNode' instead)
+
+## Return Value
+
+Returns a summary of changes made, followed by a diff patch showing the XML changes in unified diff format.
 ",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -460,7 +605,11 @@ Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom f
     "name": "searchFonts",
   },
   {
-    "description": "Deletes a Framer node, removing it from the page or component. This permanently removes the node and all its children.
+    "description": "Deletes a Framer node, color style, text style, or code file.
+
+- For nodes: Pass the node ID to remove it from the page/component (also removes all children)
+- For color/text styles: Pass the style path (e.g., "/Primary", "/Heading xl")
+- For code files: Pass the code file ID
 
 NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
 ",
@@ -469,7 +618,7 @@ NEVER use this tool to change the parent of a node! Instead use updateXmlForNode
       "additionalProperties": false,
       "properties": {
         "nodeId": {
-          "description": "The ID of the node to delete",
+          "description": "The ID of the node/style/code file to delete",
           "minLength": 1,
           "type": "string",
         },
