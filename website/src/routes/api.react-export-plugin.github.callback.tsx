@@ -1,20 +1,18 @@
 import { prisma } from 'db'
 import { OAuthApp, Octokit } from 'octokit'
-import { useEffect, useRef } from 'react'
 import {
     data,
-    Form,
     href,
     redirect,
-    useLoaderData,
-    useNavigation,
-    type ActionFunctionArgs,
     type LoaderFunctionArgs,
 } from 'react-router'
 import { env } from 'website/src/lib/env'
 import { addUnframerGithubCollaboratorIfNeeded } from 'website/src/lib/github.server'
 import { generateUnframerRepo } from 'website/src/lib/unframer-github-repos'
 import { safeJsonParse } from 'website/src/lib/utils'
+import { useEffect, useState } from 'react'
+import { Loader2Icon } from 'lucide-react'
+import { useLoaderData } from 'react-router'
 
 export type GithubState = {
     next?: string
@@ -24,33 +22,6 @@ export type GithubState = {
 export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const query = url.searchParams
-    const stateStr = query.get('state') || ''
-    const state: GithubState | null = safeJsonParse(
-        decodeURIComponent(stateStr),
-    )
-
-    if (!state?.projectId) {
-        throw new Response('Missing projectId in state', { status: 400 })
-    }
-
-    // Get project details
-    const project = await prisma.reactExportProject.findUnique({
-        where: { projectId: state.projectId },
-    })
-
-    if (!project) {
-        throw new Response('Project not found', { status: 404 })
-    }
-
-    return data({
-        projectName: project.projectName || 'Untitled',
-    })
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-    const url = new URL(request.url)
-    const query = url.searchParams
-    console.log(query)
     const stateStr = query.get('state') || ''
     const state: GithubState | null = safeJsonParse(
         decodeURIComponent(stateStr),
@@ -101,70 +72,83 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         const repo = project.connectedGitHubRepoName
 
-        await addUnframerGithubCollaboratorIfNeeded({
-            addCollaboratorUsername: user.login,
-            owner: 'unframer',
-            repo,
-            projectId: project.projectId,
-        })
-
-        await prisma.reactExportProject.update({
-            where: { projectId: state.projectId },
-            data: {
-                connectedGitHubRepoAt: new Date(),
-            },
-        })
+        await Promise.all([
+            addUnframerGithubCollaboratorIfNeeded({
+                addCollaboratorUsername: user.login,
+                owner: 'unframer',
+                repo,
+                projectId: project.projectId,
+            }),
+            prisma.reactExportProject.update({
+                where: { projectId: state.projectId },
+                data: {
+                    connectedGitHubRepoAt: new Date(),
+                },
+            })
+        ])
+        
         console.log(
             `Connected project ${state.projectId} to GitHub repo: ${repo}`,
         )
 
         throw redirect(existingRepoUrl)
     }
-    const data = await generateUnframerRepo({
+
+    // Only return promise for slow repo creation
+    const promise = generateUnframerRepo({
         projectId: state.projectId,
         projectTitle: project.projectName || 'Untitled',
         addCollaboratorUsername: user.login,
         useAI: false,
-    })
-    if (!data) {
-        return {
-            success: false,
-            message: 'skipped sync',
+    }).then(async (repoData) => {
+        if (!repoData) {
+            throw new Error('Failed to create repository')
         }
-    }
-    const { url: repoUrl, repoName: repo } = data
+        
+        const { url: repoUrl, repoName: repo } = repoData
 
-    if (repo) {
-        await prisma.reactExportProject.update({
-            where: { projectId: state.projectId },
-            data: {
-                connectedGitHubRepoAt: new Date(),
-            },
-        })
-        console.log(
-            `Connected project ${state.projectId} to GitHub repo: ${repo}`,
-        )
-    }
+        if (repo) {
+            await prisma.reactExportProject.update({
+                where: { projectId: state.projectId },
+                data: {
+                    connectedGitHubRepoAt: new Date(),
+                },
+            })
+            console.log(
+                `Connected project ${state.projectId} to GitHub repo: ${repo}`,
+            )
+        }
 
-    return redirect(repoUrl)
+        return { url: repoUrl }
+    })
+
+    return data({ promise })
 }
 
 export default function Component() {
-    const { projectName } = useLoaderData<typeof loader>() || {}
-    const navigation = useNavigation()
-    const formRef = useRef<HTMLFormElement>(null)
+    const { promise } = useLoaderData<typeof loader>()
+    const [error, setError] = useState('')
 
     useEffect(() => {
-        if (formRef.current) {
-            formRef.current.submit()
-        }
-    }, [])
+        promise.then(({ url }) => {
+            window.location.replace(url)
+        }).catch((e) => {
+            setError(e.message)
+        })
+    }, [promise])
 
+    if (error) {
+        return (
+            <div className='flex flex-col items-center justify-center min-h-screen gap-4'>
+                <p className='text-red-600'>Error: {error}</p>
+            </div>
+        )
+    }
+    
     return (
         <div className='flex flex-col items-center justify-center min-h-screen gap-4'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900'></div>
-
-            <Form ref={formRef} method='post' style={{ display: 'none' }} />
+            <Loader2Icon className='h-8 w-8 animate-spin' />
+            <p>Creating GitHub repository...</p>
         </div>
     )
 }
