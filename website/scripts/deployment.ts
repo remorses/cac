@@ -8,6 +8,7 @@ import './openapi'
 
 async function main() {
     const stage = getCurrentStage()
+    console.log({ stage })
     const env = await getDopplerEnv({ stage, project: 'website' })
     env.FORCE_COLOR = '1'
 
@@ -24,7 +25,10 @@ async function main() {
 
         await Promise.all([
             shell(`pnpm build`, {
-                env,
+                env: {
+                    NODE_ENV: 'production',
+                    ...env,
+                },
             }),
         ])
     }

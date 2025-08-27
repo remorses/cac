@@ -39,7 +39,7 @@ export async function generateUnframerRepo({
     projectTitle = '',
     addCollaboratorUsername = '',
     useAI = true,
-}) {
+}): Promise<{ url: string; repoName: string }> {
     repo ||= generateRepoName({ projectId, projectTitle })
     const [project] = await Promise.all([
         prisma.reactExportProject.findFirst({
@@ -64,6 +64,7 @@ export async function generateUnframerRepo({
     // If last sync was less than 10 minutes ago, skip repo update and email
     if (
         project.lastGitHubSyncAt &&
+        project.connectedGitHubRepoName &&
         Date.now() - new Date(project.lastGitHubSyncAt).getTime() <
             10 * 60 * 1000
     ) {
@@ -77,7 +78,10 @@ export async function generateUnframerRepo({
             repo,
         })
 
-        return
+        return {
+            url: `https://github.com/unframer/${project.connectedGitHubRepoName}`,
+            repoName: project.connectedGitHubRepoName,
+        }
     }
     if (!projectSecret) {
         projectSecret = crypto
@@ -98,9 +102,9 @@ export async function generateUnframerRepo({
         outDir: 'framer',
         useAI,
     })
-    if (!exampleCode) {
-        return
-    }
+    // if (!exampleCode) {
+    //     return
+    // }
     let files = generateStackblitzFiles({
         projectId,
         title: projectTitle,
@@ -286,7 +290,7 @@ export async function upsertUnframerRepoWithFiles({
 
         const url = `upserted https://github.com/${owner}/${repo}`
         console.log(url)
-        return { url }
+        return { url, repoName: repo }
     }
 
     const existingFiles = await getRepoFiles({
