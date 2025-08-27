@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-08-27 13:30
+
+- Fixed GitHub OAuth configuration inconsistency in React Export plugin
+- Moved `allowSignup: true` parameter to OAuthApp constructor for consistency
+- Ensured both authorization and callback routes use same OAuth configuration
+
 ## 2025-08-27 16:45
 
 - Fixed GitHub OAuth code reuse issue in React Export plugin callback

@@ -88,7 +88,7 @@ export function ErrorBoundary() {
                 <p className='mb-4'>{error.message}</p>
                 <p className='text-sm mb-2'>The stack trace is:</p>
                 <pre className='p-4 rounded text-sm font-mono overflow-auto max-h-[400px]'>
-                    {error.stack}
+                    {error.stack || error.message}
                 </pre>
             </ErrorWrapper>
         )
@@ -96,6 +96,9 @@ export function ErrorBoundary() {
         return (
             <ErrorWrapper>
                 <h1 className='text-4xl font-bold'>Unknown Error</h1>
+                <pre className='p-4 rounded text-sm font-mono overflow-auto max-h-[400px]'>
+                    {error?.['message']}
+                </pre>
             </ErrorWrapper>
         )
     }

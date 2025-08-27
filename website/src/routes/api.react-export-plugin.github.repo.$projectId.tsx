@@ -33,6 +33,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     const app = new OAuthApp({
         clientId: env.GITHUB_COLLABORATORS_EXPORT_CLIENT_ID!,
         clientSecret: env.GITHUB_COLLABORATORS_EXPORT_CLIENT_SECRET!,
+        allowSignup: true,
     })
     const { url: authUrl } = app.getWebFlowAuthorizationUrl({
         state: encodeURIComponent(JSON.stringify(state)),

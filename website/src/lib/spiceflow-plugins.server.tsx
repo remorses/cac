@@ -44,7 +44,7 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
     //         // allowedHeaders: '*',
     //     }),
     // )
-    .onError(({ code, error }) => {
+    .onError(({ code, path, error }) => {
         if (error instanceof Response) {
             return error
         }
@@ -53,7 +53,7 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             status = 400
         } else {
             status = 500
-            notifyError(error, 'API error')
+            notifyError(error, 'API error in ' + path)
         }
         // if (error instanceof ValidationError) {
         //     return error.toResponse()
@@ -345,27 +345,27 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
         '/validateSession',
         async ({ request }) => {
             const { sessionId, framerUserId } = await request.json()
-            
+
             if (!sessionId || !framerUserId) {
                 return { valid: false, error: 'Missing required parameters' }
             }
-            
+
             const session = await prisma.framerLoginSession.findUnique({
                 where: { key: sessionId },
             })
-            
+
             if (!session) {
                 return { valid: false, error: 'Session not found' }
             }
-            
+
             if (session.framerUserId !== framerUserId) {
                 return { valid: false, error: 'Session belongs to different user' }
             }
-            
+
             if (!session.usedByUserId) {
                 return { valid: false, error: 'Session not yet authenticated' }
             }
-            
+
             return { valid: true }
         },
         {

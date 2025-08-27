@@ -1,11 +1,6 @@
 import { prisma } from 'db'
 import { OAuthApp, Octokit } from 'octokit'
-import {
-    data,
-    href,
-    redirect,
-    type LoaderFunctionArgs,
-} from 'react-router'
+import { data, href, redirect, type LoaderFunctionArgs } from 'react-router'
 import { env } from 'website/src/lib/env'
 import { addUnframerGithubCollaboratorIfNeeded } from 'website/src/lib/github.server'
 import { generateUnframerRepo } from 'website/src/lib/unframer-github-repos'
@@ -13,6 +8,7 @@ import { safeJsonParse } from 'website/src/lib/utils'
 import { useEffect, useState } from 'react'
 import { Loader2Icon } from 'lucide-react'
 import { useLoaderData } from 'react-router'
+import { notifyError } from '../lib/errors'
 
 export type GithubState = {
     next?: string
@@ -40,6 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const app = new OAuthApp({
         clientId: env.GITHUB_COLLABORATORS_EXPORT_CLIENT_ID!,
         clientSecret: env.GITHUB_COLLABORATORS_EXPORT_CLIENT_SECRET!,
+        allowSignup: true,
     })
     const tokenRes = await app.createToken({
         code,
@@ -84,9 +81,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 data: {
                     connectedGitHubRepoAt: new Date(),
                 },
-            })
+            }),
         ])
-        
+
         console.log(
             `Connected project ${state.projectId} to GitHub repo: ${repo}`,
         )
@@ -94,6 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         throw redirect(existingRepoUrl)
     }
 
+    console.log(`generating repo for ${state.projectId}`)
     // Only return promise for slow repo creation
     const promise = generateUnframerRepo({
         projectId: state.projectId,
@@ -102,9 +100,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         useAI: false,
     }).then(async (repoData) => {
         if (!repoData) {
-            throw new Error('Failed to create repository')
+            const error = new Error('Repo creation did not return data')
+            notifyError(error)
+            throw error
         }
-        
+
         const { url: repoUrl, repoName: repo } = repoData
 
         if (repo) {
@@ -112,6 +112,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 where: { projectId: state.projectId },
                 data: {
                     connectedGitHubRepoAt: new Date(),
+                    connectedGitHubRepoName: repo,
+
                 },
             })
             console.log(
@@ -130,21 +132,25 @@ export default function Component() {
     const [error, setError] = useState('')
 
     useEffect(() => {
-        promise.then(({ url }) => {
-            window.location.replace(url)
-        }).catch((e) => {
-            setError(e.message)
-        })
+        promise
+            .then(({ url }) => {
+                window.location.replace(url)
+            })
+            .catch((e) => {
+                setError(e.message)
+            })
     }, [promise])
 
     if (error) {
         return (
             <div className='flex flex-col items-center justify-center min-h-screen gap-4'>
-                <p className='text-red-600'>Error: {error}</p>
+                <p className='text-red-600'>
+                    Failed to create repository: {error}
+                </p>
             </div>
         )
     }
-    
+
     return (
         <div className='flex flex-col items-center justify-center min-h-screen gap-4'>
             <Loader2Icon className='h-8 w-8 animate-spin' />
