@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-08-27 16:45
+
+- Fixed GitHub OAuth code reuse issue in React Export plugin callback
+- OAuth code was being used twice when user had to login to GitHub first
+- Moved all OAuth token exchange logic from action to loader function to ensure single use
+- Implemented streaming pattern for slow repo creation with loading UI
+- Parallelized collaborator addition and database updates with Promise.all
+
 ## 2025-08-22
 
 - **Added support for `componentType` field in React Export API**
