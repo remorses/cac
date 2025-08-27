@@ -288,7 +288,7 @@ export async function upsertUnframerRepoWithFiles({
                 homepage,
             })
 
-        const url = `upserted https://github.com/${owner}/${repo}`
+        const url = `https://github.com/${owner}/${repo}`
         console.log(url)
         return { url, repoName: repo }
     }
