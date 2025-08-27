@@ -98,31 +98,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
         projectTitle: project.projectName || 'Untitled',
         addCollaboratorUsername: user.login,
         useAI: false,
-    }).then(async (repoData) => {
-        if (!repoData) {
-            const error = new Error('Repo creation did not return data')
-            notifyError(error)
-            throw error
-        }
-
-        const { url: repoUrl, repoName: repo } = repoData
-
-        if (repo) {
-            await prisma.reactExportProject.update({
-                where: { projectId: state.projectId },
-                data: {
-                    connectedGitHubRepoAt: new Date(),
-                    connectedGitHubRepoName: repo,
-
-                },
-            })
-            console.log(
-                `Connected project ${state.projectId} to GitHub repo: ${repo}`,
-            )
-        }
-
-        return { url: repoUrl }
     })
+        .then(async (repoData) => {
+            if (!repoData) {
+                const error = new Error('Repo creation did not return data')
+                notifyError(error)
+                return {
+                    success: false as const,
+                    error: error.message,
+                }
+            }
+
+            const { url: repoUrl, repoName: repo } = repoData
+
+            if (repo) {
+                await prisma.reactExportProject.update({
+                    where: { projectId: state.projectId },
+                    data: {
+                        connectedGitHubRepoAt: new Date(),
+                        connectedGitHubRepoName: repo,
+                    },
+                })
+                console.log(
+                    `Connected project ${state.projectId} to GitHub repo: ${repo}`,
+                )
+            }
+
+            return { success: true as const, url: repoUrl }
+        })
+        .catch((error) => {
+            notifyError(error, 'generateUnframerRepo in promise')
+            return {
+                success: false as const,
+                error: error instanceof Error ? error.message : String(error),
+            }
+        })
 
     return data({ promise })
 }
@@ -132,13 +142,13 @@ export default function Component() {
     const [error, setError] = useState('')
 
     useEffect(() => {
-        promise
-            .then(({ url }) => {
-                window.location.replace(url)
-            })
-            .catch((e) => {
-                setError(e.message)
-            })
+        promise.then((result) => {
+            if (!result.success) {
+                setError(result.error)
+                return
+            }
+            window.location.replace(result.url)
+        })
     }, [promise])
 
     if (error) {
