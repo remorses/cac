@@ -412,24 +412,58 @@ export async function createExampleComponentCodeWithAI({
         )
         return { exampleCode: '' }
     }
-    const prompt = dedent`
-    Generate a component page that renders a few components in a single default export using typescript and tailwind, here is an example:
 
-    \`\`\`tsx
-    ${exampleCode}
-    \`\`\`
+    // Build prompt differently based on whether we have example code
+    let prompt = ''
+    if (exampleCode) {
+        prompt = dedent`
+        Generate a component page that renders a few components in a single default export using typescript and tailwind, here is an example:
 
-    Every component must use the .Responsive static field to render a responsive variant of the component, just like in the example.
+        \`\`\`tsx
+        ${exampleCode}
+        \`\`\`
 
-    That example component is already a good starting point but the components need to be reordered in a way that makes sense for a typical landing page for example: navbar first, then hero, then logos, testimonials, other components and then finally footer.
+        Every component must use the .Responsive static field to render a responsive variant of the component, just like in the example.
 
-    You can also import new components, these are all the possible imports:
+        That example component is already a good starting point but the components need to be reordered in a way that makes sense for a typical landing page for example: navbar first, then hero, then logos, testimonials, other components and then finally footer.`
+    } else {
+        // No example code, create from scratch
+        const containerClasses = config.pageBackgroundColor
+            ? `bg-[${config.pageBackgroundColor.replace(/ /g, '_')}]`
+            : ''
+
+        prompt = dedent`
+        Generate a component page that renders components in a single default export using typescript and tailwind.
+
+        The component should follow this structure:
+
+        \`\`\`tsx
+        import './framer/styles.css'
+
+        // Component imports here
+
+        export default function App() {
+          return (
+            <div className='flex flex-col items-center gap-3 ${containerClasses}'>
+              // Components here
+            </div>
+          );
+        };
+        \`\`\`
+
+        Every component must use the .Responsive static field to render a responsive variant of the component, like this:
+        <ComponentName.Responsive />
+
+        Order the components in a way that makes sense for a typical landing page: navbar first, then hero, then logos, testimonials, other components and then finally footer.`
+    }
+
+    prompt += dedent`
+
+    You can import these components, these are all the possible imports:
 
     \`\`\`tsx
     ${imports.join('\n')}
     \`\`\`
-
-    if the example code imports files that are not in the list of available components files you may need to remove them.
 
     BEFORE calling the generate_code tool, you MUST respond to these questions in a bullet list:
 
@@ -437,16 +471,16 @@ export async function createExampleComponentCodeWithAI({
 
     - **In what order should these components be?** Think about typical landing page structure (navbar, hero, logos, testimonials, footer, etc.)
 
-    - **What props can I use?** ALWAYS only use the props that are already in the example code. Any other prop will fail.
+    - **What props can I use?** Do NOT add any props that are not already in the example code. Any other prop will fail.
 
     After answering these questions, return good valid code using the tool generate_code. Make sure the code is valid and has no duplicate import names or invalid tsx.
 
     After you call the tool generate_code successfully you can end the conversation, do not say anything after that.
 
-    Keep the same top level tailwind bg class if present. Always keep the styles.css from the example. Use comments if they make the code easier to understand.
+    Keep the same top level tailwind bg class if present. Always keep the styles.css import. Use comments if they make the code easier to understand.
     `
     console.log('prompt', prompt)
-    let outputCode = exampleCode
+    let outputCode = exampleCode || ''  // Default to empty string if no example code
     console.time(`ai generate code for project ${config.projectId}`)
     const { text } = await generateText({
         model,
@@ -466,15 +500,14 @@ export async function createExampleComponentCodeWithAI({
                 async execute({ code }) {
                     try {
                         console.log(`ai is generating code`, code)
-                        if (outputCode) {
-                            biome = await Biome.create({
-                                distribution: Distribution.NODE,
-                            })
-                            let result = biome.formatContent(code, {
-                                filePath: 'example.jsx',
-                            })
-                            outputCode = result.content
-                        }
+                        // Always format and set the code, even if no example code exists
+                        biome = await Biome.create({
+                            distribution: Distribution.NODE,
+                        })
+                        let result = biome.formatContent(code, {
+                            filePath: 'example.jsx',
+                        })
+                        outputCode = result.content
                         return `Code generated successfully`
                     } catch (e) {
                         console.log(
@@ -492,6 +525,6 @@ export async function createExampleComponentCodeWithAI({
     console.log(text)
 
     return {
-        exampleCode: outputCode,
+        exampleCode: outputCode || exampleCode,
     }
 }

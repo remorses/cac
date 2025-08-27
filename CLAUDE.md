@@ -2,6 +2,8 @@ when summarizing changes at the end of the message be super short, a few words a
 
 Please ask questions and confirm assumptions before generating complex architecture code.
 
+before starting to implement something read all files i mention and their dependnecy to have a clear understanding of the project you will edit, then make a quick plan of what you will implement. do not jump directly writing code
+
 # package manager: pnpm with workspace
 
 This project uses pnpm workspaces to manage dependencies. Important scripts are in the root package.json or various packages package.json
