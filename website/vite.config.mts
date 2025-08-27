@@ -5,8 +5,9 @@ import withToc from '@stefanprobst/rehype-extract-toc'
 import {
     viteExternalsPlugin,
     reactRouterServerPlugin,
+    enablePreserveModulesPlugin
 } from '@xmorse/deployment-utils'
-import { reactRouterHonoServer } from 'react-router-hono-server/dev'
+
 import rehypeMdxImportMedia from 'rehype-mdx-import-media'
 import withSlugs from 'rehype-slug'
 import remarkFrontmatter from 'remark-frontmatter'
@@ -82,6 +83,7 @@ export default defineConfig({
                 'pg',
             ],
         }),
+        enablePreserveModulesPlugin(),
         reactRouterServerPlugin({ port: '8040' }),
         {
             apply(config, env) {
