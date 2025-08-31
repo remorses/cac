@@ -270,7 +270,7 @@ export async function getComponentsWithBreakpoints({
                             return
                         }
                         const parents = await getParentNodesArray(instance)
-                        console.log(parents)
+                        // console.log(parents)
                         let [root, breakpointNode] = parents.reverse()
                         if (!isFrameNode(breakpointNode)) {
                             breakpointNode = root
