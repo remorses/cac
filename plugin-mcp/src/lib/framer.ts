@@ -347,7 +347,7 @@ async function* recurseIntoComponent(
 }
 
 async function isNodeVisible(node: AnyNode) {
-    const parents = await collectGenerator(getParentNodes(node))
+    const parents = await getParentNodesArray(node)
     const isVisible = parents.every((parent) => {
         if (supportsVisible(parent)) {
             return parent.visible
@@ -380,7 +380,7 @@ async function push({
     isRootNode?: boolean
     visitedComponents?: Set<string>
 }) {
-    const parents = (await collectGenerator(getParentNodes(node))).reverse()
+    const parents = (await getParentNodesArray(node)).reverse()
     let currentLevel = tree
     let currentParent: AnyNode | null = null
 
