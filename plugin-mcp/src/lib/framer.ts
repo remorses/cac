@@ -269,6 +269,7 @@ export function getInstanceComponentId(componentInstance: AnyNode) {
     if (!isComponentInstanceNode(componentInstance)) {
         return
     }
+
     if (!componentInstance.componentIdentifier.startsWith('local-module:')) {
         console.log(
             `component ${componentInstance.name} is not a local module: ${componentInstance.componentIdentifier} `,
@@ -773,11 +774,11 @@ async function getNodeAttributesForXml(
     if (supportsLayout(node)) {
         // Layout type
         addAttribute('layout', node.layout)
-        
+
         // Common layout attributes
         addAttribute('gap', node.gap)
         addAttribute('padding', node.padding)
-        
+
         // Stack-specific attributes
         if (node.layout === 'stack') {
             addAttribute('stackDirection', node.stackDirection)
@@ -785,7 +786,7 @@ async function getNodeAttributesForXml(
             addAttribute('stackAlignment', node.stackAlignment)
             addAttribute('stackWrap', node.stackWrapEnabled)
         }
-        
+
         // Grid-specific attributes
         if (node.layout === 'grid') {
             addAttribute('gridColumns', node.gridColumnCount)
@@ -1116,31 +1117,32 @@ async function collectGenerator<T>(
     return result
 }
 
-async function* getParentNodes(node: AnyNode | string | null) {
+export async function getParentNodesArray(node: any) {
     if (typeof node === 'string') {
         node = await framer.getNode(node)
     }
     if (!node) {
-        return
+        return []
     }
     let parent = await node.getParent()
     if (!parent) {
-        if (!isWebPageNode(parent) && !isComponentNode(parent)) {
-            console.log('no parent found', node.id)
-        }
-        return
+        console.log('no parent found', node.id)
+        return []
     }
+    const parentsArray = [] as AnyNode[]
+    const seen = new Set<string>()
     while (parent) {
-        yield parent
-        if (isWebPageNode(parent) || isComponentNode(parent)) {
-            return
+        if (seen.has(parent.id)) {
+            break
         }
-        let newParent = await parent.getParent()
+        parentsArray.push(parent)
+        seen.add(parent.id)
+        const newParent = await parent.getParent()
         if (!newParent) {
-            console.log('no parent found, last one was', parent)
-            yield parent
-            return
+            // console.log('no parent found, last one was', parent)
+            break
         }
         parent = newParent
     }
+    return parentsArray
 }
