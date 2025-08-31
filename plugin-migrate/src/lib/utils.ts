@@ -191,7 +191,7 @@ export async function* getParentNodes(node: AnyNode | string | null) {
         }
         let newParent = await parent.getParent()
         if (!newParent) {
-            console.log('no parent found, last one was', parent)
+            // console.log('no parent found, last one was', parent)
             yield parent
             return
         }
@@ -236,7 +236,7 @@ export async function getParentNodesWithOrdering(
         currentChild = parent
         const newParent = await parent.getParent()
         if (!newParent) {
-            console.log('no parent found, last one was', parent)
+            // console.log('no parent found, last one was', parent)
             return result
         }
         parent = newParent

@@ -37,7 +37,7 @@ export default defineConfig({
     },
     server: {
         proxy: {},
-cors: true,
+        cors: true,
     },
     build: {
         assetsInlineLimit: 307200,

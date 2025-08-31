@@ -1,4 +1,5 @@
 import {
+    AnyNode,
     ComponentInstanceNode,
     ComponentNode,
     WebPageNode,
@@ -10,6 +11,7 @@ import {
 import {
     getComponentPropertyControls,
     getInstanceComponentId,
+    getParentNodesArray,
     replaceEnumIdsForControls,
 } from './framer.js'
 import { isTruthy } from './utils.js'
@@ -56,30 +58,6 @@ async function collectGenerator<T>(
     return result
 }
 
-async function* getParentNodes(node: any) {
-    if (typeof node === 'string') {
-        node = await framer.getNode(node)
-    }
-    if (!node) {
-        return
-    }
-    let parent = await node.getParent()
-    if (!parent) {
-        console.log('no parent found', node.id)
-        return
-    }
-    while (parent) {
-        yield parent
-        const newParent = await parent.getParent()
-        if (!newParent) {
-            console.log('no parent found, last one was', parent)
-            yield parent
-            return
-        }
-        parent = newParent
-    }
-}
-
 async function getParentNodesWithOrdering(node: any) {
     if (typeof node === 'string') {
         node = await framer.getNode(node)
@@ -113,7 +91,7 @@ async function getParentNodesWithOrdering(node: any) {
         // }
         const newParent = await parent.getParent()
         if (!newParent) {
-            console.log('no parent found, last one was', parent)
+            // console.log('no parent found, last one was', parent)
             return result
         }
         parent = newParent
@@ -266,6 +244,9 @@ export async function getComponentsWithBreakpoints({
             component.insertURL &&
             selectedComponentIds.has(component.id),
     )
+    if (!filteredComponents.length) {
+        console.warn(`[react export] no components selected with insertUrl`)
+    }
 
     const componentsWithBreakpoints = await Promise.all(
         filteredComponents.map(async (component) => {
@@ -274,6 +255,12 @@ export async function getComponentsWithBreakpoints({
                     const id = getInstanceComponentId(instance)
                     return id === component.id
                 })
+                if (!instances.length) {
+                    console.warn(
+                        `no component instances found for ${component.name}`,
+                    )
+                }
+                console.log(instances)
                 let breakpoints = await Promise.all(
                     instances.map(async (instance) => {
                         const variantId = String(
@@ -282,13 +269,15 @@ export async function getComponentsWithBreakpoints({
                         if (!variantId) {
                             return
                         }
-                        const parents = await collectGenerator(
-                            getParentNodes(instance),
-                        )
-                        const [root, breakpointNode] = parents.reverse()
+                        const parents = await getParentNodesArray(instance)
+                        console.log(parents)
+                        let [root, breakpointNode] = parents.reverse()
                         if (!isFrameNode(breakpointNode)) {
-                            console.log(
-                                'breakpoint is not a frame node for',
+                            breakpointNode = root
+                        }
+                        if (!isFrameNode(breakpointNode)) {
+                            console.warn(
+                                'neigher first nor second root nodes are breakpoints: not frame nodes!',
                                 breakpointNode,
                             )
                             return
@@ -318,6 +307,19 @@ export async function getComponentsWithBreakpoints({
             }
         }),
     )
+
+    const allBreakpointsCount = componentsWithBreakpoints.reduce(
+        (acc, curr) => acc + (curr.breakpoints?.length || 0),
+        0,
+    )
+    console.log(
+        `[react export] found ${allBreakpointsCount} breakpoints in ${componentsWithBreakpoints.length} components`,
+    )
+    if (!allBreakpointsCount) {
+        console.error(
+            `react export breakpoint detection is currently broken. found 0 breakpoints for components`,
+        )
+    }
 
     return componentsWithBreakpoints
 }
@@ -453,18 +455,25 @@ export async function processReactExportData({
             ...codeFiles
                 .filter((file) => codeFileIds.has(file.id))
                 .filter((file) =>
-                    file.exports.some((exp) => exp.type === 'component' && exp.isDefaultExport),
+                    file.exports.some(
+                        (exp) =>
+                            exp.type === 'component' && exp.isDefaultExport,
+                    ),
                 )
                 .map((file) => {
                     const componentExport = file.exports.find(
-                        (exp) => exp.type === 'component' && exp.isDefaultExport,
+                        (exp) =>
+                            exp.type === 'component' && exp.isDefaultExport,
                     )
                     const name = file.name.replace(/\.(jsx?|tsx?)$/, '')
 
                     return {
                         name,
                         id: file.id,
-                        url: componentExport && 'insertURL' in componentExport ? componentExport.insertURL : '',
+                        url:
+                            componentExport && 'insertURL' in componentExport
+                                ? componentExport.insertURL
+                                : '',
                         projectId: fullFramerProjectId!,
                         componentIdentifier: '',
                         componentType: 'codeFile' as const,
