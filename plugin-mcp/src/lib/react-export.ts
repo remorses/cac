@@ -269,13 +269,16 @@ export async function getComponentsWithBreakpoints({
                         if (!variantId) {
                             return
                         }
-                        const parents = await getParentNodesArray(instance)
-                        // console.log(parents)
-                        let [root, breakpointNode] = parents.reverse()
+                        const parents = (
+                            await getParentNodesArray(instance)
+                        ).reverse()
+
+                        let [root, breakpointNode] = parents
                         if (!isFrameNode(breakpointNode)) {
                             breakpointNode = root
                         }
                         if (!isFrameNode(breakpointNode)) {
+                            console.log('component instance parents', parents)
                             console.warn(
                                 'neigher first nor second root nodes are breakpoints: not frame nodes!',
                                 breakpointNode,
