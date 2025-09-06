@@ -204,6 +204,24 @@ args = ["-y", "mcp-remote", "https://mcp.unframer.co/sse?id=$userId&secret=$secr
 
 > **Note**: The config file is not created during installation, so you need to create it manually first.
 
+### Troubleshooting: Connection Timeout
+
+If you get a "connection timeout" error, install mcp-remote globally and update your config:
+
+```bash
+npm i -g mcp-remote
+```
+
+Then update your `~/.codex/config.toml` to use `mcp-remote` directly:
+
+export const codexCliConfigAlt = `[mcp_servers.framer]
+command = "mcp-remote"
+args = ["https://mcp.unframer.co/sse?id=$userId&secret=$secret", "--transport", "sse-only"]`
+
+<CodeBlock title='~/.codex/config.toml (alternative)' language='toml'>
+    {codexCliConfigAlt}
+</CodeBlock>
+
 {/* Auth: Supported (query-param secret). Requires manual config file setup. */}
 
 ---
