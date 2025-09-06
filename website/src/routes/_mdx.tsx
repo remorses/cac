@@ -7,6 +7,7 @@ import 'prismjs/themes/prism-tomorrow.css'
 import 'prismjs/components/prism-json'
 import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-typescript'
+// import 'prismjs/components/prism-toml' this adds a weird new line on some tokens because of display table
 import { MDXProvider } from '@mdx-js/react'
 import { MDXComponents } from 'mdx/types'
 import { serialize, parse } from 'cookie'
@@ -95,7 +96,7 @@ export const CodeBlock = ({
     }
 
     return (
-        <div className='relative flex flex-col not-prose group my-4'>
+        <div className='relative  flex flex-col not-prose group my-4'>
             {title && (
                 <div className='bg-neutral-800 text-neutral-300 text-sm px-4 py-2 rounded-t-lg font-mono'>
                     {title}
@@ -112,8 +113,8 @@ export const CodeBlock = ({
                     <CopyIcon className='size-4 text-neutral-300' />
                 )}
             </button>
-            <pre className={`dark:bg-neutral-900 !mt-0 text-white ${title ? 'rounded-b-lg' : 'rounded-lg'} p-4 overflow-x-auto`}>
-                <code className={language ? `language-${language}` : ''}>
+            <pre className={`dark:bg-neutral-900 !mt-0 text-white whitespace-pre-wrap ${title ? 'rounded-b-lg' : 'rounded-lg'} p-4 overflow-x-auto`}>
+                <code className={language ? `language-${language} whitespace-pre-wrap` : ''}>
                     {content}
                 </code>
             </pre>

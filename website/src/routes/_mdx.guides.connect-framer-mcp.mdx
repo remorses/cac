@@ -184,6 +184,71 @@ console.log(result.output.text);`
 
 ---
 
+## Codex CLI
+
+export const codexCliConfig = `
+
+[mcp_servers.framer]
+command = "npx"
+args = ["-y", "mcp-remote", "https://mcp.unframer.co/sse?id=$userId&secret=$secret", "--transport", "sse-only"]
+`
+
+<CodeBlock title='~/.codex/config.toml' language='toml'>
+    {codexCliConfig}
+</CodeBlock>
+
+1. Create or edit `~/.codex/config.toml`.
+2. Add the Framer MCP server configuration above.
+3. Restart Codex CLI for changes to take effect.
+4. Verify connection: Ask Codex "What tools do you have available?".
+
+> **Note**: The config file is not created during installation, so you need to create it manually first.
+
+{/* Auth: Supported (query-param secret). Requires manual config file setup. */}
+
+---
+
+## VSCode (Native MCP Support)
+
+For VSCode's built-in MCP support:
+
+export const codexVscodeConfig = `{
+  "servers": {
+    "framer": {
+      "type": "sse",
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+    }
+  }
+}`
+
+<CodeBlock title='.vscode/mcp.json' language='json'>
+    {codexVscodeConfig}
+</CodeBlock>
+
+1. Save to workspace root in `.vscode/mcp.json`.
+2. Use **⌘⇧P / Ctrl+Shift+P** → **MCP: Add Server** (alternative method).
+3. The extension will detect and connect to the Framer MCP server.
+
+> **Note**: Requires VS Code 1.99.0 or newer. Enable MCP support with `chat.mcp.enabled` setting (enabled by default).
+
+{/* Auth: Supported (query-param via SSE). Native VS Code MCP infrastructure. */}
+
+---
+
+## Remote MCP Bridge (for stdio-only clients)
+
+If your tool only supports stdio transport, use `mcp-remote` to bridge:
+
+export const mcpRemoteCommand = `mcp-remote "https://mcp.unframer.co/sse?id=$userId&secret=$secret" --transport sse-only`
+
+<CodeBlock title='Bridge Command' language='bash'>
+    {mcpRemoteCommand}
+</CodeBlock>
+
+This creates a local stdio process that forwards to the remote SSE server.
+
+---
+
 ## How to Check MCP Availability
 
 You can check if the Framer MCP server is connected and accessible from your AI assistant or tool. To do so:
@@ -219,6 +284,6 @@ You can check if the Framer MCP server is connected and accessible from your AI 
 
 ## Roadmap Snapshot
 
-- **ChatGPT (consumer)** – slated Q4 2025.
-- **VS Code Copilot GA** – when Copilot Chat exits preview.
-- **Zed OAuth flows** – pending (header‑based auth today).
+- **ChatGPT (consumer)** – slated Q4 2025.
+- **VS Code Copilot GA** – when Copilot Chat exits preview.
+- **Zed OAuth flows** – pending (header‑based auth today).
