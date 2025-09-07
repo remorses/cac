@@ -91,10 +91,22 @@ export class MyMCP extends McpAgent<Env> {
 
         let ws: WebSocket | null = null
         let isServerStopped = false
-        let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
-        const reconnectDelay = 2000 // Fixed 2 second delay
+        let idleTimeout: ReturnType<typeof setTimeout> | null = null
+        const idleTimeoutDelay = 9 * 1000
 
-        let retries = 0
+        // Reset idle timeout helper function
+        const resetIdleTimeout = () => {
+            if (idleTimeout) {
+                clearTimeout(idleTimeout)
+            }
+            idleTimeout = setTimeout(() => {
+                console.log('Closing WebSocket due to inactivity')
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.close(1000, 'Idle timeout')
+                }
+                clientConnectedPromise = null
+            }, idleTimeoutDelay)
+        }
 
         const connectWebSocket = async (): Promise<WebsocketRpc> => {
             if (isServerStopped) {
@@ -103,9 +115,8 @@ export class MyMCP extends McpAgent<Env> {
             }
 
             console.log(
-                `trying to connect to Websocket tunnel to get access to Framer app MCP with id ${websocketId}, retry #${retries + 1}`,
+                `trying to connect to Websocket tunnel to get access to Framer app MCP with id ${websocketId}`,
             )
-            retries += 1
 
             try {
                 const start = Date.now()
@@ -163,27 +174,28 @@ export class MyMCP extends McpAgent<Env> {
                 )
 
                 // Set up persistent event listeners
+                // Start idle timeout on successful connection
+                resetIdleTimeout()
+
                 ws.addEventListener('close', () => {
                     console.log('Upstream WebSocket closed')
 
-                    // Attempt reconnection if server is not stopped
-                    if (!isServerStopped) {
-                        console.log(
-                            `Attempting reconnection in ${reconnectDelay}ms`,
-                        )
-                        reconnectTimeout = setTimeout(() => {
-                            clientConnectedPromise = connectWebSocket().catch(
-                                (err) => {
-                                    console.error('Reconnection failed:', err)
-                                    throw err
-                                },
-                            )
-                        }, reconnectDelay)
+                    if (idleTimeout) {
+                        clearTimeout(idleTimeout)
+                        idleTimeout = null
                     }
+
+                    // Don't auto-reconnect - wait for next request
+                    clientConnectedPromise = null
                 })
 
                 ws.addEventListener('error', (err) => {
                     console.error('Upstream WebSocket Error:', err)
+                })
+
+                // Reset idle timeout on any message activity
+                ws.addEventListener('message', () => {
+                    resetIdleTimeout()
                 })
 
                 return rpc
@@ -191,35 +203,24 @@ export class MyMCP extends McpAgent<Env> {
                 console.error('Failed to connect WebSocket:', error)
 
                 // Attempt reconnection if server is not stopped
-                if (!isServerStopped) {
-                    console.log(
-                        `Attempting reconnection in ${reconnectDelay}ms`,
-                    )
-                    reconnectTimeout = setTimeout(() => {
-                        clientConnectedPromise = connectWebSocket().catch(
-                            (err) => {
-                                console.error('Reconnection failed:', err)
-                                throw err
-                            },
-                        )
-                    }, reconnectDelay)
-                }
+                // Don't auto-reconnect on error - wait for next request
+                clientConnectedPromise = null
 
                 throw error
             }
         }
 
-        let clientConnectedPromise = connectWebSocket()
+        let clientConnectedPromise: Promise<WebsocketRpc> | null = null
 
         // Graceful shutdown
         const stop = () => {
             console.log('\n⏹ shutting down…')
             isServerStopped = true
 
-            // Clear any pending reconnect timeout
-            if (reconnectTimeout) {
-                clearTimeout(reconnectTimeout)
-                reconnectTimeout = null
+            // Clear any pending timeout
+            if (idleTimeout) {
+                clearTimeout(idleTimeout)
+                idleTimeout = null
             }
 
             if (
@@ -250,6 +251,11 @@ export class MyMCP extends McpAgent<Env> {
                         )
                     })
 
+                    // Lazy connect - only establish WebSocket when needed
+                    if (!clientConnectedPromise) {
+                        clientConnectedPromise = connectWebSocket()
+                    }
+
                     // Race between the connection promise and timeout
                     const result = await Promise.race([
                         clientConnectedPromise,
@@ -277,6 +283,9 @@ export class MyMCP extends McpAgent<Env> {
                     const reply = await rpc.send({
                         payload: { type: name as any, input: args as any },
                     })
+
+                    // Reset idle timeout after successful request
+                    resetIdleTimeout()
                     const text =
                         typeof reply === 'string'
                             ? reply
