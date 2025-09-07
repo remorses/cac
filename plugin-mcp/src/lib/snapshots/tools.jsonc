@@ -49,6 +49,74 @@ To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.",
   {
     "description": "Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call getSelectedNodesXml instead
 
+> IMPORTANT. If you need to recursively read all xml in the Framer project you should first read all pages xml, then read all components xml for the components that appear in the pages. Components are a way to encapsulate layers, you still need to call getNodeXml on each instance componentId to see the actual component implementation.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": {
+          "description": "The ID of the node to get as XML for, can be a page nodeId, a component componentId or any other XML layer found in a page or component",
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "nodeId",
+      ],
+      "type": "object",
+    },
+    "name": "getNodeXml",
+  },
+  {
+    "description": "Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
+
+## Node Creation
+
+Nodes without a nodeId attribute will be created as new nodes. To create a new node, simply omit the nodeId attribute. The node type is determined by the content and attributes:
+- Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
+- Nodes with svg attribute become SVG nodes
+- Nodes with componentId or insertUrl attributes become ComponentInstance nodes (omit nodeId to create new component instances)
+- Nodes with text content become Text nodes. To add a text node you must create a new wrapping element too and omit its nodeId, you CANNOT add text to an existing element that does not already contain text
+
+The tag name of new nodes will be used for the new node title in Framer, it has no semantic meaning
+
+When creating a new node ALWAYS mention the node before and after it so that it can be put in the right place. Also ALWAYS wrap it with a known nodeId wrapper node (usually the same nodeId used in the tool params).
+
+The tool output will contain the newly created node ids, in following calls you MUST use those nodeIds to reference the newly created nodes.
+
+IMPORTANT! You cannot add text content to an existing element with an existing nodeId it if does not already contain text! Instead put the new text inside a wrapper Text element
+
+## Node Updates
+
+If a node id changes its parent, it will be moved in the tree.
+
+Do not pass a string too large in this tool, instead call this tool multiple times and pass only the nodes you want to update, omit attributes or nodes that you don't need to update.
+
+Call this tool multiple times instead of batching all the updates in one tool call. This way the user will be able to see your changes in real-time in the Framer canvas.
+
+This tool is generally called using a component or page nodeId and passing a portion of the XML tree. To delete nodes you should use deleteNode instead. If a node is omitted it will not be deleted.
+
+You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will be ignored. You can also omit attributes, omitted attributes will be ignored.
+
+## Capabilities
+
+You can use this tool to:
+- Create new nodes by omitting nodeId attribute
+- Update text content for one or multiple nodes
+- Update attributes of existing nodes
+- Reorder nodes in the tree by changing their parent or position
+- Create wrapper layers by placing existing nodes inside new nodes
+
+This tool CANNOT be used for:
+- Code files (use 'updateCodeFile' instead)
+- Color styles (use 'manageColorStyle' with type: 'update' instead)
+- Text styles (use 'manageTextStyle' with type: 'update' instead)
+- Deleting nodes (use 'deleteNode' instead)
+
+## Return Value
+
+Returns a summary of changes made, followed by a diff patch showing the XML changes in unified diff format.
+
 ## Attributes of layers in XML
 
 ### Common Attributes (All Drawable Nodes)
@@ -243,73 +311,7 @@ For component instances:
 - **componentId**: The ID of the component definition (read-only, set during creation)
 - Plus any custom control properties defined by the component
 
-Component instances also support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius.",
-    "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeId": {
-          "description": "The ID of the node to get as XML",
-          "minLength": 1,
-          "type": "string",
-        },
-      },
-      "required": [
-        "nodeId",
-      ],
-      "type": "object",
-    },
-    "name": "getNodeXml",
-  },
-  {
-    "description": "Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
-
-## Node Creation
-
-Nodes without a nodeId attribute will be created as new nodes. To create a new node, simply omit the nodeId attribute. The node type is determined by the content and attributes:
-- Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
-- Nodes with svg attribute become SVG nodes
-- Nodes with componentId or insertUrl attributes become ComponentInstance nodes (omit nodeId to create new component instances)
-- Nodes with text content become Text nodes. To add a text node you must create a new wrapping element too and omit its nodeId, you CANNOT add text to an existing element that does not already contain text
-
-The tag name of new nodes will be used for the new node title in Framer, it has no semantic meaning
-
-When creating a new node ALWAYS mention the node before and after it so that it can be put in the right place. Also ALWAYS wrap it with a known nodeId wrapper node (usually the same nodeId used in the tool params).
-
-The tool output will contain the newly created node ids, in following calls you MUST use those nodeIds to reference the newly created nodes.
-
-IMPORTANT! You cannot add text content to an existing element with an existing nodeId it if does not already contain text! Instead put the new text inside a wrapper Text element
-
-## Node Updates
-
-If a node id changes its parent, it will be moved in the tree.
-
-Do not pass a string too large in this tool, instead call this tool multiple times and pass only the nodes you want to update, omit attributes or nodes that you don't need to update.
-
-Call this tool multiple times instead of batching all the updates in one tool call. This way the user will be able to see your changes in real-time in the Framer canvas.
-
-This tool is generally called using a component or page nodeId and passing a portion of the XML tree. To delete nodes you should use deleteNode instead. If a node is omitted it will not be deleted.
-
-You can pass a partial a XML string, there is no need to include the full XML structure, missing nodes will be ignored. You can also omit attributes, omitted attributes will be ignored.
-
-## Capabilities
-
-You can use this tool to:
-- Create new nodes by omitting nodeId attribute
-- Update text content for one or multiple nodes
-- Update attributes of existing nodes
-- Reorder nodes in the tree by changing their parent or position
-- Create wrapper layers by placing existing nodes inside new nodes
-
-This tool CANNOT be used for:
-- Code files (use 'updateCodeFile' instead)
-- Color styles (use 'manageColorStyle' with type: 'update' instead)
-- Text styles (use 'manageTextStyle' with type: 'update' instead)
-- Deleting nodes (use 'deleteNode' instead)
-
-## Return Value
-
-Returns a summary of changes made, followed by a diff patch showing the XML changes in unified diff format.
+Component instances also support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius.
 ",
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -324,6 +326,10 @@ Returns a summary of changes made, followed by a diff patch showing the XML chan
           "description": "XML string containing the updates. Can include multiple nodes with their nodeId attributes",
           "minLength": 1,
           "type": "string",
+        },
+        "zoomIntoView": {
+          "description": "Whether to zoom into the node before making updates in Framer. Set to true to see where updates will happen (default), false to run updates in background. Do not ask user about this setting - default to true and mention they can disable zooming if they want to use Framer app while MCP is working.",
+          "type": "boolean",
         },
       },
       "required": [

@@ -36,7 +36,7 @@ export async function websocketClientHandling({
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: 'ping' }))
                 }
-            }, 1000)
+            }, 5 * 1000)
         }
 
         ws.onmessage = async (event) => {
