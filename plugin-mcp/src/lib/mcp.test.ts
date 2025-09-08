@@ -850,19 +850,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-6653\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-4595\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "QlMOU9o0t",
-                  "slug": "test-item-6653",
+                  "id": "afpW5kcIP",
+                  "slug": "test-item-4595",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 6653"
+                      "value": "Test Item 4595"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-09-07T00:00:00.000Z"
+                      "value": "2025-09-08T00:00:00.000Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -874,7 +874,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 6653</p>"
+                      "value": "<p>Test content for item 4595</p>"
                     }
                   }
                 }
@@ -914,19 +914,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-6653\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-4595\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "QlMOU9o0t",
-                  "slug": "test-item-6653",
+                  "id": "afpW5kcIP",
+                  "slug": "test-item-4595",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 1727"
+                      "value": "Updated Item 2914"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-09-07T00:00:00.000Z"
+                      "value": "2025-09-08T00:00:00.000Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -938,7 +938,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 6653</p>"
+                      "value": "<p>Test content for item 4595</p>"
                     }
                   }
                 }
@@ -965,10 +965,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-6653\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-4595\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "QlMOU9o0t",
-                  "slug": "test-item-6653"
+                  "id": "afpW5kcIP",
+                  "slug": "test-item-4595"
                 }
               }"
             `)
