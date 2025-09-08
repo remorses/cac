@@ -141,7 +141,7 @@ export function extractObjectsFromXmlContent(xml: string, options?: { enableNode
                 if (node.type === ElementType.Tag) {
                     let nodeId = node.attribs?.nodeId
                     const hasExistingId = !!nodeId
-                    
+
                     // Only process nodes that have an ID or when node creation is enabled
                     if (!hasExistingId && !enableNodeCreation) {
                         // Skip this node but continue processing children
@@ -152,7 +152,7 @@ export function extractObjectsFromXmlContent(xml: string, options?: { enableNode
                         }
                         return
                     }
-                    
+
                     // Assign temporary ID for new nodes when creation is enabled
                     if (!nodeId && enableNodeCreation) {
                         nodeId = `${TEMP_NODE_ID_PREFIX}${++tempIdCounter}`
@@ -314,7 +314,7 @@ export function framerLayersTreeToXml(
     const {
         shouldAddNodeIdAlways = false,
         indent = '',
-        maxCharacters = 20000,
+        maxCharacters = 15000,
         currentDepth = 0,
         currentCharCount = 0,
     } = options

@@ -200,7 +200,7 @@ function stripVersionFromUrl(url: string | undefined): string | undefined {
 // Helper function to get XML for a node
 async function getNodeXml(
     nodeId: string,
-    maxCharacters=20000
+    maxCharacters=15000
 ): Promise<{ xml: string; isReplica: boolean } | null> {
     const node = await framer.getNode(nodeId)
     if (!node) {
@@ -418,6 +418,7 @@ async function websocketHandler({
             })
             const xml = framerLayersTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
+
             })
 
             // Check if any selected nodes are replicas
@@ -866,12 +867,12 @@ async function websocketHandler({
                     'After',
                     { context: 20 }
                 )
-                
+
                 // Add note about disabling zoom if enabled
-                const zoomNote = zoomIntoView 
+                const zoomNote = zoomIntoView
                     ? '\n\nNote: Set zoomIntoView=false if you want to use Framer app while MCP is working.'
                     : ''
-                
+
                 return `${resultMessage}\n\nXML Changes:\n${patch}${zoomNote}`
             }
 
