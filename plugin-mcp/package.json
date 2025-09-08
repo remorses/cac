@@ -34,6 +34,7 @@
         "react-router-dom": "^7.6.3",
         "react-use-measure": "^2.1.7",
         "sema4": "^0.1.3",
+        "sentries": "^0.2.2",
         "spiceflow": "workspace:*",
         "string-dedent": "^3.0.1",
         "unframer": "workspace:*",

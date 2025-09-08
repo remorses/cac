@@ -16,6 +16,7 @@ import { toJSONSchema } from 'zod'
 import { codeComponentsResourceUri, mcpTools } from './lib/schema.js'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
 import { sleep } from './lib/utils.js'
+import { notifyError } from './lib/errors.js'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(
@@ -79,13 +80,13 @@ export class MyMCP extends McpAgent<Env> {
             }
 
             if (!data.valid) {
-                console.error('Session validation failed:', data.error)
-                throw new Error(`Session validation failed: ${data.error}`)
+                const error = new Error(`Session validation failed: ${data.error}`)
+                throw error
             }
 
             console.log('Session validated successfully')
         } catch (error) {
-            console.error('Failed to validate session:', error)
+            // notifyError(error, 'Failed to validate session')
             throw new Error('Failed to validate session')
         }
 
@@ -162,7 +163,7 @@ export class MyMCP extends McpAgent<Env> {
                         }
 
                         const handleError = (err: Event) => {
-                            console.error('Upstream WebSocket Error:', err)
+
                             reject(err)
                         }
 
@@ -190,7 +191,7 @@ export class MyMCP extends McpAgent<Env> {
                 })
 
                 ws.addEventListener('error', (err) => {
-                    console.error('Upstream WebSocket Error:', err)
+                    notifyError(new Error('Upstream WebSocket Error'), 'WebSocket error occurred')
                 })
 
                 // Reset idle timeout on any message activity
@@ -200,7 +201,7 @@ export class MyMCP extends McpAgent<Env> {
 
                 return rpc
             } catch (error) {
-                console.error('Failed to connect WebSocket:', error)
+                notifyError(error, 'Failed to connect WebSocket')
 
                 // Attempt reconnection if server is not stopped
                 // Don't auto-reconnect on error - wait for next request

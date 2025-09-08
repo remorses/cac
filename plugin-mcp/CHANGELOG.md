@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-09-08 16:45
+
+- **Replace @sentry/browser with sentries package**
+- Updated errors.tsx to import from `sentries` instead of `@sentry/browser`
+- Added `sentries` package dependency to plugin-mcp
+- Replaced relevant `console.error` calls in worker.ts with `notifyError` function
+- Import `notifyError` from errors module for proper error handling and reporting
+
 ## 2025-08-24 16:03
 
 - **Extended deleteNode to support styles and code files**
