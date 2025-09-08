@@ -81,9 +81,12 @@ export class MyMCP extends McpAgent<Env> {
                 },
             )
 
-            const data = (await response.json()) as {
-                valid: boolean
-                error?: string
+            const text = await response.text()
+            let data: { valid: boolean; error?: string }
+            try {
+                data = JSON.parse(text)
+            } catch (err) {
+                throw new Error("Session validation failed, response is not valid JSON: " + text)
             }
 
             if (!data.valid) {
