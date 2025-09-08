@@ -2,6 +2,9 @@ import { WebsocketMessage } from './mcp-websocket.js'
 import { useStore } from './store.js'
 import { McpToolWebsocketPayload } from './schema.js'
 
+// Global variable to track the active cleanup function
+let cleanupFunction: (() => void) | null = null
+
 // Function for handling websocket connection based on session cookie
 export async function websocketClientHandling({
     handle,
@@ -13,6 +16,12 @@ export async function websocketClientHandling({
     ) => Promise<T['output']>
 }) {
     if (typeof window === 'undefined') return
+
+    // Check if we're already connected
+    if (cleanupFunction) {
+        console.log('Already connected, returning existing cleanup function')
+        return cleanupFunction
+    }
 
     const websocketUrl = `wss://unframer.co/_tunnel/upstream?id=${websocketId}`
 
@@ -113,6 +122,7 @@ export async function websocketClientHandling({
                     clearInterval(pingInterval)
                     pingInterval = null
                 }
+                cleanupFunction = null
                 return
             }
 
@@ -136,10 +146,14 @@ export async function websocketClientHandling({
     // Start the connection
     connect()
 
-    // Return a cleanup function to close connection
-    return () => {
+    // Create and store the cleanup function
+    cleanupFunction = () => {
         shouldReconnect = false
         if (pingInterval) clearInterval(pingInterval)
-        ws.close()
+        if (!ws.CLOSED) ws.close()
+        cleanupFunction = null
     }
+
+    // Return the cleanup function
+    return cleanupFunction
 }
