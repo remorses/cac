@@ -11,12 +11,16 @@ init({
 
     // Set sampling rate for profiling - this is relative to tracesSampleRate
     profilesSampleRate: 0.01,
-    beforeSend(event) {
+    beforeSend(event, hint) {
         // do not send in development
         if (process.env.NODE_ENV === 'development') {
             return null
         }
         if (event?.['name'] === 'AbortError') {
+            return null
+        }
+
+        if (hint?.originalException instanceof KnownError) {
             return null
         }
 
@@ -39,4 +43,13 @@ export function notifyError(error, msg?: string) {
     console.error(error)
     captureException(error, { extra: { msg } })
     // captureException(error, { extra: { msg } })
+}
+
+
+export class KnownError extends Error {
+    constructor(message?: string) {
+        super(message)
+        this.name = 'KnownError'
+        Object.setPrototypeOf(this, KnownError.prototype)
+    }
 }
