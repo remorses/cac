@@ -27,7 +27,7 @@ export async function websocketClientHandling({
 
     let ws: WebSocket
     let pingInterval: NodeJS.Timeout | null = null
-    let reconnectInterval = 1000
+    let reconnectInterval = 3000
     let shouldReconnect = true
 
     function connect() {
@@ -36,8 +36,9 @@ export async function websocketClientHandling({
 
         ws.onopen = () => {
             console.log('websocket client connected', websocketId)
-            reconnectInterval = 1000 // reset backoff
+            reconnectInterval = 3000
             ws.send(JSON.stringify({ type: 'ready' }))
+            useStore.setState({ error: undefined })
 
             // Setup ping interval
             if (pingInterval) clearInterval(pingInterval)
@@ -62,6 +63,7 @@ export async function websocketClientHandling({
                 return
             }
             if (payload.type === 'ready') {
+                console.log('received ready')
                 ws.send(JSON.stringify({ type: 'ready' }))
                 useStore.setState({ isConnected: true, error: undefined })
                 return
@@ -106,26 +108,6 @@ export async function websocketClientHandling({
         }
 
         ws.onclose = (event) => {
-            // Check for specific error code 4009 - another plugin already connected
-            if (event.code === 4009) {
-                const errorMessage =
-                    'Another MCP plugin is already connected. Please close the other plugin and keep only one plugin open.'
-                console.error(
-                    'Another plugin is already connected for this user',
-                )
-                useStore.setState({
-                    isConnected: false,
-                    error: errorMessage,
-                })
-                shouldReconnect = false
-                if (pingInterval) {
-                    clearInterval(pingInterval)
-                    pingInterval = null
-                }
-                cleanupFunction = null
-                return
-            }
-
             console.log(
                 `websocket client disconnected (${event.code}), reconnecting in ${reconnectInterval}ms`,
             )
@@ -140,6 +122,21 @@ export async function websocketClientHandling({
                 // exponential backoff (max 30s)
                 reconnectInterval = Math.min(30000, reconnectInterval * 1.5)
             }
+            cleanupFunction = null
+
+            if (event.code === 4009) {
+                const errorMessage =
+                    'Another MCP plugin is already connected. Please close the other plugin and keep only one plugin open.'
+                console.error(
+                    'Another plugin is already connected for this user',
+                )
+                useStore.setState({
+                    isConnected: false,
+                    error: errorMessage,
+                })
+
+                return
+            }
         }
     }
 
@@ -150,7 +147,7 @@ export async function websocketClientHandling({
     cleanupFunction = () => {
         shouldReconnect = false
         if (pingInterval) clearInterval(pingInterval)
-        if (!ws.CLOSED) ws.close()
+        if (!ws?.CLOSED) ws.close()
         cleanupFunction = null
     }
 
