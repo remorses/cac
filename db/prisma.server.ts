@@ -7,12 +7,15 @@ const debugQueries = false
 
 export const pgAdapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL,
-    
-    max: 5,
+    max: 6,
 })
 
+declare global {
+    var prisma: PrismaClient | undefined
+}
+
 export const prisma: PrismaClient =
-    (global as any).prisma ||
+    globalThis.prisma ||
     new PrismaClient({
         adapter: pgAdapter,
 
@@ -26,4 +29,4 @@ export const prisma: PrismaClient =
             : undefined,
     })
 
-if (process.env.NODE_ENV !== 'production') (global as any).prisma = prisma
+globalThis.prisma = prisma
