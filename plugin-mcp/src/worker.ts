@@ -42,329 +42,345 @@ export class MyMCP extends McpAgent<Env> {
     }
 
     async init() {
-        const server = this.server
-        const websocketId = this.props?.websocketId as string
-        const secret = this.props?.secret as string
-
-        if (!websocketId) {
-            throw new Error('websocketId ?id search param is required')
-        }
-
-        if (!secret) {
-            throw new Error(
-                'secret ?secret search param is required for authentication',
-            )
-        }
-
-        console.log('Initializing MyMCP with websocketId:', websocketId)
-
-        // Validate session
         try {
-            const response = await fetch(
-                'https://unframer.co/api/plugins/validateSession',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sessionId: secret,
-                        framerUserId: websocketId,
-                    }),
-                },
-            )
+            const server = this.server
+            const websocketId = this.props?.websocketId as string
+            const secret = this.props?.secret as string
 
-            const data = (await response.json()) as {
-                valid: boolean
-                error?: string
+            if (!websocketId) {
+                throw new Error('websocketId ?id search param is required')
             }
 
-            if (!data.valid) {
-                const error = new Error(`Session validation failed: ${data.error}`)
-                throw error
+            if (!secret) {
+                throw new Error(
+                    'secret ?secret search param is required for authentication',
+                )
             }
 
-            console.log('Session validated successfully')
-        } catch (error) {
-            // notifyError(error, 'Failed to validate session')
-            throw new Error('Failed to validate session')
-        }
+            console.log('Initializing MyMCP with websocketId:', websocketId)
 
-        let ws: WebSocket | null = null
-        let isServerStopped = false
-        let idleTimeout: ReturnType<typeof setTimeout> | null = null
-        const idleTimeoutDelay = 9 * 1000
-
-        // Reset idle timeout helper function
-        const resetIdleTimeout = () => {
-            if (idleTimeout) {
-                clearTimeout(idleTimeout)
-            }
-            idleTimeout = setTimeout(() => {
-                console.log('Closing WebSocket due to inactivity')
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.close(1000, 'Idle timeout')
-                }
-                clientConnectedPromise = null
-            }, idleTimeoutDelay)
-        }
-
-        const connectWebSocket = async (): Promise<WebsocketRpc> => {
-            if (isServerStopped) {
-                console.log('Server is stopped, not attempting reconnection')
-                throw new Error('Server is stopped')
-            }
-
-            console.log(
-                `trying to connect to Websocket tunnel to get access to Framer app MCP with id ${websocketId}`,
-            )
-
+            // Validate session
             try {
-                const start = Date.now()
-                const upstreamUrl = `wss://unframer.co/_tunnel/client?id=${websocketId}`
-                ws = new WebSocket(upstreamUrl)
-
-                // Wait for connection and ready message
-                const rpc = await new Promise<WebsocketRpc>(
-                    (resolve, reject) => {
-                        const handleOpen = () => {
-                            console.log(
-                                `Connected to upstream tunnel with ID: ${websocketId}`,
-                            )
-
-                            // Send ready message after WebSocket opens
-                            const rpc = createWebsocketHandling({ ws: ws! })
-                            const handleMessageReady = (
-                                event: MessageEvent,
-                            ) => {
-                                try {
-                                    const data = JSON.parse(event.data)
-                                    if (data.type === 'ready') {
-                                        const elapsed = Date.now() - start
-                                        console.log(
-                                            `Framer plugin is ready, connection established in ${(elapsed / 1000).toFixed(2)}s`,
-                                        )
-                                        // Remove the message listener since we only need it once
-                                        ws!.removeEventListener(
-                                            'message',
-                                            handleMessageReady,
-                                        )
-                                        resolve(rpc)
-                                    }
-                                } catch {
-                                    // Ignore parse errors
-                                }
-                            }
-                            ws!.addEventListener('message', handleMessageReady)
-
-                            rpc.send({
-                                payload: { type: 'ready' },
-                            })
-                        }
-
-                        const handleError = (err: Event) => {
-
-                            reject(err)
-                        }
-
-                        ws!.addEventListener('open', handleOpen, { once: true })
-                        ws!.addEventListener('error', handleError, {
-                            once: true,
-                        })
+                const response = await fetch(
+                    'https://unframer.co/api/plugins/validateSession',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId: secret,
+                            framerUserId: websocketId,
+                        }),
                     },
                 )
 
-                // Set up persistent event listeners
-                // Start idle timeout on successful connection
-                resetIdleTimeout()
+                const data = (await response.json()) as {
+                    valid: boolean
+                    error?: string
+                }
 
-                ws.addEventListener('close', () => {
-                    console.log('Upstream WebSocket closed')
+                if (!data.valid) {
+                    const error = new Error(
+                        `Session validation failed: ${data.error}`,
+                    )
+                    throw error
+                }
 
-                    if (idleTimeout) {
-                        clearTimeout(idleTimeout)
-                        idleTimeout = null
-                    }
-
-                    // Don't auto-reconnect - wait for next request
-                    clientConnectedPromise = null
-                })
-
-                ws.addEventListener('error', (err) => {
-                    notifyError(new Error('Upstream WebSocket Error'), 'WebSocket error occurred')
-                })
-
-                // Reset idle timeout on any message activity
-                ws.addEventListener('message', () => {
-                    resetIdleTimeout()
-                })
-
-                return rpc
+                console.log('Session validated successfully')
             } catch (error) {
-                notifyError(error, 'Failed to connect WebSocket')
-
-                // Attempt reconnection if server is not stopped
-                // Don't auto-reconnect on error - wait for next request
-                clientConnectedPromise = null
-
-                throw error
-            }
-        }
-
-        let clientConnectedPromise: Promise<WebsocketRpc> | null = null
-
-        // Graceful shutdown
-        const stop = () => {
-            console.log('\n⏹ shutting down…')
-            isServerStopped = true
-
-            // Clear any pending timeout
-            if (idleTimeout) {
-                clearTimeout(idleTimeout)
-                idleTimeout = null
+                // notifyError(error, 'Failed to validate session')
+                throw new Error('Failed to validate session')
             }
 
-            if (
-                ws &&
-                (ws.readyState === WebSocket.OPEN ||
-                    ws.readyState === WebSocket.CONNECTING)
-            ) {
-                ws.close()
+            let ws: WebSocket | null = null
+            let isServerStopped = false
+            let idleTimeout: ReturnType<typeof setTimeout> | null = null
+            const idleTimeoutDelay = 9 * 1000
+
+            // Reset idle timeout helper function
+            const resetIdleTimeout = () => {
+                if (idleTimeout) {
+                    clearTimeout(idleTimeout)
+                }
+                idleTimeout = setTimeout(() => {
+                    console.log('Closing WebSocket due to inactivity')
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.close(1000, 'Idle timeout')
+                    }
+                    clientConnectedPromise = null
+                }, idleTimeoutDelay)
             }
-        }
 
-        server.setRequestHandler(ListToolsRequestSchema, async () => ({
-            tools: Object.entries(mcpTools).map(([name, tool]) => ({
-                name,
-                description: tool.description,
-                inputSchema: toJSONSchema(tool.input),
-            })),
-        }))
+            const connectWebSocket = async (): Promise<WebsocketRpc> => {
+                if (isServerStopped) {
+                    console.log(
+                        'Server is stopped, not attempting reconnection',
+                    )
+                    throw new Error('Server is stopped')
+                }
 
-        server.setRequestHandler(
-            CallToolRequestSchema,
-            async (request: CallToolRequest) => {
+                console.log(
+                    `trying to connect to Websocket tunnel to get access to Framer app MCP with id ${websocketId}`,
+                )
+
                 try {
-                    // Create a timeout promise that returns an error after 2 seconds
-                    const timeoutPromise = sleep(3000).then(() => {
-                        return new Error(
-                            'Connection timeout: Make sure the Framer plugin is open in one of your projects',
+                    const start = Date.now()
+                    const upstreamUrl = `wss://unframer.co/_tunnel/client?id=${websocketId}`
+                    ws = new WebSocket(upstreamUrl)
+
+                    // Wait for connection and ready message
+                    const rpc = await new Promise<WebsocketRpc>(
+                        (resolve, reject) => {
+                            const handleOpen = () => {
+                                console.log(
+                                    `Connected to upstream tunnel with ID: ${websocketId}`,
+                                )
+
+                                // Send ready message after WebSocket opens
+                                const rpc = createWebsocketHandling({ ws: ws! })
+                                const handleMessageReady = (
+                                    event: MessageEvent,
+                                ) => {
+                                    try {
+                                        const data = JSON.parse(event.data)
+                                        if (data.type === 'ready') {
+                                            const elapsed = Date.now() - start
+                                            console.log(
+                                                `Framer plugin is ready, connection established in ${(elapsed / 1000).toFixed(2)}s`,
+                                            )
+                                            // Remove the message listener since we only need it once
+                                            ws!.removeEventListener(
+                                                'message',
+                                                handleMessageReady,
+                                            )
+                                            resolve(rpc)
+                                        }
+                                    } catch {
+                                        // Ignore parse errors
+                                    }
+                                }
+                                ws!.addEventListener(
+                                    'message',
+                                    handleMessageReady,
+                                )
+
+                                rpc.send({
+                                    payload: { type: 'ready' },
+                                })
+                            }
+
+                            const handleError = (err: Event) => {
+                                reject(err)
+                            }
+
+                            ws!.addEventListener('open', handleOpen, {
+                                once: true,
+                            })
+                            ws!.addEventListener('error', handleError, {
+                                once: true,
+                            })
+                        },
+                    )
+
+                    // Set up persistent event listeners
+                    // Start idle timeout on successful connection
+                    resetIdleTimeout()
+
+                    ws.addEventListener('close', () => {
+                        console.log('Upstream WebSocket closed')
+
+                        if (idleTimeout) {
+                            clearTimeout(idleTimeout)
+                            idleTimeout = null
+                        }
+
+                        // Don't auto-reconnect - wait for next request
+                        clientConnectedPromise = null
+                    })
+
+                    ws.addEventListener('error', (err) => {
+                        notifyError(
+                            new Error('Upstream WebSocket Error'),
+                            'WebSocket error occurred',
                         )
                     })
 
-                    // Lazy connect - only establish WebSocket when needed
-                    if (!clientConnectedPromise) {
-                        clientConnectedPromise = connectWebSocket()
-                    }
+                    // Reset idle timeout on any message activity
+                    ws.addEventListener('message', () => {
+                        resetIdleTimeout()
+                    })
 
-                    // Race between the connection promise and timeout
-                    const result = await Promise.race([
-                        clientConnectedPromise,
-                        timeoutPromise,
-                    ])
+                    return rpc
+                } catch (error) {
+                    notifyError(error, 'Failed to connect WebSocket')
 
-                    // Check if the result is an error
-                    if (result instanceof Error) {
+                    // Attempt reconnection if server is not stopped
+                    // Don't auto-reconnect on error - wait for next request
+                    clientConnectedPromise = null
+
+                    throw error
+                }
+            }
+
+            let clientConnectedPromise: Promise<WebsocketRpc> | null = null
+
+            // Graceful shutdown
+            const stop = () => {
+                console.log('\n⏹ shutting down…')
+                isServerStopped = true
+
+                // Clear any pending timeout
+                if (idleTimeout) {
+                    clearTimeout(idleTimeout)
+                    idleTimeout = null
+                }
+
+                if (
+                    ws &&
+                    (ws.readyState === WebSocket.OPEN ||
+                        ws.readyState === WebSocket.CONNECTING)
+                ) {
+                    ws.close()
+                }
+            }
+
+            server.setRequestHandler(ListToolsRequestSchema, async () => ({
+                tools: Object.entries(mcpTools).map(([name, tool]) => ({
+                    name,
+                    description: tool.description,
+                    inputSchema: toJSONSchema(tool.input),
+                })),
+            }))
+
+            server.setRequestHandler(
+                CallToolRequestSchema,
+                async (request: CallToolRequest) => {
+                    try {
+                        // Create a timeout promise that returns an error after 2 seconds
+                        const timeoutPromise = sleep(3000).then(() => {
+                            return new Error(
+                                'Connection timeout: Make sure the Framer plugin is open in one of your projects',
+                            )
+                        })
+
+                        // Lazy connect - only establish WebSocket when needed
+                        if (!clientConnectedPromise) {
+                            clientConnectedPromise = connectWebSocket()
+                        }
+
+                        // Race between the connection promise and timeout
+                        const result = await Promise.race([
+                            clientConnectedPromise,
+                            timeoutPromise,
+                        ])
+
+                        // Check if the result is an error
+                        if (result instanceof Error) {
+                            return {
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text: result.message,
+                                    },
+                                ],
+                            }
+                        }
+
+                        const rpc = result as WebsocketRpc
+                        if (!rpc)
+                            throw new Error(
+                                'Framer plugin failed to connect to MCP, no websocket client available',
+                            )
+                        const { name, arguments: args = {} } = request.params
+                        const reply = await rpc.send({
+                            payload: { type: name as any, input: args as any },
+                        })
+
+                        // Reset idle timeout after successful request
+                        resetIdleTimeout()
+                        const text =
+                            typeof reply === 'string'
+                                ? reply
+                                : JSON.stringify(reply, null, 2)
+
                         return {
                             content: [
                                 {
                                     type: 'text',
-                                    text: result.message,
+                                    text,
+                                },
+                            ],
+                        }
+                    } catch (error) {
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text:
+                                        `Encountered an error: ` +
+                                        (error?.message || String(error)),
                                 },
                             ],
                         }
                     }
-
-                    const rpc = result as WebsocketRpc
-                    if (!rpc)
-                        throw new Error(
-                            'Framer plugin failed to connect to MCP, no websocket client available',
-                        )
-                    const { name, arguments: args = {} } = request.params
-                    const reply = await rpc.send({
-                        payload: { type: name as any, input: args as any },
-                    })
-
-                    // Reset idle timeout after successful request
-                    resetIdleTimeout()
-                    const text =
-                        typeof reply === 'string'
-                            ? reply
-                            : JSON.stringify(reply, null, 2)
-
-                    return {
-                        content: [
-                            {
-                                type: 'text',
-                                text,
-                            },
-                        ],
-                    }
-                } catch (error) {
-                    return {
-                        content: [
-                            {
-                                type: 'text',
-                                text:
-                                    `Encountered an error: ` +
-                                    (error?.message || String(error)),
-                            },
-                        ],
-                    }
-                }
-            },
-        )
-
-        server.setRequestHandler(ListPromptsRequestSchema, async () => ({
-            prompts: [],
-        }))
-
-        server.setRequestHandler(
-            GetPromptRequestSchema,
-            async (request: GetPromptRequest) => {
-                throw new Error(`No prompts available`)
-            },
-        )
-
-        // Resources handlers - return empty array
-        server.setRequestHandler(ListResourcesRequestSchema, async () => ({
-            resources: [
-                {
-                    title: `How to write Framer code components files in TypeScript`,
-                    name: 'How to write Framer code components files in TypeScript',
-
-                    uri: codeComponentsResourceUri,
-                    description: `Prompt explaining how to write code components for Framer. ALWAYS read this resource before calling createCodeFile or updateCodeFile`,
                 },
-            ],
-        }))
+            )
 
-        server.setRequestHandler(
-            ReadResourceRequestSchema,
-            async (request: ReadResourceRequest) => {
-                if (request.params.uri === codeComponentsResourceUri) {
-                    return {
-                        content: [
-                            {
-                                type: 'text',
-                                text: codeComponentsResourceMarkdown,
-                            },
-                        ],
-                    }
-                }
-                return {
-                    error: {
-                        message: `Resource with uri ${request.params.uri} not found`,
-                        code: 'NOT_FOUND',
+            server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+                prompts: [],
+            }))
+
+            server.setRequestHandler(
+                GetPromptRequestSchema,
+                async (request: GetPromptRequest) => {
+                    throw new Error(`No prompts available`)
+                },
+            )
+
+            // Resources handlers - return empty array
+            server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+                resources: [
+                    {
+                        title: `How to write Framer code components files in TypeScript`,
+                        name: 'How to write Framer code components files in TypeScript',
+
+                        uri: codeComponentsResourceUri,
+                        description: `Prompt explaining how to write code components for Framer. ALWAYS read this resource before calling createCodeFile or updateCodeFile`,
                     },
-                }
-            },
-        )
+                ],
+            }))
 
-        server.onclose = () => {
-            console.log('Server closed, cleaning up...')
-            stop()
-            // this.ctx.storage.deleteAll()
+            server.setRequestHandler(
+                ReadResourceRequestSchema,
+                async (request: ReadResourceRequest) => {
+                    if (request.params.uri === codeComponentsResourceUri) {
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: codeComponentsResourceMarkdown,
+                                },
+                            ],
+                        }
+                    }
+                    return {
+                        error: {
+                            message: `Resource with uri ${request.params.uri} not found`,
+                            code: 'NOT_FOUND',
+                        },
+                    }
+                },
+            )
+
+            server.onclose = () => {
+                console.log('Server closed, cleaning up...')
+                stop()
+                // this.ctx.storage.deleteAll()
+            }
+        } catch (e) {
+            notifyError(e, 'mcp init')
+            throw e
         }
     }
 }
