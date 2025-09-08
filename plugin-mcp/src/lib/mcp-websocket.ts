@@ -41,7 +41,7 @@ export function createWebsocketHandling({
         payload: WebsocketMessage['payload']
     }): Promise<any> => {
         if (!ws || ws.readyState !== WebSocket.OPEN) {
-            throw new Error('WebSocket instance not open.')
+            throw new Error('WebSocket instance not open, cannot send.')
         }
 
         const id = crypto.randomUUID()

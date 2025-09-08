@@ -16,7 +16,7 @@ import { toJSONSchema } from 'zod'
 import { codeComponentsResourceUri, mcpTools } from './lib/schema.js'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
 import { sleep } from './lib/utils.js'
-import { notifyError } from './lib/errors.js'
+import { KnownError, notifyError } from './lib/errors.js'
 
 export class MyMCP extends McpAgent<Env> {
     server = new Server(
@@ -45,53 +45,55 @@ export class MyMCP extends McpAgent<Env> {
         try {
             const server = this.server
             const websocketId = this.props?.websocketId as string
-            const secret = this.props?.secret as string
+            const secret = (this.props?.secret as string) || ''
 
             if (!websocketId) {
-                throw new Error('websocketId ?id search param is required')
+                throw new KnownError('websocketId ?id search param is required')
             }
 
             if (!secret) {
-                throw new Error(
+                throw new KnownError(
                     'secret ?secret search param is required for authentication',
                 )
             }
 
-            console.log('Initializing MyMCP with websocketId:', websocketId)
-
-            // Validate session
-            try {
-                const response = await fetch(
-                    'https://unframer.co/api/plugins/validateSession',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            sessionId: secret,
-                            framerUserId: websocketId,
-                        }),
-                    },
-                )
-
-                const data = (await response.json()) as {
-                    valid: boolean
-                    error?: string
-                }
-
-                if (!data.valid) {
-                    const error = new Error(
-                        `Session validation failed: ${data.error}`,
-                    )
-                    throw error
-                }
-
-                console.log('Session validated successfully')
-            } catch (error) {
-                // notifyError(error, 'Failed to validate session')
-                throw new Error('Failed to validate session')
+            console.log(
+                'Initializing MyMCP with websocketId:',
+                websocketId,
+                'sessionId:',
+                secret.slice(0, 6),
+            )
+            if (!secret) {
+                throw new KnownError('secret param is required in MCP')
             }
+
+            const response = await fetch(
+                'https://unframer.co/api/plugins/validateSession',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: secret,
+                        framerUserId: websocketId,
+                    }),
+                },
+            )
+
+            const data = (await response.json()) as {
+                valid: boolean
+                error?: string
+            }
+
+            if (!data.valid) {
+                const error = new Error(
+                    `Session validation failed: ${data.error}`,
+                )
+                throw error
+            }
+
+            console.log('Session validated successfully')
 
             let ws: WebSocket | null = null
             let isServerStopped = false
@@ -213,8 +215,6 @@ export class MyMCP extends McpAgent<Env> {
 
                     return rpc
                 } catch (error) {
-                    notifyError(error, 'Failed to connect WebSocket')
-
                     // Attempt reconnection if server is not stopped
                     // Don't auto-reconnect on error - wait for next request
                     clientConnectedPromise = null
@@ -313,6 +313,7 @@ export class MyMCP extends McpAgent<Env> {
                             ],
                         }
                     } catch (error) {
+                        notifyError(error, 'MCP tool')
                         return {
                             content: [
                                 {
@@ -334,7 +335,7 @@ export class MyMCP extends McpAgent<Env> {
             server.setRequestHandler(
                 GetPromptRequestSchema,
                 async (request: GetPromptRequest) => {
-                    throw new Error(`No prompts available`)
+                    throw new KnownError(`No prompts available`)
                 },
             )
 
