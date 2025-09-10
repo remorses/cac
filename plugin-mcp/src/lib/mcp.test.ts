@@ -1,8 +1,30 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import yaml from 'js-yaml'
 import { createMCPClient } from './mcp-client.js'
 
 const mcpUrl =
     'https://mcp.preview.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
+
+describe('Tools Schema', () => {
+    it('should get tools schema and match file snapshot', async () => {
+        const { client } = await createMCPClient({
+            mcpUrl,
+            clientName: 'framer-test-schema',
+        })
+        const schema = await client.listTools()
+        expect(schema).toBeDefined()
+
+        const schemaYaml = yaml.dump(schema, {
+            indent: 2,
+            lineWidth: 100,
+            noRefs: true,
+            sortKeys: true,
+        })
+        await expect(schemaYaml).toMatchFileSnapshot(
+            `snapshots/tools-schema.yaml`,
+        )
+    })
+})
 
 describe(
     'Framer MCP Server Tests',
@@ -10,7 +32,7 @@ describe(
         let callTool: Awaited<ReturnType<typeof createMCPClient>>['callTool']
         let cleanup: (() => Promise<void>) | null = null
         let client: Awaited<ReturnType<typeof createMCPClient>>['client']
-        
+
         // Track created styles for cleanup
         const createdStyles = new Set<string>()
 
@@ -34,10 +56,13 @@ describe(
                     })
                     console.log(`Cleaned up style: ${stylePath}`)
                 } catch (error) {
-                    console.error(`Failed to clean up style ${stylePath}:`, error)
+                    console.error(
+                        `Failed to clean up style ${stylePath}:`,
+                        error,
+                    )
                 }
             }
-            
+
             if (cleanup) {
                 await cleanup()
                 cleanup = null
@@ -146,12 +171,14 @@ describe(
 
             const content = getTextContent(createResult.content)
             await expect(content).toMatchFileSnapshot(
-                `snapshots/create-nodes-with-layout.patch`
+                `snapshots/create-nodes-with-layout.patch`,
             )
 
             // Extract the created node IDs from the result
-            const nodeIdMatches = [...content.matchAll(/Created \w+ node ([a-zA-Z0-9_]+)/g)]
-            const createdNodeIds = nodeIdMatches.map(m => m[1])
+            const nodeIdMatches = [
+                ...content.matchAll(/Created \w+ node ([a-zA-Z0-9_]+)/g),
+            ]
+            const createdNodeIds = nodeIdMatches.map((m) => m[1])
             expect(createdNodeIds.length).toBe(5) // Should have created 3 Frame nodes + 2 Text nodes
 
             // Clean up: delete the root created node (which will delete children too)
@@ -211,7 +238,7 @@ describe(
 
             const content = getTextContent(updateResult.content)
             await expect(content).toMatchFileSnapshot(
-                `snapshots/add-frame-to-section.patch`
+                `snapshots/add-frame-to-section.patch`,
             )
 
             // Verify that frames were created
@@ -219,8 +246,10 @@ describe(
             expect(content).toContain('XML Changes:')
 
             // Extract created node IDs for cleanup
-            const nodeIdMatches = [...content.matchAll(/Created Frame node ([a-zA-Z0-9_]+)/g)]
-            const createdNodeIds = nodeIdMatches.map(m => m[1])
+            const nodeIdMatches = [
+                ...content.matchAll(/Created Frame node ([a-zA-Z0-9_]+)/g),
+            ]
+            const createdNodeIds = nodeIdMatches.map((m) => m[1])
 
             // Clean up: delete the created nodes
             if (createdNodeIds.length > 0) {
@@ -330,7 +359,7 @@ describe(
         it('should create a new color style', async () => {
             const randomNum = Math.floor(Math.random() * 1000)
             const newStylePath = `/Test-Color-${randomNum}`
-            
+
             // Track for cleanup
             createdStyles.add(newStylePath)
 
@@ -608,10 +637,10 @@ describe(
         it('should create a new text style', async () => {
             const randomNum = Math.floor(Math.random() * 1000)
             const newStylePath = `/Test-Text-${randomNum}`
-            
+
             // Track for cleanup
             createdStyles.add(newStylePath)
-            
+
             // Create a new text style
             const createResult = await callTool({
                 name: 'manageTextStyle',
@@ -626,19 +655,19 @@ describe(
                     },
                 },
             })
-            
+
             const createContent = getTextContent(createResult.content)
             expect(createContent).toBeDefined()
-            
+
             // Check if creation succeeded
             expect(createContent).toContain('Successfully created text style')
-            
+
             // Verify it's in the project
             const verifyResult = await callTool({
                 name: 'getProjectXml',
                 args: undefined,
             })
-            
+
             const verifyXml = getTextContent(verifyResult.content)
             expect(verifyXml).toContain(newStylePath)
         })
@@ -746,7 +775,7 @@ describe(
                 name: 'getCMSItems',
                 args: {
                     collectionId: cmsCollectionId,
-                    limit: 1
+                    limit: 1,
                 },
             })
 
@@ -802,7 +831,9 @@ describe(
 
         it('cms should create new item', async () => {
             if (!cmsCollectionId || !cmsFieldIds.string) {
-                throw new Error('No CMS collection or field IDs found from previous tests')
+                throw new Error(
+                    'No CMS collection or field IDs found from previous tests',
+                )
             }
 
             const randomNum = Math.floor(Math.random() * 10000)
@@ -816,34 +847,34 @@ describe(
                     fieldData: {
                         [cmsFieldIds.string]: {
                             type: 'string',
-                            value: `Test Item ${randomNum}`
+                            value: `Test Item ${randomNum}`,
                         },
                         ...(cmsFieldIds.date && {
                             [cmsFieldIds.date]: {
                                 type: 'date',
-                                value: new Date().toISOString()
-                            }
+                                value: new Date().toISOString(),
+                            },
                         }),
                         ...(cmsFieldIds.formattedText && {
                             [cmsFieldIds.formattedText]: {
                                 type: 'formattedText',
-                                value: `<p>Test content for item ${randomNum}</p>`
-                            }
+                                value: `<p>Test content for item ${randomNum}</p>`,
+                            },
                         }),
                         ...(cmsFieldIds.image && {
                             [cmsFieldIds.image]: {
                                 type: 'image',
-                                value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg'
-                            }
+                                value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+                            },
                         }),
                         ...(cmsFieldIds.multiCollectionReference && {
                             [cmsFieldIds.multiCollectionReference]: {
                                 type: 'multiCollectionReference',
-                                value: []
-                            }
-                        })
+                                value: [],
+                            },
+                        }),
                     },
-                    draft: false
+                    draft: false,
                 },
             })
 
@@ -904,10 +935,10 @@ describe(
                     fieldData: {
                         [cmsFieldIds.string]: {
                             type: 'string',
-                            value: `Updated Item ${randomNum}`
-                        }
+                            value: `Updated Item ${randomNum}`,
+                        },
                     },
-                    draft: false
+                    draft: false,
                 },
             })
 
