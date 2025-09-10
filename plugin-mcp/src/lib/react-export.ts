@@ -44,19 +44,6 @@ interface InstanceWithOrderAndDepth {
     nodeDepth: number
 }
 
-// Helper functions that need to be imported from other packages
-async function collectGenerator<T>(
-    gen: AsyncGenerator<T | null, void, unknown>,
-) {
-    const result = [] as T[]
-    for await (const item of gen) {
-        if (!item) {
-            continue
-        }
-        result.push(item)
-    }
-    return result
-}
 
 async function getParentNodesWithOrdering(node: any) {
     if (typeof node === 'string') {
