@@ -1,5 +1,4 @@
 import { prisma } from 'db'
-import { Route } from './+types/api.health'
 import { createHealthLoader } from '@xmorse/deployment-utils/src/health'
 
 async function check() {
