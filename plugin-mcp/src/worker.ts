@@ -249,11 +249,16 @@ export class MyMCP extends McpAgent<Env> {
             }
 
             server.setRequestHandler(ListToolsRequestSchema, async () => ({
-                tools: Object.entries(mcpTools).map(([name, tool]) => ({
-                    name,
-                    description: tool.description,
-                    inputSchema: toJSONSchema(tool.input),
-                })),
+                tools: Object.entries(mcpTools).map(([name, tool]) => {
+                    const schema = toJSONSchema(tool.input) as any
+                    // Remove $schema field from the output
+                    delete schema.$schema
+                    return {
+                        name,
+                        description: tool.description,
+                        inputSchema: schema,
+                    }
+                }),
             }))
 
             server.setRequestHandler(

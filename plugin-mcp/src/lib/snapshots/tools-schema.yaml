@@ -19,21 +19,18 @@ tools:
 
       To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties: {}
       type: object
     name: getProjectXml
   - description: Gets the currently selected nodes as xml
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties: {}
       type: object
     name: getSelectedNodesXml
   - description: Zooms the canvas to center on the given node ID. Code file nodes are not supported.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         nodeId:
@@ -54,7 +51,6 @@ tools:
       Components are a way to encapsulate layers, you still need to call getNodeXml on each instance
       componentId to see the actual component implementation.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         nodeId:
@@ -423,7 +419,6 @@ tools:
       position, width, height, rotation) but NOT styling attributes like backgroundColor or
       borderRadius.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         nodeId:
@@ -460,7 +455,6 @@ tools:
 
       After creating, you can reference this style in XML nodes using color="/path/to/style".
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         properties:
@@ -520,7 +514,6 @@ tools:
       After creating, you can reference this style in XML nodes using
       inlineTextStyle="/path/to/style".
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         properties:
@@ -661,7 +654,6 @@ tools:
       Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not
       both.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         query:
@@ -687,7 +679,6 @@ tools:
       element to another parent, reference both the element id and the new parent id and
       updateXmlForNode will do the reparenting for you.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         nodeId:
@@ -713,7 +704,6 @@ tools:
       DO NOT USE this tool to move a node to a different place or ordering. Instead use
       updateXmlForNode to change the parent of a node or its position in the layers tree.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         nodeId:
@@ -754,7 +744,6 @@ tools:
       to export the Framer project components as React code when you can, especially if you are
       inside Claude Code cli.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         nodeIds:
@@ -789,7 +778,6 @@ tools:
       Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with
       the insertUrl to add the component to the canvas.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         content:
@@ -808,7 +796,6 @@ tools:
 
       Returns the current content, name, path, and available exports of the code file.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         codeFileId:
@@ -824,7 +811,6 @@ tools:
       This will replace the entire content of the file.
       The file will be automatically linted and type-checked after update.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         codeFileId:
@@ -858,7 +844,6 @@ tools:
 
       - See what props/attributes are available for a component, to use them in XML
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         id:
@@ -890,7 +875,6 @@ tools:
 
       - Instructions for positioning the node using updateXmlForNode
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         insertUrl:
@@ -913,7 +897,6 @@ tools:
       - Get the staging/preview URL
       - Share the project's public URL
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties: {}
       type: object
@@ -964,7 +947,6 @@ tools:
 
       You also cannot update or add collection fields types, ask the user to do so.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties: {}
       type: object
@@ -980,7 +962,6 @@ tools:
 
       Pagination: Use skip and limit to paginate through large collections.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         collectionId:
@@ -1044,7 +1025,6 @@ tools:
 
       The field structure must match the collection's field definitions from getCMSCollections.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         collectionId:
@@ -1075,7 +1055,6 @@ tools:
       This permanently removes the item and cannot be undone.
       The item ID must exist in the specified collection.
     inputSchema:
-      $schema: https://json-schema.org/draft/2020-12/schema
       additionalProperties: false
       properties:
         collectionId:
