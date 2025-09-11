@@ -497,20 +497,12 @@ model ReactExportComponent {
   name                String
   projectId           String
   componentIdentifier String?
+  componentType       ReactExportComponentType         @default(component)
   project             ReactExportProject               @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   breakpoints         ReactExportComponentBreakpoint[]
   foundInPages        ReactExportComponentInstance[]
 
-  componentType ReactExportComponentType @default(component)
-
   @@id([id, projectId])
-  @@schema("public")
-}
-
-enum ReactExportComponentType {
-  codeFile
-  component
-
   @@schema("public")
 }
 
@@ -591,6 +583,33 @@ model AngledScreenImagesGenerated {
   generations  Int     @default(0)
   licenseKey   String?
   userName     String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oauth_clients {
+  id                 String                  @id @db.Uuid
+  client_id          String                  @unique
+  client_secret_hash String
+  registration_type  oauth_registration_type
+  redirect_uris      String
+  grant_types        String
+  client_name        String?
+  client_uri         String?
+  logo_uri           String?
+  created_at         DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime                @default(now()) @db.Timestamptz(6)
+  deleted_at         DateTime?               @db.Timestamptz(6)
+
+  @@index([client_id])
+  @@index([deleted_at])
+  @@schema("auth")
+}
+
+enum ReactExportComponentType {
+  codeFile
+  component
 
   @@schema("public")
 }
@@ -687,7 +706,15 @@ enum PluginName {
   githubSync
   reactExport
   llm
+  mcp
   angledScreen
 
   @@schema("public")
+}
+
+enum oauth_registration_type {
+  dynamic
+  manual
+
+  @@schema("auth")
 }
