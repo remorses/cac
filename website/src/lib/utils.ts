@@ -24,6 +24,7 @@ export function sleep(ms: number) {
     })
 }
 
+// IMPORTANT! this must be kept in sync with schema.prisma enum PluginName
 export enum PluginNames {
     github = 'github',
     migrate = 'migrate',
