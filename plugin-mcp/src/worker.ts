@@ -252,52 +252,6 @@ const defaultHandler = {
             })
         }
 
-        // Simple SSE endpoint that logs "hello" on connect
-        if (url.pathname === '/sse') {
-            const id = url.searchParams.get('id')
-            const secret = url.searchParams.get('secret')
-
-            if (!id || !secret) {
-                // will show login page
-                return new Response('Invalid session', { status: 401 })
-            }
-            // Legacy authentication mode - validate and set props
-            const baseUrl = env.WEBSITE_URL
-            const response = await fetch(
-                new URL('/api/mcp/validate-session', baseUrl).toString(),
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sessionToken: secret,
-                    }),
-                },
-            )
-
-            if (!response.ok) {
-                return new Response('Invalid session', { status: 401 })
-            }
-
-            const data = (await response.json()) as {
-                framerUserId: string
-                websocketId: string
-                userId: string
-                email: string
-            }
-
-            // Set props for legacy mode
-            ctx.props = {
-                framerUserId: data.framerUserId || id,
-                websocketId: id,
-                secret,
-            }
-
-            // Call the SSE handler with legacy props
-            return MyMCP.serveSSE('/sse').fetch(request, env, ctx)
-        }
-
         return new Response('Not Found', { status: 404 })
     },
 }
@@ -616,4 +570,55 @@ const oauthProvider = new OAuthProvider({
     clientRegistrationEndpoint: '/register',
 })
 
-export default oauthProvider
+const handler = {
+    async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+        const url = new URL(request.url)
+        // Simple SSE endpoint that logs "hello" on connect
+        if (url.pathname === '/sse' || url.pathname === '/sse/message') {
+            const id = url.searchParams.get('id')
+            const secret = url.searchParams.get('secret')
+
+            if (!id || !secret) {
+                // will show login page
+                return new Response('Invalid session', { status: 401 })
+            }
+            // Legacy authentication mode - validate and set props
+            const baseUrl = env.WEBSITE_URL
+            const response = await fetch(
+                new URL('/api/mcp/validate-session', baseUrl).toString(),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionToken: secret,
+                    }),
+                },
+            )
+
+            if (!response.ok) {
+                return new Response('Invalid session', { status: 401 })
+            }
+
+            const data = (await response.json()) as {
+                framerUserId: string
+                websocketId: string
+                userId: string
+                email: string
+            }
+
+            // Set props for legacy mode
+            ctx.props = {
+                framerUserId: data.framerUserId || id,
+                websocketId: id,
+                secret,
+            }
+
+            // Call the SSE handler with legacy props
+            return MyMCP.serveSSE('/sse').fetch(request, env, ctx)
+        }
+        return await oauthProvider.fetch(request, env, ctx)
+    },
+}
+export default handler
