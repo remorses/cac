@@ -39,9 +39,9 @@ export function notifyError(error, msg?: string) {
         return
     }
 
+    console.error(error?.error || error)
+    captureException(error?.error || error, { extra: { msg } })
     framer.notify(String(error.message || error), { variant: 'error' })
-    console.error(error)
-    captureException(error, { extra: { msg } })
     // captureException(error, { extra: { msg } })
 }
 
