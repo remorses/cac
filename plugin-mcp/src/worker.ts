@@ -338,7 +338,7 @@ export class MyMCP extends McpAgent<Env> {
                                         'Connection timeout: Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.',
                                     ),
                                 )
-                            }, 3000)
+                            }, 5000)
 
                             const handleOpen = () => {
                                 console.log(
