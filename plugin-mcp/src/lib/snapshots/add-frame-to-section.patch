@@ -1,18 +1,60 @@
 Successfully updated:
-Created Frame node m6d1GShVj
-Created Frame node xaxQp5Vu8
-Created Frame node Xzv1zkwXJ
-Updated attributes for node m6d1GShVj
-Updated attributes for node xaxQp5Vu8
-Updated attributes for node Xzv1zkwXJ
-Reordered node xaxQp5Vu8 within parent m6d1GShVj to index 0
+Created Frame node BesbBKXsr
+Created Frame node aYauvzGI_
+Created Frame node IzszDBYRv
+Updated attributes for node BesbBKXsr
+Updated attributes for node aYauvzGI_
+Updated attributes for node IzszDBYRv
+Reordered node aYauvzGI_ within parent BesbBKXsr to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -270,40 +270,71 @@
+@@ -46,41 +46,40 @@
+       stackDirection="horizontal"
+       stackDistribution="center"
+       stackAlignment="center"
+   >
+     <NavigationFlyout
+         nodeId="BwfPOa8WY"
+         width="100%"
+         height="fit-content"
+         <!-- the component id this instance uses -->
+         componentId="sCy40XUNu"
+         <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
+         variant="arFY89os4"
+      />
+   </NavigationFlyoutFixed>
+   <Navigation
+       nodeId="P8AJj3Q2E"
+       width="1fr"
+       height="fit-content"
+       <!-- the component id this instance uses -->
+       componentId="sCy40XUNu"
+-      <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
+       variant="QOfAnzBxh"
+    />
+   <HeroSection
+       nodeId="qKDdG3FQZ"
+       width="1fr"
+       height="fit-content"
+       layout="stack"
+       padding="8px"
+       stackDirection="vertical"
+       stackDistribution="start"
+       stackAlignment="center"
+   >
+     <Container
+         nodeId="rUPekfMHT"
+         width="1fr"
+         height="fit-content"
+         maxWidth="1152px"
+         <!-- background color string or project color style path (if starts with /) -->
+         backgroundColor="white"
+         borderRadius="32px"
+@@ -270,40 +269,71 @@
            </BadgeGroup>
            <Heading
                nodeId="JPcat5fzD"
@@ -31,10 +73,10 @@ Index: node.xml
                <!-- project text style path, always starts with / -->
                inlineTextStyle="/Body lg"
            >
-             Updated text 4
+             Updated text 1485
            </Description>
 +          <Stack
-+              nodeId="m6d1GShVj"
++              nodeId="BesbBKXsr"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -48,7 +90,7 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="xaxQp5Vu8"
++                nodeId="aYauvzGI_"
 +                width="100px"
 +                height="100px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -56,7 +98,7 @@ Index: node.xml
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="Xzv1zkwXJ"
++                nodeId="IzszDBYRv"
 +                width="150px"
 +                height="80px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -84,3 +126,6 @@ Index: node.xml
                <!-- 'Brand lg' is lkx2QyMNw, 'Inverse lg' is c_Cu9E4Vu, 'Border lg' is anmz3_Hx4, 'Brand md' is DtM6fBOBg, 'Inverse md' is lT3W94qLb, 'Border md' is AzANgMTfO -->
                variant="anmz3_Hx4"
                label="Read the Docs"
+
+
+Note: Set zoomIntoView=false if you want to use Framer app while MCP is working.
