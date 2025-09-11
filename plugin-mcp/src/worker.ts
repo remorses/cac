@@ -324,7 +324,7 @@ export class MyMCP extends McpAgent<Env> {
                 try {
                     const start = Date.now()
                     const baseUrl = new URL(env.WEBSITE_URL).host
-                    const upstreamUrl = `wss://${baseUrl}/_tunnel/client?id=${framerUserId}`
+                    const upstreamUrl = `wss://unfarmer.co/_tunnel/client?id=${framerUserId}`
                     ws = new WebSocket(upstreamUrl)
 
                     // Wait for connection and ready message with timeout
