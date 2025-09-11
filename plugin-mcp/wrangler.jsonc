@@ -13,55 +13,77 @@
     "migrations": [
         {
             "new_sqlite_classes": ["MyMCP"],
-            "tag": "v1"
-        }
+            "tag": "v1",
+        },
     ],
     "durable_objects": {
         "bindings": [
             {
                 "class_name": "MyMCP",
-                "name": "MCP_OBJECT"
-            }
-        ]
+                "name": "MCP_OBJECT",
+            },
+        ],
     },
+    "kv_namespaces": [
+        {
+            "binding": "OAUTH_KV",
+            "id": "df3f251b15b24a79bd8884a790386ba8",
+        },
+    ],
     "routes": [
         {
             "zone_name": "unframer.co",
             "pattern": "mcp.unframer.co",
-            "custom_domain": true
-        }
+            "custom_domain": true,
+        },
     ],
     "rules": [
         {
             "type": "Text",
             "globs": ["*.md"],
-            "fallthrough": true
-        }
+            "fallthrough": true,
+        },
     ],
 
     "observability": {
-        "enabled": true
+        "enabled": true,
+    },
+
+    // Production environment variables
+    "vars": {
+        "STAGE": "production",
+        "WEBSITE_URL": "https://unframer.co",
     },
 
     // Preview environment configuration
     "env": {
         "preview": {
             "name": "framer-mcp-preview-preview",
+            "vars": {
+                "STAGE": "preview",
+                "WEBSITE_URL": "https://preview.unframer.co",
+            },
             "routes": [
                 {
                     "zone_name": "unframer.co",
                     "pattern": "mcp.preview.unframer.co",
-                    "custom_domain": true
-                }
+                    "custom_domain": true,
+                },
+            ],
+            "kv_namespaces": [
+                {
+                    "binding": "OAUTH_KV",
+                    "id": "93005a9f4a064b809763718cac256a7d",
+                },
             ],
             "durable_objects": {
                 "bindings": [
                     {
                         "class_name": "MyMCP",
                         "name": "MCP_OBJECT",
-                    }
-                ]
-            }
-        }
-    }
+                    },
+                ],
+            },
+        },
+    },
 }
