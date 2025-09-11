@@ -19,27 +19,45 @@ tools:
 
       To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.
     inputSchema:
-      additionalProperties: false
-      properties: {}
+      def:
+        shape: {}
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getProjectXml
   - description: Gets the currently selected nodes as xml
     inputSchema:
-      additionalProperties: false
-      properties: {}
+      def:
+        shape: {}
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getSelectedNodesXml
   - description: Zooms the canvas to center on the given node ID. Code file nodes are not supported.
     inputSchema:
-      additionalProperties: false
-      properties:
-        nodeId:
-          description: The ID of the node to zoom into view
-          minLength: 1
-          type: string
-      required:
-        - nodeId
+      def:
+        shape:
+          nodeId:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: zoomIntoView
   - description: >-
       Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call
@@ -51,17 +69,25 @@ tools:
       Components are a way to encapsulate layers, you still need to call getNodeXml on each instance
       componentId to see the actual component implementation.
     inputSchema:
-      additionalProperties: false
-      properties:
-        nodeId:
-          description: >-
-            The ID of the node to get as XML for, can be a page nodeId, a component componentId or
-            any other XML layer found in a page or component
-          minLength: 1
-          type: string
-      required:
-        - nodeId
+      def:
+        shape:
+          nodeId:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getNodeXml
   - description: >
       Update the XML for a node using its nodeId and passing a new XML string. It can be used to
@@ -419,29 +445,51 @@ tools:
       position, width, height, rotation) but NOT styling attributes like backgroundColor or
       borderRadius.
     inputSchema:
-      additionalProperties: false
-      properties:
-        nodeId:
-          description: The ID of the node to update
-          minLength: 1
-          type: string
-        xml:
-          description: >-
-            XML string containing the updates. Can include multiple nodes with their nodeId
-            attributes
-          minLength: 1
-          type: string
-        zoomIntoView:
-          description: >-
-            Whether to zoom into the node before making updates in Framer. Set to true to see where
-            updates will happen (default), false to run updates in background. Do not ask user about
-            this setting - default to true and mention they can disable zooming if they want to use
-            Framer app while MCP is working.
-          type: boolean
-      required:
-        - nodeId
-        - xml
+      def:
+        shape:
+          nodeId:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          xml:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          zoomIntoView:
+            def:
+              innerType:
+                def:
+                  type: boolean
+                type: boolean
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: updateXmlForNode
   - description: |-
       Creates or updates a color style in the project.
@@ -455,42 +503,105 @@ tools:
 
       After creating, you can reference this style in XML nodes using color="/path/to/style".
     inputSchema:
-      additionalProperties: false
-      properties:
-        properties:
-          additionalProperties: false
-          description: >-
-            Properties for the color style. For create, light color is required. For update, only
-            specified properties will be changed.
+      def:
+        shape:
           properties:
-            dark:
-              anyOf:
-                - type: string
-                - type: 'null'
-              description: Dark theme color in any CSS color format, or null to remove dark variant
-            light:
-              description: Light theme color in any CSS color format (e.g., "rgb(255, 0, 0)", "#FF0000", "red")
+            def:
+              shape:
+                dark:
+                  def:
+                    innerType:
+                      def:
+                        innerType:
+                          def:
+                            type: string
+                          format: null
+                          maxLength: null
+                          minLength: null
+                          type: string
+                          ~standard:
+                            vendor: zod
+                            version: 1
+                        type: nullable
+                      type: nullable
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                light:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                name:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+              type: object
+            type: object
+            ~standard:
+              vendor: zod
+              version: 1
+          stylePath:
+            def:
               type: string
-            name:
-              description: The display name of the color style
-              type: string
-          type: object
-        stylePath:
-          description: >-
-            The path of the color style. Must start with /. The name is derived from the last path
-            segment.
-          type: string
-        type:
-          description: 'Operation type: "create" to make a new style, "update" to modify an existing style'
-          enum:
-            - create
-            - update
-          type: string
-      required:
-        - type
-        - stylePath
-        - properties
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          type:
+            def:
+              entries:
+                create: create
+                update: update
+              type: enum
+            enum:
+              create: create
+              update: update
+            options:
+              - create
+              - update
+            type: enum
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: manageColorStyle
   - description: >-
       Creates or updates a text style in the project.
@@ -514,126 +625,469 @@ tools:
       After creating, you can reference this style in XML nodes using
       inlineTextStyle="/path/to/style".
     inputSchema:
-      additionalProperties: false
-      properties:
-        properties:
-          additionalProperties: false
-          description: Properties for the text style. For update, only specified properties will be changed.
+      def:
+        shape:
           properties:
-            alignment:
-              description: Text alignment
-              enum:
-                - left
-                - center
-                - right
-                - justify
+            def:
+              shape:
+                alignment:
+                  def:
+                    innerType:
+                      def:
+                        entries:
+                          center: center
+                          justify: justify
+                          left: left
+                          right: right
+                        type: enum
+                      enum:
+                        center: center
+                        justify: justify
+                        left: left
+                        right: right
+                      options:
+                        - left
+                        - center
+                        - right
+                        - justify
+                      type: enum
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                balance:
+                  def:
+                    innerType:
+                      def:
+                        type: boolean
+                      type: boolean
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                boldFont:
+                  def:
+                    innerType:
+                      def:
+                        innerType:
+                          def:
+                            type: string
+                          format: null
+                          maxLength: null
+                          minLength: null
+                          type: string
+                          ~standard:
+                            vendor: zod
+                            version: 1
+                        type: nullable
+                      type: nullable
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                boldItalicFont:
+                  def:
+                    innerType:
+                      def:
+                        innerType:
+                          def:
+                            type: string
+                          format: null
+                          maxLength: null
+                          minLength: null
+                          type: string
+                          ~standard:
+                            vendor: zod
+                            version: 1
+                        type: nullable
+                      type: nullable
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                color:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                decoration:
+                  def:
+                    innerType:
+                      def:
+                        entries:
+                          line-through: line-through
+                          none: none
+                          underline: underline
+                        type: enum
+                      enum:
+                        line-through: line-through
+                        none: none
+                        underline: underline
+                      options:
+                        - none
+                        - underline
+                        - line-through
+                      type: enum
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                decorationColor:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                decorationOffset:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                decorationSkipInk:
+                  def:
+                    innerType:
+                      def:
+                        entries:
+                          all: all
+                          auto: auto
+                          none: none
+                        type: enum
+                      enum:
+                        all: all
+                        auto: auto
+                        none: none
+                      options:
+                        - auto
+                        - none
+                        - all
+                      type: enum
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                decorationStyle:
+                  def:
+                    innerType:
+                      def:
+                        entries:
+                          dashed: dashed
+                          dotted: dotted
+                          double: double
+                          solid: solid
+                          wavy: wavy
+                        type: enum
+                      enum:
+                        dashed: dashed
+                        dotted: dotted
+                        double: double
+                        solid: solid
+                        wavy: wavy
+                      options:
+                        - solid
+                        - double
+                        - dotted
+                        - dashed
+                        - wavy
+                      type: enum
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                decorationThickness:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                font:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                fontSize:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                italicFont:
+                  def:
+                    innerType:
+                      def:
+                        innerType:
+                          def:
+                            type: string
+                          format: null
+                          maxLength: null
+                          minLength: null
+                          type: string
+                          ~standard:
+                            vendor: zod
+                            version: 1
+                        type: nullable
+                      type: nullable
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                letterSpacing:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                lineHeight:
+                  def:
+                    innerType:
+                      def:
+                        type: string
+                      format: null
+                      maxLength: null
+                      minLength: null
+                      type: string
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                paragraphSpacing:
+                  def:
+                    innerType:
+                      def:
+                        checks: []
+                        type: number
+                      format: null
+                      isFinite: true
+                      isInt: false
+                      maxValue: null
+                      minValue: null
+                      type: number
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                tag:
+                  def:
+                    innerType:
+                      def:
+                        entries:
+                          h1: h1
+                          h2: h2
+                          h3: h3
+                          h4: h4
+                          h5: h5
+                          h6: h6
+                          p: p
+                        type: enum
+                      enum:
+                        h1: h1
+                        h2: h2
+                        h3: h3
+                        h4: h4
+                        h5: h5
+                        h6: h6
+                        p: p
+                      options:
+                        - h1
+                        - h2
+                        - h3
+                        - h4
+                        - h5
+                        - h6
+                        - p
+                      type: enum
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                transform:
+                  def:
+                    innerType:
+                      def:
+                        entries:
+                          capitalize: capitalize
+                          lowercase: lowercase
+                          none: none
+                          uppercase: uppercase
+                        type: enum
+                      enum:
+                        capitalize: capitalize
+                        lowercase: lowercase
+                        none: none
+                        uppercase: uppercase
+                      options:
+                        - none
+                        - uppercase
+                        - lowercase
+                        - capitalize
+                      type: enum
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    type: optional
+                  type: optional
+                  ~standard:
+                    vendor: zod
+                    version: 1
+              type: object
+            type: object
+            ~standard:
+              vendor: zod
+              version: 1
+          stylePath:
+            def:
               type: string
-            balance:
-              description: Enable balanced text wrapping for better legibility
-              type: boolean
-            boldFont:
-              anyOf:
-                - type: string
-                - type: 'null'
-              description: Bold variant font selector or null to remove
-            boldItalicFont:
-              anyOf:
-                - type: string
-                - type: 'null'
-              description: Bold italic variant font selector or null to remove
-            color:
-              description: >-
-                Color as hex, rgba, or color style path (e.g., "#FF0000", "rgb(255, 0, 0)",
-                "/Primary")
-              type: string
-            decoration:
-              description: Text decoration
-              enum:
-                - none
-                - underline
-                - line-through
-              type: string
-            decorationColor:
-              description: Decoration color as hex, rgba, or color style path
-              type: string
-            decorationOffset:
-              description: Decoration offset (e.g., "auto", "2px", "0.1em")
-              type: string
-            decorationSkipInk:
-              description: Text decoration skip ink behavior
-              enum:
-                - auto
-                - none
-                - all
-              type: string
-            decorationStyle:
-              description: Text decoration style
-              enum:
-                - solid
-                - double
-                - dotted
-                - dashed
-                - wavy
-              type: string
-            decorationThickness:
-              description: Decoration thickness (e.g., "auto", "2px", "0.1em")
-              type: string
-            font:
-              description: Font selector (e.g., "GF;Inter-600")
-              type: string
-            fontSize:
-              description: Font size with units (e.g., "16px", "1.5rem")
-              type: string
-            italicFont:
-              anyOf:
-                - type: string
-                - type: 'null'
-              description: Italic variant font selector or null to remove
-            letterSpacing:
-              description: Letter spacing with units (e.g., "0px", "0.05em")
-              type: string
-            lineHeight:
-              description: Line height with units (e.g., "24px", "1.5em", "150%")
-              type: string
-            paragraphSpacing:
-              description: Space between paragraphs in pixels
-              type: number
-            tag:
-              description: HTML tag associated with the text style
-              enum:
-                - h1
-                - h2
-                - h3
-                - h4
-                - h5
-                - h6
-                - p
-              type: string
-            transform:
-              description: Text transformation
-              enum:
-                - none
-                - uppercase
-                - lowercase
-                - capitalize
-              type: string
-          type: object
-        stylePath:
-          description: >-
-            The path of the text style. Must start with /. The name is derived from the last path
-            segment.
-          type: string
-        type:
-          description: 'Operation type: "create" to make a new style, "update" to modify an existing style'
-          enum:
-            - create
-            - update
-          type: string
-      required:
-        - type
-        - stylePath
-        - properties
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          type:
+            def:
+              entries:
+                create: create
+                update: update
+              type: enum
+            enum:
+              create: create
+              update: update
+            options:
+              - create
+              - update
+            type: enum
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: manageTextStyle
   - description: >-
       Search for Framer available fonts by selector substring. This tool searches among  all
@@ -654,15 +1108,25 @@ tools:
       Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not
       both.
     inputSchema:
-      additionalProperties: false
-      properties:
-        query:
-          description: Search query to match against font selector (e.g., "Inter", "bold", "italic")
-          minLength: 1
-          type: string
-      required:
-        - query
+      def:
+        shape:
+          query:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: searchFonts
   - description: >
       Deletes a Framer node, color style, text style, or code file.
@@ -679,15 +1143,25 @@ tools:
       element to another parent, reference both the element id and the new parent id and
       updateXmlForNode will do the reparenting for you.
     inputSchema:
-      additionalProperties: false
-      properties:
-        nodeId:
-          description: The ID of the node/style/code file to delete
-          minLength: 1
-          type: string
-      required:
-        - nodeId
+      def:
+        shape:
+          nodeId:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: deleteNode
   - description: >-
       Duplicate a node in the Framer project. Creates an exact copy of the node and all its
@@ -704,15 +1178,25 @@ tools:
       DO NOT USE this tool to move a node to a different place or ordering. Instead use
       updateXmlForNode to change the parent of a node or its position in the layers tree.
     inputSchema:
-      additionalProperties: false
-      properties:
-        nodeId:
-          description: The ID of the node to duplicate
-          minLength: 1
-          type: string
-      required:
-        - nodeId
+      def:
+        shape:
+          nodeId:
+            def:
+              checks:
+                - {}
+              type: string
+            format: null
+            maxLength: null
+            minLength: 1
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: duplicateNode
   - description: >
       Export selected Framer components as React code. This tool will return a cli command you can
@@ -744,18 +1228,46 @@ tools:
       to export the Framer project components as React code when you can, especially if you are
       inside Claude Code cli.
     inputSchema:
-      additionalProperties: false
-      properties:
-        nodeIds:
-          description: Array of component node IDs or code file IDs to export as React code
-          items:
-            minLength: 1
-            type: string
-          minItems: 1
-          type: array
-      required:
-        - nodeIds
+      def:
+        shape:
+          nodeIds:
+            def:
+              checks:
+                - {}
+              element:
+                def:
+                  checks:
+                    - {}
+                  type: string
+                format: null
+                maxLength: null
+                minLength: 1
+                type: string
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: array
+            element:
+              def:
+                checks:
+                  - {}
+                type: string
+              format: null
+              maxLength: null
+              minLength: 1
+              type: string
+              ~standard:
+                vendor: zod
+                version: 1
+            type: array
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: exportReactComponents
   - description: >-
       Create a new code file in the Framer project. Code files can export either code components or
@@ -778,32 +1290,56 @@ tools:
       Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with
       the insertUrl to add the component to the canvas.
     inputSchema:
-      additionalProperties: false
-      properties:
-        content:
-          description: The TypeScript/React code content for the file
-          type: string
-        name:
-          description: The name of the code file (e.g., "MyComponent.tsx")
-          type: string
-      required:
-        - name
-        - content
+      def:
+        shape:
+          content:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          name:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: createCodeFile
   - description: |-
       Read the content of a code file by its ID. Available code files are listed in getProjectXml.
 
       Returns the current content, name, path, and available exports of the code file.
     inputSchema:
-      additionalProperties: false
-      properties:
-        codeFileId:
-          description: The ID of the code file to read
-          type: string
-      required:
-        - codeFileId
+      def:
+        shape:
+          codeFileId:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: readCodeFile
   - description: |-
       Update the content of an existing code file.
@@ -811,18 +1347,33 @@ tools:
       This will replace the entire content of the file.
       The file will be automatically linted and type-checked after update.
     inputSchema:
-      additionalProperties: false
-      properties:
-        codeFileId:
-          description: The ID of the code file to update
-          type: string
-        content:
-          description: The new TypeScript/React code content
-          type: string
-      required:
-        - codeFileId
-        - content
+      def:
+        shape:
+          codeFileId:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          content:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: updateCodeFile
   - description: >-
       Get the insert URL, import statement and prop types documentation for components. This must be
@@ -844,14 +1395,23 @@ tools:
 
       - See what props/attributes are available for a component, to use them in XML
     inputSchema:
-      additionalProperties: false
-      properties:
-        id:
-          description: The ID of the component node or code file to get information for
-          type: string
-      required:
-        - id
+      def:
+        shape:
+          id:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getComponentInsertUrlAndTypes
   - description: >-
       Creates a component instance and inserts it into the canvas using its insertUrl. The component
@@ -875,16 +1435,23 @@ tools:
 
       - Instructions for positioning the node using updateXmlForNode
     inputSchema:
-      additionalProperties: false
-      properties:
-        insertUrl:
-          description: >-
-            The insert URL of the component to insert, it can be obtained from
-            getComponentInsertUrlAndTypes
-          type: string
-      required:
-        - insertUrl
+      def:
+        shape:
+          insertUrl:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: insertComponentInCanvas
   - description: |-
       Get the published website URLs for the current Framer project.
@@ -897,9 +1464,13 @@ tools:
       - Get the staging/preview URL
       - Share the project's public URL
     inputSchema:
-      additionalProperties: false
-      properties: {}
+      def:
+        shape: {}
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getProjectWebsiteUrl
   - description: >-
       Gets all CMS collections in the project with their field definitions.
@@ -947,9 +1518,13 @@ tools:
 
       You also cannot update or add collection fields types, ask the user to do so.
     inputSchema:
-      additionalProperties: false
-      properties: {}
+      def:
+        shape: {}
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getCMSCollections
   - description: |-
       Gets items from a specific CMS collection, with optional text search filtering.
@@ -962,31 +1537,112 @@ tools:
 
       Pagination: Use skip and limit to paginate through large collections.
     inputSchema:
-      additionalProperties: false
-      properties:
-        collectionId:
-          description: The ID of the CMS collection to get items from
-          type: string
-        filter:
-          additionalProperties: false
-          description: Optional filters to search/filter items instead of getting all
-          properties:
-            fieldName:
-              description: Specific field name to search within
+      def:
+        shape:
+          collectionId:
+            def:
               type: string
-            query:
-              description: Search query to match against slugs and text fields
-              type: string
-          type: object
-        limit:
-          description: 'Maximum number of items to return (default: 100)'
-          type: number
-        skip:
-          description: 'Number of items to skip for pagination (default: 0)'
-          type: number
-      required:
-        - collectionId
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          filter:
+            def:
+              innerType:
+                def:
+                  shape:
+                    fieldName:
+                      def:
+                        innerType:
+                          def:
+                            type: string
+                          format: null
+                          maxLength: null
+                          minLength: null
+                          type: string
+                          ~standard:
+                            vendor: zod
+                            version: 1
+                        type: optional
+                      type: optional
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                    query:
+                      def:
+                        innerType:
+                          def:
+                            type: string
+                          format: null
+                          maxLength: null
+                          minLength: null
+                          type: string
+                          ~standard:
+                            vendor: zod
+                            version: 1
+                        type: optional
+                      type: optional
+                      ~standard:
+                        vendor: zod
+                        version: 1
+                  type: object
+                type: object
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+          limit:
+            def:
+              innerType:
+                def:
+                  checks: []
+                  type: number
+                format: null
+                isFinite: true
+                isInt: false
+                maxValue: null
+                minValue: null
+                type: number
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+          skip:
+            def:
+              innerType:
+                def:
+                  checks: []
+                  type: number
+                format: null
+                isFinite: true
+                isInt: false
+                maxValue: null
+                minValue: null
+                type: number
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: getCMSItems
   - description: |-
       Creates a new CMS item or updates an existing one.
@@ -1025,29 +1681,119 @@ tools:
 
       The field structure must match the collection's field definitions from getCMSCollections.
     inputSchema:
-      additionalProperties: false
-      properties:
-        collectionId:
-          description: The ID of the CMS collection
-          type: string
-        draft:
-          description: 'Draft status (default: false for new items)'
-          type: boolean
-        fieldData:
-          additionalProperties: {}
-          description: Field values as an object matching the collection field structure
-          propertyNames:
+      def:
+        shape:
+          collectionId:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
             type: string
-          type: object
-        itemId:
-          description: ID of existing item to update (omit to create new)
-          type: string
-        slug:
-          description: URL-friendly identifier (required for new items, optional for updates)
-          type: string
-      required:
-        - collectionId
+            ~standard:
+              vendor: zod
+              version: 1
+          draft:
+            def:
+              innerType:
+                def:
+                  type: boolean
+                type: boolean
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+          fieldData:
+            def:
+              innerType:
+                def:
+                  keyType:
+                    def:
+                      type: string
+                    format: null
+                    maxLength: null
+                    minLength: null
+                    type: string
+                    ~standard:
+                      vendor: zod
+                      version: 1
+                  type: record
+                  valueType:
+                    def:
+                      type: any
+                    type: any
+                    ~standard:
+                      vendor: zod
+                      version: 1
+                keyType:
+                  def:
+                    type: string
+                  format: null
+                  maxLength: null
+                  minLength: null
+                  type: string
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                type: record
+                valueType:
+                  def:
+                    type: any
+                  type: any
+                  ~standard:
+                    vendor: zod
+                    version: 1
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+          itemId:
+            def:
+              innerType:
+                def:
+                  type: string
+                format: null
+                maxLength: null
+                minLength: null
+                type: string
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+          slug:
+            def:
+              innerType:
+                def:
+                  type: string
+                format: null
+                maxLength: null
+                minLength: null
+                type: string
+                ~standard:
+                  vendor: zod
+                  version: 1
+              type: optional
+            type: optional
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: upsertCMSItem
   - description: |-
       Deletes an item from a CMS collection.
@@ -1055,16 +1801,31 @@ tools:
       This permanently removes the item and cannot be undone.
       The item ID must exist in the specified collection.
     inputSchema:
-      additionalProperties: false
-      properties:
-        collectionId:
-          description: The ID of the CMS collection containing the item
-          type: string
-        itemId:
-          description: The ID of the item to delete
-          type: string
-      required:
-        - collectionId
-        - itemId
+      def:
+        shape:
+          collectionId:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+          itemId:
+            def:
+              type: string
+            format: null
+            maxLength: null
+            minLength: null
+            type: string
+            ~standard:
+              vendor: zod
+              version: 1
+        type: object
       type: object
+      ~standard:
+        vendor: zod
+        version: 1
     name: deleteCMSItem

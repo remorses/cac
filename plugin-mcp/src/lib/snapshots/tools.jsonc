@@ -10,39 +10,62 @@ Each element in the XML is usually referred as a "node" but the user could also 
 
 To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {},
+      "def": {
+        "shape": {},
+        "type": "object",
+      },
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getProjectXml",
   },
   {
     "description": "Gets the currently selected nodes as xml",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {},
+      "def": {
+        "shape": {},
+        "type": "object",
+      },
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getSelectedNodesXml",
   },
   {
     "description": "Zooms the canvas to center on the given node ID. Code file nodes are not supported.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeId": {
-          "description": "The ID of the node to zoom into view",
-          "minLength": 1,
-          "type": "string",
+      "def": {
+        "shape": {
+          "nodeId": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "nodeId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "zoomIntoView",
   },
@@ -51,19 +74,32 @@ To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.",
 
 > IMPORTANT. If you need to recursively read all xml in the Framer project you should first read all pages xml, then read all components xml for the components that appear in the pages. Components are a way to encapsulate layers, you still need to call getNodeXml on each instance componentId to see the actual component implementation.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeId": {
-          "description": "The ID of the node to get as XML for, can be a page nodeId, a component componentId or any other XML layer found in a page or component",
-          "minLength": 1,
-          "type": "string",
+      "def": {
+        "shape": {
+          "nodeId": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "nodeId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getNodeXml",
   },
@@ -314,29 +350,68 @@ For component instances:
 Component instances also support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius.
 ",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeId": {
-          "description": "The ID of the node to update",
-          "minLength": 1,
-          "type": "string",
+      "def": {
+        "shape": {
+          "nodeId": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "xml": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "zoomIntoView": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "type": "boolean",
+                },
+                "type": "boolean",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "xml": {
-          "description": "XML string containing the updates. Can include multiple nodes with their nodeId attributes",
-          "minLength": 1,
-          "type": "string",
-        },
-        "zoomIntoView": {
-          "description": "Whether to zoom into the node before making updates in Framer. Set to true to see where updates will happen (default), false to run updates in background. Do not ask user about this setting - default to true and mention they can disable zooming if they want to use Framer app while MCP is working.",
-          "type": "boolean",
-        },
+        "type": "object",
       },
-      "required": [
-        "nodeId",
-        "xml",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "updateXmlForNode",
   },
@@ -352,54 +427,142 @@ For example, "/Brand/Primary" will create a style named "Primary" in the "Brand"
 
 After creating, you can reference this style in XML nodes using color="/path/to/style".",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "properties": {
-          "additionalProperties": false,
-          "description": "Properties for the color style. For create, light color is required. For update, only specified properties will be changed.",
+      "def": {
+        "shape": {
           "properties": {
-            "dark": {
-              "anyOf": [
-                {
-                  "type": "string",
+            "def": {
+              "shape": {
+                "dark": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "innerType": {
+                          "def": {
+                            "type": "string",
+                          },
+                          "format": null,
+                          "maxLength": null,
+                          "minLength": null,
+                          "type": "string",
+                          "~standard": {
+                            "vendor": "zod",
+                            "version": 1,
+                          },
+                        },
+                        "type": "nullable",
+                      },
+                      "type": "nullable",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-                {
-                  "type": "null",
+                "light": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-              ],
-              "description": "Dark theme color in any CSS color format, or null to remove dark variant",
+                "name": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+              },
+              "type": "object",
             },
-            "light": {
-              "description": "Light theme color in any CSS color format (e.g., "rgb(255, 0, 0)", "#FF0000", "red")",
-              "type": "string",
-            },
-            "name": {
-              "description": "The display name of the color style",
-              "type": "string",
+            "type": "object",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
             },
           },
-          "type": "object",
+          "stylePath": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "type": {
+            "def": {
+              "entries": {
+                "create": "create",
+                "update": "update",
+              },
+              "type": "enum",
+            },
+            "enum": {
+              "create": "create",
+              "update": "update",
+            },
+            "options": [
+              "create",
+              "update",
+            ],
+            "type": "enum",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "stylePath": {
-          "description": "The path of the color style. Must start with /. The name is derived from the last path segment.",
-          "type": "string",
-        },
-        "type": {
-          "description": "Operation type: "create" to make a new style, "update" to modify an existing style",
-          "enum": [
-            "create",
-            "update",
-          ],
-          "type": "string",
-        },
+        "type": "object",
       },
-      "required": [
-        "type",
-        "stylePath",
-        "properties",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "manageColorStyle",
   },
@@ -417,170 +580,626 @@ For example, "/Typography/Headings/H1" will create a style named "H1" in the "Ty
 
 After creating, you can reference this style in XML nodes using inlineTextStyle="/path/to/style".",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "properties": {
-          "additionalProperties": false,
-          "description": "Properties for the text style. For update, only specified properties will be changed.",
+      "def": {
+        "shape": {
           "properties": {
-            "alignment": {
-              "description": "Text alignment",
-              "enum": [
-                "left",
-                "center",
-                "right",
-                "justify",
-              ],
-              "type": "string",
-            },
-            "balance": {
-              "description": "Enable balanced text wrapping for better legibility",
-              "type": "boolean",
-            },
-            "boldFont": {
-              "anyOf": [
-                {
-                  "type": "string",
+            "def": {
+              "shape": {
+                "alignment": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "entries": {
+                          "center": "center",
+                          "justify": "justify",
+                          "left": "left",
+                          "right": "right",
+                        },
+                        "type": "enum",
+                      },
+                      "enum": {
+                        "center": "center",
+                        "justify": "justify",
+                        "left": "left",
+                        "right": "right",
+                      },
+                      "options": [
+                        "left",
+                        "center",
+                        "right",
+                        "justify",
+                      ],
+                      "type": "enum",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-                {
-                  "type": "null",
+                "balance": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "boolean",
+                      },
+                      "type": "boolean",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-              ],
-              "description": "Bold variant font selector or null to remove",
-            },
-            "boldItalicFont": {
-              "anyOf": [
-                {
-                  "type": "string",
+                "boldFont": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "innerType": {
+                          "def": {
+                            "type": "string",
+                          },
+                          "format": null,
+                          "maxLength": null,
+                          "minLength": null,
+                          "type": "string",
+                          "~standard": {
+                            "vendor": "zod",
+                            "version": 1,
+                          },
+                        },
+                        "type": "nullable",
+                      },
+                      "type": "nullable",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-                {
-                  "type": "null",
+                "boldItalicFont": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "innerType": {
+                          "def": {
+                            "type": "string",
+                          },
+                          "format": null,
+                          "maxLength": null,
+                          "minLength": null,
+                          "type": "string",
+                          "~standard": {
+                            "vendor": "zod",
+                            "version": 1,
+                          },
+                        },
+                        "type": "nullable",
+                      },
+                      "type": "nullable",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-              ],
-              "description": "Bold italic variant font selector or null to remove",
-            },
-            "color": {
-              "description": "Color as hex, rgba, or color style path (e.g., "#FF0000", "rgb(255, 0, 0)", "/Primary")",
-              "type": "string",
-            },
-            "decoration": {
-              "description": "Text decoration",
-              "enum": [
-                "none",
-                "underline",
-                "line-through",
-              ],
-              "type": "string",
-            },
-            "decorationColor": {
-              "description": "Decoration color as hex, rgba, or color style path",
-              "type": "string",
-            },
-            "decorationOffset": {
-              "description": "Decoration offset (e.g., "auto", "2px", "0.1em")",
-              "type": "string",
-            },
-            "decorationSkipInk": {
-              "description": "Text decoration skip ink behavior",
-              "enum": [
-                "auto",
-                "none",
-                "all",
-              ],
-              "type": "string",
-            },
-            "decorationStyle": {
-              "description": "Text decoration style",
-              "enum": [
-                "solid",
-                "double",
-                "dotted",
-                "dashed",
-                "wavy",
-              ],
-              "type": "string",
-            },
-            "decorationThickness": {
-              "description": "Decoration thickness (e.g., "auto", "2px", "0.1em")",
-              "type": "string",
-            },
-            "font": {
-              "description": "Font selector (e.g., "GF;Inter-600")",
-              "type": "string",
-            },
-            "fontSize": {
-              "description": "Font size with units (e.g., "16px", "1.5rem")",
-              "type": "string",
-            },
-            "italicFont": {
-              "anyOf": [
-                {
-                  "type": "string",
+                "color": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-                {
-                  "type": "null",
+                "decoration": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "entries": {
+                          "line-through": "line-through",
+                          "none": "none",
+                          "underline": "underline",
+                        },
+                        "type": "enum",
+                      },
+                      "enum": {
+                        "line-through": "line-through",
+                        "none": "none",
+                        "underline": "underline",
+                      },
+                      "options": [
+                        "none",
+                        "underline",
+                        "line-through",
+                      ],
+                      "type": "enum",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
                 },
-              ],
-              "description": "Italic variant font selector or null to remove",
+                "decorationColor": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "decorationOffset": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "decorationSkipInk": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "entries": {
+                          "all": "all",
+                          "auto": "auto",
+                          "none": "none",
+                        },
+                        "type": "enum",
+                      },
+                      "enum": {
+                        "all": "all",
+                        "auto": "auto",
+                        "none": "none",
+                      },
+                      "options": [
+                        "auto",
+                        "none",
+                        "all",
+                      ],
+                      "type": "enum",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "decorationStyle": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "entries": {
+                          "dashed": "dashed",
+                          "dotted": "dotted",
+                          "double": "double",
+                          "solid": "solid",
+                          "wavy": "wavy",
+                        },
+                        "type": "enum",
+                      },
+                      "enum": {
+                        "dashed": "dashed",
+                        "dotted": "dotted",
+                        "double": "double",
+                        "solid": "solid",
+                        "wavy": "wavy",
+                      },
+                      "options": [
+                        "solid",
+                        "double",
+                        "dotted",
+                        "dashed",
+                        "wavy",
+                      ],
+                      "type": "enum",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "decorationThickness": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "font": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "fontSize": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "italicFont": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "innerType": {
+                          "def": {
+                            "type": "string",
+                          },
+                          "format": null,
+                          "maxLength": null,
+                          "minLength": null,
+                          "type": "string",
+                          "~standard": {
+                            "vendor": "zod",
+                            "version": 1,
+                          },
+                        },
+                        "type": "nullable",
+                      },
+                      "type": "nullable",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "letterSpacing": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "lineHeight": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "type": "string",
+                      },
+                      "format": null,
+                      "maxLength": null,
+                      "minLength": null,
+                      "type": "string",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "paragraphSpacing": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "checks": [],
+                        "type": "number",
+                      },
+                      "format": null,
+                      "isFinite": true,
+                      "isInt": false,
+                      "maxValue": null,
+                      "minValue": null,
+                      "type": "number",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "tag": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "entries": {
+                          "h1": "h1",
+                          "h2": "h2",
+                          "h3": "h3",
+                          "h4": "h4",
+                          "h5": "h5",
+                          "h6": "h6",
+                          "p": "p",
+                        },
+                        "type": "enum",
+                      },
+                      "enum": {
+                        "h1": "h1",
+                        "h2": "h2",
+                        "h3": "h3",
+                        "h4": "h4",
+                        "h5": "h5",
+                        "h6": "h6",
+                        "p": "p",
+                      },
+                      "options": [
+                        "h1",
+                        "h2",
+                        "h3",
+                        "h4",
+                        "h5",
+                        "h6",
+                        "p",
+                      ],
+                      "type": "enum",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "transform": {
+                  "def": {
+                    "innerType": {
+                      "def": {
+                        "entries": {
+                          "capitalize": "capitalize",
+                          "lowercase": "lowercase",
+                          "none": "none",
+                          "uppercase": "uppercase",
+                        },
+                        "type": "enum",
+                      },
+                      "enum": {
+                        "capitalize": "capitalize",
+                        "lowercase": "lowercase",
+                        "none": "none",
+                        "uppercase": "uppercase",
+                      },
+                      "options": [
+                        "none",
+                        "uppercase",
+                        "lowercase",
+                        "capitalize",
+                      ],
+                      "type": "enum",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "type": "optional",
+                  },
+                  "type": "optional",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+              },
+              "type": "object",
             },
-            "letterSpacing": {
-              "description": "Letter spacing with units (e.g., "0px", "0.05em")",
-              "type": "string",
-            },
-            "lineHeight": {
-              "description": "Line height with units (e.g., "24px", "1.5em", "150%")",
-              "type": "string",
-            },
-            "paragraphSpacing": {
-              "description": "Space between paragraphs in pixels",
-              "type": "number",
-            },
-            "tag": {
-              "description": "HTML tag associated with the text style",
-              "enum": [
-                "h1",
-                "h2",
-                "h3",
-                "h4",
-                "h5",
-                "h6",
-                "p",
-              ],
-              "type": "string",
-            },
-            "transform": {
-              "description": "Text transformation",
-              "enum": [
-                "none",
-                "uppercase",
-                "lowercase",
-                "capitalize",
-              ],
-              "type": "string",
+            "type": "object",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
             },
           },
-          "type": "object",
+          "stylePath": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "type": {
+            "def": {
+              "entries": {
+                "create": "create",
+                "update": "update",
+              },
+              "type": "enum",
+            },
+            "enum": {
+              "create": "create",
+              "update": "update",
+            },
+            "options": [
+              "create",
+              "update",
+            ],
+            "type": "enum",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "stylePath": {
-          "description": "The path of the text style. Must start with /. The name is derived from the last path segment.",
-          "type": "string",
-        },
-        "type": {
-          "description": "Operation type: "create" to make a new style, "update" to modify an existing style",
-          "enum": [
-            "create",
-            "update",
-          ],
-          "type": "string",
-        },
+        "type": "object",
       },
-      "required": [
-        "type",
-        "stylePath",
-        "properties",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "manageTextStyle",
   },
@@ -594,19 +1213,32 @@ NOTE: You can only apply a font attribute to text nodes that do NOT have an inli
 If a text node has inlineTextStyle="/Heading xl", you must remove it before applying a custom font.
 Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not both.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "query": {
-          "description": "Search query to match against font selector (e.g., "Inter", "bold", "italic")",
-          "minLength": 1,
-          "type": "string",
+      "def": {
+        "shape": {
+          "query": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "query",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "searchFonts",
   },
@@ -620,19 +1252,32 @@ Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom f
 NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
 ",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeId": {
-          "description": "The ID of the node/style/code file to delete",
-          "minLength": 1,
-          "type": "string",
+      "def": {
+        "shape": {
+          "nodeId": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "nodeId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "deleteNode",
   },
@@ -645,19 +1290,32 @@ Returns the ID of the newly created duplicate node. It will have same attributes
 
 DO NOT USE this tool to move a node to a different place or ordering. Instead use updateXmlForNode to change the parent of a node or its position in the layers tree.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeId": {
-          "description": "The ID of the node to duplicate",
-          "minLength": 1,
-          "type": "string",
+      "def": {
+        "shape": {
+          "nodeId": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": 1,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "nodeId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "duplicateNode",
   },
@@ -677,23 +1335,61 @@ You can read more documentation on how to use React Export (and the unframer cli
 This tool is the most interesting in the whole MCP. tell the user to try the react export tool to export the Framer project components as React code when you can, especially if you are inside Claude Code cli.
 ",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "nodeIds": {
-          "description": "Array of component node IDs or code file IDs to export as React code",
-          "items": {
-            "minLength": 1,
-            "type": "string",
+      "def": {
+        "shape": {
+          "nodeIds": {
+            "def": {
+              "checks": [
+                {},
+              ],
+              "element": {
+                "def": {
+                  "checks": [
+                    {},
+                  ],
+                  "type": "string",
+                },
+                "format": null,
+                "maxLength": null,
+                "minLength": 1,
+                "type": "string",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "array",
+            },
+            "element": {
+              "def": {
+                "checks": [
+                  {},
+                ],
+                "type": "string",
+              },
+              "format": null,
+              "maxLength": null,
+              "minLength": 1,
+              "type": "string",
+              "~standard": {
+                "vendor": "zod",
+                "version": 1,
+              },
+            },
+            "type": "array",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
           },
-          "minItems": 1,
-          "type": "array",
         },
+        "type": "object",
       },
-      "required": [
-        "nodeIds",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "exportReactComponents",
   },
@@ -708,23 +1404,42 @@ When creating a code component you should also define its property controls via 
 
 Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with the insertUrl to add the component to the canvas.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "content": {
-          "description": "The TypeScript/React code content for the file",
-          "type": "string",
+      "def": {
+        "shape": {
+          "content": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "name": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "name": {
-          "description": "The name of the code file (e.g., "MyComponent.tsx")",
-          "type": "string",
-        },
+        "type": "object",
       },
-      "required": [
-        "name",
-        "content",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "createCodeFile",
   },
@@ -733,18 +1448,29 @@ Returns the ID, path, and insertUrl of the created code file. Use insertComponen
 
 Returns the current content, name, path, and available exports of the code file.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "codeFileId": {
-          "description": "The ID of the code file to read",
-          "type": "string",
+      "def": {
+        "shape": {
+          "codeFileId": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "codeFileId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "readCodeFile",
   },
@@ -754,23 +1480,42 @@ Returns the current content, name, path, and available exports of the code file.
 This will replace the entire content of the file.
 The file will be automatically linted and type-checked after update.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "codeFileId": {
-          "description": "The ID of the code file to update",
-          "type": "string",
+      "def": {
+        "shape": {
+          "codeFileId": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "content": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "content": {
-          "description": "The new TypeScript/React code content",
-          "type": "string",
-        },
+        "type": "object",
       },
-      "required": [
-        "codeFileId",
-        "content",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "updateCodeFile",
   },
@@ -786,18 +1531,29 @@ Use this tool when you want to:
 - Use an existing component in a code file (get the import statement)
 - See what props/attributes are available for a component, to use them in XML",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "description": "The ID of the component node or code file to get information for",
-          "type": "string",
+      "def": {
+        "shape": {
+          "id": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "id",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getComponentInsertUrlAndTypes",
   },
@@ -814,18 +1570,29 @@ Returns markdown with:
 - The current root node ID (page or component)
 - Instructions for positioning the node using updateXmlForNode",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "insertUrl": {
-          "description": "The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes",
-          "type": "string",
+      "def": {
+        "shape": {
+          "insertUrl": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
+        "type": "object",
       },
-      "required": [
-        "insertUrl",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "insertComponentInCanvas",
   },
@@ -840,10 +1607,15 @@ Use this tool when you need to:
 - Get the staging/preview URL
 - Share the project's public URL",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {},
+      "def": {
+        "shape": {},
+        "type": "object",
+      },
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getProjectWebsiteUrl",
   },
@@ -872,10 +1644,15 @@ IMPORTANT: Notice that you cannot create a CMS collection yourself. Instead you 
 
 You also cannot update or add collection fields types, ask the user to do so.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {},
+      "def": {
+        "shape": {},
+        "type": "object",
+      },
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getCMSCollections",
   },
@@ -890,41 +1667,149 @@ When filters are used, only matching items are returned based on text search.
 
 Pagination: Use skip and limit to paginate through large collections.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "collectionId": {
-          "description": "The ID of the CMS collection to get items from",
-          "type": "string",
-        },
-        "filter": {
-          "additionalProperties": false,
-          "description": "Optional filters to search/filter items instead of getting all",
-          "properties": {
-            "fieldName": {
-              "description": "Specific field name to search within",
+      "def": {
+        "shape": {
+          "collectionId": {
+            "def": {
               "type": "string",
             },
-            "query": {
-              "description": "Search query to match against slugs and text fields",
-              "type": "string",
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
             },
           },
-          "type": "object",
+          "filter": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "shape": {
+                    "fieldName": {
+                      "def": {
+                        "innerType": {
+                          "def": {
+                            "type": "string",
+                          },
+                          "format": null,
+                          "maxLength": null,
+                          "minLength": null,
+                          "type": "string",
+                          "~standard": {
+                            "vendor": "zod",
+                            "version": 1,
+                          },
+                        },
+                        "type": "optional",
+                      },
+                      "type": "optional",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                    "query": {
+                      "def": {
+                        "innerType": {
+                          "def": {
+                            "type": "string",
+                          },
+                          "format": null,
+                          "maxLength": null,
+                          "minLength": null,
+                          "type": "string",
+                          "~standard": {
+                            "vendor": "zod",
+                            "version": 1,
+                          },
+                        },
+                        "type": "optional",
+                      },
+                      "type": "optional",
+                      "~standard": {
+                        "vendor": "zod",
+                        "version": 1,
+                      },
+                    },
+                  },
+                  "type": "object",
+                },
+                "type": "object",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "limit": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "checks": [],
+                  "type": "number",
+                },
+                "format": null,
+                "isFinite": true,
+                "isInt": false,
+                "maxValue": null,
+                "minValue": null,
+                "type": "number",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "skip": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "checks": [],
+                  "type": "number",
+                },
+                "format": null,
+                "isFinite": true,
+                "isInt": false,
+                "maxValue": null,
+                "minValue": null,
+                "type": "number",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "limit": {
-          "description": "Maximum number of items to return (default: 100)",
-          "type": "number",
-        },
-        "skip": {
-          "description": "Number of items to skip for pagination (default: 0)",
-          "type": "number",
-        },
+        "type": "object",
       },
-      "required": [
-        "collectionId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "getCMSItems",
   },
@@ -965,38 +1850,161 @@ IMPORTANT NOTES:
 
 The field structure must match the collection's field definitions from getCMSCollections.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "collectionId": {
-          "description": "The ID of the CMS collection",
-          "type": "string",
-        },
-        "draft": {
-          "description": "Draft status (default: false for new items)",
-          "type": "boolean",
-        },
-        "fieldData": {
-          "additionalProperties": {},
-          "description": "Field values as an object matching the collection field structure",
-          "propertyNames": {
+      "def": {
+        "shape": {
+          "collectionId": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
             "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
           },
-          "type": "object",
+          "draft": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "type": "boolean",
+                },
+                "type": "boolean",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "fieldData": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "keyType": {
+                    "def": {
+                      "type": "string",
+                    },
+                    "format": null,
+                    "maxLength": null,
+                    "minLength": null,
+                    "type": "string",
+                    "~standard": {
+                      "vendor": "zod",
+                      "version": 1,
+                    },
+                  },
+                  "type": "record",
+                  "valueType": {
+                    "def": {
+                      "type": "any",
+                    },
+                    "type": "any",
+                    "~standard": {
+                      "vendor": "zod",
+                      "version": 1,
+                    },
+                  },
+                },
+                "keyType": {
+                  "def": {
+                    "type": "string",
+                  },
+                  "format": null,
+                  "maxLength": null,
+                  "minLength": null,
+                  "type": "string",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "type": "record",
+                "valueType": {
+                  "def": {
+                    "type": "any",
+                  },
+                  "type": "any",
+                  "~standard": {
+                    "vendor": "zod",
+                    "version": 1,
+                  },
+                },
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "itemId": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "type": "string",
+                },
+                "format": null,
+                "maxLength": null,
+                "minLength": null,
+                "type": "string",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "slug": {
+            "def": {
+              "innerType": {
+                "def": {
+                  "type": "string",
+                },
+                "format": null,
+                "maxLength": null,
+                "minLength": null,
+                "type": "string",
+                "~standard": {
+                  "vendor": "zod",
+                  "version": 1,
+                },
+              },
+              "type": "optional",
+            },
+            "type": "optional",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "itemId": {
-          "description": "ID of existing item to update (omit to create new)",
-          "type": "string",
-        },
-        "slug": {
-          "description": "URL-friendly identifier (required for new items, optional for updates)",
-          "type": "string",
-        },
+        "type": "object",
       },
-      "required": [
-        "collectionId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "upsertCMSItem",
   },
@@ -1006,23 +2014,42 @@ The field structure must match the collection's field definitions from getCMSCol
 This permanently removes the item and cannot be undone.
 The item ID must exist in the specified collection.",
     "inputSchema": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "additionalProperties": false,
-      "properties": {
-        "collectionId": {
-          "description": "The ID of the CMS collection containing the item",
-          "type": "string",
+      "def": {
+        "shape": {
+          "collectionId": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
+          "itemId": {
+            "def": {
+              "type": "string",
+            },
+            "format": null,
+            "maxLength": null,
+            "minLength": null,
+            "type": "string",
+            "~standard": {
+              "vendor": "zod",
+              "version": 1,
+            },
+          },
         },
-        "itemId": {
-          "description": "The ID of the item to delete",
-          "type": "string",
-        },
+        "type": "object",
       },
-      "required": [
-        "collectionId",
-        "itemId",
-      ],
       "type": "object",
+      "~standard": {
+        "vendor": "zod",
+        "version": 1,
+      },
     },
     "name": "deleteCMSItem",
   },
