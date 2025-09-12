@@ -1,46 +1,88 @@
 Successfully updated:
-Created Frame node AWhyyv4Vb
-Created Frame node OErY3pRoD
-Created Text node VwuxPsBi6
-Created Text node hHdErnezz
-Created Frame node WDR86ELlt
-Updated attributes for node AWhyyv4Vb
-Updated attributes for node OErY3pRoD
-Updated text for node VwuxPsBi6
-Updated attributes for node VwuxPsBi6
-Updated text for node hHdErnezz
-Updated attributes for node hHdErnezz
-Updated attributes for node WDR86ELlt
-Reordered node OErY3pRoD within parent AWhyyv4Vb to index 0
+Created Frame node Bgc1INpuQ
+Created Frame node mVRpPaghQ
+Created Text node q_gMQgTqt
+Created Text node UKVP_GNb_
+Created Frame node uFCZJxRv6
+Updated attributes for node Bgc1INpuQ
+Updated attributes for node mVRpPaghQ
+Updated text for node q_gMQgTqt
+Updated attributes for node q_gMQgTqt
+Updated text for node UKVP_GNb_
+Updated attributes for node UKVP_GNb_
+Updated attributes for node uFCZJxRv6
+Reordered node mVRpPaghQ within parent Bgc1INpuQ to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -2977,20 +2977,73 @@
-     position="absolute"
-     width="fit-content"
-     height="fit-content"
-     top="0px"
-     left="0px"
-     font="Inter"
- >
-   Body content goes here
- </BodyContentGoesHere>
- <Something
-     nodeId="so_W61aYl"
-     position="absolute"
-     width="fit-content"
-     height="fit-content"
-     top="0px"
-     left="0px"
-     font="Inter"
- >
-   something
- </Something>
+@@ -46,41 +46,40 @@
+       stackDirection="horizontal"
+       stackDistribution="center"
+       stackAlignment="center"
+   >
+     <NavigationFlyout
+         nodeId="BwfPOa8WY"
+         width="100%"
+         height="fit-content"
+         <!-- the component id this instance uses -->
+         componentId="sCy40XUNu"
+         <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
+         variant="arFY89os4"
+      />
+   </NavigationFlyoutFixed>
+   <Navigation
+       nodeId="P8AJj3Q2E"
+       width="1fr"
+       height="fit-content"
+       <!-- the component id this instance uses -->
+       componentId="sCy40XUNu"
+-      <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
+       variant="QOfAnzBxh"
+    />
+   <HeroSection
+       nodeId="qKDdG3FQZ"
+       width="1fr"
+       height="fit-content"
+       layout="stack"
+       padding="8px"
+       stackDirection="vertical"
+       stackDistribution="start"
+       stackAlignment="center"
+   >
+     <Container
+         nodeId="rUPekfMHT"
+         width="1fr"
+         height="fit-content"
+         maxWidth="1152px"
+         <!-- background color string or project color style path (if starts with /) -->
+         backgroundColor="white"
+         borderRadius="32px"
+@@ -3061,20 +3060,73 @@
+       Header Text
+     </HeaderText>
+   </Frame>
+   <BodyContentGoesHere
+       nodeId="XAYOrGFUB"
+       width="fit-content"
+       height="fit-content"
+       font="Inter"
+   >
+     Body content goes here
+   </BodyContentGoesHere>
+   <Frame
+       nodeId="V3VqY3j0F"
+       width="100%"
+       height="100px"
+       <!-- background color string or project color style path (if starts with /) -->
+       backgroundColor="rgb(255, 255, 255)"
+       borderRadius="4px"
+    />
+ </Stack>
 +<Stack
-+    nodeId="AWhyyv4Vb"
++    nodeId="Bgc1INpuQ"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -56,7 +98,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="OErY3pRoD"
++      nodeId="mVRpPaghQ"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -64,7 +106,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="VwuxPsBi6"
++        nodeId="q_gMQgTqt"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -76,7 +118,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="hHdErnezz"
++      nodeId="UKVP_GNb_"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -84,7 +126,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="WDR86ELlt"
++      nodeId="uFCZJxRv6"
 +      width="100%"
 +      height="100px"
 +      <!-- background color string or project color style path (if starts with /) -->
