@@ -290,7 +290,7 @@ export class MyMCP extends McpAgent<Env> {
             const server = this.server
 
             // Get the framerUserId from the OAuth context
-            const framerUserId = this.props?.framerUserId
+            const framerUserId = this.props?.framerUserId as string | undefined
 
             console.log(
                 'Initializing MCP with authenticated framerUserId:',
@@ -413,7 +413,7 @@ export class MyMCP extends McpAgent<Env> {
                                 if (event.code === 4008) {
                                     reject(
                                         new Error(
-                                            `Upstream not connected, Framer MCP plugin is not running: ${framerInstructions}`,
+                                            `Upstream not connected for ${framerUserId}, Framer MCP plugin is not running: ${framerInstructions}`,
                                         ),
                                     )
                                 } else {
