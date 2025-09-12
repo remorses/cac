@@ -1,5 +1,49 @@
 # Changelog
 
+## 2025-09-12 18:20
+
+- **Removed insertComponentInCanvas tool**
+  - Tool was redundant with updateNode which can create ComponentInstance nodes
+  - updateNode now serves as the single way to insert components via XML with insertUrl attribute
+  - Updated all references to suggest using updateNode instead
+  - Simplified component insertion workflow to a single step
+
+## 2025-09-12 17:15
+
+- **Major tool consolidation and simplified naming**
+  - Renamed `getProjectXml` to `getProject` 
+  - Renamed `getNodeXml` to `getNode`
+  - Renamed `updateXmlForNode` to `updateNode`
+  - Merged `createCodeFile` and `updateCodeFile` into single `upsertCodeFile` tool
+  - Renamed `manageColorStyle` to `upsertColorStyle` for consistency
+  - Renamed `manageTextStyle` to `upsertTextStyle` for consistency  
+  - Renamed `searchFonts` to `search` with required `kind: "fonts"` parameter (extensible for future search types)
+  - Uses `codeFileId` to determine update vs create operation
+  - Returns consistent response format with lint and typecheck results
+  
+- **Removed redundant tools**
+  - Removed `zoomIntoView` tool (zooming handled via updateNode parameter)
+  - Removed `getSelectedNodesXml` tool (selected nodes now included in getProject)
+  - Removed `getProjectWebsiteUrl` tool (publish info now included in getProject)
+  - Removed `readCodeFile` tool (code files now readable via getNode)
+  
+- **Enhanced getProject output**
+  - Added currently selected nodes XML to output
+  - Added published website URLs (production/staging) to output
+  - Shows warnings for replica/variant nodes when selected
+  
+- **Extended getNode capabilities**
+  - Now supports code files - returns TypeScript/React source code
+  - Removed "Node xml:" prefix from output for cleaner response
+  - Returns code file content wrapped in markdown code block
+  - Updated description to reflect dual XML/code functionality
+  
+- **Enhanced updateNode validation**
+  - Added validation to prevent use with code files (directs to upsertCodeFile)
+  - Added validation to prevent use with style paths (directs to upsertColorStyle/upsertTextStyle)
+  - Added validation to prevent use with CMS collections (directs to CMS tools)
+  - Improved error messages with specific guidance for each resource type
+
 ## 2025-09-08 16:45
 
 - **Replace @sentry/browser with sentries package**
@@ -340,10 +384,10 @@
 
 - Renamed `getComponentImportUrl` to `getComponentInsertUrlAndTypes` for clarity
 - Extended tool to support both regular components (via nodeId) and code file components (via codeFileId)
-- Tool now returns insert URL as first item, which must be used with `insertComponentInCanvas`
+- Tool now returns insert URL as first item, which must be used with ~~`insertComponentInCanvas`~~ `updateNode` (as of 2025-09-12)
 - Removed insertUrl from `getProjectXml` output to avoid confusion - use `getComponentInsertUrlAndTypes` instead
-- Updated `createCodeFile` description to mention using `insertComponentInCanvas` to add component to canvas
-- Updated `insertComponentInCanvas` description to clarify it works with both regular and code file components
+- Updated `createCodeFile` description to mention using ~~`insertComponentInCanvas`~~ `updateNode` to add component to canvas
+- Updated ~~`insertComponentInCanvas`~~ description to clarify it works with both regular and code file components (tool removed 2025-09-12)
 
 ## 2025-01-29 17:40
 
@@ -353,7 +397,7 @@
 
 ## 2025-01-29 13:05
 
-- Added `insertComponentInCanvas` MCP tool to insert components into the canvas using their insertUrl
+- Added ~~`insertComponentInCanvas`~~ MCP tool to insert components into the canvas using their insertUrl (removed 2025-09-12, use `updateNode` instead)
 - Enhanced `getProjectXml` to include insertUrl for components and code files  
 - Updated `getProjectXml` to show currently focused page/component ID
 - Updated `createCodeFile` description to mention insertUrl in return value

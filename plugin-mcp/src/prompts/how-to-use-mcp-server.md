@@ -13,7 +13,7 @@ The MCP tools allow you to:
 
 ## Getting Started
 
-Always begin by calling `getProjectXml` to understand the project structure. This returns an XML tree showing all pages, components, code files, color styles, and text styles with their IDs and properties, which you'll use for subsequent operations.
+Always begin by calling `getProject` to understand the project structure. This returns an XML tree showing all pages, components, code files, color styles, and text styles with their IDs and properties, which you'll use for subsequent operations.
 
 To check if the project is published and get its public URL, use `getProjectWebsiteUrl`.
 
@@ -23,22 +23,24 @@ Framer projects consist of nodes (pages, components, frames, text, etc.) that ca
 
 To work with nodes:
 
-1. Get the current state using `getNodeXml` or `getSelectedNodesXml`
+1. Get the current state using `getNode`
 2. Modify the XML with desired changes
-3. Apply changes using `updateXmlForNode`
+3. Apply changes using `updateNode`
 
-**Note**: `getNodeXml` also validates the node type and will return helpful error messages if you try to use it with:
+**Note**: `getNode` can now be used with:
+- Regular nodes: Returns XML representation
+- Code files: Returns the TypeScript/React source code
 
-- **Style paths** (starting with `/`): Style data is displayed in `getProjectXml` under the `<ColorStyles>` and `<TextStyles>` sections
-- **Code file IDs**: Use `readCodeFile` to read code file content
+It will return helpful error messages if you try to use it with:
+- **Style paths** (starting with `/`): Style data is displayed in `getProject` under the `<ColorStyles>` and `<TextStyles>` sections
 
-**Important**: `updateXmlForNode` can only be used for regular Framer nodes (pages, components, frames, text, etc.). It cannot be used for:
+**Important**: `updateNode` can only be used for regular Framer nodes (pages, components, frames, text, etc.). It cannot be used for:
 
-- **Code files**: Use `updateCodeFile` to modify code
-- **Color styles**: Use `manageColorStyle` with `type: "update"`
-- **Text styles**: Use `manageTextStyle` with `type: "update"`
+- **Code files**: Use `upsertCodeFile` to modify code
+- **Color styles**: Use `upsertColorStyle` with `type: "update"`
+- **Text styles**: Use `upsertTextStyle` with `type: "update"`
 
-If you try to use `updateXmlForNode` with these resources, you'll receive an error message directing you to the appropriate tool.
+If you try to use `updateNode` with these resources, you'll receive an error message directing you to the appropriate tool.
 
 ## XML Attribute Formats
 
@@ -85,8 +87,18 @@ Component instances are references to reusable components. They have:
 To add a component to the canvas:
 
 1. Use `getComponentInsertUrlAndTypes` with an ID (either a component node ID or code file ID) to get the insertUrl and available props
-2. Use `insertComponentInCanvas` with the insertUrl to add the component to the currently focused page/component
-3. Use `updateXmlForNode` to position and configure the newly inserted component instance, using the props from step 1 as XML attributes
+2. Use `updateNode` with XML that includes a ComponentInstance element with the insertUrl attribute:
+   ```xml
+   <Frame nodeId="parent-id">
+     <ComponentInstance 
+       insertUrl="https://framer.com/m/Component.js"
+       width="200px"
+       height="100px"
+       <!-- add component-specific props here -->
+     />
+   </Frame>
+   ```
+3. The component will be created and positioned in one step, using the props from step 1 as XML attributes
 
 ### Updating Components vs Instances
 
@@ -98,13 +110,13 @@ This distinction is crucial - updating a component definition is a powerful oper
 
 ### Replica Nodes (Variants)
 
-When calling `getNodeXml` on a replica node (variant), children are automatically hidden to avoid confusion. The tool will also return a warning message recommending to update the original component instead.
+When calling `getNode` on a replica node (variant), children are automatically hidden to avoid confusion. The tool will also return a warning message recommending to update the original component instead.
 
 In the XML, replica nodes will have a special comment in their attributes:
 
 ```xml
 <ReplicaNode
-    <!-- This is a non-primary variant. To see children inside, call getNodeXml again on this nodeId. -->
+    <!-- This is a non-primary variant. To see children inside, call getNode again on this nodeId. -->
     nodeId="xyz456">
 </ReplicaNode>
 ```
@@ -113,7 +125,7 @@ This behavior applies to both root replica nodes and any child nodes that are re
 
 ## Fonts
 
-Framer provides access to over 8000 fonts. Use `searchFonts` to find fonts by searching their selector string. The returned `selector` value is what you use in the `font` attribute.
+Framer provides access to over 8000 fonts. Use `search` with `kind: "fonts"` to find fonts by searching their selector string. The returned `selector` value is what you use in the `font` attribute.
 
 **Important**: Text nodes can use EITHER `inlineTextStyle` (project text style) OR `font` (custom font), not both. Remove `inlineTextStyle` before applying a custom font.
 
@@ -125,24 +137,24 @@ Project styles provide consistent design tokens across your project:
 
 - Referenced by paths like `/Primary/Blue`
 - Support light and dark theme variants
-- Can be created or updated globally using `manageColorStyle`
+- Can be created or updated globally using `upsertColorStyle`
 
 ### Text Styles
 
 - Referenced by paths like `/Heading xl`
 - Include typography properties (size, line height, spacing, etc.)
-- Can be created or updated globally using `manageTextStyle`
+- Can be created or updated globally using `upsertTextStyle`
 
-Color and text styles are listed in the `getProjectXml` output under `<ColorStyles>` and `<TextStyles>` sections. There are no separate tools to fetch only styles - use `getProjectXml` to see all available styles in your project.
+Color and text styles are listed in the `getProject` output under `<ColorStyles>` and `<TextStyles>` sections. There are no separate tools to fetch only styles - use `getProject` to see all available styles in your project.
 
 ### Managing Styles
 
-Use `manageColorStyle` and `manageTextStyle` to create or update styles. The display name is automatically derived from the path:
+Use `upsertColorStyle` and `upsertTextStyle` to create or update styles. The display name is automatically derived from the path:
 
 ```typescript
 // Create a color style
 // Path "/Brand/Primary" creates a style named "Primary" in the "Brand" folder
-await mcp.manageColorStyle({
+await mcp.upsertColorStyle({
     type: 'create',
     stylePath: '/Brand/Primary',
     properties: {
@@ -152,7 +164,7 @@ await mcp.manageColorStyle({
 })
 
 // Update an existing color style
-await mcp.manageColorStyle({
+await mcp.upsertColorStyle({
     type: 'update',
     stylePath: '/Brand/Primary',
     properties: {
@@ -162,7 +174,7 @@ await mcp.manageColorStyle({
 
 // Create a text style
 // Path "/Typography/Heading/H1" creates a style named "H1" in the "Typography/Heading" folder
-await mcp.manageTextStyle({
+await mcp.upsertTextStyle({
     type: 'create',
     stylePath: '/Typography/Heading/H1',
     properties: {
@@ -174,7 +186,7 @@ await mcp.manageTextStyle({
 })
 
 // Update an existing text style
-await mcp.manageTextStyle({
+await mcp.upsertTextStyle({
     type: 'update',
     stylePath: '/Typography/Heading/H1',
     properties: {
@@ -209,8 +221,8 @@ Use `duplicateNode` to create an exact copy of a node:
 
 ## Best Practices
 
-1. **Start with `getProjectXml`** to understand the project structure
-2. **Inspect before modifying** - Use `getNodeXml` to see current state
+1. **Start with `getProject`** to understand the project structure
+2. **Inspect before modifying** - Use `getNode` to see current state
 3. **Preserve existing attributes** - Only include attributes you want to change
 4. **Use project styles** - Reference style paths instead of hardcoded values
 5. **Include nodeId attributes** - Essential for targeting specific nodes

@@ -13,6 +13,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { OAuthProvider } from '@cloudflare/workers-oauth-provider'
 import { createClient } from '@supabase/supabase-js'
 import * as cookie from 'cookie'
+import { toJSONSchema } from 'zod'
 import codeComponentsResourceMarkdown from './prompts/how-to-write-framer-code-files.md'
 import { codeComponentsResourceUri, mcpTools } from './lib/schema.js'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
@@ -520,11 +521,16 @@ export class MyMCP extends McpAgent<Env, MCPProps> {
 
             // Register list tools handler
             server.setRequestHandler(ListToolsRequestSchema, async () => {
-                const tools = Object.entries(mcpTools).map(([name, tool]) => ({
-                    name,
-                    description: tool.description,
-                    inputSchema: tool.input,
-                }))
+                const tools = Object.entries(mcpTools).map(([name, tool]) => {
+                    const schema = toJSONSchema(tool.input) as any
+                    // Remove the $schema field as it's not needed for MCP
+                    delete schema.$schema
+                    return {
+                        name,
+                        description: tool.description,
+                        inputSchema: schema,
+                    }
+                })
                 return { tools }
             })
 

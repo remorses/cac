@@ -111,13 +111,16 @@ const textStylePropertiesSchema = z.object({
 
 /* ──────────────────────────── Tool Definitions ─────────────────────────── */
 export const mcpTools = {
-    getProjectXml: {
+    getProject: {
         description: dedent`
         Gets the project pages and components XML, with information of the currently focused page or component.
 
-        This tool also returns the ID of the currently focused page or component node. When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
+        This tool also returns:
+        - The ID of the currently focused page or component node.
+        - The currently selected nodes XML if any nodes are selected
+        - The project's published website URLs (production and staging) if available
 
-        The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
+        The referenced nodeIds can be used with getNode to get the XML of a specific page or component.
 
         Each element in the XML is usually referred as a "node" but the user could also refer to it as a "layer" or "element". The XML structure is similar to Framer's XML layers tree, names are extracted from the layers names given by the user.
 
@@ -126,32 +129,22 @@ export const mcpTools = {
         input: z.object({}),
         output: z.any(),
     },
-    getSelectedNodesXml: {
-        description: 'Gets the currently selected nodes as xml',
-        input: z.object({}),
-        output: z.any(),
-    },
-    zoomIntoView: {
-        description:
-            'Zooms the canvas to center on the given node ID. Code file nodes are not supported.',
-        input: z.object({
-            nodeId: NodeId.describe('The ID of the node to zoom into view'),
-        }),
-        output: z.any(),
-    },
-    getNodeXml: {
+    getNode: {
         description: dedent`
-            Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call getSelectedNodesXml instead
+            Get a specific Framer node as XML or code file content. You first need to get a node id via getProject. Selected nodes are also shown in getProject output.
 
-            > IMPORTANT. If you need to recursively read all xml in the Framer project you should first read all pages xml, then read all components xml for the components that appear in the pages. Components are a way to encapsulate layers, you still need to call getNodeXml on each instance componentId to see the actual component implementation.
+            For regular nodes: Returns the XML representation of the node and its children.
+            For code files: Returns the TypeScript/React source code content.
+
+            > IMPORTANT. If you need to recursively read all xml in the Framer project you should first read all pages xml, then read all components xml for the components that appear in the pages. Components are a way to encapsulate layers, you still need to call getNode on each instance componentId to see the actual component implementation.
         `,
         input: z.object({
-            nodeId: NodeId.describe('The ID of the node to get as XML for, can be a page nodeId, a component componentId or any other XML layer found in a page or component'),
+            nodeId: NodeId.describe('The ID of the node to get as XML for, can be a page nodeId, a component componentId, a code file ID, or any other XML layer found in a page or component'),
         }),
         output: z.any(),
     },
 
-    updateXmlForNode: {
+    updateNode: {
         description: dedent`
               Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
 
@@ -193,9 +186,9 @@ export const mcpTools = {
               - Create wrapper layers by placing existing nodes inside new nodes
 
               This tool CANNOT be used for:
-              - Code files (use 'updateCodeFile' instead)
-              - Color styles (use 'manageColorStyle' with type: 'update' instead)
-              - Text styles (use 'manageTextStyle' with type: 'update' instead)
+               - Code files (use 'upsertCodeFile' instead)
+              - Color styles (use 'upsertColorStyle' with type: 'update' instead)
+              - Text styles (use 'upsertTextStyle' with type: 'update' instead)
               - Deleting nodes (use 'deleteNode' instead)
 
               ## Return Value
@@ -416,7 +409,7 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    manageColorStyle: {
+    upsertColorStyle: {
         description: dedent`
             Creates or updates a color style in the project.
 
@@ -446,7 +439,7 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    manageTextStyle: {
+    upsertTextStyle: {
         description: dedent`
             Creates or updates a text style in the project.
 
@@ -478,9 +471,13 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    searchFonts: {
+    search: {
         description: dedent`
-            Search for Framer available fonts by selector substring. This tool searches among  all available fonts on Framer. Returns max 20 results. Use specific search terms for better results.
+            Search for resources in Framer. Currently only supports searching for fonts.
+
+            ## Fonts
+            
+            Searches among all available fonts on Framer by selector substring. Returns max 20 results. Use specific search terms for better results.
 
             IMPORTANT: The returned 'selector' field is what you use in XML font attributes:
             <Text font="GF;Inter-600">Bold text</Text>
@@ -490,6 +487,11 @@ export const mcpTools = {
             Text nodes can use EITHER inlineTextStyle (project text style) OR font (custom font), not both.
         `,
         input: z.object({
+            kind: z
+                .literal('fonts')
+                .describe(
+                    'The type of resource to search for. Currently only "fonts" is supported.',
+                ),
             query: z
                 .string()
                 .min(1)
@@ -501,17 +503,57 @@ export const mcpTools = {
     },
     deleteNode: {
         description: dedent`
-        Deletes a Framer node, color style, text style, or code file.
+        Deletes a Framer node from the page or component.
 
-        - For nodes: Pass the node ID to remove it from the page/component (also removes all children)
-        - For color/text styles: Pass the style path (e.g., "/Primary", "/Heading xl")
-        - For code files: Pass the code file ID
+        Pass the node ID to remove it from the canvas. This will also remove all of its children.
 
-        NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an element to another parent, reference both the element id and the new parent id and updateXmlForNode will do the reparenting for you.
+        IMPORTANT: 
+        - If you're trying to delete a style (path starts with "/"), use deleteColorStyle or deleteTextStyle instead
+        - If you're trying to delete a code file, use deleteCodeFile instead
+        - NEVER use this tool to change the parent of a node! Instead use updateNode to move an element to another parent
 
         `,
         input: z.object({
-            nodeId: NodeId.describe('The ID of the node/style/code file to delete'),
+            nodeId: NodeId.describe('The ID of the node to delete from the canvas'),
+        }),
+        output: z.any(),
+    },
+    deleteColorStyle: {
+        description: dedent`
+        Deletes a color style from the project.
+
+        Pass the style path to remove it (e.g., "/Primary", "/Brand/Blue").
+        
+        Warning: This will affect all nodes using this color style in the project.
+        `,
+        input: z.object({
+            stylePath: z.string().describe('The path of the color style to delete (must start with /)'),
+        }),
+        output: z.any(),
+    },
+    deleteTextStyle: {
+        description: dedent`
+        Deletes a text style from the project.
+
+        Pass the style path to remove it (e.g., "/Heading xl", "/Typography/Body").
+        
+        Warning: This will affect all nodes using this text style in the project.
+        `,
+        input: z.object({
+            stylePath: z.string().describe('The path of the text style to delete (must start with /)'),
+        }),
+        output: z.any(),
+    },
+    deleteCodeFile: {
+        description: dedent`
+        Deletes a code file from the project.
+
+        Pass the code file ID to remove it.
+        
+        Warning: This will remove all instances of this code component from the canvas.
+        `,
+        input: z.object({
+            codeFileId: z.string().describe('The ID of the code file to delete'),
         }),
         output: z.any(),
     },
@@ -523,7 +565,7 @@ export const mcpTools = {
 
             Returns the ID of the newly created duplicate node. It will have same attributes, content and children.
 
-            DO NOT USE this tool to move a node to a different place or ordering. Instead use updateXmlForNode to change the parent of a node or its position in the layers tree.
+            DO NOT USE this tool to move a node to a different place or ordering. Instead use updateNode to change the parent of a node or its position in the layers tree.
         `,
         input: z.object({
             nodeId: NodeId.describe('The ID of the node to duplicate'),
@@ -538,7 +580,7 @@ export const mcpTools = {
 
             You should login with the same Google account you used in Framer React Export plugin if you want to reuse your existing subscription.
 
-            Only component nodes can be exported. Use getProjectXml to find available component node IDs.
+            Only component nodes can be exported. Use getProject to find available component node IDs.
 
             The React code will be composed of .jsx files and .css styles. it is machine generated so it is recommended to use Framer variables to customize the components. Framer variables will be available as React component props.
 
@@ -557,23 +599,38 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    createCodeFile: {
+    upsertCodeFile: {
         description: dedent`
-            Create a new code file in the Framer project. Code files can export either code components or overrides.
+            Create a new code file or update an existing one in the Framer project.
 
+            For creating a new file:
+            - Provide name and content (codeFileId should be omitted)
+            - The name must end with .tsx extension
+            - Code files can export either code components or overrides
+
+            For updating an existing file:
+            - Provide codeFileId and content (name is optional, only if renaming)
+            - This will replace the entire content of the file
+            
             ALWAYS read the MCP resource file ${codeComponentsResourceUri} to see how to create code components and overrides.
 
             You can use typescript and React. You can also import components in the project by using getComponentInsertUrlAndTypes to get their import url.
 
             When creating a code component you should also define its property controls via Framer addPropertyControls.
 
-            Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with the insertUrl to add the component to the canvas.
+            Returns the ID, path, and insertUrl of the code file. Use the insertUrl with updateNode to add the component to the canvas.
+            The file will be automatically linted and type-checked after creation/update.
         `,
         input: z.object({
+            codeFileId: z
+                .string()
+                .optional()
+                .describe('ID of existing code file to update (omit to create new)'),
             name: z
                 .string()
+                .optional()
                 .describe(
-                    'The name of the code file (e.g., "MyComponent.tsx")',
+                    'The name of the code file (e.g., "MyComponent.tsx"). Required for new files, optional for updates',
                 ),
             content: z
                 .string()
@@ -581,44 +638,17 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-    readCodeFile: {
-        description: dedent`
-            Read the content of a code file by its ID. Available code files are listed in getProjectXml.
 
-            Returns the current content, name, path, and available exports of the code file.
-        `,
-        input: z.object({
-            codeFileId: z.string().describe('The ID of the code file to read'),
-        }),
-        output: z.any(),
-    },
-    updateCodeFile: {
-        description: dedent`
-            Update the content of an existing code file.
-
-            This will replace the entire content of the file.
-            The file will be automatically linted and type-checked after update.
-        `,
-        input: z.object({
-            codeFileId: z
-                .string()
-                .describe('The ID of the code file to update'),
-            content: z
-                .string()
-                .describe('The new TypeScript/React code content'),
-        }),
-        output: z.any(),
-    },
     getComponentInsertUrlAndTypes: {
         description: dedent`
-            Get the insert URL, import statement and prop types documentation for components. This must be called before using insertComponentInCanvas.
+            Get the insert URL, import statement and prop types documentation for components.
 
             The id parameter can be either:
-            - A component node ID (from getProjectXml Components section)
-            - A code file ID (from getProjectXml CodeComponents section)
+            - A component node ID (from getProject Components section)
+            - A code file ID (from getProject CodeComponents section)
 
             Use this tool when you want to:
-            - Insert a component into the canvas (get the insertUrl for insertComponentInCanvas)
+            - Insert a component into the canvas (get the insertUrl to use with updateNode)
             - Use an existing component in a code file (get the import statement)
             - See what props/attributes are available for a component, to use them in XML
         `,
@@ -631,44 +661,7 @@ export const mcpTools = {
         }),
         output: z.string(),
     },
-    insertComponentInCanvas: {
-        description: dedent`
-            Creates a component instance and inserts it into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
 
-            This tool can be used with both regular components and code file components.
-
-            Before using this tool, call getComponentInsertUrlAndTypes to get the insertUrl for the component you want to insert.
-
-            Returns markdown with:
-            - The ID of the newly created node
-            - XML of the new node
-            - The current root node ID (page or component)
-            - Instructions for positioning the node using updateXmlForNode
-        `,
-        input: z.object({
-            insertUrl: z
-                .string()
-                .describe(
-                    'The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes',
-                ),
-        }),
-        output: z.string(),
-    },
-    getProjectWebsiteUrl: {
-        description: dedent`
-            Get the published website URLs for the current Framer project.
-
-            This tool retrieves both staging and production URLs if the project has been published.
-
-            Use this tool when you need to:
-            - Check if the project is published
-            - Get the live website URL
-            - Get the staging/preview URL
-            - Share the project's public URL
-        `,
-        input: z.object({}),
-        output: z.any(),
-    },
     getCMSCollections: {
         description: dedent`
             Gets all CMS collections in the project with their field definitions.
