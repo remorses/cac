@@ -18,11 +18,15 @@ import { codeComponentsResourceUri, mcpTools } from './lib/schema.js'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
 import { sleep } from './lib/utils.js'
 import { KnownError, notifyError } from './lib/errors.js'
+import dedent from 'string-dedent'
 
 // Helper to return text responses from tools
 const textResponse = (text: string) => ({
     content: [{ type: 'text' as const, text }],
 })
+
+const html = dedent
+const framerInstructions = `Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.'`
 
 // Helper to create Supabase client with headers
 interface SupabaseSessionArgs {
@@ -72,6 +76,7 @@ const defaultHandler = {
         const provider = env.OAUTH_PROVIDER
         const url = new URL(request.url)
 
+        console.log(`MCP auth defaultHandler handling ${url.pathname}`)
         // Handle OAuth authorization
         if (url.pathname === '/authorize') {
             const oauthReq = await provider.parseAuthRequest(request)
@@ -192,11 +197,14 @@ const defaultHandler = {
                     body: JSON.stringify({
                         supabaseUserId: user.id,
                         email: user.email,
-                        framerUserId: user.user_metadata?.framer_id || user.id,
                     }),
                 },
             )
 
+            // when user still has not logged in into Framer MCP
+            if (sessionResponse.status === 428) {
+                return htmlForUserWithoutFramerUserId()
+            }
             if (!sessionResponse.ok) {
                 const resText = await sessionResponse.text()
                 return new Response(
@@ -323,62 +331,75 @@ export class MyMCP extends McpAgent<Env> {
 
                 try {
                     const start = Date.now()
-                    const baseUrl = new URL(env.WEBSITE_URL).host
-                    const upstreamUrl = `wss://unframer.co/_tunnel/client?id=${framerUserId}`
+                    const baseUrlHost =
+                        env.STAGE === 'preview'
+                            ? 'preview.unframer.co'
+                            : 'unframer.co'
+                    const upstreamUrl = `wss://${baseUrlHost}/_tunnel/client?id=${framerUserId}`
                     ws = new WebSocket(upstreamUrl)
 
-                    // Wait for connection and ready message with timeout
+                    // Wait for first message with timeout
                     const rpc = await new Promise<WebsocketRpc>(
                         (resolve, reject) => {
-                            // Set up 3 second timeout
+                            // Set up 5 second timeout for first message
                             const timeoutId = setTimeout(() => {
                                 ws!.close()
                                 reject(
                                     new Error(
-                                        'Connection timeout: Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.',
+                                        `Connection timeout: ${framerInstructions}`,
                                     ),
                                 )
-                            }, 5000)
+                            }, 8000)
+
+                            let rpc: WebsocketRpc | null = null
+                            let readySentTime: number
 
                             const handleOpen = () => {
                                 console.log(
-                                    `Connected to upstream tunnel with ID: ${framerUserId}`,
+                                    `WebSocket opened to upstream tunnel with ID: ${framerUserId}`,
                                 )
 
-                                // Send ready message after WebSocket opens
-                                const rpc = createWebsocketHandling({ ws: ws! })
-                                const handleMessageReady = (
-                                    event: MessageEvent,
-                                ) => {
-                                    try {
-                                        const data = JSON.parse(event.data)
-                                        if (data.type === 'ready') {
-                                            // IMPORTANT! every ready message is replied with another ready message from upstream. we know upstream is online if it replies to ready with ready
-                                            // even if upstream was not already connected, it sends a ready message as soon as it connects so we can catch it
-                                            clearTimeout(timeoutId)
-                                            const elapsed = Date.now() - start
-                                            console.log(
-                                                `Framer plugin is ready, connection established in ${(elapsed / 1000).toFixed(2)}s`,
-                                            )
-                                            // Remove the message listener since we only need it once
-                                            ws!.removeEventListener(
-                                                'message',
-                                                handleMessageReady,
-                                            )
-                                            resolve(rpc)
-                                        }
-                                    } catch {
-                                        // Ignore parse errors
-                                    }
-                                }
-                                ws!.addEventListener(
-                                    'message',
-                                    handleMessageReady,
-                                )
+                                // Create RPC handler
+                                rpc = createWebsocketHandling({ ws: ws! })
 
+                                // Send ready message
+                                readySentTime = Date.now()
+                                console.log('Sending ready message to upstream')
                                 rpc.send({
                                     payload: { type: 'ready' },
                                 })
+                            }
+
+                            const handleFirstMessage = (
+                                event: MessageEvent,
+                            ) => {
+                                clearTimeout(timeoutId)
+                                resolve(rpc!)
+
+                                const elapsed = Date.now() - start
+                                console.log(
+                                    `First message received, connection established in ${(elapsed / 1000).toFixed(2)}s`,
+                                )
+
+                                // Check if it's a ready response
+                                try {
+                                    const data = JSON.parse(event.data)
+                                    if (
+                                        data.type === 'ready' &&
+                                        readySentTime
+                                    ) {
+                                        const readyResponseTime =
+                                            Date.now() - readySentTime
+                                        console.log(
+                                            `Upstream is connected! Ready message round-trip time: ${(readyResponseTime / 1000).toFixed(3)}s`,
+                                        )
+                                    }
+                                } catch {
+                                    // First message might not be JSON or ready
+                                    console.log(
+                                        'First message was not a ready response',
+                                    )
+                                }
                             }
 
                             const handleError = (err: Event) => {
@@ -386,10 +407,32 @@ export class MyMCP extends McpAgent<Env> {
                                 reject(err)
                             }
 
+                            // Set up close handler for early close (e.g., 4008)
+                            const handleEarlyClose = (event: CloseEvent) => {
+                                clearTimeout(timeoutId)
+                                if (event.code === 4008) {
+                                    reject(
+                                        new Error(
+                                            `Upstream not connected, Framer MCP plugin is not running: ${framerInstructions}`,
+                                        ),
+                                    )
+                                } else {
+                                    reject(
+                                        new Error(
+                                            `WebSocket closed early with code ${event.code}: ${event.reason || 'No reason provided'}`,
+                                        ),
+                                    )
+                                }
+                            }
+
                             ws!.addEventListener('open', handleOpen, {
                                 once: true,
                             })
+                            ws!.addEventListener('message', handleFirstMessage)
                             ws!.addEventListener('error', handleError, {
+                                once: true,
+                            })
+                            ws!.addEventListener('close', handleEarlyClose, {
                                 once: true,
                             })
                         },
@@ -399,8 +442,16 @@ export class MyMCP extends McpAgent<Env> {
                     // Start idle timeout on successful connection
                     resetIdleTimeout()
 
-                    ws.addEventListener('close', () => {
-                        console.log('Upstream WebSocket closed')
+                    ws.addEventListener('close', (event) => {
+                        if (event.code === 4008) {
+                            console.log(
+                                'Upstream WebSocket closed with code 4008: Upstream not connected (Framer plugin not running)',
+                            )
+                        } else {
+                            console.log(
+                                `Upstream WebSocket closed with code ${event.code}: ${event.reason || 'No reason provided'}`,
+                            )
+                        }
 
                         if (idleTimeout) {
                             clearTimeout(idleTimeout)
@@ -425,6 +476,7 @@ export class MyMCP extends McpAgent<Env> {
 
                     return rpc
                 } catch (error) {
+                    notifyError(error, 'connectWebSocket')
                     // Attempt reconnection if server is not stopped
                     // Don't auto-reconnect on error - wait for next request
                     clientConnectedPromise = null
@@ -567,14 +619,23 @@ const oauthProvider = new OAuthProvider({
     defaultHandler: defaultHandler as ExportedHandler,
     authorizeEndpoint: '/authorize',
     tokenEndpoint: '/token',
+    accessTokenTTL: 60 * 60 * 24 * 7,
+
     clientRegistrationEndpoint: '/register',
 })
 
 const handler = {
     async fetch(request: Request, env: Env, ctx: ExecutionContext) {
         const url = new URL(request.url)
-        // Simple SSE endpoint that logs "hello" on connect
+
+        // https://mcp.preview.unframer.co/htmlForUserWithoutFramerUserId
+        // http://localhost:8787/htmlForUserWithoutFramerUserId
+        if (url.pathname === '/htmlForUserWithoutFramerUserId') {
+            return htmlForUserWithoutFramerUserId()
+        }
+
         if (url.pathname === '/sse' || url.pathname === '/sse/message') {
+            console.log(`handling /sse for ${request.url}`)
             const id = url.searchParams.get('id')
             const secret = url.searchParams.get('secret')
 
@@ -621,4 +682,91 @@ const handler = {
         return await oauthProvider.fetch(request, env, ctx)
     },
 }
+function htmlForUserWithoutFramerUserId() {
+    return new Response(
+        html`
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <meta charset="utf-8" />
+                    <meta
+                        name="viewport"
+                        content="width=device-width, initial-scale=1.0"
+                    />
+                    <title>Framer MCP Plugin Required</title>
+                    <style>
+                        html,
+                        body {
+                            height: 100%;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        body {
+                            min-height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background: #f7f7f8;
+                            color: #222;
+                            font-family: system-ui, sans-serif;
+                        }
+                        .container {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            max-width: 600px;
+                            width: 100%;
+                            padding: 24px;
+                            box-sizing: border-box;
+                        }
+                        h1 {
+                            font-size: 2.2rem;
+                            margin-bottom: 1.4rem;
+                            font-weight: 700;
+                            letter-spacing: -0.01em;
+                            text-wrap: balance;
+                            text-align: center;
+                        }
+                        p {
+                            font-size: 1.1rem;
+                            margin: 0 0 0.9em 0;
+                            color: #444;
+                            text-wrap: pretty;
+                            text-align: center;
+                        }
+                        a {
+                            color: #2575ef;
+                            text-decoration: none;
+                            word-break: break-all;
+                        }
+                        a:hover {
+                            text-decoration: underline;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Framer MCP Plugin Not Open</h1>
+                        <p>
+                            Before using the Framer MCP, you have to
+                            <a
+                                href="https://www.framer.com/marketplace/plugins/mcp/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >open the plugin</a
+                            >
+                            and log in inside the Framer app.
+                        </p>
+                    </div>
+                </body>
+            </html>
+        `,
+        {
+            status: 428,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        },
+    )
+}
+
 export default handler

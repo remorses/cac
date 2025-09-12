@@ -21,7 +21,30 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const body = await request.json()
-    const { supabaseUserId, email, framerUserId } = body
+    const { supabaseUserId, email } = body
+
+    // const framerUserId =
+    //
+    // Try to find existing FramerLoginSession with non-null framerUserId
+    const existingFramerLoginSession =
+        await prisma.framerLoginSession.findFirst({
+            where: {
+                framerUserId: { not: null },
+                // pluginName: 'mcp',
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        })
+
+    const framerUserId = existingFramerLoginSession?.framerUserId
+
+    if (!framerUserId) {
+        return Response.json(
+            { error: 'Missing framerUserId in user session' },
+            { status: 428 },
+        )
+    }
 
     // Verify the token belongs to the same user
     if (user.id !== supabaseUserId) {
@@ -52,8 +75,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Generate MCP session token
     const sessionToken = crypto.randomUUID()
-    const finalFramerUserId =
-        framerUserId || user.user_metadata?.framer_id || user.id
 
     // Store in FramerLoginSession
     await prisma.framerLoginSession.create({
@@ -61,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
             key: sessionToken,
             usedByUserId: user.id,
             orgId: orgUser.orgId,
-            framerUserId: finalFramerUserId,
+            framerUserId: framerUserId,
             pluginName: PluginName.mcp, // MCP uses the llm plugin name
             data: {
                 email: email || user.email || '',
@@ -73,5 +94,5 @@ export async function action({ request }: ActionFunctionArgs) {
         },
     })
 
-    return Response.json({ sessionToken, framerUserId: finalFramerUserId })
+    return Response.json({ sessionToken, framerUserId: framerUserId })
 }
