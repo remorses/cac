@@ -743,21 +743,37 @@ function htmlForUserWithoutFramerUserId() {
                         a:hover {
                             text-decoration: underline;
                         }
+
+                        ol {
+                            padding-left: 1.25em;
+                        }
+                        li {
+                            margin-bottom: 1em;
+                        }
+
                     </style>
                 </head>
                 <body>
                     <div class="container">
                         <h1>Framer MCP Plugin Not Open</h1>
-                        <p>
-                            Before using the Framer MCP, you have to
-                            <a
-                                href="https://www.framer.com/marketplace/plugins/mcp/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                >open the plugin</a
-                            >
-                            and log in inside the Framer app.
-                        </p>
+                        <ol>
+                            <li>
+                                <a
+                                    href="https://www.framer.com/marketplace/plugins/mcp/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >Open the Framer MCP plugin</a
+                                >
+                                inside the Framer app or website.
+                            </li>
+                            <li>
+                                Sign in inside the plugin using the
+                                <b>same Google account</b> you use here.
+                            </li>
+                            <li>
+                                Return to this page and log in again with MCP.
+                            </li>
+                        </ol>
                     </div>
                 </body>
             </html>
