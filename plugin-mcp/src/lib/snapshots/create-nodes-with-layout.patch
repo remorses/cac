@@ -1,24 +1,24 @@
 Successfully updated:
-Created Frame node pR_DJKJgp
-Created Frame node p2YUvcEEV
-Created Text node jJwxhTSsO
-Created Text node l4CIU3ZFR
-Created Frame node LcNPrqe5B
-Updated attributes for node pR_DJKJgp
-Updated attributes for node p2YUvcEEV
-Updated text for node jJwxhTSsO
-Updated attributes for node jJwxhTSsO
-Updated text for node l4CIU3ZFR
-Updated attributes for node l4CIU3ZFR
-Updated attributes for node LcNPrqe5B
-Reordered node p2YUvcEEV within parent pR_DJKJgp to index 0
+Created Frame node AWhyyv4Vb
+Created Frame node OErY3pRoD
+Created Text node VwuxPsBi6
+Created Text node hHdErnezz
+Created Frame node WDR86ELlt
+Updated attributes for node AWhyyv4Vb
+Updated attributes for node OErY3pRoD
+Updated text for node VwuxPsBi6
+Updated attributes for node VwuxPsBi6
+Updated text for node hHdErnezz
+Updated attributes for node hHdErnezz
+Updated attributes for node WDR86ELlt
+Reordered node OErY3pRoD within parent AWhyyv4Vb to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -2976,20 +2976,73 @@
+@@ -2977,20 +2977,73 @@
      position="absolute"
      width="fit-content"
      height="fit-content"
@@ -40,7 +40,7 @@ Index: node.xml
    something
  </Something>
 +<Stack
-+    nodeId="pR_DJKJgp"
++    nodeId="AWhyyv4Vb"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -56,7 +56,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="p2YUvcEEV"
++      nodeId="OErY3pRoD"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -64,7 +64,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="jJwxhTSsO"
++        nodeId="VwuxPsBi6"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -76,7 +76,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="l4CIU3ZFR"
++      nodeId="hHdErnezz"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -84,7 +84,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="LcNPrqe5B"
++      nodeId="WDR86ELlt"
 +      width="100%"
 +      height="100px"
 +      <!-- background color string or project color style path (if starts with /) -->
