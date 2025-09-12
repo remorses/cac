@@ -9,6 +9,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
+  directUrl  = env("DATABASE_URL_IPV4")
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
   schemas    = ["auth", "public"]
 }
