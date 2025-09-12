@@ -59,7 +59,7 @@ export async function websocketClientHandling({
             }
             const { id, payload } = data || {}
             if (!payload?.type) {
-                console.error(`websocket sent invalid data`, event.data)
+                // console.error(`websocket sent invalid data`, event.data)
                 return
             }
             if (payload.type === 'ready') {
@@ -126,7 +126,7 @@ export async function websocketClientHandling({
 
             if (event.code === 4009) {
                 const errorMessage =
-                    'Another MCP plugin is already connected. Please close the other plugin and keep only one plugin open.'
+                    'Another MCP plugin is already connected. Please keep only one open. Try reopening the plugin if that is not the case.'
                 console.error(
                     'Another plugin is already connected for this user',
                 )
