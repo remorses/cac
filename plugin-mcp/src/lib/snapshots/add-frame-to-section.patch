@@ -1,82 +1,40 @@
 Successfully updated:
-Created Frame node drxyB1YYg
-Created Frame node aLgGjuXsS
-Created Frame node wcQYRW_Tp
-Updated attributes for node drxyB1YYg
-Updated attributes for node aLgGjuXsS
-Updated attributes for node wcQYRW_Tp
-Reordered node aLgGjuXsS within parent drxyB1YYg to index 0
+Created Frame node HBz9UGBpD
+Created Frame node KF71xf22O
+Created Frame node dJDnMiDZI
+Updated attributes for node HBz9UGBpD
+Updated attributes for node KF71xf22O
+Updated attributes for node dJDnMiDZI
+Reordered node KF71xf22O within parent HBz9UGBpD to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -46,41 +46,40 @@
-       stackDirection="horizontal"
-       stackDistribution="center"
-       stackAlignment="center"
-   >
-     <NavigationFlyout
-         nodeId="BwfPOa8WY"
-         width="100%"
-         height="fit-content"
-         <!-- the component id this instance uses -->
-         componentId="sCy40XUNu"
-         <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
-         variant="arFY89os4"
-      />
-   </NavigationFlyoutFixed>
-   <Navigation
-       nodeId="P8AJj3Q2E"
-       width="1fr"
-       height="fit-content"
-       <!-- the component id this instance uses -->
-       componentId="sCy40XUNu"
--      <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
-       variant="QOfAnzBxh"
-    />
-   <HeroSection
-       nodeId="qKDdG3FQZ"
-       width="1fr"
-       height="fit-content"
-       layout="stack"
-       padding="8px"
-       stackDirection="vertical"
-       stackDistribution="start"
-       stackAlignment="center"
-   >
-     <Container
-         nodeId="rUPekfMHT"
-         width="1fr"
-         height="fit-content"
-         maxWidth="1152px"
-         <!-- background color string or project color style path (if starts with /) -->
-         backgroundColor="white"
-         borderRadius="32px"
-@@ -270,40 +269,71 @@
-           </BadgeGroup>
-           <Heading
-               nodeId="JPcat5fzD"
-               width="1fr"
-               height="fit-content"
-               <!-- project text style path, always starts with / -->
-               inlineTextStyle="/undefined - Test 95"
+@@ -301,40 +301,71 @@
+               stackDistribution="center"
+               stackAlignment="center"
            >
-             Fast PostgreSQL Search
-           </Heading>
-           <Description
-               nodeId="yK6cCeTUB"
-               width="1fr"
-               height="fit-content"
-               maxWidth="520px"
-               <!-- project text style path, always starts with / -->
-               inlineTextStyle="/Body lg"
-           >
-             Updated text 7902
-           </Description>
+             <Frame
+                 nodeId="i7j9JBlbE"
+                 width="100px"
+                 height="100px"
+                 <!-- background color string or project color style path (if starts with /) -->
+                 backgroundColor="rgb(255, 255, 255)"
+                 borderRadius="8px"
+              />
+             <Frame
+                 nodeId="sPm21hajx"
+                 width="150px"
+                 height="80px"
+                 <!-- background color string or project color style path (if starts with /) -->
+                 backgroundColor="rgb(200, 200, 200)"
+                 borderRadius="4px"
+              />
+           </Stack>
 +          <Stack
-+              nodeId="drxyB1YYg"
++              nodeId="HBz9UGBpD"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -90,7 +48,7 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="aLgGjuXsS"
++                nodeId="KF71xf22O"
 +                width="100px"
 +                height="100px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -98,7 +56,7 @@ Index: node.xml
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="wcQYRW_Tp"
++                nodeId="dJDnMiDZI"
 +                width="150px"
 +                height="80px"
 +                <!-- background color string or project color style path (if starts with /) -->

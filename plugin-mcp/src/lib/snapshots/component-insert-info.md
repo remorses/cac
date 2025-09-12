@@ -30,4 +30,4 @@ import MobileMenuFramerComponent from "https://framer.com/m/Navigations-Mobile-m
 
  */```
 
-These props can be used as attributes when updating the component instance with `updateXmlForNode`.
+These props can be used as attributes when updating the component instance with `updateNode`.
