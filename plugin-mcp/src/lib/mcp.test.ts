@@ -881,15 +881,15 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-6751\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-4859\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "J1ThmUXgS",
-                  "slug": "test-item-6751",
+                  "id": "s6hktvaEk",
+                  "slug": "test-item-4859",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 6751"
+                      "value": "Test Item 4859"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
@@ -905,7 +905,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 6751</p>"
+                      "value": "<p>Test content for item 4859</p>"
                     }
                   }
                 }
@@ -945,15 +945,15 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-6751\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-4859\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "J1ThmUXgS",
-                  "slug": "test-item-6751",
+                  "id": "s6hktvaEk",
+                  "slug": "test-item-4859",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 7716"
+                      "value": "Updated Item 3018"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
@@ -969,7 +969,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 6751</p>"
+                      "value": "<p>Test content for item 4859</p>"
                     }
                   }
                 }
@@ -996,10 +996,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-6751\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-4859\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "J1ThmUXgS",
-                  "slug": "test-item-6751"
+                  "id": "s6hktvaEk",
+                  "slug": "test-item-4859"
                 }
               }"
             `)
