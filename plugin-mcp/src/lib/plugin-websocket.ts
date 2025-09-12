@@ -23,7 +23,8 @@ export async function websocketClientHandling({
         return cleanupFunction
     }
 
-    const websocketUrl = `wss://unframer.co/_tunnel/upstream?id=${websocketId}`
+    const host = new URL(process.env.PUBLIC_URL!).host
+    const websocketUrl = `wss://${host}/_tunnel/upstream?id=${websocketId}`
 
     let ws: WebSocket
     let pingInterval: NodeJS.Timeout | null = null
