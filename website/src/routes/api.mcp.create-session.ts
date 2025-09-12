@@ -30,7 +30,8 @@ export async function action({ request }: ActionFunctionArgs) {
         await prisma.framerLoginSession.findFirst({
             where: {
                 framerUserId: { not: null, notIn: [''] },
-                // pluginName: 'mcp',
+                // previos MCP sessions were saved without plugin name
+                OR: [{ pluginName: 'mcp' }, { pluginName: null }],
             },
             orderBy: {
                 createdAt: 'desc',
@@ -73,5 +74,8 @@ export async function action({ request }: ActionFunctionArgs) {
         orgUser = { org, orgId: org.orgId, userId: user.id, role: 'ADMIN' }
     }
 
-    return Response.json({ sessionToken: existingFramerLoginSession.key, framerUserId })
+    return Response.json({
+        sessionToken: existingFramerLoginSession.key,
+        framerUserId,
+    })
 }
