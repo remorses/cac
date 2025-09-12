@@ -20,6 +20,13 @@ import { sleep } from './lib/utils.js'
 import { KnownError, notifyError } from './lib/errors.js'
 import dedent from 'string-dedent'
 
+// Type for MCP props passed through OAuth or legacy auth
+interface MCPProps {
+    framerUserId?: string
+    email?: string
+    secret?: string
+}
+
 // Helper to return text responses from tools
 const textResponse = (text: string) => ({
     content: [{ type: 'text' as const, text }],
@@ -231,7 +238,8 @@ const defaultHandler = {
                 scope: oauthReq.scope || ['read', 'write'],
                 props: {
                     framerUserId,
-                },
+                    email: user.email,
+                } satisfies MCPProps,
             })
 
             // Clear the state cookie and redirect back to MCP client
@@ -264,7 +272,7 @@ const defaultHandler = {
     },
 }
 
-export class MyMCP extends McpAgent<Env> {
+export class MyMCP extends McpAgent<Env, MCPProps> {
     server = new Server(
         {
             name: 'Framer MCP',
@@ -289,12 +297,15 @@ export class MyMCP extends McpAgent<Env> {
         try {
             const server = this.server
 
-            // Get the framerUserId from the OAuth context
-            const framerUserId = this.props?.framerUserId as string | undefined
+            // Get the framerUserId and email from the OAuth context
+            const framerUserId = this.props?.framerUserId
+            const userEmail = this.props?.email
 
             console.log(
                 'Initializing MCP with authenticated framerUserId:',
                 framerUserId,
+                'email:',
+                userEmail,
             )
 
             let ws: WebSocket | null = null
@@ -413,7 +424,7 @@ export class MyMCP extends McpAgent<Env> {
                                 if (event.code === 4008) {
                                     reject(
                                         new Error(
-                                            `Upstream not connected for ${framerUserId}, Framer MCP plugin is not running: ${framerInstructions}`,
+                                            `Upstream not connected for ${framerUserId} (email: ${userEmail}), Framer MCP plugin is not running. User should login with same Google account (${userEmail}) in both ends. ${framerInstructions}`,
                                         ),
                                     )
                                 } else {
@@ -672,9 +683,9 @@ const handler = {
             // Set props for legacy mode
             ctx.props = {
                 framerUserId: data.framerUserId || id,
-                websocketId: id,
                 secret,
-            }
+                email: data.email,
+            } satisfies MCPProps
 
             // Call the SSE handler with legacy props
             return MyMCP.serveSSE('/sse').fetch(request, env, ctx)
