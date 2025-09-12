@@ -5,7 +5,7 @@
     "type": "module",
     "main": "./src/index.ts",
     "scripts": {
-        "dev": "doppler run -c production -- vite",
+        "dev": "doppler run -c preview -- vite",
         "test": "doppler run -- pnpm vitest -u --run",
         "build": "tsc && rm -rf dist && doppler run -c production -- pnpm vite build",
         "pack": "npx -y framer-plugin-tools@latest pack && open -R plugin.zip",
