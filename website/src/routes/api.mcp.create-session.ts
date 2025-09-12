@@ -73,26 +73,5 @@ export async function action({ request }: ActionFunctionArgs) {
         orgUser = { org, orgId: org.orgId, userId: user.id, role: 'ADMIN' }
     }
 
-    // Generate MCP session token
-    const sessionToken = crypto.randomUUID()
-
-    // Store in FramerLoginSession
-    await prisma.framerLoginSession.create({
-        data: {
-            key: sessionToken,
-            usedByUserId: user.id,
-            orgId: orgUser.orgId,
-            framerUserId: framerUserId,
-            pluginName: PluginName.mcp, // MCP uses the llm plugin name
-            data: {
-                email: email || user.email || '',
-                isMcpSession: true,
-                expiresAt: new Date(
-                    Date.now() + 24 * 60 * 60 * 1000,
-                ).toISOString(),
-            },
-        },
-    })
-
-    return Response.json({ sessionToken, framerUserId })
+    return Response.json({ sessionToken: existingFramerLoginSession.key, framerUserId })
 }
