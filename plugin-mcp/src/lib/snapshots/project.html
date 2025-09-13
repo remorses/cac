@@ -2,7 +2,7 @@ Project structure:
 
 <!-- Root node containing all pages, components, and code files in the project -->
 <Project>
-  <!-- All pages in the project. Use getNode with a page nodeId to see its contents -->
+  <!-- All pages in the project. Use getNodeXml with a page nodeId to see its contents -->
   <Pages>
     <Page nodeId="vN6zkojot" path="/404" />
     <Page nodeId="CpFAHygNJ" path="/" />
@@ -11,7 +11,7 @@ Project structure:
     <Page nodeId="oBHEiJUrU" path="/blog" />
     <Page nodeId="cyYCWZOM9" path="/blog/:slug" />
   </Pages>
-  <!-- Reusable components. Use getNode with a component nodeId to see its structure -->
+  <!-- Reusable components. Use getNodeXml with a component nodeId to see its structure -->
   <Components>
     <Component nodeId="zQ4rhDKqX" name="Button" />
     <Component nodeId="z0J_SV8Dz" name="Elements/Badge" />
@@ -38,7 +38,7 @@ Project structure:
     <Component nodeId="YGyZnk3Uk" name="Memoji" />
     <Component nodeId="hXOuGnrH3" name="Memoji 2" />
   </Components>
-  <!-- Code components written in React/TypeScript. Use getNode with codeFileId to see the code -->
+  <!-- Code components written in React/TypeScript. Use readCodeFile to see the code -->
   <CodeComponents>
     <CodeComponent codeFileId="Th86gFY" path="Test.tsx" />
     <CodeComponent codeFileId="eZvzSVQ" path="Workshop/TextScrambler.tsx" />
@@ -51,7 +51,7 @@ Project structure:
     <CodeComponent codeFileId="wGSFmvV" path="Workshop/PoemRectangle.tsx" />
     <CodeComponent codeFileId="rEK9E0A" path="RedRectangle.tsx" />
   </CodeComponents>
-  <!-- Code override files that modify component behavior. Use getNode with codeFileId to see the code -->
+  <!-- Code override files that modify component behavior. Use readCodeFile to see the code -->
   <CodeOverrides />
   <!-- Project color styles. Reference these in XML attributes like backgroundColor="/StylePath" -->
   <ColorStyles>
@@ -288,14 +288,8 @@ Project structure:
 </Project>
 
 
-The currently focused page ID is: `CpFAHygNJ`, call getNode with this ID to get more specific XMl of the current focused page or component layers.
+The currently focused page ID is: `CpFAHygNJ`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.
 
-
-
-## Published Website URLs
-
-**Production:** [object Object]
-**Staging:** [object Object]
-
+When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
 
 If you need to create or edit a Framer code file ALWAYS read the MCP resource mcp://mcp.unframer.co/prompts/how-to-write-framer-code-files.md first.

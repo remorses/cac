@@ -78,7 +78,7 @@ describe(
         })
         it('should get project XML', async () => {
             const result = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -89,7 +89,7 @@ describe(
         })
         it('should get page XML', async () => {
             const result = await callTool({
-                name: 'getNode',
+                name: 'getNodeXml',
                 args: { nodeId: 'CpFAHygNJ' },
             })
             expect(getTextContent(result.content)).toBeDefined()
@@ -99,7 +99,7 @@ describe(
         })
         it('should get component XML', async () => {
             const result = await callTool({
-                name: 'getNode',
+                name: 'getNodeXml',
                 args: { nodeId: 'CpFAHygNJ' },
             })
             expect(getTextContent(result.content)).toBeDefined()
@@ -111,7 +111,7 @@ describe(
         it('should update node XML with random number', async () => {
             // First get the page XML to find the node
             const pageResult = await callTool({
-                name: 'getNode',
+                name: 'getNodeXml',
                 args: { nodeId: 'CpFAHygNJ' },
             })
             const pageXml = getTextContent(pageResult.content)
@@ -125,7 +125,7 @@ describe(
 
             // Update the node
             const updateResult = await callTool({
-                name: 'updateNode',
+                name: 'updateXmlForNode',
                 args: {
                     nodeId: 'CpFAHygNJ',
                     xml: updateXml,
@@ -140,7 +140,7 @@ describe(
 
             // Verify the update by getting the node again
             const verifyResult = await callTool({
-                name: 'getNode',
+                name: 'getNodeXml',
                 args: { nodeId: 'yK6cCeTUB' },
             })
             const verifyXml = getTextContent(verifyResult.content)
@@ -162,7 +162,7 @@ describe(
 
             // Create the nodes
             const createResult = await callTool({
-                name: 'updateNode',
+                name: 'updateXmlForNode',
                 args: {
                     nodeId: 'CpFAHygNJ', // Using the page as root
                     xml: createXml,
@@ -197,7 +197,7 @@ describe(
         it('should add frame node inside existing section', async () => {
             // First get the page to find the section
             const pageResult = await callTool({
-                name: 'getNode',
+                name: 'getNodeXml',
                 args: { nodeId: 'CpFAHygNJ' },
             })
             const pageXml = getTextContent(pageResult.content)
@@ -229,7 +229,7 @@ describe(
 
             // Update the page with the new frame inside the container
             const updateResult = await callTool({
-                name: 'updateNode',
+                name: 'updateXmlForNode',
                 args: {
                     nodeId: 'CpFAHygNJ', // Page node ID
                     xml: updateXml,
@@ -267,7 +267,7 @@ describe(
         it('should update a color style', async () => {
             // First get project XML to find color styles
             const projectResult = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -289,7 +289,7 @@ describe(
             // Update the color style
             const randomNum = Math.floor(Math.random() * 255)
             const result = await callTool({
-                name: 'upsertColorStyle',
+                name: 'manageColorStyle',
                 args: {
                     type: 'update',
                     stylePath: firstColorStyle.path || 'test-style',
@@ -326,7 +326,7 @@ describe(
 
             // Verify the update by getting project XML again
             const verifyResult = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -345,7 +345,7 @@ describe(
 
             // Restore original value
             await callTool({
-                name: 'upsertColorStyle',
+                name: 'manageColorStyle',
                 args: {
                     type: 'update',
                     stylePath: firstColorStyle.path,
@@ -365,7 +365,7 @@ describe(
 
             // Create a new color style (name is derived from path)
             const result = await callTool({
-                name: 'upsertColorStyle',
+                name: 'manageColorStyle',
                 args: {
                     type: 'create',
                     stylePath: newStylePath,
@@ -406,7 +406,7 @@ describe(
 
             // Verify the style exists by getting project XML
             const verifyResult = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -421,7 +421,7 @@ describe(
 
             // Test creating duplicate should fail
             const duplicateResult = await callTool({
-                name: 'upsertColorStyle',
+                name: 'manageColorStyle',
                 args: {
                     type: 'create',
                     stylePath: newStylePath,
@@ -437,9 +437,8 @@ describe(
 
         it('should search fonts', async () => {
             const result = await callTool({
-                name: 'search',
+                name: 'searchFonts',
                 args: {
-                    kind: 'fonts',
                     query: 'Inter-200',
                 },
             })
@@ -526,12 +525,30 @@ describe(
             )
         })
 
+        it('should get project website URL', async () => {
+            const result = await callTool({
+                name: 'getProjectWebsiteUrl',
+                args: undefined,
+            })
 
+            const content = getTextContent(result.content)
+            expect(content).toBeDefined()
+
+            // Parse the content if it's a JSON string
+            const parsedContent =
+                typeof content === 'string' && content.trim().startsWith('{')
+                    ? tryJsonParse(content)
+                    : content
+
+            // The response should be an object with production and staging properties
+            expect(parsedContent).toHaveProperty('production')
+            expect(parsedContent).toHaveProperty('staging')
+        })
 
         it('should update a text style', async () => {
             // First get project XML to find text styles
             const projectResult = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -551,7 +568,7 @@ describe(
             // Update the text style
             const randomNum = Math.floor(Math.random() * 100)
             const result = await callTool({
-                name: 'upsertTextStyle',
+                name: 'manageTextStyle',
                 args: {
                     type: 'update',
                     stylePath: firstTextStyle.path,
@@ -585,7 +602,7 @@ describe(
 
             // Verify the update by getting project XML again
             const verifyResult = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -604,7 +621,7 @@ describe(
 
             // Restore original values
             await callTool({
-                name: 'upsertTextStyle',
+                name: 'manageTextStyle',
                 args: {
                     type: 'update',
                     stylePath: firstTextStyle.path,
@@ -626,7 +643,7 @@ describe(
 
             // Create a new text style
             const createResult = await callTool({
-                name: 'upsertTextStyle',
+                name: 'manageTextStyle',
                 args: {
                     type: 'create',
                     stylePath: newStylePath,
@@ -647,7 +664,7 @@ describe(
 
             // Verify it's in the project
             const verifyResult = await callTool({
-                name: 'getProject',
+                name: 'getProjectXml',
                 args: undefined,
             })
 
@@ -765,9 +782,9 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Retrieved 1 of 8 item(s) from collection \\"Articles\\"",
+                "message": "Retrieved 1 of 7 item(s) from collection \\"Articles\\"",
                 "pagination": {
-                  "total": 8,
+                  "total": 7,
                   "skip": 0,
                   "limit": 1,
                   "returned": 1
@@ -864,19 +881,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-5480\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-4595\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "JoHQBZUlk",
-                  "slug": "test-item-5480",
+                  "id": "afpW5kcIP",
+                  "slug": "test-item-4595",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 5480"
+                      "value": "Test Item 4595"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-09-12T00:00:00.000Z"
+                      "value": "2025-09-08T00:00:00.000Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -888,7 +905,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 5480</p>"
+                      "value": "<p>Test content for item 4595</p>"
                     }
                   }
                 }
@@ -928,19 +945,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-5480\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-4595\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "JoHQBZUlk",
-                  "slug": "test-item-5480",
+                  "id": "afpW5kcIP",
+                  "slug": "test-item-4595",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 7118"
+                      "value": "Updated Item 2914"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-09-12T00:00:00.000Z"
+                      "value": "2025-09-08T00:00:00.000Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -952,7 +969,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 5480</p>"
+                      "value": "<p>Test content for item 4595</p>"
                     }
                   }
                 }
@@ -979,10 +996,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-5480\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-4595\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "JoHQBZUlk",
-                  "slug": "test-item-5480"
+                  "id": "afpW5kcIP",
+                  "slug": "test-item-4595"
                 }
               }"
             `)

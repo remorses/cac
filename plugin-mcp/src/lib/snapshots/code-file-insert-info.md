@@ -34,4 +34,4 @@ import TextScrambler from "https://framer.com/m/TextScrambler-Nv3j.js"
 
  */```
 
-These props can be used as attributes when updating the component instance with `updateNode`.
+These props can be used as attributes when updating the component instance with `updateXmlForNode`.

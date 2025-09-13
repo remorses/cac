@@ -198,7 +198,7 @@ function stripVersionFromUrl(url: string | undefined): string | undefined {
 }
 
 // Helper function to get XML for a node
-async function getNodeXmlInternal(
+async function getNodeXml(
     nodeId: string,
     maxCharacters=15000
 ): Promise<{ xml: string; isReplica: boolean } | null> {
@@ -383,63 +383,66 @@ async function websocketHandler({
     type: McpToolNames
 }) {
     switch (type) {
-        case 'getNode': {
+        case 'getNodeXml': {
             const { nodeId } = input
 
             // Check if this looks like a style path
             if (nodeId.startsWith('/')) {
-                return `Cannot use getNode with style paths. Style data is displayed in 'getProject' under the <ColorStyles> and <TextStyles> sections. Use that tool to view all styles.`
+                return `Cannot use getNodeXml with style paths. Style data is displayed in 'getProjectXml' under the <ColorStyles> and <TextStyles> sections. Use that tool to view all styles.`
+            }
+            const isCodeFile = await framer.getCodeFile(nodeId)
+
+            if (isCodeFile) {
+                return `Cannot use getNodeXml with code files. Use 'readCodeFile' tool instead to read code file with ID: ${nodeId}`
             }
 
-            // Check if this is a code file
-            const codeFile = await framer.getCodeFile(nodeId)
-            if (codeFile) {
-                // Return the code file content in markdown with XML code tag
-                return dedent`
-                ## Code File: ${codeFile.name}
-
-                **Path:** ${codeFile.path}
-                **ID:** ${codeFile.id}
-
-                \`\`\`tsx
-                ${codeFile.content}
-                \`\`\`
-                `
-            }
-
-            const result = await getNodeXmlInternal(nodeId)
+            const result = await getNodeXml(nodeId)
             if (!result) {
                 return `Node with ID ${nodeId} not found.`
             }
-            let response = result.xml
+            let response = `Node xml:\n${result.xml}`
             if (result.isReplica) {
                 response = `WARNING: This is a replica node (variant). It's recommended to update the original component instead to maintain consistency. Only update a few attributes on variants. These attributes will no longer inherit the primary variant values.\n\n${response}`
             }
             return response
         }
+        case 'getSelectedNodesXml': {
+            const selectedNodes = await framer.getSelection()
+            if (!selectedNodes || selectedNodes.length === 0) {
+                return 'No nodes are currently selected.'
+            }
 
-        case 'getProject': {
+            const tree = await getFramerTree({
+                rootNodes: selectedNodes,
+                recursive: false,
+            })
+            const xml = framerLayersTreeToXml(tree, {
+                shouldAddNodeIdAlways: true,
+
+            })
+
+            // Check if any selected nodes are replicas
+            const replicaCount = selectedNodes.filter(
+                (node) => node.isReplica,
+            ).length
+            let response = `Selected nodes XML:\n${xml}`
+
+            if (replicaCount > 0) {
+                const warning =
+                    replicaCount === 1
+                        ? "WARNING: One of the selected nodes is a replica (variant). It's recommended to update the original component instead."
+                        : `WARNING: ${replicaCount} of the selected nodes are replicas (variants). It's recommended to update the original components instead.`
+                response = `${warning}\n\n${response}`
+            }
+
+            return response
+        }
+        case 'getProjectXml': {
             const pages = await framer.getNodesWithType('WebPageNode')
             const components = await framer.getNodesWithType('ComponentNode')
             const codeFiles = await framer.getCodeFiles()
             const colorStyles = await framer.getColorStyles()
             const textStyles = await framer.getTextStyles()
-
-            // Get selected nodes if any
-            const selectedNodes = await framer.getSelection()
-            let selectedNodesXml = ''
-            if (selectedNodes && selectedNodes.length > 0) {
-                const selectedTree = await getFramerTree({
-                    rootNodes: selectedNodes,
-                    recursive: false,
-                })
-                selectedNodesXml = framerLayersTreeToXml(selectedTree, {
-                    shouldAddNodeIdAlways: true,
-                })
-            }
-
-            // Get publish info
-            const publishInfo = await framer.getPublishInfo()
 
             // Separate code files by export type
             const codeComponents = codeFiles.filter((file) =>
@@ -458,7 +461,7 @@ async function websocketHandler({
                         {
                             name: 'Pages',
                             comment:
-                                'All pages in the project. Use getNode with a page nodeId to see its contents',
+                                'All pages in the project. Use getNodeXml with a page nodeId to see its contents',
                             children: pages.map((page) => ({
                                 name: 'Page',
                                 id: page.id,
@@ -472,7 +475,7 @@ async function websocketHandler({
                         {
                             name: 'Components',
                             comment:
-                                'Reusable components. Use getNode with a component nodeId to see its structure',
+                                'Reusable components. Use getNodeXml with a component nodeId to see its structure',
                             children: components.map((component) => ({
                                 name: 'Component',
                                 id: component.id,
@@ -486,7 +489,7 @@ async function websocketHandler({
                         {
                             name: 'CodeComponents',
                             comment:
-                                'Code components written in React/TypeScript. Use getNode with codeFileId to see the code',
+                                'Code components written in React/TypeScript. Use readCodeFile to see the code',
                             children: codeComponents.map((file) => {
                                 const componentExport = file.exports.find(
                                     (exp) => exp.type === 'component',
@@ -505,7 +508,7 @@ async function websocketHandler({
                         {
                             name: 'CodeOverrides',
                             comment:
-                                'Code override files that modify component behavior. Use getNode with codeFileId to see the code',
+                                'Code override files that modify component behavior. Use readCodeFile to see the code',
                             children: codeOverrides.map((file) => ({
                                 name: 'CodeOverride',
                                 id: file.id,
@@ -564,52 +567,22 @@ async function websocketHandler({
             // Get current root node (focused page or component)
             const rootNode = await framer.getCanvasRoot()
             const rootNodeInfo = rootNode
-                ? `The currently focused ${rootNode.__class === 'WebPageNode' ? 'page' : 'component'} ID is: \`${rootNode.id}\`, call getNode with this ID to get more specific XMl of the current focused page or component layers.`
+                ? `The currently focused ${rootNode.__class === 'WebPageNode' ? 'page' : 'component'} ID is: \`${rootNode.id}\`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.`
                 : 'No page or component is currently focused'
 
-            let response = dedent`
+            return dedent`
             Project structure:
 
             ${xml}
 
             ${rootNodeInfo}
 
+            When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
 
+            If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.
             `
-
-            // Add selected nodes info if any
-            if (selectedNodesXml) {
-                const replicaCount = selectedNodes.filter(
-                    (node) => node.isReplica,
-                ).length
-                let selectedInfo = `\n\n## Currently Selected Nodes\n\n${selectedNodesXml}`
-
-                if (replicaCount > 0) {
-                    const warning =
-                        replicaCount === 1
-                            ? "WARNING: One of the selected nodes is a replica (variant). It's recommended to update the original component instead."
-                            : `WARNING: ${replicaCount} of the selected nodes are replicas (variants). It's recommended to update the original components instead.`
-                    selectedInfo = `\n\n## Currently Selected Nodes\n\n${warning}\n\n${selectedNodesXml}`
-                }
-                response += selectedInfo
-            }
-
-            // Add publish info if available
-            if (publishInfo && (publishInfo.production || publishInfo.staging)) {
-                response += '\n\n## Published Website URLs\n\n'
-                if (publishInfo.production) {
-                    response += `**Production:** ${publishInfo.production}\n`
-                }
-                if (publishInfo.staging) {
-                    response += `**Staging:** ${publishInfo.staging}\n`
-                }
-            }
-
-            response += `\n\nIf you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.`
-
-            return response
         }
-        case 'updateNode': {
+        case 'updateXmlForNode': {
             const { nodeId: rootNodeId, xml, zoomIntoView = true } = input
 
             // Check all required permissions at once
@@ -628,37 +601,12 @@ async function websocketHandler({
             const codeFiles = await framer.getCodeFiles()
             const isCodeFile = codeFiles.some((file) => file.id === rootNodeId)
             if (isCodeFile) {
-                return `Cannot use updateNode with code files. Use 'upsertCodeFile' tool instead to modify code file with ID: ${rootNodeId}`
+                return `Cannot use updateXmlForNode with code files. Use 'updateCodeFile' tool instead to modify code file with ID: ${rootNodeId}`
             }
 
-            // Check if this looks like a style path (for color or text styles)
+            // Check if this looks like a style path
             if (rootNodeId.startsWith('/')) {
-                return `Cannot use updateNode with style paths. Style paths start with '/'. To update color styles use 'upsertColorStyle' and for text styles use 'upsertTextStyle'.`
-            }
-
-            // Check if this is a CMS collection ID
-            const collections = await framer.getCollections()
-            const isCollection = collections.some((collection) => collection.id === rootNodeId)
-            if (isCollection) {
-                return `Cannot use updateNode with CMS collections. Use 'upsertCMSItem' to create or update CMS items, or 'deleteCMSItem' to delete them.`
-            }
-
-            // Additional check: verify the node actually exists and is a regular node
-            const node = await framer.getNode(rootNodeId)
-            if (!node) {
-                // It might be a style or other non-node resource
-                const colorStyles = await framer.getColorStyles()
-                const textStyles = await framer.getTextStyles()
-                
-                if (colorStyles.some(style => style.path === rootNodeId)) {
-                    return `"${rootNodeId}" is a color style path, not a node ID. Use 'upsertColorStyle' to update color styles.`
-                }
-                
-                if (textStyles.some(style => style.path === rootNodeId)) {
-                    return `"${rootNodeId}" is a text style path, not a node ID. Use 'upsertTextStyle' to update text styles.`
-                }
-                
-                return `Node with ID ${rootNodeId} not found. Make sure it's a valid node ID from 'getProject' or 'getNode'.`
+                return `Node ID cannot start with a slash. It should be a valid node ID, not a color style or text path. To update styles use 'manageColorStyle' or 'manageTextStyle' tools.`
             }
 
             // Zoom into the node before making changes if requested
@@ -672,7 +620,7 @@ async function websocketHandler({
             }
 
             // Get the original XML before making changes
-            const originalResult = await getNodeXmlInternal(rootNodeId, Infinity)
+            const originalResult = await getNodeXml(rootNodeId, Infinity)
             const originalXml = originalResult?.xml || ''
 
             // Extract nodes from the provided XML with node creation enabled
@@ -898,7 +846,7 @@ async function websocketHandler({
             }
 
             // Get the updated XML for the primary node
-            const updatedResult = await getNodeXmlInternal(rootNodeId, Infinity)
+            const updatedResult = await getNodeXml(rootNodeId, Infinity)
             const updatedXml = updatedResult?.xml || ''
 
             // Check if there were actual changes by comparing XML
@@ -930,8 +878,16 @@ async function websocketHandler({
 
             return 'No changes were made! Make sure you are not using made up attributes, follow the outlined attributes only.'
         }
-
-        case 'upsertColorStyle': {
+        case 'zoomIntoView': {
+            const { nodeId } = input
+            const node = await framer.getNode(nodeId)
+            if (!node) {
+                return `Node with ID ${nodeId} not found.`
+            }
+            await framer.zoomIntoView(nodeId, { maxZoom: 0.9 })
+            return `Zoomed into view for node ${nodeId}`
+        }
+        case 'manageColorStyle': {
             const { type, stylePath, properties } = input
 
             // Check permissions based on type
@@ -1016,7 +972,7 @@ async function websocketHandler({
                 }
             }
         }
-        case 'upsertTextStyle': {
+        case 'manageTextStyle': {
             const { type, stylePath, properties } = input
 
             // Check permissions based on type
@@ -1065,7 +1021,7 @@ async function websocketHandler({
                     const font = fonts.find((f) => f.selector === attrs.font)
                     if (!font) {
                         throw new Error(
-                            `Font with selector "${attrs.font}" not found. Use search tool with kind: "fonts" to find available fonts.`,
+                            `Font with selector "${attrs.font}" not found. Use searchFonts tool to find available fonts.`,
                         )
                     }
                     processed.font = font
@@ -1181,13 +1137,8 @@ async function websocketHandler({
                 }
             }
         }
-        case 'search': {
-            const { kind, query } = input
-
-            // Currently only supports fonts
-            if (kind !== 'fonts') {
-                return `Search kind "${kind}" is not supported. Currently only "fonts" is supported.`
-            }
+        case 'searchFonts': {
+            const { query } = input
 
             // Get all fonts from Framer
             const allFonts = await framer.getFonts()
@@ -1224,100 +1175,53 @@ async function websocketHandler({
         case 'deleteNode': {
             const { nodeId } = input
 
-            // Check if this looks like a style path (starts with /)
+            // First check if this is a style path (starts with /)
             if (nodeId.startsWith('/')) {
-                // Determine if it's a color or text style
+                // Try to delete as color style first
                 const colorStyles = await framer.getColorStyles()
+                const colorStyle = colorStyles.find(style => style.path === nodeId)
+                if (colorStyle) {
+                    const permissionError = checkPermissions('ColorStyle.remove')
+                    if (permissionError) return permissionError
+                    await colorStyle.remove()
+                    return `Successfully deleted color style ${nodeId}.`
+                }
+
+                // Try to delete as text style
                 const textStyles = await framer.getTextStyles()
-                
-                if (colorStyles.some(style => style.path === nodeId)) {
-                    return `"${nodeId}" is a color style path, not a node ID. Use 'deleteColorStyle' to delete color styles.`
+                const textStyle = textStyles.find(style => style.path === nodeId)
+                if (textStyle) {
+                    const permissionError = checkPermissions('TextStyle.remove')
+                    if (permissionError) return permissionError
+                    await textStyle.remove()
+                    return `Successfully deleted text style ${nodeId}.`
                 }
-                
-                if (textStyles.some(style => style.path === nodeId)) {
-                    return `"${nodeId}" is a text style path, not a node ID. Use 'deleteTextStyle' to delete text styles.`
-                }
-                
-                return `"${nodeId}" looks like a style path (starts with /), but no matching style was found. Use 'deleteColorStyle' for color styles or 'deleteTextStyle' for text styles.`
+
+                return `Style with path ${nodeId} not found.`
             }
 
-            // Check permissions
+            // Check if this is a code file ID
+            const codeFiles = await framer.getCodeFiles()
+            const codeFile = codeFiles.find(file => file.id === nodeId)
+            if (codeFile) {
+                const permissionError = checkPermissions('CodeFile.remove')
+                if (permissionError) return permissionError
+                await codeFile.remove()
+                return `Successfully deleted code file ${nodeId}.`
+            }
+
+            // Regular node deletion
             const permissionError = checkPermissions('Node.remove')
             if (permissionError) return permissionError
 
             const node = await framer.getNode(nodeId)
 
             if (!node) {
-                // Check if it might be a code file
-                const codeFiles = await framer.getCodeFiles()
-                if (codeFiles.some(file => file.id === nodeId)) {
-                    return `"${nodeId}" is a code file ID. Use 'deleteCodeFile' to delete code files.`
-                }
-                
                 return `Node with ID ${nodeId} not found.`
             }
 
             await node.remove()
             return `Successfully deleted node ${nodeId}.`
-        }
-        case 'deleteColorStyle': {
-            const { stylePath } = input
-
-            // Check permissions
-            const permissionError = checkPermissions('ColorStyle.remove')
-            if (permissionError) return permissionError
-
-            if (!stylePath.startsWith('/')) {
-                return `Color style path must start with /. Got: ${stylePath}`
-            }
-
-            const colorStyles = await framer.getColorStyles()
-            const colorStyle = colorStyles.find(style => style.path === stylePath)
-            
-            if (!colorStyle) {
-                return `Color style with path ${stylePath} not found.`
-            }
-
-            await colorStyle.remove()
-            return `Successfully deleted color style ${stylePath}.`
-        }
-        case 'deleteTextStyle': {
-            const { stylePath } = input
-
-            // Check permissions
-            const permissionError = checkPermissions('TextStyle.remove')
-            if (permissionError) return permissionError
-
-            if (!stylePath.startsWith('/')) {
-                return `Text style path must start with /. Got: ${stylePath}`
-            }
-
-            const textStyles = await framer.getTextStyles()
-            const textStyle = textStyles.find(style => style.path === stylePath)
-            
-            if (!textStyle) {
-                return `Text style with path ${stylePath} not found.`
-            }
-
-            await textStyle.remove()
-            return `Successfully deleted text style ${stylePath}.`
-        }
-        case 'deleteCodeFile': {
-            const { codeFileId } = input
-
-            // Check permissions
-            const permissionError = checkPermissions('CodeFile.remove')
-            if (permissionError) return permissionError
-
-            const codeFiles = await framer.getCodeFiles()
-            const codeFile = codeFiles.find(file => file.id === codeFileId)
-            
-            if (!codeFile) {
-                return `Code file with ID ${codeFileId} not found.`
-            }
-
-            await codeFile.remove()
-            return `Successfully deleted code file ${codeFileId}.`
         }
         case 'duplicateNode': {
             const { nodeId } = input
@@ -1345,7 +1249,7 @@ async function websocketHandler({
                 if (!cloned) {
                     return `Failed to duplicate node ${nodeId}: The operation returned null.`
                 }
-                return `Here is the new node XML:\n\n` + getNodeXmlInternal(cloned.id)
+                return `Here is the new node XML:\n\n` + getNodeXml(cloned.id)
             } catch (error) {
                 return `Failed to duplicate node ${nodeId}: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
@@ -1416,123 +1320,128 @@ async function websocketHandler({
                 return `Failed to export components: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
-        case 'upsertCodeFile': {
-            const { codeFileId, name, content } = input
+        case 'createCodeFile': {
+            const { name, content } = input
 
-            if (codeFileId) {
-                // Update existing file
-                const permissionError = checkPermissions('CodeFile.setFileContent')
-                if (permissionError) return permissionError
+            // Check permission
+            const permissionError = checkPermissions('createCodeFile')
+            if (permissionError) return permissionError
 
-                try {
-                    const codeFile = await framer.getCodeFile(codeFileId)
+            // Validate file name
+            if (!name.endsWith('.tsx')) {
+                return `Code file name must end with .tsx extension. Got: ${name}`
+            }
 
-                    if (!codeFile) {
-                        return `Code file with ID ${codeFileId} not found.`
-                    }
+            try {
+                const codeFile = await framer.createCodeFile(name, content)
 
-                    // Update the content
-                    await codeFile.setFileContent(content)
-
-                    // Run lint and typecheck after update
-                    const lintResult = await codeFile.lint({
-                        'forbid-browser-apis': 'warning',
-                    })
-                    const typecheckResult = await codeFile.typecheck()
-
-                    const componentExport = codeFile.exports.find(
-                        (x) => x.type === 'component',
-                    )
-                    const insertUrl = stripVersionFromUrl(
-                        componentExport?.insertURL,
-                    )
-
-                    return dedent`
-                    ## Successfully updated code file: \`${codeFile.path}\`
-
-                    **Code file details:**
-
-                    - **ID:** \`${codeFile.id}\`
-                    - **Name:** \`${codeFile.name}\`
-                    - **Path:** \`${codeFile.path}\`
-                    - **Component Insert URL:** \`${insertUrl}\`
-
-                    ${insertUrl ? `Use updateNode with insertUrl: \`${insertUrl}\` as an attribute to add this component to the canvas.` : 'No component export found in this code file.'}
-
-                    **Lint result:**
-                    \`\`\`json
-                    ${JSON.stringify(lintResult, null, 2)}
-                    \`\`\`
-
-                    **Typecheck result:**
-                    \`\`\`json
-                    ${JSON.stringify(typecheckResult, null, 2)}
-                    \`\`\`
-                    `
-                } catch (error) {
-                    return `Failed to update code file: ${error instanceof Error ? error.message : 'Unknown error'}`
+                if (!codeFile) {
+                    return `Failed to create code file ${name}.`
                 }
-            } else {
-                // Create new file
-                const permissionError = checkPermissions('createCodeFile')
-                if (permissionError) return permissionError
+                const componentExport = codeFile.exports.find(
+                    (x) => x.type === 'component',
+                )
+                // if (componentExport) {
+                //     await framer.addComponentInstance({
+                //         url: componentExport.insertURL,
+                //         attributes: {},
+                //     })
+                // }
+                const insertUrl = stripVersionFromUrl(
+                    componentExport?.insertURL,
+                )
 
-                // Validate file name
-                if (!name) {
-                    return `File name is required when creating a new code file.`
-                }
-                if (!name.endsWith('.tsx')) {
-                    return `Code file name must end with .tsx extension. Got: ${name}`
-                }
+                // Run initial lint and typecheck
+                const lintResult = await codeFile.lint({
+                    'forbid-browser-apis': 'warning',
+                })
+                const typecheckResult = await codeFile.typecheck()
 
-                try {
-                    const codeFile = await framer.createCodeFile(name, content)
+                return dedent`
+                ## Successfully created code file: \`${codeFile.path}\`
 
-                    if (!codeFile) {
-                        return `Failed to create code file ${name}.`
-                    }
-                    const componentExport = codeFile.exports.find(
-                        (x) => x.type === 'component',
-                    )
-                    const insertUrl = stripVersionFromUrl(
-                        componentExport?.insertURL,
-                    )
+                **Code file details:**
 
-                    // Run initial lint and typecheck
-                    const lintResult = await codeFile.lint({
-                        'forbid-browser-apis': 'warning',
-                    })
-                    const typecheckResult = await codeFile.typecheck()
+                - **ID:** \`${codeFile.id}\`
+                - **Name:** \`${codeFile.name}\`
+                - **Path:** \`${codeFile.path}\`
+                - **Component Insert URL:** \`${insertUrl}\`
 
-                    return dedent`
-                    ## Successfully created code file: \`${codeFile.path}\`
+                ${insertUrl ? `Use insertComponentInCanvas with insertUrl: \`${insertUrl}\` to add this component to the canvas.` : 'No component export found in this code file.'}
 
-                    **Code file details:**
+                **Lint result:**
+                \`\`\`json
+                ${JSON.stringify(lintResult, null, 2)}
+                \`\`\`
 
-                    - **ID:** \`${codeFile.id}\`
-                    - **Name:** \`${codeFile.name}\`
-                    - **Path:** \`${codeFile.path}\`
-                    - **Component Insert URL:** \`${insertUrl}\`
-
-                    ${insertUrl ? `Use updateNode with insertUrl: \`${insertUrl}\` as an attribute to add this component to the canvas.` : 'No component export found in this code file.'}
-
-                    **Lint result:**
-                    \`\`\`json
-                    ${JSON.stringify(lintResult, null, 2)}
-                    \`\`\`
-
-                    **Typecheck result:**
-                    \`\`\`json
-                    ${JSON.stringify(typecheckResult, null, 2)}
-                    \`\`\`
-                    `
-                } catch (error) {
-                    return `Failed to create code file: ${error instanceof Error ? error.message : 'Unknown error'}`
-                }
+                **Typecheck result:**
+                \`\`\`json
+                ${JSON.stringify(typecheckResult, null, 2)}
+                \`\`\`
+                `
+            } catch (error) {
+                return `Failed to create code file: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
+        case 'readCodeFile': {
+            const { codeFileId } = input
 
+            try {
+                const codeFile = await framer.getCodeFile(codeFileId)
 
+                if (!codeFile) {
+                    return `Code file with ID ${codeFileId} not found.`
+                }
+
+                return {
+                    id: codeFile.id,
+                    name: codeFile.name,
+                    path: codeFile.path,
+                    content: codeFile.content,
+                    exports: codeFile.exports,
+                }
+            } catch (error) {
+                return `Failed to read code file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'updateCodeFile': {
+            const { codeFileId, content } = input
+
+            // Check permission
+            const permissionError = checkPermissions('CodeFile.setFileContent')
+            if (permissionError) return permissionError
+
+            try {
+                const codeFile = await framer.getCodeFile(codeFileId)
+
+                if (!codeFile) {
+                    return `Code file with ID ${codeFileId} not found.`
+                }
+
+                // Update the content
+                await codeFile.setFileContent(content)
+
+                // Run lint and typecheck after update
+                const lintResult = await codeFile.lint({
+                    'forbid-browser-apis': 'warning',
+                })
+                const typecheckResult = await codeFile.typecheck()
+
+                return {
+                    message: `Successfully updated code file: ${codeFile.name}`,
+                    codeFile: {
+                        id: codeFile.id,
+                        name: codeFile.name,
+                        path: codeFile.path,
+                        exports: codeFile.exports,
+                    },
+                    lint: lintResult,
+                    typecheck: typecheckResult,
+                }
+            } catch (error) {
+                return `Failed to update code file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
         case 'getComponentInsertUrlAndTypes': {
             const { id } = input
 
@@ -1586,7 +1495,7 @@ async function websocketHandler({
                             })
                         }
                     } else {
-                        return `ID ${id} not found. Make sure it's a valid component node ID or code file ID from getProject.`
+                        return `ID ${id} not found. Make sure it's a valid component node ID or code file ID from getProjectXml.`
                     }
                 }
 
@@ -1640,15 +1549,100 @@ async function websocketHandler({
                 }
 
                 // Add footer note
-                message += `\n\nThese props can be used as attributes when updating ${components.length > 1 ? 'component instances' : 'the component instance'} with \`updateNode\`.`
+                message += `\n\nThese props can be used as attributes when updating ${components.length > 1 ? 'component instances' : 'the component instance'} with \`updateXmlForNode\`.`
 
                 return message
             } catch (error) {
                 return `Failed to get component insert URL and types: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
+        case 'insertComponentInCanvas': {
+            const { insertUrl } = input
 
+            // Check permission
+            const permissionError = checkPermissions('addComponentInstance')
+            if (permissionError) return permissionError
 
+            try {
+                // Get the current root node (page or component)
+                const rootNode = await framer.getCanvasRoot()
+                if (!rootNode) {
+                    return `No page or component is currently focused. Please open a page or component in Framer first.`
+                }
+
+                // Insert the component
+                const newNode = await framer.addComponentInstance({
+                    url: insertUrl,
+                    attributes: {},
+                })
+
+                if (!newNode) {
+                    return `Failed to insert component with URL: ${insertUrl}`
+                }
+
+                // Get the XML for the new node
+                const nodeXml = await getNodeXml(newNode.id)
+                if (!nodeXml) {
+                    return `Component inserted but failed to get XML for node ${newNode.id}`
+                }
+
+                return dedent`
+                ## Component Successfully Inserted
+
+                **New Node ID:** \`${newNode.id}\`
+
+                **Current Root:** ${rootNode.__class} \`${rootNode.id}\`
+
+                **Component XML:**
+                \`\`\`xml
+                ${nodeXml.xml}
+                \`\`\`
+
+                ### IMPORTANT: Component Placement Required
+
+                The component has been inserted into the canvas but is NOT yet inside the page/component content. You MUST use \`updateXmlForNode\` to place it inside the ${rootNode.__class} structure.
+
+                1. First, use \`getNodeXml\` on the root node ID \`${rootNode.id}\` to see the current structure
+
+                2. Then use \`updateXmlForNode\` with the root node ID to add the component as a child with styling attributes:
+                   \`\`\`xml
+                   <${rootNode.__class} nodeId="${rootNode.id}">
+                       <!-- existing children -->
+                       <ComponentInstance
+                           nodeId="${newNode.id}"
+                           width="200px"
+                           height="100px"
+                           position="relative"
+                           <!-- add component-specific props here -->
+                       />
+                   </${rootNode.__class}>
+                   \`\`\`
+
+                3. To customize the component instance:
+                   - Use \`getComponentInsertUrlAndTypes\` with the component's nodeId to see available props/attributes
+                   - Add standard attributes: width, height, position, opacity, etc.
+                   - Add component-specific attributes based on its property controls
+                   - Example: For a Button component, you might add \`text="Click me"\` \`variant="primary"\`
+
+                4. The component can be placed:
+                   - As a direct child of the root
+                   - Inside a specific Frame or Stack
+                   - At any position among siblings
+
+                Without this placement step, the component will not be visible in the canvas.
+                `
+            } catch (error) {
+                return `Failed to insert component: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
+        case 'getProjectWebsiteUrl': {
+            try {
+                const publishInfo = await framer.getPublishInfo()
+                return publishInfo || { production: null, staging: null }
+            } catch (error) {
+                return `Failed to get project website URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+            }
+        }
         case 'getCMSCollections': {
             try {
                 const collections = await framer.getCollections()

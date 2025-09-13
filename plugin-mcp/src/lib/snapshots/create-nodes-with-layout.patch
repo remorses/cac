@@ -1,88 +1,46 @@
 Successfully updated:
-Created Frame node Bgc1INpuQ
-Created Frame node mVRpPaghQ
-Created Text node q_gMQgTqt
-Created Text node UKVP_GNb_
-Created Frame node uFCZJxRv6
-Updated attributes for node Bgc1INpuQ
-Updated attributes for node mVRpPaghQ
-Updated text for node q_gMQgTqt
-Updated attributes for node q_gMQgTqt
-Updated text for node UKVP_GNb_
-Updated attributes for node UKVP_GNb_
-Updated attributes for node uFCZJxRv6
-Reordered node mVRpPaghQ within parent Bgc1INpuQ to index 0
+Created Frame node gdFpQaTsf
+Created Frame node TS51kTpoF
+Created Text node Epm0qZ7Om
+Created Text node Emq2LCsBG
+Created Frame node jRefPBpVC
+Updated attributes for node gdFpQaTsf
+Updated attributes for node TS51kTpoF
+Updated text for node Epm0qZ7Om
+Updated attributes for node Epm0qZ7Om
+Updated text for node Emq2LCsBG
+Updated attributes for node Emq2LCsBG
+Updated attributes for node jRefPBpVC
+Reordered node TS51kTpoF within parent gdFpQaTsf to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -46,41 +46,40 @@
-       stackDirection="horizontal"
-       stackDistribution="center"
-       stackAlignment="center"
-   >
-     <NavigationFlyout
-         nodeId="BwfPOa8WY"
-         width="100%"
-         height="fit-content"
-         <!-- the component id this instance uses -->
-         componentId="sCy40XUNu"
-         <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
-         variant="arFY89os4"
-      />
-   </NavigationFlyoutFixed>
-   <Navigation
-       nodeId="P8AJj3Q2E"
-       width="1fr"
-       height="fit-content"
-       <!-- the component id this instance uses -->
-       componentId="sCy40XUNu"
--      <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
-       variant="QOfAnzBxh"
-    />
-   <HeroSection
-       nodeId="qKDdG3FQZ"
-       width="1fr"
-       height="fit-content"
-       layout="stack"
-       padding="8px"
-       stackDirection="vertical"
-       stackDistribution="start"
-       stackAlignment="center"
-   >
-     <Container
-         nodeId="rUPekfMHT"
-         width="1fr"
-         height="fit-content"
-         maxWidth="1152px"
-         <!-- background color string or project color style path (if starts with /) -->
-         backgroundColor="white"
-         borderRadius="32px"
-@@ -3061,20 +3060,73 @@
-       Header Text
-     </HeaderText>
-   </Frame>
-   <BodyContentGoesHere
-       nodeId="XAYOrGFUB"
-       width="fit-content"
-       height="fit-content"
-       font="Inter"
-   >
-     Body content goes here
-   </BodyContentGoesHere>
-   <Frame
-       nodeId="V3VqY3j0F"
-       width="100%"
-       height="100px"
-       <!-- background color string or project color style path (if starts with /) -->
-       backgroundColor="rgb(255, 255, 255)"
-       borderRadius="4px"
-    />
- </Stack>
+@@ -2977,20 +2977,73 @@
+     position="absolute"
+     width="fit-content"
+     height="fit-content"
+     top="0px"
+     left="0px"
+     font="Inter"
+ >
+   Body content goes here
+ </BodyContentGoesHere>
+ <Something
+     nodeId="so_W61aYl"
+     position="absolute"
+     width="fit-content"
+     height="fit-content"
+     top="0px"
+     left="0px"
+     font="Inter"
+ >
+   something
+ </Something>
 +<Stack
-+    nodeId="Bgc1INpuQ"
++    nodeId="gdFpQaTsf"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -98,7 +56,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="mVRpPaghQ"
++      nodeId="TS51kTpoF"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -106,7 +64,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="q_gMQgTqt"
++        nodeId="Epm0qZ7Om"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -118,7 +76,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="UKVP_GNb_"
++      nodeId="Emq2LCsBG"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -126,7 +84,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="uFCZJxRv6"
++      nodeId="jRefPBpVC"
 +      width="100%"
 +      height="100px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -134,6 +92,3 @@ Index: node.xml
 +      borderRadius="4px"
 +   />
 +</Stack>
-
-
-Note: Set zoomIntoView=false if you want to use Framer app while MCP is working.
