@@ -49,13 +49,11 @@
         "enabled": true,
     },
 
-    // Production environment variables
     "vars": {
         "STAGE": "production",
         "WEBSITE_URL": "https://unframer.co",
     },
 
-    // Preview environment configuration
     "env": {
         "preview": {
             "name": "framer-mcp-preview-preview",
