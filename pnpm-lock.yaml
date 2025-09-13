@@ -679,8 +679,8 @@ importers:
         specifier: ^0.0.6
         version: 0.0.6
       '@modelcontextprotocol/sdk':
-        specifier: ^1.17.5
-        version: 1.17.5
+        specifier: ^1.18.0
+        version: 1.18.0
       '@sentry/browser':
         specifier: ^9.22.0
         version: 9.30.0
@@ -1109,8 +1109,8 @@ importers:
         version: 4.1.1
     devDependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.17.5
-        version: 1.17.5
+        specifier: ^1.18.0
+        version: 1.18.0
       '@types/ps-tree':
         specifier: ^1.1.6
         version: 1.1.6
@@ -1158,8 +1158,8 @@ importers:
         version: 3.24.6(zod@4.1.1)
     devDependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.17.5
-        version: 1.17.5
+        specifier: ^1.18.0
+        version: 1.18.0
       ai:
         specifier: ^5.0.14
         version: 5.0.14(zod@4.1.1)
@@ -1194,8 +1194,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(acorn@8.15.0)(rollup@4.46.2)
       '@modelcontextprotocol/sdk':
-        specifier: ^1.17.5
-        version: 1.17.5
+        specifier: ^1.18.0
+        version: 1.18.0
       '@react-router/cloudflare':
         specifier: ^7.7.1
         version: 7.7.1(@cloudflare/workers-types@4.20250806.0)(react-router@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.3)
@@ -4237,10 +4237,6 @@ packages:
 
   '@mjackson/node-fetch-server@0.7.0':
     resolution: {integrity: sha512-un8diyEBKU3BTVj3GzlTPA1kIjCkGdD+AMYQy31Gf9JCkfoZzwgJ79GUtHrF2BN3XPNMLpubbzPcxys+a3uZEw==}
-
-  '@modelcontextprotocol/sdk@1.17.5':
-    resolution: {integrity: sha512-QakrKIGniGuRVfWBdMsDea/dx1PNE739QJ7gCM41s9q+qaCYTHCdsIBXQVVXry3mfWAiaM9kT22Hyz53Uw8mfg==}
-    engines: {node: '>=18'}
 
   '@modelcontextprotocol/sdk@1.18.0':
     resolution: {integrity: sha512-JvKyB6YwS3quM+88JPR0axeRgvdDu3Pv6mdZUy+w4qVkCzGgumb9bXG/TmtDRQv+671yaofVfXSQmFLlWU5qPQ==}
@@ -14749,23 +14745,6 @@ snapshots:
   '@mjackson/node-fetch-server@0.6.1': {}
 
   '@mjackson/node-fetch-server@0.7.0': {}
-
-  '@modelcontextprotocol/sdk@1.17.5':
-    dependencies:
-      ajv: 6.12.6
-      content-type: 1.0.5
-      cors: 2.8.5
-      cross-spawn: 7.0.6
-      eventsource: 3.0.7
-      eventsource-parser: 3.0.6
-      express: 5.1.0
-      express-rate-limit: 7.5.1(express@5.1.0)
-      pkce-challenge: 5.0.0
-      raw-body: 3.0.1
-      zod: 3.25.76
-      zod-to-json-schema: 3.24.6(zod@3.25.76)
-    transitivePeerDependencies:
-      - supports-color
 
   '@modelcontextprotocol/sdk@1.18.0':
     dependencies:
