@@ -19,6 +19,7 @@ import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
 import { sleep } from './lib/utils.js'
 import { KnownError, notifyError } from './lib/errors.js'
 import dedent from 'string-dedent'
+import { toJSONSchema } from 'zod'
 
 // Type for MCP props passed through OAuth or legacy auth
 interface MCPProps {
@@ -518,13 +519,17 @@ export class MyMCP extends McpAgent<Env, MCPProps> {
                 }
             }
 
-            // Register list tools handler
             server.setRequestHandler(ListToolsRequestSchema, async () => {
-                const tools = Object.entries(mcpTools).map(([name, tool]) => ({
-                    name,
-                    description: tool.description,
-                    inputSchema: tool.input,
-                }))
+                const tools = Object.entries(mcpTools).map(([name, tool]) => {
+                    const schema = toJSONSchema(tool.input) as any
+                    // Remove the $schema field as it's not needed for MCP
+                    delete schema.$schema
+                    return {
+                        name,
+                        description: tool.description,
+                        inputSchema: schema,
+                    }
+                })
                 return { tools }
             })
 
@@ -761,7 +766,6 @@ function htmlForUserWithoutFramerUserId() {
                         li {
                             margin-bottom: 1em;
                         }
-
                     </style>
                 </head>
                 <body>
