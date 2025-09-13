@@ -570,6 +570,13 @@ async function websocketHandler({
                 ? `The currently focused ${rootNode.__class === 'WebPageNode' ? 'page' : 'component'} ID is: \`${rootNode.id}\`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.`
                 : 'No page or component is currently focused'
 
+            // Check if user has permission to modify nodes
+            const canModifyNodes = framer.isAllowedTo('Node.setAttributes')
+
+            const permissionMessage = canModifyNodes
+                ? ''
+                : '\n\nIMPORTANT! You have read-only access to this project. You cannot modify nodes, create new elements. If asked to make modifications, please inform the user that you only have read-only permissions.'
+
             return dedent`
             Project structure:
 
@@ -579,7 +586,7 @@ async function websocketHandler({
 
             When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
 
-            If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.
+            If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.${permissionMessage}
             `
         }
         case 'updateXmlForNode': {
