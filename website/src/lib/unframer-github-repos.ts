@@ -425,7 +425,8 @@ export async function createExampleComponentCodeWithAI({
 
         Every component must use the .Responsive static field to render a responsive variant of the component, just like in the example.
 
-        That example component is already a good starting point but the components need to be reordered in a way that makes sense for a typical landing page for example: navbar first, then hero, then logos, testimonials, other components and then finally footer.`
+        That example component is already a good starting point but the components need to be reordered in a way that makes sense for a typical landing page for example: navbar first, then hero, then logos, testimonials, other components and then finally footer.
+        `
     } else {
         // No example code, create from scratch
         const containerClasses = config.pageBackgroundColor
@@ -454,7 +455,8 @@ export async function createExampleComponentCodeWithAI({
         Every component must use the .Responsive static field to render a responsive variant of the component, like this:
         <ComponentName.Responsive />
 
-        Order the components in a way that makes sense for a typical landing page: navbar first, then hero, then logos, testimonials, other components and then finally footer.`
+        Order the components in a way that makes sense for a typical landing page: navbar first, then hero, then logos, testimonials, other components and then finally footer.
+        `
     }
 
     prompt += dedent`
