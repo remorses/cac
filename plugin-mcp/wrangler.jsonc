@@ -63,12 +63,12 @@
                 ]
             }
         },
-        "v1-17-2": {
-            "name": "framer-mcp-v1-17-2",
+        "v1": {
+            "name": "framer-mcp-v1",
             "routes": [
                 {
                     "zone_name": "unframer.co",
-                    "pattern": "mcp.v1-17-2.unframer.co",
+                    "pattern": "mcp.v1.unframer.co",
                     "custom_domain": true
                 }
             ],
