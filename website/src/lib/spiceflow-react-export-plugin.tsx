@@ -210,9 +210,15 @@ export const reactPluginApp = new Spiceflow({
                 throw new AppError('Invalid secret')
             }
 
+            // Get project to access projectName
+            const projectForRepo = await prisma.reactExportProject.findFirst({
+                where: { projectId: body.projectId },
+            })
+
             // Call the generateUnframerRepo function
             const result = await generateUnframerRepo({
                 projectId: body.projectId,
+                projectTitle: projectForRepo?.projectName || undefined,
                 useAI: true,
             })
 
