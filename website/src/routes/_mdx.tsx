@@ -21,7 +21,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     if (userId && secret) {
         const mcpUrlInfo = {
             userId: userId || undefined,
-            secret: secret || undefined
+            secret: secret || undefined,
         }
 
         // Remove the query params
@@ -31,13 +31,19 @@ export async function loader({ request }: Route.LoaderArgs) {
         // Set the cookie and redirect
         return redirect(url.pathname + url.search, {
             headers: {
-                'Set-Cookie': serialize('mcpUrlInfo', encodeURIComponent(JSON.stringify(mcpUrlInfo)), {
-                    path: '/',
-                    httpOnly: false, // Allow JS access
-                    sameSite: 'lax',
-                    maxAge: 60 * 60 * 24 * 30 // 30 days
-                })
-            }
+                'Set-Cookie': serialize(
+                    'mcpUrlInfo',
+                    encodeURIComponent(JSON.stringify(mcpUrlInfo)),
+                    {
+                        path: '/',
+                        httpOnly: false, // Allow JS access
+                        sameSite: 'lax',
+                        maxAge: 60 * 60 * 24 * 30, // 30 days
+                    },
+                ),
+                'Cache-Control':
+                    'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            },
         })
     }
 
@@ -47,14 +53,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 export const CodeBlock = ({
     children,
     language,
-    title
+    title,
 }: {
     children: React.ReactNode
     language?: string
     title?: string
 }) => {
     const [copied, setCopied] = useState(false)
-    const [mcpUrlInfo, setMcpUrlInfo] = useState<{ userId?: string; secret?: string }>({})
+    const [mcpUrlInfo, setMcpUrlInfo] = useState<{
+        userId?: string
+        secret?: string
+    }>({})
 
     useEffect(() => {
         const cookies = parse(document.cookie)
@@ -80,7 +89,6 @@ export const CodeBlock = ({
 
     useEffect(() => {
         const loadPrismAndHighlight = async () => {
-
             Prism.highlightAll()
         }
 
@@ -113,8 +121,16 @@ export const CodeBlock = ({
                     <CopyIcon className='size-4 text-neutral-300' />
                 )}
             </button>
-            <pre className={`dark:bg-neutral-900 !mt-0 text-white whitespace-pre-wrap ${title ? 'rounded-b-lg' : 'rounded-lg'} p-4 overflow-x-auto`}>
-                <code className={language ? `language-${language} whitespace-pre-wrap` : ''}>
+            <pre
+                className={`dark:bg-neutral-900 !mt-0 text-white whitespace-pre-wrap ${title ? 'rounded-b-lg' : 'rounded-lg'} p-4 overflow-x-auto`}
+            >
+                <code
+                    className={
+                        language
+                            ? `language-${language} whitespace-pre-wrap`
+                            : ''
+                    }
+                >
                     {content}
                 </code>
             </pre>
