@@ -23,6 +23,7 @@ import dedent from 'dedent'
 import { marked } from 'marked'
 
 import { defaultResendOptions, resend } from './resend'
+import { getSupabaseWithHeaders } from './supabase.server'
 
 export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
     .state('userId', Promise.resolve(''))
@@ -380,6 +381,195 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
                 }),
             },
             description: 'Validates a session belongs to the given Framer user',
+        },
+    )
+    .post(
+        '/mcp/createSession',
+        async ({ request }) => {
+            const authHeader = request.headers.get('Authorization')
+            if (!authHeader?.startsWith('Bearer ')) {
+                throw new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            }
+
+            const { supabase } = getSupabaseWithHeaders({ request })
+            const {
+                data: { user },
+                error,
+            } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+
+            if (error || !user) {
+                throw new Response(JSON.stringify({ error: 'Invalid token' }), {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            }
+
+            const body = await request.json()
+            const { supabaseUserId, email } = body
+
+            // Try to find existing FramerLoginSession with non-null framerUserId
+            const existingFramerLoginSession =
+                await prisma.framerLoginSession.findFirst({
+                    where: {
+                        framerUserId: { not: null, notIn: [''] },
+                        // previous MCP sessions were saved without plugin name
+                        OR: [{ pluginName: 'mcp' }, { pluginName: null }],
+                    },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                })
+
+            const framerUserId = existingFramerLoginSession?.framerUserId
+
+            if (!framerUserId) {
+                throw new Response(
+                    JSON.stringify({ error: 'Missing framerUserId in user session' }),
+                    {
+                        status: 428,
+                        headers: { 'Content-Type': 'application/json' }
+                    },
+                )
+            }
+
+            // Verify the token belongs to the same user
+            if (user.id !== supabaseUserId) {
+                throw new Response(JSON.stringify({ error: 'User ID mismatch' }), {
+                    status: 403,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            }
+
+            // Get user's org (create if doesn't exist)
+            let orgUser = await prisma.orgsUsers.findFirst({
+                where: { userId: user.id },
+                include: { org: true },
+            })
+
+            if (!orgUser) {
+                // Create org for user
+                const org = await prisma.org.create({
+                    data: {
+                        name: email || 'MCP User',
+                        users: {
+                            create: {
+                                userId: user.id,
+                                role: 'ADMIN',
+                            },
+                        },
+                    },
+                })
+                orgUser = { org, orgId: org.orgId, userId: user.id, role: 'ADMIN' }
+            }
+
+            return {
+                sessionToken: existingFramerLoginSession.key,
+                framerUserId,
+            }
+        },
+        {
+            body: z.object({
+                supabaseUserId: z.string(),
+                email: z.string().optional(),
+            }),
+            response: {
+                200: z.object({
+                    sessionToken: z.string(),
+                    framerUserId: z.string(),
+                }),
+            },
+            description: 'Creates an MCP session for authenticated user',
+        },
+    )
+    .post(
+        '/mcp/validateSession',
+        async ({ request }) => {
+            const body = await request.json()
+            const { sessionToken } = body
+
+            if (!sessionToken) {
+                throw new Response(
+                    JSON.stringify({ error: 'Missing session token' }),
+                    {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    },
+                )
+            }
+
+            // Find and validate session
+            const session = await prisma.framerLoginSession.findUnique({
+                where: {
+                    key: sessionToken,
+                },
+                include: {
+                    org: {
+                        include: {
+                            users: {
+                                where: {
+                                    role: 'ADMIN', // Get admin user for the org
+                                },
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            email: true,
+                                        },
+                                    },
+                                },
+                                take: 1,
+                            },
+                        },
+                    },
+                },
+            })
+
+            if (!session) {
+                throw new Response(JSON.stringify({ error: 'Invalid session' }), {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            }
+
+            // Check if session is expired (stored in data JSON)
+            const sessionData = session.data as any
+            if (
+                sessionData?.expiresAt &&
+                new Date(sessionData.expiresAt) < new Date()
+            ) {
+                throw new Response(JSON.stringify({ error: 'Session expired' }), {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            }
+
+            if (!session.framerUserId) {
+              throw new Error(`no session.framerUserId found`)
+            }
+
+            const adminUser = session.org.users[0]?.user
+
+            return {
+                framerUserId: session.framerUserId,
+                userId: session.usedByUserId,
+                email: sessionData?.email || adminUser?.email || '',
+            }
+        },
+        {
+            body: z.object({
+                sessionToken: z.string(),
+            }),
+            response: {
+                200: z.object({
+                    framerUserId: z.string(),
+                    userId: z.string().nullable(),
+                    email: z.string(),
+                }),
+            },
+            description: 'Validates an MCP session token',
         },
     )
 

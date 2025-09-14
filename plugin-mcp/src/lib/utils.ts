@@ -1,7 +1,5 @@
-import { createSpiceflowClient, SpiceflowClient } from 'spiceflow/client'
-import { framer } from 'framer-plugin'
 import { redirect } from 'react-router'
-import { createClient } from '../generated/api-client.js'
+import { createSpiceflowClient, SpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 export type LoaderReturnType<T extends (...args: any) => any> = Awaited<
