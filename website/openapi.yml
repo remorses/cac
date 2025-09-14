@@ -207,6 +207,81 @@ paths:
               required:
                 - sessionId
                 - framerUserId
+  /api/plugins/mcp/createSession:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionToken:
+                    type: string
+                  framerUserId:
+                    type: string
+                required:
+                  - sessionToken
+                  - framerUserId
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                supabaseUserId:
+                  type: string
+                email:
+                  type: string
+              required:
+                - supabaseUserId
+  /api/plugins/mcp/validateSession:
+    post:
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  framerUserId:
+                    type: string
+                  userId:
+                    anyOf:
+                      - type: string
+                      - type: 'null'
+                  email:
+                    type: string
+                required:
+                  - framerUserId
+                  - userId
+                  - email
+        default:
+          description: ''
+          content:
+            '*/*':
+              schema: {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionToken:
+                  type: string
+              required:
+                - sessionToken
   /api/plugins/openapi:
     get:
       responses:
