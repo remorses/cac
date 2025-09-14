@@ -20,6 +20,8 @@ import { sleep } from './lib/utils.js'
 import { KnownError, notifyError } from './lib/errors.js'
 import dedent from 'string-dedent'
 import { toJSONSchema } from 'zod'
+import { createSpiceflowClient, type SpiceflowClient } from 'spiceflow/client'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 // Type for MCP props passed through OAuth or legacy auth
 interface MCPProps {
@@ -35,6 +37,12 @@ const textResponse = (text: string) => ({
 
 const html = dedent
 const framerInstructions = `Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.'`
+
+// Helper to create spiceflow client for website API
+function createWebsiteApiClient(env: Env): SpiceflowClient.Create<RouteType> {
+    const baseUrl = env.WEBSITE_URL || 'https://unframer.co'
+    return createSpiceflowClient<RouteType>(baseUrl)
+}
 
 // Helper to create Supabase client with headers
 interface SupabaseSessionArgs {
@@ -192,40 +200,41 @@ const defaultHandler = {
 
             const { user, session } = sessionData
 
-            // Create MCP session in your website API
-            const baseUrl = env.WEBSITE_URL
-            const sessionResponse = await fetch(
-                new URL('/api/mcp/create-session', baseUrl).toString(),
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${session.access_token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
+            // Create MCP session using spiceflow client
+            const apiClient = createWebsiteApiClient(env)
+            const { data: sessionResult, error: sessionError } =
+                await apiClient.api.plugins.mcp.createSession.post(
+                    {
                         supabaseUserId: user.id,
                         email: user.email,
-                    }),
-                },
-            )
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    },
+                )
 
             // when user still has not logged in into Framer MCP
-            if (sessionResponse.status === 428) {
+            if (
+                sessionError &&
+                sessionError instanceof Response &&
+                sessionError.status === 428
+            ) {
                 return htmlForUserWithoutFramerUserId()
             }
-            if (!sessionResponse.ok) {
-                const resText = await sessionResponse.text()
+            if (sessionError) {
+                const errorText =
+                    sessionError instanceof Response
+                        ? await sessionError.text()
+                        : String(sessionError)
                 return new Response(
-                    `Failed to create MCP session: ${resText}`,
+                    `Failed to create MCP session: ${errorText}`,
                     { status: 500 },
                 )
             }
 
-            const { sessionToken, framerUserId } =
-                (await sessionResponse.json()) as {
-                    sessionToken: string
-                    framerUserId: string
-                }
+            const { sessionToken, framerUserId } = sessionResult
 
             // Complete OAuth flow
             const { redirectTo } = await provider.completeAuthorization({
@@ -660,29 +669,14 @@ const handler = {
                 return new Response('Invalid session', { status: 401 })
             }
             // Legacy authentication mode - validate and set props
-            const baseUrl = env.WEBSITE_URL
-            const response = await fetch(
-                new URL('/api/mcp/validate-session', baseUrl).toString(),
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sessionToken: secret,
-                    }),
-                },
-            )
+            const apiClient = createWebsiteApiClient(env)
+            const { data: data, error: validationError } =
+                await apiClient.api.plugins.mcp.validateSession.post({
+                    sessionToken: secret,
+                })
 
-            if (!response.ok) {
+            if (validationError) {
                 return new Response('Invalid session', { status: 401 })
-            }
-
-            const data = (await response.json()) as {
-                framerUserId: string
-                websocketId: string
-                userId: string
-                email: string
             }
 
             // Set props for legacy mode
