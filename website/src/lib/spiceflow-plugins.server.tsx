@@ -360,7 +360,10 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             }
 
             if (session.framerUserId !== framerUserId) {
-                return { valid: false, error: 'Session belongs to different user' }
+                return {
+                    valid: false,
+                    error: 'Session belongs to different user',
+                }
             }
 
             if (!session.usedByUserId) {
@@ -390,7 +393,7 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             if (!authHeader?.startsWith('Bearer ')) {
                 throw new Response(JSON.stringify({ error: 'Unauthorized' }), {
                     status: 401,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
                 })
             }
 
@@ -403,7 +406,7 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             if (error || !user) {
                 throw new Response(JSON.stringify({ error: 'Invalid token' }), {
                     status: 401,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
                 })
             }
 
@@ -414,6 +417,7 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             const existingFramerLoginSession =
                 await prisma.framerLoginSession.findFirst({
                     where: {
+                        usedByUserId: supabaseUserId,
                         framerUserId: { not: null, notIn: [''] },
                         // previous MCP sessions were saved without plugin name
                         OR: [{ pluginName: 'mcp' }, { pluginName: null }],
@@ -427,20 +431,25 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
 
             if (!framerUserId) {
                 throw new Response(
-                    JSON.stringify({ error: 'Missing framerUserId in user session' }),
+                    JSON.stringify({
+                        error: 'Missing framerUserId in user session',
+                    }),
                     {
                         status: 428,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
                     },
                 )
             }
 
             // Verify the token belongs to the same user
             if (user.id !== supabaseUserId) {
-                throw new Response(JSON.stringify({ error: 'User ID mismatch' }), {
-                    status: 403,
-                    headers: { 'Content-Type': 'application/json' }
-                })
+                throw new Response(
+                    JSON.stringify({ error: 'User ID mismatch' }),
+                    {
+                        status: 403,
+                        headers: { 'Content-Type': 'application/json' },
+                    },
+                )
             }
 
             // Get user's org (create if doesn't exist)
@@ -462,7 +471,12 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
                         },
                     },
                 })
-                orgUser = { org, orgId: org.orgId, userId: user.id, role: 'ADMIN' }
+                orgUser = {
+                    org,
+                    orgId: org.orgId,
+                    userId: user.id,
+                    role: 'ADMIN',
+                }
             }
 
             return {
@@ -495,7 +509,7 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
                     JSON.stringify({ error: 'Missing session token' }),
                     {
                         status: 400,
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
                     },
                 )
             }
@@ -528,10 +542,13 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             })
 
             if (!session) {
-                throw new Response(JSON.stringify({ error: 'Invalid session' }), {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' }
-                })
+                throw new Response(
+                    JSON.stringify({ error: 'Invalid session' }),
+                    {
+                        status: 401,
+                        headers: { 'Content-Type': 'application/json' },
+                    },
+                )
             }
 
             // Check if session is expired (stored in data JSON)
@@ -540,14 +557,17 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
                 sessionData?.expiresAt &&
                 new Date(sessionData.expiresAt) < new Date()
             ) {
-                throw new Response(JSON.stringify({ error: 'Session expired' }), {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' }
-                })
+                throw new Response(
+                    JSON.stringify({ error: 'Session expired' }),
+                    {
+                        status: 401,
+                        headers: { 'Content-Type': 'application/json' },
+                    },
+                )
             }
 
             if (!session.framerUserId) {
-              throw new Error(`no session.framerUserId found`)
+                throw new Error(`no session.framerUserId found`)
             }
 
             const adminUser = session.org.users[0]?.user
@@ -572,7 +592,6 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
             description: 'Validates an MCP session token',
         },
     )
-
 
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
