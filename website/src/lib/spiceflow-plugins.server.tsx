@@ -409,9 +409,23 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
                     headers: { 'Content-Type': 'application/json' },
                 })
             }
-
             const body = await request.json()
             const { supabaseUserId, email } = body
+
+            if (!supabaseUserId) {
+                throw new Error(`supabaseUserId is required`)
+            }
+
+            // Verify the token belongs to the same user
+            if (user.id !== supabaseUserId) {
+                throw new Response(
+                    JSON.stringify({ error: 'User ID mismatch' }),
+                    {
+                        status: 403,
+                        headers: { 'Content-Type': 'application/json' },
+                    },
+                )
+            }
 
             // Try to find existing FramerLoginSession with non-null framerUserId
             const existingFramerLoginSession =
@@ -436,17 +450,6 @@ export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
                     }),
                     {
                         status: 428,
-                        headers: { 'Content-Type': 'application/json' },
-                    },
-                )
-            }
-
-            // Verify the token belongs to the same user
-            if (user.id !== supabaseUserId) {
-                throw new Response(
-                    JSON.stringify({ error: 'User ID mismatch' }),
-                    {
-                        status: 403,
                         headers: { 'Content-Type': 'application/json' },
                     },
                 )
