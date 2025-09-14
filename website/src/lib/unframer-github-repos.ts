@@ -1,5 +1,5 @@
 import dedent from 'string-dedent'
-import crypto from 'crypto'
+import * as crypto from 'node:crypto'
 
 import { generateText, tool, wrapLanguageModel } from 'ai'
 import { prisma } from 'db'
@@ -29,6 +29,11 @@ import { componentCamelCase } from 'unframer-workspace/src/typescript'
 
 let biome: Biome
 export function generateRepoName({ projectId, projectTitle }) {
+    // Use only projectId prefix if no title or title is 'untitled'
+    // if (!projectTitle || projectTitle === 'untitled') {
+    //     return projectId.slice(0, 16)
+    // }
+    // Include both title and projectId prefix for uniqueness
     return kebabCase(projectTitle + ' ' + projectId.slice(0, 5))
 }
 
@@ -93,7 +98,8 @@ export async function generateUnframerRepo({
             .slice(0, 16)
     }
 
-    projectTitle = projectTitle || project?.projectName || 'untitled'
+    // Use the project name from database if no title was passed
+    projectTitle = projectTitle || project?.projectName || ''
 
     const { config } = await configFromFetch({ projectId })
 
