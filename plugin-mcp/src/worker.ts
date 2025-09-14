@@ -1,4 +1,6 @@
 import { McpAgent } from 'agents/mcp'
+import type { OAuthHelpers } from '@cloudflare/workers-oauth-provider'
+
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 import {
     ListToolsRequestSchema,
@@ -24,10 +26,20 @@ import { createSpiceflowClient, type SpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 // Type for MCP props passed through OAuth or legacy auth
-interface MCPProps {
+interface MCPProps extends Record<string, unknown> {
     framerUserId?: string
     email?: string
-    secret?: string
+    secret: string
+}
+
+type MyEnv = Env & {
+    OAUTH_PROVIDER: OAuthHelpers // your OAuth binding
+    OAUTH_KV: KVNamespace // required for provider
+    PUBLIC_SUPABASE_URL: string
+    PUBLIC_SUPABASE_ANON_KEY: string
+    SERVICE_SECRET: string // to authenticate requests from Framer plugin
+    WEBSITE_URL?: string // to call website API
+    STAGE?: 'preview' | 'production'
 }
 
 // Helper to return text responses from tools
@@ -39,7 +51,7 @@ const html = dedent
 const framerInstructions = `Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.'`
 
 // Helper to create spiceflow client for website API
-function createWebsiteApiClient(env: Env): SpiceflowClient.Create<RouteType> {
+function createWebsiteApiClient(env: MyEnv): SpiceflowClient.Create<RouteType> {
     const baseUrl = env.WEBSITE_URL || 'https://unframer.co'
     return createSpiceflowClient<RouteType>(baseUrl)
 }
@@ -47,7 +59,7 @@ function createWebsiteApiClient(env: Env): SpiceflowClient.Create<RouteType> {
 // Helper to create Supabase client with headers
 interface SupabaseSessionArgs {
     request: Request
-    env: Env
+    env: MyEnv
     response?: Response
 }
 
@@ -88,7 +100,7 @@ function getSupabaseWithHeaders({
 
 // OAuth handler for non-authenticated requests
 const defaultHandler = {
-    async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    async fetch(request: Request, env: MyEnv, ctx: ExecutionContext) {
         const provider = env.OAUTH_PROVIDER
         const url = new URL(request.url)
 
@@ -246,9 +258,11 @@ const defaultHandler = {
                     framerUserId,
                 },
                 scope: oauthReq.scope || ['read', 'write'],
+
                 props: {
                     framerUserId,
                     email: user.email,
+                    secret: sessionToken,
                 } satisfies MCPProps,
             })
 
@@ -282,7 +296,7 @@ const defaultHandler = {
     },
 }
 
-export class MyMCP extends McpAgent<Env, MCPProps> {
+export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
     server = new Server(
         {
             name: 'Framer MCP',
@@ -306,10 +320,15 @@ export class MyMCP extends McpAgent<Env, MCPProps> {
     async init() {
         try {
             const server = this.server
-
+            const provider = this.env.OAUTH_PROVIDER
             // Get the framerUserId and email from the OAuth context
             const framerUserId = this.props?.framerUserId
             const userEmail = this.props?.email
+
+            const secret = this.props?.secret
+            if (!secret) {
+                throw new Error(`Missing MCP secret prop`)
+            }
 
             console.log(
                 'Initializing MCP with authenticated framerUserId:',
@@ -317,6 +336,15 @@ export class MyMCP extends McpAgent<Env, MCPProps> {
                 'email:',
                 userEmail,
             )
+            // const apiClient = createWebsiteApiClient(this.env)
+            // const { data: data, error: validationError } =
+            //     await apiClient.api.plugins.mcp.validateSession.post({
+            //         sessionToken: secret,
+            //     })
+
+            // if (validationError) {
+            //     throw new Error('Invalid session')
+            // }
 
             let ws: WebSocket | null = null
             let isServerStopped = false
@@ -644,13 +672,13 @@ const oauthProvider = new OAuthProvider({
     defaultHandler: defaultHandler as ExportedHandler,
     authorizeEndpoint: '/authorize',
     tokenEndpoint: '/token',
-    accessTokenTTL: 60 * 60 * 24 * 7,
+    // accessTokenTTL: 60 * 60 * 24 * 7,
 
     clientRegistrationEndpoint: '/register',
 })
 
 const handler = {
-    async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    async fetch(request: Request, env: MyEnv, ctx: ExecutionContext) {
         const url = new URL(request.url)
 
         // https://mcp.preview.unframer.co/htmlForUserWithoutFramerUserId
