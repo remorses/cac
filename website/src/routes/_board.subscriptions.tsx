@@ -13,7 +13,6 @@ import {
 } from '@lemonsqueezy/lemonsqueezy.js'
 import { isTruthy } from '../lib/utils'
 
-
 export let loader = async ({ request }: LoaderFunctionArgs) => {
     lemonSqueezySetup({
         apiKey: env.LEMON_SQUEEZY_API_KEY,
@@ -162,11 +161,11 @@ export default function Page() {
                     ))}
                 </div>
             )}
-            <div className="mt-8 text-center">
-                <Form method="post" action={href('/api/auth/signout')}>
+            <div className='mt-8 text-center'>
+                <Form method='post' action={href('/api/auth/signout')}>
                     <button
-                        type="submit"
-                        className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 underline bg-transparent border-none cursor-pointer"
+                        type='submit'
+                        className='text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 underline bg-transparent border-none cursor-pointer'
                     >
                         Sign Out
                     </button>
