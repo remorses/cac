@@ -1,17 +1,17 @@
 Successfully updated:
-Created Frame node Bgc1INpuQ
-Created Frame node mVRpPaghQ
-Created Text node q_gMQgTqt
-Created Text node UKVP_GNb_
-Created Frame node uFCZJxRv6
-Updated attributes for node Bgc1INpuQ
-Updated attributes for node mVRpPaghQ
-Updated text for node q_gMQgTqt
-Updated attributes for node q_gMQgTqt
-Updated text for node UKVP_GNb_
-Updated attributes for node UKVP_GNb_
-Updated attributes for node uFCZJxRv6
-Reordered node mVRpPaghQ within parent Bgc1INpuQ to index 0
+Created Frame node MPsoyWiXW
+Created Frame node RonU5918V
+Created Text node L3mGIxayk
+Created Text node NtASvmP9k
+Created Frame node T5mwJ0Vqo
+Updated attributes for node MPsoyWiXW
+Updated attributes for node RonU5918V
+Updated text for node L3mGIxayk
+Updated attributes for node L3mGIxayk
+Updated text for node NtASvmP9k
+Updated attributes for node NtASvmP9k
+Updated attributes for node T5mwJ0Vqo
+Reordered node RonU5918V within parent MPsoyWiXW to index 0
 
 XML Changes:
 Index: node.xml
@@ -82,7 +82,7 @@ Index: node.xml
     />
  </Stack>
 +<Stack
-+    nodeId="Bgc1INpuQ"
++    nodeId="MPsoyWiXW"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -98,7 +98,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="mVRpPaghQ"
++      nodeId="RonU5918V"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -106,7 +106,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="q_gMQgTqt"
++        nodeId="L3mGIxayk"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -118,7 +118,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="UKVP_GNb_"
++      nodeId="NtASvmP9k"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -126,9 +126,9 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="uFCZJxRv6"
++      nodeId="T5mwJ0Vqo"
 +      width="100%"
-+      height="100px"
++      height="1fr"
 +      <!-- background color string or project color style path (if starts with /) -->
 +      backgroundColor="rgb(255, 255, 255)"
 +      borderRadius="4px"
