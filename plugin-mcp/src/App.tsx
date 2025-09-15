@@ -357,6 +357,8 @@ async function createFramerNode({
 
 // Initialize websocket connection (will be moved to authenticated component)
 let cleanup: (() => void) | undefined
+// Track current websocket ID to prevent duplicate connections for same user
+let currentWebsocketId: string | undefined
 
 // Helper function to check permissions and return error message if not allowed
 function checkPermissions(...methods: ProtectedMethod[]): string | null {
@@ -2045,14 +2047,14 @@ function MainComponent() {
             <div className='flex items-center justify-between ml-1 -mr-2 bg-framer-primary'>
                 <div className='flex items-center truncate gap-2'>
                     <CircleIcon
-                        className={`size-2 shrink-0 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
+                        className={`size-2 shrink-0 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-gray-500'}`}
                     />
                     <div className='truncate'>
                         {error
                             ? 'Error'
                             : isConnected
-                              ? 'Connected'
-                              : 'Not Connected'}
+                              ? 'Working...'
+                              : 'MCP ready'}
                     </div>
                 </div>
                 <button
@@ -2080,7 +2082,7 @@ function MainComponent() {
                     Keep this plugin open while using MCP
                 </p>
                 <CircleIcon
-                    className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-orange-500'}`}
+                    className={`size-2 fill-current ${error ? 'text-red-500' : isConnected ? 'text-green-500' : 'text-gray-500'}`}
                 />
             </div>
 
@@ -2118,9 +2120,20 @@ function MainComponent() {
                 </div>
             )}
             <div className='flex items-center -mt-px justify-between border-framer-divider'>
-                <span className='text-[11px] grow text-framer-tertiary truncate'>
-                    {data?.email}
-                </span>
+                <div className='flex items-center gap-2 text-[11px] text-framer-tertiary'>
+                    <span className='truncate'>
+                        {data?.email}
+                    </span>
+                    <span className='text-framer-tertiary/50'>•</span>
+                    <a
+                        href="mailto:tommy@unframer.co?subject=MCP%20Framer%20plugin%20support"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className='text-framer-tertiary/60 hover:text-framer-tertiary transition-colors'
+                    >
+                        support
+                    </a>
+                </div>
                 <button
                     onClick={toggleExpanded}
                     className='w-auto p-1 bg-transparent hover:bg-framer-secondary rounded transition-colors'
@@ -2154,15 +2167,22 @@ async function rootLoader({}: LoaderFunctionArgs) {
     const user = await framer.getCurrentUser()
     const userId = user.id
 
-    // Initialize websocket with user ID
-    if (!cleanup) {
+    // Initialize websocket with user ID only if not already connected for this user
+    if (!cleanup || currentWebsocketId !== userId) {
+        // Clean up previous connection if user changed
+        if (cleanup && currentWebsocketId !== userId) {
+            cleanup()
+            cleanup = undefined
+        }
+
+        currentWebsocketId = userId
         cleanup = await websocketClientHandling({
             websocketId: userId,
             handle: websocketHandler,
         })
     }
 
-    return { email: data.email || 'Unknown', userId }
+    return { email: data.email || 'Unknown', userId, websocketId: userId }
 }
 
 function RootLayout() {

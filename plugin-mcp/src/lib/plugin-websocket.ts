@@ -3,7 +3,11 @@ import { useStore } from './store.js'
 import { McpToolWebsocketPayload } from './schema.js'
 
 // Global variable to track the active cleanup function
-let cleanupFunction: (() => void) | null = null
+let cleanupFunction: (() => void) | undefined = undefined
+// Global WebSocket instance to check connection state
+let ws: WebSocket | undefined = undefined
+// Track reconnect timeout to cancel it if needed
+let reconnectTimeout: NodeJS.Timeout | undefined = undefined
 
 // Function for handling websocket connection based on session cookie
 export async function websocketClientHandling({
@@ -17,34 +21,56 @@ export async function websocketClientHandling({
 }) {
     if (typeof window === 'undefined') return
 
-    // Check if we're already connected
-    if (cleanupFunction) {
-        console.log('Already connected, returning existing cleanup function')
+    // Check if we're already connected or connecting using WebSocket state
+    if (
+        ws?.readyState === WebSocket.CONNECTING ||
+        ws?.readyState === WebSocket.OPEN
+    ) {
+        console.log(
+            'Already connected or connecting (WebSocket state:',
+            ws?.readyState,
+            '), returning existing cleanup function',
+        )
         return cleanupFunction
     }
 
     const host = new URL(process.env.PUBLIC_URL!).host
+    console.log(`using ${host} for websocket url`)
     const websocketUrl = `wss://${host}/_tunnel/upstream?id=${websocketId}`
 
-    let ws: WebSocket
     let pingInterval: NodeJS.Timeout | null = null
     let reconnectInterval = 3000
     let shouldReconnect = true
 
     function connect() {
-        console.log('connecting over mcp websocketId', websocketId)
+        if (
+            ws?.readyState === WebSocket.CONNECTING ||
+            ws?.readyState === WebSocket.OPEN
+        ) {
+            console.log('Already connected')
+            return
+        }
+        // Clear any pending reconnect when starting a new connection
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout)
+            reconnectTimeout = undefined
+        }
+
+        console.log('connecting over mcp websocket', websocketUrl)
         ws = new WebSocket(websocketUrl)
 
         ws.onopen = () => {
             console.log('websocket client connected', websocketId)
             reconnectInterval = 3000
-            ws.send(JSON.stringify({ type: 'ready' }))
+            if (ws?.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ready' }))
+            }
             useStore.setState({ error: undefined })
 
             // Setup ping interval
             if (pingInterval) clearInterval(pingInterval)
             pingInterval = setInterval(() => {
-                if (ws.readyState === WebSocket.OPEN) {
+                if (ws?.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: 'ping' }))
                 }
             }, 5 * 1000)
@@ -65,7 +91,9 @@ export async function websocketClientHandling({
             }
             if (payload.type === 'ready') {
                 console.log('received ready')
-                ws.send(JSON.stringify({ type: 'ready' }))
+                if (ws?.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'ready' }))
+                }
                 useStore.setState({ isConnected: true, error: undefined })
                 return
             }
@@ -79,7 +107,7 @@ export async function websocketClientHandling({
                 const output = await handle(payload as any)
                 console.log(`websocket message handled`, payload.type, output)
 
-                if (ws.readyState === WebSocket.OPEN) {
+                if (ws?.readyState === WebSocket.OPEN) {
                     ws.send(
                         JSON.stringify({
                             id,
@@ -93,7 +121,7 @@ export async function websocketClientHandling({
                 }
             } catch (e) {
                 console.error(`websocket error`, e)
-                if (ws.readyState === WebSocket.OPEN) {
+                if (ws?.readyState === WebSocket.OPEN) {
                     ws.send(
                         JSON.stringify({
                             id,
@@ -118,12 +146,9 @@ export async function websocketClientHandling({
                 pingInterval = null
             }
 
-            if (shouldReconnect) {
-                setTimeout(connect, reconnectInterval)
-                // exponential backoff (max 30s)
-                reconnectInterval = Math.min(30000, reconnectInterval * 1.5)
-            }
-            cleanupFunction = null
+            // Clear connection state
+            cleanupFunction = undefined
+            ws = undefined
 
             if (event.code === 4009) {
                 const errorMessage =
@@ -135,8 +160,29 @@ export async function websocketClientHandling({
                     isConnected: false,
                     error: errorMessage,
                 })
-
+                // Don't reconnect on this error
+                shouldReconnect = false
                 return
+            }
+
+            if (shouldReconnect) {
+                // Clear any existing reconnect timeout
+                if (reconnectTimeout) {
+                    clearTimeout(reconnectTimeout)
+                }
+                reconnectTimeout = setTimeout(() => {
+                    reconnectTimeout = undefined
+                    // Only reconnect if WebSocket is not open or connecting
+                    if (
+                        !ws ||
+                        (ws.readyState !== WebSocket.OPEN &&
+                            ws.readyState !== WebSocket.CONNECTING)
+                    ) {
+                        connect()
+                    }
+                }, reconnectInterval)
+                // exponential backoff (max 30s)
+                reconnectInterval = Math.min(30000, reconnectInterval * 1.1)
             }
         }
     }
@@ -147,9 +193,19 @@ export async function websocketClientHandling({
     // Create and store the cleanup function
     cleanupFunction = () => {
         shouldReconnect = false
-        if (pingInterval) clearInterval(pingInterval)
-        if (!ws?.CLOSED) ws.close()
-        cleanupFunction = null
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout)
+            reconnectTimeout = undefined
+        }
+        if (pingInterval) {
+            clearInterval(pingInterval)
+            pingInterval = null
+        }
+        if (ws?.readyState !== WebSocket.CLOSED) {
+            ws?.close()
+        }
+        cleanupFunction = undefined
+        ws = undefined
     }
 
     // Return the cleanup function
