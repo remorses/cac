@@ -1,5 +1,5 @@
 import { McpAgent } from 'agents/mcp'
-import type { OAuthHelpers } from '@cloudflare/workers-oauth-provider'
+import type { OAuthHelpers, AuthRequest } from '@cloudflare/workers-oauth-provider'
 
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 import {
@@ -30,6 +30,7 @@ interface MCPProps extends Record<string, unknown> {
     framerUserId?: string
     email?: string
     secret: string
+    clientId?: string
 }
 
 type MyEnv = Env & {
@@ -189,7 +190,7 @@ const defaultHandler = {
                 return new Response('Invalid or expired state', { status: 400 })
             }
 
-            const { oauthReq } = JSON.parse(stored)
+            const { oauthReq }: { oauthReq: AuthRequest } = JSON.parse(stored)
             await env.OAUTH_KV.delete(`oauth:${stateId}`)
 
             // Create Supabase client with headers
@@ -240,7 +241,6 @@ const defaultHandler = {
 
             const { sessionToken, framerUserId } = sessionResult
 
-            // Complete OAuth flow
             const { redirectTo } = await provider.completeAuthorization({
                 request: oauthReq,
                 userId: framerUserId,
@@ -255,6 +255,7 @@ const defaultHandler = {
                     framerUserId,
                     email: user.email,
                     secret: sessionToken,
+                    clientId: oauthReq.clientId,
                 } satisfies MCPProps,
             })
 
