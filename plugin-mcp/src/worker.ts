@@ -228,20 +228,12 @@ const defaultHandler = {
                 )
 
             // when user still has not logged in into Framer MCP
-            if (
-                sessionError &&
-                sessionError instanceof Response &&
-                sessionError.status === 428
-            ) {
+            if (sessionError && sessionError.status === 428) {
                 return htmlForUserWithoutFramerUserId()
             }
             if (sessionError) {
-                const errorText =
-                    sessionError instanceof Response
-                        ? await sessionError.text()
-                        : String(sessionError)
                 return new Response(
-                    `Failed to create MCP session: ${errorText}`,
+                    `Failed to create MCP session: ${sessionError.message}`,
                     { status: 500 },
                 )
             }
