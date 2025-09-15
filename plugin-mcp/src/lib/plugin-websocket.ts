@@ -160,9 +160,7 @@ export async function websocketClientHandling({
                     isConnected: false,
                     error: errorMessage,
                 })
-                // Don't reconnect on this error
-                shouldReconnect = false
-                return
+                // Allow reconnect to happen with normal retry logic
             }
 
             if (shouldReconnect) {
