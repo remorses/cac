@@ -4,16 +4,11 @@ tools:
       component.
 
 
-      This tool also returns:
-
-      - The ID of the currently focused page or component node.
-
-      - The currently selected nodes XML if any nodes are selected
-
-      - The project's published website URLs (production and staging) if available
+      This tool also returns the ID of the currently focused page or component node. When you call
+      insertComponentInCanvas, the component will be inserted into this focused page or component.
 
 
-      The referenced nodeIds can be used with getNode to get the XML of a specific page or
+      The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or
       component.
 
 
@@ -27,34 +22,47 @@ tools:
       additionalProperties: false
       properties: {}
       type: object
-    name: getProject
+    name: getProjectXml
+  - description: Gets the currently selected nodes as xml
+    inputSchema:
+      additionalProperties: false
+      properties: {}
+      type: object
+    name: getSelectedNodesXml
+  - description: Zooms the canvas to center on the given node ID. Code file nodes are not supported.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        nodeId:
+          description: The ID of the node to zoom into view
+          minLength: 1
+          type: string
+      required:
+        - nodeId
+      type: object
+    name: zoomIntoView
   - description: >-
-      Get a specific Framer node as XML or code file content. You first need to get a node id via
-      getProject. Selected nodes are also shown in getProject output.
-
-
-      For regular nodes: Returns the XML representation of the node and its children.
-
-      For code files: Returns the TypeScript/React source code content.
+      Get a specific Framer node as XML. You first need to get a node id via getProjectXml or call
+      getSelectedNodesXml instead
 
 
       > IMPORTANT. If you need to recursively read all xml in the Framer project you should first
       read all pages xml, then read all components xml for the components that appear in the pages.
-      Components are a way to encapsulate layers, you still need to call getNode on each instance
+      Components are a way to encapsulate layers, you still need to call getNodeXml on each instance
       componentId to see the actual component implementation.
     inputSchema:
       additionalProperties: false
       properties:
         nodeId:
           description: >-
-            The ID of the node to get as XML for, can be a page nodeId, a component componentId, a
-            code file ID, or any other XML layer found in a page or component
+            The ID of the node to get as XML for, can be a page nodeId, a component componentId or
+            any other XML layer found in a page or component
           minLength: 1
           type: string
       required:
         - nodeId
       type: object
-    name: getNode
+    name: getNodeXml
   - description: >
       Update the XML for a node using its nodeId and passing a new XML string. It can be used to
       update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
@@ -136,10 +144,12 @@ tools:
 
 
       This tool CANNOT be used for:
-       - Code files (use 'upsertCodeFile' instead)
-      - Color styles (use 'upsertColorStyle' with type: 'update' instead)
 
-      - Text styles (use 'upsertTextStyle' with type: 'update' instead)
+      - Code files (use 'updateCodeFile' instead)
+
+      - Color styles (use 'manageColorStyle' with type: 'update' instead)
+
+      - Text styles (use 'manageTextStyle' with type: 'update' instead)
 
       - Deleting nodes (use 'deleteNode' instead)
 
@@ -432,7 +442,7 @@ tools:
         - nodeId
         - xml
       type: object
-    name: updateNode
+    name: updateXmlForNode
   - description: |-
       Creates or updates a color style in the project.
 
@@ -481,7 +491,7 @@ tools:
         - stylePath
         - properties
       type: object
-    name: upsertColorStyle
+    name: manageColorStyle
   - description: >-
       Creates or updates a text style in the project.
 
@@ -624,16 +634,11 @@ tools:
         - stylePath
         - properties
       type: object
-    name: upsertTextStyle
+    name: manageTextStyle
   - description: >-
-      Search for resources in Framer. Currently only supports searching for fonts.
-
-
-      ## Fonts
-
-
-      Searches among all available fonts on Framer by selector substring. Returns max 20 results.
-      Use specific search terms for better results.
+      Search for Framer available fonts by selector substring. This tool searches among  all
+      available fonts on Framer. Returns max 20 results. Use specific search terms for better
+      results.
 
 
       IMPORTANT: The returned 'selector' field is what you use in XML font attributes:
@@ -651,94 +656,39 @@ tools:
     inputSchema:
       additionalProperties: false
       properties:
-        kind:
-          const: fonts
-          description: The type of resource to search for. Currently only "fonts" is supported.
-          type: string
         query:
           description: Search query to match against font selector (e.g., "Inter", "bold", "italic")
           minLength: 1
           type: string
       required:
-        - kind
         - query
       type: object
-    name: search
+    name: searchFonts
   - description: >
-      Deletes a Framer node from the page or component.
+      Deletes a Framer node, color style, text style, or code file.
 
 
-      Pass the node ID to remove it from the canvas. This will also remove all of its children.
+      - For nodes: Pass the node ID to remove it from the page/component (also removes all children)
+
+      - For color/text styles: Pass the style path (e.g., "/Primary", "/Heading xl")
+
+      - For code files: Pass the code file ID
 
 
-      IMPORTANT: 
-
-      - If you're trying to delete a style (path starts with "/"), use deleteColorStyle or
-      deleteTextStyle instead
-
-      - If you're trying to delete a code file, use deleteCodeFile instead
-
-      - NEVER use this tool to change the parent of a node! Instead use updateNode to move an
-      element to another parent
+      NEVER use this tool to change the parent of a node! Instead use updateXmlForNode to move an
+      element to another parent, reference both the element id and the new parent id and
+      updateXmlForNode will do the reparenting for you.
     inputSchema:
       additionalProperties: false
       properties:
         nodeId:
-          description: The ID of the node to delete from the canvas
+          description: The ID of the node/style/code file to delete
           minLength: 1
           type: string
       required:
         - nodeId
       type: object
     name: deleteNode
-  - description: |-
-      Deletes a color style from the project.
-
-      Pass the style path to remove it (e.g., "/Primary", "/Brand/Blue").
-
-      Warning: This will affect all nodes using this color style in the project.
-    inputSchema:
-      additionalProperties: false
-      properties:
-        stylePath:
-          description: The path of the color style to delete (must start with /)
-          type: string
-      required:
-        - stylePath
-      type: object
-    name: deleteColorStyle
-  - description: |-
-      Deletes a text style from the project.
-
-      Pass the style path to remove it (e.g., "/Heading xl", "/Typography/Body").
-
-      Warning: This will affect all nodes using this text style in the project.
-    inputSchema:
-      additionalProperties: false
-      properties:
-        stylePath:
-          description: The path of the text style to delete (must start with /)
-          type: string
-      required:
-        - stylePath
-      type: object
-    name: deleteTextStyle
-  - description: |-
-      Deletes a code file from the project.
-
-      Pass the code file ID to remove it.
-
-      Warning: This will remove all instances of this code component from the canvas.
-    inputSchema:
-      additionalProperties: false
-      properties:
-        codeFileId:
-          description: The ID of the code file to delete
-          type: string
-      required:
-        - codeFileId
-      type: object
-    name: deleteCodeFile
   - description: >-
       Duplicate a node in the Framer project. Creates an exact copy of the node and all its
       children.
@@ -751,8 +701,8 @@ tools:
       children.
 
 
-      DO NOT USE this tool to move a node to a different place or ordering. Instead use updateNode
-      to change the parent of a node or its position in the layers tree.
+      DO NOT USE this tool to move a node to a different place or ordering. Instead use
+      updateXmlForNode to change the parent of a node or its position in the layers tree.
     inputSchema:
       additionalProperties: false
       properties:
@@ -777,7 +727,7 @@ tools:
       want to reuse your existing subscription.
 
 
-      Only component nodes can be exported. Use getProject to find available component node IDs.
+      Only component nodes can be exported. Use getProjectXml to find available component node IDs.
 
 
       The React code will be composed of .jsx files and .css styles. it is machine generated so it
@@ -808,23 +758,8 @@ tools:
       type: object
     name: exportReactComponents
   - description: >-
-      Create a new code file or update an existing one in the Framer project.
-
-
-      For creating a new file:
-
-      - Provide name and content (codeFileId should be omitted)
-
-      - The name must end with .tsx extension
-
-      - Code files can export either code components or overrides
-
-
-      For updating an existing file:
-
-      - Provide codeFileId and content (name is optional, only if renaming)
-
-      - This will replace the entire content of the file
+      Create a new code file in the Framer project. Code files can export either code components or
+      overrides.
 
 
       ALWAYS read the MCP resource file
@@ -840,38 +775,73 @@ tools:
       addPropertyControls.
 
 
-      Returns the ID, path, and insertUrl of the code file. Use the insertUrl with updateNode to add
-      the component to the canvas.
-
-      The file will be automatically linted and type-checked after creation/update.
+      Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with
+      the insertUrl to add the component to the canvas.
     inputSchema:
       additionalProperties: false
       properties:
-        codeFileId:
-          description: ID of existing code file to update (omit to create new)
-          type: string
         content:
           description: The TypeScript/React code content for the file
           type: string
         name:
-          description: >-
-            The name of the code file (e.g., "MyComponent.tsx"). Required for new files, optional
-            for updates
+          description: The name of the code file (e.g., "MyComponent.tsx")
           type: string
       required:
+        - name
         - content
       type: object
-    name: upsertCodeFile
+    name: createCodeFile
   - description: |-
-      Get the insert URL, import statement and prop types documentation for components.
+      Read the content of a code file by its ID. Available code files are listed in getProjectXml.
+
+      Returns the current content, name, path, and available exports of the code file.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        codeFileId:
+          description: The ID of the code file to read
+          type: string
+      required:
+        - codeFileId
+      type: object
+    name: readCodeFile
+  - description: |-
+      Update the content of an existing code file.
+
+      This will replace the entire content of the file.
+      The file will be automatically linted and type-checked after update.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        codeFileId:
+          description: The ID of the code file to update
+          type: string
+        content:
+          description: The new TypeScript/React code content
+          type: string
+      required:
+        - codeFileId
+        - content
+      type: object
+    name: updateCodeFile
+  - description: >-
+      Get the insert URL, import statement and prop types documentation for components. This must be
+      called before using insertComponentInCanvas.
+
 
       The id parameter can be either:
-      - A component node ID (from getProject Components section)
-      - A code file ID (from getProject CodeComponents section)
+
+      - A component node ID (from getProjectXml Components section)
+
+      - A code file ID (from getProjectXml CodeComponents section)
+
 
       Use this tool when you want to:
-      - Insert a component into the canvas (get the insertUrl to use with updateNode)
+
+      - Insert a component into the canvas (get the insertUrl for insertComponentInCanvas)
+
       - Use an existing component in a code file (get the import statement)
+
       - See what props/attributes are available for a component, to use them in XML
     inputSchema:
       additionalProperties: false
@@ -883,6 +853,54 @@ tools:
         - id
       type: object
     name: getComponentInsertUrlAndTypes
+  - description: >-
+      Creates a component instance and inserts it into the canvas using its insertUrl. The component
+      will be inserted into the currently focused page or component.
+
+
+      This tool can be used with both regular components and code file components.
+
+
+      Before using this tool, call getComponentInsertUrlAndTypes to get the insertUrl for the
+      component you want to insert.
+
+
+      Returns markdown with:
+
+      - The ID of the newly created node
+
+      - XML of the new node
+
+      - The current root node ID (page or component)
+
+      - Instructions for positioning the node using updateXmlForNode
+    inputSchema:
+      additionalProperties: false
+      properties:
+        insertUrl:
+          description: >-
+            The insert URL of the component to insert, it can be obtained from
+            getComponentInsertUrlAndTypes
+          type: string
+      required:
+        - insertUrl
+      type: object
+    name: insertComponentInCanvas
+  - description: |-
+      Get the published website URLs for the current Framer project.
+
+      This tool retrieves both staging and production URLs if the project has been published.
+
+      Use this tool when you need to:
+      - Check if the project is published
+      - Get the live website URL
+      - Get the staging/preview URL
+      - Share the project's public URL
+    inputSchema:
+      additionalProperties: false
+      properties: {}
+      type: object
+    name: getProjectWebsiteUrl
   - description: >-
       Gets all CMS collections in the project with their field definitions.
 
