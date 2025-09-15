@@ -149,6 +149,9 @@ export const reactPluginApp = new Spiceflow({
                     where: {
                         orgId: await store.orgId,
                         pluginName: 'reactExport',
+                        status: {
+                            notIn: ['canceled', 'incomplete_expired', 'unpaid'],
+                        },
                     },
                     orderBy: {
                         createdAt: 'desc', // Get the most recent subscription
@@ -655,10 +658,14 @@ export const reactPluginApp = new Spiceflow({
                 breakpoints: z
                     .array(z.any() as ZodType<ReactExportComponentBreakpoint>)
                     .optional(),
-                pages: z.array(z.any() as ZodType<ReactExportWebPage>).optional(),
+                pages: z
+                    .array(z.any() as ZodType<ReactExportWebPage>)
+                    .optional(),
                 fullFramerProjectId: z.string().optional(),
                 websiteUrl: z.string().optional(),
-                locales: z.array(z.any() as ZodType<ReactExportLocale>).optional(),
+                locales: z
+                    .array(z.any() as ZodType<ReactExportLocale>)
+                    .optional(),
                 projectId: z.string(),
                 projectName: z.string().optional().nullable(),
                 colorStyles: z.array(z.any() as ZodType<ReactExportColorStyle>),
@@ -755,9 +762,12 @@ async function getProject({ projectId, email }) {
     ])
 
     if (!project) {
-        throw new Response(`Project with id ${projectId} not found. Please ensure you've exported components from Framer first.`, {
-            status: 404,
-        })
+        throw new Response(
+            `Project with id ${projectId} not found. Please ensure you've exported components from Framer first.`,
+            {
+                status: 404,
+            },
+        )
     }
 
     // TODO enable this, require subscription to download the components

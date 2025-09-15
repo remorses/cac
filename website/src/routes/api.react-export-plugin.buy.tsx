@@ -24,7 +24,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Check if user already has an active subscription
     const activeSub = await getReactSub({ orgId })
-    
+
     // If user already has active subscription, redirect to manage it
     if (activeSub) {
         // If no active subscription, try to find any subscription (including inactive ones)
@@ -37,11 +37,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 createdAt: 'desc', // Get the most recent subscription
             },
         })
-        
+
         if (anySubscription?.customerId) {
             const portalSession = await stripe.billingPortal.sessions.create({
                 customer: anySubscription.customerId,
-                return_url: new URL('/after-framer-payment', env.PUBLIC_URL).toString(),
+                return_url: new URL(
+                    '/after-framer-payment',
+                    env.PUBLIC_URL,
+                ).toString(),
             })
             return redirect(portalSession.url)
         }
