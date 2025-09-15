@@ -10,7 +10,7 @@
         "fly:prod": "fly --app unframer-website-prod",
         "fly:preview": "fly --app unframer-website-preview",
         "deployment": "doppler run -c preview -- pnpm vite-node scripts/deployment.ts",
-        "deployment:prod": "sudo STAGE=production doppler run -c production -- pnpm vite-node scripts/deployment.ts",
+        "deployment:prod":  "sudo echo 'agents should never run this' && STAGE=production doppler run -c production -- pnpm vite-node scripts/deployment.ts",
         "check": "pnpm tsc --incremental",
         "typegen": "pnpm react-router typegen",
         "framer": "pnpm unframer --outDir src/framer 620e74c088cdcb26",
