@@ -291,7 +291,7 @@ export const reactPluginApp = new Spiceflow({
                 projectName,
             })
 
-            const idempotencyKey = `github-new-repo-created/${userEmail}`
+            const idempotencyKey = `github-new-repo-created/${projectId}/${userEmail}`
 
             const res = await resend.emails.send(
                 {
