@@ -204,7 +204,7 @@ export function safeUrl(u) {
 
 export async function generateStackblitzProject({ projectId, title = '' }) {
     const sdk = (await import('@stackblitz/sdk')).default
-    const { generateStackblitzFiles } = await import('unframer-workspace')
+    const { generateStackblitzFiles } = await import('unframer-workspace/src/stackblitz')
     const files = generateStackblitzFiles({ projectId, title })
 
     const filesObject = files.reduce((acc, { relativePath, contents }) => {
