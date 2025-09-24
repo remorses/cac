@@ -19,7 +19,7 @@
         "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"
     },
     "dependencies": {
-        "@cloudflare/workers-oauth-provider": "^0.0.6",
+        "@cloudflare/workers-oauth-provider": "^0.0.11",
         "@modelcontextprotocol/sdk": "^1.18.0",
         "@sentry/browser": "^9.22.0",
         "agents": "0.2.1",
