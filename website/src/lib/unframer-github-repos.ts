@@ -18,7 +18,7 @@ import {
     upsertGithubFile,
 } from './github.server'
 import { isTruthy } from './utils'
-import { generateStackblitzFiles } from 'unframer-workspace'
+import { generateStackblitzFiles } from 'unframer-workspace/src/stackblitz'
 
 import { google } from '@ai-sdk/google'
 import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
