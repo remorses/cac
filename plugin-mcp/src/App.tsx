@@ -1315,11 +1315,15 @@ async function websocketHandler({
                 return dedent`
                   Components successfully exported!
 
-                  Now you can run the following command to download the React components into your own codebase
+                  Now you can run the following command to download the React components into your own codebase:
 
-                  \`npx unframer --outDir src/framer ${projectId}\`
+                  \`npx -y unframer --outDir src/framer ${projectId}\`
 
-                  You can also run \`npx unframer --help\` for more available options.
+                  Or to create a complete example app with all your components:
+
+                  \`npx -y unframer example-app ${projectId}\`
+
+                  You can also run \`npx -y unframer --help\` for more available options.
 
                   If you install unframer locally in the project you won't need to use npx. Install as a dependency and not a devDependency to use it in production builds.
 
