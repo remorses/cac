@@ -49,7 +49,7 @@ const frequencies: Array<Frequency> = [
 const tiers: Array<Tier> = [
     {
         key: TiersEnum.Personal,
-        title: 'Personal',
+        title: 'Hobby, non commercial',
         description: 'Single Framer user access, for personal use',
         mostPopular: false,
         price: {
@@ -64,7 +64,7 @@ const tiers: Array<Tier> = [
     },
     {
         key: TiersEnum.Business,
-        title: 'Business',
+        title: 'Commercial',
 
         featured: true,
         mostPopular: true,
