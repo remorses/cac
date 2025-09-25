@@ -78,7 +78,7 @@ function Component() {
                         Your React components are ready
                     </div>
                     <div className=' opacity-70 text-balance'>
-                        {manageSubUrl 
+                        {manageSubUrl
                             ? `your subscription (${subscriptionStatus}) needs attention to access your React components`
                             : 'to access your React components you will need a subscription'
                         }
@@ -112,7 +112,7 @@ function Component() {
                     }
                     className='font-semibold grow w-auto '
                 >
-                    {manageSubUrl ? 'Manage Subscription' : 'Start 7 Days Free Trial'}
+                    {manageSubUrl ? 'Manage Subscription' : 'Start Subscription'}
                 </Button>
             </div>
         </div>
