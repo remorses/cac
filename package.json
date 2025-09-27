@@ -31,7 +31,7 @@
     "license": "",
     "dependencies": {
         "rollup-plugin-visualizer": "^5.14.0",
-        "zod": "^4.1.1",
+        "zod": "^4.1.11",
         "zod-validation-error": "^4.0.1"
     }
 }
