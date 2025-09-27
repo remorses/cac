@@ -17,16 +17,6 @@ import { CoreMessage, streamObject, DeepPartial, streamText } from 'ai'
 import { yieldNewArrayItems } from 'website/src/lib/ndjson'
 import { formatHtmlForPrompt } from 'website/src/lib/htmlrewrite.server'
 
-import init from 'htmlrewriter/dist/html_rewriter.js'
-
-import { HTMLRewriterWrapper } from 'htmlrewriter/dist/html_rewriter_wrapper.js'
-
-// @ts-ignore
-import wasm from 'htmlrewriter/dist/html_rewriter_bg.wasm'
-import { openai } from '@ai-sdk/openai'
-
-export const HTMLRewriter = HTMLRewriterWrapper(init(wasm))
-
 if (process.env.NODE_ENV !== 'production') {
     console.log('overriding logging to localhost:8832')
     const cb = (...args) => {
@@ -97,9 +87,7 @@ export const extractedFormInputSchema = z.object({
 //     value: z.string(),
 // })
 
-let model = anthropic('claude-3-5-sonnet-latest', {
-    // cacheControl: true,
-})
+let model = anthropic('claude-sonnet-4-20250514')
 
 // model = openai('gpt-4o-2024-08-06', {
 //     structuredOutputs: true,
@@ -235,7 +223,6 @@ chrome.runtime.onMessage.addListener(
                                     const formattedHtml =
                                         await formatHtmlForPrompt(
                                             new Response(message.documentHtml),
-                                            HTMLRewriter,
                                         )
                                     if (formattedHtml) {
                                         documentHtmls.push(formattedHtml)
@@ -297,7 +284,7 @@ chrome.runtime.onMessage.addListener(
                         if (allFiles.length) {
                             messages.push({
                                 role: 'user',
-                                content: allFiles,
+                                content: allFiles as any, // TODO
                             })
                         }
                         const textFiles = files.filter(
@@ -320,11 +307,6 @@ chrome.runtime.onMessage.addListener(
                                 description,
                                 documentHtml: documentHtmls.join('\n\n'),
                             }),
-                            experimental_providerMetadata: {
-                                // anthropic: {
-                                //     cacheControl: { type: 'ephemeral' },
-                                // },
-                            },
                         })
 
                         // TODO turn text/* files to text, add them to the prompt. If a file is of type application/pdf, turn it into an image

@@ -1,20 +1,19 @@
 import { Spiceflow } from 'spiceflow'
+import { openai } from '@ai-sdk/openai'
 
 import { notifyError } from 'website/src/lib/errors'
 
 import { db } from 'db/kysely'
 import { prisma } from 'db'
-import {
-    getOrgPluginCredits
-} from 'website/src/lib/credits'
-import {
-    fetchFormattedHtml,
-    getWebsiteDescription,
-} from 'website/src/lib/htmlrewrite.server'
+import { getOrgPluginCredits } from 'website/src/lib/credits'
+import { fetchFormattedHtml } from 'website/src/lib/htmlrewrite.server'
 import { RewriteSchema, rewriteTemplateContent } from 'website/src/lib/rewrite'
 import { splitIntoWords } from 'website/src/lib/ssr.server'
-import { framerLayersTreeToXml } from 'website/src/lib/utils'
+import { framerLayersTreeToXml, isTruthy } from 'website/src/lib/utils'
 import { z } from 'zod'
+import { wrapLanguageModel, generateText } from 'ai'
+import { createAiCacheMiddleware } from 'ai-cache'
+import { removeMarkdownSnippets } from './ndjson'
 
 export const rewritePluginApp = new Spiceflow({
     basePath: '/rewritePlugin',
@@ -485,3 +484,66 @@ export const rewritePluginApp = new Spiceflow({
 const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
+
+export async function getWebsiteDescription({ html, user, url, signal }) {
+    const model = wrapLanguageModel({
+        middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
+            isTruthy,
+        ),
+        model: openai('gpt-4.1-mini'),
+    })
+    console.time('getWebsiteDescription ' + html.length)
+    const result = await generateText({
+        abortSignal: signal,
+        messages: [
+            {
+                role: 'user',
+
+                content: makeDescriptionPrompt({ html: html }),
+            },
+        ],
+
+        // model: anthropic('claude-3-sonnet-20240229'),
+        model,
+    })
+
+    let extractedDescription = result.text
+    extractedDescription = removeMarkdownSnippets(extractedDescription)
+    if (!extractedDescription) {
+        console.log('no description found using LLM')
+    }
+    console.timeEnd('getWebsiteDescription ' + html.length)
+    return { extractedDescription }
+}
+
+function makeDescriptionPrompt({ html }) {
+    return (
+        `
+I will provide you with an HTML document. Your task is to analyze the content and structure of the website and generate a concise description that includes the following information:
+
+- Type of website (e.g., portfolio, SaaS, e-commerce, blog, etc.)
+- If this is a website for a company, the company name
+- If this is a website for a product, the product name
+- If this is a website for a person portfolio, the person's name
+- Main topic or purpose of the website
+- Tone of the language used (e.g., formal, funny, colloquial, etc.)
+- Language of the website (English or other)
+
+Please provide the description in a single, concise sentence without any additional explanations or context.
+
+The HTML document is:
+
+` +
+        '```html\n' +
+        html +
+        '\n```' +
+        `
+Generate the description now. Do not use terms like "The website is a " or "This document is about", don't add any introduction or conclusion.
+
+Be as short as possible, no more than 50 words, use simple sentences separated by commas or periods. Don't use : or ; or any other punctuation.
+
+
+An example output for Twitter is: Social network website and app  called Twitter to share short messages. Friendly tone. Stay connected with friends and world news.
+`
+    )
+}
