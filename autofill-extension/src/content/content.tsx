@@ -116,7 +116,7 @@ chrome.runtime.onMessage.addListener(
                                     error: 'Unhandled element type',
                                 }
                             }
-                            return
+
                         }
                         case 'highlightInputFound': {
                             let data = request.data
@@ -137,6 +137,7 @@ chrome.runtime.onMessage.addListener(
                                 }
                                 el.style.backgroundColor =
                                     'rgba(255, 255, 0, 0.5)'
+                                return
                             } else {
                                 console.log(
                                     'element is not an input element',

@@ -1,26 +1,16 @@
-import { openai } from '@ai-sdk/openai'
 import { FlatCache } from 'flat-cache'
 
 import { generateText, wrapLanguageModel } from 'ai'
-import { createAiCacheMiddleware } from 'ai-cache'
 import { removeMarkdownSnippets } from 'website/src/lib/ndjson'
-import {} from 'website/src/lib/spiceflow-plugins.server'
 import { isTruthy } from './utils'
 import { maxSize } from 'zod/v4'
+import posthtml from 'posthtml'
+import beautify from 'posthtml-beautify'
 
 export async function formatHtmlForPrompt(
     input: Response,
-    HTMLRewriter_?: typeof import('htmlrewriter').HTMLRewriter,
 ) {
-    let HTMLRewriter = HTMLRewriter_
-    if (!HTMLRewriter) {
-        console.log('importing htmlrewriter')
-        HTMLRewriter = await import('htmlrewriter').then((x) => x.HTMLRewriter)
-    }
-
-    const rewriter = new HTMLRewriter!()
-
-    // remove all the attributes and tags that are not useful for an AI prompt, that don't show what the website is about, like style, link, script, meta, noscript, svg, head, and footer tags
+    const html = await input.text()
 
     const tagsToRemove = [
         'hint',
@@ -53,34 +43,81 @@ export async function formatHtmlForPrompt(
         'vimium-label',
     ]
 
-    const res = rewriter
-        .on('*', {
-            element(element) {
-                if (tagsToRemove.includes(element.tagName.toLowerCase())) {
-                    element.remove()
-                    return
+    // Create a custom plugin to remove tags and filter attributes
+    const removeTagsAndAttrsPlugin = () => {
+        return (tree) => {
+            // Remove comments at root level
+            tree = tree.filter((item) => {
+                if (typeof item === 'string') {
+                    const trimmed = item.trim()
+                    return !(trimmed.startsWith('<!--') && trimmed.endsWith('-->'))
+                }
+                return true
+            })
+
+            // Process each node recursively
+            const processNode = (node) => {
+                if (typeof node === 'string') {
+                    return node
                 }
 
-                for (const [attr] of element.attributes) {
-                    if (
-                        !attr.startsWith('aria-') &&
-                        !attributesToKeep.includes(attr)
-                    ) {
-                        element.removeAttribute(attr)
+                // Remove unwanted tags
+                if (node.tag && tagsToRemove.includes(node.tag.toLowerCase())) {
+                    return null
+                }
+
+                // Filter attributes
+                if (node.attrs) {
+                    const newAttrs: typeof node.attrs = {}
+                    for (const [attr, value] of Object.entries(node.attrs)) {
+                        if (attr.startsWith('aria-') || attributesToKeep.includes(attr)) {
+                            newAttrs[attr] = value
+                        }
                     }
+                    node.attrs = newAttrs
                 }
-            },
 
-            comments(comment) {
-                comment.remove()
-            },
-        })
-        .transform(input)
-    let newHtml = await res.text()
-    // remove white space
-    newHtml = newHtml.replace(/\s+/gm, ' ')
+                // Process content recursively
+                if (node.content && Array.isArray(node.content)) {
+                    node.content = node.content
+                        .map(processNode)
+                        .filter(item => {
+                            if (item === null) return false
+                            if (typeof item === 'string') {
+                                const trimmed = item.trim()
+                                return !(trimmed.startsWith('<!--') && trimmed.endsWith('-->'))
+                            }
+                            return true
+                        })
+                }
 
-    return newHtml
+                return node
+            }
+
+            // Process all root nodes
+            return tree.map(processNode).filter(item => item !== null)
+        }
+    }
+
+    // Process HTML
+    const processor = posthtml()
+        .use(removeTagsAndAttrsPlugin())
+        .use(beautify({
+            rules: {
+                indent: 1,          // 1-space indent
+                blankLines: false,  // no extra blank lines
+                maxlen: 100000      // effectively never wrap by content length
+            },
+            jsBeautifyOptions: {
+                wrap_line_length: 0,     // disable js-beautify wrapping
+                preserve_newlines: false // reduce stray newlines
+            }
+        }))
+
+    // Process with await
+    const result = await processor.process(html)
+
+    return result.html
 }
 
 const htmlCache = new FlatCache({
@@ -157,67 +194,4 @@ export async function fetchFormattedHtml({
     } finally {
         clearTimeout(timeoutId)
     }
-}
-
-export async function getWebsiteDescription({ html, user, url, signal }) {
-    const model = wrapLanguageModel({
-        middleware: [process.env.VITEST && createAiCacheMiddleware()].filter(
-            isTruthy,
-        ),
-        model: openai('gpt-4.1-mini',),
-    })
-    console.time('getWebsiteDescription ' + html.length)
-    const result = await generateText({
-        abortSignal: signal,
-        messages: [
-            {
-                role: 'user',
-
-                content: makeDescriptionPrompt({ html: html })
-            },
-        ],
-
-        // model: anthropic('claude-3-sonnet-20240229'),
-        model,
-    })
-
-    let extractedDescription = result.text
-    extractedDescription = removeMarkdownSnippets(extractedDescription)
-    if (!extractedDescription) {
-        console.log('no description found using LLM')
-    }
-    console.timeEnd('getWebsiteDescription ' + html.length)
-    return { extractedDescription }
-}
-
-function makeDescriptionPrompt({ html }) {
-    return (
-        `
-I will provide you with an HTML document. Your task is to analyze the content and structure of the website and generate a concise description that includes the following information:
-
-- Type of website (e.g., portfolio, SaaS, e-commerce, blog, etc.)
-- If this is a website for a company, the company name
-- If this is a website for a product, the product name
-- If this is a website for a person portfolio, the person's name
-- Main topic or purpose of the website
-- Tone of the language used (e.g., formal, funny, colloquial, etc.)
-- Language of the website (English or other)
-
-Please provide the description in a single, concise sentence without any additional explanations or context.
-
-The HTML document is:
-
-` +
-        '```html\n' +
-        html +
-        '\n```' +
-        `
-Generate the description now. Do not use terms like "The website is a " or "This document is about", don't add any introduction or conclusion.
-
-Be as short as possible, no more than 50 words, use simple sentences separated by commas or periods. Don't use : or ; or any other punctuation.
-
-
-An example output for Twitter is: Social network website and app  called Twitter to share short messages. Friendly tone. Stay connected with friends and world news.
-`
-    )
 }

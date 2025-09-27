@@ -11,7 +11,7 @@
     "dependencies": {
         "@ai-sdk/anthropic": "^2.0.4",
         "@ai-sdk/openai": "^2.0.14",
-        "@crxjs/vite-plugin": "2.0.0-beta.26",
+        "@crxjs/vite-plugin": "2.2.0",
         "@headlessui/tailwindcss": "^0.2.1",
         "@sentry/browser": "^9.22.0",
         "@sinclair/typebox": "^0.34.14",
