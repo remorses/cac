@@ -1315,18 +1315,21 @@ async function websocketHandler({
                 return dedent`
                   Components successfully exported!
 
-                  Now you can run the following command to download the React components into your own codebase:
+                  To create a complete example app with all your components:
 
-                  \`npx -y unframer --outDir src/framer ${projectId}\`
+                  \`npx -y unframer example-app --outDir ./example-framer-app ${projectId}\`
 
-                  Or to create a complete example app with all your components:
+                  This will create a folder example-framer-app with a vite app with tailwind and the Framer components already downloaded as .jsx file and the packages already installed (node_modules already present)
 
-                  \`npx -y unframer example-app ${projectId}\`
+                  After that you can go inside the directory with \`cd example-framer-app\` and tell the user to run the development server with npm run dev. Then visit the localhost url to see the live preview of the website.
 
-                  You can also run \`npx -y unframer --help\` for more available options.
+                  If you already created the example app you can just run \`npx -y unframer --outDir src/framer ${projectId}\` inside the example app folder do download the Framer components locally as .jsx files. The example app also has a script you can run with \`npm run framer\` that does the same, without need for npx.
 
-                  If you install unframer locally in the project you won't need to use npx. Install as a dependency and not a devDependency to use it in production builds.
+                  Running this command will update the .jsx files with the latest changes made in Framer. Notice that if the user adds Framer variables in the components you can customize these using React props in the code, for example the user can use a Framer variable for a link and give it the name ctaLink, then you will be able to customize this url with a React prop ctaLink. You can see available props reading the generated .jsx files first 100 lines, the available props are described with a typedoc typescript comment on a type Props at the start of the file.
 
+                  You can run \`npx -y unframer --help\` for more available options.
+
+                  If you install unframer locally in the project you won't need to use npx. Install it as a dependency and not a devDependency to use it in production builds. (ntice the example-app command does all of this already)
 
                   `
             } catch (error) {

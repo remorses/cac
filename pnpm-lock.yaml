@@ -2085,7 +2085,7 @@ importers:
         version: link:../unframer-deploy-demo
       unframer-workspace:
         specifier: file:../unframer/unframer
-        version: link:../unframer/unframer
+        version: unframer@file:unframer/unframer(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -12320,6 +12320,14 @@ packages:
 
   unframer@2.26.0:
     resolution: {integrity: sha512-WtI4jsgdOoFhIDnR7zIO5wYGVz8SSi2kXz3amvGyD5S62u5G+SNMPFbJJpWegaGTKsIeAzDaQkUChllIjkg//A==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
+
+  unframer@file:unframer/unframer:
+    resolution: {directory: unframer/unframer, type: directory}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -26962,6 +26970,31 @@ snapshots:
       spiceflow: 1.17.10(@modelcontextprotocol/sdk@1.18.2)
       string-dedent: 3.0.1
       undici: 7.13.0
+    transitivePeerDependencies:
+      - '@biomejs/wasm-bundler'
+      - '@biomejs/wasm-web'
+      - '@emotion/is-prop-valid'
+      - '@modelcontextprotocol/sdk'
+      - supports-color
+
+  unframer@file:unframer/unframer(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@antfu/ni': 25.0.0
+      '@babel/core': 7.28.4
+      '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
+      '@biomejs/wasm-nodejs': 1.9.4
+      async-sema: 3.1.1
+      cac: 6.7.14
+      esbuild: 0.25.8
+      esbuild-plugins-node-modules-polyfill: 1.7.1(esbuild@0.25.8)
+      nanospinner: 1.2.2
+      picocolors: 1.1.1
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      real-framer-motion: framer-motion@12.23.22(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      spiceflow: 1.17.10(@modelcontextprotocol/sdk@1.18.2)
+      string-dedent: 3.0.1
+      undici: 7.16.0
     transitivePeerDependencies:
       - '@biomejs/wasm-bundler'
       - '@biomejs/wasm-web'
