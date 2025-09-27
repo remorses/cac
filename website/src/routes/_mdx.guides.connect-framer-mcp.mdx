@@ -93,6 +93,31 @@ export const claudeAppMcpConfig = `{
 
 ---
 
+## OpenCode
+
+### Basic Configuration
+
+export const opencodeConfig = `
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "framer": {
+      "type": "remote",
+      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret",
+      "enabled": true
+    }
+  }
+}
+`
+
+<CodeBlock title='.opencode.json' language='json'>
+    {opencodeConfig}
+</CodeBlock>
+
+1. Save to project root (`opencode.json`) or global config (`~/.config/opencode/opencode.json`).
+2. OpenCode automatically detects and connects to the MCP server.
+3. Verify connection: Ask "What tools do you have available?" to confirm Framer MCP access.
+
 ## Claude Website with a Max subscription
 
 1. **Settings → Connectors** → **Create**.
