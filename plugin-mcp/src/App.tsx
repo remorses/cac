@@ -1264,39 +1264,34 @@ async function websocketHandler({
             }
         }
         case 'exportReactComponents': {
-            const { nodeIds } = input
-
-            // Validate that all nodes exist and are components
-            const componentIds = new Set<string>()
-            const invalidNodes: string[] = []
-
-            for (const nodeId of nodeIds) {
-                const node = await framer.getNode(nodeId)
-                if (!node) {
-                    invalidNodes.push(`${nodeId} (not found)`)
-                    continue
-                }
-
-                // Check if it's a component node
-                if (isComponentNode(node)) {
-                    componentIds.add(nodeId)
-                } else {
-                    invalidNodes.push(`${nodeId} (not a component)`)
-                }
-            }
-
-            if (invalidNodes.length > 0) {
-                return `Cannot export the following nodes: ${invalidNodes.join(', ')}. Only component nodes can be exported.`
-            }
-
-            if (componentIds.size === 0) {
-                return `No valid component nodes found to export.`
-            }
-
             try {
+                // Get all available components and code files
+                const components = await framer.getNodesWithType('ComponentNode')
+                const codeFiles = await framer.getCodeFiles()
+
+                const selectedComponentIds = new Set<string>()
+
+                // Add all component nodes with insertURL
+                for (const component of components) {
+                    if (component.id && component.insertURL) {
+                        selectedComponentIds.add(component.id)
+                    }
+                }
+
+                // Add all code files with component exports
+                for (const file of codeFiles) {
+                    if (file.exports.some((exp) => exp.type === 'component' && exp.isDefaultExport)) {
+                        selectedComponentIds.add(file.id)
+                    }
+                }
+
+                if (selectedComponentIds.size === 0) {
+                    return `No components or code files found to export.`
+                }
+
                 // Process the export data
                 const data = await processReactExportData({
-                    selectedComponentIds: componentIds,
+                    selectedComponentIds,
                 })
 
                 // Get the API client and submit the export
@@ -1311,9 +1306,12 @@ async function websocketHandler({
                 }
 
                 const projectId = responseData.projectId
+                const exportedNodeIds = Array.from(selectedComponentIds)
 
                 return dedent`
                   Components successfully exported!
+
+                  **Exported ${JSON.stringify(exportedNodeIds)} components**
 
                   To create a complete example app with all your components:
 
