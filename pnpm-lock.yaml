@@ -2078,8 +2078,8 @@ importers:
         specifier: ^4.33.0
         version: 4.41.0
       unframer:
-        specifier: 3.2.6
-        version: 3.2.6(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 3.2.7
+        version: 3.2.7(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       unframer-deploy-demo:
         specifier: workspace:*
         version: link:../unframer-deploy-demo
@@ -12318,8 +12318,8 @@ packages:
   unfetch@4.2.0:
     resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
 
-  unframer@3.2.6:
-    resolution: {integrity: sha512-I0mbvK8fWnyf2kcc6YLCVziDco0SCV4H+vVvoMuSJ5b0LQzC7UyqE7/NCBIhcm3ElbrxHZVXYCGXgDnv12oxzA==}
+  unframer@3.2.7:
+    resolution: {integrity: sha512-RJe/Eif7PqkvxMVHu2bnEDDTT5tYMAvEtIlVfGZ7G7xVzf+M25FBhCdiPVTMFMOWzBfg9YypGLl5fOfPFCPTcA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -26953,7 +26953,7 @@ snapshots:
 
   unfetch@4.2.0: {}
 
-  unframer@3.2.6(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  unframer@3.2.7(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@antfu/ni': 25.0.0
       '@babel/core': 7.28.4
