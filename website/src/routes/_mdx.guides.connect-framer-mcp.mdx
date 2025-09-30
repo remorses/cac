@@ -4,7 +4,7 @@ url: 'https://localhost:8040/guides/connect-framer-mcp?userId=123&secret=abc'
 description: 'Quick reference for integrating https://mcp.unframer.co/sse with popular AI‑assisted editors and the OpenAI Responses API.'
 ---
 
-import { CodeBlock } from './_mdx'
+import { CodeBlock, InstallInCursorButton } from './_mdx'
 
 # How to connect Framer MCP server
 
@@ -13,6 +13,10 @@ import { CodeBlock } from './_mdx'
 > **⚠️ Important:** Using **Framer MCP** requires that the _Framer MCP plugin is open inside the Framer app_. Only one MCP plugin can be open at any time—the server will control whichever Framer project currently has the plugin open.
 
 ## Cursor
+
+<InstallInCursorButton />
+
+Or configure manually:
 
 export const cursorCode = `{
   "mcpServers": {
