@@ -200,7 +200,7 @@ function stripVersionFromUrl(url: string | undefined): string | undefined {
 // Helper function to get XML for a node
 async function getNodeXml(
     nodeId: string,
-    maxCharacters=15000
+    maxCharacters = 15000,
 ): Promise<{ xml: string; isReplica: boolean } | null> {
     const node = await framer.getNode(nodeId)
     if (!node) {
@@ -209,18 +209,17 @@ async function getNodeXml(
     const tree = await getFramerTree({
         rootNodes: [node],
         recursive: false,
-
     })
     const xml = framerLayersTreeToXml(tree, {
         shouldAddNodeIdAlways: true,
-        maxCharacters
+        maxCharacters,
     })
     return { xml, isReplica: node.isReplica }
 }
 
 // Helper function to detect nodes added during an operation
 async function getAddedNodesDuring(
-    callback: () => Promise<void>
+    callback: () => Promise<void>,
 ): Promise<CanvasNode[]> {
     // Clear selection first
     await framer.setSelection([])
@@ -228,7 +227,7 @@ async function getAddedNodesDuring(
     // Get canvas root and its children before operation
     const canvasRoot = await framer.getCanvasRoot()
     const childrenBefore = await canvasRoot.getChildren()
-    const idsBefore = new Set(childrenBefore.map(child => child.id))
+    const idsBefore = new Set(childrenBefore.map((child) => child.id))
 
     // Execute the callback
     await callback()
@@ -237,7 +236,7 @@ async function getAddedNodesDuring(
     const childrenAfter = await canvasRoot.getChildren()
 
     // Find new nodes (those that weren't in the before set)
-    const newNodes = childrenAfter.filter(child => !idsBefore.has(child.id))
+    const newNodes = childrenAfter.filter((child) => !idsBefore.has(child.id))
 
     return newNodes
 }
@@ -322,11 +321,18 @@ async function createFramerNode({
                 // If still not found, try to get it as a code file
                 if (!insertUrl) {
                     const codeFiles = await framer.getCodeFiles()
-                    const codeFile = codeFiles.find(f => f.id === attributes.componentId)
+                    const codeFile = codeFiles.find(
+                        (f) => f.id === attributes.componentId,
+                    )
                     if (codeFile) {
                         // Check if the default export is a component
-                        const defaultExport = codeFile.exports.find(e => e.name === 'default')
-                        if (defaultExport && defaultExport.type === 'component') {
+                        const defaultExport = codeFile.exports.find(
+                            (e) => e.name === 'default',
+                        )
+                        if (
+                            defaultExport &&
+                            defaultExport.type === 'component'
+                        ) {
                             insertUrl = defaultExport.insertURL
                         }
                     }
@@ -334,7 +340,9 @@ async function createFramerNode({
             }
 
             if (!insertUrl) {
-                throw new Error('Cannot create component instance without insertUrl or valid componentId attributes')
+                throw new Error(
+                    'Cannot create component instance without insertUrl or valid componentId attributes',
+                )
             }
 
             const instance = await framer.addComponentInstance({
@@ -420,7 +428,6 @@ async function websocketHandler({
             })
             const xml = framerLayersTreeToXml(tree, {
                 shouldAddNodeIdAlways: true,
-
             })
 
             // Check if any selected nodes are replicas
@@ -692,12 +699,18 @@ async function websocketHandler({
                             )
                         }
                     } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+                        const errorMessage =
+                            error instanceof Error
+                                ? error.message
+                                : 'Unknown error'
 
                         // Notify user of the error
-                        await framer.notify(`Failed to create ${extractedNode.nodeType || 'node'}: ${errorMessage}`, {
-                            variant: 'error',
-                        })
+                        await framer.notify(
+                            `Failed to create ${extractedNode.nodeType || 'node'}: ${errorMessage}`,
+                            {
+                                variant: 'error',
+                            },
+                        )
 
                         // Rollback all created nodes using tempIdToRealId values
                         for (const nodeId of tempIdToRealId.values()) {
@@ -707,7 +720,10 @@ async function websocketHandler({
                                     await node.remove()
                                 }
                             } catch (rollbackError) {
-                                console.error(`Failed to rollback node ${nodeId}:`, rollbackError)
+                                console.error(
+                                    `Failed to rollback node ${nodeId}:`,
+                                    rollbackError,
+                                )
                             }
                         }
 
@@ -874,7 +890,7 @@ async function websocketHandler({
                     updatedXml,
                     'Before',
                     'After',
-                    { context: 20 }
+                    { context: 20 },
                 )
 
                 // Add note about disabling zoom if enabled
@@ -1188,9 +1204,12 @@ async function websocketHandler({
             if (nodeId.startsWith('/')) {
                 // Try to delete as color style first
                 const colorStyles = await framer.getColorStyles()
-                const colorStyle = colorStyles.find(style => style.path === nodeId)
+                const colorStyle = colorStyles.find(
+                    (style) => style.path === nodeId,
+                )
                 if (colorStyle) {
-                    const permissionError = checkPermissions('ColorStyle.remove')
+                    const permissionError =
+                        checkPermissions('ColorStyle.remove')
                     if (permissionError) return permissionError
                     await colorStyle.remove()
                     return `Successfully deleted color style ${nodeId}.`
@@ -1198,7 +1217,9 @@ async function websocketHandler({
 
                 // Try to delete as text style
                 const textStyles = await framer.getTextStyles()
-                const textStyle = textStyles.find(style => style.path === nodeId)
+                const textStyle = textStyles.find(
+                    (style) => style.path === nodeId,
+                )
                 if (textStyle) {
                     const permissionError = checkPermissions('TextStyle.remove')
                     if (permissionError) return permissionError
@@ -1211,7 +1232,7 @@ async function websocketHandler({
 
             // Check if this is a code file ID
             const codeFiles = await framer.getCodeFiles()
-            const codeFile = codeFiles.find(file => file.id === nodeId)
+            const codeFile = codeFiles.find((file) => file.id === nodeId)
             if (codeFile) {
                 const permissionError = checkPermissions('CodeFile.remove')
                 if (permissionError) return permissionError
@@ -1266,7 +1287,8 @@ async function websocketHandler({
         case 'exportReactComponents': {
             try {
                 // Get all available components and code files
-                const components = await framer.getNodesWithType('ComponentNode')
+                const components =
+                    await framer.getNodesWithType('ComponentNode')
                 const codeFiles = await framer.getCodeFiles()
 
                 const selectedComponentIds = new Set<string>()
@@ -1280,7 +1302,12 @@ async function websocketHandler({
 
                 // Add all code files with component exports
                 for (const file of codeFiles) {
-                    if (file.exports.some((exp) => exp.type === 'component' && exp.isDefaultExport)) {
+                    if (
+                        file.exports.some(
+                            (exp) =>
+                                exp.type === 'component' && exp.isDefaultExport,
+                        )
+                    ) {
                         selectedComponentIds.add(file.id)
                     }
                 }
@@ -2126,14 +2153,12 @@ function MainComponent() {
             )}
             <div className='flex items-center -mt-px justify-between border-framer-divider'>
                 <div className='flex items-center gap-2 text-[11px] text-framer-tertiary'>
-                    <span className='truncate'>
-                        {data?.email}
-                    </span>
+                    <span className='truncate'>{data?.email}</span>
                     <span className='text-framer-tertiary/50'>•</span>
                     <a
-                        href="mailto:tommy@unframer.co?subject=MCP%20Framer%20plugin%20support"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href='mailto:tommy@unframer.co?subject=MCP%20Framer%20plugin%20support'
+                        target='_blank'
+                        rel='noopener noreferrer'
                         className='text-framer-tertiary/60 hover:text-framer-tertiary transition-colors'
                     >
                         support
@@ -2148,6 +2173,54 @@ function MainComponent() {
             </div>
         </div>
     )
+}
+
+async function createMcpFirstExportProject() {
+    try {
+        const projectInfo = await framer.getProjectInfo()
+        if (!projectInfo?.id) {
+            return
+        }
+
+        const [components, codeFiles] = await Promise.all([
+            framer.getNodesWithType('ComponentNode'),
+            framer.getCodeFiles(),
+        ])
+
+        const selectedComponentIds = new Set<string>()
+        for (const component of components) {
+            if (!component.id || !component.insertURL) {
+                continue
+            }
+            selectedComponentIds.add(component.id)
+        }
+        for (const file of codeFiles) {
+            if (
+                !file.exports.some(
+                    (exp) => exp.type === 'component' && exp.isDefaultExport,
+                )
+            ) {
+                continue
+            }
+            selectedComponentIds.add(file.id)
+        }
+
+        if (selectedComponentIds.size === 0) {
+            return
+        }
+
+        await framer.setPluginData('alreadyDoneFirstExport', 'true')
+        const data = await processReactExportData({
+            selectedComponentIds,
+        })
+
+        await pluginApiClient.api.plugins.reactExportPlugin.upsertProject.post({
+            ...data,
+            creationReason: 'MCP_FIRST_OPEN',
+        })
+    } catch (error) {
+        console.error('Failed to process first export:', error)
+    }
 }
 
 // Root loader to check authentication
@@ -2184,6 +2257,15 @@ async function rootLoader({}: LoaderFunctionArgs) {
         cleanup = await websocketClientHandling({
             websocketId: userId,
             handle: websocketHandler,
+        })
+    }
+
+    const alreadyDoneFirstExport = await framer.getPluginData(
+        'alreadyDoneFirstExport',
+    )
+    if (!alreadyDoneFirstExport) {
+        createMcpFirstExportProject().catch((error) => {
+            console.error('Failed to create MCP first export project:', error)
         })
     }
 

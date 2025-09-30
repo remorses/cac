@@ -279,11 +279,45 @@ export const reactPluginApp = new Spiceflow({
 
             const projectId = project.projectId
             const projectName = project.projectName || 'without name'
-            // const subscription = await getReactSub({
-            //     orgId: project.org.orgId,
-            // })
 
-            // const hasSubscription = !!subscription
+            if (project.creationReason === 'MCP_FIRST_OPEN') {
+                const emailContent = await createMcpFirstOpenEmail({
+                    projectName,
+                })
+
+                const idempotencyKey = `mcp-first-open/${projectId}/${userEmail}`
+
+                const res = await resend.emails.send(
+                    {
+                        ...defaultResendOptions,
+                        to: [userEmail],
+                        subject: emailContent.subject,
+                        html: emailContent.html,
+                    },
+                    {
+                        idempotencyKey,
+                    },
+                )
+
+                console.log(
+                    `MCP first-open email sent successfully to ${userEmail} for project ${projectId}:`,
+                    res,
+                )
+
+                return {
+                    success: true,
+                    result: res,
+                }
+            }
+
+            if (project.creationReason !== 'USER_REQUESTED') {
+                console.log(
+                    `Skipping email for project ${project.projectId} with creationReason: ${project.creationReason}`,
+                )
+                return {
+                    success: true,
+                }
+            }
 
             const emailContent = await createGithubSetupEmail({
                 projectId,
@@ -342,6 +376,7 @@ export const reactPluginApp = new Spiceflow({
                 framerUserId,
                 componentInstances,
                 pageBackgroundColor,
+                creationReason = 'USER_REQUESTED',
             } = body
 
             const shortId = projectId.slice(0, 4)
@@ -436,6 +471,7 @@ export const reactPluginApp = new Spiceflow({
                         fullFramerProjectId,
                         framerUserId,
                         pageBackgroundColor,
+                        creationReason,
                     },
                     update: {
                         websiteUrl,
@@ -676,6 +712,9 @@ export const reactPluginApp = new Spiceflow({
                         z.any() as ZodType<Prisma.ReactExportComponentInstanceUncheckedCreateInput>,
                     )
                     .optional(),
+                creationReason: z
+                    .enum(['USER_REQUESTED', 'MCP_FIRST_OPEN'])
+                    .optional(),
             }),
         },
     )
@@ -807,6 +846,30 @@ async function getProject({ projectId, email }) {
     }
 }
 
+export async function createMcpFirstOpenEmail({
+    projectName,
+}: {
+    projectName: string
+}) {
+    const markdown = dedent`
+    Hey,
+
+    I saw you tried the Framer MCP. Have you checked out the React Export feature yet?
+
+    You can export "${projectName}" components as React code and use them in any codebase. Deploy wherever you want.
+
+    I can setup an example GitHub repo with your components, can I send you the url?
+
+    Cheers,
+    Tommy
+    `
+
+    return {
+        subject: 'Export Framer components as React?',
+        html: await marked.parse(markdown),
+    }
+}
+
 export async function createGithubSetupEmail({
     projectId,
     userEmail,
@@ -826,7 +889,7 @@ export async function createGithubSetupEmail({
     const markdown = dedent`
     Hey, thanks for trying the React Export plugin!
 
-    I just created a GitHub repo for your Framer components in "${projectName}".
+    I just created an example GitHub repo with your Framer components in "${projectName}".
 
     The repo includes:
     - Example code showing how to integrate the React components

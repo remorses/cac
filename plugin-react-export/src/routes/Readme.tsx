@@ -31,17 +31,15 @@ import { env } from 'website/src/lib/env'
 
 function markdown({ shortId }) {
     return `
-Click the button at the bottom to open a demo project in Stackblitz.
+To create an example Vite app with your components, run:
 
-To download the components in your own codebase, run the following command:
+    npx unframer example-app ${shortId}
 
-    npx unframer@latest ${shortId}
+To download the components in an existing app:
 
-- This command will download the React components in a \`framer\` folder.
+    npx unframer ${shortId}
 
-- Import them and use them with full **TypeScript** support.
-
-- Framer variables and breakpoints will be available as **React props**.
+- This will create an example website app with your components.
 
 - These files are **generated**, do not edit them manually. Instead run the command again after making changes in Framer.
 
@@ -187,7 +185,7 @@ function Component() {
                 <div
                     dangerouslySetInnerHTML={{ __html: markdownHtml }}
                     className={
-                        'max-w-full tracking-wide leading-normal prose-sm text-[13px] dark:prose-invert prose-pre:px-3 prose-pre:text-[14px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
+                        'max-w-full leading-normal prose-sm text-[13px] dark:prose-invert prose-pre:px-3 prose-pre:text-[12px] prose-pre:text-framer-primary prose-pre:bg-framer-secondary prose-ul:list-disc '
                     }
                 ></div>
             </div>
