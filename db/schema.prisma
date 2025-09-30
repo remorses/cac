@@ -472,9 +472,9 @@ model GitHubSync {
 
 model ReactExportProject {
   orgId                     String
-  projectId                 String                  @id
+  projectId                 String    @id
   projectName               String?
-  createdAt                 DateTime                @default(now())
+  createdAt                 DateTime  @default(now())
   fullFramerProjectId       String?
   websiteUrl                String?
   framerUserId              String?
@@ -483,11 +483,21 @@ model ReactExportProject {
   connectedGitHubRepoName   String?
   invitedGitHubRepoUsername String?
   lastGitHubSyncAt          DateTime?
-  colorStyles               ReactExportColorStyle[]
-  components                ReactExportComponent[]
-  locales                   ReactExportLocale[]
-  org                       Org                     @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
-  pages                     ReactExportWebPage[]
+
+  creationReason ReactExportCreationReason @default(USER_REQUESTED)
+  colorStyles    ReactExportColorStyle[]
+  components     ReactExportComponent[]
+  locales        ReactExportLocale[]
+  org            Org                       @relation(fields: [orgId], references: [orgId], onDelete: Cascade)
+  pages          ReactExportWebPage[]
+
+  @@schema("public")
+}
+
+enum ReactExportCreationReason {
+  USER_REQUESTED
+  // when user opens an MCP for the first time we create a react export project. so that we can email user and upsell them react export
+  MCP_FIRST_OPEN
 
   @@schema("public")
 }
