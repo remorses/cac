@@ -827,6 +827,11 @@ paths:
                 componentInstances:
                   type: array
                   items: {}
+                creationReason:
+                  type: string
+                  enum:
+                    - USER_REQUESTED
+                    - MCP_FIRST_OPEN
               required:
                 - components
                 - projectId

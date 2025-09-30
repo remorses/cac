@@ -2078,8 +2078,8 @@ importers:
         specifier: ^4.33.0
         version: 4.41.0
       unframer:
-        specifier: 2.26.0
-        version: 2.26.0(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 3.2.6
+        version: 3.2.6(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       unframer-deploy-demo:
         specifier: workspace:*
         version: link:../unframer-deploy-demo
@@ -12318,8 +12318,8 @@ packages:
   unfetch@4.2.0:
     resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
 
-  unframer@2.26.0:
-    resolution: {integrity: sha512-WtI4jsgdOoFhIDnR7zIO5wYGVz8SSi2kXz3amvGyD5S62u5G+SNMPFbJJpWegaGTKsIeAzDaQkUChllIjkg//A==}
+  unframer@3.2.6:
+    resolution: {integrity: sha512-I0mbvK8fWnyf2kcc6YLCVziDco0SCV4H+vVvoMuSJ5b0LQzC7UyqE7/NCBIhcm3ElbrxHZVXYCGXgDnv12oxzA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -26953,8 +26953,9 @@ snapshots:
 
   unfetch@4.2.0: {}
 
-  unframer@2.26.0(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  unframer@3.2.6(@modelcontextprotocol/sdk@1.18.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
+      '@antfu/ni': 25.0.0
       '@babel/core': 7.28.4
       '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
       '@biomejs/wasm-nodejs': 1.9.4
@@ -26969,7 +26970,7 @@ snapshots:
       real-framer-motion: framer-motion@12.23.22(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       spiceflow: 1.17.10(@modelcontextprotocol/sdk@1.18.2)
       string-dedent: 3.0.1
-      undici: 7.13.0
+      undici: 7.16.0
     transitivePeerDependencies:
       - '@biomejs/wasm-bundler'
       - '@biomejs/wasm-web'
