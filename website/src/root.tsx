@@ -51,6 +51,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     content='width=device-width, initial-scale=1'
                 />
                 <Meta />
+                <script
+                    defer
+                    src='https://assets.onedollarstats.com/stonks.js'
+                ></script>
                 <Links />
             </head>
             <body className='dark flex flex-col grow min-h-full'>
