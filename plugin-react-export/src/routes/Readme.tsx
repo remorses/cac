@@ -44,6 +44,8 @@ To download the components in an existing app:
 - These files are **generated**, do not edit them manually. Instead run the command again after making changes in Framer.
 
 - For more info or issues please visit <a href="https://github.com/remorses/unframer" target="_blank" rel="noopener noreferrer">unframer GitHub</a>.
+
+- For support, please contact: <a href="mailto:tommy@unframer.co?subject=React%20Export%20support%20${shortId}" target="_blank">tommy@unframer.co</a>
 `
 }
 async function loader({}: LoaderFunctionArgs) {
