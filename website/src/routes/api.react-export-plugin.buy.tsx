@@ -67,7 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             // order of items is important
             { quantity: 1, price },
             // this line item should NEVER be first
-            { quantity: 1, price: ONE_TIME_DOLLAR_PRICE_ID },
+            // { quantity: 1, price: ONE_TIME_DOLLAR_PRICE_ID },
         ],
         mode: 'subscription',
         customer_email: params.email || undefined,
@@ -81,13 +81,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         subscription_data: {
             metadata: {
                 ...params,
+
                 pluginName,
                 orgId: orgId,
             },
-            trial_period_days: 7,
-            // trial_settings: {
-            //     end_behavior: 'cancel',
-            // },
+            // trial_period_days: 7,
         },
         // payment_method_collection: 'always',
 
