@@ -1,4 +1,5 @@
 'use client'
+// https://unframer.co/react-export-pricing?orgId=xxx
 
 import NProgress from 'nprogress'
 
@@ -49,7 +50,7 @@ const frequencies: Array<Frequency> = [
 const tiers: Array<Tier> = [
     {
         key: TiersEnum.Personal,
-        title: 'Hobby, non commercial',
+        title: 'Personal, non commercial',
         description: 'Single Framer user access, for personal use',
         mostPopular: false,
         price: {
