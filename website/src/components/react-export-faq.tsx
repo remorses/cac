@@ -53,9 +53,14 @@ const faqs = [
             'The React Export plugin allows you to use Framer components in your React codebase. It exports your Framer components as React components that you can use in your project.',
     },
     {
+        title: 'Is there a free tiral?',
+        content:
+            'There is currently no free trial, if you are not satisfied with the service write an email to tomm@unframer.co to get a refund, please write the email before 30 days since the last payment was made.',
+    },
+    {
         title: 'How is the pricing structured for Personal vs Business plans?',
         content:
-            'We offer a 7-day free trial. The Personal plan is for single-user Framer access, while the Business plan is for companies with multiple users in Framer projects. Both plans support unlimited Framer projects. The plugin is free for open source and non-commercial projects.',
+            'The Personal plan is for single-user Framer access for personal projects, while the Commercial plan is for companies with multiple users in Framer projects. Both plans support unlimited Framer projects. The plugin is free for open source and non-commercial projects.',
     },
     {
         title: 'How can I get the free version for my open source project?',
@@ -92,7 +97,7 @@ const faqs = [
         content:
             'The Business plan is designed for companies with multiple users in Framer projects. It allows for team collaboration while maintaining access to all plugin features.',
     },
-    
+
     {
         title: 'How do responsive breakpoints work with the exported components?',
         content:
