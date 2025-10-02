@@ -79,6 +79,7 @@ export const reactPluginApp = new Spiceflow({
         async ({ params, state: store }) => {
             let { projectId } = params
             projectId = projectId.slice(0, 16)
+
             return await getProject({ projectId, email: '' })
         },
         {},
@@ -110,6 +111,7 @@ export const reactPluginApp = new Spiceflow({
         '/project/:projectId/subscribe',
         async function* ({ params, state: store }) {
             const { projectId } = params
+
             const project = await getProject({ projectId, email: '' })
             try {
                 yield { type: 'project' as const, ...project }
@@ -762,80 +764,59 @@ async function getProject({ projectId, email }) {
         breakpoints,
         componentInstances,
     ] = await Promise.all([
-        prisma.reactExportProject.findUnique({
-            where: {
-                // orgId,
-                projectId,
-            },
-        }),
-        prisma.reactExportComponent.findMany({
-            where: {
-                projectId,
-            },
-        }),
-        prisma.reactExportColorStyle.findMany({
-            where: {
-                projectId,
-            },
-        }),
-        prisma.reactExportWebPage.findMany({
-            where: {
-                projectId,
-            },
-        }),
-        prisma.reactExportLocale.findMany({
-            where: {
-                projectId,
-            },
-        }),
+        prisma.reactExportProject.findUnique({ where: { projectId } }),
+        prisma.reactExportComponent.findMany({ where: { projectId } }),
+        prisma.reactExportColorStyle.findMany({ where: { projectId } }),
+        prisma.reactExportWebPage.findMany({ where: { projectId } }),
+        prisma.reactExportLocale.findMany({ where: { projectId } }),
         prisma.reactExportComponentBreakpoint.findMany({
-            where: {
-                projectId,
-            },
+            where: { projectId },
         }),
-        prisma.reactExportComponentInstance.findMany({
-            where: {
-                projectId,
-            },
-        }),
+        prisma.reactExportComponentInstance.findMany({ where: { projectId } }),
     ])
 
     if (!project) {
         throw new Response(
             `Project with id ${projectId} not found. Please ensure you've exported components from Framer first.`,
-            {
-                status: 404,
-            },
+            { status: 404 },
         )
     }
-
-    // TODO enable this, require subscription to download the components
-    // if (project && project.orgId) {
-    //     const orgSubscription = await getReactSub({
-    //         orgId: project.orgId,
-    //     })
-    //     if (!orgSubscription) {
-    //         const buyUrl = getBuyReactExportPluginUrl({
-    //             orgId: project.orgId,
-    //             email,
-    //             projectId,
-    //         })
-    //         throw new Response(
-    //             `No active React Export subscription found for this project. To access exported components, please purchase a subscription at: ${buyUrl}\n\nIf you already have a subscription, ensure you're logged in with the correct account or visit https://unframer.co to manage your subscription.`,
-    //             { status: reactExportStatusErrors.SUB_NEEDED, statusText: 'Payment Required' },
-    //         )
-    //     }
-    // }
+    const requireSubToDownloadUnframer = false // TODO require sub at some point. only do this for unframer download cli and not other cases, like Components view
+    if (requireSubToDownloadUnframer && project.orgId) {
+        const shouldSkipSubscriptionCheck = Boolean(
+            email?.toLowerCase().endsWith('@framer.com'),
+        )
+        if (!shouldSkipSubscriptionCheck) {
+            const orgSubscription = await getReactSub({ orgId: project.orgId })
+            if (!orgSubscription) {
+                const buyUrl = getBuyReactExportPluginUrl({
+                    orgId: project.orgId,
+                    // TODO email during framer cli download is not available actually
+                    email: email || '',
+                    projectId,
+                })
+                const message = `No active React Export subscription found. To export components and use the React Export plugin, please purchase a subscription at: ${buyUrl}`
+                throw new Response(
+                    JSON.stringify({
+                        message,
+                        buyUrl,
+                    }),
+                    {
+                        status: reactExportStatusErrors.SUB_NEEDED,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+            }
+        }
+    }
 
     return {
         project,
-
         components: components
             .filter((x) => x?.url && x?.id)
-            .map((c) => ({
-                ...c,
-                url: c.url?.split('@')[0],
-            })),
+            .map((c) => ({ ...c, url: c.url?.split('@')[0] })),
         framerWebPages: framerWebPages.filter((x) => x.webPageId && x.path),
         colorStyles,
         locales: locales.map(({ projectId, ...rest }) => rest),
