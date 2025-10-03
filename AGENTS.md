@@ -464,7 +464,7 @@ in typescript never use process.env directly. instead find the closest `env.ts` 
 
 the cli uses cac npm package.
 
-notice that if you add a route in the spiceflow server you will need to run `pnpm --filter website gen-client` to update the apiClient inside cli.
+notice that if you add a route in the spiceflow server you will need to run `pnpm --filter unframer gen-client` to update the apiClient inside unframer cli. same for plugin-mcp
 
 
 ---
@@ -888,4 +888,3 @@ use zod to create schemas and types that need to be used for tool inputs or spic
 when you need to create a complex type that comes from a prisma table, do not create a new schema that tries to recreate the prisma table structure. instead just use `z.any() as ZodType<PrismaTable>)` to get type safety but leave any in the schema. this gets most of the benefits of zod without having to define a new zod schema that can easily go out of sync.
 
 ---
-
