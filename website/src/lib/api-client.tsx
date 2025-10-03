@@ -1,6 +1,6 @@
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
-export async function createClient({ url }: { url: string }) {
+export async function createClient({ url, headers: extraHeaders }: { url: string, headers?: Record<string, string> }) {
     const { createSpiceflowClient } = await import('spiceflow/client')
     const client = createSpiceflowClient<RouteType>(url, {
         // async fetch(input, requestInit) {
@@ -20,6 +20,7 @@ export async function createClient({ url }: { url: string }) {
         headers() {
             return {
                 // Cookie: `sb-${supabaseRef}-auth-token=${encodeURIComponent(JSON.stringify(session))}`,
+                ...extraHeaders,
             }
         },
     })

@@ -76,11 +76,46 @@ export const reactPluginApp = new Spiceflow({
     })
     .get(
         '/project/:projectId',
-        async ({ params, state: store }) => {
+        async ({ params, state: store, request }) => {
             let { projectId } = params
             projectId = projectId.slice(0, 16)
+            const agent = request.headers.get('X-Agent') || ''
 
-            return await getProject({ projectId, email: '' })
+            const project = await getProject({ projectId })
+
+            // Only check subscription for CLI usage
+            if (agent === 'cli' && project.project?.orgId) {
+                const shouldSkipSubscriptionCheck = Boolean(
+                    project.ownerEmail?.toLowerCase().endsWith('@framer.com'),
+                )
+                if (!shouldSkipSubscriptionCheck) {
+                    const orgSubscription = await getReactSub({
+                        orgId: project.project.orgId,
+                    })
+                    if (!orgSubscription) {
+                        const buyUrl = getBuyReactExportPluginUrl({
+                            orgId: project.project.orgId,
+                            email: project.ownerEmail || '',
+                            projectId,
+                        })
+                        const message = `No active React Export subscription found. To export components and use the React Export plugin, please purchase a subscription at: ${buyUrl}`
+                        throw new Response(
+                            JSON.stringify({
+                                message,
+                                buyUrl,
+                            }),
+                            {
+                                status: reactExportStatusErrors.SUB_NEEDED,
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            },
+                        )
+                    }
+                }
+            }
+
+            return project
         },
         {},
     )
@@ -109,10 +144,10 @@ export const reactPluginApp = new Spiceflow({
     )
     .get(
         '/project/:projectId/subscribe',
-        async function* ({ params, state: store }) {
+        async function* ({ params }) {
             const { projectId } = params
 
-            const project = await getProject({ projectId, email: '' })
+            const project = await getProject({ projectId })
             try {
                 yield { type: 'project' as const, ...project }
                 const emitter = projectsEvents.get(projectId)
@@ -754,9 +789,9 @@ export async function getReactSub({ orgId }) {
     })
 }
 
-async function getProject({ projectId, email }) {
+async function getProject({ projectId }) {
     const [
-        project,
+        projectWithOrg,
         components,
         colorStyles,
         framerWebPages,
@@ -764,7 +799,16 @@ async function getProject({ projectId, email }) {
         breakpoints,
         componentInstances,
     ] = await Promise.all([
-        prisma.reactExportProject.findUnique({ where: { projectId } }),
+        prisma.reactExportProject.findUnique({
+            where: { projectId },
+            include: {
+                org: {
+                    include: {
+                        users: { include: { user: true } },
+                    },
+                },
+            },
+        }),
         prisma.reactExportComponent.findMany({ where: { projectId } }),
         prisma.reactExportColorStyle.findMany({ where: { projectId } }),
         prisma.reactExportWebPage.findMany({ where: { projectId } }),
@@ -775,45 +819,28 @@ async function getProject({ projectId, email }) {
         prisma.reactExportComponentInstance.findMany({ where: { projectId } }),
     ])
 
-    if (!project) {
+    if (!projectWithOrg) {
         throw new Response(
             `Project with id ${projectId} not found. Please ensure you've exported components from Framer first.`,
             { status: 404 },
         )
     }
-    const requireSubToDownloadUnframer = false // TODO require sub at some point. only do this for unframer download cli and not other cases, like Components view
-    if (requireSubToDownloadUnframer && project.orgId) {
-        const shouldSkipSubscriptionCheck = Boolean(
-            email?.toLowerCase().endsWith('@framer.com'),
-        )
-        if (!shouldSkipSubscriptionCheck) {
-            const orgSubscription = await getReactSub({ orgId: project.orgId })
-            if (!orgSubscription) {
-                const buyUrl = getBuyReactExportPluginUrl({
-                    orgId: project.orgId,
-                    // TODO email during framer cli download is not available actually
-                    email: email || '',
-                    projectId,
-                })
-                const message = `No active React Export subscription found. To export components and use the React Export plugin, please purchase a subscription at: ${buyUrl}`
-                throw new Response(
-                    JSON.stringify({
-                        message,
-                        buyUrl,
-                    }),
-                    {
-                        status: reactExportStatusErrors.SUB_NEEDED,
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    },
-                )
-            }
-        }
+
+    // Get owner email - first try org users, then fall back to legacy user lookup
+    let ownerEmail = projectWithOrg.org?.users?.[0]?.user?.email || ''
+    if (!ownerEmail && projectWithOrg.orgId) {
+        // Legacy user lookup
+        const legacyUser = await prisma.users.findFirst({
+            where: {
+                id: projectWithOrg.orgId,
+            },
+        })
+        ownerEmail = legacyUser?.email || ''
     }
 
     return {
-        project,
+        project: projectWithOrg,
+        ownerEmail,
         components: components
             .filter((x) => x?.url && x?.id)
             .map((c) => ({ ...c, url: c.url?.split('@')[0] })),
