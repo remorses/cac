@@ -17,6 +17,25 @@ import {
 import { isTruthy } from './utils.js'
 
 // Type definitions
+export type ComponentInstanceStyles = {
+    position?: string | null
+    top?: string | null
+    right?: string | null
+    bottom?: string | null
+    left?: string | null
+    centerX?: string | null
+    centerY?: string | null
+    width?: string | null
+    height?: string | null
+    minWidth?: string | null
+    maxWidth?: string | null
+    minHeight?: string | null
+    maxHeight?: string | null
+    aspectRatio?: number | null
+    rotation?: number | null
+    opacity?: number | null
+}
+
 export interface ReactExportComponentInstance {
     componentId: string
     controls: Record<string, any>
@@ -24,6 +43,7 @@ export interface ReactExportComponentInstance {
     projectId: string
     nodeDepth: number
     pageOrdering: number
+    styles: ComponentInstanceStyles
 }
 
 interface ComponentWithBreakpoints {
@@ -42,6 +62,7 @@ interface InstanceWithOrderAndDepth {
     webPageId: string
     projectId: string
     nodeDepth: number
+    styles: ComponentInstanceStyles
 }
 
 
@@ -157,6 +178,26 @@ export async function getInstancesWithOrderAndDepth({
                 components.find((x) => x.id === componentId)?.insertURL,
             )
             componentsAlredyProcessed.add(componentId)
+            
+            const styles = {
+                position: x.position ?? null,
+                top: x.top ?? null,
+                right: x.right ?? null,
+                bottom: x.bottom ?? null,
+                left: x.left ?? null,
+                centerX: x.centerX ?? null,
+                centerY: x.centerY ?? null,
+                width: x.width ?? null,
+                height: x.height ?? null,
+                minWidth: x.minWidth ?? null,
+                maxWidth: x.maxWidth ?? null,
+                minHeight: x.minHeight ?? null,
+                maxHeight: x.maxHeight ?? null,
+                aspectRatio: x.aspectRatio ?? null,
+                rotation: x.rotation ?? null,
+                opacity: x.opacity ?? null,
+            }
+            
             const instance: InstanceWithOrderAndDepth = {
                 componentId,
                 controls: replaceEnumIdsForControls(
@@ -167,6 +208,7 @@ export async function getInstancesWithOrderAndDepth({
                 webPageId,
                 projectId,
                 nodeDepth: parents.length - 1,
+                styles,
             }
             return instance
         }),
