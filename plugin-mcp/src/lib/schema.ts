@@ -7,6 +7,13 @@ export const codeComponentsResourceUri =
 /* ──────────────────────────── Schemas ─────────────────────────── */
 const NodeId = z.string().min(1)
 
+export type McpToolDefinition = {
+    description: string
+    input: z.ZodTypeAny
+    output: z.ZodTypeAny
+    outputPrefix?: string
+}
+
 const colorStylePropertiesSchema = z.object({
     name: z.string().optional().describe('The display name of the color style'),
     light: z
@@ -777,7 +784,7 @@ export const mcpTools = {
         }),
         output: z.any(),
     },
-} as const
+} satisfies Record<string, McpToolDefinition>
 
 /* ──────────────────────────── Types ─────────────────────────── */
 export type McpToolNames = keyof typeof mcpTools

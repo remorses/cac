@@ -636,7 +636,11 @@ export const reactPluginApp = new Spiceflow({
 
                                           return true
                                       })
-                                      .map((x) => ({ ...x, projectId })) || [],
+                                      .map((x) => ({
+                                          ...x,
+                                          projectId,
+                                          styles: (x.styles ?? {}) as Prisma.InputJsonValue,
+                                      })) || [],
                           }),
                       ]
                     : []),

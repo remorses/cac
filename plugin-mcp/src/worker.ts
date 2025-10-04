@@ -19,7 +19,11 @@ import { OAuthProvider } from '@cloudflare/workers-oauth-provider'
 import { createClient } from '@supabase/supabase-js'
 import * as cookie from 'cookie'
 import codeComponentsResourceMarkdown from './prompts/how-to-write-framer-code-files.md'
-import { codeComponentsResourceUri, mcpTools } from './lib/schema.js'
+import {
+    codeComponentsResourceUri,
+    mcpTools,
+    type McpToolDefinition,
+} from './lib/schema.js'
 import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
 import { sleep } from './lib/utils.js'
 import { KnownError, notifyError } from './lib/errors.js'
@@ -560,7 +564,7 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
             // Register call tool handler
             server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const { name, arguments: args } = request.params
-                const tool = mcpTools[name as keyof typeof mcpTools]
+                const tool = mcpTools[name as keyof typeof mcpTools] as McpToolDefinition
 
                 if (!tool) {
                     throw new Error(`Unknown tool: ${name}`)
@@ -597,8 +601,11 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                         typeof reply === 'string'
                             ? reply
                             : JSON.stringify(reply, null, 2)
+                    const prefixedText = tool.outputPrefix
+                        ? `${tool.outputPrefix}${text}`
+                        : text
 
-                    return textResponse(text)
+                    return textResponse(prefixedText)
                 } catch (error) {
                     notifyError(error, 'MCP tool')
                     const errorMessage =

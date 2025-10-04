@@ -536,6 +536,7 @@ model ReactExportComponentInstance {
   pageOrdering Int
   nodeDepth    Int
   controls     Json                 @default("{}")
+  styles       Json                 @default("{}")
   component    ReactExportComponent @relation(fields: [componentId, projectId], references: [id, projectId], onDelete: Cascade)
   webPage      ReactExportWebPage   @relation(fields: [webPageId, projectId], references: [webPageId, projectId], onDelete: Cascade)
 
