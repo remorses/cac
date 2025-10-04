@@ -1,5 +1,8 @@
 import { McpAgent } from 'agents/mcp'
-import type { OAuthHelpers, AuthRequest } from '@cloudflare/workers-oauth-provider'
+import type {
+    OAuthHelpers,
+    AuthRequest,
+} from '@cloudflare/workers-oauth-provider'
 
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 import {
@@ -383,9 +386,11 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                     // Wait for first message with timeout
                     const rpc = await new Promise<WebsocketRpc>(
                         (resolve, reject) => {
+                            if (!ws)
+                                throw new Error('WebSocket not initialized')
                             // Set up 5 second timeout for first message
                             const timeoutId = setTimeout(() => {
-                                ws!.close()
+                                ws?.close()
                                 reject(
                                     new Error(
                                         `Connection timeout: ${framerInstructions}`,
@@ -396,22 +401,61 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             let rpc: WebsocketRpc | null = null
                             let readySentTime: number
 
-                            const handleOpen = () => {
-                                console.log(
-                                    `WebSocket opened to upstream tunnel with ID: ${framerUserId}`,
-                                )
-
-                                // Create RPC handler
-                                rpc = createWebsocketHandling({ ws: ws! })
-
-                                // Send ready message
-                                readySentTime = Date.now()
-                                console.log('Sending ready message to upstream')
-                                rpc.send({
-                                    payload: { type: 'ready' },
-                                })
+                            const handleError = (err: Event) => {
+                                clearTimeout(timeoutId)
+                                reject(err)
                             }
 
+                            ws.addEventListener(
+                                'close',
+                                (event) => {
+                                    if (idleTimeout) {
+                                        clearTimeout(idleTimeout)
+                                        idleTimeout = null
+                                    }
+                                    clearTimeout(timeoutId)
+
+                                    clientConnectedPromise = null
+                                    if (event.code === 4008) {
+                                        reject(
+                                            new Error(
+                                                `Upstream not connected for ${framerUserId} (email: ${userEmail}), Framer MCP plugin is not running. User should login with same Google account (${userEmail}) in both ends. ${framerInstructions}`,
+                                            ),
+                                        )
+                                    } else {
+                                        reject(
+                                            new Error(
+                                                `WebSocket closed early with code ${event.code}: ${event.reason || 'No reason provided'}`,
+                                            ),
+                                        )
+                                    }
+                                },
+                                { once: true },
+                            )
+
+                            ws.addEventListener(
+                                'open',
+                                () => {
+                                    console.log(
+                                        `WebSocket opened to upstream tunnel with ID: ${framerUserId}`,
+                                    )
+
+                                    // Create RPC handler
+                                    rpc = createWebsocketHandling({ ws: ws! })
+
+                                    // Send ready message
+                                    readySentTime = Date.now()
+                                    console.log(
+                                        'Sending ready message to upstream',
+                                    )
+                                    rpc.send({
+                                        payload: { type: 'ready' },
+                                    })
+                                },
+                                {
+                                    once: true,
+                                },
+                            )
                             const handleFirstMessage = (
                                 event: MessageEvent,
                             ) => {
@@ -443,39 +487,21 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                                     )
                                 }
                             }
-
-                            const handleError = (err: Event) => {
-                                clearTimeout(timeoutId)
-                                reject(err)
-                            }
-
-                            // Set up close handler for early close (e.g., 4008)
-                            const handleEarlyClose = (event: CloseEvent) => {
-                                clearTimeout(timeoutId)
-                                if (event.code === 4008) {
-                                    reject(
-                                        new Error(
-                                            `Upstream not connected for ${framerUserId} (email: ${userEmail}), Framer MCP plugin is not running. User should login with same Google account (${userEmail}) in both ends. ${framerInstructions}`,
-                                        ),
-                                    )
-                                } else {
-                                    reject(
-                                        new Error(
-                                            `WebSocket closed early with code ${event.code}: ${event.reason || 'No reason provided'}`,
-                                        ),
-                                    )
-                                }
-                            }
-
-                            ws!.addEventListener('open', handleOpen, {
+                            ws.addEventListener('message', handleFirstMessage)
+                            ws.addEventListener('error', handleError, {
                                 once: true,
                             })
-                            ws!.addEventListener('message', handleFirstMessage)
-                            ws!.addEventListener('error', handleError, {
-                                once: true,
+
+                            ws.addEventListener('error', (err) => {
+                                notifyError(
+                                    new Error('Upstream WebSocket Error'),
+                                    'WebSocket error occurred',
+                                )
                             })
-                            ws!.addEventListener('close', handleEarlyClose, {
-                                once: true,
+
+                            // Reset idle timeout on any message activity
+                            ws.addEventListener('message', () => {
+                                resetIdleTimeout()
                             })
                         },
                     )
@@ -483,38 +509,6 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                     // Set up persistent event listeners
                     // Start idle timeout on successful connection
                     resetIdleTimeout()
-
-                    ws.addEventListener('close', (event) => {
-                        if (event.code === 4008) {
-                            console.log(
-                                'Upstream WebSocket closed with code 4008: Upstream not connected (Framer plugin not running)',
-                            )
-                        } else {
-                            console.log(
-                                `Upstream WebSocket closed with code ${event.code}: ${event.reason || 'No reason provided'}`,
-                            )
-                        }
-
-                        if (idleTimeout) {
-                            clearTimeout(idleTimeout)
-                            idleTimeout = null
-                        }
-
-                        // Don't auto-reconnect - wait for next request
-                        clientConnectedPromise = null
-                    })
-
-                    ws.addEventListener('error', (err) => {
-                        notifyError(
-                            new Error('Upstream WebSocket Error'),
-                            'WebSocket error occurred',
-                        )
-                    })
-
-                    // Reset idle timeout on any message activity
-                    ws.addEventListener('message', () => {
-                        resetIdleTimeout()
-                    })
 
                     return rpc
                 } catch (error) {
@@ -574,7 +568,10 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
 
                 try {
                     // Lazy connect - only establish WebSocket when needed
-                    if (!clientConnectedPromise) {
+                    if (
+                        !clientConnectedPromise ||
+                        ws?.readyState === WebSocket.CLOSED
+                    ) {
                         clientConnectedPromise = connectWebSocket()
                     }
 
