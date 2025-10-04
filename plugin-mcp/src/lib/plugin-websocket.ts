@@ -163,12 +163,11 @@ export async function websocketClientHandling({
                 // Prevent further reconnect attempts when this error occurs
                 shouldReconnect = false
             }
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout)
+            }
 
             if (shouldReconnect) {
-                // Clear any existing reconnect timeout
-                if (reconnectTimeout) {
-                    clearTimeout(reconnectTimeout)
-                }
                 reconnectTimeout = setTimeout(() => {
                     reconnectTimeout = undefined
                     // Only reconnect if WebSocket is not open or connecting
