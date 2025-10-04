@@ -152,10 +152,8 @@ export async function websocketClientHandling({
 
             if (event.code === 4009) {
                 const errorMessage =
-                    'Another MCP plugin is already connected. Please keep only one open. Try reopening the plugin if that is not the case.'
-                console.error(
-                    'Another plugin is already connected for this user',
-                )
+                    'Another MCP plugin has connected. Please keep only one open. Then try reopening this plugin'
+                console.error(errorMessage)
                 useStore.setState({
                     isConnected: false,
                     error: errorMessage,
