@@ -3,6 +3,7 @@
 import React from 'react'
 import { Accordion, AccordionItem } from '@heroui/react'
 import { Icon } from '@iconify/react'
+import { isReactExportFreePlanEnabled } from 'website/src/lib/env'
 
 export function ReactExportFaq() {
     return (
@@ -53,9 +54,10 @@ const faqs = [
             'The React Export plugin allows you to use Framer components in your React codebase. It exports your Framer components as React components that you can use in your project.',
     },
     {
-        title: 'Is there a free tiral?',
-        content:
-            'There is currently no free trial, if you are not satisfied with the service write an email to tomm@unframer.co to get a refund, please write the email before 30 days since the last payment was made.',
+        title: 'Is there a free trial?',
+        content: isReactExportFreePlanEnabled
+            ? 'Yes! Get a 7-day free trial for just $1 upfront. This gives you full access to all features. After the trial, your subscription will continue at the standard rate unless you cancel.'
+            : 'There is currently no free trial, if you are not satisfied with the service write an email to tommy@unframer.co to get a refund, please write the email before 30 days since the last payment was made.',
     },
     {
         title: 'How is the pricing structured for Personal vs Business plans?',

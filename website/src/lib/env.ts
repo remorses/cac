@@ -276,3 +276,5 @@ export const reactExportStatusErrors = {
     PROJECT_BELONGS_TO_ANOTHER_USER: 403,
     SUB_NEEDED: 402,
 }
+
+export const isReactExportFreePlanEnabled = true

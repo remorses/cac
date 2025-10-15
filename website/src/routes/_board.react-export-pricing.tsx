@@ -1,5 +1,6 @@
 'use client'
 // https://unframer.co/react-export-pricing?orgId=xxx
+// https://localhost:8040/react-export-pricing?orgId=xxx
 
 import NProgress from 'nprogress'
 
@@ -23,8 +24,13 @@ import React from 'react'
 import type { ButtonProps } from '@heroui/react'
 import { href, useLoaderData } from 'react-router'
 import { ReactExportFaq } from 'website/src/components/react-export-faq'
-import { discountCodeUrl, env, reactExportVariants } from 'website/src/lib/env'
-import {  Route } from './+types/_board.react-export-pricing'
+import {
+    discountCodeUrl,
+    env,
+    isReactExportFreePlanEnabled,
+    reactExportVariants,
+} from 'website/src/lib/env'
+import { Route } from './+types/_board.react-export-pricing'
 import LogosFramerComponent from 'website/src/framer/logos'
 import TestimonialsFramerComponent from 'website/src/framer/testimonials'
 
@@ -49,9 +55,33 @@ const frequencies: Array<Frequency> = [
 
 const tiers: Array<Tier> = [
     {
+        key: TiersEnum.Business,
+        title: 'Commercial',
+
+        featured: true,
+        mostPopular: true,
+        description: isReactExportFreePlanEnabled
+            ? 'Accessible by unlimited Framer users and developers. 7 day trial with $1 upfront fee.'
+            : 'Accessible by unlimited Framer users and developers',
+        price: {
+            yearly: '$2250',
+            monthly: '$250',
+        },
+        features: [
+            'Unlimited Framer users', //
+        ],
+        buttonText: isReactExportFreePlanEnabled
+            ? 'Start 7-Day Trial'
+            : 'Start Subscription',
+        buttonColor: 'primary',
+        buttonVariant: 'solid',
+    },
+    {
         key: TiersEnum.Personal,
         title: 'Personal, non commercial',
-        description: 'Single Framer user access, for personal use',
+        description: isReactExportFreePlanEnabled
+            ? 'Single Framer user access, for personal use. 7 day trial with $1 upfront fee.'
+            : 'Single Framer user access, for personal use',
         mostPopular: false,
         price: {
             yearly: '$450',
@@ -59,24 +89,10 @@ const tiers: Array<Tier> = [
         },
         featured: false,
         features: ['1 Framer user access'],
-        buttonText: 'Start Subscription',
+        buttonText: isReactExportFreePlanEnabled
+            ? 'Start 7-Day Trial'
+            : 'Start Subscription',
         buttonColor: 'default',
-        buttonVariant: 'solid',
-    },
-    {
-        key: TiersEnum.Business,
-        title: 'Commercial',
-
-        featured: true,
-        mostPopular: true,
-        description: 'Accessible by unlimited Framer users and developers',
-        price: {
-            yearly: '$2250',
-            monthly: '$250',
-        },
-        features: ['Unlimited Framer users & developers'],
-        buttonText: 'Start Subscription',
-        buttonColor: 'primary',
         buttonVariant: 'solid',
     },
 ]
@@ -280,11 +296,15 @@ export default function Page() {
             <div className='flex max-w-xl flex-col mx-auto text-center'>
                 <h2 className='font-medium text-primary'>Pricing</h2>
                 <h1 className='text-4xl font-medium tracking-tight'>
-                    React Export Subscription
+                    {isReactExportFreePlanEnabled
+                        ? 'Try React Export Free for 7 Days'
+                        : 'React Export Subscription'}
                 </h1>
                 <Spacer y={4} />
                 <h2 className='text-large text-default-500'>
-                    Export Framer components to React and deploy anywhere
+                    {isReactExportFreePlanEnabled
+                        ? 'Export Framer components to React. Start with a 7-day trial for just $1'
+                        : 'Export Framer components to React and deploy anywhere'}
                 </h2>
             </div>
 
