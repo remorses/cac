@@ -68,7 +68,9 @@ const tiers: Array<Tier> = [
             monthly: '$250',
         },
         features: [
-            'Unlimited Framer users', //
+            'Unlimited Framer Users', //
+            'Unlimited Developers',
+            'Commercial Use',
         ],
         buttonText: isReactExportFreePlanEnabled
             ? 'Start 7-Day Trial'
@@ -78,7 +80,7 @@ const tiers: Array<Tier> = [
     },
     {
         key: TiersEnum.Personal,
-        title: 'Personal, non commercial',
+        title: 'Hobby',
         description: isReactExportFreePlanEnabled
             ? 'Single Framer user access, for personal use. 7 day trial with $1 upfront fee.'
             : 'Single Framer user access, for personal use',
@@ -88,7 +90,11 @@ const tiers: Array<Tier> = [
             monthly: '$49',
         },
         featured: false,
-        features: ['1 Framer user access'],
+        features: [
+            '1 Framer user access', //
+            '1 Developer',
+            'Personal Use',
+        ],
         buttonText: isReactExportFreePlanEnabled
             ? 'Start 7-Day Trial'
             : 'Start Subscription',
