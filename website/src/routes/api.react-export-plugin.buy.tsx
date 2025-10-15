@@ -4,7 +4,11 @@
 import { PluginName, prisma } from 'db'
 import { href, LoaderFunctionArgs, redirect } from 'react-router'
 import Stripe from 'stripe'
-import { env, reactExportVariants } from 'website/src/lib/env'
+import {
+    env,
+    isReactExportFreePlanEnabled,
+    reactExportVariants,
+} from 'website/src/lib/env'
 import { getReactSub } from 'website/src/lib/spiceflow-react-export-plugin'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {})
@@ -67,7 +71,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
             // order of items is important
             { quantity: 1, price },
             // this line item should NEVER be first
-            // { quantity: 1, price: ONE_TIME_DOLLAR_PRICE_ID },
+            ...(isReactExportFreePlanEnabled
+                ? [{ quantity: 1, price: ONE_TIME_DOLLAR_PRICE_ID }]
+                : []),
         ],
         mode: 'subscription',
         customer_email: params.email || undefined,
@@ -81,15 +87,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         subscription_data: {
             metadata: {
                 ...params,
-
                 pluginName,
                 orgId: orgId,
             },
-            // trial_period_days: 7,
+            ...(isReactExportFreePlanEnabled ? { trial_period_days: 7 } : {}),
         },
-        // payment_method_collection: 'always',
 
-        allow_promotion_codes: true, // Enable coupon/promotion code input
+        allow_promotion_codes: true,
     })
     if (!session.url?.toString()) {
         throw new Error('No Stripe payment link found')
