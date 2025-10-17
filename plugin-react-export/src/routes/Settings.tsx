@@ -75,7 +75,7 @@ function Component() {
         <div className='flex flex-col justify-start gap-4'>
             <div className='flex items-center'>
                 <div className=''>
-                    Currently logged in as{' '}
+                    Project Owner{' '}
                     <span className='font-semibold inline'>{email}</span>
                 </div>
 
@@ -86,7 +86,9 @@ function Component() {
                         try {
                             // Check permission before setting plugin data
                             if (!framer.isAllowedTo('setPluginData')) {
-                                throw new Error('Permission denied: cannot set plugin data')
+                                throw new Error(
+                                    'Permission denied: cannot set plugin data',
+                                )
                             }
                             await framer.setPluginData(
                                 PluginDataKeys.sessionKey,
@@ -128,7 +130,10 @@ function Component() {
             <div className='flex gap-2 items-center'>
                 <div className=''>Questions or requests?</div>
                 <div className='grow'></div>
-                <a target='_blank' href={feedbackUrl({ pluginName: 'React Export', email })}>
+                <a
+                    target='_blank'
+                    href={feedbackUrl({ pluginName: 'React Export', email })}
+                >
                     <Button className='w-auto'>Share Feedback</Button>
                 </a>
             </div>
