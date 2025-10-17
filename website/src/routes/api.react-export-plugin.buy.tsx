@@ -29,22 +29,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Check if user already has an active subscription
     const activeSub = await getReactSub({ orgId })
 
+    // Check for any previous subscription (including inactive ones) to reuse customer
+    const anySubscription = await prisma.subscription.findFirst({
+        where: {
+            orgId: orgId,
+            pluginName: 'reactExport',
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+    })
+
     // If user already has active subscription, redirect to manage it
     if (activeSub) {
-        // If no active subscription, try to find any subscription (including inactive ones)
-        const anySubscription = await prisma.subscription.findFirst({
-            where: {
-                orgId: orgId,
-                pluginName: 'reactExport',
-            },
-            orderBy: {
-                createdAt: 'desc', // Get the most recent subscription
-            },
-        })
-
-        if (anySubscription?.customerId) {
+        if (activeSub?.customerId) {
             const portalSession = await stripe.billingPortal.sessions.create({
-                customer: anySubscription.customerId,
+                customer: activeSub.customerId,
                 return_url: new URL(
                     '/after-framer-payment',
                     env.PUBLIC_URL,
@@ -76,7 +76,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 : []),
         ],
         mode: 'subscription',
-        customer_email: params.email || undefined,
+        ...(anySubscription?.customerId
+            ? { customer: anySubscription.customerId }
+            : { customer_email: params.email || undefined }),
         client_reference_id: orgId,
         success_url: new URL('/after-framer-payment', baseUrl).toString(),
         cancel_url: new URL('/after-framer-payment', baseUrl).toString(),
