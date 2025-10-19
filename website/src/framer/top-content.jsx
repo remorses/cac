@@ -24,7 +24,7 @@
  */
 import { Icon } from "./chunks/chunk-IXDMRUES.js";
 import "./chunks/chunk-BVM6H744.js";
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:top-content
 import { Fragment as Fragment2 } from "react";

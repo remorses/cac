@@ -29,7 +29,7 @@
  */
 import { Icon, stdin_default } from "./chunks/chunk-K6UQ5WSB.js";
 import "./chunks/chunk-BVM6H744.js";
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:footer
 import { Fragment as Fragment3 } from "react";

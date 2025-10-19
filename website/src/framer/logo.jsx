@@ -24,7 +24,7 @@
 
  */
 import { stdin_default } from "./chunks/chunk-OB6JXTMV.js";
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:logo
 import { Fragment } from "react";

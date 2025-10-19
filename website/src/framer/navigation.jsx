@@ -30,7 +30,7 @@ import {
 } from "./chunks/chunk-K6UQ5WSB.js";
 import { stdin_default } from "./chunks/chunk-OB6JXTMV.js";
 import "./chunks/chunk-BVM6H744.js";
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:navigation
 import { Fragment as Fragment3 } from "react";

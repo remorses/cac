@@ -24,7 +24,7 @@
 
  */
 import { className, css, fonts } from "./chunks/chunk-FRDHWG4Z.js";
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:logos
 import { Fragment as Fragment2 } from "react";
