@@ -121,7 +121,7 @@ export const mcpTools = {
         description: dedent`
         Gets the project pages and components XML, with information of the currently focused page or component.
 
-        This tool also returns the ID of the currently focused page or component node. When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
+        This tool also returns the ID of the currently focused page or component node. When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
 
         The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
 
@@ -166,7 +166,9 @@ export const mcpTools = {
               Nodes without a nodeId attribute will be created as new nodes. To create a new node, simply omit the nodeId attribute. The node type is determined by the content and attributes:
               - Nodes with layout attributes (layout="stack" or layout="grid") become Frame nodes
               - Nodes with svg attribute become SVG nodes
-              - Nodes with componentId or insertUrl attributes become ComponentInstance nodes (omit nodeId to create new component instances)
+              - Nodes with componentId or insertUrl attributes become ComponentInstance nodes. This is the PREFERRED way to insert components with full attribute support in one step. Get the insertUrl using getComponentInsertUrlAndTypes first.
+                - **Linked components** (default): Use insertUrl as-is to create a linked component instance that updates when the source component changes
+                - **Detached components**: Add ?detached=true query parameter to insertUrl (e.g., insertUrl="https://framer.com/m/Button.js?detached=true") to create detached/unlinked layers. The component's internal structure becomes editable regular nodes (Frame, Text, etc.) that won't update with the source. IMPORTANT: After creating a detached component, you MUST call getNodeXml on the parent node again to see the actual internal structure that was created, as it will contain multiple child nodes (Text, Frame, SVG, etc.) from the component's definition.
               - Nodes with text content become Text nodes. To add a text node you must create a new wrapping element too and omit its nodeId, you CANNOT add text to an existing element that does not already contain text
 
               The tag name of new nodes will be used for the new node title in Framer, it has no semantic meaning
@@ -192,7 +194,8 @@ export const mcpTools = {
               ## Capabilities
 
               You can use this tool to:
-              - Create new nodes by omitting nodeId attribute
+              - Create new nodes by omitting nodeId attribute (Frame, Text, SVG, ComponentInstance)
+              - Insert components as linked instances or detached layers (use insertUrl with optional ?detached=true)
               - Update text content for one or multiple nodes
               - Update attributes of existing nodes
               - Reorder nodes in the tree by changing their parent or position
@@ -399,10 +402,15 @@ export const mcpTools = {
 
               For component instances:
 
-              - **componentId**: The ID of the component definition (read-only, set during creation)
+              - **insertUrl**: The component module URL (required for creation). Add ?detached=true to create detached/unlinked layers instead of a linked instance.
+              - **componentId**: The ID of the component definition (read-only, set during creation, alternative to insertUrl)
               - Plus any custom control properties defined by the component
 
-              Component instances also support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius.
+              **Linked vs Detached Components:**
+              - **Linked** (default): Component instance that updates when source changes. Cannot edit internal structure. Only styling attributes like opacity, position, width, height work.
+              - **Detached** (insertUrl with ?detached=true): Creates editable Frame with component's internal layers. Full access to all children. Does NOT update when source changes. Use when you need to customize internal structure. After creation, call getNodeXml on the parent to see the actual internal structure (Text, Frame, SVG nodes, etc.) that was created from the component.
+
+              Component instances support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius. Detached components become regular Frames which DO support all styling attributes.
 
               `,
         input: z.object({
@@ -570,7 +578,7 @@ export const mcpTools = {
 
             When creating a code component you should also define its property controls via Framer addPropertyControls.
 
-            Returns the ID, path, and insertUrl of the created code file. Use insertComponentInCanvas with the insertUrl to add the component to the canvas.
+            Returns the ID, path, and insertUrl of the created code file. Use updateXmlForNode with the insertUrl in a ComponentInstance node to add the component to the canvas.
         `,
         input: z.object({
             name: z
@@ -614,14 +622,16 @@ export const mcpTools = {
     },
     getComponentInsertUrlAndTypes: {
         description: dedent`
-            Get the insert URL, import statement and prop types documentation for components. This must be called before using insertComponentInCanvas.
+            Get the insert URL, import statement and prop types documentation for components.
 
             The id parameter can be either:
             - A component node ID (from getProjectXml Components section)
             - A code file ID (from getProjectXml CodeComponents section)
 
             Use this tool when you want to:
-            - Insert a component into the canvas (get the insertUrl for insertComponentInCanvas)
+            - Insert a component into the canvas via updateXmlForNode (get the insertUrl to use in XML)
+              - Use insertUrl as-is for linked components (updates with source)
+              - Add ?detached=true to insertUrl for detached/unlinked layers (editable, won't update). After inserting detached components, call getNodeXml on the parent to inspect the actual internal structure created.
             - Use an existing component in a code file (get the import statement)
             - See what props/attributes are available for a component, to use them in XML
         `,
@@ -634,29 +644,29 @@ export const mcpTools = {
         }),
         output: z.string(),
     },
-    insertComponentInCanvas: {
-        description: dedent`
-            Creates a component instance and inserts it into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
-
-            This tool can be used with both regular components and code file components.
-
-            Before using this tool, call getComponentInsertUrlAndTypes to get the insertUrl for the component you want to insert.
-
-            Returns markdown with:
-            - The ID of the newly created node
-            - XML of the new node
-            - The current root node ID (page or component)
-            - Instructions for positioning the node using updateXmlForNode
-        `,
-        input: z.object({
-            insertUrl: z
-                .string()
-                .describe(
-                    'The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes',
-                ),
-        }),
-        output: z.string(),
-    },
+    // insertComponentInCanvas: {
+    //     description: dedent`
+    //         Creates a component instance and inserts it into the canvas using its insertUrl. The component will be inserted into the currently focused page or component.
+    //
+    //         This tool can be used with both regular components and code file components.
+    //
+    //         Before using this tool, call getComponentInsertUrlAndTypes to get the insertUrl for the component you want to insert.
+    //
+    //         Returns markdown with:
+    //         - The ID of the newly created node
+    //         - XML of the new node
+    //         - The current root node ID (page or component)
+    //         - Instructions for positioning the node using updateXmlForNode
+    //     `,
+    //     input: z.object({
+    //         insertUrl: z
+    //             .string()
+    //             .describe(
+    //                 'The insert URL of the component to insert, it can be obtained from getComponentInsertUrlAndTypes',
+    //             ),
+    //     }),
+    //     output: z.string(),
+    // },
     getProjectWebsiteUrl: {
         description: dedent`
             Get the published website URLs for the current Framer project.

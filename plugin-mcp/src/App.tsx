@@ -345,17 +345,52 @@ async function createFramerNode({
                 )
             }
 
-            const instance = await framer.addComponentInstance({
-                url: insertUrl,
-                attributes: attributes,
-            })
+            // Check if detached mode is requested via query parameter
+            const url = new URL(insertUrl, 'https://framer.com')
+            const isDetached = url.searchParams.get('detached') === 'true'
+            
+            // Remove query parameters from insertUrl
+            const cleanInsertUrl = insertUrl.split('?')[0]
 
-            if (instance?.id) {
-                // Move to correct parent (addComponentInstance doesn't take parent param)
-                await framer.setParent(instance.id, parentId)
-                return { id: instance.id, type: 'ComponentInstance' }
+            // Prepare attributes without insertUrl/componentId
+            const instanceAttributes = { ...attributes }
+            delete instanceAttributes.insertUrl
+            delete instanceAttributes.componentId
+
+            let nodeId: string
+            let nodeType: NodeType
+
+            if (isDetached) {
+                // Use addDetachedComponentLayers for detached mode
+                const detachedFrame = await framer.addDetachedComponentLayers({
+                    url: cleanInsertUrl,
+                    attributes: instanceAttributes,
+                })
+
+                if (!detachedFrame?.id) {
+                    throw new Error('Failed to create detached component layers')
+                }
+
+                nodeId = detachedFrame.id
+                nodeType = 'Frame' // addDetachedComponentLayers returns a FrameNode
+            } else {
+                // Use addComponentInstance for linked mode
+                const instance = await framer.addComponentInstance({
+                    url: cleanInsertUrl,
+                    attributes: instanceAttributes,
+                })
+
+                if (!instance?.id) {
+                    throw new Error('Failed to create component instance')
+                }
+
+                nodeId = instance.id
+                nodeType = 'ComponentInstance'
             }
-            return null
+
+            // Move to correct parent
+            await framer.setParent(nodeId, parentId)
+            return { id: nodeId, type: nodeType }
         }
 
         default:
@@ -593,7 +628,7 @@ async function websocketHandler({
 
             ${rootNodeInfo}
 
-            When you call insertComponentInCanvas, the component will be inserted into this focused page or component.
+            When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
 
             If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.${permissionMessage}
             `
@@ -694,9 +729,20 @@ async function websocketHandler({
                                 }
                             })
 
-                            results.push(
-                                `Created ${newNode.type} node ${newNode.id}`,
-                            )
+                            // Check if this was a detached component
+                            const wasDetached =
+                                extractedNode.nodeType === 'ComponentInstance' &&
+                                extractedNode.attributes.insertUrl?.includes('?detached=true')
+
+                            if (wasDetached && newNode.type === 'Frame') {
+                                results.push(
+                                    `Created detached component as Frame node ${newNode.id}. IMPORTANT: Call getNodeXml on this node or its parent to inspect the internal structure (Text, Frame, SVG nodes, etc.) that was created from the component definition.`,
+                                )
+                            } else {
+                                results.push(
+                                    `Created ${newNode.type} node ${newNode.id}`,
+                                )
+                            }
                         }
                     } catch (error) {
                         const errorMessage =
@@ -1408,7 +1454,7 @@ async function websocketHandler({
                 - **Path:** \`${codeFile.path}\`
                 - **Component Insert URL:** \`${insertUrl}\`
 
-                ${insertUrl ? `Use insertComponentInCanvas with insertUrl: \`${insertUrl}\` to add this component to the canvas.` : 'No component export found in this code file.'}
+                ${insertUrl ? `Use updateXmlForNode with a ComponentInstance node using insertUrl: \`${insertUrl}\` to add this component to the canvas.` : 'No component export found in this code file.'}
 
                 **Lint result:**
                 \`\`\`json
@@ -1597,85 +1643,86 @@ async function websocketHandler({
                 return `Failed to get component insert URL and types: ${error instanceof Error ? error.message : 'Unknown error'}`
             }
         }
-        case 'insertComponentInCanvas': {
-            const { insertUrl } = input
-
-            // Check permission
-            const permissionError = checkPermissions('addComponentInstance')
-            if (permissionError) return permissionError
-
-            try {
-                // Get the current root node (page or component)
-                const rootNode = await framer.getCanvasRoot()
-                if (!rootNode) {
-                    return `No page or component is currently focused. Please open a page or component in Framer first.`
-                }
-
-                // Insert the component
-                const newNode = await framer.addComponentInstance({
-                    url: insertUrl,
-                    attributes: {},
-                })
-
-                if (!newNode) {
-                    return `Failed to insert component with URL: ${insertUrl}`
-                }
-
-                // Get the XML for the new node
-                const nodeXml = await getNodeXml(newNode.id)
-                if (!nodeXml) {
-                    return `Component inserted but failed to get XML for node ${newNode.id}`
-                }
-
-                return dedent`
-                ## Component Successfully Inserted
-
-                **New Node ID:** \`${newNode.id}\`
-
-                **Current Root:** ${rootNode.__class} \`${rootNode.id}\`
-
-                **Component XML:**
-                \`\`\`xml
-                ${nodeXml.xml}
-                \`\`\`
-
-                ### IMPORTANT: Component Placement Required
-
-                The component has been inserted into the canvas but is NOT yet inside the page/component content. You MUST use \`updateXmlForNode\` to place it inside the ${rootNode.__class} structure.
-
-                1. First, use \`getNodeXml\` on the root node ID \`${rootNode.id}\` to see the current structure
-
-                2. Then use \`updateXmlForNode\` with the root node ID to add the component as a child with styling attributes:
-                   \`\`\`xml
-                   <${rootNode.__class} nodeId="${rootNode.id}">
-                       <!-- existing children -->
-                       <ComponentInstance
-                           nodeId="${newNode.id}"
-                           width="200px"
-                           height="100px"
-                           position="relative"
-                           <!-- add component-specific props here -->
-                       />
-                   </${rootNode.__class}>
-                   \`\`\`
-
-                3. To customize the component instance:
-                   - Use \`getComponentInsertUrlAndTypes\` with the component's nodeId to see available props/attributes
-                   - Add standard attributes: width, height, position, opacity, etc.
-                   - Add component-specific attributes based on its property controls
-                   - Example: For a Button component, you might add \`text="Click me"\` \`variant="primary"\`
-
-                4. The component can be placed:
-                   - As a direct child of the root
-                   - Inside a specific Frame or Stack
-                   - At any position among siblings
-
-                Without this placement step, the component will not be visible in the canvas.
-                `
-            } catch (error) {
-                return `Failed to insert component: ${error instanceof Error ? error.message : 'Unknown error'}`
-            }
-        }
+        // Commented out: Use updateXmlForNode with insertUrl attribute instead, which supports all attributes in one step
+        // case 'insertComponentInCanvas': {
+        //     const { insertUrl } = input
+        //
+        //     // Check permission
+        //     const permissionError = checkPermissions('addComponentInstance')
+        //     if (permissionError) return permissionError
+        //
+        //     try {
+        //         // Get the current root node (page or component)
+        //         const rootNode = await framer.getCanvasRoot()
+        //         if (!rootNode) {
+        //             return `No page or component is currently focused. Please open a page or component in Framer first.`
+        //         }
+        //
+        //         // Insert the component
+        //         const newNode = await framer.addComponentInstance({
+        //             url: insertUrl,
+        //             attributes: {},
+        //         })
+        //
+        //         if (!newNode) {
+        //             return `Failed to insert component with URL: ${insertUrl}`
+        //         }
+        //
+        //         // Get the XML for the new node
+        //         const nodeXml = await getNodeXml(newNode.id)
+        //         if (!nodeXml) {
+        //             return `Component inserted but failed to get XML for node ${newNode.id}`
+        //         }
+        //
+        //         return dedent`
+        //         ## Component Successfully Inserted
+        //
+        //         **New Node ID:** \`${newNode.id}\`
+        //
+        //         **Current Root:** ${rootNode.__class} \`${rootNode.id}\`
+        //
+        //         **Component XML:**
+        //         \`\`\`xml
+        //         ${nodeXml.xml}
+        //         \`\`\`
+        //
+        //         ### IMPORTANT: Component Placement Required
+        //
+        //         The component has been inserted into the canvas but is NOT yet inside the page/component content. You MUST use \`updateXmlForNode\` to place it inside the ${rootNode.__class} structure.
+        //
+        //         1. First, use \`getNodeXml\` on the root node ID \`${rootNode.id}\` to see the current structure
+        //
+        //         2. Then use \`updateXmlForNode\` with the root node ID to add the component as a child with styling attributes:
+        //            \`\`\`xml
+        //            <${rootNode.__class} nodeId="${rootNode.id}">
+        //                <!-- existing children -->
+        //                <ComponentInstance
+        //                    nodeId="${newNode.id}"
+        //                    width="200px"
+        //                    height="100px"
+        //                    position="relative"
+        //                    <!-- add component-specific props here -->
+        //                />
+        //            </${rootNode.__class}>
+        //            \`\`\`
+        //
+        //         3. To customize the component instance:
+        //            - Use \`getComponentInsertUrlAndTypes\` with the component's nodeId to see available props/attributes
+        //            - Add standard attributes: width, height, position, opacity, etc.
+        //            - Add component-specific attributes based on its property controls
+        //            - Example: For a Button component, you might add \`text="Click me"\` \`variant="primary"\`
+        //
+        //         4. The component can be placed:
+        //            - As a direct child of the root
+        //            - Inside a specific Frame or Stack
+        //            - At any position among siblings
+        //
+        //         Without this placement step, the component will not be visible in the canvas.
+        //         `
+        //     } catch (error) {
+        //         return `Failed to insert component: ${error instanceof Error ? error.message : 'Unknown error'}`
+        //     }
+        // }
         case 'getProjectWebsiteUrl': {
             try {
                 const publishInfo = await framer.getPublishInfo()
@@ -2049,6 +2096,66 @@ function MainComponent() {
             },
         ])
     }, [isExpanded])
+
+    useEffect(() => {
+        const handleKeyDown = async (event: KeyboardEvent) => {
+            if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'x') {
+                event.preventDefault()
+                event.stopPropagation()
+
+                try {
+                    const selectedNodes = await framer.getSelection()
+                    if (!selectedNodes || selectedNodes.length === 0) {
+                        await framer.notify('No nodes selected', { variant: 'error' })
+                        return
+                    }
+
+                    const tree = await getFramerTree({
+                        rootNodes: selectedNodes,
+                        recursive: false,
+                    })
+
+                    const firstNode = tree[0]
+                    if (!firstNode) {
+                        await framer.notify('No tree data', { variant: 'error' })
+                        return
+                    }
+
+                    const children = firstNode.children
+                    if (!children || children.length === 0) {
+                        await framer.notify('No children in selected node', { variant: 'error' })
+                        return
+                    }
+
+                    const removeNodeIds = (node: FramerLayersTree[number]): FramerLayersTree[number] => {
+                        const { nodeId, ...rest } = node
+                        const newAttributes = { ...rest.attributes }
+                        delete newAttributes.nodeId
+                        return {
+                            ...rest,
+                            attributes: newAttributes,
+                            children: node.children?.map(removeNodeIds) || [],
+                        }
+                    }
+
+                    const cleanedTree = children.map(removeNodeIds)
+                    const xml = framerLayersTreeToXml(cleanedTree, {
+                        shouldAddNodeIdAlways: false,
+                    })
+
+                    await navigator.clipboard.writeText(xml)
+                    await framer.notify('XML copied to clipboard', { variant: 'success' })
+                } catch (error) {
+                    await framer.notify(`Failed to copy: ${error instanceof Error ? error.message : 'Unknown error'}`, { variant: 'error' })
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown, true)
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown, true)
+        }
+    }, [])
 
     const mcpServerUrl = `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
 
