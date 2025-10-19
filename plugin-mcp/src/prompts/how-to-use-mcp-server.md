@@ -85,8 +85,31 @@ Component instances are references to reusable components. They have:
 To add a component to the canvas:
 
 1. Use `getComponentInsertUrlAndTypes` with an ID (either a component node ID or code file ID) to get the insertUrl and available props
-2. Use `insertComponentInCanvas` with the insertUrl to add the component to the currently focused page/component
-3. Use `updateXmlForNode` to position and configure the newly inserted component instance, using the props from step 1 as XML attributes
+2. Use `updateXmlForNode` to create a ComponentInstance node with the insertUrl and configure it with position, size, and component-specific props from step 1 as XML attributes. This creates and positions the component in one step.
+
+**Linked vs Detached Components:**
+
+- **Linked (default)**: Use insertUrl as-is. Creates a component instance that updates when the source component changes. Internal structure is not editable.
+  ```xml
+  <ComponentInstance insertUrl="https://framer.com/m/Button.js" width="200px" />
+  ```
+
+- **Detached**: Add `?detached=true` to insertUrl. Creates editable layers (Frame with children) that won't update with source changes. Use when you need to customize the internal structure.
+  ```xml
+  <ComponentInstance insertUrl="https://framer.com/m/Button.js?detached=true" width="200px" />
+  ```
+
+**Important workflow for detached components:**
+
+After inserting a detached component, you MUST call `getNodeXml` on the parent node again to see the actual internal structure that was created. The detached component becomes a Frame with multiple child nodes (Text, Frame, SVG, etc.) copied from the component's definition.
+
+Example workflow:
+1. Insert detached component: `<ComponentInstance insertUrl="...?detached=true" />`
+2. Call `getNodeXml` on the parent page/component
+3. Inspect the new Frame node and its children in the XML
+4. Edit individual child nodes as needed (text content, styles, structure)
+
+This is useful when you need programmatic access to customize specific parts of a component's internal structure.
 
 ### Updating Components vs Instances
 
