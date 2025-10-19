@@ -112,7 +112,7 @@ function Component() {
                     }
                     className='font-semibold grow w-auto '
                 >
-                    {manageSubUrl ? 'Manage Subscription' : 'Start Subscription'}
+                    {manageSubUrl ? 'Manage Subscription' : 'Get Subscription'}
                 </Button>
             </div>
         </div>
