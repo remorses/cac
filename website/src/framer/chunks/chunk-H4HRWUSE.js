@@ -14,6 +14,9 @@ var routes = {
   },
   "tfaaimH0f": {
     "path": "/testing"
+  },
+  "wyGCNkDrw": {
+    "path": "/login"
   }
 };
 

@@ -24,7 +24,7 @@
 }} Props
 
  */
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:contact
 import { Fragment as Fragment3 } from "react";

@@ -25,7 +25,7 @@
  */
 import { Icon } from "./chunks/chunk-IXDMRUES.js";
 import "./chunks/chunk-BVM6H744.js";
-import { routes } from "./chunks/chunk-EZMEJNMO.js";
+import { routes } from "./chunks/chunk-H4HRWUSE.js";
 
 // virtual:tabs-content
 import { Fragment as Fragment3 } from "react";
@@ -2857,10 +2857,7 @@ addFonts2(
 import { WithFramerBreakpoints } from "unframer";
 import { jsx } from "react/jsx-runtime";
 var locales = [];
-var defaultResponsiveVariants = {
-	base: "a85vO9_BV",
-	xl: "ZF1XpuiLx",
-};
+var defaultResponsiveVariants = {};
 /** @type {function(Props): any} */
 function ComponentWithRoot({ locale, ...rest }) {
 	return (
