@@ -348,7 +348,7 @@ async function createFramerNode({
             // Check if detached mode is requested via query parameter
             const url = new URL(insertUrl, 'https://framer.com')
             const isDetached = url.searchParams.get('detached') === 'true'
-            
+
             // Remove query parameters from insertUrl
             const cleanInsertUrl = insertUrl.split('?')[0]
 
@@ -364,6 +364,7 @@ async function createFramerNode({
                 // Use addDetachedComponentLayers for detached mode
                 const detachedFrame = await framer.addDetachedComponentLayers({
                     url: cleanInsertUrl,
+                    layout: true,
                     attributes: instanceAttributes,
                 })
 
@@ -629,6 +630,8 @@ async function websocketHandler({
             ${rootNodeInfo}
 
             When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
+
+            **IMPORTANT: When user asks to add new sections** (hero, features, pricing, testimonials, footer, etc.), use the pre-built section components listed in the updateXmlForNode tool description with ?detached=true. This is MUCH BETTER than creating all the layers from scratch. Insert the section component, then call getNodeXml to see its structure, and customize the content (text, images, links) as needed.
 
             If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.${permissionMessage}
             `

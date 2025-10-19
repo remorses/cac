@@ -111,6 +111,8 @@ Example workflow:
 
 This is useful when you need programmatic access to customize specific parts of a component's internal structure.
 
+
+
 ### Updating Components vs Instances
 
 **Instance updates**: Modify the specific instance's attributes or control values. Changes affect only that instance.
