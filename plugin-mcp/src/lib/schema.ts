@@ -201,32 +201,24 @@ export const mcpTools = {
               - Reorder nodes in the tree by changing their parent or position
               - Create wrapper layers by placing existing nodes inside new nodes
 
-              ## Example: Adding Pre-built Section Components
+              ## Pre-built Section Components
 
-              **IMPORTANT**: When users ask to add new sections to a page (hero, features, pricing, footer, testimonials, etc.), ALWAYS use these ready-made section components with ?detached=true. This is MUCH BETTER and FASTER than creating all the layers from scratch. Insert the section, then call getNodeXml to see its structure, and customize the content:
+              When users ask to add new sections (hero, features, pricing, footer, testimonials, etc.), use these ready-made section components with ?detached=true. This is MUCH BETTER and FASTER than creating all the layers from scratch.
 
-              Hero Section (with 3D image on right):
+              IMPORTANT: Insert these components in pages under the root Desktop breakpoint node (not inside other components) to preserve responsive breakpoints.
+
+              Example XML for Hero section:
               <ComponentInstance insertUrl="https://framer.com/m/sections-Hero-2xJX.js?detached=true" position="relative" width="100%" />
 
-              Logo Strip (companies using the product):
-              <ComponentInstance insertUrl="https://framer.com/m/sections-Logo-Strip-mX1f.js?detached=true" position="relative" width="100%" />
+              Other available sections:
+              - Logo Strip: https://framer.com/m/sections-Logo-Strip-mX1f.js?detached=true
+              - Features with central image: https://framer.com/m/sections-Features-Product-ZlOC.js?detached=true
+              - Pricing 3 plans: https://framer.com/m/sections-Pricing-3-plans-uGqH.js?detached=true
+              - Testimonials Grid: https://framer.com/m/sections-Testimonials-kbrH.js?detached=true
+              - CTA section: https://framer.com/m/sections-CTA-section-Qd0e.js?detached=true
+              - Footer with columns: https://framer.com/m/sections-Footer-Complete-Night-1qIZ.js?detached=true
 
-              Features Section (big central image with features below):
-              <ComponentInstance insertUrl="https://framer.com/m/sections-Features-Product-ZlOC.js?detached=true" position="relative" width="100%" />
-
-              Pricing Section (3 plans):
-              <ComponentInstance insertUrl="https://framer.com/m/sections-Pricing-3-plans-uGqH.js?detached=true" position="relative" width="100%" />
-
-              Testimonials Grid:
-              <ComponentInstance insertUrl="https://framer.com/m/sections-Testimonials-kbrH.js?detached=true" position="relative" width="100%" />
-
-              CTA Section (call-to-action):
-              <ComponentInstance insertUrl="https://framer.com/m/sections-CTA-section-Qd0e.js?detached=true" position="relative" width="100%" />
-
-              Footer (with columns):
-              <ComponentInstance insertUrl="https://framer.com/m/sections-Footer-Complete-Night-1qIZ.js?detached=true" position="relative" width="100%" />
-
-              After inserting these sections, call getNodeXml on the page to see the internal structure, then customize text content, images, links, and styling as needed.
+              After inserting, call getNodeXml on the page to see the internal structure, then customize text content, images, links, and styling.
 
               This tool CANNOT be used for:
               - Code files (use 'updateCodeFile' instead)
