@@ -327,11 +327,30 @@ export const reactPluginApp = new Spiceflow({
                     }
                 }
 
+                const existingMcpProjects = await prisma.reactExportProject.findMany({
+                    where: {
+                        orgId: project.orgId,
+                        creationReason: 'MCP_FIRST_OPEN',
+                    },
+                    orderBy: {
+                        createdAt: 'asc',
+                    },
+                })
+
+                if (existingMcpProjects.length === 0 || existingMcpProjects[0].projectId !== projectId) {
+                    console.log(
+                        `Skipping MCP first-open email, not the first MCP project for user ${userEmail}`,
+                    )
+                    return {
+                        success: true,
+                    }
+                }
+
                 const emailContent = await createMcpFirstOpenEmail({
                     projectName,
                 })
 
-                const idempotencyKey = `mcp-first-open/${projectId}/${userEmail}`
+                const idempotencyKey = `mcp-first-open/${project.orgId}/${userEmail}`
 
                 const res = await resend.emails.send(
                     {
