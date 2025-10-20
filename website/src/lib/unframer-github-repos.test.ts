@@ -133,7 +133,7 @@ test(
     'example code',
     async () => {
         const projectId = 'cf755ed7d59e0319'
-        const { config } = await configFromFetch({ projectId })
+        const { config } = await configFromFetch({ projectId, agent: 'test' })
         const { exampleCode } = await createExampleComponentCode({
             config,
             outDir: 'framer',
@@ -202,7 +202,7 @@ test(
     'example code for 0fd14a347fc0edc4',
     async () => {
         const projectId = '0fd14a347fc0edc4'
-        const { config } = await configFromFetch({ projectId })
+        const { config } = await configFromFetch({ projectId, agent: 'test' })
         const { exampleCode } = await createExampleComponentCode({
             config,
             outDir: 'framer',

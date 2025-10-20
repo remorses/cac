@@ -564,7 +564,9 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
             // Register call tool handler
             server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const { name, arguments: args } = request.params
-                const tool = mcpTools[name as keyof typeof mcpTools] as McpToolDefinition
+                const tool = mcpTools[
+                    name as keyof typeof mcpTools
+                ] as McpToolDefinition
 
                 if (!tool) {
                     throw new Error(`Unknown tool: ${name}`)
@@ -602,7 +604,7 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             ? reply
                             : JSON.stringify(reply, null, 2)
                     const prefixedText = tool.outputPrefix
-                        ? `${tool.outputPrefix}${text}`
+                        ? `${tool.outputPrefix?.trim()}\n\n${text}`
                         : text
 
                     return textResponse(prefixedText)

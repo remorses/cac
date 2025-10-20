@@ -102,7 +102,7 @@ export async function generateUnframerRepo({
     // Use the project name from database if no title was passed
     projectTitle = projectTitle || project?.projectName || ''
 
-    const { config } = await configFromFetch({ projectId })
+    const { config } = await configFromFetch({ projectId, agent: 'website' })
 
     const { exampleCode } = await createExampleComponentCodeWithAI({
         config,
@@ -489,7 +489,7 @@ export async function createExampleComponentCodeWithAI({
     Keep the same top level tailwind bg class if present. Always keep the styles.css import. Use comments if they make the code easier to understand.
     `
     console.log('prompt', prompt)
-    let outputCode = exampleCode || ''  // Default to empty string if no example code
+    let outputCode = exampleCode || '' // Default to empty string if no example code
     console.time(`ai generate code for project ${config.projectId}`)
     const { text } = await generateText({
         model,
