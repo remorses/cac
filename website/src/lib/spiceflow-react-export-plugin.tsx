@@ -327,19 +327,26 @@ export const reactPluginApp = new Spiceflow({
                     }
                 }
 
-                const existingMcpProjects = await prisma.reactExportProject.findMany({
+                const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+                if (project.createdAt < twentyFourHoursAgo) {
+                    console.log(
+                        `Skipping MCP first-open email, project created more than 24h ago: ${userEmail}`,
+                    )
+                    return {
+                        success: true,
+                    }
+                }
+
+                const mcpProjectCount = await prisma.reactExportProject.count({
                     where: {
                         orgId: project.orgId,
                         creationReason: 'MCP_FIRST_OPEN',
                     },
-                    orderBy: {
-                        createdAt: 'asc',
-                    },
                 })
 
-                if (existingMcpProjects.length === 0 || existingMcpProjects[0].projectId !== projectId) {
+                if (mcpProjectCount !== 1) {
                     console.log(
-                        `Skipping MCP first-open email, not the first MCP project for user ${userEmail}`,
+                        `Skipping MCP first-open email, user has ${mcpProjectCount} MCP projects: ${userEmail}`,
                     )
                     return {
                         success: true,
