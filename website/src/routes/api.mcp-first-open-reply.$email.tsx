@@ -42,9 +42,10 @@ export async function loader({ params }: Route.LoaderArgs) {
         }),
         env.PUBLIC_URL,
     )
+    const { 0: firstName } = ((user.raw_user_meta_data as any)?.full_name ?? "").split(" ")
 
     const content = dedent`
-        Hey,
+        Hi ${firstName},
 
         Here's the GitHub repo:
 
@@ -52,7 +53,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 
         The repo includes:
         - Example code showing how to integrate the React components
-        - Live preview URL (link in the README)
+        - Live preview URL
+
+        Keep in mind this repo is just an example for how to import and render the components, the demo will not look great at first without modifying App.tsx and exporting the right components
+
+        If you want to export the full website you will have to create a component with all your sections and ask Framer MCP to export it. I can send you a tutorial if you want
 
         Best,
         Tommy
