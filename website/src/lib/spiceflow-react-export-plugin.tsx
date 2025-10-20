@@ -318,6 +318,15 @@ export const reactPluginApp = new Spiceflow({
             const projectName = project.projectName || 'without name'
 
             if (project.creationReason === 'MCP_FIRST_OPEN') {
+                if (userEmail.endsWith('@framer.com')) {
+                    console.log(
+                        `Skipping MCP first-open email for Framer team member: ${userEmail}`,
+                    )
+                    return {
+                        success: true,
+                    }
+                }
+
                 const emailContent = await createMcpFirstOpenEmail({
                     projectName,
                 })
@@ -328,6 +337,10 @@ export const reactPluginApp = new Spiceflow({
                     {
                         ...defaultResendOptions,
                         to: [userEmail],
+                        tags: [
+                            { name: 'category', value: 'mcp-first-open' },
+                            { name: 'project', value: projectId },
+                        ],
                         subject: emailContent.subject,
                         html: emailContent.html,
                     },
@@ -368,6 +381,10 @@ export const reactPluginApp = new Spiceflow({
                 {
                     ...defaultResendOptions,
                     to: [userEmail],
+                    tags: [
+                        { name: 'category', value: 'github-setup' },
+                        { name: 'project', value: projectId },
+                    ],
                     subject: emailContent.subject,
                     html: emailContent.html,
                 },
