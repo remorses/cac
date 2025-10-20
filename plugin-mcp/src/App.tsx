@@ -623,15 +623,13 @@ async function websocketHandler({
                 : '\n\nIMPORTANT! You have read-only access to this project. You cannot modify nodes, create new elements. If asked to make modifications, please inform the user that you only have read-only permissions.'
 
             return dedent`
-            Project structure:
+            # Project structure:
 
             ${xml}
 
             ${rootNodeInfo}
 
             When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
-
-            **IMPORTANT: When user asks to add new sections** (hero, features, pricing, testimonials, footer, etc.), use the pre-built section components listed in the updateXmlForNode tool description with ?detached=true. This is MUCH BETTER than creating all the layers from scratch. Insert the section component, then call getNodeXml to see its structure, and customize the content (text, images, links) as needed.
 
             If you need to create or edit a Framer code file ALWAYS read the MCP resource ${codeComponentsResourceUri} first.${permissionMessage}
             `

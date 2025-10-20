@@ -868,9 +868,9 @@ export async function createMcpFirstOpenEmail({
 
     I saw you tried the Framer MCP. Have you checked out the React Export feature yet?
 
-    You can export "${projectName}" components as React code and use them in any codebase. Deploy wherever you want.
+    You can export your project "${projectName}" components as React code and use them in any codebase. Then deploy in platforms like AWS, Vercel, Cloudflare or anywhere else.
 
-    I can setup an example GitHub repo with your components, can I send you the url?
+    I can setup an example GitHub repo with your components code, can I send you the url?
 
     Cheers,
     Tommy

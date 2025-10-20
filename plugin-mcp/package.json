@@ -13,7 +13,7 @@
         "typecheck": "pnpm tsc --noEmit --incremental",
         "secrets:preview": "doppler run -c preview --mount .env.preview --mount-format env -- wrangler secret bulk --env preview .env.preview",
         "secrets:prod": "doppler run -c production --mount .env.prod --mount-format env -- wrangler secret bulk .env.prod",
-        "deployment:prod": "sudo echo 'agents should never run this' && pnpm typecheck && pnpm wrangler deploy && pnpm wrangler deploy --env preview",
+        "deployment:prod": "sudo echo 'agents should never run this' && pnpm typecheck && pnpm wrangler deploy --env='' && pnpm wrangler deploy --env preview",
         "deployment": "pnpm typecheck && pnpm wrangler deploy --env preview",
         "start": "vite preview --port 5173",
         "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"

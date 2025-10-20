@@ -121,6 +121,14 @@ export const mcpTools = {
         description: dedent`
         Gets the project pages and components XML, with information of the currently focused page or component.
 
+        Framer is a website builder and design tool. This tool should ALWAYS be called at the start of any session involving a Framer project to understand the project structure.
+
+        This tool returns:
+        - Project pages, components, code files, and styles
+        - Complete documentation for all available node attributes (opacity, width, layout, etc.)
+        - Pre-built section components for quickly adding hero, pricing, footer, testimonials, and other sections
+        - Currently focused page or component ID
+
         This tool also returns the ID of the currently focused page or component node. When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
 
         The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
@@ -129,8 +137,230 @@ export const mcpTools = {
 
         To get insert URLs for components, use the getComponentInsertUrlAndTypes tool.
         `,
+
         input: z.object({}),
         output: z.any(),
+        outputPrefix: dedent`
+        ## Adding Pre-built Section Components
+
+        IMPORTANT: When users ask to add new sections (hero, features, pricing, footer, testimonials, etc.), ALWAYS use these ready-made section components with updateXmlForNode and ?detached=true parameter. This is MUCH BETTER and FASTER than creating all the layers from scratch.
+
+        IMPORTANT: Insert these components in pages under the root Desktop breakpoint node (not inside other components) to preserve responsive breakpoints.
+
+        Example XML for Hero section:
+        <ComponentInstance insertUrl="https://framer.com/m/sections-Hero-2xJX.js?detached=true" position="relative" width="100%" />
+
+        Other available sections:
+        - Logo Strip: https://framer.com/m/sections-Logo-Strip-mX1f.js?detached=true
+        - Features with central image: https://framer.com/m/sections-Features-Product-ZlOC.js?detached=true
+        - Pricing 3 plans: https://framer.com/m/sections-Pricing-3-plans-uGqH.js?detached=true
+        - Testimonials Grid: https://framer.com/m/sections-Testimonials-kbrH.js?detached=true
+        - CTA section: https://framer.com/m/sections-CTA-section-Qd0e.js?detached=true
+        - Footer with columns: https://framer.com/m/sections-Footer-Complete-Night-1qIZ.js?detached=true
+
+        After inserting, call getNodeXml on the page to see the internal structure, then customize text content, images, links, and styling.
+
+        ## Attributes of layers in XML to use in updateXmlForNode
+
+        ### Common Attributes (All Drawable Nodes)
+
+        These attributes are available on most visual nodes:
+
+        - **opacity**: Number between 0-1 (default: 1)
+        - **visible**: Boolean true/false (default: true)
+        - **locked**: Boolean true/false (default: false)
+        - **rotation**: Number in degrees (default: 0)
+        - **position**: "relative" | "absolute" | "fixed" | "sticky" (default: "relative")
+
+        ### Size and Layout Attributes
+
+        For nodes that support sizing:
+
+        - **width**: CSS units like "100px", "50%", "100vw", "1fr", "fit-content", "1.5rem"
+        - **height**: CSS units like "100px", "50%", "100vh", "1fr", "fit-content", "2em"
+        - **minWidth**: Pixels only (e.g., "100px")
+        - **maxWidth**: Pixels only (e.g., "500px")
+        - **minHeight**: Pixels only (e.g., "50px")
+        - **maxHeight**: Pixels only (e.g., "300px")
+        - **aspectRatio**: Number (e.g., 1.5 for 3:2 ratio)
+
+        ### Positioning Attributes (Pins)
+
+        For absolute/fixed positioned nodes:
+
+        - **top**: Pixels (e.g., "10px")
+        - **right**: Pixels (e.g., "20px")
+        - **bottom**: Pixels (e.g., "10px")
+        - **left**: Pixels (e.g., "20px")
+        - **centerX**: Percentage (e.g., "50%")
+        - **centerY**: Percentage (e.g., "50%")
+
+        > Note: root level nodes are always absolute positioned, if you add a new root screen or layer to a canvas always use absolute positioning
+
+        ### Frame-Specific Attributes
+
+        For Frame, Stack, and similar container nodes:
+
+        - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
+        - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
+        - **backgroundImage**: Image URL (will be uploaded to Framer if external)
+        - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
+
+        ### Layout Attributes (Frame nodes only)
+
+        For controlling layout behavior:
+
+        - **layout**: "stack" | "grid"
+          - "stack": Flexbox-like layout, items flow in one direction
+          - "grid": CSS Grid-like layout, items arranged in rows and columns
+          - null/omitted: No layout system, children use absolute positioning
+
+        - **gap**: Pixels, supports 1 or 2 values
+          - Single value (e.g., "10px"): Same gap between all items
+          - Two values (e.g., "10px 20px"): First is row gap, second is column gap
+          - Default: "0px" (no gap between items)
+
+        - **padding**: Pixels, supports 1 or 4 values
+          - Single value (e.g., "10px"): Same padding on all sides
+          - Four values (e.g., "10px 20px 15px 25px"): top, right, bottom, left
+          - Default: "0px" (no padding)
+
+        ### Stack Layout Attributes (when layout="stack")
+
+        - **stackDirection**: "horizontal" | "vertical"
+          - "horizontal": Items flow left to right (row direction)
+          - "vertical": Items flow top to bottom (column direction)
+
+        - **stackDistribution**: "start" | "center" | "end" | "space-between" | "space-around" | "space-evenly"
+          - Controls spacing along the main axis (horizontal for row, vertical for column)
+          - "start": Pack items at the start (left for horizontal, top for vertical)
+          - "center": Center items along the main axis
+          - "end": Pack items at the end (right for horizontal, bottom for vertical)
+          - "space-between": Distribute items evenly, first at start, last at end
+          - "space-around": Distribute items evenly with equal space around each
+          - "space-evenly": Distribute items with equal space between and around
+
+        - **stackAlignment**: "start" | "center" | "end"
+          - Controls alignment on the cross axis (vertical for row, horizontal for column)
+          - When stackDirection="horizontal": controls vertical alignment (top/center/bottom)
+          - When stackDirection="vertical": controls horizontal alignment (left/center/right)
+          - "start": Align to start of cross axis
+          - "center": Center on cross axis
+          - "end": Align to end of cross axis
+
+        - **stackWrap**: Boolean true/false
+          - true: Items wrap to next line when they exceed container width/height
+          - false: Items stay on single line (default)
+
+        ### Grid Layout Attributes (when layout="grid")
+
+        - **gridColumns**: Number or "auto-fill"
+          - Number (e.g., 3): Fixed number of columns
+          - "auto-fill": Automatically create columns based on gridColumnWidth
+          - Example: gridColumns="3" creates a 3-column grid
+
+        - **gridRows**: Number
+          - Sets fixed number of rows (e.g., 2 for 2 rows)
+          - Items flow into columns first, then wrap to next row
+
+        - **gridAlignment**: "start" | "center" | "end"
+          - Controls alignment of the entire grid within its container
+          - "start": Align grid to top-left
+          - "center": Center the grid
+          - "end": Align grid to bottom-right
+
+        - **gridColumnWidthType**: "fixed" | "minmax"
+          - "fixed": All columns have the same fixed width (gridColumnWidth)
+          - "minmax": Columns have minimum width (gridColumnMinWidth) and can grow
+
+        - **gridColumnWidth**: Pixels (number only, e.g., 200)
+          - Width of each column when gridColumnWidthType="fixed"
+          - Used with gridColumns="auto-fill" to determine how many columns fit
+
+        - **gridColumnMinWidth**: Pixels (number only, e.g., 150)
+          - Minimum width of columns when gridColumnWidthType="minmax"
+          - Columns will grow to fill available space but won't shrink below this
+
+        - **gridRowHeightType**: "fixed" | "auto" | "fit"
+          - "fixed": All rows have same height (gridRowHeight)
+          - "auto": Row height determined by content
+          - "fit": Rows stretch to fill container height
+
+        - **gridRowHeight**: Pixels (number only, e.g., 100)
+          - Height of each row when gridRowHeightType="fixed"
+          - Ignored for "auto" or "fit" types
+
+        ### Grid Item Attributes (for children of grid containers)
+
+        For nodes that are children of a grid container:
+
+        - **gridFillWidth**: Boolean true/false
+          - true: Item stretches to fill full width of its grid cell(s) (default)
+          - false: Item uses its natural width
+
+        - **gridFillHeight**: Boolean true/false
+          - true: Item stretches to fill full height of its grid cell(s) (default)
+          - false: Item uses its natural height
+
+        - **gridAlignX**: "start" | "center" | "end"
+          - Horizontal alignment within the grid cell (when gridFillWidth=false)
+          - "start": Align to left edge of cell
+          - "center": Center horizontally in cell
+          - "end": Align to right edge of cell
+
+        - **gridAlignY**: "start" | "center" | "end"
+          - Vertical alignment within the grid cell (when gridFillHeight=false)
+          - "start": Align to top edge of cell
+          - "center": Center vertically in cell
+          - "end": Align to bottom edge of cell
+
+        - **gridColumnSpan**: Number or "all"
+          - Number (e.g., 2): Item spans this many columns
+          - "all": Item spans all columns in the grid
+          - Example: gridColumnSpan="2" makes item 2 columns wide
+
+        - **gridRowSpan**: Number
+          - Number of rows the item should span (e.g., 2 for 2 rows)
+          - Example: gridRowSpan="3" makes item 3 rows tall
+
+        ### Text Node Attributes
+
+        For Text nodes:
+
+        - **font**: Font selector (e.g., "GF;Inter-400", "GF;Roboto-700")
+        - **inlineTextStyle**: Project text style path (e.g., "/Heading xl", "/Body md")
+
+        **Note**: A text node can use EITHER \`font\` OR \`inlineTextStyle\`, not both.
+
+        IMPORTANT: to change color of a text node you MUST use a text style to do so. You can either use an existing text style or create a new text style for a specific text node.
+
+        ### Link Attributes
+
+        For nodes that support links:
+
+        - **link**: URL (e.g., "https://example.com") or page path (e.g., "/about")
+        - **linkOpenInNewTab**: Boolean true/false
+
+        ### SVG Node Attributes
+
+        For SVG nodes:
+
+        - **svg**: SVG content as a string. This cannot use text styles or other features, it is plain svg code.
+
+        ### Component Instance Attributes
+
+        For component instances:
+
+        - **insertUrl**: The component module URL (required for creation). Add ?detached=true to create detached/unlinked layers instead of a linked instance.
+        - **componentId**: The ID of the component definition (read-only, set during creation, alternative to insertUrl)
+        - Plus any custom control properties defined by the component
+
+        **Linked vs Detached Components:**
+        - **Linked** (default): Component instance that updates when source changes. Cannot edit internal structure. Only styling attributes like opacity, position, width, height work.
+        - **Detached** (insertUrl with ?detached=true): Creates editable Frame with component's internal layers. Full access to all children. Does NOT update when source changes. Use when you need to customize internal structure. After creation, call getNodeXml on the parent to see the actual internal structure (Text, Frame, SVG nodes, etc.) that was created from the component.
+
+        Component instances support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius. Detached components become regular Frames which DO support all styling attributes.
+        `,
     },
     getSelectedNodesXml: {
         description: 'Gets the currently selected nodes as xml',
@@ -160,6 +390,8 @@ export const mcpTools = {
     updateXmlForNode: {
         description: dedent`
               Update the XML for a node using its nodeId and passing a new XML string. It can be used to update nodes text or attributes, reorder nodes in the XML tree, or create new nodes.
+
+              IMPORTANT: Call getProjectXml first to see available node attributes, pre-built section components, and project structure.
 
               ## Node Creation
 
@@ -201,24 +433,7 @@ export const mcpTools = {
               - Reorder nodes in the tree by changing their parent or position
               - Create wrapper layers by placing existing nodes inside new nodes
 
-              ## Pre-built Section Components
-
-              When users ask to add new sections (hero, features, pricing, footer, testimonials, etc.), use these ready-made section components with ?detached=true. This is MUCH BETTER and FASTER than creating all the layers from scratch.
-
-              IMPORTANT: Insert these components in pages under the root Desktop breakpoint node (not inside other components) to preserve responsive breakpoints.
-
-              Example XML for Hero section:
-              <ComponentInstance insertUrl="https://framer.com/m/sections-Hero-2xJX.js?detached=true" position="relative" width="100%" />
-
-              Other available sections:
-              - Logo Strip: https://framer.com/m/sections-Logo-Strip-mX1f.js?detached=true
-              - Features with central image: https://framer.com/m/sections-Features-Product-ZlOC.js?detached=true
-              - Pricing 3 plans: https://framer.com/m/sections-Pricing-3-plans-uGqH.js?detached=true
-              - Testimonials Grid: https://framer.com/m/sections-Testimonials-kbrH.js?detached=true
-              - CTA section: https://framer.com/m/sections-CTA-section-Qd0e.js?detached=true
-              - Footer with columns: https://framer.com/m/sections-Footer-Complete-Night-1qIZ.js?detached=true
-
-              After inserting, call getNodeXml on the page to see the internal structure, then customize text content, images, links, and styling.
+              For adding sections (hero, pricing, footer, etc.), see the Pre-built Section Components documentation in getProjectXml output.
 
               This tool CANNOT be used for:
               - Code files (use 'updateCodeFile' instead)
@@ -229,207 +444,6 @@ export const mcpTools = {
               ## Return Value
 
               Returns a summary of changes made, followed by a diff patch showing the XML changes in unified diff format.
-
-              ## Attributes of layers in XML
-
-              ### Common Attributes (All Drawable Nodes)
-
-              These attributes are available on most visual nodes:
-
-              - **opacity**: Number between 0-1 (default: 1)
-              - **visible**: Boolean true/false (default: true)
-              - **locked**: Boolean true/false (default: false)
-              - **rotation**: Number in degrees (default: 0)
-              - **position**: "relative" | "absolute" | "fixed" | "sticky" (default: "relative")
-
-              ### Size and Layout Attributes
-
-              For nodes that support sizing:
-
-              - **width**: CSS units like "100px", "50%", "100vw", "1fr", "fit-content", "1.5rem"
-              - **height**: CSS units like "100px", "50%", "100vh", "1fr", "fit-content", "2em"
-              - **minWidth**: Pixels only (e.g., "100px")
-              - **maxWidth**: Pixels only (e.g., "500px")
-              - **minHeight**: Pixels only (e.g., "50px")
-              - **maxHeight**: Pixels only (e.g., "300px")
-              - **aspectRatio**: Number (e.g., 1.5 for 3:2 ratio)
-
-              ### Positioning Attributes (Pins)
-
-              For absolute/fixed positioned nodes:
-
-              - **top**: Pixels (e.g., "10px")
-              - **right**: Pixels (e.g., "20px")
-              - **bottom**: Pixels (e.g., "10px")
-              - **left**: Pixels (e.g., "20px")
-              - **centerX**: Percentage (e.g., "50%")
-              - **centerY**: Percentage (e.g., "50%")
-
-              > Note: root level nodes are always absolute positioned, if you add a new root screen or layer to a canvas always use absolute positioning
-
-              ### Frame-Specific Attributes
-
-              For Frame, Stack, and similar container nodes:
-
-              - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
-              - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
-              - **backgroundImage**: Image URL (will be uploaded to Framer if external)
-              - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
-
-              ### Layout Attributes (Frame nodes only)
-
-              For controlling layout behavior:
-
-              - **layout**: "stack" | "grid"
-                - "stack": Flexbox-like layout, items flow in one direction
-                - "grid": CSS Grid-like layout, items arranged in rows and columns
-                - null/omitted: No layout system, children use absolute positioning
-
-              - **gap**: Pixels, supports 1 or 2 values
-                - Single value (e.g., "10px"): Same gap between all items
-                - Two values (e.g., "10px 20px"): First is row gap, second is column gap
-                - Default: "0px" (no gap between items)
-
-              - **padding**: Pixels, supports 1 or 4 values
-                - Single value (e.g., "10px"): Same padding on all sides
-                - Four values (e.g., "10px 20px 15px 25px"): top, right, bottom, left
-                - Default: "0px" (no padding)
-
-              ### Stack Layout Attributes (when layout="stack")
-
-              - **stackDirection**: "horizontal" | "vertical"
-                - "horizontal": Items flow left to right (row direction)
-                - "vertical": Items flow top to bottom (column direction)
-
-              - **stackDistribution**: "start" | "center" | "end" | "space-between" | "space-around" | "space-evenly"
-                - Controls spacing along the main axis (horizontal for row, vertical for column)
-                - "start": Pack items at the start (left for horizontal, top for vertical)
-                - "center": Center items along the main axis
-                - "end": Pack items at the end (right for horizontal, bottom for vertical)
-                - "space-between": Distribute items evenly, first at start, last at end
-                - "space-around": Distribute items evenly with equal space around each
-                - "space-evenly": Distribute items with equal space between and around
-
-              - **stackAlignment**: "start" | "center" | "end"
-                - Controls alignment on the cross axis (vertical for row, horizontal for column)
-                - When stackDirection="horizontal": controls vertical alignment (top/center/bottom)
-                - When stackDirection="vertical": controls horizontal alignment (left/center/right)
-                - "start": Align to start of cross axis
-                - "center": Center on cross axis
-                - "end": Align to end of cross axis
-
-              - **stackWrap**: Boolean true/false
-                - true: Items wrap to next line when they exceed container width/height
-                - false: Items stay on single line (default)
-
-              ### Grid Layout Attributes (when layout="grid")
-
-              - **gridColumns**: Number or "auto-fill"
-                - Number (e.g., 3): Fixed number of columns
-                - "auto-fill": Automatically create columns based on gridColumnWidth
-                - Example: gridColumns="3" creates a 3-column grid
-
-              - **gridRows**: Number
-                - Sets fixed number of rows (e.g., 2 for 2 rows)
-                - Items flow into columns first, then wrap to next row
-
-              - **gridAlignment**: "start" | "center" | "end"
-                - Controls alignment of the entire grid within its container
-                - "start": Align grid to top-left
-                - "center": Center the grid
-                - "end": Align grid to bottom-right
-
-              - **gridColumnWidthType**: "fixed" | "minmax"
-                - "fixed": All columns have the same fixed width (gridColumnWidth)
-                - "minmax": Columns have minimum width (gridColumnMinWidth) and can grow
-
-              - **gridColumnWidth**: Pixels (number only, e.g., 200)
-                - Width of each column when gridColumnWidthType="fixed"
-                - Used with gridColumns="auto-fill" to determine how many columns fit
-
-              - **gridColumnMinWidth**: Pixels (number only, e.g., 150)
-                - Minimum width of columns when gridColumnWidthType="minmax"
-                - Columns will grow to fill available space but won't shrink below this
-
-              - **gridRowHeightType**: "fixed" | "auto" | "fit"
-                - "fixed": All rows have same height (gridRowHeight)
-                - "auto": Row height determined by content
-                - "fit": Rows stretch to fill container height
-
-              - **gridRowHeight**: Pixels (number only, e.g., 100)
-                - Height of each row when gridRowHeightType="fixed"
-                - Ignored for "auto" or "fit" types
-
-              ### Grid Item Attributes (for children of grid containers)
-
-              For nodes that are children of a grid container:
-
-              - **gridFillWidth**: Boolean true/false
-                - true: Item stretches to fill full width of its grid cell(s) (default)
-                - false: Item uses its natural width
-
-              - **gridFillHeight**: Boolean true/false
-                - true: Item stretches to fill full height of its grid cell(s) (default)
-                - false: Item uses its natural height
-
-              - **gridAlignX**: "start" | "center" | "end"
-                - Horizontal alignment within the grid cell (when gridFillWidth=false)
-                - "start": Align to left edge of cell
-                - "center": Center horizontally in cell
-                - "end": Align to right edge of cell
-
-              - **gridAlignY**: "start" | "center" | "end"
-                - Vertical alignment within the grid cell (when gridFillHeight=false)
-                - "start": Align to top edge of cell
-                - "center": Center vertically in cell
-                - "end": Align to bottom edge of cell
-
-              - **gridColumnSpan**: Number or "all"
-                - Number (e.g., 2): Item spans this many columns
-                - "all": Item spans all columns in the grid
-                - Example: gridColumnSpan="2" makes item 2 columns wide
-
-              - **gridRowSpan**: Number
-                - Number of rows the item should span (e.g., 2 for 2 rows)
-                - Example: gridRowSpan="3" makes item 3 rows tall
-
-              ### Text Node Attributes
-
-              For Text nodes:
-
-              - **font**: Font selector (e.g., "GF;Inter-400", "GF;Roboto-700")
-              - **inlineTextStyle**: Project text style path (e.g., "/Heading xl", "/Body md")
-
-              **Note**: A text node can use EITHER \`font\` OR \`inlineTextStyle\`, not both.
-
-              IMPORTANT: to change color of a text node you MUST use a text style to do so. You can either use an existing text style or create a new text style for a specific text node.
-
-              ### Link Attributes
-
-              For nodes that support links:
-
-              - **link**: URL (e.g., "https://example.com") or page path (e.g., "/about")
-              - **linkOpenInNewTab**: Boolean true/false
-
-              ### SVG Node Attributes
-
-              For SVG nodes:
-
-              - **svg**: SVG content as a string. This cannot use text styles or other features, it is plain svg code.
-
-              ### Component Instance Attributes
-
-              For component instances:
-
-              - **insertUrl**: The component module URL (required for creation). Add ?detached=true to create detached/unlinked layers instead of a linked instance.
-              - **componentId**: The ID of the component definition (read-only, set during creation, alternative to insertUrl)
-              - Plus any custom control properties defined by the component
-
-              **Linked vs Detached Components:**
-              - **Linked** (default): Component instance that updates when source changes. Cannot edit internal structure. Only styling attributes like opacity, position, width, height work.
-              - **Detached** (insertUrl with ?detached=true): Creates editable Frame with component's internal layers. Full access to all children. Does NOT update when source changes. Use when you need to customize internal structure. After creation, call getNodeXml on the parent to see the actual internal structure (Text, Frame, SVG nodes, etc.) that was created from the component.
-
-              Component instances support all common node attributes (opacity, visible, locked, position, width, height, rotation) but NOT styling attributes like backgroundColor or borderRadius. Detached components become regular Frames which DO support all styling attributes.
 
               `,
         input: z.object({
@@ -705,6 +719,8 @@ export const mcpTools = {
         description: dedent`
             Gets all CMS collections in the project with their field definitions.
 
+            IMPORTANT: Call this tool FIRST before using any other CMS tools to understand the field structure and get proper field IDs.
+
             Returns collections with:
             - ID, name, and management status (user-managed or plugin-managed)
             - Field definitions with field IDs, names, types, and requirements
@@ -720,15 +736,46 @@ export const mcpTools = {
             - collectionId: Referenced collection ID for reference fields
             - Additional legacy properties like options, defaultValue, multiline when applicable
 
-            Use this to discover available collections and understand their structure before working with items.
-            The field IDs returned here are what you need to use as keys in upsertCMSItem fieldData.
-
             IMPORTANT: Notice that you cannot create a CMS collection yourself. Instead you should ask the user to create it, then you can add CMS items to it after using this tool to get the collection id.
 
             You also cannot update or add collection fields types, ask the user to do so.
         `,
         input: z.object({}),
         output: z.any(),
+        outputPrefix: dedent`
+        ## Working with CMS Items
+
+        After getting collection information, you can use getCMSItems to query items and upsertCMSItem to create or update items.
+
+        ### Field Data Format for upsertCMSItem
+
+        When creating or updating CMS items, each field is an object with type and value:
+
+        {
+            "fieldId": { "type": "string", "value": "My Title" },
+            "fieldId": { "type": "formattedText", "value": "<p>HTML content</p>" },
+            "fieldId": { "type": "number", "value": 29.99 },
+            "fieldId": { "type": "boolean", "value": true },
+            "fieldId": { "type": "date", "value": "2025-08-21T10:00:00.000Z" },
+            "fieldId": { "type": "image", "value": "https://url.to/image.jpg" },
+            "fieldId": { "type": "color", "value": "#FF0000" },
+            "fieldId": { "type": "link", "value": "https://example.com" },
+            "fieldId": { "type": "file", "value": "https://url.to/file.pdf" },
+            "fieldId": { "type": "enum", "value": "option1" },
+            "fieldId": { "type": "collectionReference", "value": "itemId" },
+            "fieldId": { "type": "multiCollectionReference", "value": ["itemId1", "itemId2"] }
+        }
+
+        ### Important Notes
+
+        - **Field IDs are auto-generated strings** (e.g., "j11rZL4rT"), NOT descriptive names
+        - Get field IDs from the collections returned by this tool
+        - For image fields: provide URL string directly as value, NOT an object
+        - For multiCollectionReference: provide array of item IDs from the referenced collection
+        - For collectionReference: when referencing items, use their actual item IDs (not slugs)
+        - Date values must be ISO 8601 format strings
+        - The field structure must match the collection's field definitions
+        `,
     },
     getCMSItems: {
         description: dedent`
@@ -757,6 +804,8 @@ export const mcpTools = {
         description: dedent`
             Creates a new CMS item or updates an existing one.
 
+            IMPORTANT: Call getCMSCollections first to get field IDs and see the field data format documentation.
+
             For creating a new item:
             - Provide slug and fieldData (itemId should be omitted)
             - The slug must be unique within the collection
@@ -764,30 +813,6 @@ export const mcpTools = {
             For updating an existing item:
             - Provide itemId and any fields to update
             - Only included fields will be changed (partial updates supported)
-
-            Field data format - each field is an object with type and value:
-            {
-                "fieldId": { "type": "string", "value": "My Title" },
-                "fieldId": { "type": "formattedText", "value": "<p>HTML content</p>" },
-                "fieldId": { "type": "number", "value": 29.99 },
-                "fieldId": { "type": "boolean", "value": true },
-                "fieldId": { "type": "date", "value": "2025-08-21T10:00:00.000Z" },
-                "fieldId": { "type": "image", "value": "https://url.to/image.jpg" },
-                "fieldId": { "type": "color", "value": "#FF0000" },
-                "fieldId": { "type": "link", "value": "https://example.com" },
-                "fieldId": { "type": "file", "value": "https://url.to/file.pdf" },
-                "fieldId": { "type": "enum", "value": "option1" },
-                "fieldId": { "type": "collectionReference", "value": "itemId" },
-                "fieldId": { "type": "multiCollectionReference", "value": ["itemId1", "itemId2"] }
-            }
-
-            IMPORTANT NOTES:
-            - Field IDs are auto-generated strings (e.g., "j11rZL4rT"), NOT descriptive names
-            - Get field IDs from getCMSItems response to see existing field structure
-            - For image fields: provide URL string directly as value, NOT an object
-            - For multiCollectionReference: provide array of item IDs from the referenced collection
-            - For collectionReference: when referencing items, use their actual item IDs (not slugs)
-            - Date values must be ISO 8601 format strings
 
             The field structure must match the collection's field definitions from getCMSCollections.
         `,
