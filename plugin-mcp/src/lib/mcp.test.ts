@@ -815,9 +815,9 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Retrieved 1 of 8 item(s) from collection \\"Articles\\"",
+                "message": "Retrieved 1 of 11 item(s) from collection \\"Articles\\"",
                 "pagination": {
-                  "total": 8,
+                  "total": 11,
                   "skip": 0,
                   "limit": 1,
                   "returned": 1
@@ -914,19 +914,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-4303\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-7420\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "EtCjM8N8i",
-                  "slug": "test-item-4303",
+                  "id": "bQ2IJcEcg",
+                  "slug": "test-item-7420",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 4303"
+                      "value": "Test Item 7420"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-09-15T00:00:00.000Z"
+                      "value": "2025-10-20T12:30:23.947Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -938,7 +938,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 4303</p>"
+                      "value": "<p>Test content for item 7420</p>"
                     }
                   }
                 }
@@ -978,19 +978,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-4303\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-7420\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "EtCjM8N8i",
-                  "slug": "test-item-4303",
+                  "id": "bQ2IJcEcg",
+                  "slug": "test-item-7420",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 2565"
+                      "value": "Updated Item 4737"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-09-15T00:00:00.000Z"
+                      "value": "2025-10-20T12:30:23.947Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1002,7 +1002,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 4303</p>"
+                      "value": "<p>Test content for item 7420</p>"
                     }
                   }
                 }
@@ -1029,10 +1029,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-4303\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-7420\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "EtCjM8N8i",
-                  "slug": "test-item-4303"
+                  "id": "bQ2IJcEcg",
+                  "slug": "test-item-7420"
                 }
               }"
             `)
@@ -1068,6 +1068,19 @@ function tryJsonParse(str: string) {
     try {
         return JSON.parse(str)
     } catch {
+        const lastBraceIndex = str.lastIndexOf('}')
+        if (lastBraceIndex === -1) return str
+        
+        for (let i = 0; i <= lastBraceIndex; i++) {
+            if (str[i] === '{' || str[i] === '[') {
+                try {
+                    const jsonStr = str.slice(i, lastBraceIndex + 1)
+                    return JSON.parse(jsonStr)
+                } catch {
+                    continue
+                }
+            }
+        }
         return str
     }
 }
