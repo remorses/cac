@@ -684,7 +684,40 @@ describe(
 
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
-              "{
+              "## Working with CMS Items
+
+              After getting collection information, you can use getCMSItems to query items and upsertCMSItem to create or update items.
+
+              ### Field Data Format for upsertCMSItem
+
+              When creating or updating CMS items, each field is an object with type and value:
+
+              {
+                  "fieldId": { "type": "string", "value": "My Title" },
+                  "fieldId": { "type": "formattedText", "value": "<p>HTML content</p>" },
+                  "fieldId": { "type": "number", "value": 29.99 },
+                  "fieldId": { "type": "boolean", "value": true },
+                  "fieldId": { "type": "date", "value": "2025-08-21T10:00:00.000Z" },
+                  "fieldId": { "type": "image", "value": "https://url.to/image.jpg" },
+                  "fieldId": { "type": "color", "value": "#FF0000" },
+                  "fieldId": { "type": "link", "value": "https://example.com" },
+                  "fieldId": { "type": "file", "value": "https://url.to/file.pdf" },
+                  "fieldId": { "type": "enum", "value": "option1" },
+                  "fieldId": { "type": "collectionReference", "value": "itemId" },
+                  "fieldId": { "type": "multiCollectionReference", "value": ["itemId1", "itemId2"] }
+              }
+
+              ### Important Notes
+
+              - **Field IDs are auto-generated strings** (e.g., "j11rZL4rT"), NOT descriptive names
+              - Get field IDs from the collections returned by this tool
+              - For image fields: provide URL string directly as value, NOT an object
+              - For multiCollectionReference: provide array of item IDs from the referenced collection
+              - For collectionReference: when referencing items, use their actual item IDs (not slugs)
+              - Date values must be ISO 8601 format strings
+              - The field structure must match the collection's field definitions
+
+              {
                 "message": "Found 2 CMS collection(s)",
                 "collections": [
                   {
