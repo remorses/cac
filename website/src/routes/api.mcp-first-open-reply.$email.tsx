@@ -2,7 +2,9 @@ import { href } from 'react-router'
 import { prisma } from 'db'
 import { env } from 'website/src/lib/env'
 import type { Route } from './+types/api.mcp-first-open-reply.$email'
-import dedent from 'dedent'
+import dedent from 'string-dedent'
+
+const html = dedent
 
 export async function loader({ params }: Route.LoaderArgs) {
     const { email } = params
@@ -26,7 +28,9 @@ export async function loader({ params }: Route.LoaderArgs) {
     })
 
     if (!project) {
-        throw new Response('No MCP project found for this user', { status: 404 })
+        throw new Response('No MCP project found for this user', {
+            status: 404,
+        })
     }
 
     const projectId = project.projectId
@@ -39,23 +43,72 @@ export async function loader({ params }: Route.LoaderArgs) {
         env.PUBLIC_URL,
     )
 
-    const markdown = dedent`
-    Hey,
+    const content = dedent`
+        Hey,
 
-    Here's the GitHub repo with your Framer components in "${projectName}":
+        Here's the GitHub repo:
 
-    ${githubUrl.toString()}
+        ${githubUrl.toString()}
 
-    The repo includes:
-    - Example code showing how to integrate the React components
-    - Live preview URL (link in the README)
+        The repo includes:
+        - Example code showing how to integrate the React components
+        - Live preview URL (link in the README)
 
-    Tommy
+        Best,
+        Tommy
     `
 
-    return new Response(markdown, {
+    const htmlContent = html`
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8" />
+                <title>MCP First Open Reply</title>
+                <style>
+                    body {
+                        font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        max-width: 600px;
+                        margin: 50px auto;
+                        padding: 20px;
+                        line-height: 1.6;
+                    }
+                    pre {
+                        background: #f5f5f5;
+                        padding: 20px;
+                        border-radius: 8px;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                    }
+                    .status {
+                        padding: 10px;
+                        margin-bottom: 20px;
+                        border-radius: 4px;
+                        background: #4caf50;
+                        color: white;
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="status">✓ Copied to clipboard!</div>
+                <pre id="content">
+                    ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre
+                >
+                <script>
+                    const content = ${JSON.stringify(content)}
+                    navigator.clipboard.writeText(content).catch((err) => {
+                        console.error('Failed to copy:', err)
+                    })
+                </script>
+            </body>
+        </html>
+    `
+
+    return new Response(htmlContent, {
         headers: {
-            'Content-Type': 'text/plain',
+            'Content-Type': 'text/html',
         },
     })
 }
