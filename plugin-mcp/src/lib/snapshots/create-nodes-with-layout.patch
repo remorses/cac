@@ -1,66 +1,24 @@
 Successfully updated:
-Created Frame node MPsoyWiXW
-Created Frame node RonU5918V
-Created Text node L3mGIxayk
-Created Text node NtASvmP9k
-Created Frame node T5mwJ0Vqo
-Updated attributes for node MPsoyWiXW
-Updated attributes for node RonU5918V
-Updated text for node L3mGIxayk
-Updated attributes for node L3mGIxayk
-Updated text for node NtASvmP9k
-Updated attributes for node NtASvmP9k
-Updated attributes for node T5mwJ0Vqo
-Reordered node RonU5918V within parent MPsoyWiXW to index 0
+Created Frame node Pfk2m4SGb
+Created Frame node pRa2tYQ2v
+Created Text node mFoi1eQog
+Created Text node bAPooxmFU
+Created Frame node xsQSrPkgF
+Updated attributes for node Pfk2m4SGb
+Updated attributes for node pRa2tYQ2v
+Updated text for node mFoi1eQog
+Updated attributes for node mFoi1eQog
+Updated text for node bAPooxmFU
+Updated attributes for node bAPooxmFU
+Updated attributes for node xsQSrPkgF
+Reordered node pRa2tYQ2v within parent Pfk2m4SGb to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -46,41 +46,40 @@
-       stackDirection="horizontal"
-       stackDistribution="center"
-       stackAlignment="center"
-   >
-     <NavigationFlyout
-         nodeId="BwfPOa8WY"
-         width="100%"
-         height="fit-content"
-         <!-- the component id this instance uses -->
-         componentId="sCy40XUNu"
-         <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
-         variant="arFY89os4"
-      />
-   </NavigationFlyoutFixed>
-   <Navigation
-       nodeId="P8AJj3Q2E"
-       width="1fr"
-       height="fit-content"
-       <!-- the component id this instance uses -->
-       componentId="sCy40XUNu"
--      <!-- 'Desktop' is QOfAnzBxh, 'Tablet' is P1v1ihspX, 'Phone' is PnuvdVM1J, 'Desktop Flyout' is arFY89os4, 'Tablet Flyout' is qGUh0LbE8, 'Phone Flyout' is uWt60osFn, 'Tablet close' is wrwRZcibf, 'Tablet  Flyout close' is WkaXeslVy, 'Phone close' is NTfXwQ4NI, 'Phone Flyout close' is DrAxuXYke -->
-       variant="QOfAnzBxh"
-    />
-   <HeroSection
-       nodeId="qKDdG3FQZ"
-       width="1fr"
-       height="fit-content"
-       layout="stack"
-       padding="8px"
-       stackDirection="vertical"
-       stackDistribution="start"
-       stackAlignment="center"
-   >
-     <Container
-         nodeId="rUPekfMHT"
-         width="1fr"
-         height="fit-content"
-         maxWidth="1152px"
-         <!-- background color string or project color style path (if starts with /) -->
-         backgroundColor="white"
-         borderRadius="32px"
-@@ -3061,20 +3060,73 @@
+@@ -3062,20 +3062,73 @@
        Header Text
      </HeaderText>
    </Frame>
@@ -82,7 +40,7 @@ Index: node.xml
     />
  </Stack>
 +<Stack
-+    nodeId="MPsoyWiXW"
++    nodeId="Pfk2m4SGb"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -98,7 +56,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="RonU5918V"
++      nodeId="pRa2tYQ2v"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -106,7 +64,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="L3mGIxayk"
++        nodeId="mFoi1eQog"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -118,7 +76,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="NtASvmP9k"
++      nodeId="bAPooxmFU"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -126,7 +84,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="T5mwJ0Vqo"
++      nodeId="xsQSrPkgF"
 +      width="100%"
 +      height="1fr"
 +      <!-- background color string or project color style path (if starts with /) -->

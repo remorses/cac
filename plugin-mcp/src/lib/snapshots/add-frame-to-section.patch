@@ -1,18 +1,18 @@
 Successfully updated:
-Created Frame node XHFSzn6rI
-Created Frame node a3FeAhP9A
-Created Frame node pfpL_gi4I
-Updated attributes for node XHFSzn6rI
-Updated attributes for node a3FeAhP9A
-Updated attributes for node pfpL_gi4I
-Reordered node a3FeAhP9A within parent XHFSzn6rI to index 0
+Created Frame node Cq6F_M_3o
+Created Frame node Z3ZaNOjz0
+Created Frame node gdhjdiQuX
+Updated attributes for node Cq6F_M_3o
+Updated attributes for node Z3ZaNOjz0
+Updated attributes for node gdhjdiQuX
+Reordered node Z3ZaNOjz0 within parent Cq6F_M_3o to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -301,40 +301,71 @@
+@@ -300,40 +300,71 @@
                stackDistribution="center"
                stackAlignment="center"
            >
@@ -34,7 +34,7 @@ Index: node.xml
               />
            </Stack>
 +          <Stack
-+              nodeId="XHFSzn6rI"
++              nodeId="Cq6F_M_3o"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -48,7 +48,7 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="a3FeAhP9A"
++                nodeId="Z3ZaNOjz0"
 +                width="100px"
 +                height="100px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -56,7 +56,7 @@ Index: node.xml
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="pfpL_gi4I"
++                nodeId="gdhjdiQuX"
 +                width="150px"
 +                height="80px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -83,7 +83,7 @@ Index: node.xml
                componentId="zQ4rhDKqX"
                <!-- 'Brand lg' is lkx2QyMNw, 'Inverse lg' is c_Cu9E4Vu, 'Border lg' is anmz3_Hx4, 'Brand md' is DtM6fBOBg, 'Inverse md' is lT3W94qLb, 'Border md' is AzANgMTfO -->
                variant="anmz3_Hx4"
-               label="Read the Docs"
+               XNZ6TQLVf="Read the Docs"
 
 
 Note: Set zoomIntoView=false if you want to use Framer app while MCP is working.
