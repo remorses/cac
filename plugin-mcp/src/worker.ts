@@ -497,10 +497,12 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             })
 
                             ws.addEventListener('error', (err) => {
-                                notifyError(
-                                    new Error('Upstream WebSocket Error'),
-                                    'WebSocket error occurred',
-                                )
+                                console.error('WebSocket error (details in close event):', {
+                                    framerUserId,
+                                    userEmail,
+                                    readyState: ws?.readyState,
+                                    errorType: err.type,
+                                })
                             })
 
                             // Reset idle timeout on any message activity
