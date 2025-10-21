@@ -5,5 +5,5 @@ export const resend = new Resend(env.RESEND_API_KEY!)
 
 export const defaultResendOptions = {
   replyTo: 'tommy@unframer.co',
-  from: 'Tommy <tommy@updates.unframer.co>',
+  from: 'Tommy <tommy@tommy.unframer.co>',
 }
