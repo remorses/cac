@@ -45,8 +45,6 @@ export async function loader({ params }: Route.LoaderArgs) {
     const { 0: firstName } = ((user.raw_user_meta_data as any)?.full_name ?? "").split(" ")
 
     const content = dedent`
-        Hi ${firstName},
-
         Here's the GitHub repo:
 
         ${githubUrl.toString()}
