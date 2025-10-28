@@ -102,6 +102,7 @@ test(
             repo,
             projectSecret: 'x',
             addCollaboratorUsername: 'daertommy',
+            skipUpdateIfLastSyncLessThan: 0,
             useAI: false,
             // description: 'example test repo description',
         })
@@ -155,7 +156,7 @@ test(
 
           export default function App() {
             return (
-              <div className='flex flex-col items-center gap-3 '>
+              <div className='flex flex-col items-center gap-3 bg-[rgb(8,_8,_7)]'>
                 <NavigationFramerComponent.Responsive
                   ctaVariant={"Primary"}
                 />
@@ -218,7 +219,7 @@ test(
 
           export default function App() {
             return (
-              <div className='flex flex-col items-center gap-3 '>
+              <div className='flex flex-col items-center gap-3 bg-[rgb(255,_255,_255)]'>
                 <ProblemBadgeFramerComponent.Responsive
                   text={"How can i detach this problem ?"}
                 />

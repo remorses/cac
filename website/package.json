@@ -98,6 +98,7 @@
         "js-yaml": "^4.1.0",
         "lemonsqueezy-webhooks": "^0.1.2",
         "lemonsqueezy.ts": "^0.1.8",
+        "libsodium-wrappers": "^0.7.15",
         "lru-cache": "^11.0.2",
         "lucide-react": "^0.474.0",
         "markdown-it": "^14.1.0",
