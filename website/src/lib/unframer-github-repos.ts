@@ -13,6 +13,7 @@ import { env } from './env'
 import {
     addUnframerGithubCollaboratorIfNeeded,
     createNewRepo,
+    createRepoSecret,
     doesRepoExist,
     getRepoFiles,
     upsertGithubFile,
@@ -45,6 +46,7 @@ export async function generateUnframerRepo({
     projectTitle = '',
     addCollaboratorUsername = '',
     useAI = true,
+    skipUpdateIfLastSyncLessThan = 10 * 60 * 1000,
 }): Promise<{ url: string; repoName: string }> {
     repo ||= generateRepoName({ projectId, projectTitle })
     const [project] = await Promise.all([
@@ -72,7 +74,7 @@ export async function generateUnframerRepo({
         project.lastGitHubSyncAt &&
         project.connectedGitHubRepoName &&
         Date.now() - new Date(project.lastGitHubSyncAt).getTime() <
-            10 * 60 * 1000
+            skipUpdateIfLastSyncLessThan
     ) {
         console.log(
             'Last GitHub sync was less than 10 minutes ago; skipping repo update',
@@ -215,6 +217,14 @@ export async function generateUnframerRepo({
                 # Add [skip ci] to the commit message to skip ci runs on this commit
                 git commit -m "chore: automated update [skip ci]"
                 git push origin HEAD:"\${{ github.ref_name }}"
+            - name: Auto-fix with OpenCode on failure
+              if: \${{ failure() && !cancelled() }}
+              env:
+                OPENCODE_API_KEY: \${{ secrets.OPENCODE_ZEN_API_KEY }}
+              run: |
+                npm install -g opencode-ai
+                PROMPT="The GitHub Actions workflow at .github/workflows/ci.yml just failed during CI. You are OpenCode running inside a post-failure handler with up to five minutes to work. Read the file at .github/workflows/ci.yml so you understand the steps and repeat them. Try to run those workflow steps again locally, fix any issues that appear, rerun until they pass, then commit and push the fixes, just like the workflow does. If some imported files in App.tsx do not exist just remove them."
+                opencode run --model opencode/kimi-k2 "$PROMPT"
       `,
     })
 
@@ -350,6 +360,13 @@ export async function upsertUnframerRepoWithFiles({
                 description: title,
                 homepage,
             })),
+        createRepoSecret({
+            octokit: octokit.rest,
+            owner,
+            repo,
+            secretName: 'OPENCODE_ZEN_API_KEY',
+            secretValue: env.OPENCODE_ZEN_API_KEY!,
+        }),
         ...files.map(async (file) => {
             await sema.acquire()
             try {

@@ -6,6 +6,7 @@ import { App, Octokit } from 'octokit'
 import { AppError, notifyError } from 'website/src/lib/errors'
 import { isTruthy } from 'website/src/lib/utils'
 import { env } from './env'
+import sodium from 'libsodium-wrappers'
 
 type OctokitRest = Octokit['rest']
 
@@ -340,8 +341,6 @@ export async function createNewRepo({
     oauthToken?: string
     addCollaboratorUsername?: string
 }) {
-
-
     files = files.filter((x) => {
         return true
         // return githubPathToPageSlug(x.filePath) !== TUTORIAL_PAGE_SLUG
@@ -452,14 +451,25 @@ export async function createNewRepo({
     // Create the first commit with all of the file changes
     console.log('creating commit')
 
-    const { data: commit } = await repoOctokit.git.createCommit({
-        owner: owner,
-        repo,
-        message: `Unframer Initial Commit`,
-        tree: tree.sha,
-        committer: committer,
-        parents: [commitSha], // Use the existing commit as parent
-    })
+    // Do commit creation and createRepoSecret concurrently
+    const [commitResult] = await Promise.all([
+        repoOctokit.git.createCommit({
+            owner: owner,
+            repo,
+            message: `Unframer Initial Commit`,
+            tree: tree.sha,
+            committer: committer,
+            parents: [commitSha], // Use the existing commit as parent
+        }),
+        createRepoSecret({
+            octokit: repoOctokit,
+            owner,
+            repo,
+            secretName: 'OPENCODE_ZEN_API_KEY',
+            secretValue: env.OPENCODE_ZEN_API_KEY!,
+        }),
+    ]);
+    const { data: commit } = commitResult;
 
     try {
         console.log('updating branch')
@@ -474,10 +484,53 @@ export async function createNewRepo({
         throw err
     }
 
+
+
     return {
         branch: defaultBranch,
         githubRepoId: String(repoResult.id),
     }
+}
+
+export async function createRepoSecret({
+    octokit,
+    owner,
+    repo,
+    secretName,
+    secretValue,
+}: {
+    octokit: OctokitRest
+    owner: string
+    repo: string
+    secretName: string
+    secretValue: string
+}) {
+    await sodium.ready
+
+    const {
+        data: { key, key_id },
+    } = await octokit.actions.getRepoPublicKey({
+        owner,
+        repo,
+    })
+
+    const binkey = sodium.from_base64(key, sodium.base64_variants.ORIGINAL)
+    const binsec = sodium.from_string(secretValue)
+    const encBytes = sodium.crypto_box_seal(binsec, binkey)
+    const encryptedValue = sodium.to_base64(
+        encBytes,
+        sodium.base64_variants.ORIGINAL,
+    )
+
+    await octokit.actions.createOrUpdateRepoSecret({
+        owner,
+        repo,
+        secret_name: secretName,
+        encrypted_value: encryptedValue,
+        key_id: key_id,
+    })
+
+    console.log(`Secret '${secretName}' created/updated for ${owner}/${repo}`)
 }
 
 export async function addUnframerGithubCollaboratorIfNeeded({
