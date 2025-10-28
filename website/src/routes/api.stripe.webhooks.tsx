@@ -46,7 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             case 'customer.subscription.deleted':
                 const subscription = event.data.object
 
-                await handleSubscriptionChange(subscription, event.type)
+                await handleSubscriptionChange(subscription)
                 break
             // case 'invoice.payment_succeeded':
             //     const invoice = event.data.object as Stripe.Invoice
@@ -113,10 +113,7 @@ async function handleCheckoutSessionCompleted(
     })
 }
 
-async function handleSubscriptionChange(
-    subscription: Stripe.Subscription,
-    eventType: string,
-) {
+async function handleSubscriptionChange(subscription: Stripe.Subscription) {
     // Fetch the latest subscription data from Stripe
     const latestSubscription = await stripe.subscriptions.retrieve(
         subscription.id,
@@ -142,9 +139,6 @@ async function handleSubscriptionChange(
         variantId: latestSubscription.items.data[0]?.price.id,
         subscriptionId: latestSubscription.id,
         email: orgId || undefined,
-        // endsAt: latestSubscription.current_period_end
-        //     ? new Date(latestSubscription.current_period_end * 1000)
-        //     : undefined,
         status: latestSubscription.status,
         variantName:
             latestSubscription.items.data[0]?.price.nickname || undefined,
