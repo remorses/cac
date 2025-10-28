@@ -121,6 +121,14 @@ export async function generateUnframerRepo({
     })
 
     const previewUrl = unframerDemoUrl({ basePath: repo })
+    const opencodePrompt =
+        'The GitHub Actions workflow at .github/workflows/ci.yml just failed during CI. ' +
+        'You are OpenCode running inside a post-failure handler with up to five minutes to work. ' +
+        'Read the file at .github/workflows/ci.yml so you understand the steps and repeat them. ' +
+        'Try to run those workflow steps again locally (bun run framer, bun run build, bunx unframer-deploy-demo), fix any issues that appear, rerun until they pass. ' +
+        'If some imported files in App.tsx do not exist just remove them. ' +
+        'After fixing and getting all steps to pass, commit and push the fixes just like the workflow does. ' +
+        'Then exit with code 0 to mark the CI as successful. If you cannot fix the issues, exit with code 1.'
     files.push({
         relativePath: 'README.md',
         contents: dedent`
@@ -197,9 +205,15 @@ export async function generateUnframerRepo({
                 node-version: 22
             - uses: oven-sh/setup-bun@v2
             - run: bun install
-            - run: bun run framer
-            - run: bun run build
-            - run: bunx unframer-deploy-demo@latest --secret ${projectSecret} --slug ${repo} --dir ./dist
+            - id: framer
+              run: bun run framer
+              continue-on-error: true
+            - id: build
+              run: bun run build
+              continue-on-error: true
+            - id: deploy
+              run: bunx unframer-deploy-demo@latest --secret ${projectSecret} --slug ${repo} --dir ./dist
+              continue-on-error: true
             - name: Commit & push (if changed)
               run: |
                 git config user.name  "github-actions[bot]"
@@ -211,20 +225,16 @@ export async function generateUnframerRepo({
                   exit 0
                 fi
 
-                # Optional: avoid non-fast-forward errors if something landed meanwhile
                 git pull --rebase origin "\${{ github.ref_name }}" || true
-
-                # Add [skip ci] to the commit message to skip ci runs on this commit
                 git commit -m "chore: automated update [skip ci]"
                 git push origin HEAD:"\${{ github.ref_name }}"
             - name: Auto-fix with OpenCode on failure
-              if: \${{ failure() && !cancelled() }}
+              if: \${{ (steps.framer.outcome == 'failure' || steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure') && !cancelled() }}
               env:
                 OPENCODE_API_KEY: \${{ secrets.OPENCODE_ZEN_API_KEY }}
               run: |
                 npm install -g opencode-ai
-                PROMPT="The GitHub Actions workflow at .github/workflows/ci.yml just failed during CI. You are OpenCode running inside a post-failure handler with up to five minutes to work. Read the file at .github/workflows/ci.yml so you understand the steps and repeat them. Try to run those workflow steps again locally, fix any issues that appear, rerun until they pass, then commit and push the fixes, just like the workflow does. If some imported files in App.tsx do not exist just remove them."
-                opencode run --model opencode/kimi-k2 "$PROMPT"
+                opencode run --model opencode/kimi-k2 "${opencodePrompt}"
       `,
     })
 
