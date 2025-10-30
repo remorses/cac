@@ -144,6 +144,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
             latestSubscription.items.data[0]?.price.nickname || undefined,
         createdAt: new Date(latestSubscription.created * 1000),
         pluginName,
+
         metadata: latestSubscription.metadata || {},
         provider: 'stripe',
         customerId: latestSubscription.customer.toString(),

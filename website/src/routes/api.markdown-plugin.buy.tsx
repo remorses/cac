@@ -6,7 +6,7 @@ import { LoaderFunctionArgs, redirect } from 'react-router';
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {})
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 export async function loader({ request }: LoaderFunctionArgs) {
     const u = new URL(request.url)
