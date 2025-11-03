@@ -55,7 +55,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
         Next time you want to export to React you can ask the MCP or use the React Export plugin: https://www.framer.com/marketplace/plugins/react-export/
 
-        PS: Keep in mind this repo is just an example for how to use the components, the demo will not look great at first without modifying App.tsx and exporting the right components
+        PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
 
         Best,
         Tommy
