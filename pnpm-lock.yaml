@@ -1945,6 +1945,9 @@ importers:
       lemonsqueezy.ts:
         specifier: ^0.1.8
         version: 0.1.8
+      libsodium:
+        specifier: ^0.7.15
+        version: 0.7.15
       libsodium-wrappers:
         specifier: ^0.7.15
         version: 0.7.15

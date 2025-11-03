@@ -78,6 +78,7 @@ export default defineConfig({
             externals: [
                 'dprint-node',
                 'playwright',
+                'libsodium',
                 'htmlrewriter',
                 '@sentry/node',
                 'pg',
