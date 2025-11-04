@@ -10,6 +10,7 @@
         "build": "tsc && rm -rf dist && doppler run -c production -- pnpm vite build",
         "pack": "npx -y framer-plugin-tools@latest pack && open -R plugin.zip",
         "check": "pnpm tsc --incremental",
+        "workshop.md": "jq -r '.' src/prompts/workshop.json > src/prompts/workshop.md",
         "typecheck": "pnpm tsc --noEmit --incremental",
         "secrets:preview": "doppler run -c preview --mount .env.preview --mount-format env -- wrangler secret bulk --env preview .env.preview",
         "secrets:prod": "doppler run -c production --mount .env.prod --mount-format env -- wrangler secret bulk .env.prod",
