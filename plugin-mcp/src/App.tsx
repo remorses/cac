@@ -1439,10 +1439,6 @@ async function websocketHandler({
                     componentExport?.insertURL,
                 )
 
-                // Run initial lint and typecheck
-                const lintResult = await codeFile.lint({
-                    'forbid-browser-apis': 'warning',
-                })
                 const typecheckResult = await codeFile.typecheck()
 
                 return dedent`
@@ -1456,11 +1452,6 @@ async function websocketHandler({
                 - **Component Insert URL:** \`${insertUrl}\`
 
                 ${insertUrl ? `Use updateXmlForNode with a ComponentInstance node using insertUrl: \`${insertUrl}\` to add this component to the canvas.` : 'No component export found in this code file.'}
-
-                **Lint result:**
-                \`\`\`json
-                ${JSON.stringify(lintResult, null, 2)}
-                \`\`\`
 
                 **Typecheck result:**
                 \`\`\`json
@@ -1509,10 +1500,6 @@ async function websocketHandler({
                 // Update the content
                 await codeFile.setFileContent(content)
 
-                // Run lint and typecheck after update
-                const lintResult = await codeFile.lint({
-                    'forbid-browser-apis': 'warning',
-                })
                 const typecheckResult = await codeFile.typecheck()
 
                 return {
@@ -1523,7 +1510,6 @@ async function websocketHandler({
                         path: codeFile.path,
                         exports: codeFile.exports,
                     },
-                    lint: lintResult,
                     typecheck: typecheckResult,
                 }
             } catch (error) {
