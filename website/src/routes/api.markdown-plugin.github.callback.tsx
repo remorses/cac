@@ -31,17 +31,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // const userId = session?.user?.id
     let afterFramerLoginUrl = state?.next
 
-    if (!afterFramerLoginUrl) {
-        return new Response('Missing `next` state param callback', {
-            status: 400,
-        })
-    }
+    const setupAction = query.get('setup_action')
 
     console.log(JSON.stringify(state, null, 2))
-
-    if (!state) {
-        return new Response('Missing state', { status: 400 })
-    }
     const code = (query.get('code') as string) || ''
 
     let token
@@ -126,6 +118,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
         //         },
         //     }),
     ])
+
+    if (setupAction === 'update' || !afterFramerLoginUrl) {
+        return new Response(
+            `<html>
+                <body style="font-family: system-ui; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+                    <div style="text-align: center;">
+                        <h2>GitHub settings saved</h2>
+                        <p>You can close this tab and return to Framer.</p>
+                    </div>
+                </body>
+            </html>`,
+            { headers: { 'Content-Type': 'text/html' } },
+        )
+    }
 
     let redirectUrl = new URL(afterFramerLoginUrl)
     let data: GithubLoginRequestData = {
