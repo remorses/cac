@@ -108,7 +108,7 @@ function Component() {
                         setIsLoading(true)
                         try {
                             const collection =
-                                await framer.getManagedCollection()
+                                await framer.getActiveManagedCollection()
                             await collection.setPluginData(
                                 PluginDataKeys.sessionKey,
                                 null,

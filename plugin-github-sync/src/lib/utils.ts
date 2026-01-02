@@ -23,7 +23,7 @@ export const pluginApiClient: SpiceflowClient.Create<RouteType> =
     createSpiceflowClient<RouteType>(env.PUBLIC_URL!, {
         async onResponse(response) {
             if (response.status === 401) {
-                const collection = await framer.getManagedCollection()
+                const collection = await framer.getActiveManagedCollection()
                 console.log('clearing session because api returned 401')
                 await collection.setPluginData(PluginDataKeys.sessionKey, null)
                 throw redirect(withMode(Paths.login))
@@ -79,7 +79,8 @@ export enum PluginDataKeys {
 }
 
 export async function getMarkdownPluginData() {
-    const collection = await framer.getManagedCollection()
+    const collection = await framer.getActiveManagedCollection()
+    const collectionId = collection.id
 
     const [
         repoSlug,
@@ -101,7 +102,11 @@ export async function getMarkdownPluginData() {
     const [owner, repo = ''] = repoSlug?.split('/') || ''
     const mapFieldsConfig: CollectionField[] =
         safeJsonParse(mapFieldsConfigJson || '[]') || []
+    console.log(
+        `[GitHub Sync] Collection ${collectionId}: repoSlug=${repoSlug}, owner=${owner}, repo=${repo}`,
+    )
     return {
+        collectionId,
         owner,
         repo,
         mapFieldsConfig,
