@@ -13,7 +13,9 @@ import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
 import { Sema } from 'sema4'
 
 async function loader({}: LoaderFunctionArgs) {
+    const pluginData = await getMarkdownPluginData()
     const {
+        collectionId,
         owner,
         repo,
         githubAccountLogin,
@@ -22,10 +24,18 @@ async function loader({}: LoaderFunctionArgs) {
         projectId,
         projectName,
         enablePartialUpdate,
-    } = await getMarkdownPluginData()
-    const collection = await framer.getManagedCollection()
+    } = pluginData
+    const collection = await framer.getActiveManagedCollection()
 
-    console.log('syncing', owner, repo, githubAccountLogin, basePath)
+    if (collection.id !== collectionId) {
+        console.error(
+            `[GitHub Sync] Collection mismatch! Expected ${collectionId}, got ${collection.id}`,
+        )
+    }
+
+    console.log(
+        `[GitHub Sync] Syncing collection ${collection.id}: ${owner}/${repo}`,
+    )
     let itemIds = await collection.getItemIds()
     const itemIdsSet = new Set(itemIds)
     const { data, error } =
