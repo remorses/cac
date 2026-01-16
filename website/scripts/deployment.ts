@@ -42,7 +42,7 @@ async function main() {
         port,
         buildRemotely: true,
         buildkit: true,
-
+        concurrencyLimit: 300,
         strategy: stage === 'production' ? 'bluegreen' : 'immediate',
         dockerfile: 'Dockerfile',
         forceHttps: false,
