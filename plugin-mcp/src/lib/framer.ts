@@ -210,13 +210,13 @@ export function getAttributeComments(
                         return 'component instance'
                         return 'React.ReactNode'
                     case ControlType.Array:
-                        // @ts-expect-error
+
                         return `${typescriptType(value.control)}[]`
                     case ControlType.Object:
-                        // @ts-expect-error
+
                         return `{${Object.entries(value.controls)
                             .map(([k, v]) => {
-                                // @ts-expect-error
+
                                 return `${k}: ${typescriptType(v)}`
                             })
                             .join(', ')}}`
