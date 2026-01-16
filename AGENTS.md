@@ -1,27 +1,54 @@
+<!-- This AGENTS.md file is generated. Look for an agents.md package.json script to see what files to update instead. -->
 
-# Project Coding Guidelines
+# Unframer Private Guidelines
 
-NOTICE: AGENTS.md is generated using AGENTS.sh and should NEVER be manually updated.
+## Git Submodules
 
----
+This repo uses git submodules for `spiceflow` and `unframer`. Always keep submodules on their respective `main` branches.
 
+When working with submodules:
+1. After cloning, run `git submodule update --init`
+2. Before making changes in a submodule, ensure you're on `main`: `git checkout main`
+3. Never leave submodules in detached HEAD state with uncommitted changes
+4. Commit submodule changes to `main` branch, then update the parent repo reference
 
+If you see submodules in detached HEAD:
+```bash
+cd spiceflow && git checkout main
+cd ../unframer && git checkout main
+```
+
+# core guidelines
 
 when summarizing changes at the end of the message, be super short, a few words and in bullet points, use bold text to highlight important keywords. use markdown.
 
 please ask questions and confirm assumptions before generating complex architecture code.
 
-NEVER run commands with & at the end to run them in the background. this is leaky and harmful! instead ask me to run commands in the background if needed.
+NEVER run commands with & at the end to run them in the background. this is leaky and harmful! instead ask me to run commands in the background using tmux if needed.
 
 NEVER commit yourself unless asked to do so. I will commit the code myself.
 
-NEVER add comments unless I tell you
+NEVER use git to revert files to previous state if you did not create those files yourself! there can be user changes in files you touched, if you revert those changes the user will be very upset!
 
 ## files
 
 always use kebab case for new filenames. never use uppercase letters in filenames
 
----
+never write temporary files to /tmp. instead write them to a local ./tmp folder instead. make sure it is in .gitignore too
+
+## see files in the repo
+
+use `git ls-files | tree --fromfile` to see files in the repo. this command will ignore files ignored by git
+
+## handling unexpected file contents after a read or write
+
+if you find code that was not there since the last time you read the file it means the user or another agent edited the file. do not revert the changes that were added. instead keep them and integrate them with your new changes
+
+IMPORTANT: NEVER commit your changes unless clearly and specifically asked to!
+
+## opening me files in zed to show me a specific portion of code
+
+you can open files when i ask me "open in zed the line where ..." using the command `zed path/to/file:line`
 
 # typescript
 
@@ -30,6 +57,10 @@ always use kebab case for new filenames. never use uppercase letters in filename
 - use a single object argument instead of multiple positional args: use object arguments for new typescript functions if the function would accept more than one argument, so it is more readable, ({a,b,c}) instead of (a,b,c). this way you can use the object as a sort of named argument feature, where order of arguments does not matter and it's easier to discover parameters.
 
 - always add the {} block body in arrow functions: arrow functions should never be written as `onClick={(x) => setState('')}`. NEVER. instead you should ALWAYS write `onClick={() => {setState('')}}`. this way it's easy to add new statements in the arrow function without refactoring it.
+
+- in array operations .map, .filter, .reduce and .flatMap are preferred over .forEach and for of loops. For example prefer doing `.push(...array.map(x => x.items))` over mutating array variables inside for loops. Always think of how to turn for loops into expressions using .map, .filter or .flatMap if you ever are about to write a for loop.
+
+- if you encounter typescript errors like "undefined | T is not assignable to T" after .filter(Boolean) operations: use a guarded function instead of Boolean: `.filter(isTruthy)`. implemented as `function isTruthy<T>(value: T): value is NonNullable<T> { return Boolean(value) }`
 
 - minimize useless comments: do not add useless comments if the code is self descriptive. only add comments if requested or if this was a change that i asked for, meaning it is not obvious code and needs some inline documentation. if a comment is required because the part of the code was result of difficult back and forth with me, keep it very short.
 
@@ -45,15 +76,13 @@ always use kebab case for new filenames. never use uppercase letters in filename
 
 - NEVER do `(x as any).field` or `'field' in x` before checking if the code compiles first without it. the code probably doesn't need any or the in check. even if it does not compile, use think tool first! before adding (x as any).something, ALWAYS read the .d.ts to understand the types
 
-- after any change to typescript code ALWAYS run the `pnpm typecheck` script of that package, or if there is no typecheck script run `pnpm tsc` yourself
-
 - do not declare uninitialized variables that are defined later in the flow. instead use an IIFE with returns. this way there is less state. also define the type of the variable before the iife. here is an example:
 
 - use || over in: avoid 'x' in obj checks. prefer doing `obj?.x || ''` over doing `'x' in obj ? obj.x : ''`. only use the in operator if that field causes problems in typescript checks because typescript thinks the field is missing, as a last resort.
 
 - when creating urls from a path and a base url, prefer using `new URL(path, baseUrl).toString()` instead of normal string interpolation. use type-safe react-router `href` or spiceflow `this.safePath` (available inside routes) if possible
 
-- for node built-in imports, never import singular names. instead do `import fs from 'node:fs'`, same for path, os, etc.
+- for node built-in imports, never import singular exported names. instead do `import fs from 'node:fs'`, same for path, os, etc.
 
 - NEVER start the development server with pnpm dev yourself. there is no reason to do so, even with &
 
@@ -61,40 +90,39 @@ always use kebab case for new filenames. never use uppercase letters in filename
 
 - if you encounter typescript lint errors for an npm package, read the node_modules/package/\*.d.ts files to understand the typescript types of the package. if you cannot understand them, ask me to help you with it.
 
+- NEVER silently suppress errors in catch {} blocks if they contain more than one function call
 ```ts
 // BAD. DO NOT DO THIS
-let favicon: string | undefined
+let favicon: string | undefined;
 if (docsConfig?.favicon) {
-    if (typeof docsConfig.favicon === 'string') {
-        favicon = docsConfig.favicon
-    } else if (docsConfig.favicon?.light) {
-        // Use light favicon as default, could be enhanced with theme detection
-        favicon = docsConfig.favicon.light
-    }
+  if (typeof docsConfig.favicon === "string") {
+    favicon = docsConfig.favicon;
+  } else if (docsConfig.favicon?.light) {
+    // Use light favicon as default, could be enhanced with theme detection
+    favicon = docsConfig.favicon.light;
+  }
 }
 // DO THIS. use an iife. Immediately Invoked Function Expression
 const favicon: string = (() => {
-    if (!docsConfig?.favicon) {
-        return ''
-    }
-    if (typeof docsConfig.favicon === 'string') {
-        return docsConfig.favicon
-    }
-    if (docsConfig.favicon?.light) {
-        // Use light favicon as default, could be enhanced with theme detection
-        return docsConfig.favicon.light
-    }
-    return ''
-})()
+  if (!docsConfig?.favicon) {
+    return "";
+  }
+  if (typeof docsConfig.favicon === "string") {
+    return docsConfig.favicon;
+  }
+  if (docsConfig.favicon?.light) {
+    // Use light favicon as default, could be enhanced with theme detection
+    return docsConfig.favicon.light;
+  }
+  return "";
+})();
 // if you already know the type use it:
 const favicon: string = () => {
-    // ...
-}
+  // ...
+};
 ```
 
 - when a package has to import files from another packages in the workspace never add a new tsconfig path, instead add that package as a workspace dependency using `pnpm i "package@workspace:*"`
-
-## typescript
 
 NEVER use require. always esm imports
 
@@ -108,18 +136,20 @@ always specify the type when creating arrays, especially for empty arrays. if yo
 
 ```ts
 // BAD: Type will be never[]
-const items = []
+const items = [];
 
 // GOOD: Specify the expected type
-const items: string[] = []
-const numbers: number[] = []
-const users: User[] = []
+const items: string[] = [];
+const numbers: number[] = [];
+const users: User[] = [];
 ```
 
 remember to always add the explicit type to avoid unexpected type inference.
 
+- when using nodejs APIs like fs always import the module and not the named exports. I prefer hacing nodejs APIs accessed on the module namspace like fs, os, path, etc.
 
----
+DO `import fs from 'fs'; fs.writeFileSync(...)`
+DO NOT `import { writeFileSync } from 'fs';`
 
 # package manager: pnpm with workspace
 
@@ -242,25 +272,7 @@ in this case, we could have only updated @better-auth/stripe to fix the issue to
 
 if after doing this we still have duplicate packages, you will have to ask the user for help. you can try deleting the node_modules and restarting the approach, but it rarely helps.
 
-
----
-
-## reading github repositories
-
-you can use gitchamber.com to read repo files. run `curl https://gitchamber.com` to see how the API works. always use curl to fetch the responses of gitchamber.com
-
-### vercel ai sdk documentation
-
-when working with the vercel ai sdk, you can fetch the latest docs using:
-https://gitchamber.com/repos/vercel/ai/main/files
-
-use gitchamber to read the .md files using curl
-
-you can swap out the topic with text you want to search docs for. you can also limit the total results returned with the param token to limit the tokens that will be added to the context window
-
----
-
-## react
+# react
 
 - never test react code. instead put as much code as possible in react-agnostic functions or classes and test those if needed.
 
@@ -274,7 +286,7 @@ you can swap out the topic with text you want to search docs for. you can also l
 
 - too many `useState` calls are bad. if some piece of state is dependent on other state just compute it as an expression in render. do not add new state unless strictly necessary. before adding a new useState to a component, use @think tool to think hard if you can instead: use expression with already existing local state, use expression with some global state, use expression with loader data, use expression with some other existing variable instead. for example if you need to show a popover when there is an error you should use the error as open state for the popover instead of adding new useState hook
 
-- `useCallback` is bad. it should be always avoided.
+- `useCallback` is bad. it should be always avoided unless for ref props. ref props ALWAYS need to be passed memoized functions or the component could remount on ever render!
 
 - NEVER pass functions to useEffect or useMemo dependencies. when you start passing functions to hook dependencies you need to add useCallback everywhere in the code, useCallback is a virus that infects the codebase and should be ALWAYS avoided.
 
@@ -300,94 +312,52 @@ you can swap out the topic with text you want to search docs for. you can also l
 
 - hooks should be put in the src/hooks.tsx file. do not create a new file for each new hook. also notice that you should never create custom hooks, only do it if asked for.
 
+## zustand
 
----
+zustand is the preferred way to created global React state. put it in files like state.ts or x-state.ts where x is something that describe a portion of app state in case of multiple global states or multiple apps
 
-## sentry
+- NEVER add zustand state setter methods. instead use useStore.setState to set state. For example never add a method `setVariable` in the state type. Instead call `setState` directly
 
-this project uses sentry to notify about unexpected errors.
+- zustand already merges new partial state with the previous state. NEVER DO `useStore.setState({ ...useStore.getInitialState(), ... })` unless for resetting state
 
-the website folder will have a src/lib/errors.ts file with an exported function `notifyError(error: Error, contextMessage: string)`.
+## non controlled input components
 
-you should ALWAYS use notifyError in these cases:
+some components do not have a value prop to set the value via React state. these are called uncontrolled components. Instead they usually let you get the current input value via ref. something like ref.current.value. They usually also have an onChange prop that let you know when the value changes
 
-- create a new spiceflow api app, put notifyError in the onError callback with context message including the api route path
-- suppressing an error for operations that can fail. instead of doing console.error(error) you should instead call notifyError
-- wrapping a promise with cloudflare `waitUntil`. add a .catch and a notifyError so errors are tracked
+these usually have a initialValue or defaultValue to programmatically set the initial value of the input
 
-this function will add the error in sentry so that the developer is able to track users' errors
+when using these components you SHOULD not track their state via React: instead you should programmatically set their value and read their value via refs in event handlers
 
-## errors.ts file
+tracking uncontrolled inputs via React state means that you will need to add useEffect to programmatically change their value when our state changes. this is an anti pattern. instead you MUST keep in mind the uncontrolled input manages its own state and we interface with it via refs and initialValue prop. 
 
-if a package is missing the errors.ts file, here is the template for adding one.
-
-notice that
-
-- dsn should be replaced by the user with the right one. ask to do so
-- use the sentries npm package, this handles correctly every environment like Bun, Node, Browser, etc
-
-```tsx
-import { captureException, flush, init } from "sentries";
-
-init({
-  dsn: "https://e702f9c3dff49fd1aa16500c6056d0f7@o4509638447005696.ingest.de.sentry.io/4509638454476880",
-  integrations: [],
-  tracesSampleRate: 0.01,
-  profilesSampleRate: 0.01,
-  beforeSend(event) {
-    if (process.env.NODE_ENV === "development") {
-      return null;
-    }
-    if (process.env.BYTECODE_RUN) {
-      return null;
-    }
-    if (event?.["name"] === "AbortError") {
-      return null;
-    }
-
-    return event;
-  },
-});
-
-export async function notifyError(error: any, msg?: string) {
-  console.error(msg, error);
-  captureException(error, { extra: { msg } });
-  await flush(1000);
-}
-
-export class AppError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AppError";
-  }
-}
-```
-
-## app error
-
-every time you throw a user-readable error you should use AppError instead of Error
-
-AppError messages will be forwarded to the user as is. normal Error instances instead could have their messages obfuscated
-
-
----
+using React state in these cases is only necessary if you have to show the input value during render. if that is not the case you can just use `inputRef.current.value` instead and set the value via `inputRef.current.value = something`
 
 # testing
 
-do not write new test files unless asked. do not write tests if there is not already a test or describe block for that function or module.
+.toMatchInlineSnapshot is the preferred way to write tests. leave them empty the first time, update them with -u. check git diff for the test file every time you update them with -u
+
+never use timeouts longer than 5 seconds for expects and other statements timeouts. increase timeouts for tests if required, up to 1 minute
+
+do not create dumb tests that test nothing. do not write tests if there is not already a test file or describe block for that function or module.
+
+if the inputs for the tests is an array of repetitive fields and long content, generate this input data programmatically instead of hardcoding everything. only hardcode the important parts and generate other repetitive fields in a .map or .reduce
 
 tests should validate complex and non-obvious logic. if a test looks like a placeholder, do not add it.
 
-use vitest to run tests. tests should be run from the current package directory and not root. try using the test script instead of vitest directly. additional vitest flags can be added at the end, like --run to disable watch mode or -u to update snapshots.
+use vitest or bun test to run tests. tests should be run from the current package directory and not root. try using the test script instead of vitest directly. additional vitest flags can be added at the end, like --run to disable watch mode or -u to update snapshots.
 
 to understand how the code you are writing works, you should add inline snapshots in the test files with expect().toMatchInlineSnapshot(), then run the test with `pnpm test -u --run` or `pnpm vitest -u --run` to update the snapshot in the file, then read the file again to inspect the result. if the result is not expected, update the code and repeat until the snapshot matches your expectations. never write the inline snapshots in test files yourself. just leave them empty and run `pnpm test -u --run` to update them.
 
 > always call `pnpm vitest` or `pnpm test` with `--run` or they will hang forever waiting for changes!
 > ALWAYS read back the test if you use the `-u` option to make sure the inline snapshots are as you expect.
 
+- NEVER write the snapshots content yourself in `toMatchInlineSnapshot`. instead leave it as is and call `pnpm test -u` to fill in snapshots content. the first time you call `toMatchInlineSnapshot()` you can leave it empty
+
+- when updating implementation and `toMatchInlineSnapshot` should change, DO NOT remove the inline snapshots yourself, just run `pnpm test -u` instead! This will replace contents of the snapshots without wasting time doing it yourself.
+
 - for very long snapshots you should use `toMatchFileSnapshot(filename)` instead of `toMatchInlineSnapshot()`. put the snapshot files in a snapshots/ directory and use the appropriate extension for the file based on the content
 
-never test client react components. only server code that runs on the server.
+never test client react components. only React and browser independent code. 
 
 most tests should be simple calls to functions with some expect calls, no mocks. test files should be called the same as the file where the tested function is being exported from.
 
@@ -403,442 +373,106 @@ sometimes tests work directly on database data, using prisma. to run these tests
 
 never write tests yourself that call prisma or interact with database or emails. for these, ask the user to write them for you.
 
----
+changelogs.md
+# github
 
-## changelog
 
-after you make a change that is noteworthy, add an entry in the CHANGELOG.md file in the root of the package. there are 2 kinds of packages, public and private packages. private packages have a private: true field in package.json, public packages do not and instead have a version field in package.json. public packages are the ones that are published to npm.
+you can use the `gh` cli to do operations on github for the current repository. For example: open issues, open PRs, check actions status, read workflow logs, etc.
 
-to write a changelog.md file for a public package, use the following format, add a heading with the new version and a bullet list of your changes, like this:
+## creating issues and pull requests
 
-```md
-## 0.1.3
+when opening issues and pull requests with gh cli, never use markdown headings or sections. instead just use simple paragraphs, lists and code examples. be as short as possible while remaining clear and using good English.
 
-### Patch Changes
+example:
 
-- bug fixes
+```bash
+gh issue create --title "Fix login timeout" --body "The login form times out after 5 seconds on slow connections. This affects users on mobile networks.
 
-## 0.1.2
+Steps to reproduce:
+1. Open login page on 3G connection
+2. Enter credentials
+3. Click submit
 
-### Patch Changes
+Expected: Login completes within 30 seconds
+Actual: Request times out after 5 seconds
 
-- add support for githubPath
+Error in console:
+\`\`\`bash
+Error: Request timeout at /api/auth/login
+\`\`\`"
 ```
 
-for private packages, which do not have versions, you must instead use the current date and time, for example:
+## get current github repo
 
-```md
-# Changelog
+`git config --get remote.origin.url`
 
-## 2025-01-24 19:50
+## checking status of latest github actions workflow run
 
-- Added a feature to improve user experience
-- Fixed a bug that caused the app to crash on startup
+```bash
+gh run list # lists latest actions runs
+gh run watch <id> --exit-status # if workflow is in progress, wait for the run to complete. the actions run is finished when this command exits. Set a tiemout of at least 10 minutes when running this command
+gh pr checks --watch --fail-fast # watch for current branch pr ci checks to finish
+gh run view <id> --log-failed | tail -n 300 # read the logs for failed steps in the actions run
+gh run view <id> --log | tail -n 300 # read all logs for a github actions run
 ```
 
-these are just examples. be clear and concise in your changelog entries.
+## responding to PR reviews and comments (gh-pr-review extension)
 
-use present tense. be detailed but concise, omit useless verbs like "implement", "added", just put the subject there instead, so it is shorter. it's implicit we are adding features or fixes. do not use nested bullet points. always show example code snippets if applicable, and use proper markdown formatting.
+```bash
+# view reviews and get thread IDs
+gh pr-review review view 42 -R owner/repo --unresolved
 
+# reply to a review comment
+gh pr-review comments reply 42 -R owner/repo \
+  --thread-id PRRT_kwDOAAABbcdEFG12 \
+  --body "Fixed in latest commit"
+
+# resolve a thread
+gh pr-review threads resolve 42 -R owner/repo --thread-id PRRT_kwDOAAABbcdEFG12
 ```
 
-the website package has a dependency on docs-website. instead of duplicating code that is needed both in website and docs-website keep a file in docs-website instead and import from there for the website package.
+## reading github repos source code
 
----
+```sh
+opensrc zod # npm package name
 
-## writing docs
+# Using github: prefix
+opensrc github:owner/repo
 
-when generating a .md or .mdx file to document things, always add a frontmatter with title and description. also add a prompt field with the exact prompt used to generate the doc. use @ to reference files and urls and provide any context necessary to be able to recreate this file from scratch using a model. if you used urls also reference them. reference all files you had to read to create the doc. use yaml | syntax to add this prompt and never go over the column width of 80
+# Using owner/repo shorthand
+opensrc facebook/react
 
----
+# Using full GitHub URL
+opensrc https://github.com/colinhacks/zod
 
-# secrets
+# Fetch a specific branch or tag
+opensrc owner/repo@v1.0.0
+opensrc owner/repo#main
 
-this project uses doppler to manage secrets, with a single project with 3 envs: dev, preview and production. dev is the env already selected and implicit in doppler calls.
+# Mix packages and repos
+```
 
-in typescript never use process.env directly. instead find the closest `env.ts` file that exports an env object (this file should already exist). so the env can be used type-safely and i can clearly see which secrets are available and need to be added.
+This will download the source code in ./opensrc. which should be put in .gitignore
 
----
-
-## cac for cli development
+# cac for cli development
 
 the cli uses cac npm package.
 
-notice that if you add a route in the spiceflow server you will need to run `pnpm --filter unframer gen-client` to update the apiClient inside unframer cli. same for plugin-mcp
+# spiceflow
 
+before writing or updating spiceflow related code always execute this command to get Spiceflow full documentation: `curl -s https://gitchamber.com/repos/remorses/spiceflow/main/files/README.md`
 
----
+spiceflow is an API library similar to hono, it allows you to write api servers using whatwg requests and responses
 
-## prisma
+use zod to create schemas and types that need to be used for tool inputs or spiceflow API routes.
 
-this project uses prisma to interact with the database. if you need to add new queries always read the schema.prisma inside the db folder first so you understand the shape of the tables in the database.
+## calling the server from the clientE
 
-never add new tables to the prisma schema, instead ask me to do so.
-
-prisma upsert calls are preferable over updates, so that you also handle the case where the row is missing.
-
-never make changes to schema.prisma yourself, instead propose a change with a message and ask me to do it. this file is too important to be edited by agents.
-
-NEVER run `pnpm push` in db or commands like `pnpm prisma db push` or other prisma commands that mutate the database!
-
-### prisma queries for relations
-
-- NEVER add more than 1 include nesting. this is very bad for performance because prisma will have to do the query to get the relation sequentially. instead of adding a new nested `include` you should add a new prisma query and wrap them in a `Promise.all`
-
-### prisma transactions for complex relations inserts
-
-for very complex updates or inserts that involve more than 3 related tables, for example a Chat with ChatMessages and ChatMessagePath, you should use transaction instead of a super complex single query:
-
-- start a transaction
-- delete the parent table, the one with cascade deletes, so that the related tables are also deleted
-- recreate all the tables again, reuse the old existing rows data when you don't have all the fields available
-- make sure to create all the rows in the related tables. use for loops if necessary
-
-### prisma, always make sure user has access to prisma tables
-
-> IMPORTANT! always read the schema.prisma file before adding a new prisma query, to understand how to structure it
-
-try to never write sql by hand, use prisma
-
-if a query becomes too complex because fetching too deeply into related tables (more than 1 `include` nesting), use different queries instead, put them in a Promise.all
-
-### prisma, concurrency
-
-when doing prisma queries or other async operations try to parallelize them using Promise.all
-
-this will speed up operations that can be done concurrently.
-
-this is especially important in react-router loaders
-
-### prisma security
-
-all loaders, actions and spiceflow routes of the project should have authorization checks.
-
-these checks should check that the current user, identified by userId, has access to the fetched and updated rows.
-
-this simply means to always include a check in prisma queries to make sure that the user has access to the updated or queried rows, for example:
-
-```typescript
-const resource = await prisma.resource.findFirst({
-    where: { resourceId, parentResource: { users: { some: { userId } } } },
-})
-if (!resource) {
-    throw new AppError(`cannot find resource`)
-}
-```
-
-### prisma transactions
-
-NEVER use prisma interactive transactions (passing a function to `prisma.$transaction`), instead pass an array of operations. this is basically the same thing, operations are executed in order, but it has much better performance.
-
-if you need to use complex logic to construct the array of operations, create an empty array using `const operations: Prisma.PrismaPromise<any>[]` first, then push to this array the queries you want to execute
-
-> IMPORTANT! while constructing the operations array you should never call await in between, this would cause the prisma query to start and would make the transaction invalid.
-
-````typescript
-
-## errors
-
-if you throw an error that is not unexpected you should use the `AppError` class, this way I can skip sending these errors to Sentry in the `notifyError` function
-
-for example for cases where a resource is not found or user has no subscription.
-
-you can even throw response errors, for example:
-
-```typescript
-if (!user.subscription) {
-    throw new ResponseError(
-        403,
-        JSON.stringify({ message: `user has no subscription` }),
-    )
-}
-````
-
----
-
-# react router v7
-
-the website uses react-router v7.
-
-NEVER start the dev server yourself with `pnpm dev`, instead ask me to do so.
-
-react-router framework is the successor of remix. it is basically the same framework and it uses loaders and actions as core features.
-
-react-router follows all the conventions of remix but all imports must be updated to point to `react-router` instead of `@remix-run/react` or `@remix-run/node`.
-
-## react-router navigation state
-
-react-router has the hook `useNavigation` that exposes the navigation state. ALWAYS use this hook to track loading state for navigation
-
-```ts
-const navigation = useNavigation()
-
-if (navigation.state === 'loading' || navigation.state === 'submitting') {
-    return null
-}
-```
-
-> when making changes to the website code only use the `pnpm typecheck` script to validate changes, NEVER run `pnpm build` unless asked. It is too slow.
-
-## Creating New Routes and Handling Types
-
-When creating a new React Router route, follow these steps:
-
-### 1. Create the route file
-Create a file in `src/routes/` using flat routes naming convention (dots for separators, $ for params, kebab-case).
-
-### 2. Generate types
-**IMPORTANT**: Types are NOT automatically generated. After creating a route, run:
-```bash
-pnpm exec react-router typegen
-```
-
-### 3. Import Route types
-```typescript
-import type { Route } from './+types/your-route-name'
-```
-Note: The `+types` directory doesn't physically exist - it's virtual/generated.
-
-### 4. Verify with typecheck
-```bash
-pnpm typecheck  # This runs typegen first, then tsc
-```
-
-### Troubleshooting Missing Types
-- Types missing? Run `pnpm exec react-router typegen`
-- Import failing? Check filename matches import path exactly
-- Types not updating? Run `pnpm typecheck` to regenerate
-- The `+types` directory is virtual - don't look for it in the filesystem
-
-### Best Practices
-- Always run `pnpm typecheck` after creating/modifying routes
-- Export `Route` type from layout routes for child routes to import
-- Use `href()` for all internal paths, even in redirects
-
-## react-router layout routes
-
-react-router layout routes are simply routes that share a prefix with some children routes. these routes will run their loaders and components also when the children paths are fetched.
-
-components can render children routes using the Outlet component
-
-```tsx
-export function Component() {
-    return <Outlet />
-}
-```
-
-the loader data from parent layouts will NOT be present in the children routes `Route.componentProps['loaderData']` type. instead you have to use the `useRouteLoaderData('/prefix-path')` instead. always add the type to these calls getting the `Route` type from the parent layout
-
-> layout routes should ALWAYS export their own Route namespace types so that child route can use it to type `useRouteLoaderData`!
-
-## cookies
-
-never use react-router or remix `createCookieSessionStorage`. instead just use the npm cookie package to serialize and parse cookies. keep it simple.
-
-if you want to store json data in cookies, remember to use encodeURIComponent to encode the data before storing it in the cookie, and decodeURIComponent to decode it when reading it back. this is because cookies can only store string values.
-
-## website, react-routes
-
-website routes use the flat routes filesystem routes, inside src/routes. these files encode the routing logic in the filename, using $id for params and dot . for slashes.
-
-if 2 routes share the same prefix, then the loader of both routes is run on a request and the route with the shorter route name is called a layout. a layout can also use <Outlet /> to render the child route inside it. for example, /org/x/site will run loaders in `org.$orgid` and `org.$orgid.site`. if you want instead to create a route that is not a layout route, where the loader does not run for routes that share the prefix, append \_index to the filename, for example `org.$orgid._index` in the example before.
-
-if you need to add new prisma queries or data fetching in loaders, put it in layouts if possible. this way the data is fetched less often. you can do this if the data does not depend on the children routes' specific parameters.
-
-## route file exports
-
-you can export the functions `loader` and `action` to handle loading data and submitting user data.
-
-the default export (not always required for API routes) is the jsx component that renders the page visually.
-
-notice that the `json` util was removed from `react-router`. instead there is a function `data` which is very similar and accepts a second argument to add headers and status like `json` does, but it supports more data types than json, like generators, async generators, dates, map, sets, etc.
-
-## Route type safety
-
-react-router exports a `Route` namespace with types like `Route.LoaderArgs`, `Route.ActionArgs` and `Route.ComponentProps`
-
-these types can be used for the main route exports, they must be imported from `./+types/{route-basename}`
-
-for example, if the current file is `src/routes/home.tsx` you can import `import { Route } from './+types/home'`.
-
-when using loader data in components, it is preferable to use useRouteLoaderData instead of just useLoaderData, so that if the route data is not accessible an error is thrown instead of silently failing with the wrong data.
-
-you can use the Route types even to type other components that rely on `useRouteLoaderData`. but to do this you cannot import from `+types`, only route files can do that. instead you should export the Route type from the route file and let the component file import from the route.
-
-here is an example to get the loader data type safely from a component:
-
-> useRouteLoaderData return type is `Route.componentProps['loaderData']`
-
-```ts
-import type { Route } from 'website/src/routes/root'
-
-const { userId } = useRouteLoaderData(
-    'root',
-) as Route.componentProps['loaderData']
-```
-
-```ts
-// this path should export Route first. make sure of that
-import type { Route } from 'website/src/routes/org.$orgId'
-
-const { userId } = useRouteLoaderData(
-    'routes/org.$orgId',
-) as Route.componentProps['loaderData']
-```
-
-you can do the same thing with action data, using `Route.componentProps['actionData']`
-
-## links type safety
-
-ALWAYS use the react-router href function to create links, it works as follow
-
-```ts
-import { href } from 'react-router'
-
-const path = href('/org/:orgId', { orgId })
-```
-
-if you need to have an absolute url you can do `new URL(href('/some/path'), env.PUBLIC_URL)`
-
-the only case where you should not use href is for urls outside of the current app or routes like `routes/$.tsx`, basically routes that match all paths.
-
-> if you cannot use `href` simply because the route you would like to link to does not exist, you should do the following: list all the files in the src/routes folder first, to see if it already exists but not with the name you would expect. if still you can't find one, create a simple placeholder react-router route with a simple page component and a simple loader that does what you would expect. do not write too much code. you can improve on it in later messages.
-
-## showing spinner while loader does work and then redirect
-
-for routes that do slow operations like creating PRs and then redirect, use a loader that returns a promise. the component uses window.location.replace when the promise resolves.
-
-> IMPORTANT: react router does not preserve errors thrown in promises returned from loaders. NEVER throw errors inside promises returned from loaders. instead, add a .catch to make sure errors are never thrown and returned as values instead. then use instanceof check in client
-
-```tsx
-export async function loader({ request, params: { id } }: Route.LoaderArgs) {
-    const url = new URL(request.url)
-    const data = url.searchParams.get('data')
-    const promise = doSlowWork(id, data)
-        .catch(error => {
-            notifyError(error)
-            return error
-        })
-    return { promise }
-}
-
-export default function Page() {
-    const { promise } = useLoaderData<typeof loader>()
-    const [error, setError] = useState('')
-
-    useEffect(() => {
-        promise.then(result => {
-            if (result instanceof Error) {
-                setError(result.message)
-                return
-            }
-            window.location.replace(result.url)
-        })
-    }, [promise])
-
-    if (error) return <p className='text-red-600'>Error: {error}</p>
-    return <Loader2Icon className='h-6 w-6 animate-spin' />
-}
-```
-
-## do not redirect to missing routes that do not exist
-
-never redirect or link to a route that does not exist. instead create a simple placeholder route with a simple loader and component. then redirect there using type-safe path with `href`
-
-if instead it's not clear where to redirect because a user resource is missing, check if an onboarding route exists for that resource or a generic onboarding route. redirect there instead
-
-also keep in mind it's preferable to throw redirects in loaders instead of returning responses, so loader keeps type safety.
-
-## client side navigation is preferred
-
-always try to use react-router `useNavigate` or `Link` instead of doing window.location.href update.
-
-so that internal navigation is done client side and is faster. notice that navigate only accepts a relative path and not a full url, so if you have a full url you should do new URL(url).pathname. only use navigate if you know the url is relative to the app.
-
-## Link or a components are preferred over `navigate`
-
-ALWAYS use link components instead of the navigate function if possible. for example, in a dropdown component you should wrap the dropdown item in a link instead of adding an onClick handler.
-
-# Creating New React Router Routes and Handling Types
-
-When creating a new React Router route, follow these steps:
-
-## 1. Create the route file
-Create a file in `src/routes/` using flat routes naming convention (dots for separators, $ for params, kebab-case).
-
-## 2. Generate types
-**IMPORTANT**: Types are NOT automatically generated. After creating a route, run:
-```bash
-pnpm exec react-router typegen
-```
-
-## 3. Import Route types
-```typescript
-import type { Route } from './+types/your-route-name'
-```
-Note: The `+types` directory doesn't physically exist - it's virtual/generated.
-
-## 4. Verify with typecheck
-```bash
-pnpm typecheck  # This runs typegen first, then tsc
-```
-
-## Troubleshooting Missing Types
-- Types missing? Run `pnpm exec react-router typegen`
-- Import failing? Check filename matches import path exactly
-- The `+types` directory is virtual - don't look for it in the filesystem
-
-## Best Practices
-- Always run `pnpm typecheck` after creating/modifying routes
-- Export `Route` type from layout routes for child routes to import
-- Use `href()` for all internal paths, even in redirects
-
-
----
-
-## styling
-
-- always use tailwind for styling. prefer using simple styles using flex and gap. margins should be avoided, instead use flexbox gaps, grid gaps, or separate spacing divs.
-
-- use shadcn theme colors instead of tailwind default colors. this way there is no need to add `dark:` variants most of the time.
-
-- `flex flex-col gap-3` is preferred over `space-y-3`. same for the x direction.
-
-- try to keep styles as simple as possible, for breakpoints too.
-
-- to join many classes together use the `cn('class-1', 'class-2')` utility instead of `${}` or other methods. this utility is usually used in shadcn-compatible projects and mine is exported from `website/src/lib/cn` usually. prefer doing `cn(bool && 'class')` instead of `cn(bool ? 'class' : '')`
-
-- prefer `size-4` over `w-4 h-4`
-
-## components
-
-this project uses shadcn components placed in the website/src/components/ui folder. never add a new shadcn component yourself by writing code. instead use the shadcn cli installed locally.
-
-try to reuse these available components when you can, for example for buttons, tooltips, scroll areas, etc.
-
----
-
-## tailwind v4
-
-this project uses tailwind v4. this new tailwind version does not use tailwind.config.js. instead it does all configuration in css files.
-
-read https://tailwindcss.com/docs/upgrade-guide to understand the updates landed in tailwind v4 if you do not have tailwind v4 in your training context. ignore the parts that talk about running the upgrade cli. this project already uses tailwind v4 so no need to upgrade anything.
-
----
-
-## lucide icons
-
-use lucide-react to import icons. always add the Icon import name, for example `ImageIcon` instead of just `Image`.
-
----
-
-## calling the server from the client
+you can obtain a type safe client for the API using `createSpiceflowClient` from `spiceflow/client`
 
 for simple routes that only have one interaction in the page, for example a form page, you should use react-router forms and actions to interact with the server.
 
 but when you do interactions from a component that can be rendered from multiple routes, or simply is not implemented inside a route page, you should use spiceflow client instead.
-
-the website exposes an API via spiceflow. here is spiceflow docs: https://getspiceflow.com/
 
 > ALWAYS use the fetch tool to get the latest docs if you need to implement a new route in a spiceflow API app server or need to add a new rpc call with a spiceflow api client!
 
@@ -857,34 +491,54 @@ spiceflow is a little-known api framework. if you add server routes to a file th
 
 this url returns a single long documentation that covers your use case. always fetch this document so you know how to use spiceflow. spiceflow is different from hono and other api frameworks, that's why you should ALWAYS fetch the docs first before using it
 
+## using spiceflow client in published public workspace packages
 
----
+usually you can just import the App type from the server workspace to create the client with createSpiceflowClient
 
-## ai sdk
+if you want to use the spiceflow client in a published package instead we will use the pattern of generating .d.ts and copying these in the workspace package, this way the package does not need to depend on unpublished private server package.
 
-i use the vercel ai sdk to interact with LLMs, also known as the npm package `ai`. never use the openai sdk or provider-specific sdks, always use the vercel ai sdk, npm package `ai`. streamText is preferred over generateText, unless the model used is very small and fast and the current code doesn't care about streaming tokens or showing a preview to the user. `streamObject` is also preferred over generateObject.
+example:
 
-ALWAYS fetch the latest docs for the ai sdk using this url with curl:
-https://gitchamber.com/repos/vercel/ai/main/files
+```json
+{
+  "scripts": {
+    "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"
+  }
+}
+```
 
-use gitchamber to read the .md files using curl
+notice that if you add a route in the spiceflow server you will need to run `pnpm --filter website gen-client` to update the apiClient inside cli.
 
-you can swap out the topic with text you want to search docs for. you can also limit the total results returned with the param token to limit the tokens that will be added to the context window
+## dedent
 
----
+when creating long strings in functions use dedent so that we can indent the string content and make it more readable
 
-## playwright
+for example:
 
-you can control the browser using the playwright mcp tools. these tools let you control the browser to get information or accomplish actions
+```ts
+import dedent from 'string-dedent'
 
-if i ask you to test something in the browser, know that the website dev server is already running at http://localhost:7664 for website and :7777 for docs-website (but docs-website needs to use the website domain specifically, for example name-hash.localhost:7777)
+const content = dedent`
+  some content
+```
 
----
+IMPORTANT: notice that i have at start and end a new line. this is required when using string-dedent. Also notice npm package `string-dedent` instead of `dedent`.
 
-## zod
+When creating code snippets alias dedent to variables like html or javascript so that I get syntax highlight in my editor: `const html = dedent`
 
-use zod to create schemas and types that need to be used for tool inputs or spiceflow API routes.
+# tailwind v4
 
-when you need to create a complex type that comes from a prisma table, do not create a new schema that tries to recreate the prisma table structure. instead just use `z.any() as ZodType<PrismaTable>)` to get type safety but leave any in the schema. this gets most of the benefits of zod without having to define a new zod schema that can easily go out of sync.
+this project uses tailwind v4. this new tailwind version does not use tailwind.config.js. instead it does all configuration in css files.
 
----
+read https://tailwindcss.com/docs/upgrade-guide to understand the updates landed in tailwind v4 if you do not have tailwind v4 in your training context. ignore the parts that talk about running the upgrade cli. this project already uses tailwind v4 so no need to upgrade anything.
+
+## spacing should use multiples of 4
+
+for margin, padding, gaps, widths and heights it is preferable to use multiples of 4 of the tailwind spacing scale. for example p-4 or gap-4
+
+4 is equal to 16px which is the default font size of the page. this way every spacing is a multiple of the height and width of a default letter.
+
+user interfaces are mostly text so using the letter width and height as a base unit makes it easier to reason about the layout and sizes.
+
+use grow instead of flex-1.
+

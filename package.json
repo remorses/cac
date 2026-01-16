@@ -6,7 +6,8 @@
         "bootstrap": "pnpm --parallel --filter spiceflow build && pnpm --filter db gen",
         "typecheck": "pnpm --filter spiceflow build && pnpm -r --filter '!spiceflow' --parallel --no-bail typecheck",
         "build": "pnpm -r build",
-        "release": "git rebase main && git checkout main && git merge preview && git push && git checkout preview"
+        "release": "git rebase main && git checkout main && git merge preview && git push && git checkout preview",
+        "agents.md": "agentsdotmd ./UNFRAMER_PRIVATE_AGENTS.md core.md typescript.md pnpm.md react.md vitest.md changelog.md github.md cac.md spiceflow.md dedent.md tailwind.md"
     },
     "workspaces": [
         "./*",
