@@ -1,4 +1,3 @@
-import { Evt } from 'evt'
 import * as fs from 'fs'
 
 import * as path from 'path'
@@ -45,10 +44,6 @@ export const freeComponents = 10
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 export type ComponentObject = z.infer<typeof componentObjectSchema>
-
-type FramerEvent = { type: 'change'; components: ReactExportComponent[] }
-
-let projectsEvents = new Map<string, Evt<FramerEvent>>()
 
 export const reactPluginApp = new Spiceflow({
     basePath: '/reactExportPlugin',
@@ -116,55 +111,6 @@ export const reactPluginApp = new Spiceflow({
             }
 
             return project
-        },
-        {},
-    )
-    .post(
-        '/project/:projectId/publish',
-        async ({ request, params }) => {
-            const { projectId } = params
-            const { components } = await request.json()
-            if (!projectsEvents.has(projectId)) {
-                projectsEvents.set(projectId, new Evt())
-            }
-            const emitter = projectsEvents.get(projectId)!
-            console.log(
-                'Framer emitting event for components',
-                components.map((x) => x.url),
-            )
-            emitter.post({ type: 'change', components })
-
-            return 'ok'
-        },
-        {
-            body: z.object({
-                components: z.array(z.any() as ZodType<ReactExportComponent>),
-            }),
-        },
-    )
-    .get(
-        '/project/:projectId/subscribe',
-        async function* ({ params }) {
-            const { projectId } = params
-
-            const project = await getProject({ projectId })
-            try {
-                yield { type: 'project' as const, ...project }
-                const emitter = projectsEvents.get(projectId)
-                if (!emitter) {
-                    return
-                }
-
-                // https://docs.evt.land/api/evt/async-iterator
-                for await (const event of emitter.iter()) {
-                    console.log('emitting event', event)
-                    yield event
-                }
-            } finally {
-                const emitter = projectsEvents.get(projectId)
-                emitter?.detach()
-                projectsEvents.delete(projectId)
-            }
         },
         {},
     )
