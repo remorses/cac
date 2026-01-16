@@ -664,58 +664,6 @@ paths:
           content:
             '*/*':
               schema: {}
-  /api/plugins/reactExportPlugin/project/{projectId}/publish:
-    post:
-      parameters:
-        - schema:
-            type: string
-          in: path
-          name: projectId
-          required: true
-      responses:
-        '200':
-          description: ''
-          content:
-            '*/*':
-              schema: {}
-        default:
-          description: ''
-          content:
-            '*/*':
-              schema: {}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                components:
-                  type: array
-                  items: {}
-              required:
-                - components
-  /api/plugins/reactExportPlugin/project/{projectId}/subscribe:
-    get:
-      x-fern-streaming:
-        format: sse
-      parameters:
-        - schema:
-            type: string
-          in: path
-          name: projectId
-          required: true
-      responses:
-        '200':
-          description: ''
-          content:
-            '*/*':
-              schema: {}
-        default:
-          description: ''
-          content:
-            '*/*':
-              schema: {}
   /api/plugins/reactExportPlugin/subscriptions:
     get:
       parameters:
