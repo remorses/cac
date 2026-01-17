@@ -64,6 +64,58 @@ function createWebsiteApiClient(env: MyEnv): SpiceflowClient.Create<RouteType> {
     return createSpiceflowClient<RouteType>(baseUrl)
 }
 
+const SESSION_CACHE_TTL = 60 * 5 // 5 minutes
+
+interface CachedSessionData {
+    framerUserId: string
+    email: string | undefined
+    cachedAt: number
+}
+
+async function getValidatedSession({
+    env,
+    secret,
+    id,
+}: {
+    env: MyEnv
+    secret: string
+    id: string
+}): Promise<{ framerUserId: string; email: string | undefined } | null> {
+    const cacheKey = `session-valid:${secret}`
+
+    const cached = (await env.OAUTH_KV.get(
+        cacheKey,
+        'json',
+    )) as CachedSessionData | null
+    if (cached) {
+        console.log(`Session cache HIT for ${id}`)
+        return { framerUserId: cached.framerUserId, email: cached.email }
+    }
+
+    console.log(`Session cache MISS for ${id}`)
+    const apiClient = createWebsiteApiClient(env)
+    const { data, error } = await apiClient.api.plugins.mcp.validateSession.post(
+        {
+            sessionToken: secret,
+        },
+    )
+
+    if (error) {
+        return null
+    }
+
+    const cacheData: CachedSessionData = {
+        framerUserId: data.framerUserId || id,
+        email: data.email,
+        cachedAt: Date.now(),
+    }
+    await env.OAUTH_KV.put(cacheKey, JSON.stringify(cacheData), {
+        expirationTtl: SESSION_CACHE_TTL,
+    })
+
+    return { framerUserId: cacheData.framerUserId, email: cacheData.email }
+}
+
 // Helper to create Supabase client with headers
 interface SupabaseSessionArgs {
     request: Request
@@ -694,28 +746,20 @@ const handler = {
             const secret = url.searchParams.get('secret')
 
             if (!id || !secret) {
-                // will show login page
-                return new Response('Invalid session', { status: 401 })
-            }
-            // Legacy authentication mode - validate and set props
-            const apiClient = createWebsiteApiClient(env)
-            const { data: data, error: validationError } =
-                await apiClient.api.plugins.mcp.validateSession.post({
-                    sessionToken: secret,
-                })
-
-            if (validationError) {
                 return new Response('Invalid session', { status: 401 })
             }
 
-            // Set props for legacy mode
+            const sessionData = await getValidatedSession({ env, secret, id })
+            if (!sessionData) {
+                return new Response('Invalid session', { status: 401 })
+            }
+
             ctx.props = {
-                framerUserId: data.framerUserId || id,
+                framerUserId: sessionData.framerUserId,
                 secret,
-                email: data.email,
+                email: sessionData.email,
             } satisfies MCPProps
 
-            // Call the SSE handler with legacy props
             return MyMCP.serveSSE('/sse').fetch(request, env, ctx)
         }
         return await oauthProvider.fetch(request, env, ctx)
