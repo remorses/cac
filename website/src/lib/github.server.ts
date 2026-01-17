@@ -261,6 +261,7 @@ export async function upsertGithubFile({
                 sha,
                 branch: githubBranch,
                 committer: committer,
+                author: committer,
             }),
         { maxRetries: 3, initialDelay: 1000 },
     ).catch((e) => {
@@ -459,6 +460,7 @@ export async function createNewRepo({
             message: `Unframer Initial Commit`,
             tree: tree.sha,
             committer: committer,
+            author: committer,
             parents: [commitSha], // Use the existing commit as parent
         }),
         createRepoSecret({
@@ -688,8 +690,8 @@ export async function pushChangesToNewBranch({
             filePaths: files.map((x) => x.filePath),
         }),
         tree: newTree.sha,
-
         committer: committer,
+        author: committer,
         parents: [commitSha],
     })
 
