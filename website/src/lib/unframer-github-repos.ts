@@ -227,7 +227,7 @@ export async function generateUnframerRepo({
 
                 git pull --rebase origin "\${{ github.ref_name }}" || true
                 git commit -m "chore: automated update [skip ci]"
-                git push origin HEAD:"\${{ github.ref_name }}"
+                git push origin HEAD:"\${{ github.ref_name }}" || true
             - name: Auto-fix with OpenCode on failure
               if: \${{ (steps.framer.outcome == 'failure' || steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure') && !cancelled() }}
               env:
