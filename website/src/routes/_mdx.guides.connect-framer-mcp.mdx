@@ -44,51 +44,29 @@ After login, all MCP commands become available. Run `npx unframer --help` to see
 
 ## Example Commands
 
-Get the project structure as XML:
-
 ```bash
+# Get project structure as XML
 npx unframer mcp getProjectXml
-```
 
-Get a specific node by ID:
-
-```bash
+# Get a specific node by ID
 npx unframer mcp getNodeXml --nodeId "abc123"
-```
 
-Update a node's text or attributes:
+# Update a node's text or attributes
+npx unframer mcp updateXmlForNode --nodeId "abc123" --xml '<Text nodeId="abc123">New text</Text>'
 
-```bash
-npx unframer mcp updateXmlForNode --nodeId "abc123" --xml '<Text nodeId="abc123">New text content</Text>'
-```
-
-Search for available fonts:
-
-```bash
+# Search for available fonts
 npx unframer mcp searchFonts --query "Inter"
-```
 
-List all CMS collections:
-
-```bash
+# List all CMS collections
 npx unframer mcp getCMSCollections
-```
 
-Get items from a CMS collection:
-
-```bash
+# Get items from a CMS collection
 npx unframer mcp getCMSItems --collectionId "col123"
-```
 
-Export React components:
-
-```bash
+# Export React components
 npx unframer mcp exportReactComponents
-```
 
-Run any command with `--help` for detailed options:
-
-```bash
+# Run any command with --help for detailed options
 npx unframer mcp updateXmlForNode --help
 ```
 
