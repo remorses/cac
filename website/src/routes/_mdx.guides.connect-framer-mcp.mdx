@@ -16,13 +16,13 @@ import { CodeBlock, InstallInCursorButton } from './_mdx'
 
 Run the following command to automatically install Framer MCP to your preferred AI client:
 
-export const installMcpCommand = `npx -y @anthropic-ai/claude-code mcp add --transport sse framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+export const installMcpCommand = `npx -y @playwriter/install-mcp --oauth no "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
 
 <CodeBlock title='Terminal' language='bash'>
     {installMcpCommand}
 </CodeBlock>
 
-The command will prompt you to choose which client to install to (Cursor, Claude Desktop, VS Code, etc.).
+This will prompt you to choose which client to install to (Cursor, Claude Code, Claude Desktop, VS Code, Zed, etc.).
 
 ---
 
