@@ -2,13 +2,49 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import yaml from 'js-yaml'
 import { createMCPClient } from './mcp-client.js'
 
-const mcpUrl =
+const sseUrl =
     'https://mcp.preview.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
+
+const httpUrl = sseUrl.replace('/sse?', '/mcp?')
+
+
+
+describe('HTTP Streamable Transport', () => {
+    it(
+        'should get tools schema using HTTP Streamable transport',
+        async () => {
+            console.log('Connecting to HTTP Streamable transport at:', httpUrl)
+            const { client, cleanup } = await createMCPClient({
+                mcpUrl: httpUrl,
+                clientName: 'framer-test-http-streamable',
+                transport: 'streamable-http',
+            })
+
+            try {
+                console.log('Connected, listing tools...')
+                const schema = await client.listTools()
+                expect(schema).toBeDefined()
+                expect(schema.tools).toBeDefined()
+                expect(Array.isArray(schema.tools)).toBe(true)
+                expect(schema.tools.length).toBeGreaterThan(0)
+
+                // Verify some expected tools exist
+                const toolNames = schema.tools.map((t: any) => t.name)
+                expect(toolNames).toContain('getProjectXml')
+                expect(toolNames).toContain('getNodeXml')
+                console.log('Test passed! Found', schema.tools.length, 'tools')
+            } finally {
+                await cleanup()
+            }
+        },
+        30000,
+    )
+})
 
 describe('Tools Schema', () => {
     it('should get tools schema and match file snapshot', async () => {
         const { client } = await createMCPClient({
-            mcpUrl,
+            mcpUrl: sseUrl,
             clientName: 'framer-test-schema',
         })
         const schema = await client.listTools()
@@ -38,7 +74,7 @@ describe(
 
         beforeAll(async () => {
             const result = await createMCPClient({
-                mcpUrl,
+                mcpUrl: sseUrl,
                 clientName: 'framer-test',
             })
             callTool = result.callTool
@@ -815,9 +851,9 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Retrieved 1 of 11 item(s) from collection \\"Articles\\"",
+                "message": "Retrieved 1 of 13 item(s) from collection \\"Articles\\"",
                 "pagination": {
-                  "total": 11,
+                  "total": 13,
                   "skip": 0,
                   "limit": 1,
                   "returned": 1
@@ -914,19 +950,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-7420\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-2953\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "bQ2IJcEcg",
-                  "slug": "test-item-7420",
+                  "id": "q2_RkCFcG",
+                  "slug": "test-item-2953",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 7420"
+                      "value": "Test Item 2953"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-10-20T12:30:23.947Z"
+                      "value": "2026-01-23T21:56:50.804Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -938,7 +974,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 7420</p>"
+                      "value": "<p dir=\\"auto\\">Test content for item 2953</p>"
                     }
                   }
                 }
@@ -978,19 +1014,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-7420\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-2953\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "bQ2IJcEcg",
-                  "slug": "test-item-7420",
+                  "id": "q2_RkCFcG",
+                  "slug": "test-item-2953",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 4737"
+                      "value": "Updated Item 8154"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2025-10-20T12:30:23.947Z"
+                      "value": "2026-01-23T21:56:50.804Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1002,7 +1038,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p>Test content for item 7420</p>"
+                      "value": "<p dir=\\"auto\\">Test content for item 2953</p>"
                     }
                   }
                 }
@@ -1029,10 +1065,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-7420\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-2953\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "bQ2IJcEcg",
-                  "slug": "test-item-7420"
+                  "id": "q2_RkCFcG",
+                  "slug": "test-item-2953"
                 }
               }"
             `)
@@ -1070,7 +1106,7 @@ function tryJsonParse(str: string) {
     } catch {
         const lastBraceIndex = str.lastIndexOf('}')
         if (lastBraceIndex === -1) return str
-        
+
         for (let i = 0; i <= lastBraceIndex; i++) {
             if (str[i] === '{' || str[i] === '[') {
                 try {

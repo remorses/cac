@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import type { McpCallParam, McpToolNames, mcpTools } from './schema.js'
 import z from 'zod'
@@ -7,6 +8,7 @@ import z from 'zod'
 export interface CreateTransportOptions {
     clientName?: string
     mcpUrl: string
+    transport?: 'sse' | 'streamable-http'
 }
 
 export async function createTransport(
@@ -14,11 +16,16 @@ export async function createTransport(
 ): Promise<{
     transport: Transport
 }> {
-    const sseUrl = new URL(options.mcpUrl)
-    const transport = new SSEClientTransport(sseUrl)
-    return {
-        transport,
+    const url = new URL(options.mcpUrl)
+    const transportType = options.transport ?? 'sse'
+
+    if (transportType === 'streamable-http') {
+        const transport = new StreamableHTTPClientTransport(url)
+        return { transport }
     }
+
+    const transport = new SSEClientTransport(url)
+    return { transport }
 }
 
 export async function createMCPClient(options: CreateTransportOptions) {
