@@ -1,23 +1,23 @@
 Successfully updated:
-Created Frame node f0muk1Ftx
-Created Frame node kk_FlpqWA
-Created Frame node RC7BUR264
-Updated attributes for node f0muk1Ftx
-Updated attributes for node kk_FlpqWA
-Updated attributes for node RC7BUR264
-Reordered node kk_FlpqWA within parent f0muk1Ftx to index 0
+Created Frame node Gz82cAbQd
+Created Frame node Q5x_HoEYd
+Created Frame node M0BnlzyjK
+Updated attributes for node Gz82cAbQd
+Updated attributes for node Q5x_HoEYd
+Updated attributes for node M0BnlzyjK
+Reordered node Q5x_HoEYd within parent Gz82cAbQd to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -455,40 +455,71 @@
+@@ -524,40 +524,71 @@
                stackDistribution="center"
                stackAlignment="center"
            >
              <Frame
-                 nodeId="Zn44XUzuT"
+                 nodeId="eUtmX7NVC"
                  width="100px"
                  height="100px"
                  <!-- background color string or project color style path (if starts with /) -->
@@ -25,7 +25,7 @@ Index: node.xml
                  borderRadius="8px"
               />
              <Frame
-                 nodeId="u_Typx2zr"
+                 nodeId="KSuoNUJMJ"
                  width="150px"
                  height="80px"
                  <!-- background color string or project color style path (if starts with /) -->
@@ -34,7 +34,7 @@ Index: node.xml
               />
            </Stack>
 +          <Stack
-+              nodeId="f0muk1Ftx"
++              nodeId="Gz82cAbQd"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -48,7 +48,7 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="kk_FlpqWA"
++                nodeId="Q5x_HoEYd"
 +                width="100px"
 +                height="100px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -56,7 +56,7 @@ Index: node.xml
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="RC7BUR264"
++                nodeId="M0BnlzyjK"
 +                width="150px"
 +                height="80px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -81,9 +81,9 @@ Index: node.xml
                height="fit-content"
                <!-- the component id this instance uses -->
                componentId="zQ4rhDKqX"
-               <!-- 'Brand lg' is lkx2QyMNw, 'Inverse lg' is c_Cu9E4Vu, 'Border lg' is anmz3_Hx4, 'Brand md' is DtM6fBOBg, 'Inverse md' is lT3W94qLb, 'Border md' is AzANgMTfO -->
                variant="anmz3_Hx4"
                XNZ6TQLVf="Read the Docs"
+               YEdbiaweI="diamond"
 
 
 Note: Set zoomIntoView=false if you want to use Framer app while MCP is working.

@@ -230,6 +230,7 @@ Component instances support all common node attributes (opacity, visible, locked
     <Page nodeId="CuCqPj7i9" path="/page-2" />
     <Page nodeId="oBHEiJUrU" path="/blog" />
     <Page nodeId="cyYCWZOM9" path="/blog/:slug" />
+    <Page nodeId="AO3zOhC8z" path="/page-3" />
   </Pages>
   <!-- Reusable components. Use getNodeXml with a component nodeId to see its structure -->
   <Components>
@@ -257,6 +258,7 @@ Component instances support all common node attributes (opacity, visible, locked
     <Component nodeId="wUId_7nXO" name="Cards/Pricing feature" />
     <Component nodeId="YGyZnk3Uk" name="Memoji" />
     <Component nodeId="hXOuGnrH3" name="Memoji 2" />
+    <Component nodeId="Rg6giZqnh" name="slotswrapper" />
   </Components>
   <!-- Code components written in React/TypeScript. Use readCodeFile to see the code -->
   <CodeComponents>
@@ -270,6 +272,7 @@ Component instances support all common node attributes (opacity, visible, locked
     <CodeComponent codeFileId="jgyH8RA" path="Workshop/TiltCard.tsx" />
     <CodeComponent codeFileId="wGSFmvV" path="Workshop/PoemRectangle.tsx" />
     <CodeComponent codeFileId="rEK9E0A" path="RedRectangle.tsx" />
+    <CodeComponent codeFileId="x57bFIW" path="Slots.tsx" />
   </CodeComponents>
   <!-- Code override files that modify component behavior. Use readCodeFile to see the code -->
   <CodeOverrides />
@@ -388,7 +391,7 @@ Component instances support all common node attributes (opacity, visible, locked
         tag="h2"
      />
     <TextStyle
-        path="/"
+        path="/Heading 3"
         font="Inter-Bold"
         fontSize="26px"
         lineHeight="1.4em"
@@ -401,7 +404,7 @@ Component instances support all common node attributes (opacity, visible, locked
         tag="h3"
      />
     <TextStyle
-        path="/"
+        path="/Heading 4"
         font="Inter-Bold"
         fontSize="22px"
         lineHeight="1.4em"
@@ -496,6 +499,19 @@ Component instances support all common node attributes (opacity, visible, locked
         font="GF;Instrument Sans-600"
         fontSize="18px"
         lineHeight="28px"
+        letterSpacing="-0.02em"
+        paragraphSpacing="20"
+        transform="none"
+        alignment="center"
+        decoration="none"
+        balance="false"
+        tag="p"
+     />
+    <TextStyle
+        path="/Test-Text-278"
+        font="Inter"
+        fontSize="24px"
+        lineHeight="1.5em"
         letterSpacing="-0.02em"
         paragraphSpacing="20"
         transform="none"
