@@ -740,6 +740,7 @@ const handler = {
             return htmlForUserWithoutFramerUserId()
         }
 
+        // Legacy SSE transport with query-based auth
         if (url.pathname === '/sse' || url.pathname === '/sse/message') {
             console.log(`handling /sse for ${request.url}`)
             const id = url.searchParams.get('id')
@@ -762,6 +763,34 @@ const handler = {
 
             return MyMCP.serveSSE('/sse').fetch(request, env, ctx)
         }
+
+        // HTTP Streamable transport with query-based auth (bypass OAuth)
+        if (url.pathname === '/mcp' || url.pathname.startsWith('/mcp')) {
+            const id = url.searchParams.get('id')
+            const secret = url.searchParams.get('secret')
+
+            if (id && secret) {
+                console.log(`handling /mcp with query auth for ${request.url}`)
+                const sessionData = await getValidatedSession({ env, secret, id })
+                if (!sessionData) {
+                    return new Response('Invalid session', { status: 401 })
+                }
+
+                ctx.props = {
+                    framerUserId: sessionData.framerUserId,
+                    secret,
+                    email: sessionData.email,
+                } satisfies MCPProps
+
+                return MyMCP.serve('/mcp', { binding: 'MCP_OBJECT' }).fetch(
+                    request,
+                    env,
+                    ctx,
+                )
+            }
+            // Fall through to OAuth provider for token-based auth
+        }
+
         return await oauthProvider.fetch(request, env, ctx)
     },
 }
