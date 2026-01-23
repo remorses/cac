@@ -26,50 +26,6 @@ This will prompt you to choose which client to install to (Cursor, Claude Code, 
 
 ---
 
-# Unframer CLI
-
-You can also use the `unframer` CLI to interact with the Framer MCP directly from your terminal, without needing an AI assistant.
-
-## Login
-
-First, save your MCP URL:
-
-export const unframerLoginCommand = `npx -y unframer mcp login "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
-
-<CodeBlock title='Terminal' language='bash'>
-    {unframerLoginCommand}
-</CodeBlock>
-
-After login, all MCP commands become available. Run `npx unframer --help` to see the full list.
-
-```bash
-# Get project structure as XML
-npx unframer mcp getProjectXml
-
-# Get a specific node by ID
-npx unframer mcp getNodeXml --nodeId "abc123"
-
-# Update a node's text or attributes
-npx unframer mcp updateXmlForNode --nodeId "abc123" --xml '<Text nodeId="abc123">New text</Text>'
-
-# Search for available fonts
-npx unframer mcp searchFonts --query "Inter"
-
-# List all CMS collections
-npx unframer mcp getCMSCollections
-
-# Get items from a CMS collection
-npx unframer mcp getCMSItems --collectionId "col123"
-
-# Export React components
-npx unframer mcp exportReactComponents
-
-# Run any command with --help for detailed options
-npx unframer mcp updateXmlForNode --help
-```
-
----
-
 # Manual Install
 
 Below are manual configuration instructions for each AI client.
@@ -399,3 +355,45 @@ You can check if the Framer MCP server is connected and accessible from your AI 
 - **ChatGPT (consumer)** – slated Q4 2025.
 - **VS Code Copilot GA** – when Copilot Chat exits preview.
 - **Zed OAuth flows** – pending (header‑based auth today).
+
+---
+
+# Unframer CLI
+
+You can also use the `unframer` CLI to interact with the Framer MCP directly from your terminal, without needing an AI assistant.
+
+First, save your MCP URL:
+
+export const unframerLoginCommand = `npx -y unframer mcp login "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+
+<CodeBlock title='Terminal' language='bash'>
+    {unframerLoginCommand}
+</CodeBlock>
+
+After login, all MCP commands become available. Run `npx unframer --help` to see the full list.
+
+```bash
+# Get project structure as XML
+npx unframer mcp getProjectXml
+
+# Get a specific node by ID
+npx unframer mcp getNodeXml --nodeId "abc123"
+
+# Update a node's text or attributes
+npx unframer mcp updateXmlForNode --nodeId "abc123" --xml '<Text nodeId="abc123">New text</Text>'
+
+# Search for available fonts
+npx unframer mcp searchFonts --query "Inter"
+
+# List all CMS collections
+npx unframer mcp getCMSCollections
+
+# Get items from a CMS collection
+npx unframer mcp getCMSItems --collectionId "col123"
+
+# Export React components
+npx unframer mcp exportReactComponents
+
+# Run any command with --help for detailed options
+npx unframer mcp updateXmlForNode --help
+```
