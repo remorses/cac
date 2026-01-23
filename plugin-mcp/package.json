@@ -21,9 +21,9 @@
     },
     "dependencies": {
         "@cloudflare/workers-oauth-provider": "^0.0.11",
-        "@modelcontextprotocol/sdk": "^1.19.1",
+        "@modelcontextprotocol/sdk": "^1.25.3",
         "@sentry/browser": "^9.22.0",
-        "agents": "0.2.6",
+        "agents": "0.3.6",
         "camelcase": "^8.0.0",
         "diff": "^7.0.0",
         "dom-serializer": "^2.0.0",
@@ -43,7 +43,7 @@
         "string-dedent": "^3.0.1",
         "unframer": "workspace:*",
         "website": "workspace:*",
-        "zod": "^4.1.11",
+        "zod": "^4.3.6",
         "zustand": "^5.0.5"
     },
     "devDependencies": {
