@@ -12,6 +12,92 @@ import { CodeBlock, InstallInCursorButton } from './_mdx'
 
 > **⚠️ Important:** Using **Framer MCP** requires that the _Framer MCP plugin is open inside the Framer app_. Only one MCP plugin can be open at any time—the server will control whichever Framer project currently has the plugin open.
 
+# Automatic Install
+
+Run the following command to automatically install Framer MCP to your preferred AI client:
+
+export const installMcpCommand = `npx -y @anthropic-ai/claude-code mcp add --transport sse framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+
+<CodeBlock title='Terminal' language='bash'>
+    {installMcpCommand}
+</CodeBlock>
+
+The command will prompt you to choose which client to install to (Cursor, Claude Desktop, VS Code, etc.).
+
+---
+
+# Unframer CLI
+
+You can also use the `unframer` CLI to interact with the Framer MCP directly from your terminal, without needing an AI assistant.
+
+## Login
+
+First, save your MCP URL:
+
+export const unframerLoginCommand = `npx -y unframer mcp login "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+
+<CodeBlock title='Terminal' language='bash'>
+    {unframerLoginCommand}
+</CodeBlock>
+
+After login, all MCP commands become available. Run `npx unframer --help` to see the full list.
+
+## Example Commands
+
+Get the project structure as XML:
+
+```bash
+npx unframer mcp getProjectXml
+```
+
+Get a specific node by ID:
+
+```bash
+npx unframer mcp getNodeXml --nodeId "abc123"
+```
+
+Update a node's text or attributes:
+
+```bash
+npx unframer mcp updateXmlForNode --nodeId "abc123" --xml '<Text nodeId="abc123">New text content</Text>'
+```
+
+Search for available fonts:
+
+```bash
+npx unframer mcp searchFonts --query "Inter"
+```
+
+List all CMS collections:
+
+```bash
+npx unframer mcp getCMSCollections
+```
+
+Get items from a CMS collection:
+
+```bash
+npx unframer mcp getCMSItems --collectionId "col123"
+```
+
+Export React components:
+
+```bash
+npx unframer mcp exportReactComponents
+```
+
+Run any command with `--help` for detailed options:
+
+```bash
+npx unframer mcp updateXmlForNode --help
+```
+
+---
+
+# Manual Install
+
+Below are manual configuration instructions for each AI client.
+
 ## Cursor
 
 <InstallInCursorButton />
