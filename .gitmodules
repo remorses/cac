@@ -5,6 +5,3 @@
 	path = spiceflow
 	url = https://github.com/remorses/spiceflow
 	branch = new
-[submodule "cac"]
-	path = cac
-	url = https://github.com/remorses/cac.git
