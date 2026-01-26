@@ -44,7 +44,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     )
     const { 0: firstName } = ((user.raw_user_meta_data as any)?.full_name ?? "").split(" ")
 
-    const content = dedent`
+    const plainTextContent = dedent`
         Here's the GitHub repo:
 
         ${githubUrl.toString()}
@@ -54,6 +54,22 @@ export async function loader({ params }: Route.LoaderArgs) {
         - Live preview URL
 
         Next time you want to export to React you can ask the MCP or use the React Export plugin: https://www.framer.com/marketplace/plugins/react-export/
+
+        PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
+
+        Best,
+        Tommy
+    `
+
+    // HTML version with clickable "Here" link for rich text email clients like Spark
+    const richTextContent = dedent`
+        Here's the GitHub repo: <a href="${githubUrl.toString()}">Here</a>
+
+        The repo includes:
+        - Example code showing how to integrate the React components
+        - Live preview URL
+
+        Next time you want to export to React you can ask the MCP or use the React Export plugin: <a href="https://www.framer.com/marketplace/plugins/react-export/">Here</a>
 
         PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
 
@@ -97,11 +113,19 @@ export async function loader({ params }: Route.LoaderArgs) {
             <body>
                 <div class="status">✓ Copied to clipboard!</div>
                 <pre id="content">
-                    ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre
+                    ${plainTextContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre
                 >
                 <script>
-                    const content = ${JSON.stringify(content)}
-                    navigator.clipboard.writeText(content).catch((err) => {
+                    const plainText = ${JSON.stringify(plainTextContent)}
+                    const richText = ${JSON.stringify(richTextContent)}
+                    
+                    // Copy both plain text and HTML so email clients like Spark render clickable links
+                    navigator.clipboard.write([
+                        new ClipboardItem({
+                            'text/plain': new Blob([plainText], { type: 'text/plain' }),
+                            'text/html': new Blob([richText], { type: 'text/html' }),
+                        })
+                    ]).catch((err) => {
                         console.error('Failed to copy:', err)
                     })
                 </script>
