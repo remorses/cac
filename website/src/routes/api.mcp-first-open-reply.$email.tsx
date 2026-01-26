@@ -61,21 +61,21 @@ export async function loader({ params }: Route.LoaderArgs) {
         Tommy
     `
 
-    // HTML version with clickable "Here" link for rich text email clients like Spark
-    const richTextContent = dedent`
-        Here's the GitHub repo: <a href="${githubUrl.toString()}">Here</a>
-
-        The repo includes:
-        - Example code showing how to integrate the React components
-        - Live preview URL
-
-        Next time you want to export to React you can ask the MCP or use the React Export plugin: <a href="https://www.framer.com/marketplace/plugins/react-export/">Here</a>
-
-        PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
-
-        Best,
-        Tommy
-    `
+    // HTML version with clickable links for rich text email clients like Spark
+    const richTextContent = [
+        `You can access the example repo <a href="${githubUrl.toString()}">here</a>`,
+        ``,
+        `The repo includes:`,
+        `- Example code showing how to integrate the React components`,
+        `- Live preview URL`,
+        ``,
+        `Next time you want to export to React you can ask the MCP or use the <a href="https://www.framer.com/marketplace/plugins/react-export/">React Export plugin</a>`,
+        ``,
+        `PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want`,
+        ``,
+        `Best,`,
+        `Tommy`,
+    ].join('<br>')
 
     const htmlContent = html`
         <!DOCTYPE html>
@@ -118,7 +118,7 @@ export async function loader({ params }: Route.LoaderArgs) {
                 <script>
                     const plainText = ${JSON.stringify(plainTextContent)}
                     const richText = ${JSON.stringify(richTextContent)}
-                    
+
                     // Copy both plain text and HTML so email clients like Spark render clickable links
                     navigator.clipboard.write([
                         new ClipboardItem({
