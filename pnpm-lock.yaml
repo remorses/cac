@@ -683,7 +683,7 @@ importers:
         version: 0.0.11
       '@modelcontextprotocol/sdk':
         specifier: 1.25.3
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       '@sentry/browser':
         specifier: ^9.22.0
         version: 9.30.0
@@ -1113,7 +1113,7 @@ importers:
     devDependencies:
       '@modelcontextprotocol/sdk':
         specifier: 1.25.3
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       '@types/ps-tree':
         specifier: ^1.1.6
         version: 1.1.6
@@ -1162,7 +1162,7 @@ importers:
     devDependencies:
       '@modelcontextprotocol/sdk':
         specifier: 1.25.3
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       ai:
         specifier: ^5.0.14
         version: 5.0.14(zod@4.3.6)
@@ -1198,7 +1198,7 @@ importers:
         version: 3.1.0(acorn@8.15.0)(rollup@4.55.1)
       '@modelcontextprotocol/sdk':
         specifier: 1.25.3
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       '@react-router/cloudflare':
         specifier: ^7.12.0
         version: 7.12.0(@cloudflare/workers-types@4.20251004.0)(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.8.3)
@@ -1449,7 +1449,7 @@ importers:
         version: 4.0.7
       spiceflow:
         specifier: ^1.17.10
-        version: 1.17.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4))
+        version: 1.17.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6))
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -1500,16 +1500,6 @@ importers:
         specifier: workspace:*
         version: link:../unframer
 
-  unframer/mcpcac:
-    dependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: 1.25.3
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
-    devDependencies:
-      '@xmorse/cac':
-        specifier: ^6.0.7
-        version: 6.0.7
-
   unframer/nextjs-app:
     dependencies:
       '@motionone/dom':
@@ -1551,25 +1541,6 @@ importers:
       unframer:
         specifier: workspace:*
         version: link:../unframer
-
-  unframer/notion-mcp-cli:
-    dependencies:
-      '@xmorse/cac':
-        specifier: ^6.0.7
-        version: 6.0.7
-      mcpcac:
-        specifier: ^0.0.2
-        version: 0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)
-    devDependencies:
-      '@types/node':
-        specifier: ^22.15.21
-        version: 22.15.32
-      tsx:
-        specifier: ^4.20.3
-        version: 4.20.3
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
   unframer/remix-app:
     dependencies:
@@ -1675,7 +1646,7 @@ importers:
         version: 8.2.0(@types/node@22.15.32)
       '@modelcontextprotocol/sdk':
         specifier: 1.25.3
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       '@xmorse/cac':
         specifier: ^6.0.7
         version: 6.0.7
@@ -1689,8 +1660,8 @@ importers:
         specifier: ^1.6.8
         version: 1.7.1(esbuild@0.25.8)
       mcpcac:
-        specifier: workspace:*
-        version: link:../mcpcac
+        specifier: ^0.0.2
+        version: 0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.11.4)(zod@4.3.6)
       nanospinner:
         specifier: ^1.2.2
         version: 1.2.2
@@ -1702,7 +1673,7 @@ importers:
         version: framer-motion@12.23.22(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       spiceflow:
         specifier: ^1.17.10
-        version: 1.17.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4))
+        version: 1.17.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6))
       string-dedent:
         specifier: ^3.0.1
         version: 3.0.1
@@ -2132,13 +2103,13 @@ importers:
         version: 4.41.0
       unframer:
         specifier: 3.2.10
-        version: 3.2.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 3.2.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       unframer-deploy-demo:
         specifier: workspace:*
         version: link:../unframer-deploy-demo
       unframer-workspace:
         specifier: file:../unframer/unframer
-        version: unframer@file:unframer/unframer(@cfworker/json-schema@4.1.1)(@types/node@22.15.32)(hono@4.9.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: unframer@file:unframer/unframer(@cfworker/json-schema@4.1.1)(@types/node@22.15.32)(hono@4.9.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.6)
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -4657,6 +4628,7 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
+      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
@@ -15067,7 +15039,7 @@ snapshots:
 
   '@mjackson/node-fetch-server@0.7.0': {}
 
-  '@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)':
+  '@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.4)
       ajv: 8.17.1
@@ -15091,7 +15063,7 @@ snapshots:
       - hono
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)':
+  '@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.9.9)
       ajv: 8.17.1
@@ -17741,7 +17713,7 @@ snapshots:
   agents@0.3.6(@cloudflare/workers-types@4.20251004.0)(ai@5.0.14(zod@4.3.6))(hono@4.11.4)(react@19.2.3)(zod@4.3.6):
     dependencies:
       '@cfworker/json-schema': 4.1.1
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       ai: 5.0.14(zod@4.3.6)
       cron-schedule: 6.0.0
       json-schema: 0.4.0
@@ -20404,14 +20376,25 @@ snapshots:
 
   matter-js@0.20.0: {}
 
-  mcpcac@0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7):
+  mcpcac@0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.11.4)(zod@4.3.6):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
       '@xmorse/cac': 6.0.7
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - hono
       - supports-color
+      - zod
+
+  mcpcac@0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.9.9)(zod@4.3.6):
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)
+      '@xmorse/cac': 6.0.7
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - hono
+      - supports-color
+      - zod
 
   mdast-util-definitions@6.0.0:
     dependencies:
@@ -22587,7 +22570,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  spiceflow@1.17.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)):
+  spiceflow@1.17.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)):
     dependencies:
       '@medley/router': 0.2.1
       '@standard-schema/spec': 1.0.0
@@ -22598,9 +22581,9 @@ snapshots:
       zod: 4.3.6
       zod-to-json-schema: 3.24.6(zod@4.3.6)
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
 
-  spiceflow@1.17.12(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)):
+  spiceflow@1.17.12(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)):
     dependencies:
       '@medley/router': 0.2.1
       '@standard-schema/spec': 1.0.0
@@ -22611,7 +22594,7 @@ snapshots:
       zod: 4.3.6
       zod-to-json-schema: 3.24.6(zod@4.3.6)
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)
 
   split2@3.2.2:
     dependencies:
@@ -23052,7 +23035,7 @@ snapshots:
 
   unfetch@4.2.0: {}
 
-  unframer@3.2.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9))(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+  unframer@3.2.10(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6))(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       '@antfu/ni': 25.0.0
       '@babel/core': 7.28.6
@@ -23067,7 +23050,7 @@ snapshots:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
       real-framer-motion: framer-motion@12.23.24(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      spiceflow: 1.17.12(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9))
+      spiceflow: 1.17.12(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6))
       string-dedent: 3.0.1
       undici: 7.19.0
     transitivePeerDependencies:
@@ -23077,25 +23060,25 @@ snapshots:
       - '@modelcontextprotocol/sdk'
       - supports-color
 
-  unframer@file:unframer/unframer(@cfworker/json-schema@4.1.1)(@types/node@22.15.32)(hono@4.9.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+  unframer@file:unframer/unframer(@cfworker/json-schema@4.1.1)(@types/node@22.15.32)(hono@4.9.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.6):
     dependencies:
       '@antfu/ni': 25.0.0
       '@babel/core': 7.28.6
       '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
       '@biomejs/wasm-nodejs': 1.9.4
       '@inquirer/prompts': 8.2.0(@types/node@22.15.32)
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)
       '@xmorse/cac': 6.0.7
       async-sema: 3.1.1
       esbuild: 0.25.11
       esbuild-plugins-node-modules-polyfill: 1.7.1(esbuild@0.25.11)
-      mcpcac: link:unframer/mcpcac
+      mcpcac: 0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.9.9)(zod@4.3.6)
       nanospinner: 1.2.2
       picocolors: 1.1.1
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
       real-framer-motion: framer-motion@12.23.24(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      spiceflow: 1.17.12(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9))
+      spiceflow: 1.17.12(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6))
       string-dedent: 3.0.1
       undici: 7.19.0
     transitivePeerDependencies:
@@ -23106,6 +23089,7 @@ snapshots:
       - '@types/node'
       - hono
       - supports-color
+      - zod
 
   unicode-properties@1.4.1:
     dependencies:
