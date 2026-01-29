@@ -402,13 +402,20 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
             let isServerStopped = false
             let idleTimeout: ReturnType<typeof setTimeout> | null = null
             const idleTimeoutDelay = 9 * 1000
+            let pendingToolCalls = 0
 
-            // Reset idle timeout helper function
             const resetIdleTimeout = () => {
                 if (idleTimeout) {
                     clearTimeout(idleTimeout)
                 }
                 idleTimeout = setTimeout(() => {
+                    if (pendingToolCalls > 0) {
+                        console.log(
+                            `Skipping idle timeout, ${pendingToolCalls} pending tool calls`,
+                        )
+                        resetIdleTimeout()
+                        return
+                    }
                     console.log('Closing WebSocket due to inactivity')
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.close(1000, 'Idle timeout')
@@ -615,7 +622,6 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                 return { tools }
             })
 
-            // Register call tool handler
             server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const { name, arguments: args } = request.params
                 const tool = mcpTools[
@@ -626,8 +632,8 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                     throw new Error(`Unknown tool: ${name}`)
                 }
 
+                pendingToolCalls++
                 try {
-                    // Lazy connect - only establish WebSocket when needed
                     if (
                         !clientConnectedPromise ||
                         ws?.readyState === WebSocket.CLOSED
@@ -650,9 +656,6 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                         },
                     })
 
-                    // Reset idle timeout after successful request
-                    resetIdleTimeout()
-
                     const text =
                         typeof reply === 'string'
                             ? reply
@@ -667,6 +670,9 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                     const errorMessage =
                         error instanceof Error ? error.message : String(error)
                     return textResponse(`Encountered an error: ${errorMessage}`)
+                } finally {
+                    pendingToolCalls--
+                    resetIdleTimeout()
                 }
             })
 
