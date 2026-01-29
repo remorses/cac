@@ -17,3 +17,4 @@ prisma-generated
 .wrangler
 generated
 opensrc
+tmp
