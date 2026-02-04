@@ -9,6 +9,7 @@ import {
     isColorStyle,
     isImageAsset,
     isFileAsset,
+    ManagedCollectionFieldInput,
 } from 'framer-plugin'
 import dedent from 'string-dedent'
 import { createPatch } from 'diff'
@@ -2046,6 +2047,137 @@ async function websocketHandler({
                 },
             }
         }
+        case 'createCMSCollection': {
+            const { name, fields = [] } = input
+
+            // Check permissions for creating managed collections
+            const permissionError = checkPermissions('createManagedCollection')
+            if (permissionError) return permissionError
+
+            // Create the managed collection
+            const collection = await framer.createManagedCollection(name)
+
+            if (!collection) {
+                return `Failed to create collection "${name}"`
+            }
+
+            // If fields are provided, set them on the collection
+            if (fields.length > 0) {
+                // Convert input fields to ManagedCollectionFieldInput format
+                const fieldInputs: ManagedCollectionFieldInput[] = fields.map(
+                    (field) => {
+                        const baseField = {
+                            id: field.id,
+                            name: field.name,
+                        }
+
+                        // Add type-specific properties
+                        switch (field.type) {
+                            case 'file':
+                                return {
+                                    ...baseField,
+                                    type: 'file' as const,
+                                    allowedFileTypes: field.allowedFileTypes || [],
+                                    required: field.required,
+                                }
+                            case 'enum':
+                                return {
+                                    ...baseField,
+                                    type: 'enum' as const,
+                                    cases:
+                                        field.cases?.map((c) => ({
+                                            id: c.id,
+                                            name: c.name,
+                                        })) || [],
+                                }
+                            case 'collectionReference':
+                                return {
+                                    ...baseField,
+                                    type: 'collectionReference' as const,
+                                    collectionId: field.collectionId || '',
+                                    required: field.required,
+                                }
+                            case 'multiCollectionReference':
+                                return {
+                                    ...baseField,
+                                    type: 'multiCollectionReference' as const,
+                                    collectionId: field.collectionId || '',
+                                    required: field.required,
+                                }
+                            case 'string':
+                                return {
+                                    ...baseField,
+                                    type: 'string' as const,
+                                    required: field.required,
+                                }
+                            case 'formattedText':
+                                return {
+                                    ...baseField,
+                                    type: 'formattedText' as const,
+                                    required: field.required,
+                                }
+                            case 'image':
+                                return {
+                                    ...baseField,
+                                    type: 'image' as const,
+                                    required: field.required,
+                                }
+                            case 'link':
+                                return {
+                                    ...baseField,
+                                    type: 'link' as const,
+                                    required: field.required,
+                                }
+                            case 'date':
+                                return {
+                                    ...baseField,
+                                    type: 'date' as const,
+                                    required: field.required,
+                                }
+                            case 'number':
+                                return {
+                                    ...baseField,
+                                    type: 'number' as const,
+                                }
+                            case 'boolean':
+                                return {
+                                    ...baseField,
+                                    type: 'boolean' as const,
+                                }
+                            case 'color':
+                                return {
+                                    ...baseField,
+                                    type: 'color' as const,
+                                }
+                            default:
+                                return {
+                                    ...baseField,
+                                    type: field.type,
+                                } as ManagedCollectionFieldInput
+                        }
+                    },
+                )
+
+                await collection.setFields(fieldInputs)
+            }
+
+            // Get the created fields to return their IDs
+            const createdFields = await collection.getFields()
+
+            return {
+                message: `Successfully created CMS collection "${name}" with ${createdFields.length} field(s)`,
+                collection: {
+                    id: collection.id,
+                    name: collection.name,
+                    managedBy: collection.managedBy,
+                },
+                fields: createdFields.map((f) => ({
+                    id: f.id,
+                    name: f.name,
+                    type: f.type,
+                })),
+            }
+        }
         default:
             throw new Error(`Unknown tool type: ${type}`)
     }
@@ -2144,7 +2276,7 @@ function MainComponent() {
         }
     }, [])
 
-    const mcpServerUrl = `https://mcp.unframer.co/sse?id=${data.userId}&secret=${sessionId}`
+    const mcpServerUrl = `https://mcp.unframer.co/mcp?id=${data.userId}&secret=${sessionId}`
 
     const connectFramerMcpGuide = (() => {
         const url = new URL('https://unframer.co/guides/connect-framer-mcp')

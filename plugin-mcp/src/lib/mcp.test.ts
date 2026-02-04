@@ -2,10 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import yaml from 'js-yaml'
 import { createMCPClient } from './mcp-client.js'
 
-const sseUrl =
-    'https://mcp.preview.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
-
-const httpUrl = sseUrl.replace('/sse?', '/mcp?')
+const mcpUrl =
+    'https://mcp.preview.unframer.co/mcp?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
 
 
 
@@ -13,9 +11,9 @@ describe('HTTP Streamable Transport', () => {
     it(
         'should get tools schema using HTTP Streamable transport',
         async () => {
-            console.log('Connecting to HTTP Streamable transport at:', httpUrl)
+            console.log('Connecting to HTTP Streamable transport at:', mcpUrl)
             const { client, cleanup } = await createMCPClient({
-                mcpUrl: httpUrl,
+                mcpUrl: mcpUrl,
                 clientName: 'framer-test-http-streamable',
                 transport: 'streamable-http',
             })
@@ -44,7 +42,7 @@ describe('HTTP Streamable Transport', () => {
 describe('Tools Schema', () => {
     it('should get tools schema and match file snapshot', async () => {
         const { client } = await createMCPClient({
-            mcpUrl: sseUrl,
+            mcpUrl: mcpUrl,
             clientName: 'framer-test-schema',
         })
         const schema = await client.listTools()
@@ -74,7 +72,7 @@ describe(
 
         beforeAll(async () => {
             const result = await createMCPClient({
-                mcpUrl: sseUrl,
+                mcpUrl: mcpUrl,
                 clientName: 'framer-test',
             })
             callTool = result.callTool
