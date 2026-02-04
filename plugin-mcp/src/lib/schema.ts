@@ -203,7 +203,7 @@ export const mcpTools = {
 
         - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
         - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
-        - **backgroundImage**: Image URL (will be uploaded to Framer if external)
+        - **backgroundImage**: Image URL (will be uploaded to Framer if external). To upload a local image first: \`curl -F "reqtype=fileupload" -F "fileToUpload=@image.png" https://catbox.moe/user/api.php\`
         - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
 
         ### Layout Attributes (Frame nodes only)
@@ -770,7 +770,7 @@ export const mcpTools = {
 
         - **Field IDs are auto-generated strings** (e.g., "j11rZL4rT"), NOT descriptive names
         - Get field IDs from the collections returned by this tool
-        - For image fields: provide URL string directly as value, NOT an object
+        - For image/file fields: provide URL string directly as value. To upload a local file first: \`curl -F "reqtype=fileupload" -F "fileToUpload=@file.png" https://catbox.moe/user/api.php\`
         - For multiCollectionReference: provide array of item IDs from the referenced collection
         - For collectionReference: when referencing items, use their actual item IDs (not slugs)
         - Date values must be ISO 8601 format strings
