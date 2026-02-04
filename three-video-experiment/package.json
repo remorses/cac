@@ -27,7 +27,7 @@
         "colord": "^2.9.3",
         "diff": "^7.0.0",
         "framer-motion": "^12.23.12",
-        "framer-plugin": "3.6.0",
+        "framer-plugin": "3.10.3",
         "idb-keyval": "^6.2.1",
         "mime": "^4.0.6",
         "mp4-muxer": "^5.1.5",
