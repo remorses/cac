@@ -97,9 +97,17 @@ function Component() {
     return (
         <div className='flex flex-col justify-start gap-4'>
             <div className='flex items-center'>
-                <div className=''>
-                    Currently logged in as{' '}
-                    <span className='font-semibold inline'>{email}</span>
+                <div className='flex items-center gap-2 text-[11px] text-framer-tertiary'>
+                    <span className='truncate'>{email}</span>
+                    <span className='text-framer-tertiary/50'>•</span>
+                    <a
+                        href={`mailto:tommy@unframer.co?subject=${encodeURIComponent('Github Sync plugin support')}`}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-framer-tertiary/60 hover:text-framer-tertiary transition-colors'
+                    >
+                        support
+                    </a>
                 </div>
 
                 <div className='grow'></div>
