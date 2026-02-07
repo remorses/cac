@@ -44,6 +44,7 @@ describe('Tools Schema', () => {
         const { client } = await createMCPClient({
             mcpUrl: mcpUrl,
             clientName: 'framer-test-schema',
+            transport: 'streamable-http',
         })
         const schema = await client.listTools()
         expect(schema).toBeDefined()
@@ -74,6 +75,7 @@ describe(
             const result = await createMCPClient({
                 mcpUrl: mcpUrl,
                 clientName: 'framer-test',
+                transport: 'streamable-http',
             })
             callTool = result.callTool
             cleanup = result.cleanup

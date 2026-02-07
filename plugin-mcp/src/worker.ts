@@ -43,6 +43,7 @@ interface MCPProps extends Record<string, unknown> {
 type MyEnv = Env & {
     OAUTH_PROVIDER: OAuthHelpers // your OAuth binding
     OAUTH_KV: KVNamespace // required for provider
+    RATE_LIMITER: RateLimit // 500 requests per minute per IP
     PUBLIC_SUPABASE_URL: string
     PUBLIC_SUPABASE_ANON_KEY: string
     SERVICE_SECRET: string // to authenticate requests from Framer plugin
@@ -739,6 +740,13 @@ const oauthProvider = new OAuthProvider({
 const handler = {
     async fetch(request: Request, env: MyEnv, ctx: ExecutionContext) {
         const url = new URL(request.url)
+
+        // Rate limit by IP: 500 requests per minute
+        const ip = request.headers.get('cf-connecting-ip') || 'unknown'
+        const { success } = await env.RATE_LIMITER.limit({ key: ip })
+        if (!success) {
+            return new Response('Rate limit exceeded', { status: 429 })
+        }
 
         // https://mcp.preview.unframer.co/htmlForUserWithoutFramerUserId
         // http://localhost:8787/htmlForUserWithoutFramerUserId

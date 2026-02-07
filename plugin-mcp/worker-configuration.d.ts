@@ -4,6 +4,7 @@
 declare namespace Cloudflare {
 	interface Env {
 		OAUTH_KV: KVNamespace;
+		RATE_LIMITER: RateLimit;
 		STAGE: "production" | "preview";
 		WEBSITE_URL: "https://unframer.co" | "https://preview.unframer.co";
 		MCP_OBJECT: DurableObjectNamespace<import("./src/worker").MyMCP>;

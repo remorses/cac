@@ -24,6 +24,16 @@
             },
         ],
     },
+    "ratelimits": [
+        {
+            "name": "RATE_LIMITER",
+            "namespace_id": "1001",
+            "simple": {
+                "limit": 500,
+                "period": 60,
+            },
+        },
+    ],
     "kv_namespaces": [
         {
             "binding": "OAUTH_KV",
@@ -75,6 +85,16 @@
                     "zone_name": "unframer.co",
                     "pattern": "mcp.preview.unframer.co",
                     "custom_domain": true,
+                },
+            ],
+            "ratelimits": [
+                {
+                    "name": "RATE_LIMITER",
+                    "namespace_id": "1001",
+                    "simple": {
+                        "limit": 500,
+                        "period": 60,
+                    },
                 },
             ],
             "kv_namespaces": [
