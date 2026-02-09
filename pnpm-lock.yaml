@@ -1438,12 +1438,12 @@ importers:
       '@sentry/node':
         specifier: ^9.22.0
         version: 9.30.0
-      cac:
-        specifier: ^6.7.14
-        version: 6.7.14
       globby:
         specifier: ^14.1.0
         version: 14.1.0
+      goke:
+        specifier: ^6.1.1
+        version: 6.1.1
       mime:
         specifier: ^4.0.7
         version: 4.0.7
@@ -1641,15 +1641,15 @@ importers:
       '@biomejs/wasm-nodejs':
         specifier: ^1.9.4
         version: 1.9.4
+      '@goke/mcp':
+        specifier: ^0.0.4
+        version: 0.0.4(@cfworker/json-schema@4.1.1)(goke@6.1.1)(hono@4.11.4)(zod@4.3.6)
       '@inquirer/prompts':
         specifier: ^8.2.0
         version: 8.2.0(@types/node@22.15.32)
       '@modelcontextprotocol/sdk':
         specifier: 1.25.3
         version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
-      '@xmorse/cac':
-        specifier: ^6.0.7
-        version: 6.0.7
       async-sema:
         specifier: ^3.1.1
         version: 3.1.1
@@ -1659,9 +1659,9 @@ importers:
       esbuild-plugins-node-modules-polyfill:
         specifier: ^1.6.8
         version: 1.7.1(esbuild@0.25.8)
-      mcpcac:
-        specifier: ^0.0.2
-        version: 0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.11.4)(zod@4.3.6)
+      goke:
+        specifier: ^6.1.1
+        version: 6.1.1
       nanospinner:
         specifier: ^1.2.2
         version: 1.2.2
@@ -3503,6 +3503,11 @@ packages:
     resolution: {integrity: sha512-hWy4fkHAk0OUW/cmjAOhbE3PnR9YfwaE8DRl5oEf7r9K6Owju8ogTDV3RMkG6Vm57H9xYxI5+am5ImAUbqPH8A==}
     peerDependencies:
       graphql: '*'
+
+  '@goke/mcp@0.0.4':
+    resolution: {integrity: sha512-z75+Cfso+NFcYlF/9CR43z1F6k+j9v5otHr886OVzlaRid1+16NCJ0RA+NuaN5Bl0xA6GP9rZiHT8o8Q/7FEOw==}
+    peerDependencies:
+      goke: '*'
 
   '@graphql-tools/graphql-file-loader@7.5.17':
     resolution: {integrity: sha512-hVwwxPf41zOYgm4gdaZILCYnKB9Zap7Ys9OhY1hbwuAuC4MMNY9GpUjoTU3CQc3zUiPoYStyRtUGkHSJZ3HxBw==}
@@ -6594,10 +6599,6 @@ packages:
     resolution: {integrity: sha512-p96FSY54r+WJ50FIOsCOjyj/wavs8921hG5+kVMmZgKcvIKxMXHTrjNJvRgWa/zuX3B6t2lijLNFaOyuxUH+2A==}
     engines: {node: '>=14.6'}
 
-  '@xmorse/cac@6.0.7':
-    resolution: {integrity: sha512-eCKgJIn0Yswt4JreHNXUslyuOe8amDK6gE+wVgG8/Tu1HmCxuxAUOGPQRoma4mFO77759/YYE5opAbmaU6+Gxg==}
-    engines: {node: '>=8'}
-
   '@xmorse/deployment-utils@0.7.4':
     resolution: {integrity: sha512-L8/n9WmTpWEE2SpzN0RugceT4cPzxblpULv1crDrLJ1kilKAxsjFPeD4mI7CKjI7fV60iR68bhKi3RE9HE4vqg==}
 
@@ -8253,11 +8254,12 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   globby@11.1.0:
     resolution: {integrity: sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g==}
@@ -8269,6 +8271,10 @@ packages:
 
   globrex@0.1.2:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
+
+  goke@6.1.1:
+    resolution: {integrity: sha512-rS02JY5pnqmGCQTgUb5sKMEMZilMvy4NS1j7GzPNGSLzUejFsTmEzv/fwiaYsoXKSWetfbbbcEmtuU1rXTZr9w==}
+    engines: {node: '>=18'}
 
   goober@2.1.16:
     resolution: {integrity: sha512-erjk19y1U33+XAMe1VTvIONHYoSqE4iS7BYUZfHaqeohLmnC0FdxEh7rQU+6MZ4OajItzjZFSRtVANrQwNq6/g==}
@@ -9032,11 +9038,6 @@ packages:
 
   matter-js@0.20.0:
     resolution: {integrity: sha512-iC9fYR7zVT3HppNnsFsp9XOoQdQN2tUyfaKg4CHLH8bN+j6GT4Gw7IH2rP0tflAebrHFw730RR3DkVSZRX8hwA==}
-
-  mcpcac@0.0.2:
-    resolution: {integrity: sha512-hGufailsvLmLOcMfdjXeql7nTa3pGV4GUZ+0woQz6RCr8gKpl2RFpjQzFhOjWIYs+WbGUCkq98ObUN9F6B7u+g==}
-    peerDependencies:
-      '@xmorse/cac': '*'
 
   mdast-util-definitions@6.0.0:
     resolution: {integrity: sha512-scTllyX6pnYNZH/AIp/0ePz6s4cZtARxImwoPJ7kS42n+MnVsI4XbnG6d4ibehRIldYMWM2LD7ImQblVhUejVQ==}
@@ -10943,10 +10944,12 @@ packages:
   tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   tar@7.4.3:
     resolution: {integrity: sha512-5S7Va8hKfV7W5U6g3aYxXmlPoZVAwUMy9AOKyF2fVuZa2UD3qZjg578OrLRt8PcNN1PleVaL/5/yYATNL0ICUw==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   taskkill@5.0.0:
     resolution: {integrity: sha512-+HRtZ40Vc+6YfCDWCeAsixwxJgMbPY4HHuTgzPYH3JXvqHWUlsCfy+ylXlAKhFNcuLp4xVeWeFBUhDk+7KYUvQ==}
@@ -11672,6 +11675,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -12111,7 +12115,7 @@ snapshots:
       hast-util-from-html: 2.0.3
       hast-util-to-text: 4.0.2
       import-meta-resolve: 4.1.0
-      js-yaml: 4.1.0
+      js-yaml: 4.1.1
       mdast-util-definitions: 6.0.0
       rehype-raw: 7.0.0
       rehype-stringify: 10.0.1
@@ -13379,6 +13383,28 @@ snapshots:
       - bufferutil
       - encoding
       - utf-8-validate
+
+  '@goke/mcp@0.0.4(@cfworker/json-schema@4.1.1)(goke@6.1.1)(hono@4.11.4)(zod@4.3.6)':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
+      goke: 6.1.1
+      js-yaml: 4.1.1
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - hono
+      - supports-color
+      - zod
+
+  '@goke/mcp@0.0.4(@cfworker/json-schema@4.1.1)(goke@6.1.1)(hono@4.9.9)(zod@4.3.6)':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)
+      goke: 6.1.1
+      js-yaml: 4.1.1
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - hono
+      - supports-color
+      - zod
 
   '@graphql-tools/graphql-file-loader@7.5.17(graphql@16.10.0)':
     dependencies:
@@ -17626,8 +17652,6 @@ snapshots:
 
   '@xmldom/xmldom@0.9.8': {}
 
-  '@xmorse/cac@6.0.7': {}
-
   '@xmorse/deployment-utils@0.7.4(@types/node@22.15.32)(jiti@2.5.1)(tsx@4.20.3)(yaml@2.7.1)':
     dependencies:
       '@actions/cache': 3.3.0
@@ -18523,7 +18547,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.1.0
+      js-yaml: 4.1.1
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.9.3
@@ -19597,6 +19621,10 @@ snapshots:
 
   globrex@0.1.2: {}
 
+  goke@6.1.1:
+    dependencies:
+      picocolors: 1.1.1
+
   goober@2.1.16(csstype@3.1.3):
     dependencies:
       csstype: 3.1.3
@@ -20375,26 +20403,6 @@ snapshots:
   math-intrinsics@1.1.0: {}
 
   matter-js@0.20.0: {}
-
-  mcpcac@0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.11.4)(zod@4.3.6):
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
-      '@xmorse/cac': 6.0.7
-    transitivePeerDependencies:
-      - '@cfworker/json-schema'
-      - hono
-      - supports-color
-      - zod
-
-  mcpcac@0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.9.9)(zod@4.3.6):
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)
-      '@xmorse/cac': 6.0.7
-    transitivePeerDependencies:
-      - '@cfworker/json-schema'
-      - hono
-      - supports-color
-      - zod
 
   mdast-util-definitions@6.0.0:
     dependencies:
@@ -23066,13 +23074,13 @@ snapshots:
       '@babel/core': 7.28.6
       '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
       '@biomejs/wasm-nodejs': 1.9.4
+      '@goke/mcp': 0.0.4(@cfworker/json-schema@4.1.1)(goke@6.1.1)(hono@4.9.9)(zod@4.3.6)
       '@inquirer/prompts': 8.2.0(@types/node@22.15.32)
       '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.9.9)(zod@4.3.6)
-      '@xmorse/cac': 6.0.7
       async-sema: 3.1.1
       esbuild: 0.25.11
       esbuild-plugins-node-modules-polyfill: 1.7.1(esbuild@0.25.11)
-      mcpcac: 0.0.2(@cfworker/json-schema@4.1.1)(@xmorse/cac@6.0.7)(hono@4.9.9)(zod@4.3.6)
+      goke: 6.1.1
       nanospinner: 1.2.2
       picocolors: 1.1.1
       react: 19.2.3

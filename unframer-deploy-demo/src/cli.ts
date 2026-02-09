@@ -1,21 +1,21 @@
-import { cac } from 'cac'
+import { goke } from 'goke'
 import fs from 'fs'
 import path from 'path'
 import { notifyError } from './sentry.js'
 import { unframerBucketServerSdk } from './sdk.js'
 import { globby } from 'globby'
 
-export const cli = cac('unframer-deploy-demo')
+export const cli = goke('unframer-deploy-demo')
 
 cli.help()
 
 cli.command('', 'Deploy unframer demo')
-    .option('--secret <value>', 'Secret key for deployment', {})
-    .option('--slug <repo>', 'Repository slug', {})
-    .option('--dir <directory>', 'Directory to deploy', { default: './dist' })
+    .option('--secret <value>', 'Secret key for deployment')
+    .option('--slug <repo>', 'Repository slug')
+    .option('--dir <directory>', 'Directory to deploy')
     .action(async function main(options) {
-        // console.log({ options })
-        const { slug, dir, secret } = options
+        const { slug, secret } = options
+        const dir = options.dir || './dist'
         if (!slug) {
             console.error('No repository slug provided')
             return
