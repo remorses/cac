@@ -736,9 +736,9 @@ export const mcpTools = {
             - collectionId: Referenced collection ID for reference fields
             - Additional legacy properties like options, defaultValue, multiline when applicable
 
-            IMPORTANT: Notice that you cannot create a CMS collection yourself. Instead you should ask the user to create it, then you can add CMS items to it after using this tool to get the collection id.
+            To create a new CMS collection, use the createCMSCollection tool.
 
-            You also cannot update or add collection fields types, ask the user to do so.
+            You cannot update or add fields to existing user-managed collections, ask the user to do so. For plugin-managed collections created via createCMSCollection, you can set fields during creation.
         `,
         input: z.object({}),
         output: z.any(),
@@ -835,6 +835,39 @@ export const mcpTools = {
         input: z.object({
             collectionId: z.string().describe('The ID of the CMS collection containing the item'),
             itemId: z.string().describe('The ID of the item to delete'),
+        }),
+        output: z.any(),
+    },
+    createCMSCollection: {
+        description: dedent`
+            Creates a new CMS collection with optional field definitions.
+
+            The collection will be managed by this plugin. After creation, you can add items using upsertCMSItem.
+
+            Field types supported: string, number, boolean, color, date, image, link, formattedText, file, enum, collectionReference, multiCollectionReference.
+
+            For enum fields, provide cases array with id and name for each option.
+            For collectionReference/multiCollectionReference fields, provide the collectionId of the referenced collection.
+            For file fields, provide allowedFileTypes array with file extensions.
+        `,
+        input: z.object({
+            name: z.string().describe('Name for the new CMS collection'),
+            fields: z.array(z.object({
+                id: z.string().describe('Unique field identifier'),
+                name: z.string().describe('Human-readable field name'),
+                type: z.enum([
+                    'string', 'number', 'boolean', 'color', 'date',
+                    'image', 'link', 'formattedText', 'file', 'enum',
+                    'collectionReference', 'multiCollectionReference',
+                ]).describe('The data type for this field'),
+                required: z.boolean().optional().describe('Whether the field is mandatory'),
+                allowedFileTypes: z.array(z.string()).optional().describe('Allowed file extensions for file fields (e.g., ["pdf", "txt"])'),
+                cases: z.array(z.object({
+                    id: z.string(),
+                    name: z.string(),
+                })).optional().describe('Enum options with id and name'),
+                collectionId: z.string().optional().describe('Referenced collection ID for reference fields'),
+            })).optional().default([]).describe('Field definitions for the collection'),
         }),
         output: z.any(),
     },
