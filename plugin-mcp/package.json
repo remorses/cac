@@ -23,7 +23,7 @@
         "@cloudflare/workers-oauth-provider": "^0.0.11",
         "@modelcontextprotocol/sdk": "^1.25.3",
         "@sentry/browser": "^9.22.0",
-        "agents": "0.3.6",
+        "agents": "0.4.0",
         "camelcase": "^8.0.0",
         "diff": "^7.0.0",
         "dom-serializer": "^2.0.0",
