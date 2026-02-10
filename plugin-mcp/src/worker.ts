@@ -89,11 +89,8 @@ async function getValidatedSession({
         'json',
     )) as CachedSessionData | null
     if (cached) {
-        console.log(`Session cache HIT for ${id}`)
         return { framerUserId: cached.framerUserId, email: cached.email }
     }
-
-    console.log(`Session cache MISS for ${id}`)
     const apiClient = createWebsiteApiClient(env)
     const { data, error } = await apiClient.api.plugins.mcp.validateSession.post(
         {
@@ -165,7 +162,7 @@ const defaultHandler = {
         const provider = env.OAUTH_PROVIDER
         const url = new URL(request.url)
 
-        console.log(`MCP auth defaultHandler handling ${url.pathname}`)
+        
         // Handle OAuth authorization
         if (url.pathname === '/authorize') {
             const oauthReq = await provider.parseAuthRequest(request)
@@ -186,7 +183,6 @@ const defaultHandler = {
                 env,
             })
             const redirectTo = new URL('/callback', url).toString()
-            console.log(`redirecting to callback and then to ${redirectTo}`)
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
 
@@ -383,12 +379,7 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                 throw new Error(`Missing MCP secret prop`)
             }
 
-            console.log(
-                'Initializing MCP with authenticated framerUserId:',
-                framerUserId,
-                'email:',
-                userEmail,
-            )
+            console.log(`MCP init for ${framerUserId} (${userEmail})`)
             // const apiClient = createWebsiteApiClient(this.env)
             // const { data: data, error: validationError } =
             //     await apiClient.api.plugins.mcp.validateSession.post({
@@ -402,7 +393,8 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
             let ws: WebSocket | null = null
             let isServerStopped = false
             let idleTimeout: ReturnType<typeof setTimeout> | null = null
-            const idleTimeoutDelay = 9 * 1000
+            // Longer idle timeout reduces DO wake-ups between tool call bursts, saving on DO invocation + SQLite init costs
+            const idleTimeoutDelay = 30 * 1000
             let pendingToolCalls = 0
 
             const resetIdleTimeout = () => {
@@ -411,13 +403,9 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                 }
                 idleTimeout = setTimeout(() => {
                     if (pendingToolCalls > 0) {
-                        console.log(
-                            `Skipping idle timeout, ${pendingToolCalls} pending tool calls`,
-                        )
                         resetIdleTimeout()
                         return
                     }
-                    console.log('Closing WebSocket due to inactivity')
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.close(1000, 'Idle timeout')
                     }
@@ -428,15 +416,8 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
             const env = this.env
             const connectWebSocket = async (): Promise<WebsocketRpc> => {
                 if (isServerStopped) {
-                    console.log(
-                        'Server is stopped, not attempting reconnection',
-                    )
                     throw new Error('Server is stopped')
                 }
-
-                console.log(
-                    `trying to connect to Websocket tunnel to get access to Framer app MCP with id ${framerUserId}`,
-                )
 
                 try {
                     const start = Date.now()
@@ -500,18 +481,11 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             ws.addEventListener(
                                 'open',
                                 () => {
-                                    console.log(
-                                        `WebSocket opened to upstream tunnel with ID: ${framerUserId}`,
-                                    )
-
                                     // Create RPC handler
                                     rpc = createWebsocketHandling({ ws: ws! })
 
                                     // Send ready message
                                     readySentTime = Date.now()
-                                    console.log(
-                                        'Sending ready message to upstream',
-                                    )
                                     rpc.send({
                                         payload: { type: 'ready' },
                                     })
@@ -521,35 +495,12 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                                 },
                             )
                             const handleFirstMessage = (
-                                event: MessageEvent,
+                                _event: MessageEvent,
                             ) => {
                                 clearTimeout(timeoutId)
-                                resolve(rpc!)
-
                                 const elapsed = Date.now() - start
-                                console.log(
-                                    `First message received, connection established in ${(elapsed / 1000).toFixed(2)}s`,
-                                )
-
-                                // Check if it's a ready response
-                                try {
-                                    const data = JSON.parse(event.data)
-                                    if (
-                                        data.type === 'ready' &&
-                                        readySentTime
-                                    ) {
-                                        const readyResponseTime =
-                                            Date.now() - readySentTime
-                                        console.log(
-                                            `Upstream is connected! Ready message round-trip time: ${(readyResponseTime / 1000).toFixed(3)}s`,
-                                        )
-                                    }
-                                } catch {
-                                    // First message might not be JSON or ready
-                                    console.log(
-                                        'First message was not a ready response',
-                                    )
-                                }
+                                console.log(`WS connected to ${framerUserId} in ${elapsed}ms`)
+                                resolve(rpc!)
                             }
                             ws.addEventListener('message', handleFirstMessage)
                             ws.addEventListener('error', handleError, {
@@ -557,12 +508,7 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             })
 
                             ws.addEventListener('error', (err) => {
-                                console.error('WebSocket error (details in close event):', {
-                                    framerUserId,
-                                    userEmail,
-                                    readyState: ws?.readyState,
-                                    errorType: err.type,
-                                })
+                                console.error(`WS error for ${framerUserId}:`, err.type)
                             })
 
                             // Reset idle timeout on any message activity
@@ -591,7 +537,6 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
 
             // Graceful shutdown
             const stop = () => {
-                console.log('\n⏹ shutting down…')
                 isServerStopped = true
 
                 // Clear any pending timeout
@@ -756,7 +701,7 @@ const handler = {
 
         // Legacy SSE transport with query-based auth
         if (url.pathname === '/sse' || url.pathname === '/sse/message') {
-            console.log(`handling /sse for ${request.url}`)
+            
             const id = url.searchParams.get('id')
             const secret = url.searchParams.get('secret')
 
@@ -784,7 +729,6 @@ const handler = {
             const secret = url.searchParams.get('secret')
 
             if (id && secret) {
-                console.log(`handling /mcp with query auth for ${request.url}`)
                 const sessionData = await getValidatedSession({ env, secret, id })
                 if (!sessionData) {
                     return new Response('Invalid session', { status: 401 })
