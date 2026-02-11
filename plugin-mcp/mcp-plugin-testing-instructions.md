@@ -1,0 +1,58 @@
+use `playwriter` skill and cli to control the browser.
+
+## Step-by-step
+
+- Open the Framer project URL in Chrome:
+  https://framer.com/projects/unframer-source--XOxwdyyCrFEE9uKnKFPq-6gX7n?node=augiA20Il
+
+- Wait for the editor UI to finish loading (toolbar visible) before opening the command palette.
+
+- Press Command+K to open the command palette.
+
+- Verify the palette is open (look for the command dialog and MCP entry in the snapshot output):
+
+```bash
+playwriter -s 1 -e "console.log(await accessibilitySnapshot({ page, search: /dialog|Search…|MCP/ }));"
+```
+
+- Search for **MCP**, press Enter, then wait about 1 second for the plugin iframe to appear.
+
+- Verify the plugin iframe exists (should include `plugins.framercdn.com`):
+
+```bash
+playwriter -s 1 -e "const iframes = await page.locator('iframe').all(); for (const f of iframes) { console.log(await f.getAttribute('src')); }"
+```
+
+- Wait until the MCP iframe is present (verifies the action worked):
+
+```bash
+playwriter -s 1 -e "const iframe = page.locator(\"iframe[src*='plugins.framercdn.com']\"); await iframe.first().waitFor({ timeout: 10000 }); console.log('iframe ready');"
+```
+
+- Grab the iframe’s locator by URL:
+
+```bash
+playwriter -s 1 -e "const iframe = page.locator(\"iframe[src*='plugins.framercdn.com']\"); console.log(await iframe.count());"
+```
+
+- Run the accessibility snapshot on that iframe using `contentFrame()` (FrameLocator is auto-resolved to Frame):
+
+```bash
+playwriter -s 1 -e "const frame = await page.locator(\"iframe[src*='plugins.framercdn.com']\").contentFrame(); console.log(await accessibilitySnapshot({ page, frame }));"
+```
+
+- Alternative: use `page.frames()` to get the Frame directly:
+
+```bash
+playwriter -s 1 -e "const frame = page.frames().find(f => f.url().includes('plugins.framercdn.com')); console.log(await accessibilitySnapshot({ page, frame }));"
+```
+
+- Validate the snapshot contains MCP UI text (confirms the panel is actually loaded):
+
+```bash
+playwriter -s 1 -e "const frame = await page.locator(\"iframe[src*='plugins.framercdn.com']\").contentFrame(); console.log(await accessibilitySnapshot({ page, frame, search: /Control Framer with MCP|Login With Google/ }));"
+```
+
+## Expected iframe URL
+
+- https://nw12xtr7iedsczg1le9s9pqfl.plugins.framercdn.com/?mode=canvas
