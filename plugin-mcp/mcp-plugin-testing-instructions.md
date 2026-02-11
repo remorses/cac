@@ -1,58 +1,100 @@
-use `playwriter` skill and cli to control the browser.
+# MCP Plugin Testing Instructions
 
-## Step-by-step
+Use `playwriter` skill and CLI to control the browser.
 
-- Open the Framer project URL in Chrome:
-  https://framer.com/projects/unframer-source--XOxwdyyCrFEE9uKnKFPq-6gX7n?node=augiA20Il
+## Prerequisites
 
-- Wait for the editor UI to finish loading (toolbar visible) before opening the command palette.
-
-- Press Command+K to open the command palette.
-
-- Verify the palette is open (look for the command dialog and MCP entry in the snapshot output):
+1. Start the plugin dev server in a background tmux session:
 
 ```bash
-playwriter -s 1 -e "console.log(await accessibilitySnapshot({ page, search: /dialog|Search…|MCP/ }));"
+tmux new-session -d -s plugin-mcp-dev
+tmux send-keys -t plugin-mcp-dev "cd /path/to/plugin-mcp && pnpm dev" Enter
 ```
 
-- Search for **MCP**, press Enter, then wait about 1 second for the plugin iframe to appear.
+The dev server runs at **https://localhost:5173/**
 
-- Verify the plugin iframe exists (should include `plugins.framercdn.com`):
+2. Open the Framer test project in Chrome:
+   https://framer.com/projects/Framer-MCP-project-Designor-Framer-Template-copy--lfAw10qcrLpLLEznmZmo
+
+3. Wait for the editor UI to finish loading (toolbar visible).
+
+## Opening the Development Plugin
+
+1. Press **Cmd+K** to open the command palette.
+
+2. Search for **"show developer tools"** and press Enter to enable developer mode (if not already enabled). If you see "Disable Show Developer Tools", it's already enabled.
+
+3. Press **Cmd+K** again and search for **"development plugin"** (or use shortcut **⌥⌘L**).
+
+4. **If a URL input dialog appears**: Enter the plugin URL `https://localhost:5173/` and press Enter.
+
+5. **If no dialog appears**: Framer cached the URL from a previous session and the plugin loads automatically.
+
+## User Login Required
+
+**Important**: The plugin iframe is cross-origin (localhost:5173 vs framer.com), so automation tools cannot interact with elements inside the iframe. The user must manually click the "Login With Google" button.
+
+After opening the development plugin:
+1. The plugin panel shows "Control Framer with MCP" with a "Login With Google" button
+2. **Ask the user to click "Login With Google"** and complete the OAuth flow
+3. Once logged in, the plugin will show the MCP connection status
+
+## Running Tests
+
+After the plugin is open and logged in, run the tests:
 
 ```bash
-playwriter -s 1 -e "const iframes = await page.locator('iframe').all(); for (const f of iframes) { console.log(await f.getAttribute('src')); }"
+cd plugin-mcp && pnpm test
 ```
 
-- Wait until the MCP iframe is present (verifies the action worked):
+The tests connect to the MCP server which communicates with the Framer plugin via WebSocket tunnel.
+
+## Verifying Plugin State with Playwriter
+
+Create a session and navigate to the project:
 
 ```bash
-playwriter -s 1 -e "const iframe = page.locator(\"iframe[src*='plugins.framercdn.com']\"); await iframe.first().waitFor({ timeout: 10000 }); console.log('iframe ready');"
+playwriter session new
+playwriter -s 1 -e "state.page = await context.newPage(); await state.page.goto('https://framer.com/projects/Framer-MCP-project-Designor-Framer-Template-copy--lfAw10qcrLpLLEznmZmo', { waitUntil: 'domcontentloaded' });"
 ```
 
-- Grab the iframe’s locator by URL:
+Check if the plugin iframe is loaded:
 
 ```bash
-playwriter -s 1 -e "const iframe = page.locator(\"iframe[src*='plugins.framercdn.com']\"); console.log(await iframe.count());"
+playwriter -s 1 -e "const iframes = await state.page.locator('iframe').all(); for (const f of iframes) { console.log(await f.getAttribute('src')); }"
 ```
 
-- Run the accessibility snapshot on that iframe using `contentFrame()` (FrameLocator is auto-resolved to Frame):
+Look for an iframe with `localhost:5173` in the output.
+
+Get the plugin frame URL:
 
 ```bash
-playwriter -s 1 -e "const frame = await page.locator(\"iframe[src*='plugins.framercdn.com']\").contentFrame(); console.log(await accessibilitySnapshot({ page, frame }));"
+playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); console.log('Plugin frame:', frame?.url());"
 ```
 
-- Alternative: use `page.frames()` to get the Frame directly:
+Take a screenshot to see plugin state:
 
 ```bash
-playwriter -s 1 -e "const frame = page.frames().find(f => f.url().includes('plugins.framercdn.com')); console.log(await accessibilitySnapshot({ page, frame }));"
+playwriter -s 1 -e "await screenshotWithAccessibilityLabels({ page: state.page })"
 ```
 
-- Validate the snapshot contains MCP UI text (confirms the panel is actually loaded):
+## Known Limitations
 
-```bash
-playwriter -s 1 -e "const frame = await page.locator(\"iframe[src*='plugins.framercdn.com']\").contentFrame(); console.log(await accessibilitySnapshot({ page, frame, search: /Control Framer with MCP|Login With Google/ }));"
+- **Cross-origin iframe**: Cannot use `frame.locator()`, `frame.evaluate()`, or similar methods on the plugin iframe - they will timeout. This is because the iframe (localhost:5173) is cross-origin relative to the main page (framer.com).
+
+- **Coordinate-based clicking**: Can click at specific coordinates to interact with the iframe, but OAuth popups require user interaction.
+
+- **Popup detection**: Google OAuth may open in a popup window that playwriter cannot control. The user must complete the login manually.
+
+## Expected Test Output
+
+When properly configured, `pnpm test` should show all tests passing:
+
+```
+ ✓ src/lib/xml.test.ts (15 tests)
+ ✓ src/lib/mcp.test.ts (22 tests)
+ Test Files  2 passed (2)
+      Tests  37 passed (37)
 ```
 
-## Expected iframe URL
-
-- https://nw12xtr7iedsczg1le9s9pqfl.plugins.framercdn.com/?mode=canvas
+If tests fail with "Upstream not connected", the plugin is not logged in or not open.
