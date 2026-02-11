@@ -41,8 +41,12 @@ export function notifyError(error, msg?: string) {
 
     console.error(error?.error || error)
     captureException(error?.error || error, { extra: { msg } })
-    framer.notify(String(error.message || error), { variant: 'error' })
-    // captureException(error, { extra: { msg } })
+    
+    // Only call framer.notify in plugin context (browser), not in server runtime (Cloudflare Worker)
+    // Check if we're in a browser environment where framer.notify is available
+    if (typeof window !== 'undefined') {
+        framer.notify(String(error.message || error), { variant: 'error' })
+    }
 }
 
 
