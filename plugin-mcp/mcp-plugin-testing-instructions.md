@@ -18,6 +18,8 @@ The dev server runs at **https://localhost:5173/**
 2. Open the Framer test project in Chrome:
    https://framer.com/projects/Framer-MCP-project-Designor-Framer-Template-copy--lfAw10qcrLpLLEznmZmo
 
+if there is already a playwriter page open with this url reuse it instead of opening a new one.
+
 3. Wait for the editor UI to finish loading (toolbar visible).
 
 ## Opening the Development Plugin
