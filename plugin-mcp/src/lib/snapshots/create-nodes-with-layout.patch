@@ -1,34 +1,24 @@
 Successfully updated:
-Created Frame node WNlgVgHBF
-Created Frame node BWt9tOxUe
-Created Text node YDhvCY_jz
-Created Text node vJQkz_5k7
-Created Frame node G_WP_pdPP
-Updated attributes for node WNlgVgHBF
-Updated attributes for node BWt9tOxUe
-Updated text for node YDhvCY_jz
-Updated attributes for node YDhvCY_jz
-Updated text for node vJQkz_5k7
-Updated attributes for node vJQkz_5k7
-Updated attributes for node G_WP_pdPP
-Reordered node BWt9tOxUe within parent WNlgVgHBF to index 0
+Created Frame node vyc5dWPdn
+Created Frame node phPUvysk1
+Created Text node gx7S_sKog
+Created Text node EOzZ01KKX
+Created Frame node Qx5BCDbcR
+Updated attributes for node vyc5dWPdn
+Updated attributes for node phPUvysk1
+Updated text for node gx7S_sKog
+Updated attributes for node gx7S_sKog
+Updated text for node EOzZ01KKX
+Updated attributes for node EOzZ01KKX
+Updated attributes for node Qx5BCDbcR
+Reordered node phPUvysk1 within parent vyc5dWPdn to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -3871,20 +3871,73 @@
-     top="0px"
-     left="0px"
-     <!-- background color string or project color style path (if starts with /) -->
-     backgroundColor="rgb(200, 200, 200)"
-     zIndex="10"
-     overflow="hidden"
- >
-   <TruncatedTextThatIsLongEnoughToBeTruncated
-       nodeId="c5HU2SqaR"
-       position="absolute"
+@@ -3881,20 +3881,73 @@
        width="fit-content"
        height="fit-content"
        top="0px"
@@ -39,8 +29,18 @@ Index: node.xml
      Truncated Text that is long enough to be truncated
    </TruncatedTextThatIsLongEnoughToBeTruncated>
  </Frame>
+ <Frame
+     nodeId="yKtdVfGM5"
+     position="absolute"
+     width="100px"
+     height="100px"
+     top="0px"
+     left="0px"
+     <!-- background color string or project color style path (if starts with /) -->
+     backgroundColor="rgb(200, 200, 200)"
+  />
 +<Stack
-+    nodeId="WNlgVgHBF"
++    nodeId="vyc5dWPdn"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -56,7 +56,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="BWt9tOxUe"
++      nodeId="phPUvysk1"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -64,7 +64,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="YDhvCY_jz"
++        nodeId="gx7S_sKog"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -76,7 +76,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="vJQkz_5k7"
++      nodeId="EOzZ01KKX"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -84,7 +84,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="G_WP_pdPP"
++      nodeId="Qx5BCDbcR"
 +      width="100%"
 +      height="1fr"
 +      <!-- background color string or project color style path (if starts with /) -->
