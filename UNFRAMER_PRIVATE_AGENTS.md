@@ -15,3 +15,14 @@ If you see submodules in detached HEAD:
 cd spiceflow && git checkout main
 cd ../unframer && git checkout main
 ```
+
+## testing plugins with playwriter
+
+framer plugins are just iframes that run inside the framer websites. each plugin is served with vite locally, framer.com has a command palette option to load them.
+
+to try out the plugin you can load them into framer and control them with playwriter
+
+mcp plugin also has a test suite that has to be run after the plugin is open in a specific project. see instructions in plugin-mcp/mcp-plugin-testing-instructions.md for how. follow it every time user asks to run mcp plugin test suite.
+
+
+the framer plugin also depend on a cloudflare worker. if you make changes there run `pnpm deployment` first inside mcp plugin folder to deploy the preview worker. this is safe, the real worker in production is deployed with different script
