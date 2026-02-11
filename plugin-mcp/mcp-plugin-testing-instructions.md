@@ -2,6 +2,8 @@
 
 Use `playwriter` skill and CLI to control the browser.
 
+**Important**: Never call `bringToFront()` on pages - it's disruptive and unnecessary.
+
 ## Prerequisites
 
 1. Start the plugin dev server in a background tmux session:
@@ -32,12 +34,11 @@ The dev server runs at **https://localhost:5173/**
 
 ## User Login Required
 
-**Important**: The plugin iframe is cross-origin (localhost:5173 vs framer.com), so automation tools cannot interact with elements inside the iframe. The user must manually click the "Login With Google" button.
+After opening the development plugin, check the plugin state:
+- If logged in: Shows MCP URL with "Keep this plugin open while using MCP"
+- If not logged in: Shows "Login With Google" button
 
-After opening the development plugin:
-1. The plugin panel shows "Control Framer with MCP" with a "Login With Google" button
-2. **Ask the user to click "Login With Google"** and complete the OAuth flow
-3. Once logged in, the plugin will show the MCP connection status
+**If not logged in**: Ask the user to click the "Login With Google" button and complete the OAuth flow.
 
 ## Running Tests
 
@@ -51,25 +52,35 @@ The tests connect to the MCP server which communicates with the Framer plugin vi
 
 ## Verifying Plugin State with Playwriter
 
-Create a session and navigate to the project:
+Create a session and get the Framer page:
 
 ```bash
 playwriter session new
-playwriter -s 1 -e "state.page = await context.newPage(); await state.page.goto('https://framer.com/projects/Framer-MCP-project-Designor-Framer-Template-copy--lfAw10qcrLpLLEznmZmo', { waitUntil: 'domcontentloaded' });"
+playwriter -s 1 -e "state.page = context.pages().find(p => p.url().includes('framer.com/projects')); console.log('page:', state.page?.url());"
+```
+
+Open the development plugin:
+
+```bash
+playwriter -s 1 -e "await state.page.keyboard.press('Meta+k'); await state.page.waitForTimeout(500); await state.page.keyboard.type('development plugin'); await state.page.waitForTimeout(500); await state.page.keyboard.press('Enter'); await state.page.waitForTimeout(2000);"
 ```
 
 Check if the plugin iframe is loaded:
 
 ```bash
-playwriter -s 1 -e "const iframes = await state.page.locator('iframe').all(); for (const f of iframes) { console.log(await f.getAttribute('src')); }"
+playwriter -s 1 -e "const frames = state.page.frames(); frames.forEach(f => { if (f.url().includes('localhost')) console.log('Plugin frame:', f.url()); });"
 ```
 
-Look for an iframe with `localhost:5173` in the output.
-
-Get the plugin frame URL:
+Get the plugin frame and check its state:
 
 ```bash
-playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); console.log('Plugin frame:', frame?.url());"
+playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); const html = await frame.evaluate(() => document.body.innerHTML); console.log(html.slice(0, 1500));"
+```
+
+Count buttons in the iframe (2 buttons when logged in, 1 "Login With Google" button when not):
+
+```bash
+playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); const btnCount = await frame.locator('button').count(); console.log('button count:', btnCount);"
 ```
 
 Take a screenshot to see plugin state:
@@ -77,14 +88,6 @@ Take a screenshot to see plugin state:
 ```bash
 playwriter -s 1 -e "await screenshotWithAccessibilityLabels({ page: state.page })"
 ```
-
-## Known Limitations
-
-- **Cross-origin iframe**: Cannot use `frame.locator()`, `frame.evaluate()`, or similar methods on the plugin iframe - they will timeout. This is because the iframe (localhost:5173) is cross-origin relative to the main page (framer.com).
-
-- **Coordinate-based clicking**: Can click at specific coordinates to interact with the iframe, but OAuth popups require user interaction.
-
-- **Popup detection**: Google OAuth may open in a popup window that playwriter cannot control. The user must complete the login manually.
 
 ## Expected Test Output
 
