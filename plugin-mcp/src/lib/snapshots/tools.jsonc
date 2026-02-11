@@ -635,9 +635,9 @@ Each field includes:
 - collectionId: Referenced collection ID for reference fields
 - Additional legacy properties like options, defaultValue, multiline when applicable
 
-IMPORTANT: Notice that you cannot create a CMS collection yourself. Instead you should ask the user to create it, then you can add CMS items to it after using this tool to get the collection id.
+To create a new CMS collection, use the createCMSCollection tool.
 
-You also cannot update or add collection fields types, ask the user to do so.",
+You cannot update or add fields to existing user-managed collections, ask the user to do so. For plugin-managed collections created via createCMSCollection, you can set fields during creation.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {},
@@ -766,5 +766,108 @@ The item ID must exist in the specified collection.",
       "type": "object",
     },
     "name": "deleteCMSItem",
+  },
+  {
+    "description": "Creates a new CMS collection with optional field definitions.
+
+The collection will be managed by this plugin. After creation, you can add items using upsertCMSItem.
+
+Field types supported: string, number, boolean, color, date, image, link, formattedText, file, enum, collectionReference, multiCollectionReference.
+
+For enum fields, provide cases array with id and name for each option.
+For collectionReference/multiCollectionReference fields, provide the collectionId of the referenced collection.
+For file fields, provide allowedFileTypes array with file extensions.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "default": [],
+          "description": "Field definitions for the collection",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "allowedFileTypes": {
+                "description": "Allowed file extensions for file fields (e.g., ["pdf", "txt"])",
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+              "cases": {
+                "description": "Enum options with id and name",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                    },
+                    "name": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                  ],
+                  "type": "object",
+                },
+                "type": "array",
+              },
+              "collectionId": {
+                "description": "Referenced collection ID for reference fields",
+                "type": "string",
+              },
+              "id": {
+                "description": "Unique field identifier",
+                "type": "string",
+              },
+              "name": {
+                "description": "Human-readable field name",
+                "type": "string",
+              },
+              "required": {
+                "description": "Whether the field is mandatory",
+                "type": "boolean",
+              },
+              "type": {
+                "description": "The data type for this field",
+                "enum": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "color",
+                  "date",
+                  "image",
+                  "link",
+                  "formattedText",
+                  "file",
+                  "enum",
+                  "collectionReference",
+                  "multiCollectionReference",
+                ],
+                "type": "string",
+              },
+            },
+            "required": [
+              "id",
+              "name",
+              "type",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+        "name": {
+          "description": "Name for the new CMS collection",
+          "type": "string",
+        },
+      },
+      "required": [
+        "name",
+        "fields",
+      ],
+      "type": "object",
+    },
+    "name": "createCMSCollection",
   },
 ]

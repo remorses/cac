@@ -747,7 +747,7 @@ describe(
 
               - **Field IDs are auto-generated strings** (e.g., "j11rZL4rT"), NOT descriptive names
               - Get field IDs from the collections returned by this tool
-              - For image fields: provide URL string directly as value, NOT an object
+              - For image/file fields: provide URL string directly as value. To upload a local file first: \`curl -F "reqtype=fileupload" -F "fileToUpload=@file.png" https://catbox.moe/user/api.php\`
               - For multiCollectionReference: provide array of item IDs from the referenced collection
               - For collectionReference: when referencing items, use their actual item IDs (not slugs)
               - Date values must be ISO 8601 format strings
@@ -950,19 +950,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-4115\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-8590\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "pV1ZxgAxe",
-                  "slug": "test-item-4115",
+                  "id": "Msbuj5YpQ",
+                  "slug": "test-item-8590",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 4115"
+                      "value": "Test Item 8590"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-01-29T19:47:34.781Z"
+                      "value": "2026-02-11T14:03:03.469Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -974,7 +974,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p dir=\\"auto\\">Test content for item 4115</p>"
+                      "value": "<p dir=\\"auto\\">Test content for item 8590</p>"
                     }
                   }
                 }
@@ -1014,19 +1014,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-4115\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-8590\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "pV1ZxgAxe",
-                  "slug": "test-item-4115",
+                  "id": "Msbuj5YpQ",
+                  "slug": "test-item-8590",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 9513"
+                      "value": "Updated Item 7786"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-01-29T19:47:34.781Z"
+                      "value": "2026-02-11T14:03:03.469Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1038,7 +1038,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p dir=\\"auto\\">Test content for item 4115</p>"
+                      "value": "<p dir=\\"auto\\">Test content for item 8590</p>"
                     }
                   }
                 }
@@ -1065,10 +1065,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-4115\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-8590\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "pV1ZxgAxe",
-                  "slug": "test-item-4115"
+                  "id": "Msbuj5YpQ",
+                  "slug": "test-item-8590"
                 }
               }"
             `)

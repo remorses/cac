@@ -60,7 +60,7 @@ For Frame, Stack, and similar container nodes:
 
 - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
 - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
-- **backgroundImage**: Image URL (will be uploaded to Framer if external)
+- **backgroundImage**: Image URL (will be uploaded to Framer if external). To upload a local image first: `curl -F "reqtype=fileupload" -F "fileToUpload=@image.png" https://catbox.moe/user/api.php`
 - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
 
 ### Layout Attributes (Frame nodes only)
