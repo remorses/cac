@@ -1,18 +1,18 @@
 [
   {
-    "description": "Gets the project pages and components XML, with information of the currently focused page or component.
+    "description": "Gets the project pages, design pages, and components XML, with information of the currently focused page or component.
 
 Framer is a website builder and design tool. This tool should ALWAYS be called at the start of any session involving a Framer project to understand the project structure.
 
 This tool returns:
-- Project pages, components, code files, and styles
+- Project web pages, design pages, components, code files, and styles
 - Complete documentation for all available node attributes (opacity, width, layout, etc.)
 - Pre-built section components for quickly adding hero, pricing, footer, testimonials, and other sections
-- Currently focused page or component ID
+- Currently focused page, design page, or component ID
 
-This tool also returns the ID of the currently focused page or component node. When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
+This tool also returns the ID of the currently focused page, design page, or component node. When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
 
-The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
+The referenced nodeIds can be used with getNodeXml to get the XML of a specific page, design page, or component.
 
 Each element in the XML is usually referred as a "node" but the user could also refer to it as a "layer" or "element". The XML structure is similar to Framer's XML layers tree, names are extracted from the layers names given by the user.
 
@@ -869,5 +869,38 @@ For file fields, provide allowedFileTypes array with file extensions.",
       "type": "object",
     },
     "name": "createCMSCollection",
+  },
+  {
+    "description": "Create a new page in the Framer project.
+
+Two types of pages can be created:
+- **design**: Canvas pages for components, prototypes, and design explorations. Not published to the website.
+- **web**: Publishable web pages that appear on the live website. Path must start with "/" (e.g., "/about", "/contact").
+
+After creating a page, you can use getNodeXml to see its contents
+and updateXmlForNode to add content to it.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Name or path for the page. For design pages: any name (e.g., "Components"). For web pages: must start with "/" (e.g., "/about", "/contact").",
+          "type": "string",
+        },
+        "type": {
+          "description": "Type of page: "design" for canvas/prototype pages, "web" for publishable website pages.",
+          "enum": [
+            "design",
+            "web",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "name",
+        "type",
+      ],
+      "type": "object",
+    },
+    "name": "createPage",
   },
 ]

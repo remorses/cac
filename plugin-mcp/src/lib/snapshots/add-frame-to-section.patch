@@ -1,18 +1,18 @@
 Successfully updated:
-Created Frame node QdB23KI6d
-Created Frame node ARPfeaFBW
-Created Frame node q1M8tdbIi
-Updated attributes for node QdB23KI6d
-Updated attributes for node ARPfeaFBW
-Updated attributes for node q1M8tdbIi
-Reordered node ARPfeaFBW within parent QdB23KI6d to index 0
+Created Frame node dq6xWyEE8
+Created Frame node EMQNtanss
+Created Frame node YmB2VbsnD
+Updated attributes for node dq6xWyEE8
+Updated attributes for node EMQNtanss
+Updated attributes for node YmB2VbsnD
+Reordered node EMQNtanss within parent dq6xWyEE8 to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -524,40 +524,77 @@
+@@ -548,40 +548,71 @@
                stackDistribution="center"
                stackAlignment="center"
            >
@@ -34,7 +34,7 @@ Index: node.xml
               />
            </Stack>
 +          <Stack
-+              nodeId="QdB23KI6d"
++              nodeId="dq6xWyEE8"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -48,23 +48,17 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="ARPfeaFBW"
-+                position="absolute"
++                nodeId="EMQNtanss"
 +                width="100px"
 +                height="100px"
-+                top="0px"
-+                left="0px"
 +                <!-- background color string or project color style path (if starts with /) -->
 +                backgroundColor="rgb(255, 255, 255)"
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="q1M8tdbIi"
-+                position="absolute"
++                nodeId="YmB2VbsnD"
 +                width="150px"
 +                height="80px"
-+                top="0px"
-+                left="0px"
 +                <!-- background color string or project color style path (if starts with /) -->
 +                backgroundColor="rgb(200, 200, 200)"
 +                borderRadius="4px"
@@ -75,6 +69,7 @@ Index: node.xml
              nodeId="XQhemvRcY"
              width="fit-content"
              height="fit-content"
+             overflow="visible"
              layout="stack"
              gap="12px"
              stackDirection="horizontal"
@@ -89,7 +84,6 @@ Index: node.xml
                componentId="zQ4rhDKqX"
                variant="anmz3_Hx4"
                XNZ6TQLVf="Read the Docs"
-               YEdbiaweI="diamond"
 
 
 Note: Set zoomIntoView=false if you want to use Framer app while MCP is working.

@@ -42,7 +42,7 @@ const CMS_FIELD_TYPE_COMMENTS: Record<string, string> = {
     date: 'JSON string - ISO 8601 date (e.g., "2025-08-20T10:00:00.000Z")',
     image: 'JSON string or null - Image URL (e.g., "https://example.com/image.jpg")',
     link: 'JSON string or null - URL (e.g., "https://example.com" or "/page-path")',
-    formattedText: 'JSON string - HTML content (e.g., "<p>Rich text</p>")',
+    formattedText: 'JSON string - Markdown content (e.g., "# Heading\\n\\nParagraph text"). Markdown is converted automatically.',
     file: 'JSON string or null - File URL (e.g., "https://example.com/file.pdf")',
     enum: 'JSON string - One of the predefined enum case IDs',
     collectionReference:
@@ -61,6 +61,22 @@ function cleanFieldData(
             fieldId,
             cleanCMSFieldValue(fieldValue),
         ]),
+    )
+}
+
+// Helper function to normalize incoming user fieldData
+// Adds contentType: 'markdown' for formattedText fields from MCP input
+function normalizeIncomingFieldData(
+    fieldData: Record<string, any>,
+): Record<string, any> {
+    return Object.fromEntries(
+        Object.entries(fieldData).map(([fieldId, fieldValue]) => {
+            // If it's a formattedText field, add contentType: 'markdown'
+            if (fieldValue?.type === 'formattedText' && !fieldValue.contentType) {
+                return [fieldId, { ...fieldValue, contentType: 'markdown' }]
+            }
+            return [fieldId, fieldValue]
+        }),
     )
 }
 
@@ -130,6 +146,7 @@ function cleanCMSFieldValue(fieldValue: FieldDataEntry): FieldDataEntryInput {
 
         case 'formattedText':
             // FormattedText has valueByLocale which we can drop for input
+            // Don't change contentType of existing data - preserve its original format
             return {
                 type: fieldValue.type,
                 value: fieldValue.value,
@@ -485,6 +502,7 @@ async function websocketHandler({
         }
         case 'getProjectXml': {
             const pages = await framer.getNodesWithType('WebPageNode')
+            const designPages = await framer.getNodesWithType('DesignPageNode')
             const components = await framer.getNodesWithType('ComponentNode')
             const codeFiles = await framer.getCodeFiles()
             const colorStyles = await framer.getColorStyles()
@@ -507,13 +525,27 @@ async function websocketHandler({
                         {
                             name: 'Pages',
                             comment:
-                                'All pages in the project. Use getNodeXml with a page nodeId to see its contents',
+                                'Web pages that are published to the website. Use getNodeXml with a page nodeId to see its contents',
                             children: pages.map((page) => ({
                                 name: 'Page',
                                 id: page.id,
                                 attributes: {
                                     nodeId: page.id,
                                     path: page.path || '',
+                                },
+                                children: [],
+                            })),
+                        },
+                        {
+                            name: 'DesignPages',
+                            comment:
+                                'Design pages for components, prototypes, and explorations. Use createPage with type="design" to add new ones',
+                            children: designPages.map((page) => ({
+                                name: 'DesignPage',
+                                id: page.id,
+                                attributes: {
+                                    nodeId: page.id,
+                                    name: page.name || '',
                                 },
                                 children: [],
                             })),
@@ -610,11 +642,16 @@ async function websocketHandler({
                 shouldAddNodeIdAlways: true,
             })
 
-            // Get current root node (focused page or component)
+            // Get current root node (focused page, design page, or component)
             const rootNode = await framer.getCanvasRoot()
+            const rootNodeType = (() => {
+                if (rootNode.__class === 'WebPageNode') return 'page'
+                if (rootNode.__class === 'DesignPageNode') return 'design page'
+                return 'component'
+            })()
             const rootNodeInfo = rootNode
-                ? `The currently focused ${rootNode.__class === 'WebPageNode' ? 'page' : 'component'} ID is: \`${rootNode.id}\`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.`
-                : 'No page or component is currently focused'
+                ? `The currently focused ${rootNodeType} ID is: \`${rootNode.id}\`, call getNodeXml with this ID to get more specific XML of the current focused ${rootNodeType} layers.`
+                : 'No page, design page, or component is currently focused'
 
             // Check if user has permission to modify nodes
             const canModifyNodes = framer.isAllowedTo('Node.setAttributes')
@@ -1928,9 +1965,11 @@ async function websocketHandler({
             }
 
             // Prepare the item data
+            // Normalize incoming fieldData to use markdown for formattedText fields
+            const normalizedFieldData = fieldData ? normalizeIncomingFieldData(fieldData) : {}
             const itemData: any = {
                 draft,
-                fieldData: fieldData || {},
+                fieldData: normalizedFieldData,
             }
 
             if (itemId) {
@@ -1953,9 +1992,10 @@ async function websocketHandler({
                 // For updates, merge with existing field data (partial update support)
                 if (fieldData) {
                     // Clean existing field data to ensure proper format for API validation
+                    // Then overlay with the normalized incoming field data
                     itemData.fieldData = {
                         ...cleanFieldData(existingItem.fieldData),
-                        ...fieldData,
+                        ...normalizedFieldData,
                     }
                 } else {
                     itemData.fieldData = existingItem.fieldData
@@ -2178,6 +2218,58 @@ async function websocketHandler({
                 })),
             }
         }
+        case 'createPage': {
+            const { name, type: pageType } = input
+
+            if (pageType === 'design') {
+                // Check permissions for creating design pages
+                const permissionError = checkPermissions('createDesignPage')
+                if (permissionError) return permissionError
+
+                // Create the design page
+                const designPage = await framer.createDesignPage(name)
+
+                if (!designPage) {
+                    return `Failed to create design page "${name}"`
+                }
+
+                return {
+                    message: `Successfully created design page "${name}"`,
+                    page: {
+                        id: designPage.id,
+                        name: designPage.name,
+                        type: 'design',
+                    },
+                    hint: 'Use getNodeXml with this page ID to see its contents, or updateXmlForNode to add content to it.',
+                }
+            } else {
+                // Check permissions for creating web pages
+                const permissionError = checkPermissions('createWebPage')
+                if (permissionError) return permissionError
+
+                // Validate path starts with /
+                if (!name.startsWith('/')) {
+                    return `Web page path must start with "/". Got: "${name}"`
+                }
+
+                // Create the web page
+                const webPage = await framer.createWebPage(name)
+
+                if (!webPage) {
+                    return `Failed to create web page "${name}"`
+                }
+
+                return {
+                    message: `Successfully created web page "${name}"`,
+                    page: {
+                        id: webPage.id,
+                        path: webPage.path,
+                        type: 'web',
+                    },
+                    hint: 'Use getNodeXml with this page ID to see its contents, or updateXmlForNode to add content to it.',
+                }
+            }
+        }
         default:
             throw new Error(`Unknown tool type: ${type}`)
     }
@@ -2211,6 +2303,13 @@ function MainComponent() {
                     : 'Reduce Window Size',
                 onAction() {
                     useStore.setState({ isExpanded: !isExpanded })
+                },
+            },
+            {
+                label: 'Run in Background',
+                async onAction() {
+                    await framer.setBackgroundMessage('MCP server running')
+                    await framer.hideUI()
                 },
             },
         ])

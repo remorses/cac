@@ -9,6 +9,7 @@ import {
     supportsAspectRatio,
     supportsBackgroundColor,
     supportsBackgroundImage,
+    supportsBorder,
     supportsBorderRadius,
     supportsFont,
     supportsImageRendering,
@@ -18,13 +19,16 @@ import {
     supportsLocked,
     supportsName,
     supportsOpacity,
+    supportsOverflow,
     supportsPins,
     supportsPosition,
     supportsRotation,
     supportsSize,
     supportsSizeConstraints,
     supportsSVG,
+    supportsTextTruncation,
     supportsVisible,
+    supportsZIndex,
     type ImageAsset,
     ProtectedMethod,
 } from 'framer-plugin'
@@ -770,6 +774,35 @@ async function getNodeAttributesForXml(
         addAttribute('svg', node.svg)
     }
 
+    // Border attributes
+    if (supportsBorder(node) && node.border) {
+        const borderColor =
+            typeof node.border.color === 'string'
+                ? node.border.color
+                : node.border.color.path
+        addAttribute('borderWidth', node.border.width)
+        addAttribute('borderStyle', node.border.style)
+        addAttribute('borderColor', borderColor)
+    }
+
+
+    // Z-Index attribute
+    if (supportsZIndex(node) && node.zIndex != null) {
+        addAttribute('zIndex', node.zIndex)
+    }
+
+    // Overflow attributes
+    if (supportsOverflow(node)) {
+        if (node.overflow != null) addAttribute('overflow', node.overflow)
+        if (node.overflowX != null) addAttribute('overflowX', node.overflowX)
+        if (node.overflowY != null) addAttribute('overflowY', node.overflowY)
+    }
+
+    // Text truncation (line clamp)
+    if (supportsTextTruncation(node) && node.textTruncation != null) {
+        addAttribute('textTruncation', node.textTruncation)
+    }
+
     // Layout attributes (Frame nodes only)
     if (supportsLayout(node)) {
         // Layout type
@@ -987,6 +1020,44 @@ export async function applyAttributes(
             }
         }
     }
+
+    if (
+        supportsBorder(node) &&
+        (decodedAttrs.borderWidth ||
+            decodedAttrs.borderStyle ||
+            decodedAttrs.borderColor)
+    ) {
+        const borderColor = decodedAttrs.borderColor
+        let resolvedBorderColor = borderColor
+        if (typeof borderColor === 'string' && borderColor.startsWith('/')) {
+            const colorStyles = await framer.getColorStyles()
+            const colorStyle = colorStyles.find((cs) => cs.path === borderColor)
+            if (!colorStyle) {
+                throw new Error(`ColorStyle with path "${borderColor}" not found`)
+            }
+            resolvedBorderColor = colorStyle
+        }
+
+        const borderWidth = decodedAttrs.borderWidth
+        const borderStyle = decodedAttrs.borderStyle
+
+        if (!borderWidth || !borderStyle || !resolvedBorderColor) {
+            throw new Error(
+                'borderWidth, borderStyle, and borderColor are required to set a border',
+            )
+        }
+
+        decodedAttrs.border = {
+            width: borderWidth,
+            style: borderStyle,
+            color: resolvedBorderColor,
+        }
+
+        delete decodedAttrs.borderWidth
+        delete decodedAttrs.borderStyle
+        delete decodedAttrs.borderColor
+    }
+
 
     // Handle backgroundImage URL
     if (

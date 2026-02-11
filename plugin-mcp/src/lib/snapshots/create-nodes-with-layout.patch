@@ -1,46 +1,46 @@
 Successfully updated:
-Created Frame node EEJdD0ft_
-Created Frame node xaJUfmBty
-Created Text node jAlIxx3pf
-Created Text node Fiqa_6xYG
-Created Frame node zxD0Wqngo
-Updated attributes for node EEJdD0ft_
-Updated attributes for node xaJUfmBty
-Updated text for node jAlIxx3pf
-Updated attributes for node jAlIxx3pf
-Updated text for node Fiqa_6xYG
-Updated attributes for node Fiqa_6xYG
-Updated attributes for node zxD0Wqngo
-Reordered node xaJUfmBty within parent EEJdD0ft_ to index 0
+Created Frame node WNlgVgHBF
+Created Frame node BWt9tOxUe
+Created Text node YDhvCY_jz
+Created Text node vJQkz_5k7
+Created Frame node G_WP_pdPP
+Updated attributes for node WNlgVgHBF
+Updated attributes for node BWt9tOxUe
+Updated text for node YDhvCY_jz
+Updated attributes for node YDhvCY_jz
+Updated text for node vJQkz_5k7
+Updated attributes for node vJQkz_5k7
+Updated attributes for node G_WP_pdPP
+Reordered node BWt9tOxUe within parent WNlgVgHBF to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -3611,20 +3611,73 @@
-       Header Text
-     </HeaderText>
-   </Frame>
-   <BodyContentGoesHere
-       nodeId="LXzPmG6zb"
+@@ -3871,20 +3871,73 @@
+     top="0px"
+     left="0px"
+     <!-- background color string or project color style path (if starts with /) -->
+     backgroundColor="rgb(200, 200, 200)"
+     zIndex="10"
+     overflow="hidden"
+ >
+   <TruncatedTextThatIsLongEnoughToBeTruncated
+       nodeId="c5HU2SqaR"
+       position="absolute"
        width="fit-content"
        height="fit-content"
+       top="0px"
+       left="0px"
        font="Inter"
+       textTruncation="2"
    >
-     Body content goes here
-   </BodyContentGoesHere>
-   <Frame
-       nodeId="xLL2w0cI7"
-       width="100%"
-       height="1fr"
-       <!-- background color string or project color style path (if starts with /) -->
-       backgroundColor="rgb(255, 255, 255)"
-       borderRadius="4px"
-    />
- </Stack>
+     Truncated Text that is long enough to be truncated
+   </TruncatedTextThatIsLongEnoughToBeTruncated>
+ </Frame>
 +<Stack
-+    nodeId="EEJdD0ft_"
++    nodeId="WNlgVgHBF"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -56,7 +56,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="xaJUfmBty"
++      nodeId="BWt9tOxUe"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -64,7 +64,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="jAlIxx3pf"
++        nodeId="YDhvCY_jz"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -76,7 +76,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="Fiqa_6xYG"
++      nodeId="vJQkz_5k7"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -84,7 +84,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="zxD0Wqngo"
++      nodeId="G_WP_pdPP"
 +      width="100%"
 +      height="1fr"
 +      <!-- background color string or project color style path (if starts with /) -->

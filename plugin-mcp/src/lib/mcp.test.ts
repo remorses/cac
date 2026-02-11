@@ -30,6 +30,11 @@ describe('HTTP Streamable Transport', () => {
                 const toolNames = schema.tools.map((t: any) => t.name)
                 expect(toolNames).toContain('getProjectXml')
                 expect(toolNames).toContain('getNodeXml')
+                if (!toolNames.includes('createPage')) {
+                    console.warn(
+                        'createPage is not available in current MCP server schema yet',
+                    )
+                }
                 console.log('Test passed! Found', schema.tools.length, 'tools')
             } finally {
                 await cleanup()
@@ -67,9 +72,11 @@ describe(
         let callTool: Awaited<ReturnType<typeof createMCPClient>>['callTool']
         let cleanup: (() => Promise<void>) | null = null
         let client: Awaited<ReturnType<typeof createMCPClient>>['client']
+        let supportsCreatePage = false
 
         // Track created styles for cleanup
         const createdStyles = new Set<string>()
+        const createdDesignPageIds = new Set<string>()
 
         beforeAll(async () => {
             const result = await createMCPClient({
@@ -80,6 +87,11 @@ describe(
             callTool = result.callTool
             cleanup = result.cleanup
             client = result.client
+
+            const schema = await client.listTools()
+            supportsCreatePage = schema.tools.some(
+                (tool) => tool.name === 'createPage',
+            )
         })
 
         afterAll(async () => {
@@ -94,6 +106,21 @@ describe(
                 } catch (error) {
                     console.error(
                         `Failed to clean up style ${stylePath}:`,
+                        error,
+                    )
+                }
+            }
+
+            for (const designPageId of createdDesignPageIds) {
+                try {
+                    await callTool({
+                        name: 'deleteNode',
+                        args: { nodeId: designPageId },
+                    })
+                    console.log(`Cleaned up design page: ${designPageId}`)
+                } catch (error) {
+                    console.error(
+                        `Failed to clean up design page ${designPageId}:`,
                         error,
                     )
                 }
@@ -123,6 +150,100 @@ describe(
             )
             expect(getTextContent(result.content)).toBeDefined()
         })
+
+        it('should create and delete design page', async () => {
+            if (!supportsCreatePage) {
+                console.warn(
+                    'Skipping createPage test because tool is not available in current MCP server schema',
+                )
+                return
+            }
+
+            const randomNum = Math.floor(Math.random() * 10000)
+            const pageName = `MCP test design page ${randomNum}`
+
+            const createResult = await callTool({
+                name: 'createPage',
+                args: { name: pageName, type: 'design' },
+            })
+
+            const createContent = getTextContent(createResult.content)
+            const parsedCreateContent = tryJsonParse(createContent)
+
+            expect(parsedCreateContent.message).toContain(
+                'Successfully created design page',
+            )
+            expect(parsedCreateContent.page?.id).toBeDefined()
+            expect(parsedCreateContent.page?.name).toBe(pageName)
+            expect(parsedCreateContent.page?.type).toBe('design')
+
+            const designPageId = parsedCreateContent.page.id
+            createdDesignPageIds.add(designPageId)
+
+            const getPageResult = await callTool({
+                name: 'getNodeXml',
+                args: { nodeId: designPageId },
+            })
+            const pageXml = getTextContent(getPageResult.content)
+            expect(pageXml).toContain(designPageId)
+
+            const deleteResult = await callTool({
+                name: 'deleteNode',
+                args: { nodeId: designPageId },
+            })
+            const deleteContent = getTextContent(deleteResult.content)
+            expect(deleteContent).toContain('Successfully deleted node')
+
+            createdDesignPageIds.delete(designPageId)
+        })
+
+        it('should create and delete web page', async () => {
+            if (!supportsCreatePage) {
+                console.warn(
+                    'Skipping createPage test because tool is not available in current MCP server schema',
+                )
+                return
+            }
+
+            const randomNum = Math.floor(Math.random() * 10000)
+            const pagePath = `/mcp-test-web-page-${randomNum}`
+
+            const createResult = await callTool({
+                name: 'createPage',
+                args: { name: pagePath, type: 'web' },
+            })
+
+            const createContent = getTextContent(createResult.content)
+            const parsedCreateContent = tryJsonParse(createContent)
+
+            expect(parsedCreateContent.message).toContain(
+                'Successfully created web page',
+            )
+            expect(parsedCreateContent.page?.id).toBeDefined()
+            expect(parsedCreateContent.page?.path).toBe(pagePath)
+            expect(parsedCreateContent.page?.type).toBe('web')
+
+            const webPageId = parsedCreateContent.page.id
+            createdDesignPageIds.add(webPageId)
+
+            const getPageResult = await callTool({
+                name: 'getNodeXml',
+                args: { nodeId: webPageId },
+            })
+            const pageXml = getTextContent(getPageResult.content)
+            // Web pages contain Desktop breakpoint children, not their own ID
+            expect(pageXml).toContain('Desktop')
+
+            const deleteResult = await callTool({
+                name: 'deleteNode',
+                args: { nodeId: webPageId },
+            })
+            const deleteContent = getTextContent(deleteResult.content)
+            expect(deleteContent).toContain('Successfully deleted node')
+
+            createdDesignPageIds.delete(webPageId)
+        })
+
         it('should get page XML', async () => {
             const result = await callTool({
                 name: 'getNodeXml',
@@ -297,6 +418,73 @@ describe(
 
                 const deleteContent = getTextContent(deleteResult.content)
                 expect(deleteContent).toContain('Successfully deleted node')
+            }
+        })
+
+        it('should update node with new layout attributes (zIndex, overflow, textTruncation, border)', async () => {
+            // Create a frame and text node to test attributes
+            const createXml = `
+                <Frame width="200px" height="200px" backgroundColor="rgb(200, 200, 200)">
+                    <Text fontSize="16px">Truncated Text that is long enough to be truncated</Text>
+                </Frame>
+            `
+
+            const createResult = await callTool({
+                name: 'updateXmlForNode',
+                args: {
+                    nodeId: 'CpFAHygNJ',
+                    xml: createXml,
+                },
+            })
+
+            const content = getTextContent(createResult.content)
+            const frameMatch = content.match(/Created Frame node ([a-zA-Z0-9_]+)/)
+            const textMatch = content.match(/Created Text node ([a-zA-Z0-9_]+)/)
+
+            const frameId = frameMatch ? frameMatch[1] : null
+            const textId = textMatch ? textMatch[1] : null
+
+            expect(frameId).toBeDefined()
+            expect(textId).toBeDefined()
+
+            if (frameId && textId) {
+                // Update attributes
+                const updateXml = `
+                    <Frame nodeId="${frameId}" zIndex="10" overflow="hidden" borderWidth="2px" borderStyle="solid" borderColor="#000000" />
+                    <Text nodeId="${textId}" textTruncation="2" />
+                `
+
+                const updateResult = await callTool({
+                    name: 'updateXmlForNode',
+                    args: {
+                        nodeId: 'CpFAHygNJ', // Parent context
+                        xml: updateXml,
+                    },
+                })
+                const updateContent = getTextContent(updateResult.content)
+                expect(updateContent).toContain('Successfully updated')
+
+                // Verify attributes in XML
+                const getFrameResult = await callTool({
+                    name: 'getNodeXml',
+                    args: { nodeId: frameId },
+                })
+                const frameXml = getTextContent(getFrameResult.content)
+                expect(frameXml).toContain('zIndex="10"')
+                expect(frameXml).toContain('overflow="hidden"')
+
+                const getTextResult = await callTool({
+                    name: 'getNodeXml',
+                    args: { nodeId: textId },
+                })
+                const textXml = getTextContent(getTextResult.content)
+                expect(textXml).toContain('textTruncation="2"')
+
+                // Cleanup
+                await callTool({
+                    name: 'deleteNode',
+                    args: { nodeId: frameId },
+                })
             }
         })
 
@@ -730,7 +918,7 @@ describe(
 
               {
                   "fieldId": { "type": "string", "value": "My Title" },
-                  "fieldId": { "type": "formattedText", "value": "<p>HTML content</p>" },
+                  "fieldId": { "type": "formattedText", "value": "# Heading\\n\\nParagraph with **bold** and *italic*" },
                   "fieldId": { "type": "number", "value": 29.99 },
                   "fieldId": { "type": "boolean", "value": true },
                   "fieldId": { "type": "date", "value": "2025-08-21T10:00:00.000Z" },
@@ -795,7 +983,7 @@ describe(
                         "id": "kp5xnuF29",
                         "name": "Content",
                         "type": "formattedText",
-                        "comment": "JSON string - HTML content (e.g., \\"<p>Rich text</p>\\")",
+                        "comment": "JSON string - Markdown content (e.g., \\"# Heading\\\\n\\\\nParagraph text\\"). Markdown is converted automatically.",
                         "required": false
                       }
                     ]
@@ -927,7 +1115,7 @@ describe(
                         ...(cmsFieldIds.formattedText && {
                             [cmsFieldIds.formattedText]: {
                                 type: 'formattedText',
-                                value: `<p>Test content for item ${randomNum}</p>`,
+                                value: `# Test item ${randomNum}\n\nTest content for item ${randomNum}`,
                             },
                         }),
                         ...(cmsFieldIds.image && {
@@ -950,19 +1138,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-8590\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-807\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "Msbuj5YpQ",
-                  "slug": "test-item-8590",
+                  "id": "XTwct15kz",
+                  "slug": "test-item-807",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 8590"
+                      "value": "Test Item 807"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-02-11T14:03:03.469Z"
+                      "value": "2026-02-11T21:45:42.181Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -974,7 +1162,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p dir=\\"auto\\">Test content for item 8590</p>"
+                      "value": "<h1 dir=\\"auto\\">Test item 807</h1><p dir=\\"auto\\">Test content for item 807</p>"
                     }
                   }
                 }
@@ -984,6 +1172,15 @@ describe(
             const parsedContent = tryJsonParse(content)
             expect(parsedContent.message).toContain('Successfully created')
             expect(parsedContent.item.slug).toBe(testSlug)
+            if (cmsFieldIds.formattedText) {
+                const formattedTextField =
+                    parsedContent.item.fieldData[cmsFieldIds.formattedText]
+                expect(formattedTextField.type).toBe('formattedText')
+                expect(formattedTextField.value).toContain(
+                    `Test content for item ${randomNum}`,
+                )
+                expect(formattedTextField.value).not.toContain('# Test item')
+            }
 
             // Store the created item ID for cleanup
             createdItemId = parsedContent.item.id
@@ -1014,19 +1211,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-8590\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-807\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "Msbuj5YpQ",
-                  "slug": "test-item-8590",
+                  "id": "XTwct15kz",
+                  "slug": "test-item-807",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 7786"
+                      "value": "Updated Item 622"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-02-11T14:03:03.469Z"
+                      "value": "2026-02-11T21:45:42.181Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1038,7 +1235,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<p dir=\\"auto\\">Test content for item 8590</p>"
+                      "value": "<h1 dir=\\"auto\\">Test item 807</h1><p dir=\\"auto\\">Test content for item 807</p>"
                     }
                   }
                 }
@@ -1065,10 +1262,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-8590\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-807\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "Msbuj5YpQ",
-                  "slug": "test-item-8590"
+                  "id": "XTwct15kz",
+                  "slug": "test-item-807"
                 }
               }"
             `)

@@ -119,19 +119,19 @@ const textStylePropertiesSchema = z.object({
 export const mcpTools = {
     getProjectXml: {
         description: dedent`
-        Gets the project pages and components XML, with information of the currently focused page or component.
+        Gets the project pages, design pages, and components XML, with information of the currently focused page or component.
 
         Framer is a website builder and design tool. This tool should ALWAYS be called at the start of any session involving a Framer project to understand the project structure.
 
         This tool returns:
-        - Project pages, components, code files, and styles
+        - Project web pages, design pages, components, code files, and styles
         - Complete documentation for all available node attributes (opacity, width, layout, etc.)
         - Pre-built section components for quickly adding hero, pricing, footer, testimonials, and other sections
-        - Currently focused page or component ID
+        - Currently focused page, design page, or component ID
 
-        This tool also returns the ID of the currently focused page or component node. When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
+        This tool also returns the ID of the currently focused page, design page, or component node. When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
 
-        The referenced nodeIds can be used with getNodeXml to get the XML of a specific page or component.
+        The referenced nodeIds can be used with getNodeXml to get the XML of a specific page, design page, or component.
 
         Each element in the XML is usually referred as a "node" but the user could also refer to it as a "layer" or "element". The XML structure is similar to Framer's XML layers tree, names are extracted from the layers names given by the user.
 
@@ -203,8 +203,26 @@ export const mcpTools = {
 
         - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
         - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
+        - **borderWidth**: CSS border width (e.g., "1px", "2px 4px 2px 4px")
+        - **borderStyle**: "solid" | "dashed" | "dotted" | "double"
+        - **borderColor**: Color string (e.g., "rgb(0, 0, 0)") or style path (e.g., "/Primary/Blue")
         - **backgroundImage**: Image URL (will be uploaded to Framer if external). To upload a local image first: \`curl -F "reqtype=fileupload" -F "fileToUpload=@image.png" https://catbox.moe/user/api.php\`
         - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
+
+        ### Z-Index and Overflow Attributes
+
+        For Frame and Text nodes:
+
+        - **zIndex**: Number | null - CSS z-index for stacking order (higher values appear on top)
+        - **overflow**: "visible" | "hidden" | "auto" | "clip" - How content overflow is handled
+        - **overflowX**: Same values as overflow, but only for horizontal axis
+        - **overflowY**: Same values as overflow, but only for vertical axis
+
+        ### Text Truncation Attribute
+
+        For Text nodes only:
+
+        - **textTruncation**: Number | null - Number of lines before truncating with ellipsis (line-clamp). Set to a number like 2 to show max 2 lines with "..." at the end.
 
         ### Layout Attributes (Frame nodes only)
 
@@ -753,7 +771,7 @@ export const mcpTools = {
 
         {
             "fieldId": { "type": "string", "value": "My Title" },
-            "fieldId": { "type": "formattedText", "value": "<p>HTML content</p>" },
+            "fieldId": { "type": "formattedText", "value": "# Heading\\n\\nParagraph with **bold** and *italic*" },
             "fieldId": { "type": "number", "value": 29.99 },
             "fieldId": { "type": "boolean", "value": true },
             "fieldId": { "type": "date", "value": "2025-08-21T10:00:00.000Z" },
@@ -868,6 +886,31 @@ export const mcpTools = {
                 })).optional().describe('Enum options with id and name'),
                 collectionId: z.string().optional().describe('Referenced collection ID for reference fields'),
             })).optional().default([]).describe('Field definitions for the collection'),
+        }),
+        output: z.any(),
+    },
+    createPage: {
+        description: dedent`
+            Create a new page in the Framer project.
+
+            Two types of pages can be created:
+            - **design**: Canvas pages for components, prototypes, and design explorations. Not published to the website.
+            - **web**: Publishable web pages that appear on the live website. Path must start with "/" (e.g., "/about", "/contact").
+
+            After creating a page, you can use getNodeXml to see its contents
+            and updateXmlForNode to add content to it.
+        `,
+        input: z.object({
+            name: z
+                .string()
+                .describe(
+                    'Name or path for the page. For design pages: any name (e.g., "Components"). For web pages: must start with "/" (e.g., "/about", "/contact").',
+                ),
+            type: z
+                .enum(['design', 'web'])
+                .describe(
+                    'Type of page: "design" for canvas/prototype pages, "web" for publishable website pages.',
+                ),
         }),
         output: z.any(),
     },

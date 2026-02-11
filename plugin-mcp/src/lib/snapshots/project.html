@@ -60,8 +60,26 @@ For Frame, Stack, and similar container nodes:
 
 - **backgroundColor**: Color string (e.g., "rgb(255, 0, 0)") or style path (e.g., "/Primary/Blue")
 - **borderRadius**: CSS border radius (e.g., "8px", "50%", "4px 8px")
+- **borderWidth**: CSS border width (e.g., "1px", "2px 4px 2px 4px")
+- **borderStyle**: "solid" | "dashed" | "dotted" | "double"
+- **borderColor**: Color string (e.g., "rgb(0, 0, 0)") or style path (e.g., "/Primary/Blue")
 - **backgroundImage**: Image URL (will be uploaded to Framer if external). To upload a local image first: `curl -F "reqtype=fileupload" -F "fileToUpload=@image.png" https://catbox.moe/user/api.php`
 - **imageRendering**: "auto" | "pixelated" | "crisp-edges"
+
+### Z-Index and Overflow Attributes
+
+For Frame and Text nodes:
+
+- **zIndex**: Number | null - CSS z-index for stacking order (higher values appear on top)
+- **overflow**: "visible" | "hidden" | "auto" | "clip" - How content overflow is handled
+- **overflowX**: Same values as overflow, but only for horizontal axis
+- **overflowY**: Same values as overflow, but only for vertical axis
+
+### Text Truncation Attribute
+
+For Text nodes only:
+
+- **textTruncation**: Number | null - Number of lines before truncating with ellipsis (line-clamp). Set to a number like 2 to show max 2 lines with "..." at the end.
 
 ### Layout Attributes (Frame nodes only)
 
@@ -222,7 +240,7 @@ Component instances support all common node attributes (opacity, visible, locked
 
 <!-- Root node containing all pages, components, and code files in the project -->
 <Project>
-  <!-- All pages in the project. Use getNodeXml with a page nodeId to see its contents -->
+  <!-- Web pages that are published to the website. Use getNodeXml with a page nodeId to see its contents -->
   <Pages>
     <Page nodeId="vN6zkojot" path="/404" />
     <Page nodeId="CpFAHygNJ" path="/" />
@@ -232,6 +250,8 @@ Component instances support all common node attributes (opacity, visible, locked
     <Page nodeId="cyYCWZOM9" path="/blog/:slug" />
     <Page nodeId="AO3zOhC8z" path="/page-3" />
   </Pages>
+  <!-- Design pages for components, prototypes, and explorations. Use createPage with type="design" to add new ones -->
+  <DesignPages />
   <!-- Reusable components. Use getNodeXml with a component nodeId to see its structure -->
   <Components>
     <Component nodeId="zQ4rhDKqX" name="Button" />
@@ -524,7 +544,7 @@ Component instances support all common node attributes (opacity, visible, locked
 </Project>
 
 
-The currently focused page ID is: `CpFAHygNJ`, call getNodeXml with this ID to get more specific XMl of the current focused page or component layers.
+The currently focused page ID is: `CpFAHygNJ`, call getNodeXml with this ID to get more specific XML of the current focused page layers.
 
 When you create a ComponentInstance via updateXmlForNode, it will be inserted into this focused page or component.
 

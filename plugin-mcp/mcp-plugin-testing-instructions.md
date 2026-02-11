@@ -46,6 +46,9 @@ After opening the development plugin, check the plugin state:
 
 After the plugin is open and logged in, run the tests:
 
+Use a dedicated task/sub-session for this test run to save the main session context window.
+Pass this file path and ask the task to execute the exact steps here.
+
 ```bash
 cd plugin-mcp && pnpm test
 ```
