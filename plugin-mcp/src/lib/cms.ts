@@ -41,7 +41,13 @@ export function mapValueToFieldValue(
         return { type: 'enum', value: String(value) || '' }
     }
     if (field.type === 'formattedText') {
-        return { type: 'formattedText', value: String(value) || '', contentType: 'markdown' }
+        const valueString = String(value) || ''
+        const looksLikeHtml = valueString.trim().startsWith('<')
+        return {
+            type: 'formattedText',
+            value: valueString,
+            contentType: looksLikeHtml ? 'html' : 'markdown',
+        }
     }
     if (field.type === 'color') {
         return { type: 'color', value: String(value) || '' }

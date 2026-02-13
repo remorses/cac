@@ -921,9 +921,6 @@ Object.assign(globalThis, {
 })
 
 function encodeAttributeValue(value) {
-    if (value === undefined) {
-        return 'null'
-    }
     if (typeof value === 'string') {
         return value
     }
@@ -938,6 +935,9 @@ export function serializeAttributesForXml(
     }
     const result: Record<string, string> = {}
     for (const [key, value] of Object.entries(attributes)) {
+        if (value === undefined) {
+            continue
+        }
         if (typeof value === 'object') {
             console.log('skipping object value for attribute', key, value)
             continue
@@ -986,6 +986,13 @@ export async function applyAttributes(
         decodedAttrs[key] = decodeAttributeValueAsJson(value)
     }
 
+    // Treat undefined as "not provided" and do not forward it
+    for (const [key, value] of Object.entries(decodedAttrs)) {
+        if (value === undefined) {
+            delete decodedAttrs[key]
+        }
+    }
+
     // Handle font selector if present
     if (decodedAttrs.font && supportsFont(node)) {
         const fontSelector = decodedAttrs.font
@@ -1021,41 +1028,67 @@ export async function applyAttributes(
         }
     }
 
-    if (
-        supportsBorder(node) &&
-        (decodedAttrs.borderWidth ||
-            decodedAttrs.borderStyle ||
-            decodedAttrs.borderColor)
-    ) {
-        const borderColor = decodedAttrs.borderColor
-        let resolvedBorderColor = borderColor
-        if (typeof borderColor === 'string' && borderColor.startsWith('/')) {
-            const colorStyles = await framer.getColorStyles()
-            const colorStyle = colorStyles.find((cs) => cs.path === borderColor)
-            if (!colorStyle) {
-                throw new Error(`ColorStyle with path "${borderColor}" not found`)
-            }
-            resolvedBorderColor = colorStyle
+    const hasBorderWidth = Object.prototype.hasOwnProperty.call(
+        decodedAttrs,
+        'borderWidth',
+    )
+    const hasBorderStyle = Object.prototype.hasOwnProperty.call(
+        decodedAttrs,
+        'borderStyle',
+    )
+    const hasBorderColor = Object.prototype.hasOwnProperty.call(
+        decodedAttrs,
+        'borderColor',
+    )
+
+    if (supportsBorder(node) && (hasBorderWidth || hasBorderStyle || hasBorderColor)) {
+        if (!(hasBorderWidth && hasBorderStyle && hasBorderColor)) {
+            throw new Error(
+                'borderWidth, borderStyle, and borderColor must be provided together',
+            )
         }
 
         const borderWidth = decodedAttrs.borderWidth
         const borderStyle = decodedAttrs.borderStyle
+        const borderColor = decodedAttrs.borderColor
 
-        if (!borderWidth || !borderStyle || !resolvedBorderColor) {
-            throw new Error(
-                'borderWidth, borderStyle, and borderColor are required to set a border',
-            )
+        // Explicit clear semantics: all null means remove border
+        if (borderWidth === null && borderStyle === null && borderColor === null) {
+            decodedAttrs.border = null
+            delete decodedAttrs.borderWidth
+            delete decodedAttrs.borderStyle
+            delete decodedAttrs.borderColor
+        } else {
+            if (
+                typeof borderWidth !== 'string' ||
+                typeof borderStyle !== 'string' ||
+                typeof borderColor !== 'string'
+            ) {
+                throw new Error(
+                    'borderWidth, borderStyle, and borderColor must all be strings, or all null to clear border',
+                )
+            }
+
+            let resolvedBorderColor: string | any = borderColor
+            if (borderColor.startsWith('/')) {
+                const colorStyles = await framer.getColorStyles()
+                const colorStyle = colorStyles.find((cs) => cs.path === borderColor)
+                if (!colorStyle) {
+                    throw new Error(`ColorStyle with path "${borderColor}" not found`)
+                }
+                resolvedBorderColor = colorStyle
+            }
+
+            decodedAttrs.border = {
+                width: borderWidth,
+                style: borderStyle,
+                color: resolvedBorderColor,
+            }
+
+            delete decodedAttrs.borderWidth
+            delete decodedAttrs.borderStyle
+            delete decodedAttrs.borderColor
         }
-
-        decodedAttrs.border = {
-            width: borderWidth,
-            style: borderStyle,
-            color: resolvedBorderColor,
-        }
-
-        delete decodedAttrs.borderWidth
-        delete decodedAttrs.borderStyle
-        delete decodedAttrs.borderColor
     }
 
 

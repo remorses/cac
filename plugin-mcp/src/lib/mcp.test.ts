@@ -488,6 +488,109 @@ describe(
             }
         })
 
+        it('should clear nullable attributes with null', async () => {
+            const createXml = `
+                <Frame width="180px" height="120px" backgroundColor="rgb(220, 220, 220)">
+                    <Text fontSize="16px">Nullable attrs</Text>
+                </Frame>
+            `
+
+            const createResult = await callTool({
+                name: 'updateXmlForNode',
+                args: {
+                    nodeId: 'CpFAHygNJ',
+                    xml: createXml,
+                },
+            })
+
+            const content = getTextContent(createResult.content)
+            const frameMatch = content.match(/Created Frame node ([a-zA-Z0-9_]+)/)
+            const textMatch = content.match(/Created Text node ([a-zA-Z0-9_]+)/)
+
+            const frameId = frameMatch ? frameMatch[1] : null
+            const textId = textMatch ? textMatch[1] : null
+
+            expect(frameId).toBeDefined()
+            expect(textId).toBeDefined()
+
+            if (frameId && textId) {
+                await callTool({
+                    name: 'updateXmlForNode',
+                    args: {
+                        nodeId: 'CpFAHygNJ',
+                        xml: `<Frame nodeId="${frameId}" zIndex="9" /><Text nodeId="${textId}" textTruncation="3" />`,
+                    },
+                })
+
+                const clearResult = await callTool({
+                    name: 'updateXmlForNode',
+                    args: {
+                        nodeId: 'CpFAHygNJ',
+                        xml: `<Frame nodeId="${frameId}" zIndex="null" /><Text nodeId="${textId}" textTruncation="null" />`,
+                    },
+                })
+                const clearContent = getTextContent(clearResult.content)
+                expect(clearContent).toContain('Successfully updated')
+
+                const getFrameResult = await callTool({
+                    name: 'getNodeXml',
+                    args: { nodeId: frameId },
+                })
+                const frameXml = getTextContent(getFrameResult.content)
+                expect(frameXml).not.toContain('zIndex="9"')
+
+                const getTextResult = await callTool({
+                    name: 'getNodeXml',
+                    args: { nodeId: textId },
+                })
+                const textXml = getTextContent(getTextResult.content)
+                expect(textXml).not.toContain('textTruncation="3"')
+
+                await callTool({
+                    name: 'deleteNode',
+                    args: { nodeId: frameId },
+                })
+            }
+        })
+
+        it('should surface errors for partial border updates', async () => {
+            const createXml = `<Frame width="100px" height="100px" backgroundColor="rgb(200, 200, 200)" />`
+            const createResult = await callTool({
+                name: 'updateXmlForNode',
+                args: {
+                    nodeId: 'CpFAHygNJ',
+                    xml: createXml,
+                },
+            })
+
+            const content = getTextContent(createResult.content)
+            const frameMatch = content.match(/Created Frame node ([a-zA-Z0-9_]+)/)
+            const frameId = frameMatch ? frameMatch[1] : null
+            expect(frameId).toBeDefined()
+
+            if (frameId) {
+                const badUpdateResult = await callTool({
+                    name: 'updateXmlForNode',
+                    args: {
+                        nodeId: 'CpFAHygNJ',
+                        xml: `<Frame nodeId="${frameId}" borderWidth="2px" />`,
+                    },
+                })
+                const badUpdateContent = getTextContent(badUpdateResult.content)
+                expect(badUpdateContent).toContain(
+                    'Encountered errors while updating:',
+                )
+                expect(badUpdateContent).toContain(
+                    'borderWidth, borderStyle, and borderColor must be provided together',
+                )
+
+                await callTool({
+                    name: 'deleteNode',
+                    args: { nodeId: frameId },
+                })
+            }
+        })
+
         it('should update a color style', async () => {
             // First get project XML to find color styles
             const projectResult = await callTool({
@@ -983,7 +1086,7 @@ describe(
                         "id": "kp5xnuF29",
                         "name": "Content",
                         "type": "formattedText",
-                        "comment": "JSON string - Markdown content (e.g., \\"# Heading\\\\n\\\\nParagraph text\\"). Markdown is converted automatically.",
+                        "comment": "JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).",
                         "required": false
                       }
                     ]
@@ -1138,19 +1241,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-807\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-4921\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "XTwct15kz",
-                  "slug": "test-item-807",
+                  "id": "YnLe3XAuE",
+                  "slug": "test-item-4921",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 807"
+                      "value": "Test Item 4921"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-02-11T21:45:42.181Z"
+                      "value": "2026-02-12T12:34:33.565Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1162,7 +1265,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<h1 dir=\\"auto\\">Test item 807</h1><p dir=\\"auto\\">Test content for item 807</p>"
+                      "value": "<h1 dir=\\"auto\\">Test item 4921</h1><p dir=\\"auto\\">Test content for item 4921</p>"
                     }
                   }
                 }
@@ -1211,19 +1314,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-807\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-4921\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "XTwct15kz",
-                  "slug": "test-item-807",
+                  "id": "YnLe3XAuE",
+                  "slug": "test-item-4921",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 622"
+                      "value": "Updated Item 4774"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-02-11T21:45:42.181Z"
+                      "value": "2026-02-12T12:34:33.565Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1235,7 +1338,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<h1 dir=\\"auto\\">Test item 807</h1><p dir=\\"auto\\">Test content for item 807</p>"
+                      "value": "<h1 dir=\\"auto\\">Test item 4921</h1><p dir=\\"auto\\">Test content for item 4921</p>"
                     }
                   }
                 }
@@ -1262,10 +1365,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-807\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-4921\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "XTwct15kz",
-                  "slug": "test-item-807"
+                  "id": "YnLe3XAuE",
+                  "slug": "test-item-4921"
                 }
               }"
             `)

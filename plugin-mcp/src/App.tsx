@@ -42,7 +42,8 @@ const CMS_FIELD_TYPE_COMMENTS: Record<string, string> = {
     date: 'JSON string - ISO 8601 date (e.g., "2025-08-20T10:00:00.000Z")',
     image: 'JSON string or null - Image URL (e.g., "https://example.com/image.jpg")',
     link: 'JSON string or null - URL (e.g., "https://example.com" or "/page-path")',
-    formattedText: 'JSON string - Markdown content (e.g., "# Heading\\n\\nParagraph text"). Markdown is converted automatically.',
+    formattedText:
+        'JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).',
     file: 'JSON string or null - File URL (e.g., "https://example.com/file.pdf")',
     enum: 'JSON string - One of the predefined enum case IDs',
     collectionReference:
@@ -73,7 +74,19 @@ function normalizeIncomingFieldData(
         Object.entries(fieldData).map(([fieldId, fieldValue]) => {
             // If it's a formattedText field, add contentType: 'markdown'
             if (fieldValue?.type === 'formattedText' && !fieldValue.contentType) {
-                return [fieldId, { ...fieldValue, contentType: 'markdown' }]
+                const value: unknown = fieldValue.value
+                const valueString = typeof value === 'string' ? value.trim() : ''
+                const looksLikeHtml = valueString.startsWith('<')
+
+                // Heuristic: allow passing raw HTML without being interpreted as markdown.
+                // If it looks like HTML, default to html; otherwise default to markdown.
+                return [
+                    fieldId,
+                    {
+                        ...fieldValue,
+                        contentType: looksLikeHtml ? 'html' : 'markdown',
+                    },
+                ]
             }
             return [fieldId, fieldValue]
         }),
@@ -984,6 +997,11 @@ async function websocketHandler({
                     : ''
 
                 return `${resultMessage}\n\nXML Changes:\n${patch}${zoomNote}`
+            }
+
+            const hasErrors = results.some((r) => r.startsWith('Failed '))
+            if (hasErrors) {
+                return `Encountered errors while updating:\n${results.join('\n')}`
             }
 
             return 'No changes were made! Make sure you are not using made up attributes, follow the outlined attributes only.'
