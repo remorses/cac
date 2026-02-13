@@ -1,18 +1,18 @@
 Successfully updated:
-Created Frame node cCkDbUdjo
-Created Frame node nhxq9a55h
-Created Frame node ET6RhihDl
-Updated attributes for node cCkDbUdjo
-Updated attributes for node nhxq9a55h
-Updated attributes for node ET6RhihDl
-Reordered node nhxq9a55h within parent cCkDbUdjo to index 0
+Created Frame node Q2GkzFtSQ
+Created Frame node Vm9enVbr8
+Created Frame node CwgS8Ne29
+Updated attributes for node Q2GkzFtSQ
+Updated attributes for node Vm9enVbr8
+Updated attributes for node CwgS8Ne29
+Reordered node Vm9enVbr8 within parent Q2GkzFtSQ to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -548,40 +548,71 @@
+@@ -548,40 +548,77 @@
                stackDistribution="center"
                stackAlignment="center"
            >
@@ -34,7 +34,7 @@ Index: node.xml
               />
            </Stack>
 +          <Stack
-+              nodeId="cCkDbUdjo"
++              nodeId="Q2GkzFtSQ"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -48,17 +48,23 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="nhxq9a55h"
++                nodeId="Vm9enVbr8"
++                position="absolute"
 +                width="100px"
 +                height="100px"
++                top="0px"
++                left="0px"
 +                <!-- background color string or project color style path (if starts with /) -->
 +                backgroundColor="rgb(255, 255, 255)"
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="ET6RhihDl"
++                nodeId="CwgS8Ne29"
++                position="absolute"
 +                width="150px"
 +                height="80px"
++                top="0px"
++                left="0px"
 +                <!-- background color string or project color style path (if starts with /) -->
 +                backgroundColor="rgb(200, 200, 200)"
 +                borderRadius="4px"
