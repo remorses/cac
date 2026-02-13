@@ -15,6 +15,11 @@ The MCP tools allow you to:
 
 Always begin by calling `getProjectXml` to understand the project structure. This returns an XML tree showing all pages, components, code files, color styles, and text styles with their IDs and properties, which you'll use for subsequent operations.
 
+Use `createPage` to create new pages:
+
+- `type: "design"` creates a design page (for components/prototypes)
+- `type: "web"` creates a web page (name must start with `/`)
+
 To check if the project is published and get its public URL, use `getProjectWebsiteUrl`.
 
 ## Working with Nodes
@@ -63,6 +68,20 @@ Nodes support various attributes:
 - **Styling**: borderRadius, backgroundColor, backgroundImage, imageRendering
 - **Text**: font (selector format like "GF;Inter-400"), inlineTextStyle (project style path)
 - **Links**: link (URL or path), linkOpenInNewTab (true/false)
+
+Additional attributes:
+
+- **zIndex**: number | null
+- **overflow**: "visible" | "hidden" | "auto" | "clip"
+- **overflowX**: same as overflow
+- **overflowY**: same as overflow
+- **textTruncation**: number | null (Text nodes only)
+- **borderWidth**: pixel string (e.g. "1px" or "1px 2px 3px 4px")
+- **borderStyle**: "solid" | "dashed" | "dotted" | "double"
+- **borderColor**: CSS color string or ColorStyle path (e.g. "#000" or "/Gray-200")
+
+Notes:
+- Border attributes must be provided together (width/style/color).
 
 ### Style References
 
@@ -159,6 +178,19 @@ Project styles provide consistent design tokens across your project:
 - Can be created or updated globally using `manageTextStyle`
 
 Color and text styles are listed in the `getProjectXml` output under `<ColorStyles>` and `<TextStyles>` sections. There are no separate tools to fetch only styles - use `getProjectXml` to see all available styles in your project.
+
+## CMS (Collections and Items)
+
+Use `getCMSCollections` to inspect available collections and the field IDs/types.
+
+For CMS item writes (`upsertCMSItem`):
+
+- `formattedText` supports **Markdown** (preferred) and **HTML**.
+- If you omit `contentType`, the server chooses automatically:
+  - If `value` looks like HTML (trimmed value starts with `<`), it uses `contentType: "html"`.
+  - Otherwise it uses `contentType: "markdown"`.
+
+If you need explicit control, pass `contentType: "markdown" | "html"` yourself.
 
 ### Managing Styles
 
