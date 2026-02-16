@@ -73,6 +73,8 @@ export async function loader({ params }: Route.LoaderArgs) {
         ``,
         `PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want`,
         ``,
+        `Let me know if you have feedback!`,
+        ``,
         `Best,`,
         `Tommy`,
     ].join('<br>')
