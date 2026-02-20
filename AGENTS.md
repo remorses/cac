@@ -29,6 +29,19 @@ mcp plugin also has a test suite that has to be run after the plugin is open in 
 
 the framer plugin also depend on a cloudflare worker. if you make changes there run `pnpm deployment` first inside mcp plugin folder to deploy the preview worker. this is safe, the real worker in production is deployed with different script
 
+## submitting mcp plugin for framer review
+
+framer plugins need to be submitted as a zip for review. run `pnpm pack` inside `plugin-mcp/` to build the plugin and create `plugin.zip` (it opens Finder to the file).
+
+the plugin build uses production env vars (`doppler run -c production`), so the MCP URL shown to users points to `mcp.unframer.co` (production worker). but during review the production worker may not have the latest changes yet.
+
+**review workflow:**
+1. deploy the preview worker first: `pnpm deployment` inside `plugin-mcp/`
+2. build the zip: `pnpm pack` inside `plugin-mcp/`
+3. submit the zip to framer for review
+4. tell the reviewer to use `mcp.preview.unframer.co` instead of `mcp.unframer.co` for testing, since prod worker is only deployed after the review is approved
+5. after review is approved: deploy production worker with `pnpm deployment:prod` (requires sudo, agents should not run this)
+
 # core guidelines
 
 when summarizing changes at the end of the message, be super short, a few words and in bullet points, use bold text to highlight important keywords. use markdown.
