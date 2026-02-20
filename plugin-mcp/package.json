@@ -4,11 +4,18 @@
     "version": "0.0.0",
     "type": "module",
     "main": "./src/index.ts",
+    "imports": {
+        "#framer-client": {
+            "types": "./src/lib/framer-client.ts",
+            "browser": "./src/lib/framer-client.ts",
+            "default": "./src/lib/framer-client.server.ts"
+        }
+    },
     "scripts": {
         "dev": "doppler run -c preview -- vite",
         "test": "doppler run -- pnpm vitest -u --run",
         "build": "tsc && rm -rf dist && doppler run -c production -- pnpm vite build",
-        "pack": "npx -y framer-plugin-tools@latest pack && open -R plugin.zip",
+        "pack": "pnpm build && pnpm gen-unframer && npx -y framer-plugin-tools@latest pack && open -R plugin.zip",
         "check": "pnpm tsc --incremental",
         "workshop.md": "jq -r '.' src/prompts/workshop.json > src/prompts/workshop.md",
         "typecheck": "pnpm tsc --noEmit --incremental",
@@ -17,7 +24,8 @@
         "deployment:prod": "sudo echo 'agents should never run this' && pnpm typecheck && pnpm wrangler deploy --env='' && pnpm wrangler deploy --env preview",
         "deployment": "pnpm typecheck && pnpm wrangler deploy --env preview",
         "start": "vite preview --port 5173",
-        "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR"
+        "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR",
+        "gen-unframer": "rm -rf ../unframer/unframer/src/plugin-mcp-dist && mkdir -p ../unframer/unframer/src/plugin-mcp-dist && cp -r esm/lib ../unframer/unframer/src/plugin-mcp-dist/"
     },
     "dependencies": {
         "@cloudflare/workers-oauth-provider": "^0.0.11",
