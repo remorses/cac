@@ -862,7 +862,7 @@ export async function createMcpFirstOpenEmail({
     I can setup an example GitHub repo with your components code, can I send you the url?
 
     Cheers,
-    Tommy
+    Tommy, author of the MCP plugin
     `
 
     return {

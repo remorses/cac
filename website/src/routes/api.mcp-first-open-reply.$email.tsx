@@ -58,7 +58,7 @@ export async function loader({ params }: Route.LoaderArgs) {
         PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
 
         Best,
-        Tommy
+        Tommy, author of the MCP plugin
     `
 
     // HTML version with clickable links for rich text email clients like Spark
@@ -76,7 +76,7 @@ export async function loader({ params }: Route.LoaderArgs) {
         `Let me know if you have feedback!`,
         ``,
         `Best,`,
-        `Tommy`,
+        `Tommy, author of the MCP plugin`,
     ].join('<br>')
 
     const htmlContent = html`
