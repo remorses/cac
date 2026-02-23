@@ -31,7 +31,7 @@ import {
     supportsZIndex,
     type ImageAsset,
     ProtectedMethod,
-} from 'framer-plugin'
+} from '#framer-client'
 import { Sema } from 'sema4'
 import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
 import type { ControlDescription, PropertyControls } from 'unframer/src/index'

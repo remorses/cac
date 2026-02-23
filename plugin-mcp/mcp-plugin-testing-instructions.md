@@ -76,22 +76,19 @@ Check if the plugin iframe is loaded:
 playwriter -s 1 -e "const frames = state.page.frames(); frames.forEach(f => { if (f.url().includes('localhost')) console.log('Plugin frame:', f.url()); });"
 ```
 
-Get the plugin frame and check its state:
+Check the plugin state using an accessibility snapshot (prefer this over screenshots — it's faster and gives structured text):
 
 ```bash
-playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); const html = await frame.evaluate(() => document.body.innerHTML); console.log(html.slice(0, 1500));"
+playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); await snapshot({ frame });"
 ```
 
-Count buttons in the iframe (2 buttons when logged in, 1 "Login With Google" button when not):
+- If logged in: snapshot shows MCP URL text and "Keep this plugin open while using MCP"
+- If not logged in: snapshot shows a "Login With Google" button
+
+You can also snapshot the full page to check editor state (toolbar, command palette, etc.):
 
 ```bash
-playwriter -s 1 -e "const frame = state.page.frames().find(f => f.url().includes('localhost:5173')); const btnCount = await frame.locator('button').count(); console.log('button count:', btnCount);"
-```
-
-Take a screenshot to see plugin state:
-
-```bash
-playwriter -s 1 -e "await screenshotWithAccessibilityLabels({ page: state.page })"
+playwriter -s 1 -e "await snapshot({ page: state.page });"
 ```
 
 ## Expected Test Output

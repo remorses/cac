@@ -29,7 +29,7 @@ import { getFramerTree, applyAttributes, getComponentPropertyControls } from './
 import { processReactExportData } from './react-export.js'
 import { propControlsToTypedocComments, componentCamelCase } from 'unframer/src/typescript'
 import { pluginApiClient } from './utils.js'
-import { codeComponentsResourceUri, mcpTools, type McpToolNames, type FramerLayersTree } from './schema.js'
+import { codeComponentsResourceUri, mcpTools, type McpToolNames, type FramerLayersTree, type TextStyleProperties } from './schema.js'
 import type { CanvasNode } from 'framer-plugin'
 
 export { mcpTools, type McpToolNames }

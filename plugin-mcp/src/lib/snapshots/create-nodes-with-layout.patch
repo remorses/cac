@@ -1,17 +1,17 @@
 Successfully updated:
-Created Frame node GHaBhq_Pl
-Created Frame node auzAO74gd
-Created Text node amf_4FF0u
-Created Text node aZz7KZkAi
-Created Frame node wminU5jB6
-Updated attributes for node GHaBhq_Pl
-Updated attributes for node auzAO74gd
-Updated text for node amf_4FF0u
-Updated attributes for node amf_4FF0u
-Updated text for node aZz7KZkAi
-Updated attributes for node aZz7KZkAi
-Updated attributes for node wminU5jB6
-Reordered node auzAO74gd within parent GHaBhq_Pl to index 0
+Created Frame node m8vCSk0Ym
+Created Frame node J5TyURRPc
+Created Text node TsbbNsNhW
+Created Text node O7En4lLeH
+Created Frame node tZIvwUEtu
+Updated attributes for node m8vCSk0Ym
+Updated attributes for node J5TyURRPc
+Updated text for node TsbbNsNhW
+Updated attributes for node TsbbNsNhW
+Updated text for node O7En4lLeH
+Updated attributes for node O7En4lLeH
+Updated attributes for node tZIvwUEtu
+Reordered node J5TyURRPc within parent m8vCSk0Ym to index 0
 
 XML Changes:
 Index: node.xml
@@ -40,7 +40,7 @@ Index: node.xml
      backgroundColor="rgb(200, 200, 200)"
   />
 +<Stack
-+    nodeId="GHaBhq_Pl"
++    nodeId="m8vCSk0Ym"
 +    position="absolute"
 +    width="400px"
 +    height="300px"
@@ -56,7 +56,7 @@ Index: node.xml
 +    stackAlignment="center"
 +>
 +  <Frame
-+      nodeId="auzAO74gd"
++      nodeId="J5TyURRPc"
 +      width="100%"
 +      height="60px"
 +      <!-- background color string or project color style path (if starts with /) -->
@@ -64,7 +64,7 @@ Index: node.xml
 +      borderRadius="8px"
 +  >
 +    <HeaderText
-+        nodeId="amf_4FF0u"
++        nodeId="TsbbNsNhW"
 +        position="absolute"
 +        width="fit-content"
 +        height="fit-content"
@@ -76,7 +76,7 @@ Index: node.xml
 +    </HeaderText>
 +  </Frame>
 +  <BodyContentGoesHere
-+      nodeId="aZz7KZkAi"
++      nodeId="O7En4lLeH"
 +      width="fit-content"
 +      height="fit-content"
 +      font="Inter"
@@ -84,7 +84,7 @@ Index: node.xml
 +    Body content goes here
 +  </BodyContentGoesHere>
 +  <Frame
-+      nodeId="wminU5jB6"
++      nodeId="tZIvwUEtu"
 +      width="100%"
 +      height="1fr"
 +      <!-- background color string or project color style path (if starts with /) -->

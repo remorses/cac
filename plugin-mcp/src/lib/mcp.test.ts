@@ -1045,7 +1045,7 @@ describe(
               - The field structure must match the collection's field definitions
 
               {
-                "message": "Found 2 CMS collection(s)",
+                "message": "Found 7 CMS collection(s)",
                 "collections": [
                   {
                     "id": "sbuZivmcF",
@@ -1100,6 +1100,144 @@ describe(
                       {
                         "id": "zqE_0b8PU",
                         "name": "Title",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "aviEuMMfj",
+                    "name": "Test Collection 1771003984771",
+                    "managedBy": "anotherPlugin",
+                    "readonly": true,
+                    "fields": [
+                      {
+                        "id": "content",
+                        "name": "Content",
+                        "type": "formattedText",
+                        "comment": "JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).",
+                        "required": false
+                      },
+                      {
+                        "id": "title",
+                        "name": "Title",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "VlBRC6ZnC",
+                    "name": "Test Delete 1771003985542",
+                    "managedBy": "anotherPlugin",
+                    "readonly": true,
+                    "fields": [
+                      {
+                        "id": "content",
+                        "name": "Content",
+                        "type": "formattedText",
+                        "comment": "JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).",
+                        "required": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "xCIP3jsT0",
+                    "name": "Test Null 1771003986717",
+                    "managedBy": "anotherPlugin",
+                    "readonly": true,
+                    "fields": [
+                      {
+                        "id": "content",
+                        "name": "Content",
+                        "type": "formattedText",
+                        "comment": "JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).",
+                        "required": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "Cli4lfklr",
+                    "name": "Test MDX 1771003987208",
+                    "managedBy": "anotherPlugin",
+                    "readonly": true,
+                    "fields": [
+                      {
+                        "id": "content",
+                        "name": "Content",
+                        "type": "formattedText",
+                        "comment": "JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).",
+                        "required": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "mBpbV_7ft",
+                    "name": "GitHub Sync",
+                    "managedBy": "anotherPlugin",
+                    "readonly": true,
+                    "fields": [
+                      {
+                        "id": "content",
+                        "name": "Content",
+                        "type": "formattedText",
+                        "comment": "JSON string - Markdown or HTML. If you omit contentType, Markdown is assumed unless the value looks like HTML (starts with <).",
+                        "required": false
+                      },
+                      {
+                        "id": "title",
+                        "name": "title",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "category",
+                        "name": "category",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "date",
+                        "name": "date",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "featured_image",
+                        "name": "featured_image",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "author_name",
+                        "name": "author_name",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "author_photo",
+                        "name": "author_photo",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "description",
+                        "name": "description",
+                        "type": "string",
+                        "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
+                        "required": false
+                      },
+                      {
+                        "id": "tags",
+                        "name": "tags",
                         "type": "string",
                         "comment": "JSON string - Plain text value (e.g., \\"Hello World\\")",
                         "required": false
@@ -1241,19 +1379,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully created new CMS item \\"test-item-4921\\" in collection \\"Articles\\"",
+                "message": "Successfully created new CMS item \\"test-item-8621\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "YnLe3XAuE",
-                  "slug": "test-item-4921",
+                  "id": "mp3ShS4p8",
+                  "slug": "test-item-8621",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Test Item 4921"
+                      "value": "Test Item 8621"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-02-12T12:34:33.565Z"
+                      "value": "2026-02-23T15:31:19.874Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1265,7 +1403,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<h1 dir=\\"auto\\">Test item 4921</h1><p dir=\\"auto\\">Test content for item 4921</p>"
+                      "value": "<h1 dir=\\"auto\\">Test item 8621</h1><p dir=\\"auto\\">Test content for item 8621</p>"
                     }
                   }
                 }
@@ -1314,19 +1452,19 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully updated CMS item \\"test-item-4921\\" in collection \\"Articles\\"",
+                "message": "Successfully updated CMS item \\"test-item-8621\\" in collection \\"Articles\\"",
                 "item": {
-                  "id": "YnLe3XAuE",
-                  "slug": "test-item-4921",
+                  "id": "mp3ShS4p8",
+                  "slug": "test-item-8621",
                   "draft": false,
                   "fieldData": {
                     "j11rZL4rT": {
                       "type": "string",
-                      "value": "Updated Item 4774"
+                      "value": "Updated Item 6854"
                     },
                     "HY_qtN8iD": {
                       "type": "date",
-                      "value": "2026-02-12T12:34:33.565Z"
+                      "value": "2026-02-23T15:31:19.874Z"
                     },
                     "A45uGylg5": {
                       "type": "image",
@@ -1338,7 +1476,7 @@ describe(
                     },
                     "kp5xnuF29": {
                       "type": "formattedText",
-                      "value": "<h1 dir=\\"auto\\">Test item 4921</h1><p dir=\\"auto\\">Test content for item 4921</p>"
+                      "value": "<h1 dir=\\"auto\\">Test item 8621</h1><p dir=\\"auto\\">Test content for item 8621</p>"
                     }
                   }
                 }
@@ -1365,10 +1503,10 @@ describe(
             const content = getTextContent(result.content)
             expect(content).toMatchInlineSnapshot(`
               "{
-                "message": "Successfully deleted CMS item \\"test-item-4921\\" from collection \\"Articles\\"",
+                "message": "Successfully deleted CMS item \\"test-item-8621\\" from collection \\"Articles\\"",
                 "deletedItem": {
-                  "id": "YnLe3XAuE",
-                  "slug": "test-item-4921"
+                  "id": "mp3ShS4p8",
+                  "slug": "test-item-8621"
                 }
               }"
             `)
