@@ -25,7 +25,7 @@
         "dedent": "^1.5.3",
         "eventsource-parser": "^3.0.0",
         "fkill": "^9.0.0",
-        "framer-motion": "^12.23.12",
+        "framer-motion": "^12.34.2",
         "htmlrewriter": "^0.0.12",
         "is-hotkey": "0.2.0",
         "isbot": "^5.1.21",
