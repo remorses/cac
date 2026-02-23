@@ -31,6 +31,7 @@ import dedent from 'string-dedent'
 import { toJSONSchema } from 'zod'
 import { createSpiceflowClient, type SpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
+import { Observability } from 'agents/observability'
 
 // Type for MCP props passed through OAuth or legacy auth
 interface MCPProps extends Record<string, unknown> {
@@ -92,11 +93,10 @@ async function getValidatedSession({
         return { framerUserId: cached.framerUserId, email: cached.email }
     }
     const apiClient = createWebsiteApiClient(env)
-    const { data, error } = await apiClient.api.plugins.mcp.validateSession.post(
-        {
+    const { data, error } =
+        await apiClient.api.plugins.mcp.validateSession.post({
             sessionToken: secret,
-        },
-    )
+        })
 
     if (error) {
         return null
@@ -162,7 +162,6 @@ const defaultHandler = {
         const provider = env.OAUTH_PROVIDER
         const url = new URL(request.url)
 
-        
         // Handle OAuth authorization
         if (url.pathname === '/authorize') {
             const oauthReq = await provider.parseAuthRequest(request)
@@ -346,6 +345,7 @@ const defaultHandler = {
 }
 
 export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
+    override observability = undefined
     server = new Server(
         {
             name: 'Framer MCP',
@@ -499,7 +499,9 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             ) => {
                                 clearTimeout(timeoutId)
                                 const elapsed = Date.now() - start
-                                console.log(`WS connected to ${framerUserId} in ${elapsed}ms`)
+                                console.log(
+                                    `WS connected to ${framerUserId} in ${elapsed}ms`,
+                                )
                                 resolve(rpc!)
                             }
                             ws.addEventListener('message', handleFirstMessage)
@@ -508,7 +510,10 @@ export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
                             })
 
                             ws.addEventListener('error', (err) => {
-                                console.error(`WS error for ${framerUserId}:`, err.type)
+                                console.error(
+                                    `WS error for ${framerUserId}:`,
+                                    err.type,
+                                )
                             })
 
                             // Reset idle timeout on any message activity
@@ -701,7 +706,6 @@ const handler = {
 
         // Legacy SSE transport with query-based auth
         if (url.pathname === '/sse' || url.pathname === '/sse/message') {
-            
             const id = url.searchParams.get('id')
             const secret = url.searchParams.get('secret')
 
@@ -729,7 +733,11 @@ const handler = {
             const secret = url.searchParams.get('secret')
 
             if (id && secret) {
-                const sessionData = await getValidatedSession({ env, secret, id })
+                const sessionData = await getValidatedSession({
+                    env,
+                    secret,
+                    id,
+                })
                 if (!sessionData) {
                     return new Response('Invalid session', { status: 401 })
                 }
