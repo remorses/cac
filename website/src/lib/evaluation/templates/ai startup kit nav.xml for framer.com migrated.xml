@@ -1,46 +1,56 @@
-```xml
 <AI_Kit_Nav>
 	<Navigation>
 		<Stack>
-			<!-- section and role: nav/link -->
-			<!-- existing text: Features -->
-			<!-- length: same -->
+			<!--
+			section and role: nav/top item (main navigation link, first/top item)
+			existing text: The best match is "Product" from <div>Product</div> in the main nav links under <div data-framer-name="Links">. "Features" in the template is a generic label, but "Product" is the actual navigation label in the Framer HTML.
+			length: Similar length, so use "Product".
+			-->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="w2keh4di">
-				Features
+				Product
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!-- section and role: nav/link -->
-			<!-- existing text: Developers -->
-			<!-- length: same -->
+			<!--
+			section and role: nav/top item (main navigation link, second item)
+			existing text: "Developers" is present as a sidebar nav and footer link. Use "Developers" as in the HTML.
+			length: Same, so use as is.
+			-->
 			<AI_Kit_Navigation_Nav_Top_Item nodeId="f9jqiq3c">
 				Developers
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!-- section and role: nav/link -->
-			<!-- existing text: Brand -->
-			<!-- length: same -->
+			<!--
+			section and role: nav/top item (main navigation link, third item)
+			existing text: "Brand" is present as a topbar link and in the footer. Use "Brand" label (href should be "./brand" as in HTML).
+			length: Same, use as is.
+			-->
 			<AI_Kit_Navigation_Nav_Top_Item href="./brand" nodeId="ttyq47m7">
 				Brand
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!-- section and role: nav/link -->
-			<!-- existing text: Blog -->
-			<!-- length: same -->
+			<!--
+			section and role: nav/top item (main navigation link, fourth item)
+			existing text: "Blog" is a footer link in Framer. Use "Blog" with href "./blog/" as in the HTML.
+			length: Same, use as is.
+			-->
 			<AI_Kit_Navigation_Nav_Top_Item href="./blog/" nodeId="5mjfkk9h">
 				Blog
 			</AI_Kit_Navigation_Nav_Top_Item>
-			<!-- section and role: nav/link -->
-			<!-- existing text: Help -->
-			<!-- length: same -->
-			<AI_Kit_Navigation_Nav_Top_Item nodeId="phn7sz8d">
-				Help
+			<!--
+			section and role: nav/top item (main navigation link, fifth item)
+			existing text: "Contact" is a footer link. Use "Contact" with href "./contact/" as in the HTML.
+			length: Same, use as is.
+			-->
+			<AI_Kit_Navigation_Nav_Top_Item href="./contact/" nodeId="phn7sz8d">
+				Contact
 			</AI_Kit_Navigation_Nav_Top_Item>
 		</Stack>
 		<Stack>
-			<!-- section and role: nav/button -->
-			<!-- existing text: Start for free -->
-			<!-- length: same -->
-			<AI_Kit_Button href="https://framer.com/r/signup" nodeId="koeyy0nt">
+			<!--
+			section and role: nav/button (call to action, sign up)
+			existing text: The main CTA in Framer's nav is "Sign up" or "Start for free". "Sign up for free" is not the exact phrase, but "Start for free" is the actual CTA in the hero and nav. Use "Start for free".
+			length: Slightly shorter, but matches Framer's brand language.
+			-->
+			<AI_Kit_Button nodeId="koeyy0nt">
 				Start for free
 			</AI_Kit_Button>
 		</Stack>
 	</Navigation>
 </AI_Kit_Nav>
-```

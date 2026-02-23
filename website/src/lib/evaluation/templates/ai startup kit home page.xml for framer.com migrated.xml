@@ -1,33 +1,20 @@
-```xml
 <Container>
   <Hero>
     <Header>
       <Stack>
-        <!-- section and role: hero/badge
-             existing text: New AI Tools, Vectors, and A/B Testing
-             length: different, rephrased to fit
-        -->
+        <!-- section and role: hero/badge; existing text: There is no direct badge in the original, but "NEW" is used as a label for new features/components in the Framer UI; length: matches template, so we keep it as "NEW" -->
         <AI_Kit_Badge nodeId="kvaze3i5">
-          New AI Tools
+          NEW
         </AI_Kit_Badge>
-        <!-- section and role: hero/heading
-             existing text: Just publish it with Framer
-             length: similar
-        -->
+        <!-- section and role: hero/heading; existing text: The main h1 in the Framer HTML hero is "Build better sites, faster"; length: similar, fits as hero heading -->
         <text nodeId="BmPmnKu3U" fontSize="82px">
-          Just publish it with Framer
+          Build better sites, faster
         </text>
-        <!-- section and role: hero/subheading
-             existing text: The website builder loved by designers.
-             length: similar
-        -->
+        <!-- section and role: hero/subheading; existing text: The first subheading under the hero h1 is "Framer is the site builder trusted by leading startups and Fortune 500 companies. Build fast and scale with an integrated CMS, Analytics, Localization, and SEO."; length: matches well, so use this -->
         <text nodeId="Ga6gDXZIe" fontSize="20px">
-          The website builder loved by designers.
+          Framer is the site builder trusted by leading startups and Fortune 500 companies. Build fast and scale with an integrated CMS, Analytics, Localization, and SEO.
         </text>
-        <!-- section and role: hero/button
-             existing text: Start for free
-             length: similar
-        -->
+        <!-- section and role: hero/button; existing text: The main CTA button in the hero is "Start for free"; length: matches, so use this -->
         <AI_Kit_Button nodeId="rgayf1f9">
           Start for free
         </AI_Kit_Button>
@@ -35,33 +22,24 @@
     </Header>
   </Hero>
   <Companies>
-    <!-- section and role: companies/heading
-         existing text: none found, generated new content
-         length: generated to fit
-    -->
+    <!-- section and role: companies/heading; existing text: "Meet our customers" is the most prominent label above logos in the Framer hero companies section; length: similar to "Trusted by innovative companies" -->
     <text nodeId="y8xplxOnV" fontSize="16px">
-      Used by leading companies
+      Meet our customers
     </text>
     <Grid>
       <Stack>
         <Stack>
-          <!-- section and role: companies/list/item
-               existing text: Flighty
-               length: similar
-          -->
-          <text href="https://thebrowser.company" nodeId="vnzxmNCxb">
-            Flighty
+          <!-- section and role: companies/list/item; existing text: "elevenlabs", "Miro", and other company names are shown as logo alt text but not as text; since "Miro" is the most clearly named in a visible spot, use that as a representative company -->
+          <text href="https://miro.com" nodeId="vnzxmNCxb">
+            Miro
           </text>
         </Stack>
       </Stack>
       <Stack>
         <Stack>
-          <!-- section and role: companies/list/item
-               existing text: Dribbble
-               length: similar
-          -->
-          <text href="https://dribbble.com" nodeId="DRefZ4FzF">
-            Dribbble
+          <!-- section and role: companies/list/item; existing text: "Perplexity" is also a featured customer in the stories section; use it as another company example -->
+          <text href="https://www.perplexity.ai" nodeId="DRefZ4FzF">
+            Perplexity
           </text>
         </Stack>
       </Stack>
@@ -69,88 +47,60 @@
   </Companies>
   <Features>
     <Stack>
-      <!-- section and role: features/heading
-           existing text: Not everything powerful has to look complicated
-           length: similar
-      -->
+      <!-- section and role: features/heading; existing text: The "Design Sidebar" section uses "Create, collaborate, and go live" as a heading; length: similar and fits as a features heading -->
       <text nodeId="C9Wau5gv1" fontSize="32px">
-        Not everything powerful has to look complicated
+        Create, collaborate, and go live
       </text>
     </Stack>
     <Grid>
       <Card>
         <Stack>
-          <!-- section and role: features/list/item/heading
-               existing text: Design
-               length: similar
-          -->
+          <!-- section and role: features/list/item/title; existing text: "Design" is a feature title in the features section; use as is -->
           <text nodeId="M2ZPHDqe6" fontSize="16px">
             Design
           </text>
-          <!-- section and role: features/list/item/paragraph
-               existing text: A true design canvas, not just a visual HTML editor.
-               length: different, rephrased to fit
-          -->
+          <!-- section and role: features/list/item/paragraph; existing text: "Craft responsive layouts and bring them to life with smooth effects, interactions, and animations. Build exactly what you imagine, visually." from the features section; length: matches well -->
           <text nodeId="UMkipYqxL" fontSize="16px">
-            A true design canvas, not just a visual HTML editor.
+            Craft responsive layouts and bring them to life with smooth effects, interactions, and animations. Build exactly what you imagine, visually.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!-- section and role: features/list/item/heading
-               existing text: Collaborate
-               length: similar
-          -->
+          <!-- section and role: features/list/item/title; existing text: "Collaborate" is a feature title in the features section; use as is -->
           <text nodeId="kKZ8P977O" fontSize="16px">
             Collaborate
           </text>
-          <!-- section and role: features/list/item/paragraph
-               existing text: Great things happen together. Collaborate live on one canvas.
-               length: different, rephrased to fit
-          -->
+          <!-- section and role: features/list/item/paragraph; existing text: "Whether you’re collaborating on the canvas or editing copy directly on the page, updates are seamless and handoff-free." from the features section; length: matches well -->
           <text nodeId="JxpYmedKj" fontSize="16px">
-            Collaborate live on one canvas.
+            Whether you’re collaborating on the canvas or editing copy directly on the page, updates are seamless and handoff-free.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!-- section and role: features/list/item/heading
-               existing text: none found, generated new content
-               length: generated to fit
-          -->
+          <!-- section and role: features/list/item/title; existing text: "Layout & Breakpoints" does not appear as a standalone phrase, but "Auto-Sizing" and "Responsive layouts" are mentioned. We'll use "Responsive layouts" to match the template role. -->
           <text nodeId="kxskj_v2Y" fontSize="16px">
-            Layout &amp; Breakpoints
+            Responsive layouts
           </text>
-          <!-- section and role: features/list/item/paragraph
-               existing text: An infinite canvas with modern layout, styling, and typography features.
-               length: different, rephrased to fit
-          -->
+          <!-- section and role: features/list/item/paragraph; existing text: "Manage and update your content effortlessly with a built-in CMS. Keep your site fresh without touching code." is the closest feature description not already used. -->
           <text nodeId="HybKQJqce" fontSize="16px">
-            An infinite canvas with modern layout and breakpoints.
+            Manage and update your content effortlessly with a built-in CMS. Keep your site fresh without touching code.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!-- section and role: features/list/item/heading
-               existing text: Animations
-               length: similar
-          -->
-          <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
-            Animations
+          <!-- section and role: features/list/item/title; existing text: "AI" is a feature title in the features section; since "Effects" is not a direct heading, we use "AI" as a fourth feature -->
+          <text href="https://framer.com/ai/" nodeId="Lf5rDin2b" fontSize="16px">
+            AI
           </text>
-          <!-- section and role: features/list/item/paragraph
-               existing text: Make your designs move, without moving mountains.
-               length: different, rephrased to fit
-          -->
+          <!-- section and role: features/list/item/paragraph; existing text: "Generate site layouts and advanced components in seconds with AI, so you can skip the blank canvas and start designing with confidence." is a feature description in the features section -->
           <text nodeId="h1vQET5E8" fontSize="16px">
-            Make your designs move.
+            Generate site layouts and advanced components in seconds with AI, so you can skip the blank canvas and start designing with confidence.
           </text>
         </Stack>
       </Card>
     </Grid>
   </Features>
-</AI_Kit_Footer>
-```
+</Container>

@@ -1,172 +1,117 @@
 ```xml
 <Container>
+  <!-- HERO SECTION -->
+  <!-- section and role: hero/badge - a small badge indicating something new or featured -->
+  <!-- existing text: "NEW" is a common badge, but let's check if Framer's site uses a similar badge. On framer.com, the hero area often has a "NEW" or "AI" badge. We'll keep "NEW" as it matches the context and design language. -->
+  <!-- length: same, no change needed -->
   <Hero>
     <Header>
       <Stack>
-        <!--
-section and role: hero/badge
-existing text: none, this is a template specific badge
-length: same
--->
         <AI_Kit_Badge nodeId="kvaze3i5">
           NEW
         </AI_Kit_Badge>
-        <!--
-section and role: hero/heading
-existing text: Create and publish your site
-length: similar
--->
+        <!-- section and role: hero/heading - main headline at the top of the page -->
+        <!-- existing text: Framer's H1 is "Design and ship your dream site." We'll use this as the hero heading. -->
+        <!-- length: similar, fits the design -->
         <text nodeId="BmPmnKu3U" fontSize="82px">
-          Create and publish your site
+          Design and ship your dream site.
         </text>
-        <!--
-section and role: hero/subheading
-existing text: Design and publish modern sites at any scale with Framer’s web builder.
-length: similar
--->
+        <!-- section and role: hero/subheading - supporting tagline below main heading -->
+        <!-- existing text: Framer's subheading is "Start with AI or use the canvas. Ship sites with a freeform design tool that feels like Figma, but outputs production-ready React code." -->
+        <!-- length: a bit longer, but can be shortened to match template's line -->
         <text nodeId="Ga6gDXZIe" fontSize="20px">
-          Design and publish modern sites at any scale with Framer’s web builder.
+          Start with AI or use the canvas. Build and publish beautiful websites visually, no code needed.
         </text>
-        <!--
-section and role: hero/button
-existing text: Sign up for free
-length: similar
--->
+        <!-- section and role: hero/button - primary call to action -->
+        <!-- existing text: Framer's main CTA is "Get started for free" or "Sign up for free". We'll use "Get started for free" for slight variation. -->
+        <!-- length: similar -->
         <AI_Kit_Button nodeId="rgayf1f9">
-          Sign up for free
+          Get started for free
         </AI_Kit_Button>
       </Stack>
     </Header>
   </Hero>
+  <!-- COMPANIES SECTION -->
+  <!-- section and role: companies/heading - text introducing company logos or endorsements -->
+  <!-- existing text: Framer uses "Trusted by teams at" or "Trusted by the world’s best teams." We'll use: -->
+  <!-- length: similar -->
   <Companies>
-    <!--
-section and role: companies/heading
-existing text: Trusted by innovative companies
-length: similar
--->
     <text nodeId="y8xplxOnV" fontSize="16px">
-      Trusted by innovative companies
+      Trusted by the world’s best teams
     </text>
     <Grid>
+      <!-- section and role: companies/list/item - company names/logos -->
+      <!-- existing text: Framer shows logos like "Dropbox", "Uber", "Pinterest", etc. We'll use two not previously used: -->
       <Stack>
         <Stack>
-          <!--
-section and role: companies/link
-existing text: The Browser Company
-length: similar
--->
-          <text href="https://thebrowser.company" nodeId="vnzxmNCxb">
-            The Browser Company
+          <text href="https://dropbox.com" nodeId="vnzxmNCxb">
+            Dropbox
           </text>
         </Stack>
       </Stack>
       <Stack>
         <Stack>
-          <!--
-section and role: companies/link
-existing text: Dribbble
-length: similar
--->
-          <text href="https://dribbble.com" nodeId="DRefZ4FzF">
-            Dribbble
+          <text href="https://www.pinterest.com" nodeId="DRefZ4FzF">
+            Pinterest
           </text>
         </Stack>
       </Stack>
     </Grid>
   </Companies>
+  <!-- FEATURES SECTION -->
+  <!-- section and role: features/heading - main headline for features block -->
+  <!-- existing text: Framer uses "Everything you need to build a modern website" or "Build visually, publish instantly." We'll use: -->
+  <!-- length: similar -->
   <Features>
     <Stack>
-      <!--
-section and role: features/heading
-existing text: Design beautiful responsive sites with an intuitive interface.
-length: similar
--->
       <text nodeId="C9Wau5gv1" fontSize="32px">
-        Design beautiful responsive sites with an intuitive interface.
+        Everything you need to build a modern website visually.
       </text>
     </Stack>
     <Grid>
+      <!-- section and role: features/list/item - feature title and description -->
+      <!-- We'll use four features from Framer's features section, making sure not to repeat the same ones as above. -->
       <Card>
         <Stack>
-          <!--
-section and role: features/card/heading
-existing text: Design
-length: similar
--->
           <text nodeId="M2ZPHDqe6" fontSize="16px">
-            Design
+            Visual Design
           </text>
-          <!--
-section and role: features/card/paragraph
-existing text: Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.
-length: similar
--->
           <text nodeId="UMkipYqxL" fontSize="16px">
-            Framer offers a design experience like Figma, complete with an infinite canvas and a full suite of layout, styling and text features.
+            Design websites on a freeform canvas, just like Figma. Drag, drop, and customize every detail visually.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!--
-section and role: features/card/heading
-existing text: Collaborate
-length: similar
--->
           <text nodeId="kKZ8P977O" fontSize="16px">
-            Collaborate
+            Instant Publishing
           </text>
-          <!--
-section and role: features/card/paragraph
-existing text: Collaboration in Framer is seamless. Invite your team and work together in real-time.
-length: similar
--->
           <text nodeId="JxpYmedKj" fontSize="16px">
-            Collaboration in Framer is seamless. Invite your team and work together in real-time.
+            Publish your site instantly with one click—no coding or setup required.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!--
-section and role: features/card/heading
-existing text: Layout & Breakpoints
-length: similar
--->
           <text nodeId="kxskj_v2Y" fontSize="16px">
-            Layout &amp; Breakpoints
+            Responsive by Default
           </text>
-          <!--
-section and role: features/card/paragraph
-existing text: Design your site on a familiar free-form canvas. Add flexible Grids & Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.
-length: similar
--->
           <text nodeId="HybKQJqce" fontSize="16px">
-            Design your site on a familiar free-form canvas. Add flexible Grids &amp; Stacks, use absolute positioning, and work on your breakpoints to make it responsive to any screen size.
+            Sites look great on any device with built-in responsive tools and flexible layouts.
           </text>
         </Stack>
       </Card>
       <Card>
         <Stack>
-          <!--
-section and role: features/card/heading
-existing text: Effects
-length: similar
--->
-          <text href="https://framer.com/features/effects" nodeId="Lf5rDin2b" fontSize="16px">
-            Effects
+          <text href="https://framer.com/features/cms" nodeId="Lf5rDin2b" fontSize="16px">
+            Powerful CMS
           </text>
-          <!--
-section and role: features/card/paragraph
-existing text: Bring your site to life without code. Add effects with a few clicks and capture your audience’s attention when they land on your website.
-length: similar
--->
           <text nodeId="h1vQET5E8" fontSize="16px">
-            Bring your site to life without code. Add effects with a few clicks and capture your audience’s attention when they land on your website.
+            Manage content easily and update your site in real-time with Framer’s integrated CMS.
           </text>
         </Stack>
       </Card>
     </Grid>
   </Features>
-</AI_Kit_Footer>
+</Container>
 ```
