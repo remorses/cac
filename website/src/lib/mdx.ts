@@ -6,11 +6,14 @@ import remarkMdx from 'remark-mdx'
 import remarkFrontmatter from 'remark-frontmatter'
 import rehype from 'remark-rehype'
 import rehypeStringify from 'rehype-stringify'
+import remarkStringify from 'remark-stringify'
+import remarkGfm from 'remark-gfm'
 
 import { SKIP, visit } from 'unist-util-visit'
 import yaml from 'js-yaml'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { marked } from 'marked'
+import type { Link, Image } from 'mdast'
 
 // Utility to extract and remove frontmatter
 function extractFrontmatter() {
@@ -131,4 +134,113 @@ export async function markdownToHtml(markdown: string, extension: string) {
         html: String(file), // Extract the resulting HTML
         // frontMatter: (file.data.frontmatter || {}) as any, // Extract the frontmatter
     }
+}
+
+// Types for URL rewriting
+export interface MarkdownUrlRewriteOptions {
+    /** All asset paths in the repo (for matching relative paths) */
+    allAssetPaths: string[]
+    /** Base path to strip from slugs */
+    basePath: string
+    /** Function to resolve image paths to full URLs (e.g., GitHub raw URLs) */
+    mapImageUrl: (imgPath: string) => Promise<string>
+    /** Function to find matching path in repo */
+    findMatchInPaths: (args: { filePath: string; paths: string[] }) => string
+    /** Function to convert page path to slug */
+    turnPagePathIntoSlug: (pagePath: string, basePath: string) => string
+    /** Function to check if URL is absolute */
+    isAbsoluteUrl: (url: string) => boolean
+}
+
+/**
+ * Creates a remark plugin that rewrites relative URLs in markdown.
+ * - Links: relative paths are converted to slugs
+ * - Images: relative paths are converted to full GitHub URLs
+ */
+function remarkRewriteUrls(options: MarkdownUrlRewriteOptions) {
+    const {
+        allAssetPaths,
+        basePath,
+        mapImageUrl,
+        findMatchInPaths,
+        turnPagePathIntoSlug,
+        isAbsoluteUrl,
+    } = options
+
+    // Track images that need async URL resolution
+    const imageUrlPromises: Array<{ node: Image; promise: Promise<string> }> = []
+
+    return async (tree: any) => {
+        // First pass: collect all transformations
+        visit(tree, 'link', (node: Link) => {
+            const href = node.url
+            if (!href || isAbsoluteUrl(href)) {
+                return
+            }
+            const match = findMatchInPaths({
+                filePath: href,
+                paths: allAssetPaths,
+            })
+            if (match) {
+                const newHref = turnPagePathIntoSlug(match, basePath)
+                node.url = newHref
+            }
+        })
+
+        visit(tree, 'image', (node: Image) => {
+            const src = node.url
+            if (!src || isAbsoluteUrl(src)) {
+                return
+            }
+            const imgPath = findMatchInPaths({
+                filePath: src,
+                paths: allAssetPaths,
+            })
+            if (imgPath && !isAbsoluteUrl(imgPath)) {
+                // Queue async URL resolution
+                imageUrlPromises.push({
+                    node,
+                    promise: mapImageUrl(imgPath),
+                })
+            }
+        })
+
+        // Resolve all image URLs in parallel
+        const results = await Promise.all(
+            imageUrlPromises.map(async ({ node, promise }) => {
+                try {
+                    const newUrl = await promise
+                    return { node, newUrl }
+                } catch {
+                    return { node, newUrl: null }
+                }
+            }),
+        )
+
+        // Apply resolved URLs
+        for (const { node, newUrl } of results) {
+            if (newUrl) {
+                node.url = newUrl
+            }
+        }
+    }
+}
+
+/**
+ * Rewrites relative URLs in markdown content.
+ * - Links to other markdown files become slugs
+ * - Image paths become full GitHub URLs
+ */
+export async function rewriteMarkdownUrls(
+    markdown: string,
+    options: MarkdownUrlRewriteOptions,
+): Promise<string> {
+    const processor = unified()
+        .use(remarkParse)
+        .use(remarkGfm)
+        .use(remarkRewriteUrls, options)
+        .use(remarkStringify)
+
+    const file = await processor.process(markdown)
+    return String(file)
 }

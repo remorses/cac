@@ -21,7 +21,7 @@ import {
     githubPathToPageSlug,
     isMarkdown,
 } from 'website/src/lib/github.server'
-import { getFrontmatter, markdownToHtml } from 'website/src/lib/mdx'
+import { getFrontmatter, markdownToHtml, rewriteMarkdownUrls } from 'website/src/lib/mdx'
 import { canHaveFreePlugin, isTruthy } from 'website/src/lib/utils'
 import { z, ZodType } from 'zod'
 import type { ManagedCollectionField } from 'framer-plugin'
@@ -475,24 +475,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         delete frontmatter[field]
                     }
                 }
-                // Handle rich text fields by converting markdown to HTML
-                for (const field of richTextFields) {
-                    try {
-                        const value = frontmatter[field]
-                        if (!value || typeof value !== 'string') {
-                            continue
-                        }
-                        const { html } = await markdownToHtml(value, '.md')
-                        frontmatter[field] = html
-                    } catch (error) {
-                        notifyError(
-                            error,
-                            `Error converting rich text field '${field}' to HTML`,
-                        )
-                        // Keep original value on error
-                        continue
-                    }
-                }
+                // Rich text fields keep raw markdown - plugin will use contentType: 'markdown'
                 return frontmatter
             }
 
@@ -546,6 +529,22 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         title = data?.title
                     }
 
+                    // Rewrite URLs in markdown (links become slugs, images become full GitHub URLs)
+                    const rewrittenMarkdown = await rewriteMarkdownUrls(
+                        markdown,
+                        {
+                            allAssetPaths,
+                            basePath,
+                            mapImageUrl,
+                            findMatchInPaths,
+                            turnPagePathIntoSlug,
+                            isAbsoluteUrl,
+                        },
+                    ).catch((e) => {
+                        notifyError(e, 'error rewriting markdown URLs')
+                        return markdown // fallback to original on error
+                    })
+
                     return {
                         ...data,
                         frontMatter,
@@ -556,6 +555,7 @@ export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
                         title,
                         foundMdx,
                         sha: x.sha,
+                        markdown: rewrittenMarkdown, // markdown with rewritten URLs
                     }
                 }),
             )
@@ -859,7 +859,7 @@ async function getFrontmatterForRepo({
     }
 }
 
-function turnPagePathIntoSlug(pagePath: string, basePath) {
+export function turnPagePathIntoSlug(pagePath: string, basePath: string) {
     if (isAbsoluteUrl(pagePath)) {
         return pagePath
     }
@@ -877,7 +877,7 @@ function turnPagePathIntoSlug(pagePath: string, basePath) {
             .replace(/\//g, '-') // framer does not support folders inside CMS, you will need to create separate collections for each folderF
     return res
 }
-function isAbsoluteUrl(url: string) {
+export function isAbsoluteUrl(url: string) {
     if (!url) {
         return false
     }
