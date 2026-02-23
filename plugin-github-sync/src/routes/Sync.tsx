@@ -7,10 +7,9 @@ import {
 } from '@/lib/utils'
 import { CollectionFieldConfig } from '@/routes/MapFields'
 import classNames from 'classnames'
-import { mapValueToFieldValue } from 'plugin-mcp/src/lib/cms'
-import { FieldDataEntryInput, framer } from 'framer-plugin'
+import { framer } from 'framer-plugin'
 import { LoaderFunctionArgs, RouteObject, useLoaderData } from 'react-router'
-import { Sema } from 'sema4'
+import { syncItemsToCollection, SyncFileItem } from '@/lib/sync-items'
 
 async function loader({}: LoaderFunctionArgs) {
     const pluginData = await getMarkdownPluginData()
@@ -36,8 +35,9 @@ async function loader({}: LoaderFunctionArgs) {
     console.log(
         `[GitHub Sync] Syncing collection ${collection.id}: ${owner}/${repo}`,
     )
-    let itemIds = await collection.getItemIds()
-    const itemIdsSet = new Set(itemIds)
+    const itemIds = await collection.getItemIds()
+    const existingItemIds = new Set(itemIds)
+    
     const { data, error } =
         await pluginApiClient.api.plugins.markdownPlugin.syncGithub.post({
             owner,
@@ -56,100 +56,27 @@ async function loader({}: LoaderFunctionArgs) {
     }
     const { files = [], idsToDelete = [] } = data
 
-    await collection.setFields([
-        {
-            type: 'formattedText' as const,
-            name: 'Content',
-            id: CollectionFieldIds.content,
-        },
-        ...(mapFieldsConfig
-            .filter((field) => field?.type && field.id)
-            .filter((x) => x.id !== CollectionFieldIds.content) as any[]),
-    ])
+    // Use shared sync logic
+    const result = await syncItemsToCollection({
+        collection,
+        files: files as SyncFileItem[],
+        idsToDelete,
+        mapFieldsConfig,
+        existingItemIds,
+    })
 
-    const errorList = [] as { message: string; path: string; kind?: string }[]
-    const semaphore = new Sema(1)
-    let notImported = 0
-
-    // Remove all the items that weren't in the new feed
-
-    console.log('removing items', idsToDelete)
-    try {
-        await collection.removeItems(
-            idsToDelete.map((id) => id).filter((id) => itemIdsSet.has(id)),
-        )
-    } catch (error) {
-        await framer.notify(`Error removing items: ${error.message}`, {
-            variant: 'error',
-        })
-    }
-
-    await Promise.all(
-        files.map(async (item) => {
-            if (item.foundMdx) {
-                errorList.push({
-                    kind: 'warning' as const,
-                    message: `MDX custom components are not currently supported`,
-                    path: item.path,
-                })
-            }
-
-            if (item?.html == null) {
-                return
-            }
-
-            const id = item.id
-
-            let frontMatterFields = getFieldsForFrontMatter(
-                item.frontMatter,
-                mapFieldsConfig,
-            )
-
-            await semaphore.acquire()
-            try {
-                await collection.addItems([
-                    {
-                        id,
-                        slug: item.slug,
-
-                        fieldData: {
-                            // title: item.title,
-                            [CollectionFieldIds.content]: {
-                                value: item.html,
-                                type: 'formattedText',
-                            },
-                            ...frontMatterFields,
-                        },
-                    },
-                ])
-            } catch (error) {
-                notImported++
-                console.log('error adding item', item)
-                console.error(`Error adding item with id ${item.id}:`, error)
-                console.log('content of the item with the error', item.html)
-                errorList.push({
-                    kind: 'error',
-                    message: error.message,
-                    path: item.path,
-                })
-            } finally {
-                semaphore.release()
-            }
-        }),
-    )
-
-    // Save the data source ID for future plugin runs
+    // Plugin-specific: show notification
     await framer.notify(
-        `Imported ${files.length} files${idsToDelete.length ? `, deleted ${idsToDelete.length} files` : ''}`,
-        {
-            variant: 'success',
-        },
+        `Imported ${result.imported} files${result.deleted ? `, deleted ${result.deleted} files` : ''}`,
+        { variant: 'success' },
     )
+    
     await collection.setPluginData(PluginDataKeys.enablePartialUpdate, 'true')
-    if (errorList.length) {
+    
+    if (result.errors.length) {
         return {
-            errorList,
-            notImported,
+            errorList: result.errors,
+            notImported: result.notImported,
         }
     }
 
@@ -175,7 +102,6 @@ function Component() {
 
     return (
         <div className='flex flex-col shrink-0 gap-2'>
-            {/* <Spinner /> */}
             {errorList && errorList.length > 0 && (
                 <>
                     <strong className='shrink-0 font-bold'>
@@ -213,30 +139,6 @@ function Component() {
             )}
         </div>
     )
-}
-
-function getFieldsForFrontMatter(
-    frontMatter: Record<string, any>,
-    mapFieldsConfig: CollectionFieldConfig[],
-) {
-    if (!frontMatter) {
-        return {}
-    }
-    const fields = {} as any
-    for (const field of mapFieldsConfig) {
-        if (!field) {
-            continue
-        }
-        const value = frontMatter[field.id]
-        if (value) {
-            fields[field.id] = mapValueToFieldValue(value, field)
-        }
-    }
-    return fields
-}
-
-enum CollectionFieldIds {
-    content = 'content',
 }
 
 export function Sync(): RouteObject {
