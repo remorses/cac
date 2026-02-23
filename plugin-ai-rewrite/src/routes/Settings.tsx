@@ -75,11 +75,17 @@ function Component() {
     return (
         <div className='flex flex-col grow justify-between pt-1 gap-4'>
             <div className='flex gap-1 items-center '>
-                <div className='truncate'>
-                    Currently logged in as{' '}
-                    <span className='font-semibold truncate max-w-full block'>
-                        {email}
-                    </span>
+                <div className='flex items-center gap-2 text-[11px] text-framer-tertiary'>
+                    <span className='truncate'>{email}</span>
+                    <span className='text-framer-tertiary/50'>•</span>
+                    <a
+                        href={`mailto:tommy@unframer.co?subject=${encodeURIComponent('AI Rewrite plugin support')}`}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-framer-tertiary/60 hover:text-framer-tertiary transition-colors'
+                    >
+                        support
+                    </a>
                 </div>
                 <div className='grow'></div>
                 <Button

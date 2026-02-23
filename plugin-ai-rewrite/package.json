@@ -21,7 +21,7 @@
         "db": "workspace:^",
         "es-module-shims": "^2.0.9",
         "eventsource-parser": "^3.0.0",
-        "framer-motion": "^12.23.12",
+        "framer-motion": "^12.34.2",
         "framer-plugin": "^3.10.3",
         "isbot": "^5.1.21",
         "nextjs-progressbar": "^0.0.16",
