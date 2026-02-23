@@ -778,9 +778,15 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.5.1)
+      framer-plugin-tools:
+        specifier: ^1.1.0
+        version: 1.1.0
       postcss:
         specifier: ^8.4.47
         version: 8.5.1
+      rollup-plugin-visualizer:
+        specifier: ^5.14.0
+        version: 5.14.0(rollup@4.55.1)
       tailwindcss:
         specifier: ^3.4.15
         version: 3.4.17
@@ -2799,6 +2805,11 @@ packages:
     resolution: {integrity: sha512-0wg68ZCjVWAkWT4gBUZJ8Mwktjen/XeWyqBQCrhA2IZSbZZnMYsEI6JJEFb/nZoNI3comB3JdxPLykZRq3qT2A==}
     peerDependencies:
       react: ^16.8.3 || ^17 || ^18
+
+  '@commander-js/extra-typings@13.1.0':
+    resolution: {integrity: sha512-q5P52BYb1hwVWE6dtID7VvuJWrlfbCv4klj7BjUUOqMz4jbSZD4C9fJ9lRjL2jnBGTg+gDDlaXN51rkWcLk4fg==}
+    peerDependencies:
+      commander: ~13.1.0
 
   '@crxjs/vite-plugin@2.2.0':
     resolution: {integrity: sha512-HpT1GLbUQy42nlpN4sGzFgulacBraMM778s8Q+oPo4cb26DwO9tTwdndlvAS8fe6vEProFXvbdt37objp/0IQA==}
@@ -6693,6 +6704,10 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
+  adm-zip@0.5.16:
+    resolution: {integrity: sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ==}
+    engines: {node: '>=12.0'}
+
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
@@ -7272,6 +7287,10 @@ packages:
   commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
+
+  commander@13.1.0:
+    resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
+    engines: {node: '>=18'}
 
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
@@ -8172,6 +8191,11 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  framer-plugin-tools@1.1.0:
+    resolution: {integrity: sha512-B0UPME9jqLpLfAvISPBzQcRtSaLeZkTERBhEsftEFx6qzeT66ti3dOYw1IAYkqN8x/QpnIMapLQBJw8S66qTyA==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   framer-plugin@3.10.3:
     resolution: {integrity: sha512-lZ0lnfQxyjoqg8W5dlE55PexS4osKus61eeWJnM+Ke1OaUpBzUXcSB+ud6uuNHQE55kYXTUs7AyTeW5hatJuHw==}
@@ -12977,6 +13001,10 @@ snapshots:
       react: 19.2.3
     transitivePeerDependencies:
       - encoding
+
+  '@commander-js/extra-typings@13.1.0(commander@13.1.0)':
+    dependencies:
+      commander: 13.1.0
 
   '@crxjs/vite-plugin@2.2.0':
     dependencies:
@@ -17855,6 +17883,8 @@ snapshots:
 
   acorn@8.15.0: {}
 
+  adm-zip@0.5.16: {}
+
   agent-base@6.0.2:
     dependencies:
       debug: 4.4.3
@@ -18570,6 +18600,8 @@ snapshots:
   comma-separated-tokens@2.0.3: {}
 
   commander@10.0.1: {}
+
+  commander@13.1.0: {}
 
   commander@4.1.1: {}
 
@@ -19591,6 +19623,12 @@ snapshots:
     optionalDependencies:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
+
+  framer-plugin-tools@1.1.0:
+    dependencies:
+      '@commander-js/extra-typings': 13.1.0(commander@13.1.0)
+      adm-zip: 0.5.16
+      commander: 13.1.0
 
   framer-plugin@3.10.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
