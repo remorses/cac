@@ -1,4 +1,10 @@
-// Validates sync fallback behavior when Framer rejects markdown image uploads.
+// Validates sync fallback behavior when Framer rejects formatted-text image uploads.
+//
+// Test strategy:
+// - Build a fake ManagedCollection that throws the same Framer error string used in production.
+// - Capture every addItems payload to verify both the first attempt and the sanitized retry attempt.
+// - Assert outcomes (imported/notImported/errors) and ensure image references are removed on retry
+//   for markdown image syntax and inline HTML <img> tags.
 import { describe, expect, it, vi } from 'vitest'
 
 import {
