@@ -42,6 +42,16 @@ the plugin build uses production env vars (`doppler run -c production`), so the 
 4. tell the reviewer to use `mcp.preview.unframer.co` instead of `mcp.unframer.co` for testing, since prod worker is only deployed after the review is approved
 5. after review is approved: deploy production worker with `pnpm deployment:prod` (requires sudo, agents should not run this)
 
+## reading framer plugin docs
+
+framer plugin docs are at https://www.framer.com/developers/plugins-introduction
+
+to see available pages for the plugin docs do `curl -s https://www.framer.com/sitemap.xml | grep /developers/`
+
+webfetch these docs to understand how Framer plugin works or how the framer-api npm package works. 
+
+you can also read the framer-plugin .d.ts files to see what APIs are available.
+
 # core guidelines
 
 when summarizing changes at the end of the message, be super short, a few words and in bullet points, use bold text to highlight important keywords. use markdown.
