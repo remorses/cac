@@ -8,6 +8,8 @@
         "typecheck": "pnpm tsc --noEmit --incremental",
         "check": "pnpm tsc --incremental",
         "build": "tsc && rm -rf dist && NODE_ENV=production doppler run -c production -- vite build ",
+        "pack": "pnpm build && pnpm pack:prebuilt",
+        "pack:prebuilt": "framer-plugin-tools pack --prebuilt && open -R plugin.zip",
         "start": "vite preview --port 5173",
         "preview": "vite preview --port 5173"
     },
@@ -50,6 +52,7 @@
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react-swc": "^3.8.1",
         "framer-api": "^0.1.1",
+        "framer-plugin-tools": "^1.1.0",
         "vite": "^6.3.5",
         "vite-plugin-framer": "^1.0.7",
         "vitest": "^4.0.18"

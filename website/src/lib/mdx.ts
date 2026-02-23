@@ -13,7 +13,7 @@ import { SKIP, visit } from 'unist-util-visit'
 import yaml from 'js-yaml'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { marked } from 'marked'
-import type { Image, Link, Root } from 'mdast'
+import type { Code, Image, Link, Root } from 'mdast'
 import domSerializer from 'dom-serializer'
 import * as domutils from 'domutils'
 import { parseDocument } from 'htmlparser2'
@@ -273,6 +273,13 @@ function remarkRewriteUrls(options: MarkdownUrlRewriteOptions) {
         for (const { node, value } of htmlImageResults) {
             node.value = value
         }
+
+        visit(tree, 'code', (node: Code) => {
+            if (!node.meta) {
+                return
+            }
+            node.meta = undefined
+        })
     }
 }
 

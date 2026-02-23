@@ -334,6 +334,27 @@ test('rewriteMarkdownUrls rewrites html image tags and strips missing ones', asy
     `)
 })
 
+test('rewriteMarkdownUrls strips code fence meta for framer compatibility', async () => {
+    const markdown = `\`\`\`ts title=\"sample.ts\"\nconst x = 1\n\`\`\``
+    const result = await rewriteMarkdownUrls(markdown, {
+        allAssetPaths: [],
+        basePath: '/',
+        mapImageUrl: async () => {
+            return ''
+        },
+        findMatchInPaths,
+        turnPagePathIntoSlug,
+        isAbsoluteUrl,
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      "\`\`\`ts
+      const x = 1
+      \`\`\`
+      "
+    `)
+})
+
 // Integration test with real GitHub repo
 // Run with: doppler run -- pnpm vitest run -t "syncGithub integration"
 test.skip('syncGithub integration - verifies markdown URL rewriting with real repo', async () => {
