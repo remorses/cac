@@ -80,6 +80,9 @@ export async function syncItemsToCollection({
     const errors: SyncError[] = []
     const semaphore = new Sema(1)
     let notImported = 0
+    const importableItemsCount = files.filter((item) => {
+        return item.markdown != null || item.html != null
+    }).length
 
     // Set up collection fields
     await collection.setFields([
@@ -162,7 +165,7 @@ export async function syncItemsToCollection({
     )
 
     return {
-        imported: files.filter((f) => f.markdown != null).length - notImported,
+        imported: importableItemsCount - notImported,
         deleted: itemsToRemove.length,
         errors,
         notImported,
@@ -182,7 +185,7 @@ function getFieldsForFrontMatter(
             continue
         }
         const value = frontMatter[field.id]
-        if (value) {
+        if (value !== undefined && value !== null) {
             fields[field.id] = mapValueToFieldValue(value, field as any)
         }
     }

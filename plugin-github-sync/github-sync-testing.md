@@ -55,7 +55,7 @@ Both the plugin and tests use the same `syncItemsToCollection` function, ensurin
 
 ## Notes
 
-- Tests create managed collections with unique names (timestamped)
-- Collections are cleaned up after tests
+- Tests reuse a fixed managed collection name (`__github-sync-test-collection__`)
+- Collection items are cleared before and after tests
 - Tests require network access to Framer's API
 - Each test has a 60-second timeout for API operations
