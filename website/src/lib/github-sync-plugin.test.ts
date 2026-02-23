@@ -212,6 +212,8 @@ This is a test with various links and images.
 ## Mixed content
 
 Here's a paragraph with an [inline link](./inline.md) and an image ![inline](./inline.png).
+
+<img src="./images/from-html.png" alt="html img" />
 `
 
 test('rewriteMarkdownUrls rewrites relative URLs', async () => {
@@ -223,6 +225,7 @@ test('rewriteMarkdownUrls rewrites relative URLs', async () => {
         '/about.md',
         '/inline.md',
         '/inline.png',
+        '/images/from-html.png',
     ]
     const basePath = '/'
     const owner = 'testowner'
@@ -266,6 +269,8 @@ test('rewriteMarkdownUrls rewrites relative URLs', async () => {
       ## Mixed content
 
       Here's a paragraph with an [inline link](/inline) and an image ![inline](https://raw.githubusercontent.com/testowner/testrepo/main/inline.png).
+
+      <img src="https://raw.githubusercontent.com/testowner/testrepo/main/images/from-html.png" alt="html img">
       "
     `)
 })
@@ -273,12 +278,16 @@ test('rewriteMarkdownUrls rewrites relative URLs', async () => {
 test('rewriteMarkdownUrls handles missing assets gracefully', async () => {
     const markdown = `![Missing](./missing.png)
 
+<img src="./missing-from-html.png" alt="missing from html" />
+
 [Missing link](./missing.md)
 
 [Found link](./found.md)
+
+<img src="./found.png" alt="found" />
 `
     const result = await rewriteMarkdownUrls(markdown, {
-        allAssetPaths: ['/found.md'], // only found.md exists
+        allAssetPaths: ['/found.md', '/found.png'],
         basePath: '/',
         mapImageUrl: async (imgPath) => {
             return `https://github.com${imgPath}`
@@ -288,13 +297,39 @@ test('rewriteMarkdownUrls handles missing assets gracefully', async () => {
         isAbsoluteUrl,
     })
 
-    // Missing assets keep original URLs, found ones are rewritten
+    // Missing image assets are removed while resolvable assets are rewritten
     expect(result).toMatchInlineSnapshot(`
-      "![Missing](./missing.png)
+      "
+
+
 
       [Missing link](./missing.md)
 
       [Found link](/found)
+
+      <img src="https://github.com/found.png" alt="found">
+      "
+    `)
+})
+
+test('rewriteMarkdownUrls rewrites html image tags and strips missing ones', async () => {
+    const result = await rewriteMarkdownUrls(
+        `<img src="./ok.png" alt="ok" />\n\n<img src="./missing.png" alt="missing" />`,
+        {
+            allAssetPaths: ['/ok.png'],
+            basePath: '/',
+            mapImageUrl: async (imgPath) => {
+                return `https://raw.githubusercontent.com/testowner/testrepo/main${imgPath}`
+            },
+            findMatchInPaths,
+            turnPagePathIntoSlug,
+            isAbsoluteUrl,
+        },
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      "<img src="https://raw.githubusercontent.com/testowner/testrepo/main/ok.png" alt="ok">
+
       "
     `)
 })

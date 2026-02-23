@@ -13,7 +13,10 @@ import { SKIP, visit } from 'unist-util-visit'
 import yaml from 'js-yaml'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { marked } from 'marked'
-import type { Link, Image } from 'mdast'
+import type { Image, Link, Root } from 'mdast'
+import domSerializer from 'dom-serializer'
+import * as domutils from 'domutils'
+import { parseDocument } from 'htmlparser2'
 
 // Utility to extract and remove frontmatter
 function extractFrontmatter() {
@@ -167,10 +170,19 @@ function remarkRewriteUrls(options: MarkdownUrlRewriteOptions) {
         isAbsoluteUrl,
     } = options
 
-    // Track images that need async URL resolution
-    const imageUrlPromises: Array<{ node: Image; promise: Promise<string> }> = []
+    const imageUrlPromises: Array<{
+        node: Image
+        parent: unknown
+        promise: Promise<string | null>
+    }> = []
+    const htmlImageUrlPromises: Array<{
+        node: {
+            value: string
+        }
+        promise: Promise<string>
+    }> = []
 
-    return async (tree: any) => {
+    return async (tree: Root) => {
         // First pass: collect all transformations
         visit(tree, 'link', (node: Link) => {
             const href = node.url
@@ -187,7 +199,7 @@ function remarkRewriteUrls(options: MarkdownUrlRewriteOptions) {
             }
         })
 
-        visit(tree, 'image', (node: Image) => {
+        visit(tree, 'image', (node: Image, _index: number | undefined, parent) => {
             const src = node.url
             if (!src || isAbsoluteUrl(src)) {
                 return
@@ -196,34 +208,195 @@ function remarkRewriteUrls(options: MarkdownUrlRewriteOptions) {
                 filePath: src,
                 paths: allAssetPaths,
             })
-            if (imgPath && !isAbsoluteUrl(imgPath)) {
-                // Queue async URL resolution
-                imageUrlPromises.push({
-                    node,
-                    promise: mapImageUrl(imgPath),
-                })
+            if (!imgPath) {
+                removeNodeFromParent({ parent, node })
+                return SKIP
             }
+            if (isAbsoluteUrl(imgPath)) {
+                node.url = imgPath
+                return
+            }
+
+            imageUrlPromises.push({
+                node,
+                parent,
+                promise: mapImageUrl(imgPath).catch(() => {
+                    return null
+                }),
+            })
         })
 
-        // Resolve all image URLs in parallel
-        const results = await Promise.all(
-            imageUrlPromises.map(async ({ node, promise }) => {
+        visit(tree, 'html', (node: { value: string }) => {
+            if (!node.value.toLowerCase().includes('<img')) {
+                return
+            }
+            htmlImageUrlPromises.push({
+                node,
+                promise: rewriteHtmlImageTags({
+                    html: node.value,
+                    allAssetPaths,
+                    mapImageUrl,
+                    findMatchInPaths,
+                    isAbsoluteUrl,
+                }),
+            })
+        })
+
+        const imageResults = await Promise.all(
+            imageUrlPromises.map(async ({ node, parent, promise }) => {
                 try {
                     const newUrl = await promise
-                    return { node, newUrl }
+                    return { node, parent, newUrl }
                 } catch {
-                    return { node, newUrl: null }
+                    return { node, parent, newUrl: null }
                 }
             }),
         )
 
-        // Apply resolved URLs
-        for (const { node, newUrl } of results) {
+        for (const { node, parent, newUrl } of imageResults) {
             if (newUrl) {
                 node.url = newUrl
+                continue
             }
+            removeNodeFromParent({ node, parent })
+        }
+
+        const htmlImageResults = await Promise.all(
+            htmlImageUrlPromises.map(async ({ node, promise }) => {
+                return {
+                    node,
+                    value: await promise,
+                }
+            }),
+        )
+
+        for (const { node, value } of htmlImageResults) {
+            node.value = value
         }
     }
+}
+
+function removeNodeFromParent({
+    node,
+    parent,
+}: {
+    node: unknown
+    parent: unknown
+}) {
+    if (!isNodeWithChildren(parent)) {
+        return
+    }
+    parent.children = parent.children.filter((child) => {
+        return child !== node
+    })
+}
+
+function isNodeWithChildren(value: unknown): value is { children: unknown[] } {
+    if (!value || typeof value !== 'object') {
+        return false
+    }
+    return Array.isArray((value as { children?: unknown }).children)
+}
+
+async function rewriteHtmlImageTags({
+    html,
+    allAssetPaths,
+    mapImageUrl,
+    findMatchInPaths,
+    isAbsoluteUrl,
+}: {
+    html: string
+    allAssetPaths: string[]
+    mapImageUrl: (imgPath: string) => Promise<string>
+    findMatchInPaths: (args: { filePath: string; paths: string[] }) => string
+    isAbsoluteUrl: (url: string) => boolean
+}): Promise<string> {
+    const document = parseDocument(html, { decodeEntities: false })
+    const imageNodes = domutils.findAll((node) => {
+        return domutils.isTag(node) && node.name === 'img'
+    }, document.children)
+
+    const imageTransforms = await Promise.all(
+        imageNodes.map(async (node) => {
+            if (!domutils.isTag(node)) {
+                return {
+                    node,
+                    remove: false,
+                    src: '',
+                }
+            }
+
+            const src = node.attribs?.src || ''
+            if (!src) {
+                return {
+                    node,
+                    remove: true,
+                    src,
+                }
+            }
+            if (isAbsoluteUrl(src)) {
+                return {
+                    node,
+                    remove: false,
+                    src,
+                }
+            }
+
+            const imgPath = findMatchInPaths({
+                filePath: src,
+                paths: allAssetPaths,
+            })
+            if (!imgPath) {
+                return {
+                    node,
+                    remove: true,
+                    src,
+                }
+            }
+            if (isAbsoluteUrl(imgPath)) {
+                return {
+                    node,
+                    remove: false,
+                    src: imgPath,
+                }
+            }
+
+            const mappedUrl = await mapImageUrl(imgPath).catch(() => {
+                return ''
+            })
+            if (!mappedUrl) {
+                return {
+                    node,
+                    remove: true,
+                    src,
+                }
+            }
+
+            return {
+                node,
+                remove: false,
+                src: mappedUrl,
+            }
+        }),
+    )
+
+    imageTransforms.forEach(({ node, remove, src }) => {
+        if (!domutils.isTag(node)) {
+            return
+        }
+        if (remove) {
+            domutils.removeElement(node)
+            return
+        }
+        if (src) {
+            node.attribs.src = src
+        }
+    })
+
+    return domSerializer(document.children, {
+        encodeEntities: false,
+        decodeEntities: false,
+    })
 }
 
 /**

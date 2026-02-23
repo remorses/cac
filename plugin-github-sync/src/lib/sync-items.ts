@@ -133,16 +133,14 @@ export async function syncItemsToCollection({
                 item.frontMatter || {},
                 mapFieldsConfig,
             )
-
-            await semaphore.acquire()
-            try {
+            const addCollectionItem = async (content: string) => {
                 await collection.addItems([
                     {
                         id: item.id,
                         slug: item.slug,
                         fieldData: {
                             [CollectionFieldIds.content]: {
-                                value: contentValue,
+                                value: content,
                                 type: 'formattedText',
                                 contentType,
                             },
@@ -150,12 +148,41 @@ export async function syncItemsToCollection({
                         },
                     },
                 ])
+            }
+
+            await semaphore.acquire()
+            try {
+                await addCollectionItem(contentValue)
             } catch (error) {
+                let currentErrorMessage = getErrorMessage(error)
+
+                if (
+                    contentType === 'markdown' &&
+                    isImageUploadFailureForFormattedText(currentErrorMessage)
+                ) {
+                    const contentWithoutImages =
+                        stripAllImageReferences(contentValue)
+                    if (contentWithoutImages !== contentValue) {
+                        try {
+                            await addCollectionItem(contentWithoutImages)
+                            errors.push({
+                                kind: 'warning',
+                                message:
+                                    'Imported without markdown images in Content field because image upload failed',
+                                path: item.path,
+                            })
+                            return
+                        } catch (retryError) {
+                            currentErrorMessage = getErrorMessage(retryError)
+                        }
+                    }
+                }
+
                 notImported++
                 console.error(`Error adding item with id ${item.id}:`, error)
                 errors.push({
                     kind: 'error',
-                    message: (error as Error).message,
+                    message: currentErrorMessage,
                     path: item.path,
                 })
             } finally {
@@ -190,4 +217,24 @@ function getFieldsForFrontMatter(
         }
     }
     return fields
+}
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message
+    }
+    return String(error)
+}
+
+function isImageUploadFailureForFormattedText(message: string): boolean {
+    return message.includes(
+        'Failed to upload images in formatted text for field: Content',
+    )
+}
+
+function stripAllImageReferences(markdown: string): string {
+    const imageRegex =
+        /!\[[^\]]*\]\((<[^>]+>|[^()\n]*(?:\([^()\n]*\)[^()\n]*)*)\)/g
+    const imageTagRegex = /<img\b[^>]*>/gi
+    return markdown.replace(imageRegex, '').replace(imageTagRegex, '')
 }
