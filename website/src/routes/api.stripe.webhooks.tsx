@@ -73,15 +73,15 @@ async function handleCheckoutSessionCompleted(
         expand: ['line_items'],
     })
 
-    const customerEmail = latestSession.customer_details?.email
+    const customerEmail = latestSession.customer_details?.email || undefined
 
-    const orgId = latestSession.metadata?.orgId
+    const orgId = await resolveStripeOrgId({
+        metadataOrgId: latestSession.metadata?.orgId,
+        customerEmail,
+        context: `checkout.session.completed (${latestSession.id})`,
+    })
     const pluginName = latestSession.metadata?.pluginName as any
     if (!orgId) {
-        notifyError(
-            new AppError('No orgId in Stripe metadata'),
-            'Stripe webhook',
-        )
         return
     }
 
@@ -119,26 +119,36 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
         subscription.id,
     )
 
-    const orgId = latestSubscription.metadata?.orgId
-
+    const metadataEmail = latestSubscription.metadata?.email || undefined
+    const orgId = await resolveStripeOrgId({
+        metadataOrgId: latestSubscription.metadata?.orgId,
+        customerEmail: metadataEmail,
+        context: `customer.subscription event (${latestSubscription.id})`,
+    })
     if (!orgId) {
+        return
+    }
+
+    const variantId = latestSubscription.items.data[0]?.price.id
+    if (!variantId) {
         notifyError(
             new AppError(
-                `No orgId in subscription metadata for subscription ${subscription.id}, customer email: ${subscription.customer}`,
+                `No variantId in subscription items for subscription ${latestSubscription.id}`,
             ),
             'Stripe webhook',
         )
         return
     }
+
     const pluginName = latestSubscription.metadata?.pluginName as any
 
     const create: Prisma.SubscriptionCreateManyInput = {
         orgId: orgId,
         orderId: latestSubscription.id,
         productId: latestSubscription.items.data[0]?.price.product.toString(),
-        variantId: latestSubscription.items.data[0]?.price.id,
+        variantId,
         subscriptionId: latestSubscription.id,
-        email: orgId || undefined,
+        email: metadataEmail,
         status: latestSubscription.status,
         variantName:
             latestSubscription.items.data[0]?.price.nickname || undefined,
@@ -154,11 +164,77 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
     await prisma.subscription.upsert({
         where: {
             subscriptionId_variantId: {
-                subscriptionId: subscription.id,
-                variantId: subscription.items.data[0]?.price.id || '',
+                subscriptionId: latestSubscription.id,
+                variantId,
             },
         },
         create,
         update: create,
     })
+}
+
+async function resolveStripeOrgId({
+    metadataOrgId,
+    customerEmail,
+    context,
+}: {
+    metadataOrgId: string | undefined
+    customerEmail: string | undefined
+    context: string
+}) {
+    if (metadataOrgId) {
+        const org = await prisma.org.findUnique({
+            where: {
+                orgId: metadataOrgId,
+            },
+            select: {
+                orgId: true,
+            },
+        })
+        if (org?.orgId) {
+            return org.orgId
+        }
+        notifyError(
+            new AppError(
+                `Stripe webhook received unknown orgId ${metadataOrgId} for ${context}`,
+            ),
+            'Stripe webhook',
+        )
+    } else {
+        notifyError(
+            new AppError(`No orgId in Stripe metadata for ${context}`),
+            'Stripe webhook',
+        )
+    }
+
+    if (!customerEmail) {
+        return null
+    }
+
+    const userWithEmail = await prisma.users.findFirst({
+        where: {
+            email: customerEmail,
+        },
+        include: {
+            orgs: true,
+        },
+    })
+    const fallbackOrgId = userWithEmail?.orgs?.[0]?.orgId
+    if (!fallbackOrgId) {
+        return null
+    }
+
+    const fallbackOrg = await prisma.org.findUnique({
+        where: {
+            orgId: fallbackOrgId,
+        },
+        select: {
+            orgId: true,
+        },
+    })
+    if (!fallbackOrg?.orgId) {
+        return null
+    }
+
+    return fallbackOrg.orgId
 }
