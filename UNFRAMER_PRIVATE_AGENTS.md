@@ -22,6 +22,8 @@ framer plugins are just iframes that run inside the framer websites. each plugin
 
 to try out the plugin you can load them into framer and control them with playwriter
 
+when user asks to open a framer plugin, always read and follow `plugin-mcp/mcp-plugin-testing-instructions.md` with playwriter before taking actions.
+
 mcp plugin also has a test suite that has to be run after the plugin is open in a specific project. see instructions in plugin-mcp/mcp-plugin-testing-instructions.md for how. follow it every time user asks to run mcp plugin test suite.
 
 
