@@ -65,7 +65,7 @@ export async function websocketClientHandling({
             if (ws?.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'ready' }))
             }
-            useStore.setState({ error: undefined })
+            useStore.setState({ isSocketOpen: true, error: undefined })
 
             // Setup ping interval
             if (pingInterval) clearInterval(pingInterval)
@@ -140,7 +140,11 @@ export async function websocketClientHandling({
             console.log(
                 `websocket client disconnected (${event.code}), reconnecting in ${reconnectInterval}ms`,
             )
-            useStore.setState({ isConnected: false, error: undefined })
+            useStore.setState({
+                isConnected: false,
+                isSocketOpen: false,
+                error: undefined,
+            })
             if (pingInterval) {
                 clearInterval(pingInterval)
                 pingInterval = null
@@ -156,6 +160,7 @@ export async function websocketClientHandling({
                 console.error(errorMessage)
                 useStore.setState({
                     isConnected: false,
+                    isSocketOpen: false,
                     error: errorMessage,
                 })
                 // Prevent further reconnect attempts when this error occurs

@@ -65,13 +65,34 @@ async function websocketHandler({
     return mcpToolHandler({ type, input })
 }
 
+function getBackgroundMessage({
+    error,
+    isSocketOpen,
+}: {
+    error?: string
+    isSocketOpen: boolean
+}) {
+    if (error) {
+        return 'MCP error. Open the plugin to see details.'
+    }
+    if (!isSocketOpen) {
+        return 'MCP reconnecting...'
+    }
+    return 'MCP server running'
+}
+
 function MainComponent() {
     const isConnected = useStore((state) => state.isConnected)
+    const isSocketOpen = useStore((state) => state.isSocketOpen)
     const isExpanded = useStore((state) => state.isExpanded)
+    const isUiHidden = useStore((state) => state.isUiHidden)
     const error = useStore((state) => state.error)
     const [copied, setCopied] = useState(false)
     const data = useLoaderData() as LoaderReturnType<typeof rootLoader>
     const navigate = useNavigate()
+    const backgroundMessage = useMemo(() => {
+        return getBackgroundMessage({ error, isSocketOpen })
+    }, [error, isSocketOpen])
 
     const sessionId = useMemo(
         () => localStorage.getItem(LocalStorageKeys.sessionId) || '',
@@ -98,12 +119,39 @@ function MainComponent() {
             {
                 label: 'Run in Background',
                 async onAction() {
-                    await framer.setBackgroundMessage('MCP server running')
-                    await framer.hideUI()
+                    try {
+                        await framer.setBackgroundMessage(backgroundMessage)
+                        await framer.hideUI()
+                        useStore.setState({ isUiHidden: true })
+                    } catch (runInBackgroundError) {
+                        useStore.setState({ isUiHidden: false })
+                        console.error(
+                            'Failed to run plugin in background:',
+                            runInBackgroundError,
+                        )
+                        await framer.notify(
+                            'Could not hide plugin window. Try again.',
+                            { variant: 'error' },
+                        )
+                    }
                 },
             },
         ])
-    }, [isExpanded])
+    }, [backgroundMessage, isExpanded, navigate])
+
+    useEffect(() => {
+        if (!isUiHidden) {
+            return
+        }
+        void framer
+            .setBackgroundMessage(backgroundMessage)
+            .catch((setBackgroundMessageError) => {
+                console.error(
+                    'Failed to update background message:',
+                    setBackgroundMessageError,
+                )
+            })
+    }, [backgroundMessage, isUiHidden])
 
     useEffect(() => {
         const handleKeyDown = async (event: KeyboardEvent) => {
@@ -390,15 +438,40 @@ async function rootLoader({}: LoaderFunctionArgs) {
 function RootLayout() {
     const [ref, { height }] = useMeasure()
     const isExpanded = useStore((state) => state.isExpanded)
+    const isUiHidden = useStore((state) => state.isUiHidden)
 
-    // Update framer UI size when height changes or expansion state changes
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState !== 'visible') {
+                return
+            }
+            useStore.setState({ isUiHidden: false })
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => {
+            document.removeEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            )
+        }
+    }, [])
+
+    // Update Framer UI size when visible and content height changes
     useLayoutEffect(() => {
-        void framer.showUI({
-            position: 'top left',
-            width: isExpanded ? 300 : 160,
-            height: height || 400,
+        if (isUiHidden) {
+            return
+        }
+        void (async () => {
+            await framer.setBackgroundMessage(null)
+            await framer.showUI({
+                position: 'top left',
+                width: isExpanded ? 300 : 160,
+                height: height || 400,
+            })
+        })().catch((showUIError) => {
+            console.error('Failed to show plugin UI:', showUIError)
         })
-    }, [height, isExpanded])
+    }, [height, isExpanded, isUiHidden])
 
     return (
         <div ref={ref} className='flex flex-col p-3 pb-2 pt-0'>
