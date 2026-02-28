@@ -14,7 +14,7 @@
     "scripts": {
         "dev": "doppler run -c preview -- vite",
         "test": "doppler run -- pnpm vitest -u --run",
-        "build": "tsc && rm -rf dist && doppler run -c production -- pnpm vite build",
+        "build": "tsc && rm -rf dist && doppler run -c production -- pnpm vite build && pnpm gen-unframer",
         "pack": "pnpm build && pnpm gen-unframer && pnpm pack:prebuilt",
         "pack:prebuilt": "framer-plugin-tools pack --prebuilt && open -R plugin.zip",
         "analyze-bundle": "rm -rf tmp && mkdir -p tmp && ANALYZE_BUNDLE=1 doppler run -c production -- pnpm vite build",
