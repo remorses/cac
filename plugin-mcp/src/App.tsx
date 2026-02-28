@@ -10,7 +10,7 @@ import {
     isImageAsset,
     isFileAsset,
     ManagedCollectionFieldInput,
-} from 'framer-plugin'
+} from '#framer-client'
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import useMeasure from 'react-use-measure'
 import { websocketClientHandling } from './lib/plugin-websocket.js'

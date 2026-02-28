@@ -1,4 +1,4 @@
-import { framer } from 'framer-plugin'
+import { framer } from '#framer-client'
 import { init, captureException } from 'sentries'
 
 init({

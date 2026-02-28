@@ -7,7 +7,7 @@ import {
     withMode,
     LocalStorageKeys,
 } from 'plugin-mcp/src/lib/utils'
-import { framer } from 'framer-plugin'
+import { framer } from '#framer-client'
 import { useState, useEffect } from 'react'
 import {
     LoaderFunctionArgs,

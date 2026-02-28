@@ -15,9 +15,10 @@ import {
     isImageAsset,
     isFileAsset,
     ManagedCollectionFieldInput,
-} from 'framer-plugin'
+} from '#framer-client'
 import dedent from 'string-dedent'
 import { createPatch } from 'diff'
+import { createSpiceflowClient } from 'spiceflow/client'
 import {
     framerLayersTreeToXml,
     extractObjectsFromXmlContent,
@@ -27,12 +28,29 @@ import {
 } from './xml.js'
 import { getFramerTree, applyAttributes, getComponentPropertyControls } from './framer.js'
 import { processReactExportData } from './react-export.js'
-import { propControlsToTypedocComments, componentCamelCase } from 'unframer/src/typescript'
-import { pluginApiClient } from './utils.js'
+import { propControlsToTypedocComments, componentCamelCase } from 'unframer'
 import { codeComponentsResourceUri, mcpTools, type McpToolNames, type FramerLayersTree, type TextStyleProperties } from './schema.js'
-import type { CanvasNode } from 'framer-plugin'
+import type { CanvasNode } from '#framer-client'
+import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
 
 export { mcpTools, type McpToolNames }
+
+const PUBLIC_URL = process.env.PUBLIC_URL || 'https://unframer.co'
+const MCP_SESSION_ID_STORAGE_KEY = 'framer-mcp-session-id'
+
+const pluginApiClient = createSpiceflowClient<RouteType>(PUBLIC_URL, {
+    async onRequest() {
+        const sessionKey =
+            typeof localStorage === 'undefined'
+                ? ''
+                : localStorage.getItem(MCP_SESSION_ID_STORAGE_KEY) || ''
+        return {
+            headers: {
+                sessionKey,
+            },
+        }
+    },
+})
 
 // Field type documentation for CMS collections
 const CMS_FIELD_TYPE_COMMENTS: Record<string, string> = {

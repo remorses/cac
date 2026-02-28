@@ -1,4 +1,4 @@
-import { ManagedCollectionField, FieldDataEntryInput } from 'framer-plugin'
+import { ManagedCollectionField, FieldDataEntryInput } from '#framer-client'
 
 export function mapValueToFieldValue(
     value: any,

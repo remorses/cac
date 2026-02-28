@@ -7,7 +7,7 @@ import {
     isComponentNode,
     isFrameNode,
     isWebPageNode,
-} from 'framer-plugin'
+} from '#framer-client'
 import {
     getComponentPropertyControls,
     getInstanceComponentId,
