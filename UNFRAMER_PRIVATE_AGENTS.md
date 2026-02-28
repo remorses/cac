@@ -1,5 +1,7 @@
 # Unframer Private Guidelines
 
+> **Editing instructions:** This file (`UNFRAMER_PRIVATE_AGENTS.md`) is the source of truth for the root `AGENTS.md`. Edit this file, not `AGENTS.md` (which is generated) and not any `CLAUDE.md` files (which are deleted). Run `pnpm agents.md` from root to regenerate `AGENTS.md` after editing.
+
 ## Git Submodules
 
 This repo uses git submodules for `spiceflow` and `unframer`. Always keep submodules on their respective `main` branches.
@@ -51,3 +53,39 @@ to see available pages for the plugin docs do `curl -s https://www.framer.com/si
 webfetch these docs to understand how Framer plugin works or how the framer-api npm package works. 
 
 you can also read the framer-plugin .d.ts files to see what APIs are available.
+
+## plugin-mcp: working on the MCP plugin
+
+before any chat in the plugin-mcp folder run the commands:
+- `tree`, to get the folder files in a tree format
+- read `src/schema.ts` to understand the MCP tools schema
+
+when writing a description for an mcp tool you should never describe the output of the tool, instead describe the inputs and the use cases and what the flow for this tool should be.
+
+to run tests: `pnpm test`. for a specific test: `pnpm test -t "test name"`. the test command already passes `--run -u` so never specify those again.
+
+when running tests always run them with `-u` to update snapshots, then check `git diff src/lib/snapshots` and make sure the output is what you expect.
+
+after making MCP API changes always update `src/prompts/how-to-use-mcp-server.md` with the new API. keep it short.
+
+### CRITICAL: always import from #framer-client, never from framer-plugin or framer-api
+
+All source files in `plugin-mcp/src/lib/` that need Framer SDK types or functions MUST import from `#framer-client`:
+
+```ts
+import { framer, isTextNode } from '#framer-client'
+```
+
+NEVER import directly from `framer-plugin` or `framer-api`. The `#framer-client` alias is a conditional import defined in `plugin-mcp/package.json` `imports` field: it resolves to `framer-plugin` in the browser (plugin mode) and `framer-api` on the server (Node.js headless mode). This allows the same handler code (`mcp-handlers.ts`, `framer.ts`, etc.) to run in both modes without modification.
+
+Similarly, always import from `unframer` (the main entry point), never from `unframer/src/*`. The `./src/*` exports map resolves to `.ts` source files which Node 22 cannot load at runtime.
+
+### Keeping server-api dist up to date
+
+If you change `plugin-mcp/src/lib/mcp-handlers.ts` or `schema.ts`, always run inside plugin-mcp:
+
+```bash
+pnpm tsc --incremental && pnpm gen-unframer
+```
+
+This copies compiled JS to `unframer/unframer/src/plugin-mcp-dist/lib/` which is what `unframer mcp` server-api mode loads at runtime.
