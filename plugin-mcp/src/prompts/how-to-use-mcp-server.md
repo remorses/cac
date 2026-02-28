@@ -22,6 +22,11 @@ Use `createPage` to create new pages:
 
 To check if the project is published and get its public URL, use `getProjectWebsiteUrl`.
 
+Important runtime note:
+
+- In the Framer plugin, `hideUI` / Run in Background only hides the plugin UI while keeping the plugin process alive.
+- This does not make MCP independent from the current Framer/Chrome session. If the plugin is closed or the session ends, MCP stops.
+
 ## Working with Nodes
 
 Framer projects consist of nodes (pages, components, frames, text, etc.) that can be inspected and modified through XML. Each node has a unique `nodeId` that identifies it throughout the system.
@@ -185,6 +190,8 @@ Use `getCMSCollections` to inspect available collections and the field IDs/types
 
 For CMS item writes (`upsertCMSItem`):
 
+- `fieldData` must be an object keyed by field ID, where each value is an object like `{ type, value }`.
+- Example: `{ "j11rZL4rT": { "type": "image", "value": "https://example.com/image.jpg" } }`
 - `formattedText` supports **Markdown** (preferred) and **HTML**.
 - If you omit `contentType`, the server chooses automatically:
   - If `value` looks like HTML (trimmed value starts with `<`), it uses `contentType: "html"`.
