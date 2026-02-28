@@ -1,13 +1,165 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import yaml from 'js-yaml'
+import { z } from 'zod'
+import { connect } from 'framer-api'
 import { createMCPClient } from './mcp-client.js'
+import { mcpToolHandler, mcpTools, parseIncomingFieldData } from './mcp-handlers.js'
+import type { McpToolNames } from './schema.js'
 
 const mcpUrl =
     'https://mcp.preview.unframer.co/mcp?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ'
 
+const defaultServerApiProjectUrl =
+    'https://framer.com/projects/Framer-MCP-project-Designor-Framer-Template-copy--lfAw10qcrLpLLEznmZmo-irrP1?node=CpFAHygNJ'
+
+const mcpTestMode: 'plugin' | 'server-api' =
+    process.env.MCP_TEST_MODE === 'server-api' ? 'server-api' : 'plugin'
+const isServerApiMode = mcpTestMode === 'server-api'
+
+type ToolTextContent = {
+    type: 'text'
+    text: string
+}
+
+type ToolCallResult = {
+    content: ToolTextContent[]
+}
+
+type TestCallToolParams = {
+    name: McpToolNames
+    args?: unknown
+}
+
+type TestRuntime = {
+    client: {
+        listTools: () => Promise<{
+            tools: Array<{
+                name: string
+                description: string
+                inputSchema: Record<string, unknown>
+            }>
+        }>
+    }
+    callTool: (params: TestCallToolParams) => Promise<ToolCallResult>
+    cleanup: () => Promise<void>
+}
+
+function asToolCallResult({ text }: { text: string }): ToolCallResult {
+    return {
+        content: [
+            {
+                type: 'text',
+                text,
+            },
+        ],
+    }
+}
+
+async function createTestRuntime(): Promise<TestRuntime> {
+    if (!isServerApiMode) {
+        const runtime = await createMCPClient({
+            mcpUrl,
+            clientName: 'framer-test',
+            transport: 'streamable-http',
+        })
+
+        return {
+            client: {
+                listTools: async () => {
+                    return runtime.client.listTools() as Promise<{
+                        tools: Array<{
+                            name: string
+                            description: string
+                            inputSchema: Record<string, unknown>
+                        }>
+                    }>
+                },
+            },
+            callTool: async ({ name, args }) => {
+                const callResult = await runtime.callTool({
+                    name,
+                    args,
+                } as Parameters<typeof runtime.callTool>[0])
+                return callResult as ToolCallResult
+            },
+            cleanup: runtime.cleanup,
+        }
+    }
+
+    const projectUrl = process.env.FRAMER_PROJECT_URL || defaultServerApiProjectUrl
+    const apiKey = process.env.FRAMER_API_KEY
+    if (!apiKey) {
+        throw new Error(
+            'FRAMER_API_KEY is required for server-api mode tests',
+        )
+    }
+
+    const framerClient = await connect(projectUrl, apiKey)
+    const globalWithFramer = globalThis as typeof globalThis & {
+        framer?: unknown
+    }
+    globalWithFramer.framer = framerClient
+
+    return {
+        client: {
+            listTools: async () => {
+                const tools = Object.entries(mcpTools).map(([name, tool]) => {
+                    const schema = z.toJSONSchema(tool.input) as Record<
+                        string,
+                        unknown
+                    >
+                    delete schema.$schema
+
+                    return {
+                        name,
+                        description: tool.description,
+                        inputSchema: schema,
+                    }
+                })
+                return { tools }
+            },
+        },
+        callTool: async ({ name, args }) => {
+            try {
+                const tool = mcpTools[name]
+                const reply = await mcpToolHandler({
+                    type: name,
+                    input: args ?? {},
+                })
+
+                const text =
+                    typeof reply === 'string'
+                        ? reply
+                        : JSON.stringify(reply, null, 2)
+                const outputPrefix =
+                    'outputPrefix' in tool && typeof tool.outputPrefix === 'string'
+                        ? tool.outputPrefix
+                        : undefined
+                const prefixedText = outputPrefix
+                    ? `${outputPrefix.trim()}\n\n${text}`
+                    : text
+                return asToolCallResult({ text: prefixedText })
+            } catch (error) {
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error)
+                return asToolCallResult({
+                    text: `Encountered an error: ${errorMessage}`,
+                })
+            }
+        },
+        cleanup: async () => {
+            try {
+                await framerClient.disconnect()
+            } finally {
+                delete globalWithFramer.framer
+            }
+        },
+    }
+}
 
 
-describe('HTTP Streamable Transport', () => {
+
+describe.skipIf(isServerApiMode)('HTTP Streamable Transport', () => {
     it(
         'should get tools schema using HTTP Streamable transport',
         async () => {
@@ -46,22 +198,66 @@ describe('HTTP Streamable Transport', () => {
 
 describe('Tools Schema', () => {
     it('should get tools schema and match file snapshot', async () => {
-        const { client } = await createMCPClient({
-            mcpUrl: mcpUrl,
-            clientName: 'framer-test-schema',
-            transport: 'streamable-http',
-        })
-        const schema = await client.listTools()
-        expect(schema).toBeDefined()
+        const runtime = await createTestRuntime()
+        try {
+            const schema = await runtime.client.listTools()
+            expect(schema).toBeDefined()
 
-        const schemaYaml = yaml.dump(schema, {
-            indent: 2,
-            lineWidth: 100,
-            noRefs: true,
-            sortKeys: true,
+            const schemaYaml = yaml.dump(schema, {
+                indent: 2,
+                lineWidth: 100,
+                noRefs: true,
+                sortKeys: true,
+            })
+            await expect(schemaYaml).toMatchFileSnapshot(
+                `snapshots/tools-schema.yaml`,
+            )
+        } finally {
+            await runtime.cleanup()
+        }
+    })
+})
+
+describe('CMS fieldData parsing', () => {
+    it('should parse fieldData object entries', () => {
+        const parsed = parseIncomingFieldData({
+            imageField: {
+                type: 'image',
+                value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+            },
         })
-        await expect(schemaYaml).toMatchFileSnapshot(
-            `snapshots/tools-schema.yaml`,
+
+        expect(parsed).toEqual({
+            imageField: {
+                type: 'image',
+                value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+            },
+        })
+    })
+
+    it('should throw when fieldData is a string', () => {
+        expect(() => {
+            parseIncomingFieldData(
+                JSON.stringify({
+                    imageField: {
+                        type: 'image',
+                        value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+                    },
+                }),
+            )
+        }).toThrowError(
+            'Invalid fieldData. Expected an object where each key is a field ID and each value is a field entry object.',
+        )
+    })
+
+    it('should throw a clear error for invalid fieldData entries', () => {
+        expect(() => {
+            parseIncomingFieldData({
+                imageField:
+                    'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+            })
+        }).toThrowError(
+            'Invalid fieldData["imageField"]. Expected an object with string "type" and a "value" key.',
         )
     })
 })
@@ -69,9 +265,9 @@ describe('Tools Schema', () => {
 describe(
     'Framer MCP Server Tests',
     () => {
-        let callTool: Awaited<ReturnType<typeof createMCPClient>>['callTool']
+        let callTool: TestRuntime['callTool']
         let cleanup: (() => Promise<void>) | null = null
-        let client: Awaited<ReturnType<typeof createMCPClient>>['client']
+        let client: TestRuntime['client']
         let supportsCreatePage = false
 
         // Track created styles for cleanup
@@ -79,11 +275,7 @@ describe(
         const createdDesignPageIds = new Set<string>()
 
         beforeAll(async () => {
-            const result = await createMCPClient({
-                mcpUrl: mcpUrl,
-                clientName: 'framer-test',
-                transport: 'streamable-http',
-            })
+            const result = await createTestRuntime()
             callTool = result.callTool
             cleanup = result.cleanup
             client = result.client
@@ -1003,6 +1195,192 @@ describe(
         let cmsFieldIds: Record<string, string> = {}
         let createdItemId: string | null = null
 
+        async function getCmsCollectionWithStringAndImageFields(): Promise<{
+            collectionId: string
+            stringFieldId: string
+            imageFieldId: string
+        } | null> {
+            const result = await callTool({
+                name: 'getCMSCollections',
+                args: undefined,
+            })
+
+            const content = getTextContent(result.content)
+            const parsedContent = tryJsonParse(content)
+            if (!isRecord(parsedContent) || !Array.isArray(parsedContent.collections)) {
+                if (
+                    isServerApiMode &&
+                    String(content).includes(
+                        'Cannot access framer.getCollections in server runtime',
+                    )
+                ) {
+                    console.warn(
+                        'Skipping CMS integration assertions in server-api mode because framer-api connect() does not expose getCollections in this runtime.',
+                    )
+                    return null
+                }
+                throw new Error(
+                    `Could not parse CMS collections output: ${String(content).slice(0, 2000)}`,
+                )
+            }
+
+            const collection = parsedContent.collections
+                .filter(isRecord)
+                .find((candidate) => {
+                    if (!Array.isArray(candidate.fields)) {
+                        return false
+                    }
+
+                    const fields = candidate.fields.filter(isRecord)
+                    const hasStringField = fields.some((field) => {
+                        return field.type === 'string' && typeof field.id === 'string'
+                    })
+                    const hasImageField = fields.some((field) => {
+                        return field.type === 'image' && typeof field.id === 'string'
+                    })
+
+                    return hasStringField && hasImageField
+                })
+
+            if (!collection || typeof collection.id !== 'string') {
+                throw new Error(
+                    'No CMS collection found with both string and image fields',
+                )
+            }
+            if (!Array.isArray(collection.fields)) {
+                throw new Error('CMS collection fields are missing')
+            }
+
+            const fields = collection.fields.filter(isRecord)
+            const stringField = fields.find((field) => {
+                return field.type === 'string' && typeof field.id === 'string'
+            })
+            const imageField = fields.find((field) => {
+                return field.type === 'image' && typeof field.id === 'string'
+            })
+
+            if (!stringField || !imageField) {
+                throw new Error('Could not resolve string/image field IDs')
+            }
+
+            return {
+                collectionId: collection.id,
+                stringFieldId: stringField.id as string,
+                imageFieldId: imageField.id as string,
+            }
+        }
+
+        it('cms should upsert item with image fieldData object', async () => {
+            const cmsFields =
+                await getCmsCollectionWithStringAndImageFields()
+            if (!cmsFields) {
+                return
+            }
+            const { collectionId, stringFieldId, imageFieldId } = cmsFields
+
+            const randomNum = Math.floor(Math.random() * 100000)
+            const slug = `test-item-image-field-data-${randomNum}`
+            let newItemId: string | undefined = undefined
+
+            try {
+                const result = await callTool({
+                    name: 'upsertCMSItem',
+                    args: {
+                        collectionId,
+                        slug,
+                        fieldData: {
+                            [stringFieldId]: {
+                                type: 'string',
+                                value: `Stringified ${randomNum}`,
+                            },
+                            [imageFieldId]: {
+                                type: 'image',
+                                value: 'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+                            },
+                        },
+                        draft: false,
+                    },
+                })
+
+                const content = getTextContent(result.content)
+                const parsedContent = tryJsonParse(content)
+
+                expect(isRecord(parsedContent)).toBe(true)
+                if (!isRecord(parsedContent)) {
+                    throw new Error('Unexpected upsert response shape')
+                }
+
+                expect(typeof parsedContent.message).toBe('string')
+                expect(String(parsedContent.message)).toContain(
+                    'Successfully created',
+                )
+
+                expect(isRecord(parsedContent.item)).toBe(true)
+                if (!isRecord(parsedContent.item)) {
+                    throw new Error('Missing item in upsert response')
+                }
+
+                expect(parsedContent.item.slug).toBe(slug)
+                expect(typeof parsedContent.item.id).toBe('string')
+                newItemId = parsedContent.item.id as string
+
+                expect(isRecord(parsedContent.item.fieldData)).toBe(true)
+                if (!isRecord(parsedContent.item.fieldData)) {
+                    throw new Error('Missing fieldData in upsert response')
+                }
+
+                const imageField = parsedContent.item.fieldData[imageFieldId]
+                expect(isRecord(imageField)).toBe(true)
+                if (!isRecord(imageField)) {
+                    throw new Error('Image field not returned as object')
+                }
+
+                expect(imageField.type).toBe('image')
+                expect(typeof imageField.value).toBe('string')
+            } finally {
+                if (newItemId) {
+                    await callTool({
+                        name: 'deleteCMSItem',
+                        args: {
+                            collectionId,
+                            itemId: newItemId,
+                        },
+                    })
+                }
+            }
+        })
+
+        it('cms should return clear error for invalid fieldData entry shape', async () => {
+            const cmsFields =
+                await getCmsCollectionWithStringAndImageFields()
+            if (!cmsFields) {
+                return
+            }
+            const { collectionId, stringFieldId, imageFieldId } = cmsFields
+
+            const randomNum = Math.floor(Math.random() * 100000)
+            const result = await callTool({
+                name: 'upsertCMSItem',
+                args: {
+                    collectionId,
+                    slug: `test-item-invalid-field-entry-${randomNum}`,
+                    fieldData: {
+                        [stringFieldId]: {
+                            type: 'string',
+                            value: `Invalid entry ${randomNum}`,
+                        },
+                        [imageFieldId]:
+                            'https://framerusercontent.com/images/2uTNEj5aTl2K3NJaEFWMbnrA.jpg',
+                    },
+                    draft: false,
+                },
+            })
+
+            const content = getTextContent(result.content)
+            expect(content).toContain('Invalid fieldData')
+            expect(content).toContain(`fieldData["${imageFieldId}"]`)
+        })
+
         it('cms should get collections with field information', async () => {
             const result = await callTool({
                 name: 'getCMSCollections',
@@ -1557,4 +1935,8 @@ function tryJsonParse(str: string) {
         }
         return str
     }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
