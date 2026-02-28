@@ -719,8 +719,32 @@ The field structure must match the collection's field definitions from getCMSCol
           "type": "boolean",
         },
         "fieldData": {
-          "additionalProperties": {},
-          "description": "Field values as an object matching the collection field structure",
+          "additionalProperties": {
+            "additionalProperties": {},
+            "properties": {
+              "contentType": {
+                "description": "Optional for formattedText fields. Use markdown or html.",
+                "enum": [
+                  "markdown",
+                  "html",
+                ],
+                "type": "string",
+              },
+              "type": {
+                "description": "Field type (for example: string, image, formattedText, enum)",
+                "type": "string",
+              },
+              "value": {
+                "description": "Field value. Its shape depends on the field type.",
+              },
+            },
+            "required": [
+              "type",
+              "value",
+            ],
+            "type": "object",
+          },
+          "description": "Field values as an object where each key is a field ID and each value is a { type, value } entry",
           "propertyNames": {
             "type": "string",
           },

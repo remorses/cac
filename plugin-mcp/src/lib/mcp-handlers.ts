@@ -84,16 +84,60 @@ function cleanFieldData(
     )
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isFieldDataEntryLike(
+    value: unknown,
+): value is { type: string; value: unknown } {
+    if (!isRecord(value)) {
+        return false
+    }
+
+    const hasValue = Object.prototype.hasOwnProperty.call(value, 'value')
+    return typeof value.type === 'string' && hasValue
+}
+
+export function parseIncomingFieldData(
+    fieldData: unknown,
+): Record<string, unknown> {
+    if (fieldData === undefined) {
+        return {}
+    }
+
+    if (!isRecord(fieldData)) {
+        throw new Error(
+            'Invalid fieldData. Expected an object where each key is a field ID and each value is a field entry object.',
+        )
+    }
+
+    return Object.fromEntries(
+        Object.entries(fieldData).map(([fieldId, fieldValue]) => {
+            if (!isFieldDataEntryLike(fieldValue)) {
+                throw new Error(
+                    `Invalid fieldData["${fieldId}"]. Expected an object with string "type" and a "value" key.`,
+                )
+            }
+
+            return [fieldId, fieldValue]
+        }),
+    )
+}
+
 // Helper function to normalize incoming user fieldData
 // Adds contentType: 'markdown' for formattedText fields from MCP input
 function normalizeIncomingFieldData(
-    fieldData: Record<string, any>,
-): Record<string, any> {
+    fieldData: Record<string, unknown>,
+): Record<string, unknown> {
     return Object.fromEntries(
         Object.entries(fieldData).map(([fieldId, fieldValue]) => {
             // If it's a formattedText field, add contentType: 'markdown'
-            if (fieldValue?.type === 'formattedText' && !fieldValue.contentType) {
-                const value: unknown = fieldValue.value
+            const isFormattedTextField =
+                isRecord(fieldValue) && fieldValue.type === 'formattedText'
+
+            if (isFormattedTextField && !fieldValue.contentType) {
+                const value = fieldValue.value
                 const valueString = typeof value === 'string' ? value.trim() : ''
                 const looksLikeHtml = valueString.startsWith('<')
 
@@ -1969,7 +2013,9 @@ export async function mcpToolHandler({
 
             // Prepare the item data
             // Normalize incoming fieldData to use markdown for formattedText fields
-            const normalizedFieldData = fieldData ? normalizeIncomingFieldData(fieldData) : {}
+            const hasIncomingFieldData = fieldData !== undefined
+            const incomingFieldData = parseIncomingFieldData(fieldData)
+            const normalizedFieldData = normalizeIncomingFieldData(incomingFieldData)
             const itemData: any = {
                 draft,
                 fieldData: normalizedFieldData,
@@ -1993,7 +2039,7 @@ export async function mcpToolHandler({
                 }
 
                 // For updates, merge with existing field data (partial update support)
-                if (fieldData) {
+                if (hasIncomingFieldData) {
                     // Clean existing field data to ensure proper format for API validation
                     // Then overlay with the normalized incoming field data
                     itemData.fieldData = {
@@ -2001,7 +2047,7 @@ export async function mcpToolHandler({
                         ...normalizedFieldData,
                     }
                 } else {
-                    itemData.fieldData = existingItem.fieldData
+                    itemData.fieldData = cleanFieldData(existingItem.fieldData)
                 }
 
                 await collection.addItems([itemData])

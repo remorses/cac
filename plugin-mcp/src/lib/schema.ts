@@ -115,6 +115,17 @@ const textStylePropertiesSchema = z.object({
         .describe('Decoration offset (e.g., "auto", "2px", "0.1em")'),
 })
 
+const cmsFieldDataEntrySchema = z
+    .object({
+        type: z.string().describe('Field type (for example: string, image, formattedText, enum)'),
+        value: z.unknown().describe('Field value. Its shape depends on the field type.'),
+        contentType: z
+            .enum(['markdown', 'html'])
+            .optional()
+            .describe('Optional for formattedText fields. Use markdown or html.'),
+    })
+    .passthrough()
+
 /* ──────────────────────────── Tool Definitions ─────────────────────────── */
 export const mcpTools = {
     getProjectXml: {
@@ -838,7 +849,10 @@ export const mcpTools = {
             collectionId: z.string().describe('The ID of the CMS collection'),
             itemId: z.string().optional().describe('ID of existing item to update (omit to create new)'),
             slug: z.string().optional().describe('URL-friendly identifier (required for new items, optional for updates)'),
-            fieldData: z.record(z.string(), z.any()).optional().describe('Field values as an object matching the collection field structure'),
+            fieldData: z
+                .record(z.string(), cmsFieldDataEntrySchema)
+                .optional()
+                .describe('Field values as an object where each key is a field ID and each value is a { type, value } entry'),
             draft: z.boolean().optional().describe('Draft status (default: false for new items)'),
         }),
         output: z.any(),
