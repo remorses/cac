@@ -33,8 +33,8 @@ import {
     ProtectedMethod,
 } from '#framer-client'
 import { Sema } from 'sema4'
-import { propCamelCaseJustLikeFramer } from 'unframer/src/compat'
-import type { ControlDescription, PropertyControls } from 'unframer/src/index'
+import { propCamelCaseJustLikeFramer } from 'unframer'
+import type { ControlDescription, PropertyControls } from 'unframer'
 import { bfsFramerLayersTree } from './tree-utils.js'
 import { FramerLayersTree } from './schema.js'
 
