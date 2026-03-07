@@ -370,6 +370,12 @@ export const mcpTools = {
         - **link**: URL (e.g., "https://example.com") or page path (e.g., "/about")
         - **linkOpenInNewTab**: Boolean true/false
 
+        For component instance **Link controls** (custom props from code components), link can also be a JSON object to target a section on a specific page:
+
+        - **link**: {"type":"webPage","webPageId":"<pageNodeId>","scrollSection":{"targetNodeId":"<sectionNodeId>"}}
+
+        Use getProjectXml / getNodeXml to find valid webPageId and section targetNodeId values.
+
         ### SVG Node Attributes
 
         For SVG nodes:

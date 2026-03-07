@@ -73,6 +73,8 @@ Nodes support various attributes:
 - **Styling**: borderRadius, backgroundColor, backgroundImage, imageRendering
 - **Text**: font (selector format like "GF;Inter-400"), inlineTextStyle (project style path)
 - **Links**: link (URL or path), linkOpenInNewTab (true/false)
+- **Component Link controls**: link can also be JSON for page+section:
+  `{"type":"webPage","webPageId":"<pageNodeId>","scrollSection":{"targetNodeId":"<sectionNodeId>"}}`
 
 Additional attributes:
 

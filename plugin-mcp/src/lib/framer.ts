@@ -1,6 +1,7 @@
 import {
     AnyNode,
     framer,
+    isImageAsset,
     isComponentInstanceNode,
     isComponentNode,
     isFrameNode,
@@ -39,6 +40,25 @@ import { bfsFramerLayersTree } from './tree-utils.js'
 import { FramerLayersTree } from './schema.js'
 
 let cachedPagePaths: string[] = []
+const componentPropertyControlsCache = new Map<
+    string,
+    {
+        comments: Record<string, string> | undefined
+        propertyControls: PropertyControls | undefined
+    }
+>()
+
+function isImportableComponentUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url)
+        if (typeof window === 'undefined') {
+            return parsed.protocol === 'file:' || parsed.protocol === 'data:'
+        }
+        return true
+    } catch {
+        return true
+    }
+}
 
 // Helper function to check permissions and throw error if not allowed
 function checkPermissions(...methods: ProtectedMethod[]): void {
@@ -123,6 +143,15 @@ export function replaceEnumIdsForControls(
 
 export async function getComponentPropertyControls(url?: string | null) {
     if (!url) return { comments: undefined, propertyControls: undefined }
+    const cachedResult = componentPropertyControlsCache.get(url)
+    if (cachedResult) {
+        return cachedResult
+    }
+    if (!isImportableComponentUrl(url)) {
+        const result = { comments: undefined, propertyControls: undefined }
+        componentPropertyControlsCache.set(url, result)
+        return result
+    }
     try {
         const [res, paths] = await Promise.all([
             import(/* @vite-ignore */ url),
@@ -130,13 +159,17 @@ export async function getComponentPropertyControls(url?: string | null) {
         ])
         const propertyControls: PropertyControls = res.default?.propertyControls
         const comments = getAttributeComments(propertyControls, paths)
-        return {
+        const result = {
             comments,
             propertyControls,
         }
+        componentPropertyControlsCache.set(url, result)
+        return result
     } catch (e) {
         console.log('failed to import component schema', e)
-        return { comments: undefined, propertyControls: undefined }
+        const result = { comments: undefined, propertyControls: undefined }
+        componentPropertyControlsCache.set(url, result)
+        return result
     }
 }
 
@@ -227,7 +260,9 @@ export function getAttributeComments(
                     case ControlType.Date:
                         return 'DateString'
                     case ControlType.Link:
-                        return `url or a path amongst ${JSON.stringify(availablePagePaths)}`
+                        return `URL string, page path amongst ${JSON.stringify(availablePagePaths)}, or JSON link object {"type":"webPage","webPageId":"<pageNodeId>","scrollSection":{"targetNodeId":"<sectionNodeId>"}} for page+section links`
+                    case ControlType.ScrollSectionRef:
+                        return `JSON object {"targetNodeId":"<sectionNodeId>"} for scroll section target`
                     case ControlType.ResponsiveImage:
                         return 'responsive image'
                         return `{src: string, srcSet?: string, alt?: string}`
@@ -927,6 +962,44 @@ function encodeAttributeValue(value) {
     return JSON.stringify(value)
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isAssetWithUrl(value: unknown): value is { url: string } {
+    if (isImageAsset(value)) {
+        return true
+    }
+    if (!isRecord(value)) {
+        return false
+    }
+    return typeof value.url === 'string'
+}
+
+function normalizeAttributeValueForXml(value: unknown): unknown {
+    if (isAssetWithUrl(value)) {
+        return value.url
+    }
+
+    if (isRecord(value) && typeof value.path === 'string') {
+        return value.path
+    }
+
+    if (isRecord(value) && typeof value.selector === 'string') {
+        return value.selector
+    }
+
+    return value
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false
+    }
+    const prototype = Object.getPrototypeOf(value)
+    return prototype === Object.prototype || prototype === null
+}
+
 export function serializeAttributesForXml(
     attributes?: Record<string, any>,
 ): Record<string, string> {
@@ -938,11 +1011,27 @@ export function serializeAttributesForXml(
         if (value === undefined) {
             continue
         }
-        if (typeof value === 'object') {
-            console.log('skipping object value for attribute', key, value)
+
+        const normalizedValue = normalizeAttributeValueForXml(value)
+
+        if (
+            normalizedValue &&
+            typeof normalizedValue === 'object' &&
+            !Array.isArray(normalizedValue) &&
+            !isPlainObject(normalizedValue)
+        ) {
+            console.log(
+                'skipping non-plain object value for attribute',
+                key,
+                normalizedValue,
+            )
             continue
         }
-        result[key] = encodeAttributeValue(value)
+        try {
+            result[key] = encodeAttributeValue(normalizedValue)
+        } catch {
+            console.log('skipping non-serializable value for attribute', key)
+        }
     }
     return result
 }
