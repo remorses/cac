@@ -273,10 +273,15 @@ export class McpTunnel extends Tunnel<McpEnv> {
                 }
 
                 // Echo 'ready' back to upstream so the plugin sets isConnected = true.
-                // In the old architecture, a downstream MCP client would send 'ready' which got
-                // relayed to the upstream plugin. Now MCP requests come as HTTP, so we echo it here.
-                if (parsed?.payload?.type === 'ready' || (parsed as Record<string, unknown>)?.type === 'ready') {
-                    ws.send(JSON.stringify({ payload: { type: 'ready' } }))
+                // Only ACK once per upstream socket to avoid an infinite ping-pong loop:
+                // plugin sends ready → DO echoes ready → plugin receives ready → plugin sends ready → ...
+                const isReady = parsed?.payload?.type === 'ready' || (parsed as Record<string, unknown>)?.type === 'ready'
+                if (isReady) {
+                    const att = attachment as Attachment & { readyAcked?: boolean }
+                    if (!att.readyAcked) {
+                        ws.send(JSON.stringify({ payload: { type: 'ready' } }))
+                        ws.serializeAttachment({ ...att, readyAcked: true })
+                    }
                     return
                 }
 
@@ -338,6 +343,12 @@ export class McpTunnel extends Tunnel<McpEnv> {
         // Store the stream so POST /sse/message can write responses to it
         this.sseStreams.set(sessionId, { writer, encoder })
 
+        // Clean up the SSE stream when the client disconnects (request aborted).
+        // Without this, entries leak indefinitely in long-lived DOs.
+        req.signal.addEventListener('abort', () => {
+            this.cleanupSseSession(sessionId)
+        })
+
         // Build the endpoint URL: same origin, path = /sse/message, with sessionId + original auth params
         const url = new URL(req.url)
         url.pathname = '/sse/message'
@@ -355,6 +366,15 @@ export class McpTunnel extends Tunnel<McpEnv> {
                 'Connection': 'keep-alive',
             },
         }))
+    }
+
+    private cleanupSseSession(sessionId: string) {
+        const stream = this.sseStreams.get(sessionId)
+        if (!stream) {
+            return
+        }
+        this.sseStreams.delete(sessionId)
+        stream.writer.close().catch(() => {})
     }
 
     /**
@@ -422,7 +442,7 @@ export class McpTunnel extends Tunnel<McpEnv> {
                 await writer.write(encoder.encode(sseEvent))
             } catch {
                 // SSE stream closed, clean up
-                this.sseStreams.delete(sessionId)
+                this.cleanupSseSession(sessionId)
             }
             // Also call original send (which is a no-op for the POST response since we return 202)
             return originalSend(message, options)
@@ -439,8 +459,17 @@ export class McpTunnel extends Tunnel<McpEnv> {
             body: JSON.stringify(rawMessage),
         })
 
-        // handleRequest will trigger onmessage → server processes → send() writes to SSE
-        await transport.handleRequest(syntheticReq)
+        // handleRequest triggers onmessage → server processes → send() writes to SSE.
+        // If the transport returns an error (invalid JSON-RPC, protocol error), surface it
+        // instead of always returning 202.
+        const transportResponse = await transport.handleRequest(syntheticReq)
+        if (!transportResponse.ok) {
+            return addCors(transportResponse)
+        }
+
+        // Drain the response body (transport returns an SSE stream for POST responses,
+        // but we already wrote to our own SSE stream via the overridden send())
+        await transportResponse.body?.cancel()
 
         return addCors(new Response('Accepted', { status: 202 }))
     }
