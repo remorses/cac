@@ -33,7 +33,6 @@
         "@modelcontextprotocol/sdk": "^1.25.3",
         "@sentry/browser": "^9.22.0",
         "camelcase": "^8.0.0",
-        "cloudflare-tunnel": "file:../../fumabase/cloudflare-tunnel",
         "diff": "^7.0.0",
         "dom-serializer": "^2.0.0",
         "framer-api": "^0.1.2",

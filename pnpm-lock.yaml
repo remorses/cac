@@ -696,9 +696,6 @@ importers:
       camelcase:
         specifier: ^8.0.0
         version: 8.0.0
-      cloudflare-tunnel:
-        specifier: file:../../fumabase/cloudflare-tunnel
-        version: file:../fumabase/cloudflare-tunnel
       diff:
         specifier: ^7.0.0
         version: 7.0.0
@@ -7200,14 +7197,6 @@ packages:
   clone@2.1.2:
     resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
     engines: {node: '>=0.8'}
-
-  cloudflare-tunnel@file:../fumabase/cloudflare-tunnel:
-    resolution: {directory: ../fumabase/cloudflare-tunnel, type: directory}
-    peerDependencies:
-      '@cloudflare/workers-types': '>=4'
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
 
   clsx@1.2.1:
     resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
@@ -18494,8 +18483,6 @@ snapshots:
       is-regexp: 3.1.0
 
   clone@2.1.2: {}
-
-  cloudflare-tunnel@file:../fumabase/cloudflare-tunnel: {}
 
   clsx@1.2.1: {}
 

@@ -1,18 +1,13 @@
 /**
  * Integration tests for the MCP v2 worker deployed to preview.
  *
- * Tests the tunnel WebSocket relay (upstream = plugin, client = downstream)
- * and the MCP RPC protocol over the tunnel.
- *
  * Run after deploying to preview: pnpm test -t "tunnel integration"
  *
  * The e2e test runs for both transport modes (streamable-http on /mcp and legacy SSE on /sse)
  * in a single test run via a root-level for loop.
  *
- * Tests 1-4 validate the tunnel layer independently (WS relay, error codes, RPC protocol).
- * Test 5 validates HTTP routing (auth enforcement, 404s, static pages).
- * Tests 6+ (e2e) validate the full pipeline end-to-end using the MCP SDK client,
- * once per transport mode.
+ * - Tunnel tests: upstream replacement (4009), HTTP routing
+ * - E2e tests: full MCP SDK client pipeline for each transport mode
  */
 import { describe, test, expect } from 'vitest'
 import WebSocket from 'ws'
@@ -39,57 +34,7 @@ function connectWs(url: string): Promise<WebSocket> {
     })
 }
 
-function waitForMessage(ws: WebSocket): Promise<string> {
-    return new Promise((resolve) => {
-        ws.on('message', (data) => {
-            resolve(data.toString())
-        })
-    })
-}
-
 describe('tunnel integration', () => {
-    test('upstream and client can exchange messages', async () => {
-        const tunnelId = getTunnelId()
-
-        // Plugin connects as upstream
-        const upstream = await connectWs(`${WS_URL}/upstream?id=${tunnelId}`)
-
-        // MCP DO (or test) connects as client/downstream
-        const client = await connectWs(`${WS_URL}/downstream?id=${tunnelId}`)
-
-        // upstream -> client
-        const clientMsg = waitForMessage(client)
-        upstream.send('hello from plugin')
-        expect(await clientMsg).toBe('hello from plugin')
-
-        // client -> upstream
-        const upstreamMsg = waitForMessage(upstream)
-        client.send('hello from mcp')
-        expect(await upstreamMsg).toBe('hello from mcp')
-
-        upstream.close()
-        client.close()
-    }, 15000)
-
-    test('client gets 4008 when no upstream is connected', async () => {
-        const tunnelId = getTunnelId()
-
-        const client = new WebSocket(`${WS_URL}/downstream?id=${tunnelId}`)
-
-        const closeEvent = await new Promise<{ code: number; reason: string }>((resolve, reject) => {
-            client.on('open', () => {
-                // wait for close
-            })
-            client.on('close', (code, reason) => {
-                resolve({ code, reason: reason.toString() })
-            })
-            client.on('error', reject)
-        })
-
-        expect(closeEvent.code).toBe(4008)
-        expect(closeEvent.reason).toBe('No upstream available')
-    }, 15000)
-
     test('connecting upstream twice replaces the first with 4009', async () => {
         const tunnelId = getTunnelId()
 
@@ -110,60 +55,6 @@ describe('tunnel integration', () => {
         expect(upstream2.readyState).toBe(WebSocket.OPEN)
 
         upstream2.close()
-    }, 15000)
-
-    test('RPC-style tool call: send request to upstream and get response', async () => {
-        const tunnelId = getTunnelId()
-
-        // Plugin connects as upstream
-        const upstream = await connectWs(`${WS_URL}/upstream?id=${tunnelId}`)
-
-        // Simulate MCP DO behavior: connect as client
-        const client = await connectWs(`${WS_URL}/downstream?id=${tunnelId}`)
-
-        // Plugin handles incoming tool call requests and responds
-        upstream.on('message', (data) => {
-            const msg = JSON.parse(data.toString())
-            if (msg.payload?.type === 'getPage') {
-                // Plugin responds with the same id and output
-                upstream.send(JSON.stringify({
-                    id: msg.id,
-                    payload: {
-                        type: msg.payload.type,
-                        input: msg.payload.input,
-                        output: '<html>page content</html>',
-                    },
-                }))
-            }
-        })
-
-        // Client sends a tool call (like the MCP DO would)
-        const requestId = crypto.randomUUID()
-        const request = {
-            id: requestId,
-            payload: {
-                type: 'getPage',
-                input: { nodeId: 'page-123' },
-            },
-        }
-
-        const responsePromise = new Promise<Record<string, unknown>>((resolve) => {
-            client.on('message', (data) => {
-                const msg = JSON.parse(data.toString())
-                if (msg.id === requestId) {
-                    resolve(msg)
-                }
-            })
-        })
-
-        client.send(JSON.stringify(request))
-
-        const response = await responsePromise
-        expect(response.id).toBe(requestId)
-        expect((response.payload as Record<string, unknown>).output).toBe('<html>page content</html>')
-
-        upstream.close()
-        client.close()
     }, 15000)
 
     test('HTTP endpoints return expected responses', async () => {

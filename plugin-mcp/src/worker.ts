@@ -103,8 +103,8 @@
  *   │◄──────────────────┤                    │                    │
  */
 
-import { Tunnel, handleTunnelFetch, addCors } from 'cloudflare-tunnel/src'
-import type { Attachment } from 'cloudflare-tunnel/src'
+import { Tunnel, handleTunnelFetch, addCors } from './lib/tunnel.js'
+import type { Attachment } from './lib/tunnel.js'
 import {
     ListToolsRequestSchema,
     CallToolRequestSchema,
