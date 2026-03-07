@@ -1,10 +1,110 @@
-import { McpAgent } from 'agents/mcp'
-import type {
-    OAuthHelpers,
-    AuthRequest,
-} from '@cloudflare/workers-oauth-provider'
+/**
+ * MCP Worker — lightweight replacement for the agents-based McpAgent.
+ *
+ * Architecture:
+ * - One Worker handles all HTTP routes + tunnel WebSocket upgrades.
+ * - One Durable Object (McpTunnel) per framerUserId combines:
+ *   1. WebSocket tunnel relay (inherited from cloudflare-tunnel's Tunnel class)
+ *      with hibernation support — plugin connects as upstream, zero compute when idle.
+ *   2. MCP protocol handling via @modelcontextprotocol/sdk Server +
+ *      WebStandardStreamableHTTPServerTransport (stateless, Web Standard APIs).
+ *   3. RPC-style send-and-wait for tool calls: sends to upstream plugin WS,
+ *      intercepts responses in webSocketMessage() via pendingRequests map.
+ *
+ * Why this is cheaper than the previous agents-based approach:
+ * - No SQLite tables (agents creates 5 per DO)
+ * - No outbound WebSocket (plugin connects directly to this DO)
+ * - WebSocket hibernation (DO sleeps between requests, auto-responds to pings)
+ * - 1 DO per framerUserId instead of 1 per MCP session
+ * - 1 Worker instead of 2 (no separate tunnel worker for unframer.co)
+ *
+ * Auth: query params only (?id=X&secret=Y), validated via KV-cached website API call.
+ * OAuth was removed — nobody was using it.
+ *
+ * ┌──────────────────────────────────────┐
+ * │         MCP Client (Claude, etc.)    │
+ * │                                      │
+ * │  POST /mcp?id=USER&secret=TOKEN      │
+ * └──────────────┬───────────────────────┘
+ *                │ HTTP
+ *                ▼
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │                                                              │
+ * │  Worker  (mcp.unframer.co)                                   │
+ * │                                                              │
+ * │  fetch():                                                    │
+ * │    1. Rate limit by IP                                       │
+ * │    2. Validate auth (id+secret → KV-cached website API)      │
+ * │    3. Route based on path:                                   │
+ * │                                                              │
+ * │    /_tunnel/*  → handleTunnelFetch() → DO.fetch(WS upgrade)  │
+ * │    /mcp        → DO.fetch(HTTP request)                      │
+ * │    /sse        → DO.fetch(HTTP request, rewrite to /mcp)     │
+ * │                                                              │
+ * └──────────┬─────────────────────────────────┬─────────────────┘
+ *            │                                 │
+ *            │  HTTP (tool calls)              │  WebSocket upgrade
+ *            ▼                                 ▼
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │                                                              │
+ * │  McpTunnel Durable Object  (one per framerUserId)            │
+ * │  extends Tunnel from cloudflare-tunnel library               │
+ * │                                                              │
+ * │  INHERITED from Tunnel:                                      │
+ * │  • WebSocket hibernation (zero compute when idle)            │
+ * │  • Auto ping/pong response (never wakes the DO)              │
+ * │  • acceptWebSocket() with role tags: up:ID, down:ID          │
+ * │  • Message relay: upstream ↔ downstream                      │
+ * │                                                              │
+ * │  ADDED by McpTunnel:                                         │
+ * │  • fetch() override: WS → tunnel, HTTP → MCP handler        │
+ * │  • handleMcpRequest(): MCP SDK Server + transport            │
+ * │  • sendToUpstream(): RPC via ctx.getWebSockets('up:ID')      │
+ * │  • webSocketMessage() override: intercept RPC responses      │
+ * │                                                              │
+ * │  NO SQLite. NO outbound WebSocket. NO persistent storage.    │
+ * │                                                              │
+ * └──────────────────────────────────┬───────────────────────────┘
+ *                                    │
+ *                                    │ WebSocket (hibernation-aware)
+ *                                    │ wss://mcp.unframer.co/_tunnel/upstream?id=USER
+ *                                    │ Pings auto-responded (never wakes DO)
+ *                                    ▼
+ * ┌──────────────────────────────────────┐
+ * │     Framer Plugin  (browser tab)     │
+ * │                                      │
+ * │  Connects as "upstream" WebSocket    │
+ * │  Receives RPC: {id, payload}         │
+ * │  Calls framer SDK to execute tool    │
+ * │  Sends response: {id, payload}       │
+ * └──────────────────────────────────────┘
+ *
+ * Tool call flow:
+ *
+ * Claude              Worker            McpTunnel DO            Plugin
+ *   │                   │                    │                    │
+ *   │ POST /mcp         │                    │                    │
+ *   │ {tools/call}      │                    │                    │
+ *   ├──────────────────►│                    │                    │
+ *   │                   │ validate auth      │                    │
+ *   │                   │ DO.fetch(HTTP)     │                    │
+ *   │                   ├───────────────────►│                    │
+ *   │                   │                    │ MCP SDK Server     │
+ *   │                   │                    │ sendToUpstream()   │
+ *   │                   │                    │ {id:abc, payload}  │
+ *   │                   │                    ├───────────────────►│
+ *   │                   │                    │  (DO hibernates)   │ executes tool
+ *   │                   │                    │ {id:abc, output}   │
+ *   │                   │                    │◄───────────────────┤
+ *   │                   │                    │ resolve promise    │
+ *   │                   │ HTTP response      │                    │
+ *   │                   │◄───────────────────┤                    │
+ *   │ SSE: tool result  │                    │                    │
+ *   │◄──────────────────┤                    │                    │
+ */
 
-import { createServerClient, parse, serialize } from '@supabase/ssr'
+import { Tunnel, handleTunnelFetch, addCors } from 'cloudflare-tunnel/src'
+import type { Attachment } from 'cloudflare-tunnel/src'
 import {
     ListToolsRequestSchema,
     CallToolRequestSchema,
@@ -13,55 +113,36 @@ import {
     ListResourcesRequestSchema,
     ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import { OAuthProvider } from '@cloudflare/workers-oauth-provider'
-import { createClient } from '@supabase/supabase-js'
-import * as cookie from 'cookie'
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import codeComponentsResourceMarkdown from './prompts/how-to-write-framer-code-files.md'
 import {
     codeComponentsResourceUri,
     mcpTools,
     type McpToolDefinition,
 } from './lib/schema.js'
-import { WebsocketRpc, createWebsocketHandling } from './lib/mcp-websocket.js'
-import { sleep } from './lib/utils.js'
-import { KnownError, notifyError } from './lib/errors.js'
+import type { WebsocketMessage } from './lib/mcp-websocket.js'
+import { notifyError } from './lib/errors.js'
 import dedent from 'string-dedent'
 import { toJSONSchema } from 'zod'
 import { createSpiceflowClient, type SpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
-import { Observability } from 'agents/observability'
 
-// Type for MCP props passed through OAuth or legacy auth
-interface MCPProps extends Record<string, unknown> {
-    framerUserId?: string
-    email?: string
-    secret: string
-    clientId?: string
-}
-
-type MyEnv = Env & {
-    OAUTH_PROVIDER: OAuthHelpers // your OAuth binding
-    OAUTH_KV: KVNamespace // required for provider
-    RATE_LIMITER: RateLimit // 500 requests per minute per IP
-    PUBLIC_SUPABASE_URL: string
-    PUBLIC_SUPABASE_ANON_KEY: string
-    SERVICE_SECRET: string // to authenticate requests from Framer plugin
-    WEBSITE_URL?: string // to call website API
+type McpEnv = Env & {
+    MCP_TUNNEL: DurableObjectNamespace
+    SESSION_KV: KVNamespace
+    RATE_LIMITER: RateLimit
+    SERVICE_SECRET: string
+    WEBSITE_URL?: string
     STAGE?: 'preview' | 'production'
 }
 
-// Helper to return text responses from tools
-const textResponse = (text: string) => ({
-    content: [{ type: 'text' as const, text }],
-})
-
 const html = dedent
-const framerInstructions = `Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.'`
+const framerInstructions = `Make sure the Framer plugin is open in one of your projects. Ask user to open Framer, press cmd-k and search MCP. Open the MCP plugin and try again then.`
 
-// Helper to create spiceflow client for website API
-function createWebsiteApiClient(env: MyEnv): SpiceflowClient.Create<RouteType> {
+/* ─────────────── Session validation with KV cache ─────────────── */
+
+function createWebsiteApiClient(env: McpEnv): SpiceflowClient.Create<RouteType> {
     const baseUrl = env.WEBSITE_URL || 'https://unframer.co'
     return createSpiceflowClient<RouteType>(baseUrl)
 }
@@ -79,13 +160,13 @@ async function getValidatedSession({
     secret,
     id,
 }: {
-    env: MyEnv
+    env: McpEnv
     secret: string
     id: string
 }): Promise<{ framerUserId: string; email: string | undefined } | null> {
     const cacheKey = `session-valid:${secret}`
 
-    const cached = (await env.OAUTH_KV.get(
+    const cached = (await env.SESSION_KV.get(
         cacheKey,
         'json',
     )) as CachedSessionData | null
@@ -107,659 +188,448 @@ async function getValidatedSession({
         email: data.email,
         cachedAt: Date.now(),
     }
-    await env.OAUTH_KV.put(cacheKey, JSON.stringify(cacheData), {
+    await env.SESSION_KV.put(cacheKey, JSON.stringify(cacheData), {
         expirationTtl: SESSION_CACHE_TTL,
     })
 
     return { framerUserId: cacheData.framerUserId, email: cacheData.email }
 }
 
-// Helper to create Supabase client with headers
-interface SupabaseSessionArgs {
-    request: Request
-    env: MyEnv
-    response?: Response
-}
+/* ─────────────── MCP tool helpers ─────────────── */
 
-function getSupabaseWithHeaders({
-    request,
-    env,
-    response,
-}: SupabaseSessionArgs) {
-    const cookies = parse(request.headers.get('Cookie') ?? '')
-    const headers = response?.headers
-        ? new Headers(response.headers)
-        : new Headers()
-
-    const supabase = createServerClient(
-        env.PUBLIC_SUPABASE_URL!,
-        env.PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(key) {
-                    return cookies[key]
-                },
-                set(key, value, options) {
-                    headers.append('Set-Cookie', serialize(key, value, options))
-                },
-                remove(key, options) {
-                    headers.append('Set-Cookie', serialize(key, '', options))
-                },
-            },
-            auth: {
-                detectSessionInUrl: true,
-                flowType: 'pkce',
-            },
-        },
-    )
-
-    return { supabase, headers }
-}
-
-// OAuth handler for non-authenticated requests
-const defaultHandler = {
-    async fetch(request: Request, env: MyEnv, ctx: ExecutionContext) {
-        const provider = env.OAUTH_PROVIDER
-        const url = new URL(request.url)
-
-        // Handle OAuth authorization
-        if (url.pathname === '/authorize') {
-            const oauthReq = await provider.parseAuthRequest(request)
-
-            // Store OAuth request info for later
-            const stateId = crypto.randomUUID()
-            await env.OAUTH_KV.put(
-                `oauth:${stateId}`,
-                JSON.stringify({
-                    oauthReq,
-                    timestamp: Date.now(),
-                }),
-                { expirationTtl: 600 },
-            ) // 10 minute expiration
-
-            const { supabase, headers } = getSupabaseWithHeaders({
-                request,
-                env,
-            })
-            const redirectTo = new URL('/callback', url).toString()
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-
-                options: {
-                    skipBrowserRedirect: true,
-                    queryParams: {
-                        prompt: 'select_account',
-                    },
-
-                    redirectTo,
-                },
-            })
-
-            if (error || !data?.url) {
-                notifyError(error, 'Failed to generate Google OAuth URL')
-                return new Response(
-                    'Failed to initiate OAuth. Please try again.',
-                    { status: 500 },
-                )
-            }
-
-            // Set stateId in cookie and redirect
-            // IMPORTANT: Set our oauth_state cookie AFTER Supabase has set its cookies
-            headers.append(
-                'Set-Cookie',
-                cookie.serialize('oauth_state', stateId, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'lax',
-                    maxAge: 600, // 10 minutes
-                    path: '/',
-                }),
-            )
-            headers.append('Location', data.url)
-
-            return new Response(null, {
-                status: 302,
-                headers,
-            })
-        }
-
-        // Handle OAuth callback
-        if (url.pathname === '/callback') {
-            const code = url.searchParams.get('code')
-
-            if (!code) {
-                return new Response('Missing code', { status: 400 })
-            }
-
-            // Get stateId from cookie
-            const cookies = cookie.parse(request.headers.get('Cookie') || '')
-            const stateId = cookies.oauth_state
-
-            if (!stateId) {
-                return new Response('Missing state cookie', { status: 400 })
-            }
-
-            // Retrieve stored OAuth request
-            const stored = await env.OAUTH_KV.get(`oauth:${stateId}`)
-            if (!stored) {
-                return new Response('Invalid or expired state', { status: 400 })
-            }
-
-            const { oauthReq }: { oauthReq: AuthRequest } = JSON.parse(stored)
-            await env.OAUTH_KV.delete(`oauth:${stateId}`)
-
-            // Create Supabase client with headers
-            const { supabase, headers } = getSupabaseWithHeaders({
-                request,
-                env,
-            })
-
-            // Exchange code for session
-            const { data: sessionData, error } =
-                await supabase.auth.exchangeCodeForSession(code)
-
-            if (error || !sessionData?.session) {
-                notifyError(error, 'Failed to exchange code for session')
-                return new Response(
-                    `Authentication failed${error ? `: ${error.message || error}` : ''}`,
-                    { status: 401 },
-                )
-            }
-
-            const { user, session } = sessionData
-
-            // Create MCP session using spiceflow client
-            const apiClient = createWebsiteApiClient(env)
-            const { data: sessionResult, error: sessionError } =
-                await apiClient.api.plugins.mcp.createSession.post(
-                    {
-                        supabaseUserId: user.id,
-                        email: user.email,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`,
-                        },
-                    },
-                )
-
-            // when user still has not logged in into Framer MCP
-            if (sessionError && sessionError.status === 428) {
-                return htmlForUserWithoutFramerUserId()
-            }
-            if (sessionError) {
-                return new Response(
-                    `Failed to create MCP session: ${sessionError.message}`,
-                    { status: 500 },
-                )
-            }
-
-            const { sessionToken, framerUserId } = sessionResult
-
-            const { redirectTo } = await provider.completeAuthorization({
-                request: oauthReq,
-                userId: framerUserId,
-                metadata: {
-                    email: user.email,
-                    sessionToken,
-                    framerUserId,
-                },
-                scope: oauthReq.scope || ['read', 'write'],
-
-                props: {
-                    framerUserId,
-                    email: user.email,
-                    secret: sessionToken,
-                    clientId: oauthReq.clientId,
-                } satisfies MCPProps,
-            })
-
-            // Clear the state cookie and redirect back to MCP client
-            headers.append(
-                'Set-Cookie',
-                cookie.serialize('oauth_state', '', {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'lax',
-                    maxAge: 0, // Delete cookie
-                    path: '/',
-                }),
-            )
-            headers.append('Location', redirectTo)
-
-            return new Response(null, {
-                status: 302,
-                headers,
-            })
-        }
-
-        // Handle direct resource URL access
-        if (url.pathname === new URL(codeComponentsResourceUri).pathname) {
-            return new Response(codeComponentsResourceMarkdown, {
-                headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
-            })
-        }
-
-        return new Response('Not Found', { status: 404 })
-    },
-}
-
-export class MyMCP extends McpAgent<MyEnv, {}, MCPProps> {
-    override observability = undefined
-    server = new Server(
-        {
-            name: 'Framer MCP',
-            version: '1.8.0',
-            title: 'Framer MCP, created by https://unframer.co',
-        },
-        {
-            capabilities: {
-                tools: {},
-                prompts: {},
-                resources: {},
-            },
-        },
-    )
-
-    onError(_: unknown, error?: unknown): void | Promise<void> {
-        console.error('MyMCP initialization error:', error)
-        notifyError(error, 'MyMCP onError')
-    }
-
-    async init() {
-        try {
-            const server = this.server
-            const provider = this.env.OAUTH_PROVIDER
-            // Get the framerUserId and email from the OAuth context
-            const framerUserId = this.props?.framerUserId
-            const userEmail = this.props?.email
-
-            const secret = this.props?.secret
-            if (!secret) {
-                throw new Error(`Missing MCP secret prop`)
-            }
-
-            console.log(`MCP init for ${framerUserId} (${userEmail})`)
-            // const apiClient = createWebsiteApiClient(this.env)
-            // const { data: data, error: validationError } =
-            //     await apiClient.api.plugins.mcp.validateSession.post({
-            //         sessionToken: secret,
-            //     })
-
-            // if (validationError) {
-            //     throw new Error('Invalid session')
-            // }
-
-            let ws: WebSocket | null = null
-            let isServerStopped = false
-            let idleTimeout: ReturnType<typeof setTimeout> | null = null
-            // Longer idle timeout reduces DO wake-ups between tool call bursts, saving on DO invocation + SQLite init costs
-            const idleTimeoutDelay = 30 * 1000
-            let pendingToolCalls = 0
-
-            const resetIdleTimeout = () => {
-                if (idleTimeout) {
-                    clearTimeout(idleTimeout)
-                }
-                idleTimeout = setTimeout(() => {
-                    if (pendingToolCalls > 0) {
-                        resetIdleTimeout()
-                        return
-                    }
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.close(1000, 'Idle timeout')
-                    }
-                    clientConnectedPromise = null
-                }, idleTimeoutDelay)
-            }
-
-            const env = this.env
-            const connectWebSocket = async (): Promise<WebsocketRpc> => {
-                if (isServerStopped) {
-                    throw new Error('Server is stopped')
-                }
-
-                try {
-                    const start = Date.now()
-                    const baseUrlHost =
-                        env.STAGE === 'preview'
-                            ? 'preview.unframer.co'
-                            : 'unframer.co'
-                    const upstreamUrl = `wss://${baseUrlHost}/_tunnel/client?id=${framerUserId}`
-                    ws = new WebSocket(upstreamUrl)
-
-                    // Wait for first message with timeout
-                    const rpc = await new Promise<WebsocketRpc>(
-                        (resolve, reject) => {
-                            if (!ws)
-                                throw new Error('WebSocket not initialized')
-                            // Set up 5 second timeout for first message
-                            const timeoutId = setTimeout(() => {
-                                ws?.close()
-                                reject(
-                                    new Error(
-                                        `Connection timeout: ${framerInstructions}`,
-                                    ),
-                                )
-                            }, 8000)
-
-                            let rpc: WebsocketRpc | null = null
-                            let readySentTime: number
-
-                            const handleError = (err: Event) => {
-                                clearTimeout(timeoutId)
-                                reject(err)
-                            }
-
-                            ws.addEventListener(
-                                'close',
-                                (event) => {
-                                    if (idleTimeout) {
-                                        clearTimeout(idleTimeout)
-                                        idleTimeout = null
-                                    }
-                                    clearTimeout(timeoutId)
-
-                                    clientConnectedPromise = null
-                                    if (event.code === 4008) {
-                                        reject(
-                                            new Error(
-                                                `Upstream not connected for ${framerUserId} (email: ${userEmail}), Framer MCP plugin is not running. User should login with same Google account (${userEmail}) in both ends. ${framerInstructions}`,
-                                            ),
-                                        )
-                                    } else {
-                                        reject(
-                                            new Error(
-                                                `WebSocket closed early with code ${event.code}: ${event.reason || 'No reason provided'}`,
-                                            ),
-                                        )
-                                    }
-                                },
-                                { once: true },
-                            )
-
-                            ws.addEventListener(
-                                'open',
-                                () => {
-                                    // Create RPC handler
-                                    rpc = createWebsocketHandling({ ws: ws! })
-
-                                    // Send ready message
-                                    readySentTime = Date.now()
-                                    rpc.send({
-                                        payload: { type: 'ready' },
-                                    })
-                                },
-                                {
-                                    once: true,
-                                },
-                            )
-                            const handleFirstMessage = (
-                                _event: MessageEvent,
-                            ) => {
-                                clearTimeout(timeoutId)
-                                const elapsed = Date.now() - start
-                                console.log(
-                                    `WS connected to ${framerUserId} in ${elapsed}ms`,
-                                )
-                                resolve(rpc!)
-                            }
-                            ws.addEventListener('message', handleFirstMessage)
-                            ws.addEventListener('error', handleError, {
-                                once: true,
-                            })
-
-                            ws.addEventListener('error', (err) => {
-                                console.error(
-                                    `WS error for ${framerUserId}:`,
-                                    err.type,
-                                )
-                            })
-
-                            // Reset idle timeout on any message activity
-                            ws.addEventListener('message', () => {
-                                resetIdleTimeout()
-                            })
-                        },
-                    )
-
-                    // Set up persistent event listeners
-                    // Start idle timeout on successful connection
-                    resetIdleTimeout()
-
-                    return rpc
-                } catch (error) {
-                    notifyError(error, 'connectWebSocket')
-                    // Attempt reconnection if server is not stopped
-                    // Don't auto-reconnect on error - wait for next request
-                    clientConnectedPromise = null
-
-                    throw error
-                }
-            }
-
-            let clientConnectedPromise: Promise<WebsocketRpc> | null = null
-
-            // Graceful shutdown
-            const stop = () => {
-                isServerStopped = true
-
-                // Clear any pending timeout
-                if (idleTimeout) {
-                    clearTimeout(idleTimeout)
-                    idleTimeout = null
-                }
-
-                if (
-                    ws &&
-                    (ws.readyState === WebSocket.OPEN ||
-                        ws.readyState === WebSocket.CONNECTING)
-                ) {
-                    ws.close()
-                }
-            }
-
-            server.setRequestHandler(ListToolsRequestSchema, async () => {
-                const tools = Object.entries(mcpTools).map(([name, tool]) => {
-                    const schema = toJSONSchema(tool.input) as any
-                    // Remove the $schema field as it's not needed for MCP
-                    delete schema.$schema
-                    return {
-                        name,
-                        description: tool.description,
-                        inputSchema: schema,
-                    }
-                })
-                return { tools }
-            })
-
-            server.setRequestHandler(CallToolRequestSchema, async (request) => {
-                const { name, arguments: args } = request.params
-                const tool = mcpTools[
-                    name as keyof typeof mcpTools
-                ] as McpToolDefinition
-
-                if (!tool) {
-                    throw new Error(`Unknown tool: ${name}`)
-                }
-
-                pendingToolCalls++
-                try {
-                    if (
-                        !clientConnectedPromise ||
-                        ws?.readyState === WebSocket.CLOSED
-                    ) {
-                        clientConnectedPromise = connectWebSocket()
-                    }
-
-                    const rpc = await clientConnectedPromise
-
-                    if (!rpc) {
-                        throw new Error(
-                            'Framer plugin failed to connect to MCP, no websocket client available',
-                        )
-                    }
-
-                    const reply = await rpc.send({
-                        payload: {
-                            type: name as keyof typeof mcpTools,
-                            input: (args as any) || {},
-                        },
-                    })
-
-                    const text =
-                        typeof reply === 'string'
-                            ? reply
-                            : JSON.stringify(reply, null, 2)
-                    const prefixedText = tool.outputPrefix
-                        ? `${tool.outputPrefix?.trim()}\n\n${text}`
-                        : text
-
-                    return textResponse(prefixedText)
-                } catch (error) {
-                    notifyError(error, 'MCP tool')
-                    const errorMessage =
-                        error instanceof Error ? error.message : String(error)
-                    return textResponse(`Encountered an error: ${errorMessage}`)
-                } finally {
-                    pendingToolCalls--
-                    resetIdleTimeout()
-                }
-            })
-
-            // Register prompt handlers (empty for now, but expected by MCP clients)
-            server.setRequestHandler(ListPromptsRequestSchema, async () => ({
-                prompts: [],
-            }))
-
-            server.setRequestHandler(GetPromptRequestSchema, async () => {
-                throw new Error('No prompts available')
-            })
-
-            // Register resources handlers
-            server.setRequestHandler(ListResourcesRequestSchema, async () => ({
-                resources: [
-                    {
-                        title: 'How to write Framer code components files in TypeScript',
-                        name: 'How to write Framer code components files in TypeScript',
-                        uri: codeComponentsResourceUri,
-                        description:
-                            'Prompt explaining how to write code components for Framer. ALWAYS read this resource before calling createCodeFile or updateCodeFile',
-                    },
-                ],
-            }))
-
-            server.setRequestHandler(
-                ReadResourceRequestSchema,
-                async (request) => {
-                    if (request.params.uri === codeComponentsResourceUri) {
-                        return {
-                            contents: [
-                                {
-                                    text: codeComponentsResourceMarkdown,
-                                    uri: codeComponentsResourceUri,
-                                },
-                            ],
-                        }
-                    }
-                    throw new Error(
-                        `Resource with uri ${request.params.uri} not found`,
-                    )
-                },
-            )
-        } catch (e) {
-            notifyError(e, 'mcp init')
-            throw e
-        }
-    }
-}
-
-// Export with OAuth provider wrapper
-const oauthProvider = new OAuthProvider({
-    apiHandlers: {
-        '/mcp': MyMCP.serve('/mcp'),
-    },
-    defaultHandler: defaultHandler as ExportedHandler,
-    authorizeEndpoint: '/authorize',
-    tokenEndpoint: '/token',
-    // accessTokenTTL: 60 * 60 * 24 * 7,
-
-    clientRegistrationEndpoint: '/register',
+const textResponse = (text: string) => ({
+    content: [{ type: 'text' as const, text }],
 })
 
-const handler = {
-    async fetch(request: Request, env: MyEnv, ctx: ExecutionContext) {
-        const url = new URL(request.url)
+/* ─────────────── McpTunnel Durable Object ─────────────── */
 
-        // Rate limit by IP: 500 requests per minute
-        const ip = request.headers.get('cf-connecting-ip') || 'unknown'
-        const { success } = await env.RATE_LIMITER.limit({ key: ip })
-        if (!success) {
-            return new Response('Rate limit exceeded', { status: 429 })
+/**
+ * Extends the generic Tunnel DO with MCP protocol handling.
+ *
+ * - Plugin connects as upstream WebSocket (hibernation-aware, zero compute when idle).
+ * - MCP requests arrive as plain HTTP (POST /mcp), forwarded by the Worker.
+ * - Tool calls are sent to the upstream plugin WS as RPC messages and awaited.
+ * - webSocketMessage() intercepts upstream responses matching pending RPC IDs.
+ */
+export class McpTunnel extends Tunnel<McpEnv> {
+    /**
+     * Pending RPC requests waiting for a response from the upstream plugin.
+     * Key is the message id, value is the resolve/reject/timeout for the promise.
+     */
+    private pendingRequests = new Map<
+        string,
+        {
+            resolve: (value: unknown) => void
+            reject: (error: Error) => void
+            timeout: ReturnType<typeof setTimeout>
+        }
+    >()
+
+    /**
+     * Active legacy SSE streams keyed by sessionId.
+     * GET /sse creates the stream, POST /sse/message writes responses back through it.
+     */
+    private sseStreams = new Map<
+        string,
+        {
+            writer: WritableStreamDefaultWriter<Uint8Array>
+            encoder: TextEncoder
+        }
+    >()
+
+    override async fetch(req: Request): Promise<Response> {
+        // WebSocket upgrade → delegate to Tunnel base (handles upstream/downstream/multiplexer)
+        if (req.headers.get('Upgrade') === 'websocket') {
+            return super.fetch(req)
         }
 
-        // https://mcp.preview.unframer.co/htmlForUserWithoutFramerUserId
-        // http://localhost:8787/htmlForUserWithoutFramerUserId
-        if (url.pathname === '/htmlForUserWithoutFramerUserId') {
-            return htmlForUserWithoutFramerUserId()
+        const url = new URL(req.url)
+
+        // Legacy SSE transport: GET /sse opens the stream, POST /sse/message sends messages
+        if (url.pathname === '/sse' && req.method === 'GET') {
+            return this.handleSseGet(req)
+        }
+        if (url.pathname === '/sse/message' && req.method === 'POST') {
+            return this.handleSseMessage(req)
         }
 
-        // Legacy SSE transport with query-based auth
-        if (url.pathname === '/sse' || url.pathname === '/sse/message') {
-            const id = url.searchParams.get('id')
-            const secret = url.searchParams.get('secret')
+        // Streamable HTTP transport (POST /mcp, GET /mcp, etc.)
+        return this.handleMcpRequest(req)
+    }
 
-            if (!id || !secret) {
-                return new Response('Invalid session', { status: 401 })
-            }
-
-            const sessionData = await getValidatedSession({ env, secret, id })
-            if (!sessionData) {
-                return new Response('Invalid session', { status: 401 })
-            }
-
-            ctx.props = {
-                framerUserId: sessionData.framerUserId,
-                secret,
-                email: sessionData.email,
-            } satisfies MCPProps
-
-            return MyMCP.serveSSE('/sse').fetch(request, env, ctx)
-        }
-
-        // HTTP Streamable transport with query-based auth (bypass OAuth)
-        if (url.pathname === '/mcp' || url.pathname.startsWith('/mcp')) {
-            const id = url.searchParams.get('id')
-            const secret = url.searchParams.get('secret')
-
-            if (id && secret) {
-                const sessionData = await getValidatedSession({
-                    env,
-                    secret,
-                    id,
-                })
-                if (!sessionData) {
-                    return new Response('Invalid session', { status: 401 })
+    /**
+     * Intercept upstream (plugin) messages: if it matches a pending RPC request,
+     * resolve the promise instead of relaying to downstream clients.
+     */
+    override async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
+        if (typeof message === 'string') {
+            const attachment = ws.deserializeAttachment() as Attachment | undefined
+            if (attachment?.role === 'up') {
+                let parsed: WebsocketMessage | undefined
+                try {
+                    parsed = JSON.parse(message)
+                } catch {
+                    // not JSON, fall through to tunnel relay
                 }
 
-                ctx.props = {
-                    framerUserId: sessionData.framerUserId,
-                    secret,
-                    email: sessionData.email,
-                } satisfies MCPProps
+                // Echo 'ready' back to upstream so the plugin sets isConnected = true.
+                // In the old architecture, a downstream MCP client would send 'ready' which got
+                // relayed to the upstream plugin. Now MCP requests come as HTTP, so we echo it here.
+                if (parsed?.payload?.type === 'ready' || (parsed as Record<string, unknown>)?.type === 'ready') {
+                    ws.send(JSON.stringify({ payload: { type: 'ready' } }))
+                    return
+                }
 
-                return MyMCP.serve('/mcp', { binding: 'MCP_OBJECT' }).fetch(
-                    request,
-                    env,
-                    ctx,
-                )
+                if (parsed?.id && this.pendingRequests.has(parsed.id)) {
+                    const pending = this.pendingRequests.get(parsed.id)!
+                    this.pendingRequests.delete(parsed.id)
+                    clearTimeout(pending.timeout)
+
+                    if (parsed.error) {
+                        pending.reject(new Error(parsed.error))
+                    } else {
+                        pending.resolve(parsed.payload?.output ?? null)
+                    }
+                    return // consumed, don't relay to other downstream clients
+                }
             }
-            // Fall through to OAuth provider for token-based auth
         }
 
-        return await oauthProvider.fetch(request, env, ctx)
-    },
+        // Not a pending RPC response → normal tunnel relay
+        return super.webSocketMessage(ws, message)
+    }
+
+    /**
+     * When upstream closes, reject all pending requests so callers don't hang.
+     */
+    override async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean) {
+        const attachment = ws.deserializeAttachment() as Attachment | undefined
+        if (attachment?.role === 'up') {
+            for (const [id, pending] of this.pendingRequests) {
+                clearTimeout(pending.timeout)
+                pending.reject(new Error(`Plugin disconnected (code ${code})`))
+            }
+            this.pendingRequests.clear()
+        }
+
+        return super.webSocketClose(ws, code, reason, wasClean)
+    }
+
+    /**
+     * Legacy SSE transport: GET /sse
+     *
+     * Opens an SSE stream and sends an `event: endpoint` with the POST URL.
+     * The SSEClientTransport from the MCP SDK connects here first, then
+     * POSTs JSON-RPC messages to the endpoint URL. Responses flow back
+     * through this SSE stream.
+     *
+     * Protocol (from MCP SSE transport spec):
+     * 1. Client GET /sse → server responds with text/event-stream
+     * 2. Server sends: event: endpoint\ndata: /sse/message?sessionId=X\n\n
+     * 3. Client POST /sse/message?sessionId=X with JSON-RPC body
+     * 4. Server sends: event: message\ndata: {jsonrpc response}\n\n
+     */
+    private handleSseGet(req: Request): Response {
+        const sessionId = crypto.randomUUID()
+        const { readable, writable } = new TransformStream<Uint8Array>()
+        const writer = writable.getWriter()
+        const encoder = new TextEncoder()
+
+        // Store the stream so POST /sse/message can write responses to it
+        this.sseStreams.set(sessionId, { writer, encoder })
+
+        // Build the endpoint URL: same origin, path = /sse/message, with sessionId + original auth params
+        const url = new URL(req.url)
+        url.pathname = '/sse/message'
+        url.searchParams.set('sessionId', sessionId)
+        const endpointPath = url.pathname + url.search
+
+        // Send the endpoint event immediately (tells the client where to POST)
+        const endpointMessage = `event: endpoint\ndata: ${endpointPath}\n\n`
+        writer.write(encoder.encode(endpointMessage))
+
+        return addCors(new Response(readable, {
+            headers: {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+            },
+        }))
+    }
+
+    /**
+     * Legacy SSE transport: POST /sse/message?sessionId=X
+     *
+     * Receives a JSON-RPC message, creates a fresh MCP Server to handle it,
+     * and sends responses back through the SSE stream opened by GET /sse.
+     * Returns 202 Accepted (responses go via SSE, not the POST response body).
+     */
+    private async handleSseMessage(req: Request): Promise<Response> {
+        const url = new URL(req.url)
+        const sessionId = url.searchParams.get('sessionId')
+        if (!sessionId) {
+            return addCors(new Response('Missing sessionId', { status: 400 }))
+        }
+
+        const sseStream = this.sseStreams.get(sessionId)
+        if (!sseStream) {
+            return addCors(new Response('Session not found or SSE stream closed', { status: 404 }))
+        }
+
+        const framerUserId = url.searchParams.get('id') || 'unknown'
+
+        let rawMessage: unknown
+        try {
+            rawMessage = await req.json()
+        } catch {
+            return addCors(new Response('Invalid JSON', { status: 400 }))
+        }
+
+        // Create a fresh MCP Server + transport to handle this message.
+        // We use a custom transport that writes responses to the SSE stream
+        // instead of the HTTP response body.
+        const server = new Server(
+            {
+                name: 'Framer MCP',
+                version: '1.8.0',
+                title: 'Framer MCP, created by https://unframer.co',
+            },
+            {
+                capabilities: {
+                    tools: {},
+                    prompts: {},
+                    resources: {},
+                },
+            },
+        )
+
+        this.registerMcpHandlers(server, framerUserId)
+
+        const transport = new WebStandardStreamableHTTPServerTransport({
+            sessionIdGenerator: undefined,
+            enableJsonResponse: false,
+        })
+
+        await server.connect(transport)
+
+        // Override the transport's send to write SSE events to our stored stream
+        const originalSend = transport.send.bind(transport)
+        transport.send = async (message, options) => {
+            // Write the message as an SSE event to the GET /sse stream
+            const { writer, encoder } = sseStream
+            const sseEvent = `event: message\ndata: ${JSON.stringify(message)}\n\n`
+            try {
+                await writer.write(encoder.encode(sseEvent))
+            } catch {
+                // SSE stream closed, clean up
+                this.sseStreams.delete(sessionId)
+            }
+            // Also call original send (which is a no-op for the POST response since we return 202)
+            return originalSend(message, options)
+        }
+
+        // Feed the message to the transport as if it were a POST request
+        // Build a synthetic request with proper headers for WorkerTransport
+        const syntheticReq = new Request(req.url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json, text/event-stream',
+            },
+            body: JSON.stringify(rawMessage),
+        })
+
+        // handleRequest will trigger onmessage → server processes → send() writes to SSE
+        await transport.handleRequest(syntheticReq)
+
+        return addCors(new Response('Accepted', { status: 202 }))
+    }
+
+    /**
+     * Handle an MCP HTTP request using the MCP SDK Server + WorkerTransport.
+     * Creates a fresh Server + transport per request (stateless mode).
+     *
+     * WorkerTransport (from agents/mcp) handles both Streamable HTTP (POST)
+     * and SSE GET streams on the same endpoint, with proper CORS.
+     */
+    private async handleMcpRequest(req: Request): Promise<Response> {
+        const url = new URL(req.url)
+        // The framerUserId is passed as the 'id' search param by the worker
+        const framerUserId = url.searchParams.get('id') || 'unknown'
+
+        const server = new Server(
+            {
+                name: 'Framer MCP',
+                version: '1.8.0',
+                title: 'Framer MCP, created by https://unframer.co',
+            },
+            {
+                capabilities: {
+                    tools: {},
+                    prompts: {},
+                    resources: {},
+                },
+            },
+        )
+
+        this.registerMcpHandlers(server, framerUserId)
+
+        const transport = new WebStandardStreamableHTTPServerTransport({
+            sessionIdGenerator: undefined,
+            enableJsonResponse: false,
+        })
+
+        await server.connect(transport)
+
+        return transport.handleRequest(req)
+    }
+
+    /**
+     * Register all MCP protocol handlers on the server instance.
+     * Tool calls are forwarded to the upstream plugin WebSocket via sendToUpstream().
+     */
+    private registerMcpHandlers(server: Server, framerUserId: string) {
+        server.setRequestHandler(ListToolsRequestSchema, async () => {
+            const tools = Object.entries(mcpTools).map(([name, tool]) => {
+                const schema = toJSONSchema(tool.input) as Record<string, unknown>
+                delete schema.$schema
+                return {
+                    name,
+                    description: tool.description,
+                    inputSchema: schema,
+                }
+            })
+            return { tools }
+        })
+
+        server.setRequestHandler(CallToolRequestSchema, async (request) => {
+            const { name, arguments: args } = request.params
+            const tool = mcpTools[
+                name as keyof typeof mcpTools
+            ] as McpToolDefinition
+
+            if (!tool) {
+                throw new Error(`Unknown tool: ${name}`)
+            }
+
+            try {
+                const reply = await this.sendToUpstream({
+                    framerUserId,
+                    payload: {
+                        type: name as keyof typeof mcpTools,
+                        input: (args || {}) as never,
+                    },
+                    timeout: 1000 * 30,
+                })
+
+                const text =
+                    typeof reply === 'string'
+                        ? reply
+                        : JSON.stringify(reply, null, 2)
+                const prefixedText = tool.outputPrefix
+                    ? `${tool.outputPrefix.trim()}\n\n${text}`
+                    : text
+
+                return textResponse(prefixedText)
+            } catch (error) {
+                notifyError(error, 'MCP tool')
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error)
+                return textResponse(`Encountered an error: ${errorMessage}`)
+            }
+        })
+
+        server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+            prompts: [],
+        }))
+
+        server.setRequestHandler(GetPromptRequestSchema, async () => {
+            throw new Error('No prompts available')
+        })
+
+        server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+            resources: [
+                {
+                    title: 'How to write Framer code components files in TypeScript',
+                    name: 'How to write Framer code components files in TypeScript',
+                    uri: codeComponentsResourceUri,
+                    description:
+                        'Prompt explaining how to write code components for Framer. ALWAYS read this resource before calling createCodeFile or updateCodeFile',
+                },
+            ],
+        }))
+
+        server.setRequestHandler(
+            ReadResourceRequestSchema,
+            async (request) => {
+                if (request.params.uri === codeComponentsResourceUri) {
+                    return {
+                        contents: [
+                            {
+                                text: codeComponentsResourceMarkdown,
+                                uri: codeComponentsResourceUri,
+                            },
+                        ],
+                    }
+                }
+                throw new Error(
+                    `Resource with uri ${request.params.uri} not found`,
+                )
+            },
+        )
+    }
+
+    /**
+     * Send an RPC message to the upstream plugin WebSocket and wait for the response.
+     * Uses the same WebsocketMessage protocol as plugin-websocket.ts.
+     *
+     * The upstream plugin is connected via ctx.getWebSockets('up:${framerUserId}').
+     * When the plugin responds, webSocketMessage() intercepts it by matching the message id
+     * and resolves the pending promise.
+     */
+    private sendToUpstream({
+        framerUserId,
+        payload,
+        timeout = 1000 * 10,
+    }: {
+        framerUserId: string
+        payload: WebsocketMessage['payload']
+        timeout?: number
+    }): Promise<unknown> {
+        const upstreams = this.ctx.getWebSockets(`up:${framerUserId}`)
+        if (upstreams.length === 0) {
+            return Promise.reject(
+                new Error(
+                    `Framer plugin not connected for user ${framerUserId}. ${framerInstructions}`,
+                ),
+            )
+        }
+
+        const upstream = upstreams[0]
+        const id = crypto.randomUUID()
+        const message: WebsocketMessage = { id, payload }
+
+        return new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+                this.pendingRequests.delete(id)
+                reject(new Error(`Tool call timed out after ${timeout}ms`))
+            }, timeout)
+
+            this.pendingRequests.set(id, { resolve, reject, timeout: timeoutId })
+
+            try {
+                upstream.send(JSON.stringify(message))
+            } catch (error) {
+                this.pendingRequests.delete(id)
+                clearTimeout(timeoutId)
+                reject(new Error('Failed to send message to Framer plugin', { cause: error }))
+            }
+        })
+    }
 }
+
+/* ─────────────── Worker fetch handler ─────────────── */
+
 function htmlForUserWithoutFramerUserId() {
     return new Response(
         html`
@@ -862,4 +732,94 @@ function htmlForUserWithoutFramerUserId() {
     )
 }
 
-export default handler
+export default {
+    async fetch(request: Request, env: McpEnv, ctx: ExecutionContext) {
+        const url = new URL(request.url)
+
+        // CORS preflight
+        if (request.method === 'OPTIONS') {
+            return addCors(new Response(null, { status: 204 }))
+        }
+
+        // Rate limit by IP
+        const ip = request.headers.get('cf-connecting-ip') || 'unknown'
+        const { success } = await env.RATE_LIMITER.limit({ key: ip })
+        if (!success) {
+            return new Response('Rate limit exceeded', { status: 429 })
+        }
+
+        // Static HTML page for users without Framer plugin
+        if (url.pathname === '/htmlForUserWithoutFramerUserId') {
+            return htmlForUserWithoutFramerUserId()
+        }
+
+        // Tunnel WebSocket routes: plugin connects here as upstream
+        // Rewrite to use our McpTunnel DO instead of a separate tunnel worker
+        if (url.pathname.startsWith('/_tunnel/')) {
+            const tunnelResponse = handleTunnelFetch({
+                req: request,
+                doNamespace: env.MCP_TUNNEL,
+            })
+            if (tunnelResponse) {
+                return tunnelResponse
+            }
+        }
+
+        // MCP Streamable HTTP transport
+        if (url.pathname === '/mcp' || url.pathname.startsWith('/mcp')) {
+            const id = url.searchParams.get('id')
+            const secret = url.searchParams.get('secret')
+
+            if (!id || !secret) {
+                return addCors(new Response('Missing id and secret query parameters', { status: 401 }))
+            }
+
+            const sessionData = await getValidatedSession({ env, secret, id })
+            if (!sessionData) {
+                return addCors(new Response('Invalid session', { status: 401 }))
+            }
+
+            // Route to the McpTunnel DO for this user
+            const doId = env.MCP_TUNNEL.idFromName(sessionData.framerUserId)
+            const stub = env.MCP_TUNNEL.get(doId)
+            // Forward the request to the DO, keeping id param so DO knows the framerUserId
+            const doUrl = new URL(request.url)
+            doUrl.searchParams.set('id', sessionData.framerUserId)
+            const doResponse = await stub.fetch(new Request(doUrl.toString(), request))
+            return addCors(doResponse)
+        }
+
+        // Legacy SSE transport: GET /sse opens SSE stream, POST /sse/message sends messages
+        if (url.pathname === '/sse' || url.pathname === '/sse/message') {
+            const id = url.searchParams.get('id')
+            const secret = url.searchParams.get('secret')
+
+            if (!id || !secret) {
+                return addCors(new Response('Missing id and secret query parameters', { status: 401 }))
+            }
+
+            const sessionData = await getValidatedSession({ env, secret, id })
+            if (!sessionData) {
+                return addCors(new Response('Invalid session', { status: 401 }))
+            }
+
+            // Route to the McpTunnel DO — keep /sse or /sse/message path intact
+            // so the DO can handle the legacy SSE protocol (endpoint event + message POST)
+            const doId = env.MCP_TUNNEL.idFromName(sessionData.framerUserId)
+            const stub = env.MCP_TUNNEL.get(doId)
+            const doUrl = new URL(request.url)
+            doUrl.searchParams.set('id', sessionData.framerUserId)
+            const doResponse = await stub.fetch(new Request(doUrl.toString(), request))
+            return addCors(doResponse)
+        }
+
+        // Direct resource URL access
+        if (url.pathname === new URL(codeComponentsResourceUri).pathname) {
+            return new Response(codeComponentsResourceMarkdown, {
+                headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
+            })
+        }
+
+        return addCors(new Response('Not Found', { status: 404 }))
+    },
+}

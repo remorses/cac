@@ -1,10 +1,29 @@
 /**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
+ * Framer MCP v2 — lightweight worker + tunnel DO (no agents package).
+ * Uses new DO class McpTunnel (old MyMCP DOs stay untouched and can be cleaned up separately).
+ *
+ * Production deployment steps (run in order):
+ *
+ * Step 1 — Deploy fumabase tunnel to prod (removes unframer.co routes):
+ *   cd /Users/morse/Documents/GitHub/fumabase/cloudflare-tunnel && pnpm deployment:prod
+ *   (already committed: unframer.co/_tunnel/* and mcp.unframer.co/_tunnel/* routes removed)
+ *
+ * Step 2 — Deploy this MCP worker to prod (takes over those routes):
+ *   cd /Users/morse/Documents/GitHub/unframer-private/plugin-mcp && pnpm deployment:prod
+ *   This deploys framer-mcp-preview with McpTunnel DO + unframer.co/_tunnel/* route.
+ *
+ * Step 3 — Verify:
+ *   - Open Framer plugin in a project, check green dot (plugin WS connects via unframer.co/_tunnel)
+ *   - Use MCP client (Claude/Cursor) with mcp.unframer.co/mcp URL, call a tool
+ *   - No plugin rebuild needed — same wss://unframer.co/_tunnel/upstream URL as before
+ *
+ * Step 4 — Cleanup:
+ *   - Delete old framer-mcp-v2 worker from Cloudflare dashboard (leftover test worker)
+ *   - Remove TODO comments from this file and fumabase wrangler.jsonc
  */
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "workers_dev": true, // <— this forces a Worker deploy to workers.dev
+    "workers_dev": true,
 
     "name": "framer-mcp-preview",
     "main": "src/worker.ts",
@@ -15,12 +34,17 @@
             "new_sqlite_classes": ["MyMCP"],
             "tag": "v1",
         },
+        {
+            "new_classes": ["McpTunnel"],
+            "deleted_classes": ["MyMCP"],
+            "tag": "v2",
+        },
     ],
     "durable_objects": {
         "bindings": [
             {
-                "class_name": "MyMCP",
-                "name": "MCP_OBJECT",
+                "class_name": "McpTunnel",
+                "name": "MCP_TUNNEL",
             },
         ],
     },
@@ -36,7 +60,7 @@
     ],
     "kv_namespaces": [
         {
-            "binding": "OAUTH_KV",
+            "binding": "SESSION_KV",
             "id": "df3f251b15b24a79bd8884a790386ba8",
         },
     ],
@@ -45,6 +69,12 @@
             "zone_name": "unframer.co",
             "pattern": "mcp.unframer.co",
             "custom_domain": true,
+        },
+        // Plugin connects to wss://unframer.co/_tunnel/upstream — handle it here
+        // so the upstream WS lands in the same McpTunnel DO that handles MCP requests.
+        {
+            "pattern": "unframer.co/_tunnel/*",
+            "zone_name": "unframer.co",
         },
     ],
     "rules": [
@@ -86,6 +116,10 @@
                     "pattern": "mcp.preview.unframer.co",
                     "custom_domain": true,
                 },
+                {
+                    "pattern": "preview.unframer.co/_tunnel/*",
+                    "zone_name": "unframer.co",
+                },
             ],
             "ratelimits": [
                 {
@@ -99,15 +133,15 @@
             ],
             "kv_namespaces": [
                 {
-                    "binding": "OAUTH_KV",
+                    "binding": "SESSION_KV",
                     "id": "93005a9f4a064b809763718cac256a7d",
                 },
             ],
             "durable_objects": {
                 "bindings": [
                     {
-                        "class_name": "MyMCP",
-                        "name": "MCP_OBJECT",
+                        "class_name": "McpTunnel",
+                        "name": "MCP_TUNNEL",
                     },
                 ],
             },
