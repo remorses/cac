@@ -216,6 +216,12 @@ For nodes that support links:
 - **link**: URL (e.g., "https://example.com") or page path (e.g., "/about")
 - **linkOpenInNewTab**: Boolean true/false
 
+For component instance **Link controls** (custom props from code components), link can also be a JSON object to target a section on a specific page:
+
+- **link**: {"type":"webPage","webPageId":"<pageNodeId>","scrollSection":{"targetNodeId":"<sectionNodeId>"}}
+
+Use getProjectXml / getNodeXml to find valid webPageId and section targetNodeId values.
+
 ### SVG Node Attributes
 
 For SVG nodes:
@@ -251,7 +257,9 @@ Component instances support all common node attributes (opacity, visible, locked
     <Page nodeId="AO3zOhC8z" path="/page-3" />
   </Pages>
   <!-- Design pages for components, prototypes, and explorations. Use createPage with type="design" to add new ones -->
-  <DesignPages />
+  <DesignPages>
+    <DesignPage nodeId="Rop1_cYbh" name="MCP link test page 99721" />
+  </DesignPages>
   <!-- Reusable components. Use getNodeXml with a component nodeId to see its structure -->
   <Components>
     <Component nodeId="zQ4rhDKqX" name="Button" />
@@ -293,6 +301,7 @@ Component instances support all common node attributes (opacity, visible, locked
     <CodeComponent codeFileId="wGSFmvV" path="Workshop/PoemRectangle.tsx" />
     <CodeComponent codeFileId="rEK9E0A" path="RedRectangle.tsx" />
     <CodeComponent codeFileId="x57bFIW" path="Slots.tsx" />
+    <CodeComponent codeFileId="j9FVLEb" path="mcp_link_control_test_99721.tsx" />
   </CodeComponents>
   <!-- Code override files that modify component behavior. Use readCodeFile to see the code -->
   <CodeOverrides />

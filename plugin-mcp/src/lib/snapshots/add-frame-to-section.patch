@@ -1,18 +1,18 @@
 Successfully updated:
-Created Frame node XCP07YX94
-Created Frame node RfQ2aGHKr
-Created Frame node QBfyITnaX
-Updated attributes for node XCP07YX94
-Updated attributes for node RfQ2aGHKr
-Updated attributes for node QBfyITnaX
-Reordered node RfQ2aGHKr within parent XCP07YX94 to index 0
+Created Frame node VX8gqCAJU
+Created Frame node lkFg_gITU
+Created Frame node m3ieov50V
+Updated attributes for node VX8gqCAJU
+Updated attributes for node lkFg_gITU
+Updated attributes for node m3ieov50V
+Reordered node lkFg_gITU within parent VX8gqCAJU to index 0
 
 XML Changes:
 Index: node.xml
 ===================================================================
 --- node.xml	Before
 +++ node.xml	After
-@@ -548,40 +548,71 @@
+@@ -550,40 +550,71 @@
                stackDistribution="center"
                stackAlignment="center"
            >
@@ -34,7 +34,7 @@ Index: node.xml
               />
            </Stack>
 +          <Stack
-+              nodeId="XCP07YX94"
++              nodeId="VX8gqCAJU"
 +              width="100%"
 +              height="200px"
 +              <!-- background color string or project color style path (if starts with /) -->
@@ -48,7 +48,7 @@ Index: node.xml
 +              stackAlignment="center"
 +          >
 +            <Frame
-+                nodeId="RfQ2aGHKr"
++                nodeId="lkFg_gITU"
 +                width="100px"
 +                height="100px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -56,7 +56,7 @@ Index: node.xml
 +                borderRadius="8px"
 +             />
 +            <Frame
-+                nodeId="QBfyITnaX"
++                nodeId="m3ieov50V"
 +                width="150px"
 +                height="80px"
 +                <!-- background color string or project color style path (if starts with /) -->
@@ -84,6 +84,61 @@ Index: node.xml
                componentId="zQ4rhDKqX"
                variant="anmz3_Hx4"
                XNZ6TQLVf="Read the Docs"
+@@ -3898,36 +3929,42 @@
+       width="fit-content"
+       height="fit-content"
+       top="0px"
+       left="0px"
+       font="Inter"
+       textTruncation="2"
+   >
+     Truncated Text that is long enough to be truncated
+   </TruncatedTextThatIsLongEnoughToBeTruncated>
+ </Frame>
+ <Frame
+     nodeId="yKtdVfGM5"
+     position="absolute"
+     width="100px"
+     height="100px"
+     top="0px"
+     left="0px"
+     <!-- background color string or project color style path (if starts with /) -->
+     backgroundColor="rgb(200, 200, 200)"
+  />
+-<Stack
+-    nodeId="xewAIW2EI"
++<Frame
++    nodeId="uDmkNrg_V"
+     position="absolute"
+-    width="400px"
+-    height="300px"
++    width="200px"
++    height="200px"
+     top="0px"
+     left="0px"
+     <!-- background color string or project color style path (if starts with /) -->
+-    backgroundColor="rgb(240, 240, 240)"
+-    layout="stack"
+-    gap="16px"
+-    padding="20px"
+-    stackDirection="vertical"
+-    stackDistribution="center"
+-    stackAlignment="center"
+- />
++    backgroundColor="rgb(200, 200, 200)"
++>
++  <TruncatedTextThatIsLongEnoughToBeTruncated
++      nodeId="I3ywfKHsz"
++      position="absolute"
++      width="fit-content"
++      height="fit-content"
++      top="0px"
++      left="0px"
++      font="Inter"
++  >
++    Truncated Text that is long enough to be truncated
++  </TruncatedTextThatIsLongEnoughToBeTruncated>
++</Frame>
 
 
 Note: Set zoomIntoView=false if you want to use Framer app while MCP is working.
