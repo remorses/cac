@@ -2,7 +2,7 @@
   "mcpServers": {
     "framer": {
       "type": "http",
-      "url": "https://mcp.preview.unframer.co/sse?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ"
+      "url": "https://mcp.preview.unframer.co/mcp?id=598f176d590e612e9b6bcaebb54abb0a8763c6f54ba5b9c136690ff9ad2400cc&secret=FpGeQQcnvd9CpFvZwEdONuAjEX7c6AwJ"
     }
   }
 }
