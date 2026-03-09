@@ -1,7 +1,7 @@
 ---
 title: 'Connecting Framer MCP Server across Developer Tools'
 url: 'https://localhost:8040/guides/connect-framer-mcp?userId=123&secret=abc'
-description: 'Quick reference for integrating https://mcp.unframer.co/sse with popular AI‑assisted editors and the OpenAI Responses API.'
+description: 'Quick reference for integrating https://mcp.unframer.co/mcp with popular AI‑assisted editors and the OpenAI Responses API.'
 ---
 
 import { CodeBlock, InstallInCursorButton } from './_mdx'
@@ -16,7 +16,7 @@ import { CodeBlock, InstallInCursorButton } from './_mdx'
 
 Run the following command to automatically install Framer MCP to your preferred AI client:
 
-export const installMcpCommand = `npx -y @playwriter/install-mcp --oauth no "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+export const installMcpCommand = `npx -y @playwriter/install-mcp --oauth no "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"`
 
 <CodeBlock title='Terminal' language='bash'>
     {installMcpCommand}
@@ -39,8 +39,8 @@ Or configure manually:
 export const cursorCode = `{
   "mcpServers": {
     "framer": {
-      "type": "sse",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+      "type": "streamableHttp",
+      "url": "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"
     }
   }
 }`
@@ -62,7 +62,7 @@ export const cursorCode = `{
 
 Use the following command to add Framer MCP when calling Claude cli from the current working directory
 
-export const claudeCliCommand = `claude mcp add --transport sse -s project framer "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+export const claudeCliCommand = `claude mcp add --transport http -s project framer "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"`
 
 > IMPORTANT! You MUST use the quotes around the url or Claude will incorrectly miss some query params!
 
@@ -75,8 +75,8 @@ This generates the following file:
 export const claudeMcpConfig = `{
   "mcpServers": {
     "framer": {
-      "type": "sse",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+      "type": "http",
+      "url": "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"
     }
   }
 }`
@@ -101,9 +101,7 @@ export const claudeAppMcpConfig = `{
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcp.unframer.co/sse?id=$userId&secret=$secret",
-        "--transport",
-        "sse-only"
+        "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"
       ]
     }
   }
@@ -125,7 +123,7 @@ export const opencodeConfig = `
   "mcp": {
     "framer": {
       "type": "remote",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret",
+      "url": "https://mcp.unframer.co/mcp?id=$userId&secret=$secret",
       "enabled": true
     }
   }
@@ -146,7 +144,7 @@ export const opencodeConfig = `
 2. Name: _Framer_.
 3. Copy paste the URL below
     <CodeBlock title='' language='text'>
-        {`https://mcp.unframer.co/sse?id=$userId&secret=$secret`}
+        {`https://mcp.unframer.co/mcp?id=$userId&secret=$secret`}
     </CodeBlock>
 4. **Save** → **Enable**.
 
@@ -165,9 +163,7 @@ If you have a Max subscription you can follow the steps above to add the MCP in 
 export const zedConfig = `{
   "context_servers": {
     "framer": {
-      "source": "custom",
-      "type": "sse",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+      "url": "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"
     }
   }
 }`
@@ -186,13 +182,13 @@ Reload the Agent panel; green dot == connected.
 
 1. Ensure VS Code ≥ 1.102 & Copilot subscription.
 2. **⌘⇧P / Ctrl+Shift+P** → **MCP: Add Server**.
-3. Paste the SSE URL. A `.vscode/mcp.json` is created:
+3. Paste the URL. A `.vscode/mcp.json` is created:
 
 export const vscodeConfig = `{
   "servers": {
     "framer": {
-      "type": "sse",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+      "type": "http",
+      "url": "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"
     }
   }
 }`
@@ -213,7 +209,7 @@ export const agentCode = `import { Agent, hostedMcpTool } from "@openai/agents";
 
 const framerTool = hostedMcpTool({
 name: "framer",
-serverUrl: \`https://mcp.unframer.co/sse?id=\${process.env.USER_ID}&secret=\${process.env.SECRET}\`,
+serverUrl: \`https://mcp.unframer.co/mcp?id=\${process.env.USER_ID}&secret=\${process.env.SECRET}\`,
 });
 
 const agent = new Agent({
@@ -240,7 +236,7 @@ export const codexCliConfig = `
 
 [mcp_servers.framer]
 command = "npx"
-args = ["-y", "mcp-remote", "https://mcp.unframer.co/sse?id=$userId&secret=$secret", "--transport", "sse-only"]
+args = ["-y", "mcp-remote", "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"]
 `
 
 <CodeBlock title='~/.codex/config.toml' language='toml'>
@@ -266,7 +262,7 @@ Then update your `~/.codex/config.toml` to use `mcp-remote` directly:
 
 export const codexCliConfigAlt = `[mcp_servers.framer]
 command = "mcp-remote"
-args = ["https://mcp.unframer.co/sse?id=$userId&secret=$secret", "--transport", "sse-only"]`
+args = ["https://mcp.unframer.co/mcp?id=$userId&secret=$secret"]`
 
 <CodeBlock title='~/.codex/config.toml (alternative)' language='toml'>
     {codexCliConfigAlt}
@@ -283,8 +279,8 @@ For VSCode's built-in MCP support:
 export const codexVscodeConfig = `{
   "servers": {
     "framer": {
-      "type": "sse",
-      "url": "https://mcp.unframer.co/sse?id=$userId&secret=$secret"
+      "type": "http",
+      "url": "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"
     }
   }
 }`
@@ -299,7 +295,7 @@ export const codexVscodeConfig = `{
 
 > **Note**: Requires VS Code 1.99.0 or newer. Enable MCP support with `chat.mcp.enabled` setting (enabled by default).
 
-{/* Auth: Supported (query-param via SSE). Native VS Code MCP infrastructure. */}
+{/* Auth: Supported (query-param via HTTP). Native VS Code MCP infrastructure. */}
 
 ---
 
@@ -307,13 +303,13 @@ export const codexVscodeConfig = `{
 
 If your tool only supports stdio transport, use `mcp-remote` to bridge:
 
-export const mcpRemoteCommand = `mcp-remote "https://mcp.unframer.co/sse?id=$userId&secret=$secret" --transport sse-only`
+export const mcpRemoteCommand = `mcp-remote "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"`
 
 <CodeBlock title='Bridge Command' language='bash'>
     {mcpRemoteCommand}
 </CodeBlock>
 
-This creates a local stdio process that forwards to the remote SSE server.
+This creates a local stdio process that forwards to the remote HTTP server.
 
 ---
 
@@ -364,7 +360,7 @@ You can also use the `unframer` CLI to interact with the Framer MCP directly fro
 
 First, save your MCP URL:
 
-export const unframerLoginCommand = `npx -y unframer mcp login "https://mcp.unframer.co/sse?id=$userId&secret=$secret"`
+export const unframerLoginCommand = `npx -y unframer mcp login "https://mcp.unframer.co/mcp?id=$userId&secret=$secret"`
 
 <CodeBlock title='Terminal' language='bash'>
     {unframerLoginCommand}

@@ -103,8 +103,8 @@ export const InstallInCursorButton = () => {
     const secret = mcpUrlInfo.secret || 'xxx'
 
     const cursorInstallUrl = makeCursorInstallLink('framer', {
-        type: 'sse',
-        url: `https://mcp.unframer.co/sse?id=${userId}&secret=${secret}`,
+        type: 'streamableHttp',
+        url: `https://mcp.unframer.co/mcp?id=${userId}&secret=${secret}`,
     })
 
     return (
