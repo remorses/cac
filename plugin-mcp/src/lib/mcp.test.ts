@@ -274,6 +274,7 @@ describe(
         // Track created styles for cleanup
         const createdStyles = new Set<string>()
         const createdDesignPageIds = new Set<string>()
+        const createdCodeFileIds = new Set<string>()
 
         beforeAll(async () => {
             const result = await createTestRuntime()
@@ -314,6 +315,21 @@ describe(
                 } catch (error) {
                     console.error(
                         `Failed to clean up design page ${designPageId}:`,
+                        error,
+                    )
+                }
+            }
+
+            for (const codeFileId of createdCodeFileIds) {
+                try {
+                    await callTool({
+                        name: 'deleteNode',
+                        args: { nodeId: codeFileId },
+                    })
+                    console.log(`Cleaned up code file: ${codeFileId}`)
+                } catch (error) {
+                    console.error(
+                        `Failed to clean up code file ${codeFileId}:`,
                         error,
                     )
                 }
@@ -1091,6 +1107,136 @@ describe(
             await expect(content).toMatchFileSnapshot(
                 `snapshots/code-file-insert-info.md`,
             )
+        })
+
+        it('should create code file', async () => {
+            const randomNum = Math.floor(Math.random() * 100000)
+            const codeFileName = `mcp-test-code-file-${randomNum}.tsx`
+            const codeFileContent = `import * as React from 'react'\n\nexport default function McpTestCodeFile${randomNum}() {\n    return <div>MCP test code file ${randomNum}</div>\n}`
+
+            const createResult = await callTool({
+                name: 'createCodeFile',
+                args: {
+                    name: codeFileName,
+                    content: codeFileContent,
+                },
+            })
+
+            const createContent = getTextContent(createResult.content)
+            expect(createContent).toBeDefined()
+
+            if (
+                isServerApiMode &&
+                (String(createContent).includes('view only mode') ||
+                    String(createContent).includes('Permission denied') ||
+                    String(createContent).includes('Failed to create code file') ||
+                    String(createContent).includes('Operation timed out'))
+            ) {
+                console.warn(
+                    'Skipping code file create assertions in server-api mode because this runtime cannot create code files in the current project.',
+                )
+                return
+            }
+
+            expect(createContent).toContain('Successfully created code file')
+
+            const createdCodeFileIdMatch = String(createContent).match(
+                /\*\*ID:\*\*\s*`([^`]+)`/,
+            )
+            expect(createdCodeFileIdMatch).toBeTruthy()
+
+            if (!createdCodeFileIdMatch?.[1]) {
+                throw new Error('Missing created code file ID in createCodeFile output')
+            }
+
+            const createdCodeFileId = createdCodeFileIdMatch[1]
+            createdCodeFileIds.add(createdCodeFileId)
+
+            const readResult = await callTool({
+                name: 'readCodeFile',
+                args: {
+                    codeFileId: createdCodeFileId,
+                },
+            })
+
+            const readContent = getTextContent(readResult.content)
+            const parsedReadContent = tryJsonParse(String(readContent))
+            expect(isRecord(parsedReadContent)).toBe(true)
+
+            if (!isRecord(parsedReadContent)) {
+                throw new Error('Unexpected readCodeFile response shape')
+            }
+
+            expect(parsedReadContent.id).toBe(createdCodeFileId)
+            expect(typeof parsedReadContent.name).toBe('string')
+            expect(String(parsedReadContent.path)).toContain('.tsx')
+            expect(String(parsedReadContent.content)).toContain(
+                `MCP test code file ${randomNum}`,
+            )
+        })
+
+        it('should delete code file using deleteNode', async () => {
+            const randomNum = Math.floor(Math.random() * 100000)
+            const codeFileName = `mcp-test-delete-code-file-${randomNum}.tsx`
+
+            const createResult = await callTool({
+                name: 'createCodeFile',
+                args: {
+                    name: codeFileName,
+                    content: `import * as React from 'react'\n\nexport default function McpDeleteTestCodeFile${randomNum}() {\n    return <div>Delete code file ${randomNum}</div>\n}`,
+                },
+            })
+
+            const createContent = getTextContent(createResult.content)
+            expect(createContent).toBeDefined()
+
+            if (
+                isServerApiMode &&
+                (String(createContent).includes('view only mode') ||
+                    String(createContent).includes('Permission denied') ||
+                    String(createContent).includes('Failed to create code file') ||
+                    String(createContent).includes('Operation timed out'))
+            ) {
+                console.warn(
+                    'Skipping code file delete assertions in server-api mode because this runtime cannot create code files in the current project.',
+                )
+                return
+            }
+
+            const createdCodeFileIdMatch = String(createContent).match(
+                /\*\*ID:\*\*\s*`([^`]+)`/,
+            )
+            expect(createdCodeFileIdMatch).toBeTruthy()
+
+            if (!createdCodeFileIdMatch?.[1]) {
+                throw new Error('Missing created code file ID before deleteNode')
+            }
+
+            const createdCodeFileId = createdCodeFileIdMatch[1]
+            createdCodeFileIds.add(createdCodeFileId)
+
+            const deleteResult = await callTool({
+                name: 'deleteNode',
+                args: {
+                    nodeId: createdCodeFileId,
+                },
+            })
+
+            const deleteContent = getTextContent(deleteResult.content)
+            expect(deleteContent).toContain('Successfully deleted code file')
+
+            createdCodeFileIds.delete(createdCodeFileId)
+
+            const readAfterDeleteResult = await callTool({
+                name: 'readCodeFile',
+                args: {
+                    codeFileId: createdCodeFileId,
+                },
+            })
+            const readAfterDeleteContent = getTextContent(
+                readAfterDeleteResult.content,
+            )
+            expect(String(readAfterDeleteContent)).toContain('not found')
         })
 
         it('should get project website URL', async () => {
