@@ -76,6 +76,12 @@ If you have any question about the Terms, please contact us at tommy@${domain}.
 
 The Service shall be subject to the privacy policy for the Service available at privacy policy. You agree to the use of Your data in accordance with ${companyName}'s privacy policies.
 
+### Plugin Usage and Transactional Emails
+
+By signing up for an account and using any ${companyName} plugin (including the React Export plugin and the MCP plugin), you agree to these Terms of Service. You also consent to receive transactional emails from ${companyName} related to the setup and usage of our plugins. These emails include messages to help you set up the React Export plugin, configure your MCP plugin, and get the most out of ${companyName}'s features (for example, notifications about your exported components code being ready or tips on how to use the plugins). These are not marketing emails — they are directly related to your use of the Service.
+
+You can stop receiving these emails at any time by contacting us at tommy@${domain}.
+
 ### Fees for Use of the Service
 
 * The Service may be provided to You without charge up with certain limits or for a certain "trial" period of time.
