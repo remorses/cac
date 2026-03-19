@@ -127,6 +127,13 @@ import dedent from 'string-dedent'
 import { toJSONSchema } from 'zod'
 import { createSpiceflowClient, type SpiceflowClient } from 'spiceflow/client'
 import type { RouteType } from 'website/src/lib/spiceflow-plugins.server'
+import {
+    getAttachmentConnectionId,
+    getAttachmentConnectionOrdinal,
+    getAttachmentConnectedAt,
+    matchesPendingRequestSocket,
+    pickActiveUpstreamSocket,
+} from './lib/upstream-socket.js'
 
 type McpEnv = Env & {
     MCP_TUNNEL: DurableObjectNamespace
@@ -222,6 +229,9 @@ export class McpTunnel extends Tunnel<McpEnv> {
             resolve: (value: unknown) => void
             reject: (error: Error) => void
             timeout: ReturnType<typeof setTimeout>
+            upstreamConnectionId?: string
+            upstreamConnectionOrdinal?: number
+            upstreamConnectedAt: number
         }
     >()
 
@@ -277,16 +287,27 @@ export class McpTunnel extends Tunnel<McpEnv> {
                 // plugin sends ready → DO echoes ready → plugin receives ready → plugin sends ready → ...
                 const isReady = parsed?.payload?.type === 'ready' || (parsed as Record<string, unknown>)?.type === 'ready'
                 if (isReady) {
-                    const att = attachment as Attachment & { readyAcked?: boolean }
-                    if (!att.readyAcked) {
+                    if (!attachment.readyAcked) {
                         ws.send(JSON.stringify({ payload: { type: 'ready' } }))
-                        ws.serializeAttachment({ ...att, readyAcked: true })
+                        ws.serializeAttachment({
+                            ...attachment,
+                            readyAcked: true,
+                        } satisfies Attachment)
                     }
                     return
                 }
 
                 if (parsed?.id && this.pendingRequests.has(parsed.id)) {
                     const pending = this.pendingRequests.get(parsed.id)!
+                    if (
+                        attachment &&
+                        !matchesPendingRequestSocket({
+                            attachment,
+                            pendingRequest: pending,
+                        })
+                    ) {
+                        return
+                    }
                     this.pendingRequests.delete(parsed.id)
                     clearTimeout(pending.timeout)
 
@@ -310,11 +331,19 @@ export class McpTunnel extends Tunnel<McpEnv> {
     override async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean) {
         const attachment = ws.deserializeAttachment() as Attachment | undefined
         if (attachment?.role === 'up') {
-            for (const [id, pending] of this.pendingRequests) {
+            this.pendingRequests.forEach((pending, id) => {
+                if (
+                    !matchesPendingRequestSocket({
+                        attachment,
+                        pendingRequest: pending,
+                    })
+                ) {
+                    return
+                }
                 clearTimeout(pending.timeout)
                 pending.reject(new Error(`Plugin disconnected (code ${code})`))
-            }
-            this.pendingRequests.clear()
+                this.pendingRequests.delete(id)
+            })
         }
 
         return super.webSocketClose(ws, code, reason, wasClean)
@@ -626,15 +655,24 @@ export class McpTunnel extends Tunnel<McpEnv> {
         timeout?: number
     }): Promise<unknown> {
         const upstreams = this.ctx.getWebSockets(`up:${framerUserId}`)
-        if (upstreams.length === 0) {
+        const upstream = pickActiveUpstreamSocket({
+            sockets: upstreams,
+        })
+
+        if (!upstream) {
+            const hasUpstreamSocket = upstreams.length > 0
+            const message = hasUpstreamSocket
+                ? `Framer plugin is still reconnecting for user ${framerUserId}. Wait a moment and try again. ${framerInstructions}`
+                : `Framer plugin not connected for user ${framerUserId}. ${framerInstructions}`
             return Promise.reject(
-                new Error(
-                    `Framer plugin not connected for user ${framerUserId}. ${framerInstructions}`,
-                ),
+                new Error(message),
             )
         }
 
-        const upstream = upstreams[0]
+        const attachment = upstream.deserializeAttachment() as Attachment | undefined
+        const upstreamConnectionId = getAttachmentConnectionId(attachment)
+        const upstreamConnectionOrdinal = getAttachmentConnectionOrdinal(attachment)
+        const upstreamConnectedAt = getAttachmentConnectedAt(attachment)
         const id = crypto.randomUUID()
         const message: WebsocketMessage = { id, payload }
 
@@ -644,7 +682,14 @@ export class McpTunnel extends Tunnel<McpEnv> {
                 reject(new Error(`Tool call timed out after ${timeout}ms`))
             }, timeout)
 
-            this.pendingRequests.set(id, { resolve, reject, timeout: timeoutId })
+            this.pendingRequests.set(id, {
+                resolve,
+                reject,
+                timeout: timeoutId,
+                upstreamConnectionId: upstreamConnectionId || undefined,
+                upstreamConnectionOrdinal: upstreamConnectionOrdinal || undefined,
+                upstreamConnectedAt,
+            })
 
             try {
                 upstream.send(JSON.stringify(message))

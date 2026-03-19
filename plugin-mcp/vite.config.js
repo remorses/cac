@@ -33,7 +33,13 @@ const bundleAnalysisPlugins = shouldAnalyzeBundle
 export default defineConfig({
     test: {
         pool: 'threads',
-        exclude: ['**/dist/**', '**/esm/**', '**/node_modules/**', '**/e2e/**'],
+        exclude: [
+            '**/dist/**',
+            '**/esm/**',
+            '**/node_modules/**',
+            '**/e2e/**',
+            '**/opensrc/**',
+        ],
         poolOptions: {
             threads: {
                 isolate: false,
@@ -48,7 +54,9 @@ export default defineConfig({
         framer(),
         EnvironmentPlugin('all', { prefix: 'PUBLIC' }),
         EnvironmentPlugin('all', { prefix: 'NEXT_PUBLIC' }),
-        tsconfigPaths(),
+        tsconfigPaths({
+            ignoreConfigErrors: true,
+        }),
         ...bundleAnalysisPlugins,
 
     ],

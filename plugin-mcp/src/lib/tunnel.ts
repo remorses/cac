@@ -14,6 +14,10 @@
 export type Attachment = {
     role: 'up'
     ids: string[]
+    connectionId?: string
+    connectionOrdinal?: number
+    connectedAt?: number
+    readyAcked?: boolean
 }
 
 /**
@@ -83,10 +87,27 @@ export class Tunnel<E = unknown> {
 
         this.closeUpstreamsForId(id, { code: 4009, reason: 'Upstream already connected' })
 
+        const connectionOrdinal = this.ctx
+            .getWebSockets(`up:${id}`)
+            .map((socket) => {
+                const attachment = socket.deserializeAttachment() as Attachment | undefined
+                return attachment?.connectionOrdinal || 0
+            })
+            .reduce((maxOrdinal, ordinal) => {
+                return Math.max(maxOrdinal, ordinal)
+            }, 0) + 1
+
         const pair = new WebSocketPair()
         const [client, server] = Object.values(pair)
         this.ctx.acceptWebSocket(server, [`up:${id}`])
-        server.serializeAttachment({ role: 'up', ids: [id] } satisfies Attachment)
+        server.serializeAttachment({
+            role: 'up',
+            ids: [id],
+            connectionId: crypto.randomUUID(),
+            connectionOrdinal,
+            connectedAt: Date.now(),
+            readyAcked: false,
+        } satisfies Attachment)
 
         return addCors(new Response(null, { status: 101, webSocket: client }))
     }
