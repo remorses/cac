@@ -41,7 +41,7 @@ async function main() {
         appName,
         port,
         buildRemotely: true,
-        buildkit: true,
+        // buildkit: true,
         concurrencyLimit: 700,
         strategy: stage === 'production' ? 'bluegreen' : 'immediate',
         dockerfile: 'Dockerfile',
