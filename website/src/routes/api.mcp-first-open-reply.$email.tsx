@@ -44,7 +44,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
     // HTML version with clickable links for email clients like Spark
     const richTextContent = [
-        `You can access the example repo <a href="${githubUrl.toString()}">here</a>`,
+        `You can access the Framer example repo <a href="${githubUrl.toString()}">here</a>`,
         ``,
         `The repo includes:`,
         `- Example code showing how to integrate the React components`,

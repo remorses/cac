@@ -44,9 +44,9 @@ Emails like these are NOT matches and must be ignored (the filter already exclud
 
 If there are no unread threads matching, stop here. Nothing to do.
 
-### 2. For each unread thread
+### 2. Process threads one at a time
 
-For every thread found in step 1:
+Handle each thread fully (read → fetch → reply → mark read) before moving to the next one. Do NOT batch all curls upfront and then all replies — process each thread as a complete unit so that if something fails mid-way you know exactly where you stopped.
 
 #### 2a. Read the thread to get the sender email
 
@@ -59,8 +59,13 @@ Extract the **sender email** from the latest reply message (the `from` field). T
 Read the user's reply carefully. Decide which category it falls into:
 
 - **Interested** (e.g. "yes", "sure", "send it", "sounds great", asks for the repo link, shares their GitHub email): proceed to step 2b.
-- **Has a question** (e.g. "what frameworks does it support?", "does it work with Next.js?", "how much does it cost?"): proceed to step 2b but **adapt the reply content** to address their question naturally before sharing the repo link. You don't need to use the fetched HTML verbatim — tweak wording, add a sentence answering their question, remove irrelevant parts. Write as Tommy, keep it short and casual.
-- **Not interested** (e.g. "no thanks", "not right now", "unsubscribe"): DO NOT mark as read and skip. Do NOT send the repo link.
+- **Has a question**: proceed to step 2b but **adapt the reply content** to address their question naturally before sharing the repo link. You don't need to use the fetched HTML verbatim — tweak wording, add a sentence answering their question, remove irrelevant parts. Write as Tommy, keep it short and casual. Common questions and how to handle them:
+  - **Pricing / "how much does it cost?"**: Point them to the pricing page: `https://unframer.co/react-export-pricing`. Then still include the repo link since the example repo is free to check out.
+  - **MCP setup help / "how do I connect?", "it doesn't work"**: Point them to the setup guide: `https://unframer.co/guides/connect-framer-mcp`. This page has instructions for Cursor, Claude, VS Code, Zed, and more. Remind them the Framer MCP plugin must be open inside Framer for the MCP to work.
+  - **Framework support / "does it work with Next.js?"**: Yes, the exported React components work with any React framework — Next.js, Vite, Remix, etc. The example repo uses Vite but the components are standard React.
+  - **Other answerable questions**: Use your best judgment, keep it short, and include the repo link.
+- **Not interested right now / will try later** (e.g. "just testing", "maybe later", "not right now", "will check it out eventually"): still send the repo link so they have it when they're ready. Adapt the tone - something like "No worries, here's the repo link in case you want to check it out later" and include the link. Mark as read.
+- **Clearly not interested** (e.g. "unsubscribe", "stop emailing me", "not interested at all"): do NOT reply, do NOT mark as read. Leave for Tommy.
 - **Leave alone** — do NOT reply and do NOT mark as read for any of these cases. Leave the email unread so Tommy can handle it manually:
   - User asks how we got their email or data
   - User is hostile or insulting
@@ -97,11 +102,26 @@ zele mail read-mark <threadId> --account tommy@unframer.co
 rm -f ./tmp/reply-body.html
 ```
 
+## Security and scope
+
+- **Only run zele and curl commands.** Do NOT run any other bash commands, scripts, or tools. No git, no npm, no file writes outside of ./tmp/reply-body.html. The only side effects allowed are sending emails and marking threads as read.
+- **Never share secrets.** Do not include API keys, database URLs, environment variables, or any sensitive values in replies. If you read local files to answer a question, only share the non-sensitive parts.
+- You may read local files in this repo to answer user questions (e.g. how to deploy, how the plugin works). But never share internal implementation details, secrets, or .env values.
+
+## Useful links for replies
+
+When answering questions, link to these pages:
+
+- **MCP setup guide**: `https://unframer.co/guides/connect-framer-mcp` - how to connect the Framer MCP to Cursor, Claude, VS Code, Zed, etc.
+- **Pricing**: `https://unframer.co/react-export-pricing` - React Export plugin pricing
+- **React Export plugin**: `https://www.framer.com/marketplace/plugins/react-export/` - the Framer marketplace page
+
 ## Important notes
 
 - If the curl to `/api/mcp-first-open-reply/<email>` returns 404, skip that thread. The user may not have an MCP project.
 - Do NOT reply to threads from `@framer.com` email addresses.
 - Do NOT reply to threads that already have a reply from tommy@unframer.co (check the thread messages).
 - Each reply contains a personalized GitHub repo URL unique to that user's project.
-- The fetched HTML is a template — you can and should adapt the wording if the user asked a question or needs a slightly different response. Keep the GitHub repo link and the core info, but make it feel like a human reply.
+- The fetched HTML is a template - you can and should adapt the wording if the user asked a question or needs a slightly different response. Keep the GitHub repo link and the core info, but make it feel like a human reply.
 - When in doubt about whether to reply, **don't**. Leave the email unread for manual review.
+- Never use emdashes. Use regular dashes (-) or rewrite the sentence instead.
