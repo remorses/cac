@@ -25,7 +25,7 @@ import { marked } from 'marked'
 import { defaultResendOptions, resend } from './resend'
 import { getSupabaseWithHeaders } from './supabase.server'
 
-export const spiceflowApp = new Spiceflow({ basePath: '/api/plugins' })
+export const spiceflowApp = new Spiceflow({ disableSuperJsonUnlessRpc: false, basePath: '/api/plugins' })
     .state('userId', Promise.resolve(''))
     .state('orgId', Promise.resolve(''))
     .state('userEmail', Promise.resolve(''))

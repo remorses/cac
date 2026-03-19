@@ -16,7 +16,8 @@ import { createAiCacheMiddleware } from 'ai-cache'
 import { removeMarkdownSnippets } from './ndjson'
 
 export const rewritePluginApp = new Spiceflow({
-    basePath: '/rewritePlugin',
+  basePath: '/rewritePlugin',
+  disableSuperJsonUnlessRpc: false
 })
     .state('userId', Promise.resolve(''))
     .state('userEmail', Promise.resolve(''))

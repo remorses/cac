@@ -46,7 +46,8 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 export type ComponentObject = z.infer<typeof componentObjectSchema>
 
 export const reactPluginApp = new Spiceflow({
-    basePath: '/reactExportPlugin',
+  basePath: '/reactExportPlugin',
+  disableSuperJsonUnlessRpc: false,
 })
     .state('orgId', Promise.resolve(''))
     .state('userId', Promise.resolve(''))

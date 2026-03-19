@@ -33,7 +33,7 @@ const unauthorizedResponse = new Response('Unauthorized', {
     status: 401,
 })
 
-export const markdownPluginApp = new Spiceflow({ basePath: '/markdownPlugin' })
+export const markdownPluginApp = new Spiceflow({ disableSuperJsonUnlessRpc: false, basePath: '/markdownPlugin' })
     // .state('sessionKey', '')
     .state('githubUserLogin', Promise.resolve(''))
     .state('orgId', Promise.resolve(''))

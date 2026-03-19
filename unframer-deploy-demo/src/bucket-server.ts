@@ -29,7 +29,7 @@ const UploadWebsiteSchema = z.object({
 /**
  * Main application with routes for website upload functionality
  */
-export const app = new Spiceflow()
+export const app = new Spiceflow({disableSuperJsonUnlessRpc: false})
     .state('env', null! as Env)
     .get('/hello', () => ({ message: 'Hello World!' }))
     .post('/api/uploadFiles', async (c) => {

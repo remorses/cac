@@ -59,7 +59,8 @@ let model = wrapLanguageModel({
 })
 
 export const llmPluginApp = new Spiceflow({
-    basePath: '/llm',
+  basePath: '/llm',
+  disableSuperJsonUnlessRpc: false
 })
     .state('orgId', Promise.resolve(''))
     .state('userId', Promise.resolve(''))
