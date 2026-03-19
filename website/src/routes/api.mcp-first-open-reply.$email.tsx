@@ -6,7 +6,7 @@ import dedent from 'string-dedent'
 
 const html = dedent
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
     const { email } = params
 
     const user = await prisma.users.findFirst({
@@ -34,7 +34,6 @@ export async function loader({ params }: Route.LoaderArgs) {
     }
 
     const projectId = project.projectId
-    const projectName = project.projectName || 'without name'
 
     const githubUrl = new URL(
         href('/api/react-export-plugin/github/repo/:projectId', {
@@ -42,26 +41,8 @@ export async function loader({ params }: Route.LoaderArgs) {
         }),
         env.PUBLIC_URL,
     )
-    const { 0: firstName } = ((user.raw_user_meta_data as any)?.full_name ?? "").split(" ")
 
-    const plainTextContent = dedent`
-        Here's the GitHub repo:
-
-        ${githubUrl.toString()}
-
-        The repo includes:
-        - Example code showing how to integrate the React components
-        - Live preview URL
-
-        Next time you want to export to React you can ask the MCP or use the React Export plugin: https://www.framer.com/marketplace/plugins/react-export/
-
-        PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
-
-        Best,
-        Tommy
-    `
-
-    // HTML version with clickable links for rich text email clients like Spark
+    // HTML version with clickable links for email clients like Spark
     const richTextContent = [
         `You can access the example repo <a href="${githubUrl.toString()}">here</a>`,
         ``,
@@ -79,65 +60,60 @@ export async function loader({ params }: Route.LoaderArgs) {
         `Tommy`,
     ].join('<br>')
 
+    // Non-browser clients (curl, agents) get just the raw email HTML body
+    const accept = request.headers.get('accept') || ''
+    if (!accept.includes('text/html')) {
+        return new Response(richTextContent, {
+            headers: { 'Content-Type': 'text/html' },
+        })
+    }
+
+    // Browser: show page that copies content to clipboard
+    const plainTextContent = dedent`
+        Here's the GitHub repo:
+
+        ${githubUrl.toString()}
+
+        The repo includes:
+        - Example code showing how to integrate the React components
+        - Live preview URL
+
+        Next time you want to export to React you can ask the MCP or use the React Export plugin: https://www.framer.com/marketplace/plugins/react-export/
+
+        PS: Keep in mind this repo is just an example, the demo will not look great at first without updating App.tsx and exporting the components you want
+
+        Best,
+        Tommy
+    `
+
     const htmlContent = html`
-        <!DOCTYPE html>
+        <!doctype html>
         <html>
             <head>
                 <meta charset="utf-8" />
-                <title>MCP First Open Reply</title>
+                <title>MCP Reply</title>
                 <style>
-                    body {
-                        font-family:
-                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
-                            Roboto, sans-serif;
-                        max-width: 600px;
-                        margin: 50px auto;
-                        padding: 20px;
-                        line-height: 1.6;
-                    }
-                    pre {
-                        background: #f5f5f5;
-                        padding: 20px;
-                        border-radius: 8px;
-                        white-space: pre-wrap;
-                        word-wrap: break-word;
-                    }
-                    .status {
-                        padding: 10px;
-                        margin-bottom: 20px;
-                        border-radius: 4px;
-                        background: #4caf50;
-                        color: white;
-                        text-align: center;
-                    }
+                    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+                    pre { background: #f5f5f5; padding: 20px; border-radius: 8px; white-space: pre-wrap; }
+                    .ok { padding: 10px; margin-bottom: 20px; border-radius: 4px; background: #4caf50; color: white; text-align: center; }
                 </style>
             </head>
             <body>
-                <div class="status">✓ Copied to clipboard!</div>
-                <pre id="content">
-                    ${plainTextContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre
-                >
+                <div class="ok">Copied to clipboard</div>
+                <pre>${plainTextContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
                 <script>
-                    const plainText = ${JSON.stringify(plainTextContent)}
-                    const richText = ${JSON.stringify(richTextContent)}
-
-                    // Copy both plain text and HTML so email clients like Spark render clickable links
                     navigator.clipboard.write([
                         new ClipboardItem({
-                            'text/plain': new Blob([plainText], { type: 'text/plain' }),
-                            'text/html': new Blob([richText], { type: 'text/html' }),
+                            'text/plain': new Blob([${JSON.stringify(plainTextContent)}], { type: 'text/plain' }),
+                            'text/html': new Blob([${JSON.stringify(richTextContent)}], { type: 'text/html' }),
                         })
-                    ]).catch((err) => {
-                        console.error('Failed to copy:', err)
-                    })
+                    ]).catch(console.error)
                 </script>
             </body>
         </html>
     `
 
     return new Response(htmlContent, {
-        headers: {
-            'Content-Type': 'text/html',
-        },
+        headers: { 'Content-Type': 'text/html' },
     })
 }
