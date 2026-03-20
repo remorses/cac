@@ -58,8 +58,8 @@ Extract the **sender email** from the latest reply message (the `from` field). T
 
 Read the user's reply carefully. Decide which category it falls into:
 
-- **Interested** (e.g. "yes", "sure", "send it", "sounds great", asks for the repo link, shares their GitHub email): proceed to step 2b.
-- **Has a question**: proceed to step 2b but **adapt the reply content** to address their question naturally before sharing the repo link. You don't need to use the fetched HTML verbatim — tweak wording, add a sentence answering their question, remove irrelevant parts. Write as Tommy, keep it short and casual. Common questions and how to handle them:
+- **Interested** (e.g. "yes", "sure", "send it", "sounds great", asks for the repo link, shares their GitHub email): proceed to step 2b. Personalize the opening line based on what the user said (see personalization section below).
+- **Has a question**: proceed to step 2b but **adapt the reply content** to address their question naturally before sharing the repo link. You don't need to use the fetched HTML verbatim - tweak wording, add a sentence answering their question, remove irrelevant parts. Write as Tommy, keep it short and casual. Common questions and how to handle them:
   - **Pricing / "how much does it cost?"**: Point them to the pricing page: `https://unframer.co/react-export-pricing`. Then still include the repo link since the example repo is free to check out.
   - **MCP setup help / "how do I connect?", "it doesn't work"**: Point them to the setup guide: `https://unframer.co/guides/connect-framer-mcp`. This page has instructions for Cursor, Claude, VS Code, Zed, and more. Remind them the Framer MCP plugin must be open inside Framer for the MCP to work.
   - **Framework support / "does it work with Next.js?"**: Yes, the exported React components work with any React framework — Next.js, Vite, Remix, etc. The example repo uses Vite but the components are standard React.
@@ -84,7 +84,28 @@ Since curl doesn't send `Accept: text/html`, the route returns just the raw emai
 
 If the curl returns a 404, the user either doesn't exist in our database or has no MCP project. Skip this thread and move to the next one.
 
-#### 2c. Reply to the thread
+#### 2c. Personalize the opening line
+
+Before sending, replace the first line of the fetched HTML with a personalized opening based on what the user said. Each reply should feel unique and human - not a copy-paste template. Reference something specific from their message.
+
+Examples of personalized openings:
+
+- User said "Yes please!" -> `Awesome, here's the repo...`
+- User said "sounds interesting, love the mcp so far" -> `Glad you're enjoying the MCP! Here's the example repo...`
+- User said "Please send me the GitHub repo URL" -> `Here you go -...`
+- User said "I'm working with an AI agent to redesign the site" -> `Nice, that's a great use case for it. Here's the repo...`
+- User said "You are a legend. Yes please!" -> `Ha, thanks! Here's the repo...`
+- User said "I haven't tried React Export yet but sounds interesting" -> `Definitely worth a look. Here's the example repo...`
+- User said "100% going to do that today" -> `Great, here's the repo to get started...`
+- User said "just testing out with random project, may need it later" -> `No worries! Here's the repo link for when you're ready...`
+- User said "how much does it cost?" -> `Here's the pricing page: ... And here's the example repo to try it out...`
+- User said "I need help setting up the MCP" -> `Here's the setup guide: ... Also here's the example repo...`
+
+Keep the rest of the template (repo link, what's included, PS note) mostly the same. Only the opening 1-2 sentences need to change.
+
+When it fits naturally, mention the React Export plugin with a link: `<a href="https://www.framer.com/marketplace/plugins/react-export/">React Export plugin</a>`. For example if the user only knows about the MCP but not the plugin, or if they ask how to export next time.
+
+#### 2d. Reply to the thread
 
 ```bash
 zele mail reply <threadId> --account tommy@unframer.co --body-file ./tmp/reply-body.html
