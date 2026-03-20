@@ -234,7 +234,7 @@ export async function generateUnframerRepo({
                 OPENCODE_API_KEY: \${{ secrets.OPENCODE_ZEN_API_KEY }}
               run: |
                 npm install -g opencode-ai
-                opencode run --model opencode/kimi-k2 "${opencodePrompt}"
+                opencode run --model opencode/minimax-m2.5 "${opencodePrompt}"
       `,
     })
 
