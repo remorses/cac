@@ -235,6 +235,11 @@ export async function generateUnframerRepo({
               run: |
                 npm install -g opencode-ai
                 opencode run --model opencode/minimax-m2.5 "${opencodePrompt}"
+            - name: Verify build succeeds
+              if: \${{ (steps.framer.outcome == 'failure' || steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure') && !cancelled() }}
+              run: |
+                bun run framer
+                bun run build
       `,
     })
 
