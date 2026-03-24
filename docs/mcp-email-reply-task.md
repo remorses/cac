@@ -16,11 +16,13 @@ Use `--account tommy@unframer.co` for all zele commands.
 
 **Only reply to emails that are replies to the MCP first-open email we sent.** The subject is always `Re: Export Framer components as React?`. Ignore all other unread emails — refund requests, billing issues, Google alerts, etc. are not your responsibility.
 
+Only fetch emails from the last 2 days (`newer_than:2d`). Older unread threads are likely stale or already being handled manually.
+
 ```bash
-zele mail list --account tommy@unframer.co --filter "is:unread subject:Export Framer components as React" --max 20
+zele mail list --account tommy@unframer.co --filter "is:unread subject:Export Framer components as React newer_than:2d" --max 20
 ```
 
-The filter ensures only MCP reply threads are returned. Example output:
+The filter ensures only recent MCP reply threads are returned. Example output:
 
 ```yaml
 items:
@@ -60,7 +62,7 @@ Read the user's reply carefully. Decide which category it falls into:
 
 - **Interested** (e.g. "yes", "sure", "send it", "sounds great", asks for the repo link, shares their GitHub email): proceed to step 2b. Personalize the opening line based on what the user said (see personalization section below).
 - **Has a question**: proceed to step 2b but **adapt the reply content** to address their question naturally before sharing the repo link. You don't need to use the fetched HTML verbatim - tweak wording, add a sentence answering their question, remove irrelevant parts. Write as Tommy, keep it short and casual. Common questions and how to handle them:
-  - **Pricing / "how much does it cost?"**: Point them to the pricing page: `https://unframer.co/react-export-pricing`. Then still include the repo link since the example repo is free to check out.
+  - **Pricing / "how much does it cost?"**: Point them to the pricing page: `https://unframer.co/react-export-pricing`. There are two paid plans: $50/month and $250/month. The example repo is free to check out regardless. Do NOT mention "free tier" or "limited free exports" - there is no free tier. Only the example repo we send is free.
   - **MCP setup help / "how do I connect?", "it doesn't work"**: Point them to the setup guide: `https://unframer.co/guides/connect-framer-mcp`. This page has instructions for Cursor, Claude, VS Code, Zed, and more. Remind them the Framer MCP plugin must be open inside Framer for the MCP to work.
   - **Framework support / "does it work with Next.js?"**: Yes, the exported React components work with any React framework — Next.js, Vite, Remix, etc. The example repo uses Vite but the components are standard React.
   - **Other answerable questions**: Use your best judgment, keep it short, and include the repo link.
