@@ -423,9 +423,10 @@ export class McpTunnel extends Tunnel<McpEnv> {
 
         this.registerMcpHandlers(server, framerUserId)
 
+        // enableJsonResponse: true so POST doesn't open an SSE stream inside the DO
         const transport = new WebStandardStreamableHTTPServerTransport({
             sessionIdGenerator: undefined,
-            enableJsonResponse: false,
+            enableJsonResponse: true,
         })
 
         await server.connect(transport)
@@ -492,9 +493,13 @@ export class McpTunnel extends Tunnel<McpEnv> {
 
         this.registerMcpHandlers(server, framerUserId)
 
+        // enableJsonResponse: true makes POST /mcp return plain JSON instead of
+        // opening an SSE stream. Without this, every POST holds a long-lived
+        // ReadableStream inside the DO, preventing hibernation. Clients MUST
+        // support both JSON and SSE responses per the MCP streamable HTTP spec.
         const transport = new WebStandardStreamableHTTPServerTransport({
             sessionIdGenerator: undefined,
-            enableJsonResponse: false,
+            enableJsonResponse: true,
         })
 
         await server.connect(transport)
@@ -801,6 +806,17 @@ export default {
 
         // MCP Streamable HTTP transport
         if (url.pathname === '/mcp' || url.pathname.startsWith('/mcp')) {
+            // Block GET /mcp at Worker level so the DO never wakes up for it.
+            // MCP spec allows 405: "The server MUST either return text/event-stream
+            // or else return HTTP 405 Method Not Allowed". GET SSE would hold a
+            // long-lived stream inside the DO, preventing hibernation.
+            if (request.method === 'GET') {
+                return addCors(new Response('Method Not Allowed', {
+                    status: 405,
+                    headers: { Allow: 'POST, DELETE, OPTIONS' },
+                }))
+            }
+
             const id = url.searchParams.get('id')
             const secret = url.searchParams.get('secret')
 
