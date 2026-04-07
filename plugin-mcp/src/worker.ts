@@ -18,6 +18,13 @@
  * - 1 DO per framerUserId instead of 1 per MCP session
  * - 1 Worker instead of 2 (no separate tunnel worker for unframer.co)
  *
+ * SSE hibernation: legacy SSE transport (GET /sse) is handled at the Worker
+ * level, not in the DO. The Worker holds the SSE stream and bridges it to a
+ * hibernation-tagged WebSocket (sse:${sessionId}) in the DO. This way the DO
+ * can sleep between POST /sse/message requests instead of staying awake for
+ * the entire SSE connection lifetime. Workers are billed on CPU time (not
+ * wall-clock), so holding an idle SSE stream in the Worker is effectively free.
+ *
  * Auth: query params only (?id=X&secret=Y), validated via KV-cached website API call.
  * OAuth was removed — nobody was using it.
  *
@@ -235,30 +242,20 @@ export class McpTunnel extends Tunnel<McpEnv> {
         }
     >()
 
-    /**
-     * Active legacy SSE streams keyed by sessionId.
-     * GET /sse creates the stream, POST /sse/message writes responses back through it.
-     */
-    private sseStreams = new Map<
-        string,
-        {
-            writer: WritableStreamDefaultWriter<Uint8Array>
-            encoder: TextEncoder
-        }
-    >()
-
     override async fetch(req: Request): Promise<Response> {
-        // WebSocket upgrade → delegate to Tunnel base (handles upstream/downstream/multiplexer)
         if (req.headers.get('Upgrade') === 'websocket') {
+            const url = new URL(req.url)
+            // SSE session WebSocket — hibernation-tagged bridge to Worker
+            if (url.pathname === '/_sse_session') {
+                return this.acceptSseSessionSocket(req)
+            }
+            // Upstream plugin WebSocket — delegate to Tunnel base
             return super.fetch(req)
         }
 
         const url = new URL(req.url)
 
-        // Legacy SSE transport: GET /sse opens the stream, POST /sse/message sends messages
-        if (url.pathname === '/sse' && req.method === 'GET') {
-            return this.handleSseGet(req)
-        }
+        // Legacy SSE transport: POST /sse/message processes MCP message, responds via SSE WebSocket
         if (url.pathname === '/sse/message' && req.method === 'POST') {
             return this.handleSseMessage(req)
         }
@@ -350,68 +347,39 @@ export class McpTunnel extends Tunnel<McpEnv> {
     }
 
     /**
-     * Legacy SSE transport: GET /sse
-     *
-     * Opens an SSE stream and sends an `event: endpoint` with the POST URL.
-     * The SSEClientTransport from the MCP SDK connects here first, then
-     * POSTs JSON-RPC messages to the endpoint URL. Responses flow back
-     * through this SSE stream.
-     *
-     * Protocol (from MCP SSE transport spec):
-     * 1. Client GET /sse → server responds with text/event-stream
-     * 2. Server sends: event: endpoint\ndata: /sse/message?sessionId=X\n\n
-     * 3. Client POST /sse/message?sessionId=X with JSON-RPC body
-     * 4. Server sends: event: message\ndata: {jsonrpc response}\n\n
+     * Accept a hibernation-tagged WebSocket for an SSE session.
+     * The Worker holds the actual SSE stream; this WebSocket bridges DO → Worker.
+     * Tagged as sse:${sessionId} so handleSseMessage() can look it up.
+     * Because it's accepted via ctx.acceptWebSocket(), the DO can hibernate
+     * while the SSE connection is idle — no in-memory streams to hold.
      */
-    private handleSseGet(req: Request): Response {
-        const sessionId = crypto.randomUUID()
-        const { readable, writable } = new TransformStream<Uint8Array>()
-        const writer = writable.getWriter()
-        const encoder = new TextEncoder()
-
-        // Store the stream so POST /sse/message can write responses to it
-        this.sseStreams.set(sessionId, { writer, encoder })
-
-        // Clean up the SSE stream when the client disconnects (request aborted).
-        // Without this, entries leak indefinitely in long-lived DOs.
-        req.signal.addEventListener('abort', () => {
-            this.cleanupSseSession(sessionId)
-        })
-
-        // Build the endpoint URL: same origin, path = /sse/message, with sessionId + original auth params
+    private acceptSseSessionSocket(req: Request): Response {
         const url = new URL(req.url)
-        url.pathname = '/sse/message'
-        url.searchParams.set('sessionId', sessionId)
-        const endpointPath = url.pathname + url.search
-
-        // Send the endpoint event immediately (tells the client where to POST)
-        const endpointMessage = `event: endpoint\ndata: ${endpointPath}\n\n`
-        writer.write(encoder.encode(endpointMessage))
-
-        return addCors(new Response(readable, {
-            headers: {
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-            },
-        }))
-    }
-
-    private cleanupSseSession(sessionId: string) {
-        const stream = this.sseStreams.get(sessionId)
-        if (!stream) {
-            return
+        const sessionId = url.searchParams.get('sessionId')
+        if (!sessionId) {
+            return new Response('Missing sessionId', { status: 400 })
         }
-        this.sseStreams.delete(sessionId)
-        stream.writer.close().catch(() => {})
+        const pair = new WebSocketPair()
+        const [client, server] = Object.values(pair)
+        this.ctx.acceptWebSocket(server, [`sse:${sessionId}`])
+        server.serializeAttachment({
+            role: 'sse' as const,
+            ids: [],
+            sessionId,
+        } satisfies Attachment)
+        return new Response(null, { status: 101, webSocket: client })
     }
 
     /**
      * Legacy SSE transport: POST /sse/message?sessionId=X
      *
      * Receives a JSON-RPC message, creates a fresh MCP Server to handle it,
-     * and sends responses back through the SSE stream opened by GET /sse.
-     * Returns 202 Accepted (responses go via SSE, not the POST response body).
+     * and sends responses back through the hibernatable sse:${sessionId} WebSocket
+     * (which the Worker bridges to the client's SSE stream).
+     *
+     * Previously this wrote to an in-memory TransformStream writer, which
+     * prevented the DO from hibernating. Now the DO only touches a hibernation-
+     * tagged WebSocket, so it can sleep between requests.
      */
     private async handleSseMessage(req: Request): Promise<Response> {
         const url = new URL(req.url)
@@ -420,9 +388,13 @@ export class McpTunnel extends Tunnel<McpEnv> {
             return addCors(new Response('Missing sessionId', { status: 400 }))
         }
 
-        const sseStream = this.sseStreams.get(sessionId)
-        if (!sseStream) {
-            return addCors(new Response('Session not found or SSE stream closed', { status: 404 }))
+        // Filter out sockets in CLOSING state — getWebSockets() can briefly
+        // return them after the Worker side closed the connection.
+        const sseSockets = this.ctx.getWebSockets(`sse:${sessionId}`).filter((socket) => {
+            return typeof socket.readyState === 'undefined' || socket.readyState === WebSocket.OPEN
+        })
+        if (sseSockets.length === 0) {
+            return addCors(new Response('SSE session not found or closed', { status: 404 }))
         }
 
         const framerUserId = url.searchParams.get('id') || 'unknown'
@@ -434,9 +406,6 @@ export class McpTunnel extends Tunnel<McpEnv> {
             return addCors(new Response('Invalid JSON', { status: 400 }))
         }
 
-        // Create a fresh MCP Server + transport to handle this message.
-        // We use a custom transport that writes responses to the SSE stream
-        // instead of the HTTP response body.
         const server = new Server(
             {
                 name: 'Framer MCP',
@@ -461,24 +430,20 @@ export class McpTunnel extends Tunnel<McpEnv> {
 
         await server.connect(transport)
 
-        // Override the transport's send to write SSE events to our stored stream
+        // Override send: write to hibernatable SSE WebSocket instead of in-memory stream
         const originalSend = transport.send.bind(transport)
         transport.send = async (message, options) => {
-            // Write the message as an SSE event to the GET /sse stream
-            const { writer, encoder } = sseStream
-            const sseEvent = `event: message\ndata: ${JSON.stringify(message)}\n\n`
-            try {
-                await writer.write(encoder.encode(sseEvent))
-            } catch {
-                // SSE stream closed, clean up
-                this.cleanupSseSession(sessionId)
+            const data = JSON.stringify(message)
+            for (const sock of this.ctx.getWebSockets(`sse:${sessionId}`)) {
+                try {
+                    sock.send(data)
+                } catch {
+                    // Socket closed, ignore
+                }
             }
-            // Also call original send (which is a no-op for the POST response since we return 202)
             return originalSend(message, options)
         }
 
-        // Feed the message to the transport as if it were a POST request
-        // Build a synthetic request with proper headers for WorkerTransport
         const syntheticReq = new Request(req.url, {
             method: 'POST',
             headers: {
@@ -488,16 +453,11 @@ export class McpTunnel extends Tunnel<McpEnv> {
             body: JSON.stringify(rawMessage),
         })
 
-        // handleRequest triggers onmessage → server processes → send() writes to SSE.
-        // If the transport returns an error (invalid JSON-RPC, protocol error), surface it
-        // instead of always returning 202.
         const transportResponse = await transport.handleRequest(syntheticReq)
         if (!transportResponse.ok) {
             return addCors(transportResponse)
         }
 
-        // Drain the response body (transport returns an SSE stream for POST responses,
-        // but we already wrote to our own SSE stream via the overridden send())
         await transportResponse.body?.cancel()
 
         return addCors(new Response('Accepted', { status: 202 }))
@@ -863,8 +823,10 @@ export default {
             return addCors(doResponse)
         }
 
-        // Legacy SSE transport: GET /sse opens SSE stream, POST /sse/message sends messages
-        if (url.pathname === '/sse' || url.pathname === '/sse/message') {
+        // Legacy SSE transport: GET /sse opens the event stream.
+        // Handled at the Worker level (not in the DO) so the DO can hibernate.
+        // The Worker holds the SSE stream and bridges it to a hibernatable WebSocket in the DO.
+        if (url.pathname === '/sse' && request.method === 'GET') {
             const id = url.searchParams.get('id')
             const secret = url.searchParams.get('secret')
 
@@ -877,8 +839,86 @@ export default {
                 return addCors(new Response('Invalid session', { status: 401 }))
             }
 
-            // Route to the McpTunnel DO — keep /sse or /sse/message path intact
-            // so the DO can handle the legacy SSE protocol (endpoint event + message POST)
+            const doId = env.MCP_TUNNEL.idFromName(sessionData.framerUserId)
+            const stub = env.MCP_TUNNEL.get(doId)
+            const sessionId = crypto.randomUUID()
+
+            // Create a hibernatable WebSocket to the DO for this SSE session.
+            // The DO tags it as sse:${sessionId} and can hibernate while it's idle.
+            const wsUrl = new URL(request.url)
+            wsUrl.pathname = '/_sse_session'
+            wsUrl.searchParams.set('sessionId', sessionId)
+            wsUrl.searchParams.set('id', sessionData.framerUserId)
+            const wsResp = await stub.fetch(new Request(wsUrl.toString(), {
+                headers: { Upgrade: 'websocket' },
+            }))
+            const doWs = wsResp.webSocket
+            if (!doWs) {
+                return addCors(new Response('Failed to create SSE session', { status: 500 }))
+            }
+            doWs.accept()
+
+            // Create SSE stream for the MCP client
+            const { readable, writable } = new TransformStream<Uint8Array>()
+            const writer = writable.getWriter()
+            const encoder = new TextEncoder()
+
+            // Build endpoint URL preserving auth params (id, secret) from the original request
+            const endpointUrl = new URL(request.url)
+            endpointUrl.pathname = '/sse/message'
+            endpointUrl.searchParams.set('sessionId', sessionId)
+            const endpointPath = endpointUrl.pathname + endpointUrl.search
+
+            // Send the endpoint event immediately (tells the MCP client where to POST).
+            // Catch rejection in case the client disconnects before the write completes.
+            void writer.write(encoder.encode(`event: endpoint\ndata: ${endpointPath}\n\n`)).catch(() => {
+                doWs.close()
+            })
+
+            // Bridge: DO WebSocket messages → SSE events to the MCP client.
+            // The Worker stays alive here (cheap — billed on CPU time, not wall-clock),
+            // while the DO can hibernate between POST /sse/message requests.
+            doWs.addEventListener('message', (event) => {
+                const data = typeof event.data === 'string' ? event.data : ''
+                writer.write(encoder.encode(`event: message\ndata: ${data}\n\n`)).catch(() => {
+                    doWs.close()
+                })
+            })
+            doWs.addEventListener('close', () => {
+                writer.close().catch(() => {})
+            })
+            doWs.addEventListener('error', () => {
+                writer.close().catch(() => {})
+            })
+
+            // Cleanup when the SSE client disconnects
+            request.signal.addEventListener('abort', () => {
+                doWs.close()
+            })
+
+            return addCors(new Response(readable, {
+                headers: {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                },
+            }))
+        }
+
+        // Legacy SSE transport: POST /sse/message forwards to DO for MCP processing
+        if (url.pathname === '/sse/message' && request.method === 'POST') {
+            const id = url.searchParams.get('id')
+            const secret = url.searchParams.get('secret')
+
+            if (!id || !secret) {
+                return addCors(new Response('Missing id and secret query parameters', { status: 401 }))
+            }
+
+            const sessionData = await getValidatedSession({ env, secret, id })
+            if (!sessionData) {
+                return addCors(new Response('Invalid session', { status: 401 }))
+            }
+
             const doId = env.MCP_TUNNEL.idFromName(sessionData.framerUserId)
             const stub = env.MCP_TUNNEL.get(doId)
             const doUrl = new URL(request.url)

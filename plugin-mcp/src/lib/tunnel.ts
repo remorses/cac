@@ -12,12 +12,13 @@
  */
 
 export type Attachment = {
-    role: 'up'
+    role: 'up' | 'sse'
     ids: string[]
     connectionId?: string
     connectionOrdinal?: number
     connectedAt?: number
     readyAcked?: boolean
+    sessionId?: string // only set for role: 'sse'
 }
 
 /**
@@ -66,7 +67,8 @@ export class Tunnel<E = unknown> {
         this.ctx = state
         this.env = env
 
-        this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'))
+        // Only one auto-response pair can be active (second call replaces first).
+        // Plugin sends {"type":"ping"} every 5s — must match exactly.
         this.ctx.setWebSocketAutoResponse(
             new WebSocketRequestResponsePair('{"type":"ping"}', '{"type":"pong"}'),
         )
