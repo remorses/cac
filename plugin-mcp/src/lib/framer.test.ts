@@ -65,38 +65,53 @@ describe('typedControls shape', () => {
             typedControlsSummary: summary,
         }).toMatchInlineSnapshot(`
           {
-            "componentName": "Elements/Social icon",
+            "componentName": "Navigation/Navigation",
             "controlsKeys": [
-              "zctLaVlb1",
-              "hp3YaUkPc",
-              "wjdsy_ef1",
-              "jUToPhZBI",
+              "variant",
             ],
-            "nodeName": "Elements/Social icon",
+            "nodeName": "Navigation Flyout",
             "typedControlsSummary": {
-              "hp3YaUkPc": {
-                "hasValue": true,
-                "key": "hp3YaUkPc",
-                "title": "Color",
-                "type": "color",
+              "EPlO9YAZF": {
+                "hasValue": false,
+                "key": "EPlO9YAZF",
+                "title": "Mobile menu open",
+                "type": "eventHandler",
               },
-              "jUToPhZBI": {
+              "Nm58YGyEC": {
                 "hasValue": true,
-                "key": "jUToPhZBI",
-                "title": "Link",
-                "type": "link",
+                "key": "Nm58YGyEC",
+                "title": "Testimonials",
+                "type": "scrollSection",
               },
-              "wjdsy_ef1": {
+              "VnzIg8z9x": {
                 "hasValue": true,
-                "key": "wjdsy_ef1",
-                "title": "Hover color",
-                "type": "color",
+                "key": "VnzIg8z9x",
+                "title": "Service",
+                "type": "scrollSection",
               },
-              "zctLaVlb1": {
+              "Y0TVQ0PR2": {
                 "hasValue": true,
-                "key": "zctLaVlb1",
-                "title": "Icon change",
-                "type": "string",
+                "key": "Y0TVQ0PR2",
+                "title": "Pricing",
+                "type": "scrollSection",
+              },
+              "dj72qaVd2": {
+                "hasValue": true,
+                "key": "dj72qaVd2",
+                "title": "Who we are",
+                "type": "scrollSection",
+              },
+              "gvFIXuEcN": {
+                "hasValue": true,
+                "key": "gvFIXuEcN",
+                "title": "Case",
+                "type": "scrollSection",
+              },
+              "variant": {
+                "hasValue": true,
+                "key": "variant",
+                "title": "Variant",
+                "type": "enum",
               },
             },
           }
@@ -120,7 +135,6 @@ describe('typedControls shape', () => {
           [
             "boolean",
             "border",
-            "borderRadius",
             "color",
             "enum",
             "eventHandler",
@@ -166,32 +180,48 @@ describe('typedControls shape', () => {
                         "controlKey": "variant",
                         "controlTitle": "Variant",
                         "controlType": "enum",
-                        "controlValue": "y3B4LMoQU",
-                        "nodeName": "Navigation link (Base)",
+                        "controlValue": "arFY89os4",
+                        "nodeName": "Navigation Flyout",
                         "options": [
                           {
-                            "id": "y3B4LMoQU",
+                            "id": "QOfAnzBxh",
                             "title": "Desktop",
                           },
                           {
-                            "id": "vcCG4vFZi",
+                            "id": "P1v1ihspX",
                             "title": "Tablet",
                           },
                           {
-                            "id": "UODq7qN9k",
+                            "id": "PnuvdVM1J",
                             "title": "Phone",
                           },
                           {
-                            "id": "urly6yVbp",
-                            "title": "Desktop Active",
+                            "id": "arFY89os4",
+                            "title": "Desktop Flyout",
                           },
                           {
-                            "id": "boF7SDawN",
-                            "title": "Tablet Active",
+                            "id": "qGUh0LbE8",
+                            "title": "Tablet Flyout",
                           },
                           {
-                            "id": "gVNhRn9xy",
-                            "title": "Phone Acitve",
+                            "id": "uWt60osFn",
+                            "title": "Phone Flyout",
+                          },
+                          {
+                            "id": "wrwRZcibf",
+                            "title": "Tablet close",
+                          },
+                          {
+                            "id": "WkaXeslVy",
+                            "title": "Tablet  Flyout close",
+                          },
+                          {
+                            "id": "NTfXwQ4NI",
+                            "title": "Phone close",
+                          },
+                          {
+                            "id": "DrAxuXYke",
+                            "title": "Phone Flyout close",
                           },
                         ],
                       }
