@@ -4,7 +4,6 @@ import * as crypto from 'node:crypto'
 import { generateText, tool, wrapLanguageModel } from 'ai'
 import { prisma } from 'db'
 import { Octokit } from 'octokit'
-import { Sema } from 'sema4'
 import { unframerDemoUrl } from 'unframer-deploy-demo/src/utils'
 import { Config, configFromFetch } from 'unframer-workspace/src/cli'
 import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
@@ -12,11 +11,11 @@ import { kebabCase } from 'unframer-workspace/src/utils'
 import { env } from './env'
 import {
     addUnframerGithubCollaboratorIfNeeded,
+    commitFilesToBranch,
     createNewRepo,
     createRepoSecret,
     doesRepoExist,
     getRepoFiles,
-    upsertGithubFile,
 } from './github.server'
 import { isTruthy } from './utils'
 import { generateStackblitzFiles } from 'unframer-workspace/src/stackblitz'
@@ -37,6 +36,43 @@ export function generateRepoName({ projectId, projectTitle }) {
     // }
     // Include both title and projectId prefix for uniqueness
     return kebabCase(projectTitle + ' ' + projectId.slice(0, 5))
+}
+
+function normalizeGithubPath(path: string) {
+    if (!path.startsWith('/')) {
+        return path
+    }
+
+    return path.slice(1)
+}
+
+export function getChangedRepoFiles({
+    files,
+    existingFiles,
+}: {
+    files: { relativePath: string; contents: string }[]
+    existingFiles: { githubPath?: string; content?: string }[]
+}) {
+    const existingContentsByPath = new Map(
+        existingFiles
+            .filter((file) => {
+                return Boolean(file.githubPath)
+            })
+            .map((file) => {
+                return [normalizeGithubPath(file.githubPath!), file.content || '']
+            }),
+    )
+
+    return files
+        .map((file) => {
+            return {
+                filePath: normalizeGithubPath(file.relativePath),
+                content: file.contents,
+            }
+        })
+        .filter((file) => {
+            return existingContentsByPath.get(file.filePath) !== file.content
+        })
 }
 
 export async function generateUnframerRepo({
@@ -325,21 +361,20 @@ export async function upsertUnframerRepoWithFiles({
         return { url, repoName: repo }
     }
 
+    const filePathsRelative = new Set(
+        files.map((x) => {
+            return normalizeGithubPath(x.relativePath)
+        }),
+    )
     const existingFiles = await getRepoFiles({
-        fetchBlob(pagePath) {
-            return false
+        fetchBlob(file) {
+            return filePathsRelative.has(normalizeGithubPath(file.path || ''))
         },
         branch: githubBranch,
         octokit: octokit.rest,
         owner,
         repo,
     })
-    const filePathsRelative = new Set(
-        files.map((x) => {
-            return x.relativePath
-        }),
-    )
-    const sema = new Sema(20)
     // await Promise.all(
     //     existingFiles
     //         .filter((x) => {
@@ -367,43 +402,35 @@ export async function upsertUnframerRepoWithFiles({
     //         }),
     // )
 
-    await Promise.all([
-        (title || homepage) &&
-            (await octokit.rest.repos.update({
-                owner,
-                repo,
-                description: title,
-                homepage,
-            })),
-        createRepoSecret({
-            octokit: octokit.rest,
+    const changedFiles = getChangedRepoFiles({
+        files,
+        existingFiles,
+    })
+
+    if (title || homepage) {
+        await octokit.rest.repos.update({
             owner,
             repo,
-            secretName: 'OPENCODE_ZEN_API_KEY',
-            secretValue: env.OPENCODE_ZEN_API_KEY!,
-        }),
-        ...files.map(async (file) => {
-            await sema.acquire()
-            try {
-                const code = file.contents
-                let githubPath = file.relativePath
-                if (githubPath.startsWith('/')) {
-                    githubPath = githubPath.slice(1)
-                }
-                console.log('upserting file to github', githubPath)
-                await upsertGithubFile({
-                    code,
-                    githubBranch,
-                    githubPath,
-                    octokit: octokit,
-                    owner,
-                    repo,
-                })
-            } finally {
-                sema.release()
-            }
-        }),
-    ])
+            description: title,
+            homepage,
+        })
+    }
+
+    await createRepoSecret({
+        octokit: octokit.rest,
+        owner,
+        repo,
+        secretName: 'OPENCODE_ZEN_API_KEY',
+        secretValue: env.OPENCODE_ZEN_API_KEY!,
+    })
+
+    await commitFilesToBranch({
+        octokit: octokit.rest,
+        owner,
+        repo,
+        branch: githubBranch,
+        files: changedFiles,
+    })
 
     const url = `https://github.com/${owner}/${repo}`
     console.log(url)

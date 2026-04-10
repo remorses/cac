@@ -278,6 +278,93 @@ export async function upsertGithubFile({
     let url = `https://github.com/${owner}/${repo}/commit/${data.commit.sha}`
 }
 
+export async function commitFilesToBranch({
+    octokit,
+    owner,
+    repo,
+    branch,
+    files,
+    message,
+}: {
+    octokit: OctokitRest
+    owner: string
+    repo: string
+    branch: string
+    files: { filePath: string; content: string }[]
+    message?: string
+}) {
+    if (!files.length) {
+        return null
+    }
+
+    const { data: refData } = await octokit.git.getRef({
+        owner,
+        repo,
+        ref: `heads/${branch}`,
+    })
+    const commitSha = refData.object.sha
+    console.log(`getting commit ${commitSha}`)
+
+    const { data: commitData } = await octokit.git.getCommit({
+        owner,
+        repo,
+        commit_sha: commitSha,
+    })
+    const treeSha = commitData.tree.sha
+
+    console.log(
+        'creating blobs for',
+        files.map((x) => x.filePath),
+    )
+    const withBlobs = await Promise.all(
+        files.map(async (file) => {
+            const blobData = await octokit.git.createBlob({
+                owner,
+                repo,
+                content: file.content,
+                encoding: 'utf-8',
+            })
+            return {
+                ...file,
+                blobSha: blobData.data.sha,
+                blob: blobData.data,
+            }
+        }),
+    )
+
+    const newTree = await createNewTree({
+        octokit,
+        owner,
+        repo,
+        create: withBlobs,
+        parentTreeSha: treeSha,
+    })
+
+    console.log('creating commit')
+    const { data: newCommit } = await octokit.git.createCommit({
+        owner,
+        repo,
+        message:
+            message ||
+            getCommitMessage({
+                filePaths: files.map((x) => x.filePath),
+            }),
+        tree: newTree.sha,
+        committer: committer,
+        author: committer,
+        parents: [commitSha],
+    })
+
+    await octokit.git.updateRef({
+        owner,
+        repo,
+        ref: `heads/${branch}`,
+        sha: newCommit.sha,
+    })
+
+    return newCommit
+}
+
 export function githubPathToPageSlug(path?: string) {
     if (!path) {
         return ''
@@ -644,7 +731,7 @@ export async function pushChangesToNewBranch({
         repo,
         ref: `heads/${branch}`,
     })
-    let commitSha = refData.object.sha
+    const commitSha = refData.object.sha
     console.log(`getting commit ${commitSha}`)
     const { data: commitData } = await octokit.git.getCommit({
         owner: owner,

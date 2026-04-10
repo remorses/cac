@@ -1,7 +1,11 @@
 import { createExampleComponentCode } from 'unframer-workspace/src/exporter'
 import { configFromFetch } from 'unframer-workspace/src/cli'
-import { describe, expect, test } from 'vitest'
-import { generateRepoName, generateUnframerRepo } from './unframer-github-repos'
+import { expect, test } from 'vitest'
+import {
+    generateRepoName,
+    generateUnframerRepo,
+    getChangedRepoFiles,
+} from './unframer-github-repos'
 import { Octokit } from 'octokit'
 import { env } from './env'
 
@@ -73,6 +77,49 @@ test('generateRepoName', () => {
         }),
     ).toMatchInlineSnapshot(`"caps-lock-cf755"`)
 })
+
+test('getChangedRepoFiles only returns changed paths', () => {
+    expect(
+        getChangedRepoFiles({
+            files: [
+                {
+                    relativePath: 'index.html',
+                    contents: '<html>same</html>',
+                },
+                {
+                    relativePath: '/src/main.tsx',
+                    contents: 'new main',
+                },
+                {
+                    relativePath: 'src/App.tsx',
+                    contents: 'new app',
+                },
+            ],
+            existingFiles: [
+                {
+                    githubPath: 'index.html',
+                    content: '<html>same</html>',
+                },
+                {
+                    githubPath: 'src/main.tsx',
+                    content: 'old main',
+                },
+            ],
+        }),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "content": "new main",
+          "filePath": "src/main.tsx",
+        },
+        {
+          "content": "new app",
+          "filePath": "src/App.tsx",
+        },
+      ]
+    `)
+})
+
 test(
     'create repo, without ai',
     async () => {
