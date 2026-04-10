@@ -132,11 +132,12 @@ type Tier = {
 export function loader({ request }: Route.LoaderArgs) {
     const u = new URL(request.url)
     const searchParams = u.searchParams
+    // orgId/email are optional so the pricing page renders for anyone visiting
+    // the public URL. When missing, Subscribe buttons still render but the
+    // downstream /api/react-export-plugin/buy endpoint will reject the purchase
+    // since it requires an orgId to link the subscription to a Framer org.
     const orgId = (searchParams.get('orgId') as string) || ''
     const email = (searchParams.get('email') as string) || ''
-    if (!orgId) {
-        throw new Error('No orgId found in search params')
-    }
 
     return {
         orgId,
