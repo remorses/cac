@@ -183,17 +183,35 @@ export function ReactExportPricing({}) {
                 />
             </Tabs>
             <Spacer y={12} />
+            {!orgId ? (
+                <div className='mb-6 max-w-xl text-center text-sm text-default-500'>
+                    To subscribe, open this pricing page from the React Export
+                    plugin inside Framer. Checkout needs your Framer org id to
+                    link the subscription, so direct visits can only preview
+                    the plans.
+                </div>
+            ) : null}
             <div className='grid grid-cols-1 gap-4 md:gap-12 sm:grid-cols-2 '>
                 {tiers.map((tier) => {
-                    const p = href('/api/react-export-plugin/buy')
-
-                    const u = new URL(p, env.PUBLIC_URL!)
-                    const priceId =
-                        reactExportVariants[tier.key]?.[selectedFrequency.key]
-
-                    u.searchParams.set('priceId', priceId)
-                    u.searchParams.set('email', email)
-                    u.searchParams.set('orgId', orgId)
+                    // When orgId is missing we must not let the user start a
+                    // subscription, otherwise we'd end up with a Stripe/Lemon
+                    // sub that isn't linked to any Framer org. Disable the
+                    // button in that case and skip building the buy URL.
+                    const buyUrl = (() => {
+                        if (!orgId) {
+                            return ''
+                        }
+                        const p = href('/api/react-export-plugin/buy')
+                        const u = new URL(p, env.PUBLIC_URL!)
+                        const priceId =
+                            reactExportVariants[tier.key]?.[
+                                selectedFrequency.key
+                            ]
+                        u.searchParams.set('priceId', priceId)
+                        u.searchParams.set('email', email)
+                        u.searchParams.set('orgId', orgId)
+                        return u.toString()
+                    })()
 
                     return (
                         <Card
@@ -263,18 +281,29 @@ export function ReactExportPricing({}) {
                                 </ul>
                             </CardBody>
                             <CardFooter>
-                                <Button
-                                    fullWidth
-                                    as={Link}
-                                    color={tier.buttonColor}
-                                    href={u.toString()}
-                                    onClick={(e) => {
-                                        NProgress.start()
-                                    }}
-                                    variant={tier.buttonVariant}
-                                >
-                                    {tier.buttonText}
-                                </Button>
+                                {orgId ? (
+                                    <Button
+                                        fullWidth
+                                        as={Link}
+                                        color={tier.buttonColor}
+                                        href={buyUrl}
+                                        onClick={() => {
+                                            NProgress.start()
+                                        }}
+                                        variant={tier.buttonVariant}
+                                    >
+                                        {tier.buttonText}
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        fullWidth
+                                        isDisabled
+                                        color={tier.buttonColor}
+                                        variant={tier.buttonVariant}
+                                    >
+                                        Open in Framer to Subscribe
+                                    </Button>
+                                )}
                             </CardFooter>
                         </Card>
                     )
