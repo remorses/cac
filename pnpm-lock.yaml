@@ -1230,8 +1230,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       goke:
-        specifier: ^6.5.2
-        version: 6.5.2
+        specifier: ^6.6.0
+        version: 6.6.0
     devDependencies:
       '@types/node':
         specifier: ~24.0.1
@@ -1653,8 +1653,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       goke:
-        specifier: ^6.5.2
-        version: 6.5.2
+        specifier: ^6.6.0
+        version: 6.6.0
       mime:
         specifier: ^4.0.7
         version: 4.0.7
@@ -1854,7 +1854,7 @@ importers:
         version: 1.9.4
       '@goke/mcp':
         specifier: ^0.0.4
-        version: 0.0.4(goke@6.5.2)(hono@4.12.12)(zod@4.3.6)
+        version: 0.0.4(goke@6.6.0)(hono@4.12.12)(zod@4.3.6)
       '@inquirer/prompts':
         specifier: ^8.2.0
         version: 8.2.0(@types/node@22.15.32)
@@ -1883,8 +1883,8 @@ importers:
         specifier: ^0.1.2
         version: 0.1.2
       goke:
-        specifier: ^6.5.2
-        version: 6.5.2
+        specifier: ^6.6.0
+        version: 6.6.0
       htmlparser2:
         specifier: ^10.1.0
         version: 10.1.0
@@ -9851,8 +9851,8 @@ packages:
   globrex@0.1.2:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
 
-  goke@6.5.2:
-    resolution: {integrity: sha512-AJKTaBwSj9D9cAVQZOeMBG37Qf5YbCd37dHRUFecSHYYIAPlb8RHGGw7MiLD2aZS2d37gq0zD+B1nfe7xvB7xg==}
+  goke@6.6.0:
+    resolution: {integrity: sha512-4kwY8DG/9D5hfmAEsXvclYQvpkBTkvx7kbAkGGWA8IoIwi1+SjHGdtb0rW5fB4f6SNMVvc7YoCjOpl1UOxWszg==}
     engines: {node: '>=18'}
 
   goober@2.1.16:
@@ -15604,10 +15604,10 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@goke/mcp@0.0.4(goke@6.5.2)(hono@4.12.12)(zod@4.3.6)':
+  '@goke/mcp@0.0.4(goke@6.6.0)(hono@4.12.12)(zod@4.3.6)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.25.3(hono@4.12.12)(zod@4.3.6)
-      goke: 6.5.2
+      goke: 6.6.0
       js-yaml: 4.1.1
     transitivePeerDependencies:
       - '@cfworker/json-schema'
@@ -15615,10 +15615,10 @@ snapshots:
       - supports-color
       - zod
 
-  '@goke/mcp@0.0.4(goke@6.5.2)(hono@4.9.9)(zod@4.3.6)':
+  '@goke/mcp@0.0.4(goke@6.6.0)(hono@4.9.9)(zod@4.3.6)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.25.3(hono@4.9.9)(zod@4.3.6)
-      goke: 6.5.2
+      goke: 6.6.0
       js-yaml: 4.1.1
     transitivePeerDependencies:
       - '@cfworker/json-schema'
@@ -23379,7 +23379,7 @@ snapshots:
 
   globrex@0.1.2: {}
 
-  goke@6.5.2: {}
+  goke@6.6.0: {}
 
   goober@2.1.16(csstype@3.1.3):
     dependencies:
@@ -24106,7 +24106,7 @@ snapshots:
   lintcn@0.7.0:
     dependencies:
       find-up: 8.0.0
-      goke: 6.5.2
+      goke: 6.6.0
       tar: 7.5.13
 
   listr2@6.6.1(enquirer@2.4.1):
@@ -27108,7 +27108,7 @@ snapshots:
       '@babel/core': 7.28.6
       '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
       '@biomejs/wasm-nodejs': 1.9.4
-      '@goke/mcp': 0.0.4(goke@6.5.2)(hono@4.9.9)(zod@4.3.6)
+      '@goke/mcp': 0.0.4(goke@6.6.0)(hono@4.9.9)(zod@4.3.6)
       '@inquirer/prompts': 8.2.0(@types/node@22.15.32)
       '@modelcontextprotocol/sdk': 1.25.3(hono@4.9.9)(zod@4.3.6)
       async-sema: 3.1.1
@@ -27118,7 +27118,7 @@ snapshots:
       esbuild: 0.25.11
       esbuild-plugins-node-modules-polyfill: 1.7.1(esbuild@0.25.11)
       framer-api: 0.1.2
-      goke: 6.5.2
+      goke: 6.6.0
       htmlparser2: 10.1.0
       nanospinner: 1.2.2
       picocolors: 1.1.1

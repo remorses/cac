@@ -25,7 +25,7 @@
     "dependencies": {
         "@sentry/node": "^9.22.0",
         "globby": "^14.1.0",
-        "goke": "^6.5.2",
+        "goke": "^6.6.0",
         "mime": "^4.0.7",
         "spiceflow": "^1.17.10",
         "zod": "^4.3.6"
