@@ -278,4 +278,4 @@ export const reactExportStatusErrors = {
     SUB_NEEDED: 402,
 }
 
-export const isReactExportFreePlanEnabled = true
+export const isReactExportFreePlanEnabled = false
