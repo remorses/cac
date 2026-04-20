@@ -443,8 +443,8 @@ const model = wrapLanguageModel({
     ),
     model: createFallback({
         models: [
-            openai.responses('gpt-5-mini'), //
-            google('gemini-2.0-flash'),
+            google('gemini-2.5-flash'), //
+            openai.responses('gpt-5-mini'),
         ],
     }),
 })
