@@ -9,8 +9,7 @@ import {
     isReactExportFreePlanEnabled,
     reactExportVariants,
 } from 'website/src/lib/env'
-import { getReactSub } from 'website/src/lib/spiceflow-react-export-plugin'
-import { getOrCreateStripeCustomer } from 'website/src/lib/stripe-customers'
+import { getOrCreateStripeCustomer, managedSubscriptionStatuses } from 'website/src/lib/stripe-customers'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {})
 
@@ -27,8 +26,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     let pluginName: PluginName = 'reactExport'
 
-    // Check if user already has an active subscription
-    const activeSub = await getReactSub({ orgId })
+    // Check if user already has a managed subscription (including past_due/paused/unpaid).
+    // These users should go to the portal to fix payment, not create a duplicate sub.
+    const activeSub = await prisma.subscription.findFirst({
+        where: {
+            orgId,
+            status: { in: [...managedSubscriptionStatuses] },
+            pluginName: 'reactExport',
+        },
+    })
 
     // If user already has active subscription, redirect to manage it
     if (activeSub?.customerId) {

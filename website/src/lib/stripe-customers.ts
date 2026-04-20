@@ -15,12 +15,23 @@ import { env } from 'website/src/lib/env'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
 /**
- * Statuses that mean "org has a usable subscription" — if any sub is in one of
- * these states, the buy route should redirect to the portal instead of creating
- * a new checkout. Includes past_due/paused/unpaid because the customer still
- * has a manageable subscription in Stripe's billing portal.
+ * Statuses that grant actual feature access (can they use the plugin?).
+ * Use this for download gates, API access checks, etc.
  */
 export const activeSubscriptionStatuses = [
+    'active',
+    'trialing',
+    'on_trial',
+] as const
+
+/**
+ * Statuses that mean "org already has a subscription in Stripe" — if any sub
+ * is in one of these states, the buy route should redirect to the billing portal
+ * instead of creating a new checkout. Includes past_due/paused/unpaid because
+ * the customer still has a manageable subscription they should fix via portal,
+ * not by creating a duplicate.
+ */
+export const managedSubscriptionStatuses = [
     'active',
     'trialing',
     'on_trial',

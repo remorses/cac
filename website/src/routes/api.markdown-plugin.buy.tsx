@@ -5,7 +5,7 @@ import { PluginName, prisma } from 'db'
 import { LoaderFunctionArgs, redirect } from 'react-router'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
-import { activeSubscriptionStatuses, getOrCreateStripeCustomer } from 'website/src/lib/stripe-customers'
+import { managedSubscriptionStatuses, getOrCreateStripeCustomer } from 'website/src/lib/stripe-customers'
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
@@ -27,7 +27,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const activeSub = await prisma.subscription.findFirst({
         where: {
             orgId,
-            status: { in: [...activeSubscriptionStatuses] },
+            status: { in: [...managedSubscriptionStatuses] },
             pluginName: 'githubSync',
         },
     })
