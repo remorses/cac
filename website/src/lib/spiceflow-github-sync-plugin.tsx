@@ -13,6 +13,7 @@ import path from 'path'
 import { Sema } from 'sema4'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
+import { activeSubscriptionStatuses } from 'website/src/lib/stripe-customers'
 import {
     checkGitHubIsInstalled,
     getGithubUserLogin,
@@ -1149,7 +1150,7 @@ async function getGithubSub({ orgId, projectId }) {
         where: {
             orgId: orgId,
             status: {
-                in: ['active', 'trialing'],
+                in: [...activeSubscriptionStatuses],
             },
             pluginName: 'githubSync',
             metadata: {

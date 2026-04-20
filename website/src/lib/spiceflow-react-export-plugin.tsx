@@ -2,6 +2,7 @@ import * as fs from 'fs'
 
 import * as path from 'path'
 import { Spiceflow } from 'spiceflow'
+import { activeSubscriptionStatuses } from 'website/src/lib/stripe-customers'
 
 import {
     Prisma,
@@ -764,20 +765,13 @@ export async function recursiveReaddir(dir: string) {
 }
 
 export async function getReactSub({ orgId }) {
-    // if (!projectId) {
-    //     throw new Error('projectId missing, cannot get subscription')
-    // }
     return await prisma.subscription.findFirst({
         where: {
             orgId: orgId,
             status: {
-                in: ['active', 'trialing', 'on_trial'],
+                in: [...activeSubscriptionStatuses],
             },
             pluginName: 'reactExport',
-            // metadata: {
-            //     path: ['projectId'],
-            //     equals: projectId,
-            // },
         },
     })
 }

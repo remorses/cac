@@ -2,6 +2,34 @@
 
 > **Editing instructions:** This file (`UNFRAMER_PRIVATE_AGENTS.md`) is the source of truth for the root `AGENTS.md`. Edit this file, not `AGENTS.md` (which is generated) and not any `CLAUDE.md` files (which are deleted). Run `pnpm agents.md` from root to regenerate `AGENTS.md` after editing.
 
+## What this codebase is
+
+Unframer is a suite of **Framer plugins** — each plugin adds functionality to the Framer design tool (React export, GitHub sync, AI rewrite, migrate, etc.). The monorepo contains:
+
+- **website** — the main web app (react-router + spiceflow). Serves the marketing site, plugin APIs, Stripe checkout flows, and webhook handlers. Uses Prisma with PostgreSQL.
+- **plugin-\*** — individual Framer plugins (Vite + React iframes that run inside framer.com)
+- **plugin-mcp** — the MCP plugin, which also has a Cloudflare Worker backend and a server-api mode via unframer CLI
+- **db** — shared Prisma schema and database client
+- **unframer** / **spiceflow** — git submodules (open source packages)
+
+## Billing and subscriptions
+
+The codebase handles payments for **multiple plugins** from **multiple providers**. This is critical context for any billing work:
+
+- **Providers:** Stripe (current, preferred) and LemonSqueezy (legacy, some plugins still use it)
+- **Plugins with subscriptions:** reactExport, githubSync, llm, migrate, angledScreen, mcp — each has its own subscription tracked by `pluginName` in the Subscription table
+- **The Subscription table is shared** across all plugins and providers. Always filter by `pluginName` and `provider` when querying subscriptions for a specific plugin.
+- **One Stripe customer per Org.** The `Org.stripeCustomerId` column is the single source of truth. All checkout routes must use `getOrCreateStripeCustomer` — never pass `customer_email` alone to Stripe or you create duplicate customers.
+- **Duplicate subscription prevention:** every buy route must check for an existing active subscription before creating a checkout session. If one exists, redirect to the Stripe billing portal instead.
+- **Active subscription statuses** are defined in `activeSubscriptionStatuses` in stripe-customers — use this shared list everywhere instead of hardcoding status arrays. It includes `active`, `trialing`, `on_trial`, `past_due`, `paused`, `unpaid`.
+- **Webhook handler** processes Stripe events and upserts into Subscription and PaymentForCredits tables. It resolves orgId from metadata (preferred) or email fallback. Customer ID backfill only happens from metadata-resolved orgs to avoid poisoning the wrong org.
+
+**Rules:**
+- Never call `stripe.customers.create` outside of `getOrCreateStripeCustomer`
+- Never hardcode subscription status lists — import `activeSubscriptionStatuses`
+- Always pass `customer:` (not `customer_email:`) to checkout sessions
+- LemonSqueezy routes use a different flow (external checkout URLs) and have their own webhook handler
+
 ## Git Submodules
 
 This repo uses git submodules for `spiceflow` and `unframer`. Always keep submodules on their respective `main` branches.

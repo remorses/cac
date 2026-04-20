@@ -3,6 +3,7 @@ import { prisma, Prisma } from 'db'
 import Stripe from 'stripe'
 import { env } from 'website/src/lib/env'
 import { AppError, notifyError } from 'website/src/lib/errors'
+import { backfillStripeCustomerId } from 'website/src/lib/stripe-customers'
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {})
 
@@ -77,14 +78,25 @@ async function handleCheckoutSessionCompleted(
 
     const customerEmail = latestSession.customer_details?.email || undefined
 
-    const orgId = await resolveStripeOrgId({
+    const resolved = await resolveStripeOrgId({
         metadataOrgId: latestSession.metadata?.orgId,
         customerEmail,
         context: `checkout.session.completed (${latestSession.id})`,
     })
     const pluginName = latestSession.metadata?.pluginName as any
-    if (!orgId) {
+    if (!resolved) {
         return
+    }
+    const { orgId } = resolved
+
+    // Only backfill Org.stripeCustomerId when orgId was resolved from a
+    // trusted source (metadata). Email-fallback resolution could pick the
+    // wrong org if a user belongs to multiple orgs.
+    const checkoutCustomerId = typeof latestSession.customer === 'string'
+        ? latestSession.customer
+        : latestSession.customer?.id
+    if (checkoutCustomerId && resolved.source === 'metadata') {
+        await backfillStripeCustomerId({ orgId, customerId: checkoutCustomerId })
     }
 
     const item = latestSession.line_items?.data[0] // Assuming single item checkout
@@ -122,13 +134,22 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
     )
 
     const metadataEmail = latestSubscription.metadata?.email || undefined
-    const orgId = await resolveStripeOrgId({
+    const resolved = await resolveStripeOrgId({
         metadataOrgId: latestSubscription.metadata?.orgId,
         customerEmail: metadataEmail,
         context: `customer.subscription event (${latestSubscription.id})`,
     })
-    if (!orgId) {
+    if (!resolved) {
         return
+    }
+    const { orgId } = resolved
+
+    // Only backfill from trusted metadata resolution, not email fallback
+    const subCustomerId = typeof latestSubscription.customer === 'string'
+        ? latestSubscription.customer
+        : null
+    if (subCustomerId && resolved.source === 'metadata') {
+        await backfillStripeCustomerId({ orgId, customerId: subCustomerId })
     }
 
     const variantId = latestSubscription.items.data[0]?.price.id
@@ -175,6 +196,8 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
     })
 }
 
+type ResolvedOrg = { orgId: string; source: 'metadata' | 'email' } | null
+
 async function resolveStripeOrgId({
     metadataOrgId,
     customerEmail,
@@ -183,7 +206,7 @@ async function resolveStripeOrgId({
     metadataOrgId: string | undefined
     customerEmail: string | undefined
     context: string
-}) {
+}): Promise<ResolvedOrg> {
     if (metadataOrgId) {
         const org = await prisma.org.findUnique({
             where: {
@@ -194,7 +217,7 @@ async function resolveStripeOrgId({
             },
         })
         if (org?.orgId) {
-            return org.orgId
+            return { orgId: org.orgId, source: 'metadata' }
         }
         notifyError(
             new AppError(
@@ -238,5 +261,5 @@ async function resolveStripeOrgId({
         return null
     }
 
-    return fallbackOrg.orgId
+    return { orgId: fallbackOrg.orgId, source: 'email' }
 }

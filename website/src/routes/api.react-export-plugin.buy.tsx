@@ -10,6 +10,7 @@ import {
     reactExportVariants,
 } from 'website/src/lib/env'
 import { getReactSub } from 'website/src/lib/spiceflow-react-export-plugin'
+import { getOrCreateStripeCustomer } from 'website/src/lib/stripe-customers'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {})
 
@@ -29,29 +30,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Check if user already has an active subscription
     const activeSub = await getReactSub({ orgId })
 
-    // Check for any previous subscription (including inactive ones) to reuse customer
-    const anySubscription = await prisma.subscription.findFirst({
-        where: {
-            orgId: orgId,
-            pluginName: 'reactExport',
-        },
-        orderBy: {
-            createdAt: 'desc',
-        },
-    })
-
     // If user already has active subscription, redirect to manage it
-    if (activeSub) {
-        if (activeSub?.customerId) {
-            const portalSession = await stripe.billingPortal.sessions.create({
-                customer: activeSub.customerId,
-                return_url: new URL(
-                    '/after-framer-payment',
-                    env.PUBLIC_URL,
-                ).toString(),
-            })
-            return redirect(portalSession.url)
-        }
+    if (activeSub?.customerId) {
+        const portalSession = await stripe.billingPortal.sessions.create({
+            customer: activeSub.customerId,
+            return_url: new URL(
+                '/after-framer-payment',
+                env.PUBLIC_URL,
+            ).toString(),
+        })
+        return redirect(portalSession.url)
     }
 
     const price = u.searchParams.get('priceId')
@@ -65,6 +53,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         throw redirect(redirectUrl.toString())
     }
 
+    // Prevent duplicate customers: always reuse Org.stripeCustomerId or
+    // create one Stripe customer per org. Never pass customer_email alone.
+    const customerId = await getOrCreateStripeCustomer({
+        orgId,
+        email: params.email,
+    })
+
     const ONE_TIME_DOLLAR_PRICE_ID = 'price_1RlotoLpvqzrp4t9SDXijkte'
     const session = await stripe.checkout.sessions.create({
         line_items: [
@@ -76,25 +71,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 : []),
         ],
         mode: 'subscription',
-        ...(anySubscription?.customerId
-            ? { customer: anySubscription.customerId }
-            : { customer_email: params.email || undefined }),
+        customer: customerId,
         client_reference_id: orgId,
         success_url: new URL('/after-framer-payment', baseUrl).toString(),
         cancel_url: new URL('/after-framer-payment', baseUrl).toString(),
         metadata: {
             ...params,
-            orgId: orgId,
+            orgId,
         },
         subscription_data: {
             metadata: {
                 ...params,
                 pluginName,
-                orgId: orgId,
+                orgId,
             },
             ...(isReactExportFreePlanEnabled ? { trial_period_days: 7 } : {}),
         },
-
         allow_promotion_codes: true,
     })
     if (!session.url?.toString()) {
