@@ -11,7 +11,7 @@ import {
     getSubscription,
     lemonSqueezySetup,
 } from '@lemonsqueezy/lemonsqueezy.js'
-import { isTruthy } from '../lib/utils'
+
 
 export let loader = async ({ request }: LoaderFunctionArgs) => {
     lemonSqueezySetup({
@@ -29,6 +29,15 @@ export let loader = async ({ request }: LoaderFunctionArgs) => {
     if (!user || !user.email) {
         throw new Error('user has no email or not found')
     }
+    // Resolve user's org(s) to query subscriptions correctly.
+    // Old subs used orgId = user.id (Supabase UUID), newer subs use orgId = Org.orgId (cuid).
+    // Query both to cover all cases.
+    const userOrgs = await prisma.orgsUsers.findMany({
+        where: { userId: user.id },
+        select: { orgId: true },
+    })
+    const orgIds = [user.id, ...userOrgs.map((o) => o.orgId)]
+
     const [authUser, subs] = await Promise.all([
         prisma.users.findFirst({
             where: {
@@ -37,7 +46,7 @@ export let loader = async ({ request }: LoaderFunctionArgs) => {
         }),
         prisma.subscription.findMany({
             where: {
-                orgId: user.id,
+                orgId: { in: orgIds },
             },
         }),
     ])
@@ -48,20 +57,22 @@ export let loader = async ({ request }: LoaderFunctionArgs) => {
     const subsWithManageUrl = await Promise.all(
         subs.map(async (sub) => {
             if (sub?.customerId) {
-                const portalSession =
-                    await stripe.billingPortal.sessions.create({
-                        customer: sub.customerId,
-
-                        return_url: new URL(
-                            '/after-framer-payment',
-                            env.PUBLIC_URL,
-                        ).toString(),
-                    })
-
-                let manageUrl = portalSession.url
-                return {
-                    sub,
-                    manageUrl,
+                try {
+                    const portalSession =
+                        await stripe.billingPortal.sessions.create({
+                            customer: sub.customerId,
+                            return_url: new URL(
+                                '/after-framer-payment',
+                                env.PUBLIC_URL,
+                            ).toString(),
+                        })
+                    return { sub, manageUrl: portalSession.url }
+                } catch (e) {
+                    console.error(
+                        `Failed to create portal session for customer ${sub.customerId}:`,
+                        e,
+                    )
+                    return { sub, manageUrl: undefined }
                 }
             }
 
@@ -77,21 +88,21 @@ export let loader = async ({ request }: LoaderFunctionArgs) => {
                         `no manageUrl for lemon squeezy sub`,
                         s.data?.data?.attributes,
                     )
-                    return
+                    return { sub, manageUrl: undefined }
                 }
                 return { sub, manageUrl }
             }
             console.log(
                 `could not get manage url for sub ${JSON.stringify(sub)}`,
             )
-            // return { sub }
+            return { sub, manageUrl: undefined }
         }),
     )
 
     return json(
         {
             subs,
-            subsWithManageUrl: subsWithManageUrl.filter(isTruthy),
+            subsWithManageUrl,
             authUser,
         },
         { headers },
@@ -150,13 +161,15 @@ export default function Page() {
                                     )} */}
                                 </div>
                             </div>
-                            <Link
-                                href={manageUrl}
-                                target='_blank'
-                                className='ml-4 inline-flex items-center bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200'
-                            >
-                                Manage Subscription
-                            </Link>
+                            {manageUrl && (
+                                <Link
+                                    href={manageUrl}
+                                    target='_blank'
+                                    className='ml-4 inline-flex items-center bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200'
+                                >
+                                    Manage Subscription
+                                </Link>
+                            )}
                         </div>
                     ))}
                 </div>

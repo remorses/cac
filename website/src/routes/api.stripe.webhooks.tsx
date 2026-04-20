@@ -34,6 +34,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         return new Response('Webhook Error', { status: 400 })
     }
 
+
+
     try {
         switch (event.type) {
             case 'checkout.session.completed':
