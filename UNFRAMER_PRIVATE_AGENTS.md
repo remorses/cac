@@ -89,3 +89,13 @@ pnpm tsc --incremental && pnpm gen-unframer
 ```
 
 This copies compiled JS to `unframer/unframer/src/plugin-mcp-dist/lib/` which is what `unframer mcp` server-api mode loads at runtime.
+
+### Revoking a user's MCP secret
+
+If a user asks to revoke their secret (e.g. they accidentally shared it on GitHub), run from `plugin-mcp/`:
+
+```bash
+pnpm revoke-session <the-secret-key>
+```
+
+This deletes the `FramerLoginSession` row from the production database. The worker's KV cache has a 5 minute TTL so the session may remain valid briefly after revocation. The user will need to re-login from the Framer plugin to get a new secret.

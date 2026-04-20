@@ -26,6 +26,7 @@
         "deployment:prod": "sudo echo 'agents should never run this' && pnpm typecheck && pnpm wrangler deploy --env='' && pnpm wrangler deploy --env preview",
         "deployment": "pnpm typecheck && pnpm wrangler deploy --env preview",
         "do:duration": "pnpm tsx scripts/do-duration.ts",
+        "revoke-session": "doppler run -c production -- pnpm tsx scripts/revoke-session.ts",
         "start": "vite preview --port 5173",
         "gen-client": "export DIR=../plugin-mcp/src/generated/ && cd ../website && tsc --incremental && cd ../plugin-mcp && rm -rf $DIR && mkdir -p $DIR && cp ../website/dist/src/lib/api-client.* $DIR",
         "gen-unframer": "rm -rf ../unframer/unframer/src/plugin-mcp-dist && mkdir -p ../unframer/unframer/src/plugin-mcp-dist && cp -r esm/lib ../unframer/unframer/src/plugin-mcp-dist/"
