@@ -166,9 +166,16 @@ When the thread already has a reply from tommy@unframer.co, read the user's late
   >
   > Tommy: "The components themselves are fully yours, no Framer dependency. Animations use framer-motion (handled by the unframer package). The only Framer URLs you might see are for images, videos, or fonts - same as loading a Google Font or an image from any other server. The example repo has everything set up already."
 
+**Errors / connection failures** (e.g. "it doesn't work", "I spent all afternoon trying", screenshot of an error):
+- Reply asking for the info needed to debug. Don't try to fix it. Just collect details so Tommy can follow up.
+- Always ask for: what MCP URL they're using, and the exact error message they see.
+- Example:
+  > User: "I spent all afternoon trying to connect it, followed every guide, still doesn't work."
+  >
+  > Tommy: "Sorry to hear that. To help debug, can you share: what MCP URL you're using in your editor config, and the exact error message you're seeing?"
+- Mark as read after sending.
+
 **Leave for Tommy - do NOT reply, do NOT mark as read:**
-- Persistent connection failure ("I spent all afternoon trying to connect it, followed every guide, still doesn't work") - too specific to debug over email
-- Bug reports with screenshots - can't diagnose without seeing the error
 - Product feedback / feature requests (e.g. "you should add X", "have you thought about Y workflow") - Tommy should read these
 - Questions about Claude Design or other external tools
 - Anything ambiguous or sensitive
