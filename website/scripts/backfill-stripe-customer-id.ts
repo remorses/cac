@@ -57,7 +57,9 @@ async function main() {
     })
 
     if (orgsWithoutCustomerId.length === 0) {
-        console.log('✅ No orgs need backfilling — all Stripe orgs already have stripeCustomerId set.')
+        console.log(
+            '✅ No orgs need backfilling — all Stripe orgs already have stripeCustomerId set.',
+        )
         return
     }
 
@@ -81,18 +83,20 @@ async function main() {
     console.log('')
 
     if (dryRun) {
-        console.log(`Would update ${updates.length} org(s). Run with --apply to execute.`)
+        console.log(
+            `Would update ${updates.length} org(s). Run with --apply to execute.`,
+        )
         return
     }
 
     let updated = 0
     for (const { orgId, customerId } of updates) {
-        // CAS update: only write if still null (safe against concurrent runs)
-        const result = await prisma.org.updateMany({
-            where: { orgId, stripeCustomerId: null },
+        await prisma.org.update({
+            where: { orgId },
             data: { stripeCustomerId: customerId },
         })
-        updated += result.count
+        console.log(`updated ${orgId}`)
+        updated++
     }
 
     console.log(`✅ Updated ${updated} org(s) with stripeCustomerId.`)
