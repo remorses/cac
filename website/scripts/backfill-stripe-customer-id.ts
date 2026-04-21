@@ -69,7 +69,7 @@ async function main() {
 
     for (const org of orgsWithoutCustomerId) {
         const sub = org.subscriptions[0]
-        if (!sub?.customerId) {
+        if (!sub?.customerId || !sub.customerId.startsWith('cus_')) {
             continue
         }
         updates.push({ orgId: org.orgId, customerId: sub.customerId })

@@ -27,9 +27,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const activeSub = await prisma.subscription.findFirst({
         where: {
             orgId,
-            status: { in: [...managedSubscriptionStatuses] },
+            provider: 'stripe',
             pluginName: 'githubSync',
+            status: { in: [...managedSubscriptionStatuses] },
+            customerId: { not: null },
         },
+        orderBy: { createdAt: 'desc' },
     })
     if (activeSub?.customerId) {
         const portalSession = await stripe.billingPortal.sessions.create({

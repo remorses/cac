@@ -38,6 +38,7 @@ export const managedSubscriptionStatuses = [
     'past_due',
     'paused',
     'unpaid',
+    'incomplete',
 ] as const
 
 /**

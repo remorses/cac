@@ -31,9 +31,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const activeSub = await prisma.subscription.findFirst({
         where: {
             orgId,
-            status: { in: [...managedSubscriptionStatuses] },
+            provider: 'stripe',
             pluginName: 'reactExport',
+            status: { in: [...managedSubscriptionStatuses] },
+            customerId: { not: null },
         },
+        orderBy: { createdAt: 'desc' },
     })
 
     // If user already has active subscription, redirect to manage it
