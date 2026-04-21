@@ -127,3 +127,13 @@ pnpm revoke-session <the-secret-key>
 ```
 
 This deletes the `FramerLoginSession` row from the production database. The worker's KV cache has a 5 minute TTL so the session may remain valid briefly after revocation. The user will need to re-login from the Framer plugin to get a new secret.
+
+## Automated email replies (MCP first-open)
+
+When a user opens the Framer MCP plugin for the first time, they receive an email asking if they want a GitHub repo with their exported React components. A kimaki scheduled task runs hourly and replies to those user replies automatically.
+
+The full instructions for this task — including how to categorize replies, send the repo link, handle follow-ups, and what to leave for manual review — are in:
+
+**`docs/mcp-email-reply-task.md`**
+
+Read that file before running or modifying the email reply task.
